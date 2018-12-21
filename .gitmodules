@@ -1,6 +1,3 @@
-[submodule "extern/cryptoTools"]
-	path = extern/cryptoTools
-	url = https://github.com/ladnir/cryptoTools.git
 [submodule "extern/libOTe"]
 	path = extern/libOTe
 	url = https://github.com/ladnir/libOTe.git
