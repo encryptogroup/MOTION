@@ -2,8 +2,9 @@
 #include <memory>
 #include <vector>
 
-#include "gate.h"
+#include "gate/gate.h"
 
+using namespace ABYN;
 using namespace ABYN::Gates::Interfaces;
 using namespace ABYN::Gates::Arithmetic;
 using namespace ABYN::Shares;

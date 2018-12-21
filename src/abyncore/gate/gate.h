@@ -4,7 +4,7 @@
 #include <iostream>
 #include <vector>
 
-#include "share.h"
+#include "share/share.h"
 
 
 namespace ABYN::Gates::Interfaces {

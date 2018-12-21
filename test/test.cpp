@@ -1,19 +1,20 @@
 #ifndef TEST_CPP
 #define TEST_CPP
 
-#include "gate.h"
-#include "share.h"
+#include "gate/gate.h"
+#include "share/share.h"
 #include <gtest/gtest.h>
 
 #include <iostream>
 #include <memory>
 
-
-using namespace ABYN::Gates::Interfaces;
-using namespace ABYN::Gates::Arithmetic;
-using namespace ABYN::Shares;
-
 namespace {
+
+    using namespace ABYN;
+    using namespace ABYN::Gates::Interfaces;
+    using namespace ABYN::Gates::Arithmetic;
+    using namespace ABYN::Shares;
+
 
     TEST(ArithmeticSharingTest, unsigned8) {
         for (auto i = 0; i < 1000; ++i) {

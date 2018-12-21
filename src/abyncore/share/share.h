@@ -1,7 +1,7 @@
 #ifndef SHARE_H
 #define SHARE_H
 
-#include "typedefs.h"
+#include "utility/typedefs.h"
 #include <memory>
 
 namespace ABYN::Shares{
