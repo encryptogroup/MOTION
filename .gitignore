@@ -1,0 +1,29 @@
+*.h~
+*.cpp~
+*.c~
+*.o
+*.exe
+.metadata
+.cproject
+.project
+.settings
+*.db
+README.html
+docs/*
+*.dump
+.idea*
+
+# build directory
+build*/
+cmake-build*
+
+# CMake
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake

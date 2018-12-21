@@ -1,0 +1,6 @@
+[submodule "extern/ENCRYPTO_utils"]
+	path = extern/cryptoTools
+	url = https://github.com/ladnir/cryptoTools.git
+[submodule "extern/OTExtension"]
+	path = extern/libOTe
+	url = https://github.com/ladnir/libOTe.git
