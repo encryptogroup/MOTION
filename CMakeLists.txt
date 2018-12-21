@@ -60,12 +60,12 @@ elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
     add_subdirectory(extern/OTExtension)
 endif()
 
-include_directories(utility)
-include_directories(share)
-include_directories(gate)
+include_directories(src/abyncore/utility)
+include_directories(src/abyncore/share)
+include_directories(src/abyncore/gate)
 include_directories(.)
 
-set(SOURCE_FILES main.cpp share/share.h utility/typedefs.h wire/wire.h wire/wire.cpp gate/gate.h gate/gate.cpp abyn.h)
+set(SOURCE_FILES main.cpp src/abyncore/share/share.h src/abyncore/utility/typedefs.h src/abyncore/wire/wire.h src/abyncore/wire/wire.cpp src/abyncore/gate/gate.h src/abyncore/gate/gate.cpp abyn.h src/abyncore/abynparty/abynparty.cpp src/abyncore/abynparty/abynparty.h)
 add_executable(ABY-N ${SOURCE_FILES})
 
 add_executable(myTest test/test.cpp)

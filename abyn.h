@@ -1,5 +1,3 @@
-
-
 #ifndef ABYN_H
 #define ABYN_H
 
