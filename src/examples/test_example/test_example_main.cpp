@@ -1,14 +1,9 @@
 #include <iostream>
 #include <memory>
-#include <vector>
 
-#include "gate/gate.h"
 #include "abynparty/abynparty.h"
 
 using namespace ABYN;
-using namespace ABYN::Gates::Interfaces;
-using namespace ABYN::Gates::Arithmetic;
-using namespace ABYN::Shares;
 
 using ABYNPartyPtr = std::unique_ptr<ABYNParty>;
 

@@ -9,9 +9,7 @@ find_package(GMP REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED)
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(GTEST REQUIRED gtest_main)
-find_package(GTest REQUIRED)
+
 
 # Set build type to `Release` if non was specified:
 if(NOT CMAKE_BUILD_TYPE)

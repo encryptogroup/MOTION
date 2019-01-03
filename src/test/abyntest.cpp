@@ -1,16 +1,19 @@
 #ifndef TEST_CPP
 #define TEST_CPP
 
+#include <gtest/gtest.h>
+
 #include "gate/gate.h"
 #include "abynparty/abynparty.h"
-
-#include <gtest/gtest.h>
 
 namespace {
 
     using namespace ABYN;
     using namespace ABYN::Arithmetic;
 
+    // A dummy first-try test
+    // Test that arithmetic input gates work correctly
+    // TODO: modify after implementing input gates properly
     TEST(ArithmeticSharingTest, InputGateUnsigned8) {
         for (auto i = 0; i < 100; ++i) {
             u8 value = rand();
@@ -59,14 +62,15 @@ namespace {
         }
     }
 
+    // Test that IPs and ports are set correctly after ABYNParty initialization
     TEST(ABYNPartyAllocation, CorrectnessOfIPsAndPorts) {
         const std::string d(".");
 
         for (auto i = 0; i < 10; ++i) {
             const auto number_of_parties = 5;
 
-            std::vector < u8 > check_ports;
-            std::vector < std::string > check_ips;
+            std::vector<u8> check_ports;
+            std::vector<std::string> check_ips;
 
             auto r_u8 = []() {
                 return std::to_string((u8) rand());
@@ -81,20 +85,20 @@ namespace {
                 check_ports.push_back(rand());
             }
 
-            auto p3 = std::shared_ptr < ABYNParty > (
+            auto p3 = std::shared_ptr<ABYNParty>(
                     new ABYNParty{
                             Party(check_ips[0], check_ports[0]),
                             Party(check_ips[1], check_ports[1]),
                             Party(check_ips[2], check_ports[2])});
 
-            auto p4 = std::shared_ptr < ABYNParty > (
+            auto p4 = std::shared_ptr<ABYNParty>(
                     new ABYNParty{
                             Party(check_ips[0], check_ports[0]),
                             Party(check_ips[1], check_ports[1]),
                             Party(check_ips[2], check_ports[2]),
                             Party(check_ips[3], check_ports[3])});
 
-            auto p5 = std::shared_ptr < ABYNParty > (
+            auto p5 = std::shared_ptr<ABYNParty>(
                     new ABYNParty{
                             Party(check_ips[0], check_ports[0]),
                             Party(check_ips[1], check_ports[1]),
@@ -102,7 +106,7 @@ namespace {
                             Party(check_ips[3], check_ports[3]),
                             Party(check_ips[4], check_ports[4])});
 
-            std::vector < std::shared_ptr < ABYNParty >> p345{p3, p4, p5}, p45{p4, p5};
+            std::vector<std::shared_ptr<ABYNParty >> p345{p3, p4, p5}, p45{p4, p5};
 
             for (auto j = 0; j < number_of_parties; ++j) {
                 if (j < 3) {
@@ -125,6 +129,7 @@ namespace {
         }
     }
 
+    // Check that ABYNParty throws an exception when using an incorrect IP address
     TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
         const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
         const std::string d(".");
@@ -145,11 +150,6 @@ namespace {
         }
     }
 
-
-    int main(int argc, char **argv) {
-        testing::InitGoogleTest(&argc, argv);
-        return RUN_ALL_TESTS();
-    }
 }
 
 #endif

@@ -19,7 +19,8 @@ namespace ABYN {
 
         ~ABYNConfiguration() {};
 
-        std::vector<Party> GetParties(){return parties;};
+        std::vector<Party> & GetParties(){return parties;};
+        Party & GetParty(uint i){return parties.at(i);}
     };
 
 }

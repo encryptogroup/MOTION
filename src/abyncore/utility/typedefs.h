@@ -13,9 +13,14 @@ namespace ABYN {
     const bool DEBUG = false;
 
     namespace Gates::Arithmetic{};
+    namespace Gates::Boolean{};
+    namespace Gates::Yao{};
+    namespace Gates::Conversion{};
 
-    //alias for Arithmetic
-    namespace Arithmetic = ABYN::Gates::Arithmetic;
+    //fast-access aliases for Gates
+    namespace Arithmetic = Gates::Arithmetic;
+    namespace Boolean = Gates::Boolean;
+    namespace Conversion = Gates::Conversion;
 }
 
 #endif //TYPEDEFS_H

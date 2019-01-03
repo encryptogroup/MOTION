@@ -11,7 +11,7 @@ namespace ABYN {
 
     class Party {
     private:
-        std::string ip;
+        std::string_view ip;
         u16 port;
 
         bool isInvalidIp(const char *ip) {
@@ -32,14 +32,14 @@ namespace ABYN {
                 throw (ip + " is invalid IP address");
             }
 
-            this->ip = std::string(ip);
+            this->ip = std::string_view(ip);
             this->port = port;
         };
 
         ~Party() {};
 
-        const std::string_view GetIp(){return ip;};
-        const u16 GetPort(){return port;};
+        std::string_view & GetIp(){return ip;};
+        u16 GetPort(){return port;};
     };
 
 }
