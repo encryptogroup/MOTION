@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
-project(ABY-N LANGUAGES CXX)
+project(ABYN LANGUAGES CXX)
+
+option(ABYN_BUILD_EXE "Build executables" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -60,11 +62,18 @@ elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
     add_subdirectory(extern/OTExtension)
 endif()
 
+find_package(GMP REQUIRED)
+find_package(Threads REQUIRED)
+find_package(Boost REQUIRED)
+
+add_subdirectory(src/abyncore)
+
 include_directories(src/abyncore)
+include_directories(extern)
 
-set(SOURCE_FILES main.cpp src/abyncore/share/share.h src/abyncore/utility/typedefs.h src/abyncore/wire/wire.h src/abyncore/wire/wire.cpp src/abyncore/gate/gate.h src/abyncore/gate/gate.cpp abyn.h src/abyncore/abynparty/abynparty.cpp src/abyncore/abynparty/abynparty.h src/abyncore/utility/abynconfiguration.h src/abyncore/utility/abynconfiguration.cpp src/abyncore/utility/party.h src/abyncore/utility/party.cpp)
-add_executable(ABY-N ${SOURCE_FILES})
+set(ABYN_BUILD_EXE ON)
 
-add_executable(myTest test/test.cpp)
-target_link_libraries(myTest ${GTEST_LIBRARIES} ${GTEST_LDFLAGS})
-target_compile_options(myTest PUBLIC ${GTEST_CFLAGS} ${CMAKE_THREAD_LIBS_INIT})
+if(ABYN_BUILD_EXE)
+    add_subdirectory(src/test)
+    add_subdirectory(src/examples)
+endif(ABYN_BUILD_EXE)

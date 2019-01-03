@@ -5,12 +5,14 @@
 #include <memory>
 
 #include "utility/abynconfiguration.h"
+//#include "OTExtension/ot/ot-ext.h"
 
 namespace ABYN {
 
     class ABYNParty {
     private:
         std::shared_ptr<ABYNConfiguration> configuration;
+ //       vector<
     protected:
         ABYNParty() {};
     public:

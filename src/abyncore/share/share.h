@@ -1,8 +1,9 @@
 #ifndef SHARE_H
 #define SHARE_H
 
-#include "utility/typedefs.h"
 #include <memory>
+
+#include "utility/typedefs.h"
 
 namespace ABYN::Shares{
 class Share {
