@@ -11,6 +11,7 @@ namespace ABYN {
     typedef uint8_t u8;
 
     const bool DEBUG = false;
+    const bool VERBOSE_DEBUG = false;
 
     namespace Gates::Arithmetic{};
     namespace Gates::Boolean{};

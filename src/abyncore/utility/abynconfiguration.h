@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <cstdarg>
+#include <memory>
 
 #include "party.h"
 
@@ -22,6 +23,8 @@ namespace ABYN {
         std::vector<Party> & GetParties(){return parties;};
         Party & GetParty(uint i){return parties.at(i);}
     };
+
+    using ABYNConfigurationPtr = std::shared_ptr<ABYNConfiguration>;
 
 }
 

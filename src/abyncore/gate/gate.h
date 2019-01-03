@@ -5,10 +5,12 @@
 #include <vector>
 
 #include "share/share.h"
+#include "abynparty/abynbackend.h"
 
 
 namespace ABYN::Gates::Interfaces {
 
+    using ABYNBackendPtr = ABYN::ABYNBackendPtr;
     using SharePointer = ABYN::Shares::SharePointer;
 
 //
@@ -26,11 +28,12 @@ namespace ABYN::Gates::Interfaces {
     protected:
         SharePointer output;
         ssize_t gate_id = -1;
+        ABYNBackendPtr backend;
 
     public:
-        Gate() { if constexpr (DEBUG) { std::cout << "Gate constructor" << std::endl; }};
+        Gate() { if constexpr (VERBOSE_DEBUG) { std::cout << "Gate constructor" << std::endl; }};
 
-        virtual ~Gate() { if constexpr (DEBUG) { std::cout << "Gate destructor" << std::endl; }};
+        virtual ~Gate() { if constexpr (VERBOSE_DEBUG) { std::cout << "Gate destructor" << std::endl; }};
 
         virtual void Evaluate() = 0;
 
@@ -57,16 +60,16 @@ namespace ABYN::Gates::Interfaces {
         SharePointer parent;
 
         OneGate() {
-            if constexpr (DEBUG) { std::cout << "OneGate constructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "OneGate constructor" << std::endl; }
         };
 
         virtual ~OneGate() {
-            if constexpr (DEBUG) { std::cout << "OneGate destructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "OneGate destructor" << std::endl; }
         };
 
     public:
         virtual void Evaluate() {
-            if constexpr (DEBUG) { std::cout << "Evaluate OneGate" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate OneGate" << std::endl; }
         }
 
         virtual SharePointer GetOutputShare() = 0;
@@ -88,15 +91,15 @@ namespace ABYN::Gates::Interfaces {
 
     protected:
         InputGate() {
-            if constexpr (DEBUG) { std::cout << "InputGate constructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "InputGate constructor" << std::endl; }
         };
 
-        virtual ~InputGate() { if constexpr (DEBUG) { std::cout << "InputGate destructor" << std::endl; }};
+        virtual ~InputGate() { if constexpr (VERBOSE_DEBUG) { std::cout << "InputGate destructor" << std::endl; }};
 
     public:
 
         virtual void Evaluate() {
-            if constexpr (DEBUG) { std::cout << "Evaluate InputGate" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate InputGate" << std::endl; }
         }
 
         virtual SharePointer GetOutputShare() = 0;
@@ -117,15 +120,15 @@ namespace ABYN::Gates::Interfaces {
 
     protected:
         OutputGate(SharePointer parent) {
-            if constexpr (DEBUG) { std::cout << "OutputGate constructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "OutputGate constructor" << std::endl; }
             this->parent = parent;
         };
 
-        virtual ~OutputGate() { if constexpr (DEBUG) { std::cout << "OutputGate destructor" << std::endl; }};
+        virtual ~OutputGate() { if constexpr (VERBOSE_DEBUG) { std::cout << "OutputGate destructor" << std::endl; }};
 
     public:
         virtual void Evaluate() {
-            if constexpr (DEBUG) { std::cout << "Evaluate OutputGate" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate OutputGate" << std::endl; }
         }
 
         virtual SharePointer GetOutputShare() = 0;
@@ -149,15 +152,15 @@ namespace ABYN::Gates::Interfaces {
 
     public:
         TwoGate(SharePointer parent_a, SharePointer parent_b) {
-            if constexpr (DEBUG) { std::cout << "TwoGate constructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "TwoGate constructor" << std::endl; }
             this->parent_a = parent_a;
             this->parent_b = parent_b;
         };
 
-        virtual ~TwoGate() { if constexpr (DEBUG) { std::cout << "TwoGate destructor" << std::endl; }};
+        virtual ~TwoGate() { if constexpr (VERBOSE_DEBUG) { std::cout << "TwoGate destructor" << std::endl; }};
 
         virtual void Evaluate() {
-            if constexpr (DEBUG) { std::cout << "Evaluate TwoGate" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate TwoGate" << std::endl; }
         }
 
         virtual SharePointer GetOutputShare() = 0;
@@ -180,17 +183,17 @@ namespace ABYN::Gates::Interfaces {
         std::vector<SharePointer> parents;
 
         nInputGate(std::vector<SharePointer> parents) {
-            if constexpr (DEBUG) { std::cout << "nInputGate constructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "nInputGate constructor" << std::endl; }
             this->parents = parents;
         };
 
     public:
         virtual ~nInputGate() {
-            if constexpr (DEBUG) { std::cout << "nInputGate destructor" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "nInputGate destructor" << std::endl; }
         };
 
         virtual void Evaluate() {
-            if constexpr (DEBUG) { std::cout << "nInputGate TwoGate" << std::endl; }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "nInputGate TwoGate" << std::endl; }
         }
 
         virtual SharePointer GetOutputShare() = 0;
@@ -217,29 +220,26 @@ namespace ABYN::Gates::Arithmetic {
     class ArithmeticInputGate : ABYN::Gates::Interfaces::InputGate {
 
     protected:
-        T value;
+        T input;
+
 
     public:
-        ArithmeticInputGate(T input) {
-            if constexpr (DEBUG) {
-                std::cout << "ArithmeticInputGate constructor" << std::endl;
-            }
-            value = input;
+        ArithmeticInputGate(T input, ABYNBackendPtr backend) {
+            if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate constructor" << std::endl; }
+            this->backend = backend;
+            this->input = input;
         };
 
         virtual ~ArithmeticInputGate() {
-            if constexpr (DEBUG) {
-                std::cout << "ArithmeticInputGate destructor" << std::endl;
-            }
+            if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate destructor" << std::endl; }
         };
 
-        virtual void Evaluate() {
-            output = SharePointer(static_cast<Share *>(new ArithmeticShare(value)));
+        virtual void Evaluate () final {
+            output = SharePointer(static_cast<Share *>(new ArithmeticShare(input)));
         };
 
-        virtual SharePointer GetOutputShare() { return output; };
+        virtual SharePointer GetOutputShare() final { return output; };
     };
 }
-
 
 #endif //GATE_H

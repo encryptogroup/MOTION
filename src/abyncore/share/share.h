@@ -5,34 +5,75 @@
 
 #include "utility/typedefs.h"
 
-namespace ABYN::Shares{
-class Share {
-public:
-    Share() {};
+namespace ABYN::Shares {
+    enum ShareType {
+        ArithmeticShareType = 0,
+        GMWShareType = 1,
+        BMRShareType = 2,
+        InvalidShareType = 3
+    };
 
-    virtual ~Share() {};
-};
 
-typedef std::shared_ptr<Share> SharePointer;
+    class Share {
+    protected:
+    public:
+        virtual ShareType GetShareType() = 0;
+
+        virtual bool IsConstantShare() = 0;
+
+        Share() {};
+
+        virtual ~Share() {};
+    };
+
+    typedef std::shared_ptr<Share> SharePointer;
 
 /*
  * Allow only unsigned integers for Arithmetic shares.
  */
-template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticShare : public Share {
-protected:
-    T value;
-public:
-    virtual T GetValue() final {return value;};
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    class ArithmeticShare : public Share {
+    protected:
+        T value;
+    public:
+        virtual T GetValue() final { return value; };
 
-    ArithmeticShare(T input) { value = input; };
+        virtual ShareType GetShareType() final { return ArithmeticShareType; }
 
-    ~ArithmeticShare() {};
-};
+        virtual bool IsConstantShare() final { return false; };
+
+        ArithmeticShare(T input) { value = input; };
+
+        ~ArithmeticShare() {};
+    };
 
 
-template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticSharePointer = std::shared_ptr<ArithmeticShare<T>>;
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    using ArithmeticSharePointer = std::shared_ptr<ArithmeticShare<T>>;
+
+/*
+ * Allow only unsigned integers for Arithmetic shares.
+ */
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    class ArithmeticConstantShare : public Share {
+    private:
+        ArithmeticConstantShare() {};
+    protected:
+        T value;
+    public:
+        virtual T GetValue() final { return value; };
+
+        virtual ShareType GetShareType() final { return ArithmeticShareType; }
+
+        virtual bool IsConstantShare() final { return true; };
+
+        ArithmeticConstantShare(T input) { value = input; };
+
+        ~ArithmeticConstantShare() {};
+    };
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    using ArithmeticConstantSharePointer = std::shared_ptr<ArithmeticConstantShare<T>>;
 
 }
 #endif //SHARE_H

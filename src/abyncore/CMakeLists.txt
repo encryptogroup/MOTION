@@ -2,6 +2,7 @@ include_directories(${PROJECT_SOURCE_DIR}/src/abyncore)
 
 add_library(abyn
         abynparty/abynparty.cpp
+        abynparty/abynbackend.cpp
         gate/gate.cpp
         share/share.cpp
         wire/wire.cpp
