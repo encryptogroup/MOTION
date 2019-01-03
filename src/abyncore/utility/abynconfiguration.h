@@ -18,6 +18,8 @@ namespace ABYN {
         ABYNConfiguration(std::initializer_list<Party> list_parties) {this->parties = std::vector(list_parties); };
 
         ~ABYNConfiguration() {};
+
+        std::vector<Party> GetParties(){return parties;};
     };
 
 }

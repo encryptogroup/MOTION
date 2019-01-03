@@ -12,6 +12,10 @@ namespace ABYN {
 
     const bool DEBUG = false;
 
+    namespace Gates::Arithmetic{};
+
+    //alias for Arithmetic
+    namespace Arithmetic = ABYN::Gates::Arithmetic;
 }
 
 #endif //TYPEDEFS_H

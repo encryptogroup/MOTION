@@ -9,7 +9,6 @@
 
 namespace ABYN {
 
-
     class Party {
     private:
         std::string ip;
@@ -38,6 +37,9 @@ namespace ABYN {
         };
 
         ~Party() {};
+
+        const std::string_view GetIp(){return ip;};
+        const u16 GetPort(){return port;};
     };
 
 }
