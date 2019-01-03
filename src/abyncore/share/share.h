@@ -6,12 +6,7 @@
 #include "utility/typedefs.h"
 
 namespace ABYN::Shares {
-    enum ShareType {
-        ArithmeticShareType = 0,
-        GMWShareType = 1,
-        BMRShareType = 2,
-        InvalidShareType = 3
-    };
+
 
 
     class Share {

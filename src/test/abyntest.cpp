@@ -21,9 +21,9 @@ namespace {
 
             auto abyn_party = ABYNPartyPtr(
                     new ABYNParty{
-                            Party("127.0.0.1", 7777),
-                            Party("127.0.0.1", 7778),
-                            Party("127.0.0.1", 7779)});
+                            Party("127.0.0.1", 7777, ABYN::Role::Client),
+                            Party("127.0.0.1", 7778, ABYN::Role::Client),
+                            Party("127.0.0.1", 7779, ABYN::Role::Client)});
 
             u8 value = rand();
             auto s = abyn_party->ShareArithmeticInput<decltype(value)>(value);
@@ -96,24 +96,24 @@ namespace {
 
             auto p3 = std::shared_ptr<ABYNParty>(
                     new ABYNParty{
-                            Party(check_ips[0], check_ports[0]),
-                            Party(check_ips[1], check_ports[1]),
-                            Party(check_ips[2], check_ports[2])});
+                            Party(check_ips[0], check_ports[0], ABYN::Role::Client),
+                            Party(check_ips[1], check_ports[1], ABYN::Role::Client),
+                            Party(check_ips[2], check_ports[2], ABYN::Role::Client)});
 
             auto p4 = std::shared_ptr<ABYNParty>(
                     new ABYNParty{
-                            Party(check_ips[0], check_ports[0]),
-                            Party(check_ips[1], check_ports[1]),
-                            Party(check_ips[2], check_ports[2]),
-                            Party(check_ips[3], check_ports[3])});
+                            Party(check_ips[0], check_ports[0], ABYN::Role::Client),
+                            Party(check_ips[1], check_ports[1], ABYN::Role::Client),
+                            Party(check_ips[2], check_ports[2], ABYN::Role::Client),
+                            Party(check_ips[3], check_ports[3], ABYN::Role::Client)});
 
             auto p5 = std::shared_ptr<ABYNParty>(
                     new ABYNParty{
-                            Party(check_ips[0], check_ports[0]),
-                            Party(check_ips[1], check_ports[1]),
-                            Party(check_ips[2], check_ports[2]),
-                            Party(check_ips[3], check_ports[3]),
-                            Party(check_ips[4], check_ports[4])});
+                            Party(check_ips[0], check_ports[0], ABYN::Role::Client),
+                            Party(check_ips[1], check_ports[1], ABYN::Role::Client),
+                            Party(check_ips[2], check_ports[2], ABYN::Role::Client),
+                            Party(check_ips[3], check_ports[3], ABYN::Role::Client),
+                            Party(check_ips[4], check_ports[4], ABYN::Role::Client)});
 
             std::vector<std::shared_ptr<ABYNParty >> p345{p3, p4, p5}, p45{p4, p5};
 
@@ -154,7 +154,7 @@ namespace {
                 return result;
             };
 
-            auto must_throw_function = [r_u8, rand_invalid_ip]() { Party(rand_invalid_ip(), rand()); };
+            auto must_throw_function = [r_u8, rand_invalid_ip]() { Party(rand_invalid_ip(), rand(), ABYN::Role::Client); };
             ASSERT_ANY_THROW(must_throw_function());
         }
     }

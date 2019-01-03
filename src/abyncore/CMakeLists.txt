@@ -6,6 +6,8 @@ add_library(abyn
         gate/gate.cpp
         share/share.cpp
         wire/wire.cpp
+        utility/party.cpp
+        utility/abynconfiguration.cpp
         )
 add_library(ABYN::abyn ALIAS abyn)
 

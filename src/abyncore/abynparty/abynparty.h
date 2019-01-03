@@ -45,7 +45,7 @@ namespace ABYN {
         ABYNConfigurationPtr GetConfiguration() { return configuration; };
 
         template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-        ArithmeticSharePointer<T> ShareArithmeticInput(T input){
+        ArithmeticSharePointer<T> ShareArithmeticInput(T input) {
             auto p = ABYN::Gates::Arithmetic::ArithmeticInputGate(input, backend);
             auto s = p.GetOutputShare();
             auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);

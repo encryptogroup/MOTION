@@ -2,8 +2,10 @@
 #define PARTY_H
 
 #include <string>
-#include <arpa/inet.h>
 #include <iostream>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <boost/asio.hpp>
 
 #include "typedefs.h"
 
@@ -11,12 +13,14 @@ namespace ABYN {
 
     class Party {
     private:
+        ABYN::Role role;
         std::string_view ip;
         u16 port;
+        int party_socket = -2, opt = 1;
 
-        bool isInvalidIp(const char *ip) {
+        bool IsInvalidIp(const char *ip) {
             struct sockaddr_in sa;
-            auto result = inet_pton(AF_INET, ip, &(sa.sin_addr));
+            auto result = inet_pton(AF_INET, ip, &sa.sin_addr);
             if (result == -1) {
                 throw (std::string("Address family not supported: ") + ip);
             }
@@ -24,22 +28,40 @@ namespace ABYN {
             return result == 0;
         }
 
+        void InitializeSocketServer();
+
+        void InitializeSocketClient();
+
     protected:
         Party() {};
     public:
-        Party(const std::string &ip, const u16 &port) {
-            if (isInvalidIp(ip.c_str())) {
+        Party(const std::string &ip, const u16 &port, const ABYN::Role &role) {
+            if (IsInvalidIp(ip.c_str())) {
                 throw (ip + " is invalid IP address");
             }
 
             this->ip = std::string_view(ip);
             this->port = port;
+            this->role = role;
+
+            if (role == ABYN::Role::Client) {
+                InitializeSocketClient();
+            } else {
+                InitializeSocketServer();
+            }
         };
 
-        ~Party() {};
+        Party(int socket) {
+            this->party_socket = socket;
+            this->role = role;
+        };
 
-        std::string_view & GetIp(){return ip;};
-        u16 GetPort(){return port;};
+        // close the socket
+        ~Party() { shutdown(party_socket, 2); };
+
+        std::string_view &GetIp() { return ip; };
+
+        u16 GetPort() { return port; };
     };
 
 }
