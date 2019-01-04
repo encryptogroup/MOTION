@@ -3,6 +3,16 @@
 namespace ABYN
 {
 
+    bool Party::IsInvalidIp(const char *ip) {
+        struct sockaddr_in sa;
+        auto result = inet_pton(AF_INET, ip, &sa.sin_addr);
+        if (result == -1) {
+            throw (std::string("Address family not supported: ") + ip);
+        }
+
+        return result == 0;
+    }
+
     void Party::InitializeSocketServer() {
         std::string role_str;
         if(role == ABYN::Role::Server){

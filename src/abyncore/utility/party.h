@@ -18,15 +18,7 @@ namespace ABYN {
         u16 port;
         int party_socket = -2, opt = 1;
 
-        bool IsInvalidIp(const char *ip) {
-            struct sockaddr_in sa;
-            auto result = inet_pton(AF_INET, ip, &sa.sin_addr);
-            if (result == -1) {
-                throw (std::string("Address family not supported: ") + ip);
-            }
-
-            return result == 0;
-        }
+        bool IsInvalidIp(const char *ip);
 
         void InitializeSocketServer();
 
