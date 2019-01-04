@@ -16,7 +16,7 @@ namespace ABYN {
 
     public:
         ABYNBackend(ABYNConfigurationPtr abyn_config) { this->abyn_config = abyn_config; };
-
+        ~ABYNBackend(){};
     };
 
     using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;

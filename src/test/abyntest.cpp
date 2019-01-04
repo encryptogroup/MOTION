@@ -2,6 +2,9 @@
 #define TEST_CPP
 
 #include <gtest/gtest.h>
+#include <vector>
+#include <algorithm>
+#include <future>
 
 #include "gate/gate.h"
 #include "abynparty/abynparty.h"
@@ -16,24 +19,66 @@ namespace {
     // A dummy first-try test
     // Test that arithmetic input gates work correctly
     // TODO: modify after implementing input gates properly
-    TEST(ArithmeticSharingTest, InputGateUnsigned8) {
+    TEST(ABYNPartyTest, NetworkConnection) {
         for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+            bool all_connected = false;
+            try {
+                std::vector<ABYNPartyPtr> abyn_parties(0);
+                std::vector<std::future<ABYNPartyPtr>> futures(0);
 
-            auto abyn_party = ABYNPartyPtr(
-                    new ABYNParty{
-                            Party("127.0.0.1", 7777, ABYN::Role::Client),
-                            Party("127.0.0.1", 7778, ABYN::Role::Client),
-                            Party("127.0.0.1", 7779, ABYN::Role::Client)});
 
-            u8 value = rand();
-            auto s = abyn_party->ShareArithmeticInput<decltype(value)>(value);
 
-            ASSERT_EQ(1, 1);
+                futures.push_back(std::async(std::launch::async,
+                                          []() {
+                                              return ABYNPartyPtr(new ABYNParty{
+                                                      Party("127.0.0.1", 7773, ABYN::Role::Server),
+                                                      Party("127.0.0.1", 7774, ABYN::Role::Server),
+                                                      Party("127.0.0.1", 7775, ABYN::Role::Server)});
+                                          }));
 
-            //auto test_value = sa->GetValue();
-            //ASSERT_EQ(value, test_value);
+                futures.push_back(std::async(std::launch::async,
+                                          []() {
+                                              return ABYNPartyPtr(new ABYNParty{
+                                                      Party("127.0.0.1", 7773, ABYN::Role::Client),
+                                                      Party("127.0.0.1", 7776, ABYN::Role::Server),
+                                                      Party("127.0.0.1", 7777, ABYN::Role::Server)});
+                                          }));
+
+                futures.push_back(std::async(std::launch::async,
+                                          []() {
+                                              return ABYNPartyPtr(new ABYNParty{
+                                                      Party("127.0.0.1", 7774, ABYN::Role::Client),
+                                                      Party("127.0.0.1", 7776, ABYN::Role::Client),
+                                                      Party("127.0.0.1", 7778, ABYN::Role::Server)});
+                                          }));
+
+                futures.push_back(std::async(std::launch::async,
+                                          []() {
+                                              return ABYNPartyPtr(new ABYNParty{
+                                                      Party("127.0.0.1", 7775, ABYN::Role::Client),
+                                                      Party("127.0.0.1", 7777, ABYN::Role::Client),
+                                                      Party("127.0.0.1", 7778, ABYN::Role::Client)});
+                                          }));
+
+                for(auto & f : futures)
+                    abyn_parties.push_back(f.get());
+
+                all_connected = abyn_parties.at(0)->GetConfiguration()->GetParty(0).IsConnected();
+                for (auto &abynparty : abyn_parties) {
+                    for (auto &party: abynparty->GetConfiguration()->GetParties()) {
+                        all_connected &= party.IsConnected();
+                    }
+                }
+            }
+            catch (std::exception &e) {
+                std::cerr << e.what() << std::endl;
+                all_connected = false;
+            }
+
+            ASSERT_TRUE(all_connected);
         }
     }
+
 /*
     TEST(ArithmeticSharingTest, InputGateUnsigned16) {
         for (auto i = 0; i < TEST_ITERATIONS; ++i) {
@@ -69,7 +114,7 @@ namespace {
             auto test_value = sa->GetValue();
             ASSERT_EQ(value, test_value);
         }
-    }*/
+    }
 
     // Test that IPs and ports are set correctly after ABYNParty initialization
     TEST(ABYNPartyAllocation, CorrectnessOfIPsAndPorts) {
@@ -121,24 +166,24 @@ namespace {
                 if (j < 3) {
                     for (auto &p : p345) {
                         //string.compare(s1, s2) = 0 if s1 equals s2
-                        ASSERT_EQ(p->GetConfiguration()->GetParties()[j].GetIp().compare(check_ips[j]), 0);
-                        ASSERT_EQ(p->GetConfiguration()->GetParties()[j].GetPort(), check_ports[j]);
+                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetIp().compare(check_ips[j]), 0);
+                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetPort(), check_ports[j]);
                     }
                 } else if (j < 4) {
                     for (auto &p : p45) {
-                        ASSERT_EQ(p->GetConfiguration()->GetParties()[j].GetIp().compare(check_ips[j]), 0);
-                        ASSERT_EQ(p->GetConfiguration()->GetParties()[j].GetPort(), check_ports[j]);
+                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetIp().compare(check_ips[j]), 0);
+                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetPort(), check_ports[j]);
                     }
                 } else {
-                    ASSERT_EQ(p5->GetConfiguration()->GetParties()[j].GetIp().compare(check_ips[j]), 0);
-                    ASSERT_EQ(p5->GetConfiguration()->GetParties()[j].GetPort(), check_ports[j]);
+                    ASSERT_EQ(p5->GetConfiguration()->GetParty(j).GetIp().compare(check_ips[j]), 0);
+                    ASSERT_EQ(p5->GetConfiguration()->GetParty(j).GetPort(), check_ports[j]);
                 }
 
             }
         }
     }
-
-    // Check that ABYNParty throws an exception when using an incorrect IP address
+*/
+// Check that ABYNParty throws an exception when using an incorrect IP address
     TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
         const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
         const std::string d(".");
@@ -154,7 +199,9 @@ namespace {
                 return result;
             };
 
-            auto must_throw_function = [r_u8, rand_invalid_ip]() { Party(rand_invalid_ip(), rand(), ABYN::Role::Client); };
+            auto must_throw_function = [r_u8, rand_invalid_ip]() {
+                Party(rand_invalid_ip(), rand(), ABYN::Role::Client);
+            };
             ASSERT_ANY_THROW(must_throw_function());
         }
     }

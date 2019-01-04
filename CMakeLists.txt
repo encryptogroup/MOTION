@@ -1,13 +1,18 @@
 cmake_minimum_required(VERSION 3.12)
 project(ABYN LANGUAGES CXX)
 
-option(ABYN_BUILD_EXE "Build executables" OFF)
+option(ABYN_BUILD_EXE "Build executables" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(GMP REQUIRED)
 find_package(Threads REQUIRED)
 find_package(Boost REQUIRED)
+
+find_package(OpenMP REQUIRED)
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 
 
 
@@ -60,16 +65,24 @@ elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
     add_subdirectory(extern/OTExtension)
 endif()
 
-find_package(GMP REQUIRED)
-find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
+find_package(fmt QUIET)
+if(fmt_FOUND)
+    message(STATUS "Found fmt")
+elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
+    message("fmt was not found: add fmt subdirectory")
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/fmt/CMakeLists.txt")
+        find_package(Git REQUIRED)
+        message("initialize Git submodule: extern/fmt")
+        execute_process(COMMAND git submodule update --init extern/fmt
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    endif()
+    add_subdirectory(extern/fmt)
+endif()
 
 add_subdirectory(src/abyncore)
 
 include_directories(src/abyncore)
 include_directories(extern)
-
-set(ABYN_BUILD_EXE ON)
 
 if(ABYN_BUILD_EXE)
     add_subdirectory(src/test)

@@ -35,6 +35,8 @@ namespace ABYN {
         Client = 1,
         InvalidRole = 2
     };
+
+    const auto MAXIMUM_CONNECTION_TIMEOUT = 60;//seconds
 }
 
 #endif //TYPEDEFS_H

@@ -51,6 +51,8 @@ namespace ABYN {
             auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);
             return sa;
         }
+
+        size_t GetNumOfParties(){return configuration->GetNumOfParties();};
     };
 
     using ABYNPartyPtr = std::unique_ptr<ABYNParty>;

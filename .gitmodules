@@ -4,3 +4,6 @@
 [submodule "extern/OTExtension"]
 	path = extern/OTExtension
 	url = https://github.com/encryptogroup/OTExtension.git
+[submodule "extern/fmt"]
+	path = extern/fmt
+	url = https://github.com/fmtlib/fmt.git

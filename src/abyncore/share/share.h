@@ -7,8 +7,6 @@
 
 namespace ABYN::Shares {
 
-
-
     class Share {
     protected:
     public:
