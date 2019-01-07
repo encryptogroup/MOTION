@@ -28,25 +28,25 @@ namespace ABYN {
 
     public:
 
-        ABYNParty(std::vector<Party> &parties) {
-            configuration = ABYNConfigurationPtr(new ABYNConfiguration(parties));
+        ABYNParty(std::vector<Party> &parties, size_t my_id) {
+            configuration = ABYNConfigurationPtr(new ABYNConfiguration(parties, my_id));
             backend = ABYNBackendPtr(new ABYNBackend(configuration));
         };
 
-        ABYNParty(std::initializer_list<Party> &list_parties) {
-            configuration = ABYNConfigurationPtr(new ABYNConfiguration(list_parties));
+        ABYNParty(std::initializer_list<Party> list_parties, size_t my_id) {
+            configuration = ABYNConfigurationPtr(new ABYNConfiguration(list_parties, my_id));
             backend = ABYNBackendPtr(new ABYNBackend(configuration));
         }
 
-        ABYNParty(ABYNConfigurationPtr & configuration) { this->configuration = std::move(configuration); };
+        ABYNParty(ABYNConfigurationPtr & configuration) { this->configuration = configuration; };
 
         ~ABYNParty() {};
 
         ABYNConfigurationPtr GetConfiguration() { return configuration; };
 
         template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-        ArithmeticSharePointer<T> ShareArithmeticInput(T input) {
-            auto p = Gates::Arithmetic::ArithmeticInputGate(input, backend);
+        ArithmeticSharePointer<T> ShareArithmeticInput(bool my_input, T input = 0) {
+            auto p = Gates::Arithmetic::ArithmeticInputGate(input, my_input, backend);
             auto s = p.GetOutputShare();
             auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);
             return sa;

@@ -4,13 +4,14 @@
 #include <memory>
 
 #include "utility/typedefs.h"
+#include "wire/wire.h"
 
 namespace ABYN::Shares {
 
     class Share {
     protected:
     public:
-        virtual ShareType GetShareType() = 0;
+        virtual Protocol GetSharingType() = 0;
 
         virtual bool IsConstantShare() = 0;
 
@@ -27,13 +28,15 @@ namespace ABYN::Shares {
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     class ArithmeticShare : public Share {
     protected:
-        T value;
+        ArithmeticWirePtr<T> value;
     public:
-        virtual T GetValue() final { return value; };
+        virtual std::vector<T> &GetValue() final { return value->GetRawValues(); };
 
-        virtual ShareType GetShareType() final { return ArithmeticShareType; }
+        virtual Protocol GetSharingType() final { return value->GetProtocol(); }
 
         virtual bool IsConstantShare() final { return false; };
+
+        auto GetValueByteLength() { return sizeof(T); };
 
         ArithmeticShare(T input) { value = input; };
 
@@ -56,7 +59,7 @@ namespace ABYN::Shares {
     public:
         virtual T GetValue() final { return value; };
 
-        virtual ShareType GetShareType() final { return ArithmeticShareType; }
+        virtual Protocol GetSharingType() final { return ArithmeticGMW; }
 
         virtual bool IsConstantShare() final { return true; };
 

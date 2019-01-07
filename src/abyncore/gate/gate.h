@@ -204,7 +204,6 @@ namespace ABYN::Gates::Arithmetic {
     using namespace ABYN::Shares;
 
 //
-//
 //     | <- one unsigned integer input
 //  --------
 //  |      |
@@ -222,10 +221,13 @@ namespace ABYN::Gates::Arithmetic {
     protected:
         T input;
 
+        //indicates whether this party shares the input
+        bool my_input = false;
 
     public:
-        ArithmeticInputGate(T input, ABYNBackendPtr backend) {
+        ArithmeticInputGate(T input, bool my_input, ABYNBackendPtr backend) {
             if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate constructor" << std::endl; }
+            this->my_input = my_input;
             this->backend = backend;
             this->input = input;
         };
@@ -234,9 +236,36 @@ namespace ABYN::Gates::Arithmetic {
             if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate destructor" << std::endl; }
         };
 
-        virtual void Evaluate () final {
+        virtual void Evaluate() final {
+            // implement seed extension-based sharing
             output = SharePointer(static_cast<Share *>(new ArithmeticShare(input)));
         };
+
+        virtual SharePointer GetOutputShare() final { return output; };
+    };
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    class ArithmeticOutputGate : ABYN::Gates::Interfaces::OutputGate {
+    protected:
+        T output;
+        std::vector<T> shares_of_others_parties;
+
+        //indicates whether this party obtains the output
+        bool my_output = false;
+        bool others_get_output = false;
+    public:
+        ArithmeticOutputGate(ArithmeticSharePointer<T> previous_gate, size_t id, ABYNBackendPtr backend) {
+            // TODO: implement
+        }
+
+        virtual ~ArithmeticOutputGate() {
+            if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticOutputGate destructor called" << std::endl; }
+        };
+
+        virtual void Evaluate() final {
+            //TODO: implement
+            ;
+        }
 
         virtual SharePointer GetOutputShare() final { return output; };
     };

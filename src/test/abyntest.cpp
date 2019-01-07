@@ -6,9 +6,11 @@
 #include <algorithm>
 #include <future>
 #include <functional>
+#include <fmt/format.h>
 
 #include "gate/gate.h"
 #include "abynparty/abynparty.h"
+
 
 namespace {
 
@@ -21,7 +23,7 @@ namespace {
     // Test that arithmetic input gates work correctly
     // TODO: modify after implementing input gates properly
     TEST(ABYNPartyTest, NetworkConnection) {
-        for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+        for (auto i = 0; i < 2; ++i) {
             bool all_connected = false;
             try {
                 std::vector<ABYNPartyPtr> abyn_parties(0);
@@ -31,37 +33,37 @@ namespace {
                 futures.push_back(std::async(std::launch::async,
                                              []() {
                                                  std::vector<Party> parties;
-                                                 parties.emplace_back("127.0.0.1", 7773, ABYN::Role::Server);
-                                                 parties.emplace_back("127.0.0.1", 7774, ABYN::Role::Server);
-                                                 parties.emplace_back("127.0.0.1", 7775, ABYN::Role::Server);
-                                                 return ABYNPartyPtr(new ABYNParty{parties});
+                                                 parties.emplace_back("127.0.0.1", 7773, ABYN::Role::Server, 1);
+                                                 parties.emplace_back("127.0.0.1", 7774, ABYN::Role::Server, 2);
+                                                 parties.emplace_back("127.0.0.1", 7775, ABYN::Role::Server, 3);
+                                                 return ABYNPartyPtr(new ABYNParty{parties, 0});
                                              }));
 
                 futures.push_back(std::async(std::launch::async,
                                              []() {
                                                  std::vector<Party> parties;
-                                                 parties.emplace_back("127.0.0.1", 7773, ABYN::Role::Client);
-                                                 parties.emplace_back("127.0.0.1", 7776, ABYN::Role::Server);
-                                                 parties.emplace_back("127.0.0.1", 7777, ABYN::Role::Server);
-                                                 return ABYNPartyPtr(new ABYNParty{parties});
+                                                 parties.emplace_back("127.0.0.1", 7773, ABYN::Role::Client, 0);
+                                                 parties.emplace_back("127.0.0.1", 7776, ABYN::Role::Server, 2);
+                                                 parties.emplace_back("127.0.0.1", 7777, ABYN::Role::Server, 3);
+                                                 return ABYNPartyPtr(new ABYNParty{parties, 1});
                                              }));
 
                 futures.push_back(std::async(std::launch::async,
                                              []() {
                                                  std::vector<Party> parties;
-                                                 parties.emplace_back("127.0.0.1", 7774, ABYN::Role::Client);
-                                                 parties.emplace_back("127.0.0.1", 7776, ABYN::Role::Client);
-                                                 parties.emplace_back("127.0.0.1", 7778, ABYN::Role::Server);
-                                                 return ABYNPartyPtr(new ABYNParty{parties});
+                                                 parties.emplace_back("127.0.0.1", 7774, ABYN::Role::Client, 0);
+                                                 parties.emplace_back("127.0.0.1", 7776, ABYN::Role::Client, 1);
+                                                 parties.emplace_back("127.0.0.1", 7778, ABYN::Role::Server, 3);
+                                                 return ABYNPartyPtr(new ABYNParty{parties, 2});
                                              }));
 
                 futures.push_back(std::async(std::launch::async,
                                              []() {
                                                  std::vector<Party> parties;
-                                                 parties.emplace_back("127.0.0.1", 7775, ABYN::Role::Client);
-                                                 parties.emplace_back("127.0.0.1", 7777, ABYN::Role::Client);
-                                                 parties.emplace_back("127.0.0.1", 7778, ABYN::Role::Client);
-                                                 return ABYNPartyPtr(new ABYNParty{parties});
+                                                 parties.emplace_back("127.0.0.1", 7775, ABYN::Role::Client, 0);
+                                                 parties.emplace_back("127.0.0.1", 7777, ABYN::Role::Client, 1);
+                                                 parties.emplace_back("127.0.0.1", 7778, ABYN::Role::Client, 2);
+                                                 return ABYNPartyPtr(new ABYNParty{parties, 3});
                                              }));
 
                 for (auto &f : futures)
@@ -187,29 +189,22 @@ namespace {
         }
     }
 */
+
 // Check that ABYNParty throws an exception when using an incorrect IP address
     TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
         const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
-        const std::string d(".");
 
         for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-            auto r_u8 = []() {
-                return std::to_string((u8) rand());
-            };
-
-            auto rand_invalid_ip = [r_u8, incorrect_symbols, d]() {
-                std::string result(r_u8() + d + r_u8() + d + r_u8() + d + r_u8());
+            auto r_u8 = []() { return std::to_string((u8) rand()); };
+            auto rand_invalid_ip = [r_u8, incorrect_symbols]() {
+                std::string result = fmt::format("{}.{}.{}.{}", r_u8(), r_u8(), r_u8(), r_u8());
                 result.at(rand() % result.size()) = incorrect_symbols.at(rand() % incorrect_symbols.size());
                 return result;
             };
-
-            auto must_throw_function = [r_u8, rand_invalid_ip]() {
-                Party(rand_invalid_ip(), rand(), ABYN::Role::Client);
-            };
+            auto must_throw_function = [rand_invalid_ip]() { Party(rand_invalid_ip(), rand(), ABYN::Role::Client, 0); };
             ASSERT_ANY_THROW(must_throw_function());
         }
     }
-
 }
 
 #endif

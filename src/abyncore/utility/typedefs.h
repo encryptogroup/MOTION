@@ -23,17 +23,17 @@ namespace ABYN {
     namespace Boolean = Gates::Boolean;
     namespace Conversion = Gates::Conversion;
 
-    enum ShareType {
-        ArithmeticShareType = 0,
-        GMWShareType = 1,
-        BMRShareType = 2,
-        InvalidShareType = 3
+    enum Protocol {
+        ArithmeticGMW = 0,
+        BooleanGMW = 1,
+        BMR = 2,
+        InvalidProtocol = 3
     };
 
-    enum WireType {
-        ArithmeticWireType = 0,
-        BooleanWireType = 1,
-        InvalidWireType = 2
+    enum CircuitType {
+        ArithmeticType = 0,
+        BooleanType = 1,
+        InvalidType = 2
     };
 
     enum Role {

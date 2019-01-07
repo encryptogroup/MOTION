@@ -23,6 +23,7 @@ namespace ABYN {
         std::string_view ip;
         u16 port;
         int party_socket = -2, opt = 1;
+        ssize_t id = -1;
 
         IoServicePtr io_service{new boost::asio::io_service()};
         BoostSocketPtr boost_party_socket{new ip::tcp::socket{*io_service.get()}};
@@ -39,7 +40,7 @@ namespace ABYN {
         Party() {};
     public:
 
-        Party(const std::string &ip, const u16 &port, const ABYN::Role &role) {
+        Party(const std::string &ip, u16 port, ABYN::Role role, const size_t id) {
             if (IsInvalidIp(ip.c_str())) {
                 throw (std::runtime_error(ip + " is invalid IP address"));
             }
@@ -53,12 +54,15 @@ namespace ABYN {
             } else {
                 InitializeSocketServer();
             }
+
+            this->id = id;
         };
 
-        Party(int socket) {
+        Party(int socket, const size_t id) {
             this->party_socket = socket;
             this->role = role;
             boost_party_socket->assign(boost::asio::ip::tcp::v4(), socket);
+            this->id = id;
         };
 
         // close the socket
