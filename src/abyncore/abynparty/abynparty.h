@@ -7,7 +7,7 @@
 #include "utility/abynconfiguration.h"
 #include "abynbackend.h"
 #include "gate/gate.h"
-//#include "OTExtension/ot/ot-ext.h"
+#include "OTExtension/ot/ot-ext.h"
 
 namespace ABYN {
 
@@ -33,12 +33,12 @@ namespace ABYN {
             backend = ABYNBackendPtr(new ABYNBackend(configuration));
         };
 
-        ABYNParty(std::initializer_list<Party> list_parties) {
+        ABYNParty(std::initializer_list<Party> &list_parties) {
             configuration = ABYNConfigurationPtr(new ABYNConfiguration(list_parties));
             backend = ABYNBackendPtr(new ABYNBackend(configuration));
         }
 
-        ABYNParty(ABYNConfigurationPtr configuration) { this->configuration = configuration; };
+        ABYNParty(ABYNConfigurationPtr & configuration) { this->configuration = std::move(configuration); };
 
         ~ABYNParty() {};
 
@@ -46,7 +46,7 @@ namespace ABYN {
 
         template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
         ArithmeticSharePointer<T> ShareArithmeticInput(T input) {
-            auto p = ABYN::Gates::Arithmetic::ArithmeticInputGate(input, backend);
+            auto p = Gates::Arithmetic::ArithmeticInputGate(input, backend);
             auto s = p.GetOutputShare();
             auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);
             return sa;

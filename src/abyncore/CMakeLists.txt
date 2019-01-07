@@ -61,4 +61,6 @@ install(FILES
         DESTINATION "lib/cmake/${PROJECT_NAME}"
         )
 
+include_directories(${PROJECT_SOURCE_DIR}/extern)
+
 #add_executable(ABYN ${SOURCE_FILES})

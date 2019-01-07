@@ -30,6 +30,12 @@ namespace ABYN {
         InvalidShareType = 3
     };
 
+    enum WireType {
+        ArithmeticWireType = 0,
+        BooleanWireType = 1,
+        InvalidWireType = 2
+    };
+
     enum Role {
         Server = 0,
         Client = 1,

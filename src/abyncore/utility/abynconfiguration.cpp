@@ -1,6 +1,4 @@
-namespace ABYN
-{
-
+namespace ABYN {
 
 
 }
