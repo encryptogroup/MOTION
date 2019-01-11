@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio.hpp>
+#include <flatbuffers/flatbuffers.h>
+#include <fmt/format.h>
 
 #include "typedefs.h"
 

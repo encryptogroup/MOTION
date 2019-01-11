@@ -10,9 +10,10 @@ find_package(Threads REQUIRED)
 find_package(Boost REQUIRED)
 
 find_package(OpenMP REQUIRED)
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 
 
@@ -65,6 +66,7 @@ elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
     add_subdirectory(extern/OTExtension)
 endif()
 
+set(BUILD_SHARED_LIBS TRUE)
 find_package(fmt QUIET)
 if(fmt_FOUND)
     message(STATUS "Found fmt")
@@ -79,10 +81,29 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
     add_subdirectory(extern/fmt)
 endif()
 
+find_package(flatbuffers QUIET)
+if(flatbuffers_FOUND)
+    message(STATUS "Found flatbuffers")
+elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
+    message("flatbuffers was not found: add flatbuffers subdirectory")
+    if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/flatbuffers/CMakeLists.txt")
+        find_package(Git REQUIRED)
+        message("initialize Git submodule: extern/flatbuffers")
+        execute_process(COMMAND git submodule update --init extern/flatbuffers
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    endif()
+
+    option(FLATBUFFERS_BUILD_TESTS FALSE)
+    add_subdirectory(${FLATBUFFERS_SRC_DIR}
+                 extern/flatbuffers)
+endif()
+
+include_directories(extern)
+include_directories(extern/flatbuffers/include)
+include_directories(src/abyncore)
+
 add_subdirectory(src/abyncore)
 
-include_directories(src/abyncore)
-include_directories(extern)
 
 if(ABYN_BUILD_EXE)
     add_subdirectory(src/test)

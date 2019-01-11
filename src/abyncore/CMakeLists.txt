@@ -22,13 +22,12 @@ target_include_directories(abyn
 
 target_link_libraries(abyn
         PRIVATE stdc++fs
-        )
-
-target_link_libraries(abyn
         PUBLIC OTExtension::otextension
         PUBLIC ENCRYPTO_utils::encrypto_utils
         PUBLIC GMP::GMP
         PUBLIC Threads::Threads
+        PRIVATE flatbuffers
+        PRIVATE fmt::fmt-header-only
         )
 
 install(TARGETS abyn
@@ -42,6 +41,8 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
         )
+
+
 
 export(TARGETS abyn NAMESPACE "${PROJECT_NAME}::" FILE "${PROJECT_NAME}Targets.cmake")
 install(EXPORT "${PROJECT_NAME}Targets"
@@ -61,6 +62,5 @@ install(FILES
         DESTINATION "lib/cmake/${PROJECT_NAME}"
         )
 
-include_directories(${PROJECT_SOURCE_DIR}/extern)
+#include_directories(${PROJECT_SOURCE_DIR}/extern)
 
-#add_executable(ABYN ${SOURCE_FILES})
