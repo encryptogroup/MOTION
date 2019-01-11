@@ -5,10 +5,10 @@
 
 namespace ABYN {
 
-    typedef uint64_t u64;
-    typedef uint32_t u32;
-    typedef uint16_t u16;
-    typedef uint8_t u8;
+    using u8 = uint8_t;
+    using u16 = uint16_t;
+    using u32 = uint32_t;
+    using u64 = uint64_t;
 
     const bool DEBUG = false;
     const bool VERBOSE_DEBUG = false;
@@ -24,22 +24,22 @@ namespace ABYN {
     namespace Conversion = Gates::Conversion;
 
     enum Protocol {
-        ArithmeticGMW = 0,
-        BooleanGMW = 1,
-        BMR = 2,
-        InvalidProtocol = 3
+        ArithmeticGMW = 0u,
+        BooleanGMW = 1u,
+        BMR = 2u,
+        InvalidProtocol = 3u
     };
 
     enum CircuitType {
-        ArithmeticType = 0,
-        BooleanType = 1,
-        InvalidType = 2
+        ArithmeticType = 0u,
+        BooleanType = 1u,
+        InvalidType = 2u
     };
 
     enum Role {
-        Server = 0,
-        Client = 1,
-        InvalidRole = 2
+        Server = 0u,
+        Client = 1u,
+        InvalidRole = 2u
     };
 
     const auto MAXIMUM_CONNECTION_TIMEOUT = 60;//seconds

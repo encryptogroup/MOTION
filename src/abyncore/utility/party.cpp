@@ -24,8 +24,7 @@ namespace ABYN {
             role_str = std::string(" acting as client");
         }
 
-        std::string info(std::string(ip) + std::string(":") +
-                         std::to_string(port) + role_str);
+        auto info = fmt::format("{}:{} {}", ip, port, role_str);
 
         party_socket = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -110,7 +109,7 @@ namespace ABYN {
                         getsockopt(party_socket, SOL_SOCKET, SO_ERROR, (void *) (&valopt), &lon);
                         if (valopt) {
                             throw (std::runtime_error(
-                                    std::string(strerror(valopt)) + "error at connect() for " + info));
+                                    fmt::format("{} error at connect() for {}", strerror(valopt), info)));
                         }
                         break;
                     } else {
