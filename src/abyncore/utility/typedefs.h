@@ -27,19 +27,19 @@ namespace ABYN {
         ArithmeticGMW = 0u,
         BooleanGMW = 1u,
         BMR = 2u,
-        InvalidProtocol = 3u
+        InvalidProtocol = 3u // for checking whether the value is valid
     };
 
     enum CircuitType {
         ArithmeticType = 0u,
         BooleanType = 1u,
-        InvalidType = 2u
+        InvalidType = 2u // for checking whether the value is valid
     };
 
     enum Role {
         Server = 0u,
         Client = 1u,
-        InvalidRole = 2u
+        InvalidRole = 2u // for checking whether the value is valid
     };
 
     const auto MAXIMUM_CONNECTION_TIMEOUT = 60;//seconds

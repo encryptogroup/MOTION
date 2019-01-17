@@ -238,9 +238,10 @@ namespace ABYN::Gates::Arithmetic {
 
         virtual void Evaluate() final {
             // implement seed extension-based sharing
-            output = SharePointer(static_cast<Share *>(new ArithmeticShare(input)));
+            output = std::move(std::static_pointer_cast<Share *>(std::make_shared<ArithmeticShare>(input)));
         };
 
+        //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
         virtual SharePointer GetOutputShare() final { return output; };
     };
 
@@ -254,7 +255,7 @@ namespace ABYN::Gates::Arithmetic {
         bool my_output = false;
         bool others_get_output = false;
     public:
-        ArithmeticOutputGate(ArithmeticSharePointer<T> previous_gate, size_t id, ABYNBackendPtr backend) {
+        ArithmeticOutputGate(ArithmeticSharePtr<T> previous_gate, size_t id, ABYNBackendPtr backend) {
             // TODO: implement
         }
 

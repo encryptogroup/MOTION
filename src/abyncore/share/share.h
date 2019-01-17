@@ -45,7 +45,7 @@ namespace ABYN::Shares {
 
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    using ArithmeticSharePointer = std::shared_ptr<ArithmeticShare<T>>;
+    using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
 
 /*
  * Allow only unsigned integers for Arithmetic shares.

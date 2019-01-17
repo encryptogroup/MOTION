@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <cstdlib>
+#include <fmt/format.h>
+
 #include "utility/typedefs.h"
 
 namespace ABYN {
@@ -19,12 +21,12 @@ namespace ABYN {
     void Party::InitializeSocketServer() {
         std::string role_str;
         if (role == ABYN::Role::Server) {
-            role_str = std::string(" acting as server");
+            role_str = std::move(std::string(" acting as server"));
         } else {
-            role_str = std::string(" acting as client");
+            role_str = std::move(std::string(" acting as client"));
         }
 
-        auto info = fmt::format("{}:{} {}", ip, port, role_str);
+        auto info = std::move(fmt::format("{}:{} {}", ip, port, role_str));
 
         party_socket = socket(AF_INET, SOCK_STREAM, 0);
 

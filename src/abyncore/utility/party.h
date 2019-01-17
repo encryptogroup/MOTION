@@ -11,6 +11,7 @@
 #include <flatbuffers/flatbuffers.h>
 #include <fmt/format.h>
 
+
 #include "typedefs.h"
 
 namespace ABYN {
@@ -42,39 +43,56 @@ namespace ABYN {
         Party() {};
     public:
 
-        Party(const std::string &ip, u16 port, ABYN::Role role, const size_t id) {
-            if (IsInvalidIp(ip.c_str())) {
-                throw (std::runtime_error(ip + " is invalid IP address"));
+        Party(std::string_view && ip, u16 port, ABYN::Role role, size_t id) {
+            if (IsInvalidIp(ip.data())) {
+                throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));
             }
-
-            this->ip = std::string_view(ip);
+            this->ip = std::move(ip);
             this->port = port;
             this->role = role;
-
-            if (role == ABYN::Role::Client) {
-                InitializeSocketClient();
-            } else {
-                InitializeSocketServer();
-            }
-
             this->id = id;
+            is_connected = false;
+
+            //TODO: move to the logger as soon as it is implemented
+            std::cout << fmt::format("Party constructor for {}:{}\n", this->ip, this->port);
         };
 
-        Party(int socket, const size_t id) {
+        Party(std::string_view & ip, u16 port, ABYN::Role role, size_t id){
+            Party(std::move(ip), port, role, id);
+        }
+
+        Party(int socket, size_t id) {
             this->party_socket = socket;
             this->role = role;
             boost_party_socket->assign(boost::asio::ip::tcp::v4(), socket);
             this->id = id;
+            is_connected = true;
         };
 
         // close the socket
-        ~Party() { shutdown(party_socket, 2); };
+        ~Party() { if (is_connected) shutdown(party_socket, 2); };
 
         std::string_view &GetIp() { return ip; };
 
         u16 GetPort() { return port; };
 
-        bool IsConnected() { return is_connected; };
+        bool IsConnected() { return is_connected && party_socket >= 0; };
+
+        void Connect() {
+            if (is_connected)
+                return;
+
+            if (role == ABYN::Role::Client) {
+                InitializeSocketClient();
+            } else {
+                InitializeSocketServer();
+            };
+
+            is_connected = true;
+
+            //TODO: move to the logger as soon as it is implemented
+            std::cout << fmt::format("Connected {}:{}\n", this->ip, this->port);
+        };
     };
 
 }
