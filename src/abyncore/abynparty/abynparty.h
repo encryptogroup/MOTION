@@ -4,20 +4,23 @@
 #include <vector>
 #include <memory>
 #include <omp.h>
+#include <fmt/format.h>
 
+#include "utility/constants.h"
 #include "utility/abynconfiguration.h"
 #include "abynbackend.h"
 #include "gate/gate.h"
-#include <fmt/format.h>
+#include "share/share.h"
 //#include "OTExtension/ot/ot-ext.h"
+
 
 namespace ABYN {
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    using ArithmeticSharePtr = ABYN::Arithmetic::ArithmeticSharePtr<T>;
+    using ArithmeticSharePtr = ABYN::Shares::ArithmeticSharePtr<T>;
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    using ArithmeticShare = ABYN::Arithmetic::ArithmeticShare<T>;
+    using ArithmeticShare = ABYN::Shares::ArithmeticShare<T>;
 
     class ABYNParty {
 
@@ -25,8 +28,12 @@ namespace ABYN {
         ABYNConfigurationPtr configuration;
         ABYNBackendPtr backend;
 
+        //Let's make only ABYNConfiguration be copyable
+        ABYNParty() = delete;
+        ABYNParty(ABYNParty & abynparty) = delete;
+
     protected:
-        ABYNParty() {};
+
 
     public:
 

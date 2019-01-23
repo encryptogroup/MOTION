@@ -18,6 +18,7 @@ target_include_directories(abyn
         PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        ${Boost_INCLUDE_DIRS}
         )
 
 target_link_libraries(abyn
@@ -26,6 +27,7 @@ target_link_libraries(abyn
         PUBLIC ENCRYPTO_utils::encrypto_utils
         PUBLIC GMP::GMP
         PUBLIC Threads::Threads
+        PUBLIC ${Boost_LIBRARIES}
         PRIVATE flatbuffers
         PRIVATE fmt::fmt-header-only
         )

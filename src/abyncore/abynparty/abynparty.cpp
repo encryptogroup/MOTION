@@ -8,9 +8,9 @@ namespace ABYN {
         for (auto i = 0u; i < configuration->GetNumOfParties(); ++i) {
             auto &p = configuration->GetParty(i);
 
-//TODO: pass into logger ( after it is implemented :O )
-            std::cout << fmt::format("Trying to connect {}:{}\n", p.GetIp().data(), p.GetPort());
-            configuration->GetParty(i).Connect();
+            backend->LogDebug(fmt::format("Trying to connect {}:{}\n", p.GetIp().data(), p.GetPort()));
+            auto result = configuration->GetParty(i).Connect();
+            backend->LogInfo(std::move(result));
         }
     };
 

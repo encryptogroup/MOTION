@@ -2,22 +2,62 @@
 #define ABYNBACKEND_H
 
 #include <memory>
+
+#include <boost/log/core/core.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/sources/logger.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
+#include <boost/log/utility/setup/file.hpp>
+#include <boost/log/utility/setup/common_attributes.hpp>
+#include <boost/log/sources/severity_logger.hpp>
+#include <boost/log/sources/record_ostream.hpp>
+
 #include "utility/abynconfiguration.h"
+#include "utility/constants.h"
 
 namespace ABYN {
 
     class ABYNBackend {
 
+    public:
+
+        ABYNBackend(ABYNConfigurationPtr & abyn_config) {
+            abyn_config_ = abyn_config;
+            InitLogger();
+        };
+
+        ~ABYNBackend() {};
+
+        void Log(boost::log::trivial::severity_level severity_level, std::string &msg);
+
+        void Log(boost::log::trivial::severity_level severity_level, std::string &&msg);
+
+        void LogTrace(std::string &msg);
+
+        void LogTrace(std::string &&msg);
+
+        void LogInfo(std::string &msg);
+
+        void LogInfo(std::string &&msg);
+
+        void LogDebug(std::string &msg);
+
+        void LogDebug(std::string &&msg);
+
+        void LogError(std::string &msg);
+
+        void LogError(std::string &&msg);
+
     private:
         ABYNBackend() {};
-        ABYNConfigurationPtr abyn_config;
+        ABYNConfigurationPtr abyn_config_;
 
-    protected:
+        boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
 
-    public:
-        ABYNBackend(ABYNConfigurationPtr abyn_config) { this->abyn_config = abyn_config; };
-        ~ABYNBackend(){};
+        void InitLogger();
     };
+
 
     using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;
 }

@@ -6,12 +6,10 @@
 
 #include "share/share.h"
 #include "abynparty/abynbackend.h"
-
+#include "utility/typedefs.h"
+#include "utility/constants.h"
 
 namespace ABYN::Gates::Interfaces {
-
-    using ABYNBackendPtr = ABYN::ABYNBackendPtr;
-    using SharePointer = ABYN::Shares::SharePointer;
 
 //
 //  inputs are not defined in the Gate class but in the child classes
@@ -25,25 +23,26 @@ namespace ABYN::Gates::Interfaces {
 //
 
     class Gate {
-    protected:
-        SharePointer output;
-        ssize_t gate_id = -1;
-        ABYNBackendPtr backend;
-
     public:
-        Gate() { if constexpr (VERBOSE_DEBUG) { std::cout << "Gate constructor" << std::endl; }};
-
-        virtual ~Gate() { if constexpr (VERBOSE_DEBUG) { std::cout << "Gate destructor" << std::endl; }};
+        virtual ~Gate() {};
 
         virtual void Evaluate() = 0;
 
-        virtual SharePointer GetOutputShare() = 0;
+        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
-        size_t n_parallel_values = 1;
+    protected:
+        ABYN::Shares::SharePtr output_share_;
+        ABYN::ABYNBackendPtr backend_;
+        ssize_t gate_id_ = -1;
+        size_t n_parallel_values_ = 1;
+
+        Gate() {};
+
+    private:
+        Gate(Gate &) = delete;
     };
 
-    typedef std::shared_ptr<Gate> SharedGate;
-
+    using GatePtr = std::shared_ptr<Gate>;
 
 //
 //     | <- one abstract input
@@ -56,23 +55,20 @@ namespace ABYN::Gates::Interfaces {
 //
 
     class OneGate : public Gate {
-    protected:
-        SharePointer parent;
-
-        OneGate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "OneGate constructor" << std::endl; }
-        };
-
-        virtual ~OneGate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "OneGate destructor" << std::endl; }
-        };
-
     public:
-        virtual void Evaluate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate OneGate" << std::endl; }
-        }
+        virtual ~OneGate() {};
 
-        virtual SharePointer GetOutputShare() = 0;
+        virtual void Evaluate() = 0;
+
+        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+
+    protected:
+        ABYN::Shares::SharePtr parent_;
+
+        OneGate() {};
+
+    private:
+        OneGate(OneGate &) = delete;
 
     };
 
@@ -89,20 +85,22 @@ namespace ABYN::Gates::Interfaces {
 
     class InputGate : public OneGate {
 
-    protected:
-        InputGate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "InputGate constructor" << std::endl; }
-        };
-
-        virtual ~InputGate() { if constexpr (VERBOSE_DEBUG) { std::cout << "InputGate destructor" << std::endl; }};
-
     public:
 
         virtual void Evaluate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate InputGate" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { backend_->LogTrace("Evaluate InputGate"); }
         }
 
-        virtual SharePointer GetOutputShare() = 0;
+        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+
+    protected:
+        virtual ~InputGate() {};
+
+        InputGate() {};
+
+    private:
+        InputGate(InputGate &) = delete;
+
     };
 
 
@@ -117,21 +115,19 @@ namespace ABYN::Gates::Interfaces {
 //
 
     class OutputGate : public OneGate {
-
-    protected:
-        OutputGate(SharePointer parent) {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "OutputGate constructor" << std::endl; }
-            this->parent = parent;
+    public:
+        OutputGate(ABYN::Shares::SharePtr &parent, ABYN::ABYNBackendPtr &backend) {
+            backend_ = backend;
+            parent_ = parent;
         };
 
-        virtual ~OutputGate() { if constexpr (VERBOSE_DEBUG) { std::cout << "OutputGate destructor" << std::endl; }};
-
-    public:
         virtual void Evaluate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate OutputGate" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "Evaluate OutputGate" << std::endl; }
         }
 
-        virtual SharePointer GetOutputShare() = 0;
+        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+
+        virtual ~OutputGate() {};
     };
 
 //
@@ -147,23 +143,24 @@ namespace ABYN::Gates::Interfaces {
     class TwoGate : public Gate {
 
     protected:
-        SharePointer parent_a;
-        SharePointer parent_b;
+        ABYN::Shares::SharePtr parent_a_;
+        ABYN::Shares::SharePtr parent_b_;
 
     public:
-        TwoGate(SharePointer parent_a, SharePointer parent_b) {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "TwoGate constructor" << std::endl; }
-            this->parent_a = parent_a;
-            this->parent_b = parent_b;
+        TwoGate(ABYN::Shares::SharePtr &parent_a, ABYN::Shares::SharePtr &parent_b, ABYN::ABYNBackendPtr &backend) {
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "TwoGate constructor" << std::endl; }
+            parent_a_ = parent_a;
+            parent_b_ = parent_b;
+            backend_ = backend;
         };
 
-        virtual ~TwoGate() { if constexpr (VERBOSE_DEBUG) { std::cout << "TwoGate destructor" << std::endl; }};
+        virtual ~TwoGate() { if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "TwoGate destructor" << std::endl; }};
 
         virtual void Evaluate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "Evaluate TwoGate" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "Evaluate TwoGate" << std::endl; }
         }
 
-        virtual SharePointer GetOutputShare() = 0;
+        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
     };
 
 
@@ -180,28 +177,27 @@ namespace ABYN::Gates::Interfaces {
     class nInputGate : public Gate {
 
     protected:
-        std::vector<SharePointer> parents;
+        std::vector<ABYN::Shares::SharePtr> parents;
 
-        nInputGate(std::vector<SharePointer> parents) {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "nInputGate constructor" << std::endl; }
+        nInputGate(std::vector<ABYN::Shares::SharePtr> &parents) {
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "nInputGate constructor" << std::endl; }
             this->parents = parents;
         };
 
     public:
         virtual ~nInputGate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "nInputGate destructor" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "nInputGate destructor" << std::endl; }
         };
 
         virtual void Evaluate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "nInputGate TwoGate" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "nInputGate TwoGate" << std::endl; }
         }
 
-        virtual SharePointer GetOutputShare() = 0;
+        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
     };
 }
 
 namespace ABYN::Gates::Arithmetic {
-    using namespace ABYN::Shares;
 
 //
 //     | <- one unsigned integer input
@@ -219,30 +215,32 @@ namespace ABYN::Gates::Arithmetic {
     class ArithmeticInputGate : ABYN::Gates::Interfaces::InputGate {
 
     protected:
-        T input;
+        T input_;
 
         //indicates whether this party shares the input
-        bool my_input = false;
+        bool my_input_ = false;
 
     public:
-        ArithmeticInputGate(T input, bool my_input, ABYNBackendPtr backend) {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate constructor" << std::endl; }
-            this->my_input = my_input;
-            this->backend = backend;
-            this->input = input;
+        ArithmeticInputGate(T input, bool my_input, ABYN::ABYNBackendPtr &backend) {
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate constructor" << std::endl; }
+            my_input_ = my_input;
+            backend_ = backend;
+            input_ = input;
         };
 
         virtual ~ArithmeticInputGate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate destructor" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate destructor" << std::endl; }
         };
 
         virtual void Evaluate() final {
             // implement seed extension-based sharing
-            output = std::move(std::static_pointer_cast<Share *>(std::make_shared<ArithmeticShare>(input)));
+            output_share_ = std::move(
+                    std::static_pointer_cast<ABYN::Shares::Share>(
+                            std::make_shared<ABYN::Shares::ArithmeticShare>(input_)));
         };
 
         //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
-        virtual SharePointer GetOutputShare() final { return output; };
+        virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_share_; };
     };
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -255,12 +253,13 @@ namespace ABYN::Gates::Arithmetic {
         bool my_output = false;
         bool others_get_output = false;
     public:
-        ArithmeticOutputGate(ArithmeticSharePtr<T> previous_gate, size_t id, ABYNBackendPtr backend) {
+        ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &previous_gate, size_t id, ABYNBackendPtr &backend) {
+            backend_ = backend;
             // TODO: implement
         }
 
         virtual ~ArithmeticOutputGate() {
-            if constexpr (VERBOSE_DEBUG) { std::cout << "ArithmeticOutputGate destructor called" << std::endl; }
+            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "ArithmeticOutputGate destructor called" << std::endl; }
         };
 
         virtual void Evaluate() final {
@@ -268,8 +267,9 @@ namespace ABYN::Gates::Arithmetic {
             ;
         }
 
-        virtual SharePointer GetOutputShare() final { return output; };
+        virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output; };
     };
 }
+
 
 #endif //GATE_H

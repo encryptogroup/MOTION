@@ -5,9 +5,19 @@ option(ABYN_BUILD_EXE "Build executables" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
-find_package(GMP REQUIRED)
-find_package(Threads REQUIRED)
-find_package(Boost REQUIRED)
+find_package(GMP        REQUIRED)
+find_package(Threads    REQUIRED)
+
+ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+find_package(Boost
+                        COMPONENTS
+                            log
+                            log_setup
+                            filesystem
+                            system
+                        REQUIRED)
+set(Boost_USE_STATIC_LIBS ON)
+
 
 find_package(OpenMP REQUIRED)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")

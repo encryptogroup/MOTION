@@ -10,13 +10,11 @@ namespace ABYN {
     using u32 = uint32_t;
     using u64 = uint64_t;
 
-    const bool DEBUG = false;
-    const bool VERBOSE_DEBUG = false;
-
-    namespace Gates::Arithmetic{};
-    namespace Gates::Boolean{};
-    namespace Gates::Yao{};
-    namespace Gates::Conversion{};
+    namespace Gates::Interfaces {};
+    namespace Gates::Arithmetic {};
+    namespace Gates::Boolean {};
+    namespace Gates::Yao {};
+    namespace Gates::Conversion {};
 
     //fast-access aliases for Gates
     namespace Arithmetic = Gates::Arithmetic;
@@ -42,7 +40,6 @@ namespace ABYN {
         InvalidRole = 2u // for checking whether the value is valid
     };
 
-    const auto MAXIMUM_CONNECTION_TIMEOUT = 60;//seconds
 }
 
 #endif //TYPEDEFS_H

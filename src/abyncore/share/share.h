@@ -6,41 +6,65 @@
 #include "utility/typedefs.h"
 #include "wire/wire.h"
 
+namespace ABYN::Gates::Interfaces {
+    class Gate;
+
+    using GatePtr = std::shared_ptr<Gate>;
+}
+
 namespace ABYN::Shares {
 
     class Share {
-    protected:
     public:
         virtual Protocol GetSharingType() = 0;
 
         virtual bool IsConstantShare() = 0;
 
-        Share() {};
-
         virtual ~Share() {};
+
+    protected:
+        ABYNBackendPtr backend_;
+        bool done_ = false;
+        std::vector<ABYN::Gates::Interfaces::GatePtr> waiting_gates_;
+
+    private:
+        Share() = delete;
+
+        Share(Share &) = delete;
     };
 
-    typedef std::shared_ptr<Share> SharePointer;
+
+    using SharePtr = std::shared_ptr<Share>;
 
 /*
  * Allow only unsigned integers for Arithmetic shares.
  */
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     class ArithmeticShare : public Share {
-    protected:
-        ArithmeticWirePtr<T> value;
     public:
-        virtual std::vector<T> &GetValue() final { return value->GetRawValues(); };
+        virtual std::vector<T> &GetValue() final { return wire_->GetRawValues(); };
 
-        virtual Protocol GetSharingType() final { return value->GetProtocol(); }
+        virtual Protocol GetSharingType() final { return wire_->GetProtocol(); }
 
         virtual bool IsConstantShare() final { return false; };
 
         auto GetValueByteLength() { return sizeof(T); };
 
-        ArithmeticShare(T input) { value = input; };
+        ArithmeticShare(T input, ABYNBackendPtr &backend) {
+            wire_ = ArithmeticWirePtr<T>(input, backend);
+            backend_ = backend;
+        };
 
         ~ArithmeticShare() {};
+
+    protected:
+        //Arithmetic share can have only one wire
+        ArithmeticWirePtr<T> wire_;
+
+    private:
+        ArithmeticShare() = delete;
+
+        ArithmeticShare(ArithmeticShare &) = delete;
     };
 
 
@@ -53,23 +77,36 @@ namespace ABYN::Shares {
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     class ArithmeticConstantShare : public Share {
     private:
-        ArithmeticConstantShare() {};
+        ArithmeticConstantShare() = delete;
+
+        ArithmeticConstantShare(ArithmeticConstantShare &) = delete;
+
     protected:
-        T value;
+        std::vector<T> values_;
+
     public:
-        virtual T GetValue() final { return value; };
+        virtual std::vector<T> &GetValue() final { return values_; };
 
         virtual Protocol GetSharingType() final { return ArithmeticGMW; }
 
         virtual bool IsConstantShare() final { return true; };
 
-        ArithmeticConstantShare(T input) { value = input; };
+        ArithmeticConstantShare(T input, ABYNBackendPtr &backend) : values_(
+                std::move(std::vector{input})) { backend_ = backend; };
+
+        ArithmeticConstantShare(std::vector<T> &input, ABYNBackendPtr &backend) : values_(input) {
+            backend_ = backend;
+        };
+
+        ArithmeticConstantShare(std::vector<T> &&input, ABYNBackendPtr &backend) : values_(std::move(input)) {
+            backend_ = backend;
+        };
 
         ~ArithmeticConstantShare() {};
     };
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    using ArithmeticConstantSharePointer = std::shared_ptr<ArithmeticConstantShare<T>>;
+    using ArithmeticConstantSharePtr = std::shared_ptr<ArithmeticConstantShare<T>>;
 
 }
 #endif //SHARE_H

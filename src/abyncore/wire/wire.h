@@ -7,35 +7,41 @@
 #include <memory>
 
 #include "utility/typedefs.h"
+#include "abynparty/abynbackend.h"
 
 namespace ABYN {
 
     class Wire {
     public:
-        size_t GetNumOfParallelValues() { return num_of_parallel_values; }
+        size_t GetNumOfParallelValues() { return num_of_parallel_values_; }
 
-        virtual CircuitType GetCircuitType() = 0;
+        virtual enum CircuitType GetCircuitType() = 0;
 
-        virtual Protocol GetProtocol() = 0;
-
-        Wire() {};
+        virtual enum Protocol GetProtocol() = 0;
 
         virtual ~Wire() {};
 
     protected:
         // number of values that are _logically_ processed in parallel
-        size_t num_of_parallel_values = 0;
+        size_t num_of_parallel_values_ = 0;
 
         // flagging variables as constants is useful, since this allows for tricks, such as non-interactive
         // multiplication by a constant in (arithmetic) GMW
-        bool is_constant = false;
+        bool is_constant_ = false;
 
         // is_done_* variables are needed for callbacks, i.e.,
         // gates will wait for wires to be evaluated to proceed with their evaluation
-        bool is_done_setup = false;
-        bool is_done_online = false;
+        bool is_done_setup_ = false;
+        bool is_done_online_ = false;
 
-        ssize_t id = -1;
+        ssize_t id_ = -1;
+
+        ABYNBackendPtr backend_;
+
+    private:
+        Wire() = delete;
+
+        Wire(Wire &) = delete;
     };
 
     using WirePtr = std::shared_ptr<Wire>;
@@ -44,34 +50,52 @@ namespace ABYN {
 // Allow only unsigned integers for Arithmetic wires.
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     class ArithmeticWire : Wire {
-        bool is_constant = false;
     private:
-        std::vector<T> values{};
+        std::vector<T> values_;
     public:
 
-        ArithmeticWire(std::initializer_list<T> &values, bool is_constant = false) {
-            this->values.emplace_back(values);
-            this->is_constant = is_constant;
-            num_of_parallel_values = this->values.size();
+        ArithmeticWire(std::initializer_list<T> &&values, ABYNBackendPtr &backend, bool is_constant = false) {
+            is_constant_ = is_constant;
+            backend_ = backend;
+            values_.emplace_back(std::move(values));
+            num_of_parallel_values_ = this->values_.size();
         };
 
-        ArithmeticWire(std::vector<T> &values, bool is_constant = false) {
-            this->values = std::move(values);
-            this->is_constant = is_constant;
-            num_of_parallel_values = this->values.size();
+        ArithmeticWire(std::initializer_list<T> &values, ABYNBackendPtr &backend, bool is_constant = false) {
+            is_constant_ = is_constant;
+            backend_ = backend;
+            values_.push_back(values);
+            num_of_parallel_values_ = this->values_.size();
         };
 
-        ArithmeticWire(T t, bool is_constant = false) {
-            values.push_back(t);
-            this->is_constant = is_constant;
-            num_of_parallel_values = 1;
-        }
+        ArithmeticWire(std::vector<T> &&values, ABYNBackendPtr &backend, bool is_constant = false) {
+            is_constant_ = is_constant;
+            backend_ = backend;
+            this->values_ = std::move(values);
+            num_of_parallel_values_ = this->values_.size();
+        };
+
+        ArithmeticWire(std::vector<T> &values, ABYNBackendPtr &backend, bool is_constant = false) {
+            is_constant_ = is_constant;
+            backend_ = backend;
+            this->values_ = values;
+            num_of_parallel_values_ = this->values_.size();
+        };
+
+        ArithmeticWire(T t, ABYNBackendPtr &backend, bool is_constant = false) {
+            is_constant_ = is_constant;
+            backend_ = backend;
+            values_.push_back(t);
+            num_of_parallel_values_ = 1;
+        };
 
         virtual ~ArithmeticWire() {};
 
+        virtual Protocol GetProtocol() final { return Protocol::ArithmeticGMW; };
+
         virtual CircuitType GetCircuitType() final { return CircuitType::ArithmeticType; };
 
-        std::vector<T> &GetRawValues() { return values; };
+        std::vector<T> &GetRawValues() { return values_; };
     };
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -84,21 +108,30 @@ namespace ABYN {
 
         virtual ~BooleanWire() {};
 
-        BooleanWire() {};
+    private:
+        BooleanWire() = delete;
+
+        BooleanWire(BooleanWire &) = delete;
     };
 
     class GMWWire : BooleanWire {
     public:
         virtual ~GMWWire() {};
 
-        GMWWire() {};
+    private:
+        GMWWire() = delete;
+
+        GMWWire(GMWWire &) = delete;
     };
 
     class BMRWire : BooleanWire {
     public:
         virtual ~BMRWire() {};
 
-        BMRWire() {};
+    private:
+        BMRWire() = delete;
+
+        BMRWire(BMRWire &) = delete;
     };
 
 
