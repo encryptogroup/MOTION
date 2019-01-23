@@ -90,4 +90,8 @@ namespace ABYN {
         BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
     };
 
+    size_t ABYNBackend::NextGateId(){
+        return global_gate_id_++;
+    };
+
 }

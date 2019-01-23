@@ -49,13 +49,15 @@ namespace ABYN {
 
         void LogError(std::string &&msg);
 
+        size_t NextGateId();
+
     private:
         ABYNBackend() {};
-        ABYNConfigurationPtr abyn_config_;
-
-        boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
-
         void InitLogger();
+
+        ABYNConfigurationPtr abyn_config_;
+        size_t global_gate_id_ = 0;
+        boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
     };
 
 

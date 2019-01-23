@@ -12,7 +12,7 @@
 namespace ABYN::Gates::Interfaces {
 
 //
-//  inputs are not defined in the Gate class but in the child classes
+//  inputs are not defined in the Gate class but only in the child classes
 //
 //  --------
 //  |      |
@@ -87,9 +87,7 @@ namespace ABYN::Gates::Interfaces {
 
     public:
 
-        virtual void Evaluate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { backend_->LogTrace("Evaluate InputGate"); }
-        }
+        virtual void Evaluate() = 0;
 
         virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
@@ -121,9 +119,7 @@ namespace ABYN::Gates::Interfaces {
             parent_ = parent;
         };
 
-        virtual void Evaluate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "Evaluate OutputGate" << std::endl; }
-        }
+        virtual void Evaluate() = 0;
 
         virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
@@ -146,19 +142,13 @@ namespace ABYN::Gates::Interfaces {
         ABYN::Shares::SharePtr parent_a_;
         ABYN::Shares::SharePtr parent_b_;
 
+        TwoGate() {};
+
     public:
-        TwoGate(ABYN::Shares::SharePtr &parent_a, ABYN::Shares::SharePtr &parent_b, ABYN::ABYNBackendPtr &backend) {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "TwoGate constructor" << std::endl; }
-            parent_a_ = parent_a;
-            parent_b_ = parent_b;
-            backend_ = backend;
-        };
 
-        virtual ~TwoGate() { if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "TwoGate destructor" << std::endl; }};
+        virtual ~TwoGate() {};
 
-        virtual void Evaluate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "Evaluate TwoGate" << std::endl; }
-        }
+        virtual void Evaluate() = 0;
 
         virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
     };
@@ -177,21 +167,14 @@ namespace ABYN::Gates::Interfaces {
     class nInputGate : public Gate {
 
     protected:
-        std::vector<ABYN::Shares::SharePtr> parents;
+        std::vector<ABYN::Shares::SharePtr> parents_;
 
-        nInputGate(std::vector<ABYN::Shares::SharePtr> &parents) {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "nInputGate constructor" << std::endl; }
-            this->parents = parents;
-        };
+        nInputGate() {};
 
     public:
-        virtual ~nInputGate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "nInputGate destructor" << std::endl; }
-        };
+        virtual ~nInputGate() {};
 
-        virtual void Evaluate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "nInputGate TwoGate" << std::endl; }
-        }
+        virtual void Evaluate() {}
 
         virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
     };
@@ -221,16 +204,14 @@ namespace ABYN::Gates::Arithmetic {
         bool my_input_ = false;
 
     public:
-        ArithmeticInputGate(T input, bool my_input, ABYN::ABYNBackendPtr &backend) {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate constructor" << std::endl; }
-            my_input_ = my_input;
+        ArithmeticInputGate(T input, bool my_input, ABYN::ABYNBackendPtr &backend) : my_input_(my_input),
+                                                                                     input_(input) {
+            gate_id_ = backend_->NextGateId();
             backend_ = backend;
-            input_ = input;
+            backend_->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
         };
 
-        virtual ~ArithmeticInputGate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "ArithmeticInputGate destructor" << std::endl; }
-        };
+        virtual ~ArithmeticInputGate() {};
 
         virtual void Evaluate() final {
             // implement seed extension-based sharing
@@ -246,28 +227,26 @@ namespace ABYN::Gates::Arithmetic {
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     class ArithmeticOutputGate : ABYN::Gates::Interfaces::OutputGate {
     protected:
-        T output;
-        std::vector<T> shares_of_others_parties;
+        T output_;
+        std::vector<T> shares_of_others_parties_;
 
         //indicates whether this party obtains the output
-        bool my_output = false;
-        bool others_get_output = false;
+        bool my_output_ = false;
+        bool others_get_output_ = false;
     public:
         ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &previous_gate, size_t id, ABYNBackendPtr &backend) {
             backend_ = backend;
             // TODO: implement
         }
 
-        virtual ~ArithmeticOutputGate() {
-            if constexpr (ABYN::VERBOSE_DEBUG) { std::cout << "ArithmeticOutputGate destructor called" << std::endl; }
-        };
+        virtual ~ArithmeticOutputGate() {};
 
         virtual void Evaluate() final {
             //TODO: implement
             ;
         }
 
-        virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output; };
+        virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_; };
     };
 }
 
