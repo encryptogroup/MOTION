@@ -21,9 +21,13 @@ namespace ABYN {
 
     const auto MB = 1024 * 1024;
 
-
+    //Don't compile unnecessary code if debugging is not needed
     const bool DEBUG = true;
+
+    //Don't compile unnecessary code if verbose debugging is not needed
     const bool VERBOSE_DEBUG = true;
+
+    const size_t AES_KEY_LENGTH = 16;
 
 }
 #endif //ABYN_CONSTANTS_H

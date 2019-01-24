@@ -2,6 +2,8 @@
 #define ABYNBACKEND_H
 
 #include <memory>
+#include <iterator>
+#include <algorithm>
 
 #include <boost/log/core/core.hpp>
 #include <boost/log/trivial.hpp>
@@ -22,7 +24,7 @@ namespace ABYN {
 
     public:
 
-        ABYNBackend(ABYNConfigurationPtr & abyn_config) {
+        ABYNBackend(ABYNConfigurationPtr &abyn_config) {
             abyn_config_ = abyn_config;
             InitLogger();
         };
@@ -51,13 +53,37 @@ namespace ABYN {
 
         size_t NextGateId();
 
+        void InitializeRandomnessGenerator(unsigned int key[AES_KEY_LENGTH]){
+            randomness_generator_ = std::make_unique<RandomnessGenerator>(key);
+        };
+
+
     private:
         ABYNBackend() {};
+
         void InitLogger();
 
         ABYNConfigurationPtr abyn_config_;
         size_t global_gate_id_ = 0;
         boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
+
+
+        class RandomnessGenerator {
+        public:
+            RandomnessGenerator(unsigned int key[AES_KEY_LENGTH]) {
+                std::copy(key, key + AES_KEY_LENGTH, std::begin(key_));
+            };
+
+            template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+            T GetUnsigned(T input){return input;};
+
+        private:
+            unsigned int key_[AES_KEY_LENGTH];
+
+            RandomnessGenerator() = delete;
+        };
+
+        std::unique_ptr<RandomnessGenerator> randomness_generator_;
     };
 
 
