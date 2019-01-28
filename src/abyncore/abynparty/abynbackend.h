@@ -15,6 +15,11 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 
+#include <openssl/evp.h>
+#include <openssl/aes.h>
+#include <openssl/conf.h>
+#include <openssl/err.h>
+
 #include "utility/abynconfiguration.h"
 #include "utility/constants.h"
 
@@ -53,8 +58,8 @@ namespace ABYN {
 
         size_t NextGateId();
 
-        void InitializeRandomnessGenerator(unsigned int key[AES_KEY_LENGTH]){
-            randomness_generator_ = std::make_unique<RandomnessGenerator>(key);
+        void InitializeRandomnessGenerator(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]) {
+            randomness_generator_ = std::make_unique<RandomnessGenerator>(key, iv);
         };
 
 
@@ -70,22 +75,28 @@ namespace ABYN {
 
         class RandomnessGenerator {
         public:
-            RandomnessGenerator(unsigned int key[AES_KEY_LENGTH]) {
-                std::copy(key, key + AES_KEY_LENGTH, std::begin(key_));
-            };
+            RandomnessGenerator(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]);
+
+            ~RandomnessGenerator() {EVP_CIPHER_CTX_free(ctx_);};
 
             template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-            T GetUnsigned(T input){return input;};
+            T GetUnsigned(size_t gate_id);
 
         private:
-            unsigned int key_[AES_KEY_LENGTH];
+            const size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;
+            EVP_CIPHER_CTX *ctx_ = nullptr;
+            unsigned char raw_key_[AES_KEY_SIZE] = {0};
+            AES_KEY aes_key_;
+            unsigned char aes_ctr_input_[AES_BLOCK_SIZE] = {0};
+            unsigned char iv_[AES_BLOCK_SIZE] = {0};
+            unsigned int num_ = 0;
 
+            RandomnessGenerator(RandomnessGenerator&) = delete;
             RandomnessGenerator() = delete;
         };
 
         std::unique_ptr<RandomnessGenerator> randomness_generator_;
     };
-
 
     using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;
 }

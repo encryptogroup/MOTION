@@ -90,8 +90,68 @@ namespace ABYN {
         BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
     };
 
-    size_t ABYNBackend::NextGateId(){
+    size_t ABYNBackend::NextGateId() {
         return global_gate_id_++;
+    };
+
+    ABYNBackend::RandomnessGenerator::RandomnessGenerator(
+            unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]) {
+        std::copy(key, key + AES_KEY_SIZE, std::begin(raw_key_));
+        std::copy(iv, iv + AES_BLOCK_SIZE / 2, std::begin(aes_ctr_input_));
+        if (!(ctx_ = EVP_CIPHER_CTX_new())) {
+            throw (std::runtime_error(fmt::format("Could not initialize EVP context")));
+        }
+    };
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    T ABYNBackend::RandomnessGenerator::GetUnsigned(size_t gate_id) {
+        u8 output[AES_BLOCK_SIZE] = {0};
+        u8 input[AES_BLOCK_SIZE];
+        int output_length;
+
+        std::copy(&gate_id + COUNTER_OFFSET, &gate_id + COUNTER_OFFSET + sizeof(gate_id), input);
+
+
+        //encrypt as in CTR mode, but without incrementing the counter after each encryption
+        if (1 != EVP_EncryptInit_ex(ctx_, EVP_aes_128_ecb(), NULL, raw_key_, nullptr)) {
+            throw (std::runtime_error(fmt::format("Could not re-initialize EVP context")));
+        }
+
+        if (1 != EVP_EncryptUpdate(ctx_, output, &output_length, input, AES_BLOCK_SIZE)) {
+            throw (std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
+        }
+
+        if (1 != EVP_EncryptFinal_ex(ctx_, output + output_length, &output_length)) {
+            throw (std::runtime_error(fmt::format("Could not finalize EVP-AES encryption")));
+        }
+
+        if (output_length != AES_BLOCK_SIZE) {
+            throw (std::runtime_error(
+                    fmt::format("AES encryption output has length {}, expected {}",
+                                output_length, AES_BLOCK_SIZE)
+            ));
+        }
+
+        __uint128_t result = reinterpret_cast<u64 *>(output)[0];
+        result <<= 64;
+        result ^= reinterpret_cast<u64 *>(output)[1] ^ gate_id;
+
+        const u64 mod_init = 1 << ((sizeof(T) * 8) - 1);
+
+        __uint128_t mod;
+        if constexpr(sizeof(T) == sizeof(u8) || sizeof(T) == sizeof(u16) || sizeof(T) == sizeof(u32)) {
+            mod = mod_init;
+        } else if constexpr(sizeof(T) == sizeof(u64)) {
+            mod = 1;
+            mod <<= (sizeof(T) * 8) - 1;
+        } else {
+            throw (std::runtime_error(
+                    fmt::format("Unknown data type passed to input sharing randomization: {}", typeid(T).name())));
+        }
+
+        result %= mod;
+
+        return static_cast<T>(result);
     };
 
 }

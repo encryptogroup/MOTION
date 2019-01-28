@@ -7,6 +7,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
 find_package(GMP        REQUIRED)
 find_package(Threads    REQUIRED)
+find_package(OpenSSL    REQUIRED)
 
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 find_package(Boost

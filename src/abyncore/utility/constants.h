@@ -27,7 +27,7 @@ namespace ABYN {
     //Don't compile unnecessary code if verbose debugging is not needed
     const bool VERBOSE_DEBUG = true;
 
-    const size_t AES_KEY_LENGTH = 16;
+    const size_t AES_KEY_SIZE = 16;
 
 }
 #endif //ABYN_CONSTANTS_H
