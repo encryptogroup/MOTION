@@ -95,35 +95,70 @@ namespace ABYN {
     };
 
     ABYNBackend::RandomnessGenerator::RandomnessGenerator(
-            unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]) {
+            unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2],
+            ABYNBackend *backend) : backend_(backend) {
         std::copy(key, key + AES_KEY_SIZE, std::begin(raw_key_));
-        std::copy(iv, iv + AES_BLOCK_SIZE / 2, std::begin(aes_ctr_input_));
+        std::copy(iv, iv + AES_BLOCK_SIZE / 2, std::begin(aes_ctr_nonce_));
         if (!(ctx_ = EVP_CIPHER_CTX_new())) {
             throw (std::runtime_error(fmt::format("Could not initialize EVP context")));
         }
     };
 
-    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    T ABYNBackend::RandomnessGenerator::GetUnsigned(size_t gate_id) {
-        u8 output[AES_BLOCK_SIZE] = {0};
-        u8 input[AES_BLOCK_SIZE];
+    template<typename T>
+    __uint128_t ABYNBackend::RandomnessGenerator::GetRingLimit() {
+        //compute input mod 2^l, where l is the bit length of the ring
+        const u64 mod_init = 1u << ((sizeof(T) * 8) - 1);
+
+        __uint128_t mod;
+
+        if constexpr(sizeof(T) == sizeof(u8) || sizeof(T) == sizeof(u16) ||
+                     sizeof(T) == sizeof(u32)) {            //the case where we can store 2^l un the variable
+            mod = mod_init;
+        } else if constexpr(sizeof(T) == sizeof(u64)) {     //2^l is to large to store it in the standard variables
+            mod = 1;
+            mod <<= (sizeof(T) * 8) - 1;
+        } else {                                            //unknown format
+            throw (
+                    std::runtime_error(
+                            fmt::format("Unknown data type passed to input sharing randomization: {}", typeid(T).name())
+                    ));
+        }
+
+        return mod;
+    }
+
+    int ABYNBackend::RandomnessGenerator::Encrypt(u8 *input, u8 *output, size_t num_of_blocks) {
         int output_length;
 
-        std::copy(&gate_id + COUNTER_OFFSET, &gate_id + COUNTER_OFFSET + sizeof(gate_id), input);
-
-
-        //encrypt as in CTR mode, but without incrementing the counter after each encryption
         if (1 != EVP_EncryptInit_ex(ctx_, EVP_aes_128_ecb(), NULL, raw_key_, nullptr)) {
             throw (std::runtime_error(fmt::format("Could not re-initialize EVP context")));
         }
 
-        if (1 != EVP_EncryptUpdate(ctx_, output, &output_length, input, AES_BLOCK_SIZE)) {
+        if (1 != EVP_EncryptUpdate(ctx_, output, &output_length, input, AES_BLOCK_SIZE * num_of_blocks)) {
             throw (std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
         }
 
         if (1 != EVP_EncryptFinal_ex(ctx_, output + output_length, &output_length)) {
             throw (std::runtime_error(fmt::format("Could not finalize EVP-AES encryption")));
         }
+        return output_length;
+    }
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    T ABYNBackend::RandomnessGenerator::GetUnsigned(size_t gate_id) {
+
+        if (!initialized_) {
+            throw (fmt::format("Trying to get randomness from uninitialized generator"));
+        }
+
+        u8 output[AES_BLOCK_SIZE] = {0};
+        u8 input[AES_BLOCK_SIZE];
+
+        std::copy(std::begin(aes_ctr_nonce_), std::end(aes_ctr_nonce_), input);
+        std::copy(&gate_id, &gate_id + sizeof(gate_id), input + COUNTER_OFFSET);
+
+        //encrypt as in CTR mode, but without incrementing the counter after each encryption
+        int output_length = Encrypt(input, output, 1);
 
         if (output_length != AES_BLOCK_SIZE) {
             throw (std::runtime_error(
@@ -132,26 +167,62 @@ namespace ABYN {
             ));
         }
 
-        __uint128_t result = reinterpret_cast<u64 *>(output)[0];
+        //combine resulting randomness xored with the gate_id, which is the actual input to AES-CTR
+        __uint128_t result = reinterpret_cast<u64 *>(output)[0], mod = RandomnessGenerator::GetRingLimit<T>();
         result <<= 64;
         result ^= reinterpret_cast<u64 *>(output)[1] ^ gate_id;
-
-        const u64 mod_init = 1 << ((sizeof(T) * 8) - 1);
-
-        __uint128_t mod;
-        if constexpr(sizeof(T) == sizeof(u8) || sizeof(T) == sizeof(u16) || sizeof(T) == sizeof(u32)) {
-            mod = mod_init;
-        } else if constexpr(sizeof(T) == sizeof(u64)) {
-            mod = 1;
-            mod <<= (sizeof(T) * 8) - 1;
-        } else {
-            throw (std::runtime_error(
-                    fmt::format("Unknown data type passed to input sharing randomization: {}", typeid(T).name())));
-        }
-
         result %= mod;
 
         return static_cast<T>(result);
+    };
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    std::vector<T> ABYNBackend::RandomnessGenerator::GetUnsigned(size_t gate_id, size_t num_of_gates) {
+        if (num_of_gates == 0) {
+            backend_->LogDebug(
+                    fmt::format("Trying to create randomness with 0 number of gates, first gate id: {}", gate_id));
+            return {}; //return an empty vector if num_of_gates is zero
+        }
+
+        if (!initialized_) {
+            throw (fmt::format("Trying to get randomness from uninitialized generator"));
+        }
+
+        //Pre-initialize output vector
+        std::vector<T> results;
+        results.reserve(num_of_gates);
+
+        std::vector<u8> output(AES_BLOCK_SIZE * num_of_gates, 0);
+        std::vector<u8> input(AES_BLOCK_SIZE * num_of_gates, 0);
+
+        auto gate_id_copy = gate_id;
+        for (auto i = 0u; i < num_of_gates; ++i, ++gate_id_copy) {
+            std::copy(std::begin(aes_ctr_nonce_), std::end(aes_ctr_nonce_), input.data() + i * AES_BLOCK_SIZE);
+            std::copy(&gate_id_copy, &gate_id_copy + sizeof(gate_id_copy),
+                      input.data() + i * AES_BLOCK_SIZE + COUNTER_OFFSET);
+        }
+
+        //encrypt as in CTR mode, but without incrementing the counter after each encryption
+        int output_length = Encrypt(input.data(), output.data(), num_of_gates);
+
+        if (output_length != AES_BLOCK_SIZE * num_of_gates) {
+            throw (std::runtime_error(
+                    fmt::format("AES encryption output has length {}, expected {}",
+                                output_length, AES_BLOCK_SIZE * num_of_gates)
+            ));
+        }
+
+        __uint128_t mod = RandomnessGenerator::GetRingLimit<T>(), single_result;
+        //combine resulting randomness xored with the gate_id, which is the actual input to AES-CTR
+        for (auto i = 0u; i < num_of_gates; ++i) {
+            single_result = reinterpret_cast<u64 *>(output.data())[i * AES_BLOCK_SIZE];
+            single_result <<= 64;
+            single_result ^= reinterpret_cast<u64 *>(output.data())[i * AES_BLOCK_SIZE + 1] ^ gate_id++;
+            single_result %= mod;
+            results.push_back(static_cast<T>(single_result));
+        }
+
+        return results;
     };
 
 }

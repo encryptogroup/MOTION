@@ -10,12 +10,16 @@
 
 #include "gate/gate.h"
 #include "abynparty/abynparty.h"
+#include "utility/typedefs.h"
 
 
 namespace {
 
     using namespace ABYN;
     using namespace ABYN::Arithmetic;
+
+    const u8 fixed_key [16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    const u8 fixed_iv [8] = {16,17,18,19,20,21,22,23};
 
     const auto TEST_ITERATIONS = 10;
 

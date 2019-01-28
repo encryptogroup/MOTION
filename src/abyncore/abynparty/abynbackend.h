@@ -59,7 +59,8 @@ namespace ABYN {
         size_t NextGateId();
 
         void InitializeRandomnessGenerator(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]) {
-            randomness_generator_ = std::make_unique<RandomnessGenerator>(key, iv);
+            randomness_generator_ = std::make_unique<RandomnessGenerator>(key, iv, this);
+            initialized_ = true;
         };
 
 
@@ -75,27 +76,38 @@ namespace ABYN {
 
         class RandomnessGenerator {
         public:
-            RandomnessGenerator(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]);
+            RandomnessGenerator(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2],
+                                ABYNBackend *backend_);
 
-            ~RandomnessGenerator() {EVP_CIPHER_CTX_free(ctx_);};
+            ~RandomnessGenerator() { EVP_CIPHER_CTX_free(ctx_); };
 
             template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
             T GetUnsigned(size_t gate_id);
 
+            template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+            std::vector<T> GetUnsigned(size_t gate_id, size_t num_of_gates);
+
         private:
+            std::shared_ptr<ABYNBackend> backend_;
             const size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;
+
             EVP_CIPHER_CTX *ctx_ = nullptr;
             unsigned char raw_key_[AES_KEY_SIZE] = {0};
-            AES_KEY aes_key_;
-            unsigned char aes_ctr_input_[AES_BLOCK_SIZE] = {0};
-            unsigned char iv_[AES_BLOCK_SIZE] = {0};
-            unsigned int num_ = 0;
+            unsigned char aes_ctr_nonce_[AES_BLOCK_SIZE / 2] = {0};
 
-            RandomnessGenerator(RandomnessGenerator&) = delete;
+            RandomnessGenerator(RandomnessGenerator &) = delete;
+
             RandomnessGenerator() = delete;
+
+            int Encrypt(u8 *input, u8 *output, size_t num_of_blocks);
+
+            template<typename T>
+            static __uint128_t GetRingLimit();
         };
 
         std::unique_ptr<RandomnessGenerator> randomness_generator_;
+
+        bool initialized_ = false;
     };
 
     using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;
