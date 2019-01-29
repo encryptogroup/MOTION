@@ -22,27 +22,27 @@ namespace ABYN::Gates::Interfaces {
 //     | <- one abstract output
 //
 
-    class Gate {
-    public:
-        virtual ~Gate() {};
+  class Gate {
+  public:
+    virtual ~Gate() {};
 
-        virtual void Evaluate() = 0;
+    virtual void Evaluate() = 0;
 
-        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
-    protected:
-        ABYN::Shares::SharePtr output_share_;
-        ABYN::ABYNBackendPtr backend_;
-        ssize_t gate_id_ = -1;
-        size_t n_parallel_values_ = 1;
+  protected:
+    ABYN::Shares::SharePtr output_share_;
+    ABYN::ABYNBackendPtr backend_;
+    ssize_t gate_id_ = -1;
+    size_t n_parallel_values_ = 1;
 
-        Gate() {};
+    Gate() {};
 
-    private:
-        Gate(Gate &) = delete;
-    };
+  private:
+    Gate(Gate &) = delete;
+  };
 
-    using GatePtr = std::shared_ptr<Gate>;
+  using GatePtr = std::shared_ptr<Gate>;
 
 //
 //     | <- one abstract input
@@ -54,23 +54,23 @@ namespace ABYN::Gates::Interfaces {
 //     | <- one abstract output
 //
 
-    class OneGate : public Gate {
-    public:
-        virtual ~OneGate() {};
+  class OneGate : public Gate {
+  public:
+    virtual ~OneGate() {};
 
-        virtual void Evaluate() = 0;
+    virtual void Evaluate() = 0;
 
-        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
-    protected:
-        ABYN::Shares::SharePtr parent_;
+  protected:
+    ABYN::Shares::SharePtr parent_;
 
-        OneGate() {};
+    OneGate() {};
 
-    private:
-        OneGate(OneGate &) = delete;
+  private:
+    OneGate(OneGate &) = delete;
 
-    };
+  };
 
 
 //
@@ -83,23 +83,23 @@ namespace ABYN::Gates::Interfaces {
 //     | <- SharePointer output
 //
 
-    class InputGate : public OneGate {
+  class InputGate : public OneGate {
 
-    public:
+  public:
 
-        virtual void Evaluate() = 0;
+    virtual void Evaluate() = 0;
 
-        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
-    protected:
-        virtual ~InputGate() {};
+  protected:
+    virtual ~InputGate() {};
 
-        InputGate() {};
+    InputGate() {};
 
-    private:
-        InputGate(InputGate &) = delete;
+  private:
+    InputGate(InputGate &) = delete;
 
-    };
+  };
 
 
 //
@@ -112,19 +112,19 @@ namespace ABYN::Gates::Interfaces {
 //     | <- abstract output
 //
 
-    class OutputGate : public OneGate {
-    public:
-        OutputGate(ABYN::Shares::SharePtr &parent, ABYN::ABYNBackendPtr &backend) {
-            backend_ = backend;
-            parent_ = parent;
-        };
-
-        virtual void Evaluate() = 0;
-
-        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
-
-        virtual ~OutputGate() {};
+  class OutputGate : public OneGate {
+  public:
+    OutputGate(ABYN::Shares::SharePtr &parent, ABYN::ABYNBackendPtr &backend) {
+      backend_ = backend;
+      parent_ = parent;
     };
+
+    virtual void Evaluate() = 0;
+
+    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+
+    virtual ~OutputGate() {};
+  };
 
 //
 //   |    | <- two SharePointers input
@@ -136,22 +136,22 @@ namespace ABYN::Gates::Interfaces {
 //     | <- SharePointer output
 //
 
-    class TwoGate : public Gate {
+  class TwoGate : public Gate {
 
-    protected:
-        ABYN::Shares::SharePtr parent_a_;
-        ABYN::Shares::SharePtr parent_b_;
+  protected:
+    ABYN::Shares::SharePtr parent_a_;
+    ABYN::Shares::SharePtr parent_b_;
 
-        TwoGate() {};
+    TwoGate() {};
 
-    public:
+  public:
 
-        virtual ~TwoGate() {};
+    virtual ~TwoGate() {};
 
-        virtual void Evaluate() = 0;
+    virtual void Evaluate() = 0;
 
-        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
-    };
+    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+  };
 
 
 //
@@ -164,20 +164,20 @@ namespace ABYN::Gates::Interfaces {
 //     | <- SharePointer output
 //
 
-    class nInputGate : public Gate {
+  class nInputGate : public Gate {
 
-    protected:
-        std::vector<ABYN::Shares::SharePtr> parents_;
+  protected:
+    std::vector<ABYN::Shares::SharePtr> parents_;
 
-        nInputGate() {};
+    nInputGate() {};
 
-    public:
-        virtual ~nInputGate() {};
+  public:
+    virtual ~nInputGate() {};
 
-        virtual void Evaluate() {}
+    virtual void Evaluate() {}
 
-        virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
-    };
+    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+  };
 }
 
 namespace ABYN::Gates::Arithmetic {
@@ -194,60 +194,60 @@ namespace ABYN::Gates::Arithmetic {
 
 //TODO Implement interactive sharing
 
-    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    class ArithmeticInputGate : ABYN::Gates::Interfaces::InputGate {
+  template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  class ArithmeticInputGate : ABYN::Gates::Interfaces::InputGate {
 
-    protected:
-        T input_;
+  protected:
+    T input_;
 
-        //indicates whether this party shares the input
-        bool my_input_ = false;
+    //indicates whether this party shares the input
+    bool my_input_ = false;
 
-    public:
-        ArithmeticInputGate(T input, bool my_input, ABYN::ABYNBackendPtr &backend) : my_input_(my_input),
-                                                                                     input_(input) {
-            gate_id_ = backend_->NextGateId();
-            backend_ = backend;
-            backend_->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
-        };
-
-        virtual ~ArithmeticInputGate() {};
-
-        virtual void Evaluate() final {
-            // implement seed extension-based sharing
-            output_share_ = std::move(
-                    std::static_pointer_cast<ABYN::Shares::Share>(
-                            std::make_shared<ABYN::Shares::ArithmeticShare>(input_)));
-        };
-
-        //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
-        virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_share_; };
+  public:
+    ArithmeticInputGate(T input, bool my_input, ABYN::ABYNBackendPtr &backend) : my_input_(my_input),
+                                                                                 input_(input) {
+      gate_id_ = backend_->NextGateId();
+      backend_ = backend;
+      backend_->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     };
 
-    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    class ArithmeticOutputGate : ABYN::Gates::Interfaces::OutputGate {
-    protected:
-        T output_;
-        std::vector<T> shares_of_others_parties_;
+    virtual ~ArithmeticInputGate() {};
 
-        //indicates whether this party obtains the output
-        bool my_output_ = false;
-        bool others_get_output_ = false;
-    public:
-        ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &previous_gate, size_t id, ABYNBackendPtr &backend) {
-            backend_ = backend;
-            // TODO: implement
-        }
-
-        virtual ~ArithmeticOutputGate() {};
-
-        virtual void Evaluate() final {
-            //TODO: implement
-            ;
-        }
-
-        virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_; };
+    virtual void Evaluate() final {
+      // implement seed extension-based sharing
+      output_share_ = std::move(
+          std::static_pointer_cast<ABYN::Shares::Share>(
+              std::make_shared<ABYN::Shares::ArithmeticShare>(input_)));
     };
+
+    //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
+    virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_share_; };
+  };
+
+  template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  class ArithmeticOutputGate : ABYN::Gates::Interfaces::OutputGate {
+  protected:
+    T output_;
+    std::vector<T> shares_of_others_parties_;
+
+    //indicates whether this party obtains the output
+    bool my_output_ = false;
+    bool others_get_output_ = false;
+  public:
+    ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &previous_gate, size_t id, ABYNBackendPtr &backend) {
+      backend_ = backend;
+      // TODO: implement
+    }
+
+    virtual ~ArithmeticOutputGate() {};
+
+    virtual void Evaluate() final {
+      //TODO: implement
+      ;
+    }
+
+    virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_; };
+  };
 }
 
 
