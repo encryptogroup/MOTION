@@ -106,7 +106,7 @@ namespace ABYN {
   void ABYNBackend::InitializeCommunicationHandlers(){
     using PartyCommunicationHandler = ABYN::Communication::PartyCommunicationHandler;
     for(auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i){
-      communication_handlers_.push_back({abyn_config_->GetParty(i)});
+      communication_handlers_.push_back(std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i)));
     }
   }
 }

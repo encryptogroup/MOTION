@@ -24,13 +24,13 @@ namespace ABYN {
   class ABYNConfiguration {
   private:
     ssize_t my_id_ = -1;
-    std::vector<ABYN::Party> parties_;
+    std::vector<ABYN::PartyPtr> parties_;
     boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
     ABYNConfiguration() {};
 
   public:
-    ABYNConfiguration(std::vector<Party> &parties, size_t id) : my_id_(id), parties_(std::move(parties)) {
+    ABYNConfiguration(std::vector<PartyPtr> &parties, size_t id) : my_id_(id), parties_(std::move(parties)) {
       if constexpr(ABYN::VERBOSE_DEBUG) {
         severity_level_ = boost::log::trivial::trace;
       } else if constexpr(ABYN::DEBUG) {
@@ -38,7 +38,7 @@ namespace ABYN {
       }
     };
 
-    ABYNConfiguration(std::initializer_list<Party> &list_parties, size_t id) : my_id_(id) {
+    ABYNConfiguration(std::initializer_list<PartyPtr> &list_parties, size_t id) : my_id_(id) {
       if constexpr(ABYN::VERBOSE_DEBUG) {
         severity_level_ = boost::log::trivial::trace;
       } else if constexpr(ABYN::DEBUG) {
@@ -50,13 +50,13 @@ namespace ABYN {
 
     ~ABYNConfiguration() {};
 
-    std::vector<Party> &GetParties() { return parties_; };
+    std::vector<PartyPtr> &GetParties() { return parties_; };
 
     size_t GetNumOfParties() { return parties_.size(); };
 
-    Party &GetParty(uint i) { return parties_.at(i); };
+    PartyPtr &GetParty(uint i) { return parties_.at(i); };
 
-    void AddParty(Party &party) { parties_.push_back(party); };
+    void AddParty(PartyPtr &party) { parties_.push_back(party); };
 
     size_t GetMyId() { return my_id_; }
 

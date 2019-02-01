@@ -23,12 +23,7 @@ namespace ABYN {
 
   public:
 
-    Party(std::string_view &&ip, u16 port, ABYN::Role role, size_t id) :
-        ip_(std::move(ip)), port_(port), role_(role), id_(id), is_connected_(false) {
-      if (IsInvalidIp(ip.data())) {
-        throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));
-      }
-    };
+    Party(std::string_view &&ip, u16 port, ABYN::Role role, size_t id);
 
     Party(const std::string &ip, u16 port, ABYN::Role role, size_t id) :
         Party(std::move(std::string_view(ip.c_str())), port, role, id) {};
@@ -50,20 +45,9 @@ namespace ABYN {
 
     bool IsConnected() { return is_connected_ && party_socket_ >= 0; };
 
-    std::string Connect() {
-      if (is_connected_)
-        return std::move(fmt::format("Already connected to {}:{}\n", this->ip_, this->port_));
+    std::string Connect();
 
-      if (role_ == ABYN::Role::Client) {
-        InitializeSocketClient();
-      } else {
-        InitializeSocketServer();
-      };
-
-      is_connected_ = true;
-
-      return std::move(fmt::format("Successfully connected to {}:{}\n", this->ip_, this->port_));
-    };
+    const BoostSocketPtr &GetSocket() { return boost_party_socket_; }
 
   private:
 
@@ -88,6 +72,8 @@ namespace ABYN {
     Party() = delete;
 
   };
+
+  using PartyPtr = std::shared_ptr<Party>;
 
 }
 

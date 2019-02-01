@@ -71,7 +71,7 @@ namespace ABYN {
     size_t global_gate_id_ = 0;
     boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
     std::vector<std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator>> randomness_generators_;
-    std::vector<ABYN::Communication::PartyCommunicationHandler> communication_handlers_;
+    std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
 
     size_t num_threads_ = 16;
   };

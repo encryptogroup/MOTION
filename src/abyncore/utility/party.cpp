@@ -9,6 +9,28 @@
 
 namespace ABYN {
 
+  Party::Party(std::string_view &&ip, u16 port, ABYN::Role role, size_t id) :
+  ip_(std::move(ip)), port_(port), role_(role), id_(id), is_connected_(false) {
+    if (IsInvalidIp(ip.data())) {
+      throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));
+    }
+  };
+
+  std::string Party::Connect() {
+    if (is_connected_)
+      return std::move(fmt::format("Already connected to {}:{}\n", this->ip_, this->port_));
+
+    if (role_ == ABYN::Role::Client) {
+      InitializeSocketClient();
+    } else {
+      InitializeSocketServer();
+    };
+
+    is_connected_ = true;
+
+    return std::move(fmt::format("Successfully connected to {}:{}\n", this->ip_, this->port_));
+  };
+
   bool Party::IsInvalidIp(const char *ip) {
     struct sockaddr_in sa;
     auto result = inet_pton(AF_INET, ip, &sa.sin_addr);

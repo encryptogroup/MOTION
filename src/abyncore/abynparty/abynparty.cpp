@@ -13,10 +13,10 @@ namespace ABYN {
 #pragma omp single
 #pragma omp taskloop num_tasks(n) default(shared)
       for (auto i = 0u; i < n; ++i) {
-        auto &&p = configuration_->GetParty(i);
-        backend_->LogDebug(fmt::format("Trying to connect {}:{}\n", p.GetIp().data(), p.GetPort()));
+        auto &p = configuration_->GetParty(i);
+        backend_->LogDebug(fmt::format("Trying to connect {}:{}\n", p->GetIp().data(), p->GetPort()));
 
-        auto &&result = configuration_->GetParty(i).Connect();
+        auto result = configuration_->GetParty(i)->Connect();
         backend_->LogInfo(std::move(result));
       }
     }
@@ -64,7 +64,7 @@ namespace ABYN {
     for (auto my_id = 0ul; my_id < num_parties; ++my_id) {
       futures.push_back(std::async(std::launch::async,
                                    [num_parties, my_id, &assigned_ports, &portid]() mutable {
-                                     std::vector<Party> parties;
+                                     std::vector<PartyPtr> parties;
                                      for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
                                        if (my_id == other_id) continue;
                                        ABYN::Role role = other_id < my_id ?
@@ -81,7 +81,7 @@ namespace ABYN {
                                              fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
                                        };
 
-                                       parties.emplace_back("127.0.0.1", this_port, role, 1);
+                                       parties.emplace_back(std::make_shared<Party>("127.0.0.1", this_port, role, 1));
                                      }
                                      auto abyn = std::move(std::make_unique<ABYNParty>(parties, my_id));
                                      abyn->Connect();
