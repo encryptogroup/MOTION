@@ -105,16 +105,19 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
     endif()
 
     option(FLATBUFFERS_BUILD_TESTS FALSE)
+    set(FLATC_DIR "${PROJECT_BINARY_DIR}/bin")
+    set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
     add_subdirectory(${FLATBUFFERS_SRC_DIR}
                  extern/flatbuffers)
+    add_subdirectory(fbs)
 endif()
 
 include_directories(extern)
 include_directories(extern/flatbuffers/include)
+include_directories(fbs/include)
 include_directories(src/abyncore)
 
 add_subdirectory(src/abyncore)
-
 
 if(ABYN_BUILD_EXE)
     add_subdirectory(src/test)

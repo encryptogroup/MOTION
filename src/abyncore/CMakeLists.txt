@@ -8,11 +8,15 @@ add_library(abyn
         wire/wire.cpp
         utility/party.cpp
         utility/abynconfiguration.cpp
+        crypto/aesrandomnessgenerator.cpp
+        communication/partycommunicationhandler.cpp
         )
 add_library(ABYN::abyn ALIAS abyn)
 
 target_compile_features(abyn PUBLIC cxx_std_17)
 target_compile_options(abyn PRIVATE "-Wall" "-Wextra")
+
+add_dependencies(abyn fbs-generation)
 
 target_include_directories(abyn
         PUBLIC
@@ -44,8 +48,6 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         FILES_MATCHING PATTERN "*.h"
         )
 
-
-
 export(TARGETS abyn NAMESPACE "${PROJECT_NAME}::" FILE "${PROJECT_NAME}Targets.cmake")
 install(EXPORT "${PROJECT_NAME}Targets"
         NAMESPACE "${PROJECT_NAME}::"
@@ -64,5 +66,4 @@ install(FILES
         DESTINATION "lib/cmake/${PROJECT_NAME}"
         )
 
-#include_directories(${PROJECT_SOURCE_DIR}/extern)
 

@@ -1,0 +1,14 @@
+namespace ABYN.Communication;
+
+table HelloMessage {
+  source_id:uint64;
+  destination_id:uint64;
+  ABYN_version:float;
+  num_of_parties:uint64;
+  input_sharing_seed:[ubyte]; //16-byte key, 8-byte IV
+  online_after_setup:bool = false;
+}
+//MT/OT generation parameters?
+//other parameters?
+
+root_type HelloMessage;

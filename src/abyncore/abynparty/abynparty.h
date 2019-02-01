@@ -14,7 +14,6 @@
 #include "share/share.h"
 //#include "OTExtension/ot/ot-ext.h"
 
-
 namespace ABYN {
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -27,7 +26,7 @@ namespace ABYN {
 
   private:
     ABYNConfigurationPtr configuration_;
-    ABYNBackendPtr backend;
+    ABYNBackendPtr backend_;
 
     //Let's make only ABYNConfiguration be copyable
     ABYNParty() = delete;
@@ -41,7 +40,7 @@ namespace ABYN {
 
     ABYNParty(std::vector<Party> &parties, size_t my_id) {
       configuration_ = std::make_shared<ABYNConfiguration>(parties, my_id);
-      backend = std::make_shared<ABYNBackend>(configuration_);
+      backend_ = std::make_shared<ABYNBackend>(configuration_);
     };
 
     ABYNParty(std::vector<Party> &&parties, size_t my_id) :
@@ -49,7 +48,7 @@ namespace ABYN {
 
     ABYNParty(std::initializer_list<Party> &list_parties, size_t my_id) {
       configuration_ = std::make_shared<ABYNConfiguration>(list_parties, my_id);
-      backend = std::make_shared<ABYNBackend>(configuration_);
+      backend_ = std::make_shared<ABYNBackend>(configuration_);
     }
 
     ABYNParty(std::initializer_list<Party> &&list_parties, size_t my_id) :
@@ -63,7 +62,7 @@ namespace ABYN {
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> ShareArithmeticInput(bool my_input, T input = 0) {
-      auto p = Gates::Arithmetic::ArithmeticInputGate(input, my_input, backend);
+      auto p = Gates::Arithmetic::ArithmeticInputGate(input, my_input, backend_);
       auto s = std::move(p.GetOutputShare());
       auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);
       return sa;
@@ -72,6 +71,8 @@ namespace ABYN {
     size_t GetNumOfParties() { return configuration_->GetNumOfParties(); };
 
     void Connect();
+
+    void SendHelloToOthers();
 
     static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);
   };

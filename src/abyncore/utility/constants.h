@@ -3,15 +3,7 @@
 
 #include <string>
 
-#include <boost/log/core/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
+#define OMP_NESTED TRUE
 
 namespace ABYN {
 
@@ -28,6 +20,10 @@ namespace ABYN {
   const bool VERBOSE_DEBUG = true;
 
   const size_t AES_KEY_SIZE = 16;
+
+  const size_t AES_BLOCK_SIZE_ = 16;
+
+  const size_t AES_IV_SIZE = AES_BLOCK_SIZE_ / 2;
 
 }
 #endif //ABYN_CONSTANTS_H

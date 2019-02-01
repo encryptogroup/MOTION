@@ -1,0 +1,28 @@
+namespace ABYN.Communication;
+
+enum MessageType : ubyte {HelloMessageType = 0} //add other types here after implementing them
+
+table Header {
+  message_type:MessageType;
+  message_size:uint32;
+}
+
+// General message interface that contains a header and payload, where payload is some raw flatbuffers::Struct.
+// This is generally needed because flatbuffers doesn't provide functionality to transfer serialized binary structures 
+// of variable size and type over the network, so we need to manually ensure that the other party knows how many bytes
+// it has to read for this message and what type of message it is. 
+//
+//  +------------------------------------------++-------------------------+
+//  | Header (40 bits)                         || Body (0--2^32 - 1 bits) |
+//  +--------------------+---------------------++-------------------------+
+//  |                    |                     ||                         |
+//  | uint8 message_type | uint32 message_size || uint8[] payload         |
+//  |                    |                     ||                         |
+//  +--------------------+---------------------++-------------------------+
+//
+table Message {
+  header:Header;
+  payload:[ubyte];
+}
+
+root_type Message;
