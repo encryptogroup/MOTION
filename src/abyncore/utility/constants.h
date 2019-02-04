@@ -9,12 +9,10 @@ namespace ABYN {
 
   const auto MAXIMUM_CONNECTION_TIMEOUT = 60;//seconds
 
-  const std::string_view LOG_PATH("log_file");
-
   const auto MB = 1024 * 1024;
 
   //Don't compile unnecessary code if debugging is not needed
-  const bool DEBUG = true;
+//  const bool DEBUG = true;
 
   //Don't compile unnecessary code if verbose debugging is not needed
   const bool VERBOSE_DEBUG = true;
@@ -24,6 +22,8 @@ namespace ABYN {
   const size_t AES_BLOCK_SIZE_ = 16;
 
   const size_t AES_IV_SIZE = AES_BLOCK_SIZE_ / 2;
+
+  const float ABYN_VERSION = 1.0f;
 
 }
 #endif //ABYN_CONSTANTS_H

@@ -9,102 +9,49 @@
 namespace ABYN {
 namespace Communication {
 
-struct Header;
-
 struct Message;
 
 enum MessageType {
-  MessageType_HelloMessageType = 0,
-  MessageType_MIN = MessageType_HelloMessageType,
-  MessageType_MAX = MessageType_HelloMessageType
+  MessageType_HelloMessage = 0,
+  MessageType_MIN = MessageType_HelloMessage,
+  MessageType_MAX = MessageType_HelloMessage
 };
 
 inline const MessageType (&EnumValuesMessageType())[1] {
   static const MessageType values[] = {
-    MessageType_HelloMessageType
+    MessageType_HelloMessage
   };
   return values;
 }
 
 inline const char * const *EnumNamesMessageType() {
   static const char * const names[] = {
-    "HelloMessageType",
+    "HelloMessage",
     nullptr
   };
   return names;
 }
 
 inline const char *EnumNameMessageType(MessageType e) {
-  if (e < MessageType_HelloMessageType || e > MessageType_HelloMessageType) return "";
+  if (e < MessageType_HelloMessage || e > MessageType_HelloMessage) return "";
   const size_t index = static_cast<int>(e);
   return EnumNamesMessageType()[index];
 }
 
-struct Header FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
+struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_MESSAGE_TYPE = 4,
-    VT_MESSAGE_SIZE = 6
+    VT_PAYLOAD = 6
   };
   MessageType message_type() const {
     return static_cast<MessageType>(GetField<uint8_t>(VT_MESSAGE_TYPE, 0));
-  }
-  uint32_t message_size() const {
-    return GetField<uint32_t>(VT_MESSAGE_SIZE, 0);
-  }
-  bool Verify(flatbuffers::Verifier &verifier) const {
-    return VerifyTableStart(verifier) &&
-           VerifyField<uint8_t>(verifier, VT_MESSAGE_TYPE) &&
-           VerifyField<uint32_t>(verifier, VT_MESSAGE_SIZE) &&
-           verifier.EndTable();
-  }
-};
-
-struct HeaderBuilder {
-  flatbuffers::FlatBufferBuilder &fbb_;
-  flatbuffers::uoffset_t start_;
-  void add_message_type(MessageType message_type) {
-    fbb_.AddElement<uint8_t>(Header::VT_MESSAGE_TYPE, static_cast<uint8_t>(message_type), 0);
-  }
-  void add_message_size(uint32_t message_size) {
-    fbb_.AddElement<uint32_t>(Header::VT_MESSAGE_SIZE, message_size, 0);
-  }
-  explicit HeaderBuilder(flatbuffers::FlatBufferBuilder &_fbb)
-        : fbb_(_fbb) {
-    start_ = fbb_.StartTable();
-  }
-  HeaderBuilder &operator=(const HeaderBuilder &);
-  flatbuffers::Offset<Header> Finish() {
-    const auto end = fbb_.EndTable(start_);
-    auto o = flatbuffers::Offset<Header>(end);
-    return o;
-  }
-};
-
-inline flatbuffers::Offset<Header> CreateHeader(
-    flatbuffers::FlatBufferBuilder &_fbb,
-    MessageType message_type = MessageType_HelloMessageType,
-    uint32_t message_size = 0) {
-  HeaderBuilder builder_(_fbb);
-  builder_.add_message_size(message_size);
-  builder_.add_message_type(message_type);
-  return builder_.Finish();
-}
-
-struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
-  enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
-    VT_HEADER = 4,
-    VT_PAYLOAD = 6
-  };
-  const Header *header() const {
-    return GetPointer<const Header *>(VT_HEADER);
   }
   const flatbuffers::Vector<uint8_t> *payload() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_PAYLOAD);
   }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyOffset(verifier, VT_HEADER) &&
-           verifier.VerifyTable(header()) &&
+           VerifyField<uint8_t>(verifier, VT_MESSAGE_TYPE) &&
            VerifyOffset(verifier, VT_PAYLOAD) &&
            verifier.VerifyVector(payload()) &&
            verifier.EndTable();
@@ -114,8 +61,8 @@ struct Message FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct MessageBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_header(flatbuffers::Offset<Header> header) {
-    fbb_.AddOffset(Message::VT_HEADER, header);
+  void add_message_type(MessageType message_type) {
+    fbb_.AddElement<uint8_t>(Message::VT_MESSAGE_TYPE, static_cast<uint8_t>(message_type), 0);
   }
   void add_payload(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> payload) {
     fbb_.AddOffset(Message::VT_PAYLOAD, payload);
@@ -134,22 +81,22 @@ struct MessageBuilder {
 
 inline flatbuffers::Offset<Message> CreateMessage(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<Header> header = 0,
+    MessageType message_type = MessageType_HelloMessage,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> payload = 0) {
   MessageBuilder builder_(_fbb);
   builder_.add_payload(payload);
-  builder_.add_header(header);
+  builder_.add_message_type(message_type);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<Message> CreateMessageDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    flatbuffers::Offset<Header> header = 0,
+    MessageType message_type = MessageType_HelloMessage,
     const std::vector<uint8_t> *payload = nullptr) {
   auto payload__ = payload ? _fbb.CreateVector<uint8_t>(*payload) : 0;
   return ABYN::Communication::CreateMessage(
       _fbb,
-      header,
+      message_type,
       payload__);
 }
 

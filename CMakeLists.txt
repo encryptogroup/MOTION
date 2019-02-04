@@ -26,7 +26,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-
+set(CMAKE_CXX_FLAGS_DEBUG "-g -DDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 
 # Set build type to `Release` if non was specified:
 if(NOT CMAKE_BUILD_TYPE)
@@ -35,6 +36,13 @@ if(NOT CMAKE_BUILD_TYPE)
             FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
+message("BUILD TYPE: " ${CMAKE_BUILD_TYPE})
+
+if(${CMAKE_BUILD_TYPE} EQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
 
 # Write built executables and libraries to bin/ and lib/, respectively.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)

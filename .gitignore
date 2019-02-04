@@ -3,6 +3,7 @@
 *.c~
 *.o
 *.exe
+*.log
 .metadata
 .cproject
 .project

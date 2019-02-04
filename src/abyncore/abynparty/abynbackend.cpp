@@ -30,7 +30,7 @@ namespace ABYN {
     auto time_now = std::time(nullptr);
     auto id = abyn_config_->GetMyId();
     auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", *std::localtime(&time_now));
-    logging::add_file_log(keywords::file_name = fmt::format("id{}_{}_{}_%N.log", id, date, LOG_PATH).c_str(),
+    logging::add_file_log(keywords::file_name = fmt::format("log/id{}_{}_%N.log", id, date).c_str(),
                           keywords::rotation_size = 100 * MB,
                           keywords::format =
                               (

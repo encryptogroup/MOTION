@@ -15,22 +15,19 @@ struct HelloMessage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   enum FlatBuffersVTableOffset FLATBUFFERS_VTABLE_UNDERLYING_TYPE {
     VT_SOURCE_ID = 4,
     VT_DESTINATION_ID = 6,
-    VT_ABYN_VERSION = 8,
-    VT_NUM_OF_PARTIES = 10,
-    VT_INPUT_SHARING_SEED = 12,
-    VT_ONLINE_AFTER_SETUP = 14
+    VT_NUM_OF_PARTIES = 8,
+    VT_INPUT_SHARING_SEED = 10,
+    VT_ONLINE_AFTER_SETUP = 12,
+    VT_ABYN_VERSION = 14
   };
-  uint64_t source_id() const {
-    return GetField<uint64_t>(VT_SOURCE_ID, 0);
+  uint16_t source_id() const {
+    return GetField<uint16_t>(VT_SOURCE_ID, 0);
   }
-  uint64_t destination_id() const {
-    return GetField<uint64_t>(VT_DESTINATION_ID, 0);
+  uint16_t destination_id() const {
+    return GetField<uint16_t>(VT_DESTINATION_ID, 0);
   }
-  float ABYN_version() const {
-    return GetField<float>(VT_ABYN_VERSION, 0.0f);
-  }
-  uint64_t num_of_parties() const {
-    return GetField<uint64_t>(VT_NUM_OF_PARTIES, 0);
+  uint16_t num_of_parties() const {
+    return GetField<uint16_t>(VT_NUM_OF_PARTIES, 0);
   }
   const flatbuffers::Vector<uint8_t> *input_sharing_seed() const {
     return GetPointer<const flatbuffers::Vector<uint8_t> *>(VT_INPUT_SHARING_SEED);
@@ -38,15 +35,18 @@ struct HelloMessage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
   bool online_after_setup() const {
     return GetField<uint8_t>(VT_ONLINE_AFTER_SETUP, 0) != 0;
   }
+  float ABYN_version() const {
+    return GetField<float>(VT_ABYN_VERSION, 0.0f);
+  }
   bool Verify(flatbuffers::Verifier &verifier) const {
     return VerifyTableStart(verifier) &&
-           VerifyField<uint64_t>(verifier, VT_SOURCE_ID) &&
-           VerifyField<uint64_t>(verifier, VT_DESTINATION_ID) &&
-           VerifyField<float>(verifier, VT_ABYN_VERSION) &&
-           VerifyField<uint64_t>(verifier, VT_NUM_OF_PARTIES) &&
+           VerifyField<uint16_t>(verifier, VT_SOURCE_ID) &&
+           VerifyField<uint16_t>(verifier, VT_DESTINATION_ID) &&
+           VerifyField<uint16_t>(verifier, VT_NUM_OF_PARTIES) &&
            VerifyOffset(verifier, VT_INPUT_SHARING_SEED) &&
            verifier.VerifyVector(input_sharing_seed()) &&
            VerifyField<uint8_t>(verifier, VT_ONLINE_AFTER_SETUP) &&
+           VerifyField<float>(verifier, VT_ABYN_VERSION) &&
            verifier.EndTable();
   }
 };
@@ -54,23 +54,23 @@ struct HelloMessage FLATBUFFERS_FINAL_CLASS : private flatbuffers::Table {
 struct HelloMessageBuilder {
   flatbuffers::FlatBufferBuilder &fbb_;
   flatbuffers::uoffset_t start_;
-  void add_source_id(uint64_t source_id) {
-    fbb_.AddElement<uint64_t>(HelloMessage::VT_SOURCE_ID, source_id, 0);
+  void add_source_id(uint16_t source_id) {
+    fbb_.AddElement<uint16_t>(HelloMessage::VT_SOURCE_ID, source_id, 0);
   }
-  void add_destination_id(uint64_t destination_id) {
-    fbb_.AddElement<uint64_t>(HelloMessage::VT_DESTINATION_ID, destination_id, 0);
+  void add_destination_id(uint16_t destination_id) {
+    fbb_.AddElement<uint16_t>(HelloMessage::VT_DESTINATION_ID, destination_id, 0);
   }
-  void add_ABYN_version(float ABYN_version) {
-    fbb_.AddElement<float>(HelloMessage::VT_ABYN_VERSION, ABYN_version, 0.0f);
-  }
-  void add_num_of_parties(uint64_t num_of_parties) {
-    fbb_.AddElement<uint64_t>(HelloMessage::VT_NUM_OF_PARTIES, num_of_parties, 0);
+  void add_num_of_parties(uint16_t num_of_parties) {
+    fbb_.AddElement<uint16_t>(HelloMessage::VT_NUM_OF_PARTIES, num_of_parties, 0);
   }
   void add_input_sharing_seed(flatbuffers::Offset<flatbuffers::Vector<uint8_t>> input_sharing_seed) {
     fbb_.AddOffset(HelloMessage::VT_INPUT_SHARING_SEED, input_sharing_seed);
   }
   void add_online_after_setup(bool online_after_setup) {
     fbb_.AddElement<uint8_t>(HelloMessage::VT_ONLINE_AFTER_SETUP, static_cast<uint8_t>(online_after_setup), 0);
+  }
+  void add_ABYN_version(float ABYN_version) {
+    fbb_.AddElement<float>(HelloMessage::VT_ABYN_VERSION, ABYN_version, 0.0f);
   }
   explicit HelloMessageBuilder(flatbuffers::FlatBufferBuilder &_fbb)
         : fbb_(_fbb) {
@@ -86,39 +86,39 @@ struct HelloMessageBuilder {
 
 inline flatbuffers::Offset<HelloMessage> CreateHelloMessage(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint64_t source_id = 0,
-    uint64_t destination_id = 0,
-    float ABYN_version = 0.0f,
-    uint64_t num_of_parties = 0,
+    uint16_t source_id = 0,
+    uint16_t destination_id = 0,
+    uint16_t num_of_parties = 0,
     flatbuffers::Offset<flatbuffers::Vector<uint8_t>> input_sharing_seed = 0,
-    bool online_after_setup = false) {
+    bool online_after_setup = false,
+    float ABYN_version = 0.0f) {
   HelloMessageBuilder builder_(_fbb);
+  builder_.add_ABYN_version(ABYN_version);
+  builder_.add_input_sharing_seed(input_sharing_seed);
   builder_.add_num_of_parties(num_of_parties);
   builder_.add_destination_id(destination_id);
   builder_.add_source_id(source_id);
-  builder_.add_input_sharing_seed(input_sharing_seed);
-  builder_.add_ABYN_version(ABYN_version);
   builder_.add_online_after_setup(online_after_setup);
   return builder_.Finish();
 }
 
 inline flatbuffers::Offset<HelloMessage> CreateHelloMessageDirect(
     flatbuffers::FlatBufferBuilder &_fbb,
-    uint64_t source_id = 0,
-    uint64_t destination_id = 0,
-    float ABYN_version = 0.0f,
-    uint64_t num_of_parties = 0,
+    uint16_t source_id = 0,
+    uint16_t destination_id = 0,
+    uint16_t num_of_parties = 0,
     const std::vector<uint8_t> *input_sharing_seed = nullptr,
-    bool online_after_setup = false) {
+    bool online_after_setup = false,
+    float ABYN_version = 0.0f) {
   auto input_sharing_seed__ = input_sharing_seed ? _fbb.CreateVector<uint8_t>(*input_sharing_seed) : 0;
   return ABYN::Communication::CreateHelloMessage(
       _fbb,
       source_id,
       destination_id,
-      ABYN_version,
       num_of_parties,
       input_sharing_seed__,
-      online_after_setup);
+      online_after_setup,
+      ABYN_version);
 }
 
 inline const ABYN::Communication::HelloMessage *GetHelloMessage(const void *buf) {

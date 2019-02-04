@@ -33,7 +33,7 @@ namespace ABYN {
     ABYNConfiguration(std::vector<PartyPtr> &parties, size_t id) : my_id_(id), parties_(std::move(parties)) {
       if constexpr(ABYN::VERBOSE_DEBUG) {
         severity_level_ = boost::log::trivial::trace;
-      } else if constexpr(ABYN::DEBUG) {
+      } else if constexpr(DEBUG) {
         severity_level_ = boost::log::trivial::debug;
       }
     };
@@ -41,7 +41,7 @@ namespace ABYN {
     ABYNConfiguration(std::initializer_list<PartyPtr> &list_parties, size_t id) : my_id_(id) {
       if constexpr(ABYN::VERBOSE_DEBUG) {
         severity_level_ = boost::log::trivial::trace;
-      } else if constexpr(ABYN::DEBUG) {
+      } else if constexpr(DEBUG) {
         severity_level_ = boost::log::trivial::debug;
       }
       for (auto &p : list_parties)
