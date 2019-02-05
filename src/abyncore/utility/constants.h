@@ -25,5 +25,7 @@ namespace ABYN {
 
   const float ABYN_VERSION = 1.0f;
 
+  const size_t MESSAGE_SIZE_BYTELEN = sizeof(uint32_t);
+
 }
 #endif //ABYN_CONSTANTS_H

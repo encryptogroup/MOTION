@@ -19,7 +19,6 @@
 #include "utility/constants.h"
 
 #include "communication/partycommunicationhandler.h"
-#include "communication/hellomessage.h"
 #include "message_generated.h"
 
 #include "crypto/aesrandomnessgenerator.h"
@@ -61,6 +60,11 @@ namespace ABYN {
     void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE], size_t party_id);
 
     void InitializeCommunicationHandlers();
+
+    void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
+      if(party_id == abyn_config_->GetMyId()){throw(std::runtime_error("Want to send message to myself"));}
+      communication_handlers_[party_id]->SendMessage(message);
+    }
 
   private:
     ABYNBackend() {};

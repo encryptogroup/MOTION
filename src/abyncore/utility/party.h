@@ -32,7 +32,7 @@ namespace ABYN {
       boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
     };
 
-    Party(ABYN::Role role, size_t id, BoostSocketPtr & boost_socket) :
+    Party(ABYN::Role role, size_t id, BoostSocketPtr &boost_socket) :
         role_(role), id_(id), boost_party_socket_(boost_socket), is_connected_(true) {
       party_socket_ = boost_party_socket_->native_handle();
     };
@@ -43,6 +43,8 @@ namespace ABYN {
     const std::string &GetIp() { return ip_; };
 
     u16 GetPort() { return port_; };
+
+    ssize_t GetId() { return id_; };
 
     bool IsConnected() { return is_connected_ && party_socket_ >= 0; };
 

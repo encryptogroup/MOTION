@@ -95,7 +95,7 @@ namespace {
                   new ABYNParty{
                       {std::make_shared<Party>("127.0.0.1", 7775, ABYN::Role::Client, 0),
                        std::make_shared<Party>("127.0.0.1", 7777, ABYN::Role::Client, 1),
-                       std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Client, 3)},
+                       std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Client, 2)},
                       3}));
               abyn->Connect();
 #pragma omp critical
@@ -106,10 +106,10 @@ namespace {
           }
         }
 
-        all_connected = abyn_parties.at(0)->GetConfiguration()->GetParty(0)->IsConnected();
+        all_connected = true;
         for (auto &abynparty : abyn_parties) {
           for (auto &party: abynparty->GetConfiguration()->GetParties()) {
-            all_connected &= party->IsConnected();
+            if (party.get()) { all_connected &= party->IsConnected(); }
           }
         }
       }
@@ -181,7 +181,7 @@ namespace {
                                            new ABYNParty{
                                                {std::make_shared<Party>("127.0.0.1", 7775, ABYN::Role::Client, 0),
                                                 std::make_shared<Party>("127.0.0.1", 7777, ABYN::Role::Client, 1),
-                                                std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Client, 3)},
+                                                std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Client, 2)},
                                                3}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -190,10 +190,10 @@ namespace {
         for (auto &f : futures)
           abyn_parties.push_back(f.get());
 
-        all_connected = abyn_parties.at(0)->GetConfiguration()->GetParty(0)->IsConnected();
+        all_connected = true;
         for (auto &abynparty : abyn_parties) {
           for (auto &party: abynparty->GetConfiguration()->GetParties()) {
-            all_connected &= party->IsConnected();
+            if (party.get()) { all_connected &= party->IsConnected(); }
           }
         }
       }
@@ -211,10 +211,10 @@ namespace {
     for (auto num_parties = 3u; num_parties < 10; ++num_parties) {
       try {
         std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
-        all_connected = abyn_parties.at(0)->GetConfiguration()->GetParty(0)->IsConnected();
+        all_connected = true;
         for (auto &abynparty : abyn_parties) {
           for (auto &party: abynparty->GetConfiguration()->GetParties()) {
-            all_connected &= party->IsConnected();
+            if (party.get()) { all_connected &= party->IsConnected(); }
           }
         }
       }

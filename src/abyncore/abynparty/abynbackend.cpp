@@ -103,10 +103,12 @@ namespace ABYN {
     randomness_generators_[party_id]->Initialize(key, iv);
   };
 
-  void ABYNBackend::InitializeCommunicationHandlers(){
+  void ABYNBackend::InitializeCommunicationHandlers() {
     using PartyCommunicationHandler = ABYN::Communication::PartyCommunicationHandler;
-    for(auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i){
-      communication_handlers_.push_back(std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i)));
+    communication_handlers_.resize(abyn_config_->GetNumOfParties(), nullptr);
+    for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
+      if (i == abyn_config_->GetMyId()) { continue; }
+      communication_handlers_.at(i) = std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i));
     }
   }
 }

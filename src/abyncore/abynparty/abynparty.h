@@ -74,6 +74,8 @@ namespace ABYN {
 
     void SendHelloToOthers();
 
+    void VerifyHelloMessages();
+
     static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);
   };
 
