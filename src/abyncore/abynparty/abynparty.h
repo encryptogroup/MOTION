@@ -41,10 +41,10 @@ namespace ABYN {
     ABYNParty(std::vector<PartyPtr> &parties, size_t my_id) {
       configuration_ = std::make_shared<ABYNConfiguration>(parties, my_id);
       backend_ = std::make_shared<ABYNBackend>(configuration_);
-    };
+    }
 
     ABYNParty(std::vector<PartyPtr> &&parties, size_t my_id) :
-        ABYNParty(parties, my_id) {};
+        ABYNParty(parties, my_id) {}
 
     ABYNParty(std::initializer_list<PartyPtr> &list_parties, size_t my_id) {
       configuration_ = std::make_shared<ABYNConfiguration>(list_parties, my_id);
@@ -52,13 +52,17 @@ namespace ABYN {
     }
 
     ABYNParty(std::initializer_list<PartyPtr> &&list_parties, size_t my_id) :
-        ABYNParty(list_parties, my_id) {};
+        ABYNParty(list_parties, my_id) {}
 
-    ABYNParty(ABYNConfigurationPtr &configuration) : configuration_(configuration) {};
+    ABYNParty(ABYNConfigurationPtr &configuration) : configuration_(configuration) {}
 
-    ~ABYNParty() {};
+    ~ABYNParty() {
+      VerifyHelloMessages();
+      backend_->WaitForConnectionEnd();
+      backend_->GetLogger()->LogInfo("ABYNParty has been deallocated");
+    }
 
-    ABYNConfigurationPtr GetConfiguration() { return configuration_; };
+    ABYNConfigurationPtr GetConfiguration() { return configuration_; }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> ShareArithmeticInput(bool my_input, T input = 0) {
@@ -68,7 +72,7 @@ namespace ABYN {
       return sa;
     }
 
-    size_t GetNumOfParties() { return configuration_->GetNumOfParties(); };
+    size_t GetNumOfParties() { return configuration_->GetNumOfParties(); }
 
     void Connect();
 
@@ -76,11 +80,10 @@ namespace ABYN {
 
     void VerifyHelloMessages();
 
-    //TODO: run at the end of the execution to wait for the end of the communication and properly exit
     void Finish();
 
     //TODO
-    void Run(size_t n_times = 1);
+    void Run(size_t repeats = 1);
 
     static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);
   };

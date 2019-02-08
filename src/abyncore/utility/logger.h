@@ -2,16 +2,10 @@
 #define LOGGER_H
 
 #include <memory>
-
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/core/core.hpp>
 #include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/record_ostream.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
+
+using logger_type = boost::log::sources::severity_channel_logger< boost::log::trivial::severity_level, std::size_t >;
 
 namespace ABYN {
   class Logger {
@@ -40,7 +34,7 @@ namespace ABYN {
     void LogError(std::string &&msg);
 
   private:
-    boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
+    logger_type logger_;
 
     Logger() = delete;
   };

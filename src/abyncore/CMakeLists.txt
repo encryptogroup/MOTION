@@ -9,6 +9,7 @@ add_library(abyn
         utility/party.cpp
         utility/abynconfiguration.cpp
         utility/logger.cpp
+        utility/datastorage.cpp
         crypto/aesrandomnessgenerator.cpp
         communication/partycommunicationhandler.cpp
         )

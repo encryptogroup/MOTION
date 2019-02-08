@@ -112,6 +112,10 @@ namespace {
             if (party.get()) { all_connected &= party->IsConnected(); }
           }
         }
+
+        for (auto i = 0u; i < abyn_parties.size(); ++i) {
+          abyn_parties[i]->Finish();
+        }
       }
       catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
@@ -196,6 +200,10 @@ namespace {
             if (party.get()) { all_connected &= party->IsConnected(); }
           }
         }
+
+        for (auto i = 0u; i < abyn_parties.size(); ++i) {
+          abyn_parties[i]->Finish();
+        }
       }
       catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
@@ -217,6 +225,9 @@ namespace {
             for (auto &party: abynparty->GetConfiguration()->GetParties()) {
               if (party.get()) { all_connected &= party->IsConnected(); }
             }
+          }
+          for (auto i = 0u; i < abyn_parties.size(); ++i) {
+            abyn_parties[i]->Finish();
           }
         }
         catch (std::exception &e) {

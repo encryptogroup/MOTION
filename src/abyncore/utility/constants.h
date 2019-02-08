@@ -2,6 +2,9 @@
 #define ABYN_CONSTANTS_H
 
 #include <string>
+#include <limits>
+
+#include "typedefs.h"
 
 #define OMP_NESTED TRUE
 
@@ -26,6 +29,10 @@ namespace ABYN {
   const float ABYN_VERSION = 1.0f;
 
   const size_t MESSAGE_SIZE_BYTELEN = sizeof(uint32_t);
+
+  const u32 TERMINATION_MESSAGE = std::numeric_limits<u32>::max(); // 2^32 - 1
+
+  const u8 TERMINATION_MESSAGE_U8[4] = {0xFF, 0xFF, 0xFF, 0xFF};
 
 }
 #endif //ABYN_CONSTANTS_H

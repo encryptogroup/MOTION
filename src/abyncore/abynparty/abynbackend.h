@@ -39,6 +39,26 @@ namespace ABYN {
       communication_handlers_[party_id]->SendMessage(message);
     }
 
+    void TerminateCommunication() {
+      for (auto i = 0u; i < communication_handlers_.size(); ++i) {
+        if (communication_handlers_[i]) { communication_handlers_[i]->TerminateCommunication(); }
+      }
+    }
+
+    void WaitForConnectionEnd() {
+      for (auto &handler : communication_handlers_) {
+        if (handler) { handler->WaitForConnectionEnd(); }
+      }
+    }
+
+    bool VerifyHelloMessages(){
+      bool success = true;
+      for(auto & handler : communication_handlers_){
+        success &= handler->VerifyHelloMessage();
+      }
+      return success;
+    }
+
   private:
     ABYNBackend() = delete;
 

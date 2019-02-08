@@ -12,6 +12,8 @@
 #include <fmt/format.h>
 
 #include "utility/typedefs.h"
+#include "utility/datastorage.h"
+#include "utility/logger.h"
 
 namespace ABYN {
 
@@ -25,17 +27,17 @@ namespace ABYN {
     Party(const std::string ip, u16 port, ABYN::Role role, size_t id);
 
     Party(const char *ip, u16 port, ABYN::Role role, size_t id) :
-        Party(std::string(ip), port, role, id) {};
+        Party(std::string(ip), port, role, id) {}
 
     Party(int socket, ABYN::Role role, size_t id) :
         role_(role), id_(id), party_socket_(socket), is_connected_(true) {
       boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
-    };
+    }
 
     Party(ABYN::Role role, size_t id, BoostSocketPtr &boost_socket) :
         role_(role), id_(id), boost_party_socket_(boost_socket), is_connected_(true) {
       party_socket_ = boost_party_socket_->native_handle();
-    };
+    }
 
     // close the socket
     ~Party() {
@@ -43,21 +45,27 @@ namespace ABYN {
         boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
         boost_party_socket_->close();
       }
-    };
+    }
 
-    const std::string &GetIp() { return ip_; };
+    void SetLogger(const ABYN::LoggerPtr &logger) { logger_ = logger; }
 
-    u16 GetPort() { return port_; };
+    const std::string &GetIp() { return ip_; }
 
-    ssize_t GetId() { return id_; };
+    u16 GetPort() { return port_; }
 
-    bool IsConnected() { return is_connected_ && party_socket_ >= 0; };
+    ssize_t GetId() { return id_; }
+
+    bool IsConnected() { return is_connected_ && party_socket_ >= 0; }
 
     std::string Connect();
 
     const BoostSocketPtr &GetSocket() { return boost_party_socket_; }
 
+    void ParseMessage(std::vector<u8> &&raw_message);
+
   private:
+
+    DataStorage data_storage_;
 
     std::string ip_;
     u16 port_ = 0;
@@ -68,6 +76,8 @@ namespace ABYN {
 
     IoServicePtr io_service_{new boost::asio::io_service()};
     BoostSocketPtr boost_party_socket_{new boost::asio::ip::tcp::socket{*io_service_.get()}};
+
+    ABYN::LoggerPtr logger_;
 
     bool is_connected_ = false;
 

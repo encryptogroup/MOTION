@@ -20,7 +20,7 @@ namespace ABYN::Shares {
 
     virtual bool IsConstantShare() = 0;
 
-    virtual ~Share() {};
+    virtual ~Share() {}
 
   protected:
     ABYNBackendPtr backend_;
@@ -42,20 +42,20 @@ namespace ABYN::Shares {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticShare : public Share {
   public:
-    virtual std::vector<T> &GetValue() final { return wire_->GetRawValues(); };
+    virtual std::vector<T> &GetValue() final { return wire_->GetRawValues(); }
 
     virtual Protocol GetSharingType() final { return wire_->GetProtocol(); }
 
-    virtual bool IsConstantShare() final { return false; };
+    virtual bool IsConstantShare() final { return false; }
 
-    auto GetValueByteLength() { return sizeof(T); };
+    auto GetValueByteLength() { return sizeof(T); }
 
     ArithmeticShare(T input, ABYNBackendPtr &backend) {
       wire_ = ArithmeticWirePtr<T>(input, backend);
       backend_ = backend;
-    };
+    }
 
-    ~ArithmeticShare() {};
+    ~ArithmeticShare() {}
 
   protected:
     //Arithmetic share can have only one wire
@@ -85,22 +85,22 @@ namespace ABYN::Shares {
     std::vector<T> values_;
 
   public:
-    virtual std::vector<T> &GetValue() final { return values_; };
+    virtual std::vector<T> &GetValue() final { return values_; }
 
     virtual Protocol GetSharingType() final { return ArithmeticGMW; }
 
-    virtual bool IsConstantShare() final { return true; };
+    virtual bool IsConstantShare() final { return true; }
 
     ArithmeticConstantShare(T input, ABYNBackendPtr &backend) : values_(
-        std::move(std::vector{input})) { backend_ = backend; };
+        std::move(std::vector{input})) { backend_ = backend; }
 
     ArithmeticConstantShare(std::vector<T> &input, ABYNBackendPtr &backend) : values_(input) {
       backend_ = backend;
-    };
+    }
 
     ArithmeticConstantShare(std::vector<T> &&input, ABYNBackendPtr &backend) : values_(std::move(input)) {
       backend_ = backend;
-    };
+    }
 
     ~ArithmeticConstantShare() {};
   };

@@ -30,6 +30,19 @@ namespace ABYN {
     return std::move(fmt::format("Successfully connected to {}:{}\n", this->ip_, this->port_));
   };
 
+  void Party::ParseMessage(std::vector<u8> && raw_message){
+    using namespace ABYN::Communication;
+    auto message = GetMessage(raw_message.data());
+    switch (message->message_type()) {
+      case MessageType_HelloMessage :
+        data_storage_.SetHelloMessage(std::move(raw_message));
+        break;
+      default:
+
+        break;
+    }
+  }
+
   bool Party::IsInvalidIp(const char *ip) {
     struct sockaddr_in sa;
     auto result = inet_pton(AF_INET, ip, &sa.sin_addr);
