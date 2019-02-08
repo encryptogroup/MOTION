@@ -8,6 +8,7 @@ add_library(abyn
         wire/wire.cpp
         utility/party.cpp
         utility/abynconfiguration.cpp
+        utility/logger.cpp
         crypto/aesrandomnessgenerator.cpp
         communication/partycommunicationhandler.cpp
         )

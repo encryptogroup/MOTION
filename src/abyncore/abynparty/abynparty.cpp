@@ -11,23 +11,27 @@ namespace ABYN {
 #pragma omp parallel num_threads(n)
     {
 #pragma omp single
+      {
 #pragma omp taskloop num_tasks(n) default(shared)
-      for (auto destination_id = 0u; destination_id < n; ++destination_id) {
-        if (destination_id == configuration_->GetMyId()) { continue; }
-        auto &p = configuration_->GetParty(destination_id);
-        backend_->LogDebug(fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
+        for (auto destination_id = 0u; destination_id < n; ++destination_id) {
+          if (destination_id == configuration_->GetMyId()) { continue; }
+          auto &p = configuration_->GetParty(destination_id);
+          backend_->GetLogger()->LogDebug(fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
 
-        auto result = configuration_->GetParty(destination_id)->Connect();
-        backend_->LogInfo(std::move(result));
+          auto result = configuration_->GetParty(destination_id)->Connect();
+          backend_->GetLogger()->LogInfo(std::move(result));
+        }
+        backend_->InitializeCommunicationHandlers();
       }
     }
-    backend_->InitializeCommunicationHandlers();
 
-    //SendHelloToOthers();
-    //VerifyHelloMessages();
+
+    /*SendHelloToOthers();
+    VerifyHelloMessages();*/
   };
 
   void ABYNParty::SendHelloToOthers() {
+    backend_->GetLogger()->LogInfo("Send hello message to other parties");
     for (auto destination_id = 0u; destination_id < backend_->GetConfig()->GetNumOfParties(); ++destination_id) {
       if (destination_id == configuration_->GetMyId()) { continue; }
       auto hello_message = ABYN::Communication::BuildHelloMessage(backend_->GetConfig()->GetMyId(), destination_id,
@@ -91,7 +95,8 @@ namespace ABYN {
                                              fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
                                        };
 
-                                       parties.emplace_back(std::make_shared<Party>("127.0.0.1", this_port, role, other_id));
+                                       parties.emplace_back(
+                                           std::make_shared<Party>("127.0.0.1", this_port, role, other_id));
                                      }
                                      auto abyn = std::move(std::make_unique<ABYNParty>(parties, my_id));
                                      abyn->Connect();

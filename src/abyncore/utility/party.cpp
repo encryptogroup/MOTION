@@ -17,10 +17,9 @@ namespace ABYN {
   };
 
   std::string Party::Connect() {
-    if (is_connected_)
+    if (is_connected_) {
       return std::move(fmt::format("Already connected to {}:{}\n", this->ip_, this->port_));
-
-    if (role_ == ABYN::Role::Client) {
+    } else if (role_ == ABYN::Role::Client) {
       InitializeSocketClient();
     } else {
       InitializeSocketServer();
@@ -43,14 +42,14 @@ namespace ABYN {
 
   void Party::InitializeSocketServer() {
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port_);
-    boost::asio::ip::tcp::acceptor acceptor{*io_service_.get(), endpoint};
-    acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
+    boost::asio::ip::tcp::acceptor acceptor(*io_service_.get(), endpoint,
+                                            boost::asio::ip::tcp::acceptor::reuse_address(true));
     boost::system::error_code error;
     acceptor.accept(*boost_party_socket_.get(), error);
     io_service_->run();
     party_socket_ = boost_party_socket_->native_handle();
-    if(error){
-      throw(std::runtime_error(error.message()));
+    if (error) {
+      throw (std::runtime_error(error.message()));
     }
     is_connected_ = true;
   };
@@ -62,7 +61,7 @@ namespace ABYN {
     do {
       if (error) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      }else{
+      } else {
         is_connected_ = true;
       }
       boost::asio::connect(*boost_party_socket_.get(), resolver.resolve(query), error);

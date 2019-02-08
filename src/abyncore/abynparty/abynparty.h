@@ -76,6 +76,12 @@ namespace ABYN {
 
     void VerifyHelloMessages();
 
+    //TODO: run at the end of the execution to wait for the end of the communication and properly exit
+    void Finish();
+
+    //TODO
+    void Run(size_t n_times = 1);
+
     static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);
   };
 

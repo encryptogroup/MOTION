@@ -1,16 +1,20 @@
-#include <utility/constants.h>
 #include "partycommunicationhandler.h"
+
+#include "utility/constants.h"
+#include "utility/logger.h"
+
 
 namespace ABYN::Communication {
 
-  PartyCommunicationHandler::PartyCommunicationHandler(ABYN::PartyPtr &party) : party_(party) {
+  PartyCommunicationHandler::PartyCommunicationHandler(ABYN::PartyPtr &party, ABYN::LoggerPtr & logger) :
+  party_(party), logger_(logger){
+
     sender_thread_ = std::thread([&]() {
-      PartyCommunicationHandler::ActAsSender(party->GetSocket(), queue_send_, continue_communication_,
-                                             queue_send_mutex_);
+      PartyCommunicationHandler::ActAsSender(this);
     });
+
     receiver_thread_ = std::thread([&]() {
-      PartyCommunicationHandler::ActAsReceiver(party->GetSocket(), queue_receive_, continue_communication_,
-                                               queue_receive_mutex_);
+      PartyCommunicationHandler::ActAsReceiver(this);
     });
   };
 
@@ -22,6 +26,7 @@ namespace ABYN::Communication {
 
   void PartyCommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
     u32 message_size = message.GetSize();
+    std::cout << fmt::format("Constructed a {}-byte message", message_size);
     u8 *message_size_bytes = reinterpret_cast<u8 *>(&message_size);
     std::vector<u8> buffer(message_size_bytes, message_size_bytes + message_size);
     buffer.reserve(message_size + MESSAGE_SIZE_BYTELEN);
@@ -32,57 +37,60 @@ namespace ABYN::Communication {
     }
   }
 
-  void PartyCommunicationHandler::ActAsSender(const BoostSocketPtr &socket, std::queue<std::vector<u8>> &queue_send,
-                                              const bool &continue_communication, std::mutex &queue_send_mutex) {
-    while (continue_communication) {
-      if (!queue_send.empty()) {
-        auto &message = queue_send.front();
+  void PartyCommunicationHandler::ActAsSender(PartyCommunicationHandler *party) {
+    while (party->ContinueCommunication()) {
+      if (!party->GetSendQueue().empty()) {
+        auto &message = party->GetSendQueue().front();
+        std::cout << fmt::format("Written to the socket, size: {}\n", *(reinterpret_cast<u32 *>(message.data())));
         boost::system::error_code ec;
-        boost::asio::write(*socket.get(), boost::asio::buffer(message), ec);
+        boost::asio::write(*party->GetSocket().get(), boost::asio::buffer(message), ec);
         if (ec) {
           throw (std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
         }
         {
-          std::scoped_lock lock(queue_send_mutex);
-          queue_send.pop();
+          std::scoped_lock lock(party->GetSendMutex());
+          party->GetSendQueue().pop();
         }
+
       } else {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
       }
     }
   }
 
-  void
-  PartyCommunicationHandler::ActAsReceiver(const BoostSocketPtr &socket, std::queue<std::vector<u8>> &queue_receive,
-                                           const bool &continue_communication, std::mutex &queue_send_mutex) {
-    socket->non_blocking(true);
-    while (continue_communication) {
+  void PartyCommunicationHandler::ActAsReceiver(PartyCommunicationHandler *party) {
+    while (party->ContinueCommunication()) {
+      party->GetSocket()->non_blocking(true);
       boost::system::error_code ec;
       u32 size = 0;
       static_assert(sizeof(size) == MESSAGE_SIZE_BYTELEN); // check consistency of the bytelen of the message size type
 
       //get the size of the next message
-      socket->receive(boost::asio::buffer(&size, sizeof(size)), 0, ec);
+      party->GetSocket()->receive(boost::asio::buffer(&size, sizeof(size)), 0, ec);
       if (ec == boost::asio::error::would_block || ec == boost::asio::error::eof) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         continue;
-      } else if (ec){
+      } else if (ec) {
         throw (std::runtime_error(fmt::format("Error while reading from socket: {}", ec.message())));
       }
 
-      socket->non_blocking(false);
+      party->GetLogger()->LogTrace(fmt::format("Got a new message from the socket and have read the header"));
+
+      party->GetSocket()->non_blocking(false);
       std::vector<u8> message_buffer(size);
       //get the message
-      boost::asio::read(*socket.get(), boost::asio::buffer(message_buffer), ec);
+      boost::asio::read(*(party->GetSocket().get()), boost::asio::buffer(message_buffer), ec);
       if (ec) {
         throw (std::runtime_error(fmt::format("Error while reading from socket: {}", ec.message())));
       }
 
       {
-        std::scoped_lock lock(queue_send_mutex);
-        queue_receive.push(std::move(message_buffer));
+        std::scoped_lock lock(party->GetReceiveMutex());
+        party->GetReceiveQueue().push(std::move(message_buffer));
       }
-      socket->non_blocking(true);
+      party->GetSocket()->non_blocking(true);
+
+      party->GetLogger()->LogTrace(fmt::format("Have read message body of size {}", size));
     }
   }
 

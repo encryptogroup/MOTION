@@ -6,18 +6,9 @@
 #include <memory>
 #include <functional>
 
-#include <boost/log/core/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-
 #include "utility/party.h"
 #include "utility/constants.h"
+#include "utility/logger.h"
 
 namespace ABYN {
 
@@ -49,7 +40,7 @@ namespace ABYN {
         parties_.at(p->GetId()) = std::move(p);
       }
 
-      if (parties_.at(my_id_) != nullptr) { throw (std::runtime_error("Someone else (id#{}) has my id (id#{})")); }
+      if (parties_.at(my_id_) != nullptr) { throw (std::runtime_error("Someone else has my id")); }
     };
 
     ABYNConfiguration(std::vector<PartyPtr> &&parties, size_t id) :
@@ -58,29 +49,6 @@ namespace ABYN {
     ABYNConfiguration(const std::initializer_list<PartyPtr> &list_parties, size_t id) :
         ABYNConfiguration(std::vector(std::move(list_parties)), id) {};
 
-    /*ABYNConfiguration(std::initializer_list<PartyPtr> &list_parties, size_t id) : my_id_(id) {
-      parties_.resize(list_parties.size() + 1, nullptr);
-      if constexpr(ABYN::VERBOSE_DEBUG) {
-        severity_level_ = boost::log::trivial::trace;
-      } else if constexpr(DEBUG) {
-        severity_level_ = boost::log::trivial::debug;
-      }
-
-      for (auto &p : list_parties) {
-        if (p->GetId() < 0) {
-          throw (std::runtime_error(fmt::format("IDs should be positive integers, found: {}", p->GetId())));
-        } else if (static_cast<size_t>(p->GetId()) >= list_parties.size() + 1) {
-          throw (std::runtime_error("IDs should be in the range {0..N-1}, where N is the number of parties"));
-        } else if (parties_.at(p->GetId())) {
-          throw (std::runtime_error("You cannot have multiple parties with the same id"));
-        }
-        parties_.at(p->GetId()) = std::move(p);
-      }
-
-      if (parties_.at(my_id_)) {
-        throw (std::runtime_error("Someone else has my id"));
-      }
-    };*/
 
     ~ABYNConfiguration() {};
 

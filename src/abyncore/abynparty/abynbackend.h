@@ -5,18 +5,9 @@
 #include <iterator>
 #include <algorithm>
 
-#include <boost/log/core/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sources/logger.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-
 #include "utility/abynconfiguration.h"
 #include "utility/constants.h"
+#include "utility/logger.h"
 
 #include "communication/partycommunicationhandler.h"
 #include "message_generated.h"
@@ -33,27 +24,9 @@ namespace ABYN {
 
     ~ABYNBackend() {};
 
-    ABYNConfigurationPtr &GetConfig() { return abyn_config_; };
+    const ABYNConfigurationPtr &GetConfig() { return abyn_config_; };
 
-    void Log(boost::log::trivial::severity_level severity_level, std::string &msg);
-
-    void Log(boost::log::trivial::severity_level severity_level, std::string &&msg);
-
-    void LogTrace(std::string &msg);
-
-    void LogTrace(std::string &&msg);
-
-    void LogInfo(std::string &msg);
-
-    void LogInfo(std::string &&msg);
-
-    void LogDebug(std::string &msg);
-
-    void LogDebug(std::string &&msg);
-
-    void LogError(std::string &msg);
-
-    void LogError(std::string &&msg);
+    const LoggerPtr &GetLogger() { return logger_; };
 
     size_t NextGateId();
 
@@ -62,18 +35,16 @@ namespace ABYN {
     void InitializeCommunicationHandlers();
 
     void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-      if(party_id == abyn_config_->GetMyId()){throw(std::runtime_error("Want to send message to myself"));}
+      if (party_id == abyn_config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
       communication_handlers_[party_id]->SendMessage(message);
     }
 
   private:
-    ABYNBackend() {};
-
-    void InitLogger();
+    ABYNBackend() = delete;
 
     ABYNConfigurationPtr abyn_config_;
     size_t global_gate_id_ = 0;
-    boost::log::sources::severity_logger<boost::log::trivial::severity_level> logger_;
+    ABYN::LoggerPtr logger_ = nullptr;
     std::vector<std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator>> randomness_generators_;
     std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
 

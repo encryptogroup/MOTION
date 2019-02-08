@@ -38,7 +38,12 @@ namespace ABYN {
     };
 
     // close the socket
-    ~Party() { if (is_connected_) shutdown(party_socket_, 2); };
+    ~Party() {
+      if (is_connected_ || boost_party_socket_->is_open()) {
+        boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+        boost_party_socket_->close();
+      }
+    };
 
     const std::string &GetIp() { return ip_; };
 

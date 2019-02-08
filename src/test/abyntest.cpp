@@ -22,13 +22,13 @@ namespace {
   const u8 fixed_key[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
   const u8 fixed_iv[8] = {16, 17, 18, 19, 20, 21, 22, 23};
 
-  const auto TEST_ITERATIONS = 10;
+  const auto TEST_ITERATIONS = 1; //increase if needed
 
   // A dummy first-try test
   // Test that arithmetic input gates work correctly
   // TODO: modify after implementing input gates properly
   TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
-    for (auto i = 0; i < 2; ++i) {
+    for (auto i = 0; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
       //use std::threads, since omp (and pragmas in general) cannot be used in macros :(
       try {
@@ -123,7 +123,7 @@ namespace {
   }
 
   TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
-    for (auto i = 0; i < 2; ++i) {
+    for (auto i = 0; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
       try {
         std::vector<ABYNPartyPtr> abyn_parties(0);
@@ -207,23 +207,25 @@ namespace {
   }
 
   TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_10) {
-    bool all_connected = false;
-    for (auto num_parties = 3u; num_parties < 10; ++num_parties) {
-      try {
-        std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
-        all_connected = true;
-        for (auto &abynparty : abyn_parties) {
-          for (auto &party: abynparty->GetConfiguration()->GetParties()) {
-            if (party.get()) { all_connected &= party->IsConnected(); }
+    for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
+      bool all_connected = false;
+      for (auto num_parties = 3u; num_parties < 10; ++num_parties) {
+        try {
+          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+          all_connected = true;
+          for (auto &abynparty : abyn_parties) {
+            for (auto &party: abynparty->GetConfiguration()->GetParties()) {
+              if (party.get()) { all_connected &= party->IsConnected(); }
+            }
           }
         }
+        catch (std::exception &e) {
+          std::cerr << e.what() << std::endl;
+          all_connected = false;
+        }
       }
-      catch (std::exception &e) {
-        std::cerr << e.what() << std::endl;
-        all_connected = false;
-      }
+      ASSERT_TRUE(all_connected);
     }
-    ASSERT_TRUE(all_connected);
   }
 
 /*

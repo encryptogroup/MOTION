@@ -208,7 +208,7 @@ namespace ABYN::Gates::Arithmetic {
                                                                                  input_(input) {
       gate_id_ = backend_->NextGateId();
       backend_ = backend;
-      backend_->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+      backend_->GetLogger()->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     };
 
     virtual ~ArithmeticInputGate() {};
