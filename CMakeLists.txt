@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 project(ABYN LANGUAGES CXX)
+set(ABYN_VERSION 1.00)
 
 option(ABYN_BUILD_EXE "Build executables" ON)
 
@@ -19,7 +20,6 @@ find_package(Boost
                         REQUIRED)
 set(Boost_USE_STATIC_LIBS ON)
 
-
 find_package(OpenMP REQUIRED)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -32,17 +32,30 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 # Set build type to `Release` if non was specified:
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING
-            "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+            "Choose the type of build, options are: None Debug Release"
             FORCE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 message("BUILD TYPE: " ${CMAKE_BUILD_TYPE})
 
-if(${CMAKE_BUILD_TYPE} EQUAL "Debug")
+
+if("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
+    set(ABYN_DEBUG "true")
+    message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} is debug")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
 else()
+    set(ABYN_DEBUG "false")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
 endif()
+
+configure_file(
+        ${PROJECT_SOURCE_DIR}/src/abyncore/utility/config.h.in
+        ${PROJECT_SOURCE_DIR}/src/abyncore/utility/config.h
+        ESCAPE_QUOTES
+        @ONLY
+)
+
+#unset(ABYN_DEBUG CACHE)
 
 # Write built executables and libraries to bin/ and lib/, respectively.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)

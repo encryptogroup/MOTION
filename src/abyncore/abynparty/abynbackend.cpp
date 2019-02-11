@@ -13,7 +13,6 @@ namespace ABYN {
   ABYNBackend::ABYNBackend(ABYNConfigurationPtr &abyn_config) : abyn_config_(abyn_config) {
     logger_ = std::make_shared<ABYN::Logger>(abyn_config_->GetMyId(),
                                              abyn_config_->GetLoggingSeverityLevel());
-
     for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
       if (abyn_config_->GetParty(i) == nullptr) { continue; }
       abyn_config_->GetParty(i)->InitializeMyRandomnessGenerator();

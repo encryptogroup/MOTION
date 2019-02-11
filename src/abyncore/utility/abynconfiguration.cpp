@@ -3,9 +3,9 @@
 namespace ABYN {
   ABYNConfiguration::ABYNConfiguration(std::vector<PartyPtr> &parties, size_t id) : my_id_(id) {
       parties_.resize(parties.size() + 1, nullptr);
-      if constexpr(ABYN::VERBOSE_DEBUG) {
+      if constexpr(ABYN::ABYN_VERBOSE_DEBUG) {
         severity_level_ = boost::log::trivial::trace;
-      } else if constexpr(DEBUG) {
+      } else if constexpr(ABYN_DEBUG) {
         severity_level_ = boost::log::trivial::debug;
       }
 

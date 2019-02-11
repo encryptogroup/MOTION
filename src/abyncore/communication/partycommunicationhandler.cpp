@@ -136,7 +136,7 @@ namespace ABYN::Communication {
           std::this_thread::sleep_for(std::chrono::milliseconds(1));
           continue;
         }
-        
+
         u32 size = PartyCommunicationHandler::ParseHeader(handler);
         static_assert(
             sizeof(size) == MESSAGE_SIZE_BYTELEN); // check consistency of the bytelen of the message size type

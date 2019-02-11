@@ -14,6 +14,8 @@ docs/*
 *.dump
 .idea*
 
+src/abyncore/utility/config.h
+
 # build directory
 build*/
 cmake-build*
@@ -28,3 +30,6 @@ cmake_install.cmake
 install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
+*Config.cmake
+*Targets.cmake
+*.cbp

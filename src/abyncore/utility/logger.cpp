@@ -31,7 +31,7 @@ namespace ABYN {
     auto id = my_id;
 
     //immediately write messages to the log file to see them also if the execution stalls
-    const auto auto_flush = DEBUG ? true: false;
+    const auto auto_flush = ABYN_DEBUG ? true: false;
 
     auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", *std::localtime(&time_now));
     boost::shared_ptr<sinks::text_multifile_backend> backend =
@@ -68,13 +68,13 @@ namespace ABYN {
   }
 
   void Logger::LogTrace(std::string &msg) {
-    if constexpr(DEBUG && VERBOSE_DEBUG) {
+    if constexpr(ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
       BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
     }
   }
 
   void Logger::LogTrace(std::string &&msg) {
-    if constexpr(DEBUG && VERBOSE_DEBUG) {
+    if constexpr(ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
       BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
     }
   }
@@ -88,13 +88,13 @@ namespace ABYN {
   }
 
   void Logger::LogDebug(std::string &msg) {
-    if constexpr(DEBUG) {
+    if constexpr(ABYN_DEBUG) {
       BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg;
     }
   }
 
   void Logger::LogDebug(std::string &&msg) {
-    if constexpr(DEBUG) {
+    if constexpr(ABYN_DEBUG) {
       BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg;
     }
   }

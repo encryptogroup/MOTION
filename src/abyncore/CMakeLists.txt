@@ -18,7 +18,12 @@ add_library(ABYN::abyn ALIAS abyn)
 target_compile_features(abyn PUBLIC cxx_std_17)
 target_compile_options(abyn PRIVATE "-Wall" "-Wextra")
 
-add_dependencies(abyn fbs-generation)
+add_custom_target (
+        abyn_config ALL DEPENDS
+        "${PROJECT_SOURCE_DIR}/src/abyncore/utility/config.h.in"
+)
+
+add_dependencies(abyn fbs-generation abyn_config)
 
 target_include_directories(abyn
         PUBLIC
