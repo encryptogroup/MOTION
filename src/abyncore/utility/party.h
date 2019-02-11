@@ -14,6 +14,9 @@
 #include "utility/typedefs.h"
 #include "utility/datastorage.h"
 #include "utility/logger.h"
+#include "utility/constants.h"
+
+#include "crypto/aesrandomnessgenerator.h"
 
 namespace ABYN {
 
@@ -47,6 +50,9 @@ namespace ABYN {
       }
     }
 
+    void InitializeMyRandomnessGenerator();
+    void InitializeTheirRandomnessGenerator(std::vector<u8> & key, std::vector<u8> & iv);
+
     void SetLogger(const ABYN::LoggerPtr &logger) { logger_ = logger; }
 
     const std::string &GetIp() { return ip_; }
@@ -61,7 +67,17 @@ namespace ABYN {
 
     const BoostSocketPtr &GetSocket() { return boost_party_socket_; }
 
-    void ParseMessage(std::vector<u8> &&raw_message);
+    void ParseMessage(std::vector<u8> & raw_message);
+
+    DataStorage & GetDataStorage() {return data_storage_;}
+
+    const std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator> & GetMyRandomnessGenerator() {
+      return my_randomness_generator_;
+    }
+
+    const std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator> & GetTheirRandomnessGenerator() {
+      return their_randomness_generator_;
+    }
 
   private:
 
@@ -72,12 +88,14 @@ namespace ABYN {
     ABYN::Role role_ = ABYN::Role::InvalidRole;
     ssize_t id_ = -1;
 
-    int party_socket_ = -2, opt_ = 1;
+    int party_socket_ = -2;
 
     IoServicePtr io_service_{new boost::asio::io_service()};
     BoostSocketPtr boost_party_socket_{new boost::asio::ip::tcp::socket{*io_service_.get()}};
 
     ABYN::LoggerPtr logger_;
+
+    std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator> my_randomness_generator_, their_randomness_generator_;
 
     bool is_connected_ = false;
 

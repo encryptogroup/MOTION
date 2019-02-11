@@ -201,20 +201,30 @@ namespace ABYN::Gates::Arithmetic {
     T input_;
 
     //indicates whether this party shares the input
-    bool my_input_ = false;
+    size_t party_id_ = false;
 
   public:
-    ArithmeticInputGate(T input, bool my_input, ABYN::ABYNBackendPtr &backend) : my_input_(my_input),
-                                                                                 input_(input) {
+    ArithmeticInputGate(T input, size_t party_id, ABYN::ABYNBackendPtr &backend) : party_id_(party_id) {
       gate_id_ = backend_->NextGateId();
       backend_ = backend;
+      if (party_id_ == backend_->GetConfig()->GetMyId()) { input_ = input; } //in case this is my input
       backend_->GetLogger()->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     };
 
     virtual ~ArithmeticInputGate() {};
 
     virtual void Evaluate() final {
-      // implement seed extension-based sharing
+      auto my_id = backend_->GetConfig()->GetMyId();
+      if (party_id_ == my_id) {
+        T diff = 0;
+        for (auto i = 0u; i < backend_->GetConfig()->GetNumOfParties(); ++i) {
+          if (i == my_id) { continue; }
+          diff += backend_->GetConfig()->GetParty(i)->GetMyRandomnessGenerator()->GetUnsigned<T>(gate_id_);
+        }
+        input_ -= diff;
+      } else {
+        input_ = backend_->GetConfig()->GetParty(party_id_)->GetMyRandomnessGenerator()->GetUnsigned<T>(gate_id_);
+      }
       output_share_ = std::move(
           std::static_pointer_cast<ABYN::Shares::Share>(
               std::make_shared<ABYN::Shares::ArithmeticShare>(input_)));

@@ -5,13 +5,15 @@
 #include <boost/log/trivial.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
 
-using logger_type = boost::log::sources::severity_channel_logger< boost::log::trivial::severity_level, std::size_t >;
+using logger_type = boost::log::sources::severity_channel_logger<boost::log::trivial::severity_level, std::size_t>;
 
 namespace ABYN {
   class Logger {
   public:
 
     Logger(size_t my_id, boost::log::trivial::severity_level severity_level);
+
+    ~Logger();
 
     void Log(boost::log::trivial::severity_level severity_level, std::string &msg);
 

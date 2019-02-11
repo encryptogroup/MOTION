@@ -1,8 +1,6 @@
 #include <map>
 
 #include "abynparty.h"
-#include "communication/message.h"
-#include "communication/hellomessage.h"
 
 namespace ABYN {
 
@@ -26,22 +24,8 @@ namespace ABYN {
       }
     }
 
-    SendHelloToOthers();
+    backend_->SendHelloToOthers();
     //VerifyHelloMessages();
-  }
-
-  void ABYNParty::SendHelloToOthers() {
-    backend_->GetLogger()->LogInfo("Send hello message to other parties");
-    for (auto destination_id = 0u; destination_id < backend_->GetConfig()->GetNumOfParties(); ++destination_id) {
-      if (destination_id == configuration_->GetMyId()) { continue; }
-      auto hello_message = ABYN::Communication::BuildHelloMessage(backend_->GetConfig()->GetMyId(), destination_id,
-                                                                  backend_->GetConfig()->GetNumOfParties());
-      backend_->Send(destination_id, hello_message);
-    }
-  }
-
-  void ABYNParty::VerifyHelloMessages() {
-      if(!backend_->VerifyHelloMessages()) {backend_->GetLogger()->LogError("Hello message verification failed");}
   }
 
   std::vector<std::unique_ptr<ABYNParty>> ABYNParty::GetNLocalConnectedParties(size_t num_parties, u16 port) {

@@ -14,6 +14,8 @@
 
 #include "crypto/aesrandomnessgenerator.h"
 
+static_assert(FLATBUFFERS_LITTLEENDIAN);
+
 namespace ABYN {
 
   class ABYNBackend {
@@ -34,30 +36,15 @@ namespace ABYN {
 
     void InitializeCommunicationHandlers();
 
-    void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-      if (party_id == abyn_config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
-      communication_handlers_[party_id]->SendMessage(message);
-    }
+    void SendHelloToOthers();
 
-    void TerminateCommunication() {
-      for (auto i = 0u; i < communication_handlers_.size(); ++i) {
-        if (communication_handlers_[i]) { communication_handlers_[i]->TerminateCommunication(); }
-      }
-    }
+    void VerifyHelloMessages();
 
-    void WaitForConnectionEnd() {
-      for (auto &handler : communication_handlers_) {
-        if (handler) { handler->WaitForConnectionEnd(); }
-      }
-    }
+    void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-    bool VerifyHelloMessages(){
-      bool success = true;
-      for(auto & handler : communication_handlers_){
-        success &= handler->VerifyHelloMessage();
-      }
-      return success;
-    }
+    void TerminateCommunication();
+
+    void WaitForConnectionEnd();
 
   private:
     ABYNBackend() = delete;
@@ -65,10 +52,13 @@ namespace ABYN {
     ABYNConfigurationPtr abyn_config_;
     size_t global_gate_id_ = 0;
     ABYN::LoggerPtr logger_ = nullptr;
-    std::vector<std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator>> randomness_generators_;
     std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
 
-    size_t num_threads_ = 16;
+    //determines how many worker threads are used in openmp, but not in communication handlers!
+    //the latter always use at least 2 threads for each communication channel to send and receive data to prevent
+    //the communication become a bottleneck, e.g., in 10 Gbps networks.
+    size_t num_threads_ = std::thread::hardware_concurrency();
+    bool share_inputs_ = true;
   };
 
   using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;

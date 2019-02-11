@@ -5,7 +5,8 @@
 #include <fmt/format.h>
 
 #include "utility/constants.h"
-#include "crypto/aesrandomnessgenerator.h"
+#include "communication/message.h"
+#include "communication/hellomessage.h"
 
 namespace ABYN {
 
@@ -14,17 +15,14 @@ namespace ABYN {
                                              abyn_config_->GetLoggingSeverityLevel());
 
     for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
-      randomness_generators_.push_back(std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(i));
+      if (abyn_config_->GetParty(i) == nullptr) { continue; }
+      abyn_config_->GetParty(i)->InitializeMyRandomnessGenerator();
       abyn_config_->GetParty(i)->SetLogger(logger_);
     }
   }
 
   size_t ABYNBackend::NextGateId() {
     return global_gate_id_++;
-  }
-
-  void ABYNBackend::InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_BLOCK_SIZE / 2], size_t party_id) {
-    randomness_generators_[party_id]->Initialize(key, iv);
   }
 
   void ABYNBackend::InitializeCommunicationHandlers() {
@@ -42,5 +40,51 @@ namespace ABYN {
 
       communication_handlers_.at(i) = std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i), logger_);
     }
+  }
+
+  void ABYNBackend::SendHelloToOthers() {
+    logger_->LogInfo("Send hello message to other parties");
+    for (auto destination_id = 0u; destination_id < abyn_config_->GetNumOfParties(); ++destination_id) {
+      if (destination_id == abyn_config_->GetMyId()) { continue; }
+      std::vector<u8> seed;
+      if (share_inputs_) {
+        seed = std::move(abyn_config_->GetParty(destination_id)->GetMyRandomnessGenerator()->GetSeed());
+      }
+
+      auto seed_ptr = share_inputs_ ? &seed : nullptr;
+      auto hello_message = ABYN::Communication::BuildHelloMessage(abyn_config_->GetMyId(), destination_id,
+                                                                  abyn_config_->GetNumOfParties(),
+                                                                  seed_ptr,
+                                                                  abyn_config_->OnlineAfterSetup(),
+                                                                  ABYN::ABYN_VERSION);
+      Send(destination_id, hello_message);
+    }
+  }
+
+  void ABYNBackend::Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
+    if (party_id == abyn_config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
+    communication_handlers_.at(party_id)->SendMessage(message);
+  }
+
+  void ABYNBackend::TerminateCommunication() {
+    for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
+      if (communication_handlers_.at(party_id)) { communication_handlers_.at(party_id)->TerminateCommunication(); }
+    }
+  }
+
+  void ABYNBackend::WaitForConnectionEnd() {
+    for (auto &handler : communication_handlers_) {
+      if (handler) { handler->WaitForConnectionEnd(); }
+    }
+  }
+
+  void ABYNBackend::VerifyHelloMessages() {
+    bool success = true;
+    for (auto &handler : communication_handlers_) {
+      if (handler) { success &= handler->VerifyHelloMessage(); }
+    }
+
+    if (!success) { logger_->LogError("Hello message verification failed"); }
+    else { logger_->LogInfo("Successfully verified hello messages"); }
   }
 }

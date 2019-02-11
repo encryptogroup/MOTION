@@ -23,19 +23,21 @@ namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace expr = boost::log::expressions;
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(file_channel, "Channel", size_t)
+BOOST_LOG_ATTRIBUTE_KEYWORD(id_channel, "Channel", size_t)
 
 namespace ABYN {
   Logger::Logger(size_t my_id, boost::log::trivial::severity_level severity_level) {
     auto time_now = std::time(nullptr);
     auto id = my_id;
-    const auto auto_flush = DEBUG ? true : false;
+
+    //immediately write messages to the log file to see them also if the execution stalls
+    const auto auto_flush = DEBUG ? true: false;
+
     auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", *std::localtime(&time_now));
     boost::shared_ptr<sinks::text_multifile_backend> backend =
         boost::make_shared<sinks::text_multifile_backend>();
 
     logging::add_file_log(keywords::file_name = fmt::format("log/id{}_{}_%N.log", id, date).c_str(),
-                          keywords::rotation_size = 100 * MB,
                           keywords::format =
                               (
                                   expr::stream
@@ -44,14 +46,18 @@ namespace ABYN {
                                       << ": <" << logging::trivial::severity
                                       << "> " << expr::smessage
                               ),
-                          keywords::filter = file_channel == my_id,
-                          keywords::auto_flush = auto_flush
+                          keywords::filter = id_channel == my_id,
+                          keywords::auto_flush = auto_flush,
+                          keywords::open_mode = std::ios_base::app | std::ios_base::out,
+                          keywords::rotation_size = 100 * MB
     );
 
     logging::core::get()->set_filter(logging::trivial::severity >= severity_level);
     logging::add_common_attributes();
     logger_ = logger_type(keywords::channel = my_id);
   }
+
+  Logger::~Logger() {}
 
   void Logger::Log(logging::trivial::severity_level severity_level, std::string &msg) {
     BOOST_LOG_SEV(logger_, severity_level) << msg;
@@ -62,13 +68,13 @@ namespace ABYN {
   }
 
   void Logger::LogTrace(std::string &msg) {
-    if constexpr(VERBOSE_DEBUG) {
+    if constexpr(DEBUG && VERBOSE_DEBUG) {
       BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
     }
   }
 
   void Logger::LogTrace(std::string &&msg) {
-    if constexpr(VERBOSE_DEBUG) {
+    if constexpr(DEBUG && VERBOSE_DEBUG) {
       BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
     }
   }

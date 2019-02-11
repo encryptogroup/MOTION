@@ -14,13 +14,14 @@ namespace ABYN::Communication {
                                                           bool online_after_setup = false,
                                                           float ABYN_version = ABYN_VERSION) {
     flatbuffers::FlatBufferBuilder builder_hello_message(64);
-    CreateHelloMessageDirect(builder_hello_message,
+    auto hello_message_root = CreateHelloMessageDirect(builder_hello_message,
                              source_id,
                              destination_id,
                              num_of_parties,
                              input_sharing_seed,
                              online_after_setup,
                              ABYN_version);
+    FinishHelloMessageBuffer(builder_hello_message, hello_message_root);
 
     return std::move(BuildMessage(
         MessageType_HelloMessage, builder_hello_message.GetBufferPointer(), builder_hello_message.GetSize()));

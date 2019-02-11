@@ -51,8 +51,13 @@ namespace ABYN::Communication {
 
   void PartyCommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
     u32 message_size = message.GetSize();
+    auto message_detached = message.Release();
+    auto message_raw_pointer = message_detached.data();
     std::vector<u8> buffer = std::move(u32tou8(message_size));
-    buffer.insert(buffer.end(), message.GetBufferPointer(), message.GetBufferPointer() + message_size);
+    if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
+      party_->GetDataStorage().SetSentHelloMessage(message_raw_pointer, message_size);
+    }
+    buffer.insert(buffer.end(), message_raw_pointer, message_raw_pointer + message_size);
     {
       std::scoped_lock lock(queue_send_mutex_);
       queue_send_.push(std::move(buffer));
@@ -69,6 +74,18 @@ namespace ABYN::Communication {
     }
 
     logger_->LogTrace(fmt::format("{}: Put a termination message message to send queue", handler_info_));
+  }
+
+  void PartyCommunicationHandler::WaitForConnectionEnd() {
+    while (continue_communication_) {
+      if (queue_send_.empty() && queue_receive_.empty() &&
+          received_termination_message_ && sent_termination_message_) {
+        continue_communication_ = false;
+        logger_->LogInfo(fmt::format("{}: terminated.", handler_info_));
+      } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      }
+    };
   }
 
   void PartyCommunicationHandler::ActAsSender(PartyCommunicationHandler *handler) {
@@ -110,6 +127,7 @@ namespace ABYN::Communication {
 #pragma omp parallel
 #pragma omp single
     {
+      //separate task for receiving data and putting it to the queue
 #pragma omp task
       while (handler->ContinueCommunication()) {
         boost::system::error_code ec;
@@ -118,8 +136,7 @@ namespace ABYN::Communication {
           std::this_thread::sleep_for(std::chrono::milliseconds(1));
           continue;
         }
-
-
+        
         u32 size = PartyCommunicationHandler::ParseHeader(handler);
         static_assert(
             sizeof(size) == MESSAGE_SIZE_BYTELEN); // check consistency of the bytelen of the message size type
@@ -141,11 +158,13 @@ namespace ABYN::Communication {
         handler->GetLogger()->LogTrace(fmt::format("{}: Read message body of size {}, message: {}",
                                                    handler->GetInfo(), size, s));
       }
+      //separate thread for parsing received messages
+      //TODO: consider >= 4GB messages. Add a (2^32-2)-size continue header?
 #pragma omp task
       while (handler->ContinueCommunication() || !handler->GetReceiveQueue().empty()) {
-        //TODO: implement
         if (!handler->GetReceiveQueue().empty()) {
-          handler->party_->ParseMessage(std::move(handler->GetReceiveQueue().front()));
+          std::vector<u8> message_buffer(std::move(handler->GetReceiveQueue().front()));
+          handler->party_->ParseMessage(message_buffer);
           {
             std::scoped_lock(handler->GetReceiveMutex());
             handler->GetReceiveQueue().pop();
@@ -204,8 +223,53 @@ namespace ABYN::Communication {
     return std::move(message_buffer);
   }
 
-  bool PartyCommunicationHandler::VerifyHelloMessage(){
+  bool PartyCommunicationHandler::VerifyHelloMessage() {
+    bool result = true;
+    auto my_hm = party_->GetDataStorage().GetSentHelloMessage();
+    while (my_hm == nullptr) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      my_hm = party_->GetDataStorage().GetSentHelloMessage();
+    }
 
+    auto their_hm = party_->GetDataStorage().GetReceivedHelloMessage();
+    while (their_hm == nullptr) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      their_hm = party_->GetDataStorage().GetReceivedHelloMessage();
+    }
+
+    if (party_) {
+      if (my_hm->ABYN_version() != their_hm->ABYN_version()) {
+        logger_->LogError(fmt::format("{}: Different {} versions: mine is {}, theirs is {}",
+                                      handler_info_, FRAMEWORK_NAME, ABYN_VERSION, their_hm->ABYN_version()));
+        result = false;
+      }
+      if (my_hm->num_of_parties() != their_hm->num_of_parties()) {
+        logger_->LogError(fmt::format("{}: different total number of parties: mine is {}, theirs is {}",
+                                      handler_info_, my_hm->num_of_parties(), their_hm->num_of_parties()));
+        result = false;
+      }
+      if (their_hm->destination_id() != my_hm->source_id()) {
+        logger_->LogError(fmt::format("{}: wrong destination id: mine is #{}, but received #{}",
+                                      handler_info_, my_hm->source_id(), their_hm->destination_id()));
+        result = false;
+      }
+      if (my_hm->destination_id() != their_hm->source_id()) {
+        logger_->LogError(fmt::format("{}: wrong source id: my info is #{}, but received #{}",
+                                      handler_info_, my_hm->destination_id(), their_hm->source_id()));
+        result = false;
+      }
+      if (my_hm->online_after_setup() != my_hm->online_after_setup()) {
+        logger_->LogError(fmt::format("{}: different \"online after setup\" setting: my info is #{}, but received #{}",
+                                      handler_info_, my_hm->online_after_setup(), their_hm->online_after_setup()));
+        result = false;
+      }
+      if (my_hm->input_sharing_seed() == nullptr || my_hm->input_sharing_seed()->size() == 0) {
+        logger_->LogInfo(fmt::format("{}: received no AES seeds", handler_info_));
+      } else {
+        logger_->LogInfo(fmt::format("{}: received an AES seed", handler_info_));
+      }
+    }
+    return result;
   }
 }
 

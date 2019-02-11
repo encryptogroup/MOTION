@@ -2,6 +2,7 @@
 #define RANDOMNESSGENERATOR_H
 
 #include <vector>
+#include <limits>
 
 #include <openssl/evp.h>
 #include <openssl/aes.h>
@@ -27,6 +28,8 @@ namespace ABYN::Crypto {
       template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
       std::vector<T> GetUnsigned(size_t gate_id, size_t num_of_gates);
 
+      std::vector<u8> GetSeed();
+
     private:
       const size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
       size_t party_id_ = -1;
@@ -45,12 +48,6 @@ namespace ABYN::Crypto {
       /// where counter is incremented after each encryption.
       ///
       int Encrypt(u8 *input, u8 *output, size_t num_of_blocks);
-
-      ///
-      /// \brief Returns 2^l as a 128-bit unsigned integer, where l is the bit-length of the type T.
-      ///
-      template<typename T>
-      static __uint128_t GetRingLimit();
 
       bool initialized_ = false;
     };

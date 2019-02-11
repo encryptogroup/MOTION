@@ -114,7 +114,7 @@ namespace {
         }
 
         for (auto i = 0u; i < abyn_parties.size(); ++i) {
-          abyn_parties[i]->Finish();
+          abyn_parties.at(i)->Finish();
         }
       }
       catch (std::exception &e) {
@@ -202,7 +202,7 @@ namespace {
         }
 
         for (auto i = 0u; i < abyn_parties.size(); ++i) {
-          abyn_parties[i]->Finish();
+          abyn_parties.at(i)->Finish();
         }
       }
       catch (std::exception &e) {
@@ -227,7 +227,7 @@ namespace {
             }
           }
           for (auto i = 0u; i < abyn_parties.size(); ++i) {
-            abyn_parties[i]->Finish();
+            abyn_parties.at(i)->Finish();
           }
         }
         catch (std::exception &e) {

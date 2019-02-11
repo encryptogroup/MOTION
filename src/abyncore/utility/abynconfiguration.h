@@ -40,12 +40,16 @@ namespace ABYN {
       severity_level_ = severity_level;
     }
 
+    bool OnlineAfterSetup(){return online_after_setup_;}
+
     boost::log::trivial::severity_level GetLoggingSeverityLevel() { return severity_level_; }
 
   private:
     ssize_t my_id_ = -1;
     std::vector<ABYN::PartyPtr> parties_;
     boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
+
+    bool online_after_setup_ = false;
 
     ABYNConfiguration() = delete;
   };

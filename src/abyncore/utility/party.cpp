@@ -6,6 +6,7 @@
 
 #include "utility/typedefs.h"
 #include "utility/constants.h"
+#include "utility/random.h"
 
 namespace ABYN {
 
@@ -15,6 +16,17 @@ namespace ABYN {
       throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));
     }
   };
+
+  void Party::InitializeMyRandomnessGenerator() {
+    std::vector<u8> key(ABYN::RandomVector(AES_KEY_SIZE)), iv(ABYN::RandomVector(AES_IV_SIZE));
+    my_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
+    my_randomness_generator_->Initialize(key.data(), iv.data());
+  }
+
+  void Party::InitializeTheirRandomnessGenerator(std::vector<u8> &key, std::vector<u8> &iv) {
+    their_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
+    their_randomness_generator_->Initialize(key.data(), iv.data());
+  }
 
   std::string Party::Connect() {
     if (is_connected_) {
@@ -30,15 +42,29 @@ namespace ABYN {
     return std::move(fmt::format("Successfully connected to {}:{}\n", this->ip_, this->port_));
   };
 
-  void Party::ParseMessage(std::vector<u8> && raw_message){
+  void Party::ParseMessage(std::vector<u8> &raw_message) {
     using namespace ABYN::Communication;
     auto message = GetMessage(raw_message.data());
-    switch (message->message_type()) {
-      case MessageType_HelloMessage :
-        data_storage_.SetHelloMessage(std::move(raw_message));
+    flatbuffers::Verifier verifier(raw_message.data(), raw_message.size());
+    if (VerifyMessageBuffer(verifier) != true) {
+      throw (std::runtime_error(fmt::format("Parsed a corrupt message from id#{} {}:{}", id_, ip_, port_)));
+    }
+
+    auto message_type = message->message_type();
+
+    switch (message_type) {
+      case MessageType_HelloMessage : {
+        auto seed_vector = GetHelloMessage(message->payload()->data())->input_sharing_seed();
+        if (seed_vector != nullptr && seed_vector->size() > 0) {
+          const u8 *seed = seed_vector->data();
+          std::vector<u8> key(seed, seed + AES_KEY_SIZE), iv(seed + AES_KEY_SIZE, seed + AES_KEY_SIZE + AES_IV_SIZE);
+          InitializeTheirRandomnessGenerator(key, iv);
+          logger_->LogInfo(fmt::format("Received a randomness seed in hello message from Party#{}", id_));
+        }
+        data_storage_.SetReceivedHelloMessage(raw_message);
+      }
         break;
       default:
-
         break;
     }
   }

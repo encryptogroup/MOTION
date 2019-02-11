@@ -23,17 +23,7 @@ namespace ABYN::Communication {
 
     void TerminateCommunication();
 
-    void WaitForConnectionEnd() {
-      while (continue_communication_) {
-        if (queue_send_.empty() && queue_receive_.empty() &&
-            received_termination_message_ && sent_termination_message_) {
-          continue_communication_ = false;
-          logger_->LogInfo(fmt::format("{}: terminated.", handler_info_));
-        } else {
-          std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-      };
-    }
+    void WaitForConnectionEnd();
 
     std::queue<std::vector<u8>> &GetSendQueue() { return queue_send_; }
 
