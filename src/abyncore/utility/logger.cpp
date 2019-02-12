@@ -9,6 +9,9 @@
 #include <boost/log/utility/setup/common_attributes.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 #include <boost/log/sinks/text_multifile_backend.hpp>
+#include <boost/log/attributes/scoped_attribute.hpp>
+#include <boost/log/utility/setup/console.hpp>
+#include <boost/log/sources/severity_channel_logger.hpp>
 
 #include <fmt/format.h>
 #include <fmt/time.h>
@@ -26,18 +29,17 @@ namespace expr = boost::log::expressions;
 BOOST_LOG_ATTRIBUTE_KEYWORD(id_channel, "Channel", size_t)
 
 namespace ABYN {
-  Logger::Logger(size_t my_id, boost::log::trivial::severity_level severity_level) {
+  Logger::Logger(size_t my_id, boost::log::trivial::severity_level severity_level) : my_id_(my_id) {
     auto time_now = std::time(nullptr);
-    auto id = my_id;
 
     //immediately write messages to the log file to see them also if the execution stalls
-    const auto auto_flush = ABYN_DEBUG ? true: false;
+    const auto auto_flush = ABYN_DEBUG ? true : false;
 
     auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", *std::localtime(&time_now));
     boost::shared_ptr<sinks::text_multifile_backend> backend =
         boost::make_shared<sinks::text_multifile_backend>();
 
-    logging::add_file_log(keywords::file_name = fmt::format("log/id{}_{}_%N.log", id, date).c_str(),
+    logging::add_file_log(keywords::file_name = fmt::format("log/id{}_{}_%N.log", my_id_, date).c_str(),
                           keywords::format =
                               (
                                   expr::stream

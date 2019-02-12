@@ -23,14 +23,16 @@ namespace ABYN::Shares {
     virtual ~Share() {}
 
   protected:
-    ABYNBackendPtr backend_;
+    ABYNCorePtr core_;
     bool done_ = false;
     std::vector<ABYN::Gates::Interfaces::GatePtr> waiting_gates_;
 
+    Share(){};
+
   private:
-    Share() = delete;
 
     Share(Share &) = delete;
+    Share(const Share &) = delete;
   };
 
 
@@ -50,9 +52,9 @@ namespace ABYN::Shares {
 
     auto GetValueByteLength() { return sizeof(T); }
 
-    ArithmeticShare(T input, ABYNBackendPtr &backend) {
-      wire_ = ArithmeticWirePtr<T>(input, backend);
-      backend_ = backend;
+    ArithmeticShare(T input, const ABYNCorePtr &core) {
+      wire_ = std::make_shared<ArithmeticWire<T>>(input, core);
+      core_ = core;
     }
 
     ~ArithmeticShare() {}
@@ -62,10 +64,12 @@ namespace ABYN::Shares {
     ArithmeticWirePtr<T> wire_;
 
   private:
-    ArithmeticShare() = delete;
+    ArithmeticShare(){};
 
     ArithmeticShare(ArithmeticShare &) = delete;
   };
+
+  //class <> ArithmeticShare<u8>;
 
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -91,15 +95,15 @@ namespace ABYN::Shares {
 
     virtual bool IsConstantShare() final { return true; }
 
-    ArithmeticConstantShare(T input, ABYNBackendPtr &backend) : values_(
-        std::move(std::vector{input})) { backend_ = backend; }
+    ArithmeticConstantShare(T input, const ABYNCorePtr &core) : values_(
+        std::move(std::vector{input})) { core_ = core; }
 
-    ArithmeticConstantShare(std::vector<T> &input, ABYNBackendPtr &backend) : values_(input) {
-      backend_ = backend;
+    ArithmeticConstantShare(std::vector<T> &input, const ABYNCorePtr &core) : values_(input) {
+      core_ = core;
     }
 
-    ArithmeticConstantShare(std::vector<T> &&input, ABYNBackendPtr &backend) : values_(std::move(input)) {
-      backend_ = backend;
+    ArithmeticConstantShare(std::vector<T> &&input, const ABYNCorePtr &core) : values_(std::move(input)) {
+      core_ = core;
     }
 
     ~ArithmeticConstantShare() {};

@@ -40,6 +40,10 @@ namespace ABYN {
     InvalidRole = 2u // for checking whether the value is valid
   };
 
+
+  template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  using MultiplicationTriple = std::tuple<T, T, T>;
+
 }
 
 #endif //TYPEDEFS_H

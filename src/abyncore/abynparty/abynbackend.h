@@ -5,6 +5,8 @@
 #include <iterator>
 #include <algorithm>
 
+#include "abyncore.h"
+
 #include "utility/abynconfiguration.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
@@ -13,6 +15,8 @@
 #include "message_generated.h"
 
 #include "crypto/aesrandomnessgenerator.h"
+
+#include "share/share.h"
 
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
@@ -26,11 +30,13 @@ namespace ABYN {
 
     ~ABYNBackend() {};
 
-    const ABYNConfigurationPtr &GetConfig() { return abyn_config_; };
+    const ABYNConfigurationPtr &GetConfig() { return abyn_config_; }
 
-    const LoggerPtr &GetLogger() { return logger_; };
+    const LoggerPtr &GetLogger() { return abyn_core_->GetLogger(); }
 
-    size_t NextGateId();
+    const ABYNCorePtr &GetCore() { return abyn_core_; }
+
+    size_t NextGateId() const { return abyn_core_->NextGateId(); }
 
     void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE], size_t party_id);
 
@@ -42,23 +48,26 @@ namespace ABYN {
 
     void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
+    void EvaluateSequential();
+
+    void EvaluateParallel();
+
     void TerminateCommunication();
 
     void WaitForConnectionEnd();
+
+    const std::vector<ABYN::Shares::SharePtr> &GetInputs() const { return input_shares_; };
 
   private:
     ABYNBackend() = delete;
 
     ABYNConfigurationPtr abyn_config_;
-    size_t global_gate_id_ = 0;
-    ABYN::LoggerPtr logger_ = nullptr;
+    ABYNCorePtr abyn_core_;
     std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
 
-    //determines how many worker threads are used in openmp, but not in communication handlers!
-    //the latter always use at least 2 threads for each communication channel to send and receive data to prevent
-    //the communication become a bottleneck, e.g., in 10 Gbps networks.
-    size_t num_threads_ = std::thread::hardware_concurrency();
     bool share_inputs_ = true;
+
+    std::vector<Shares::SharePtr> input_shares_;
   };
 
   using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;

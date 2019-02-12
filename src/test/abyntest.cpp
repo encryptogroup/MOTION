@@ -114,7 +114,7 @@ namespace {
         }
 
         for (auto i = 0u; i < abyn_parties.size(); ++i) {
-          abyn_parties.at(i)->Finish();
+          abyn_parties.at(i)->Run();
         }
       }
       catch (std::exception &e) {
@@ -202,7 +202,7 @@ namespace {
         }
 
         for (auto i = 0u; i < abyn_parties.size(); ++i) {
-          abyn_parties.at(i)->Finish();
+          abyn_parties.at(i)->Run();
         }
       }
       catch (std::exception &e) {
@@ -227,7 +227,34 @@ namespace {
             }
           }
           for (auto i = 0u; i < abyn_parties.size(); ++i) {
-            abyn_parties.at(i)->Finish();
+            abyn_parties.at(i)->Run();
+          }
+        }
+        catch (std::exception &e) {
+          std::cerr << e.what() << std::endl;
+          all_connected = false;
+        }
+      }
+      ASSERT_TRUE(all_connected);
+    }
+  }
+
+  TEST(ABYNSharingTest, ArithmeticInputOutput) {
+    for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
+      bool all_connected = false;
+      for (auto num_parties = 3u; num_parties < 5; ++num_parties) {
+        try {
+          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+          for (auto &abynparty : abyn_parties) {
+            auto input = 0u;
+            if (abynparty->GetConfiguration()->GetMyId() == 0) {
+              input = 65535;
+            }
+            abynparty->ShareArithmeticInput<u32>(abynparty->GetConfiguration()->GetMyId(), input);
+          }
+
+          for (auto i = 0u; i < abyn_parties.size(); ++i) {
+            abyn_parties.at(i)->Run();
           }
         }
         catch (std::exception &e) {

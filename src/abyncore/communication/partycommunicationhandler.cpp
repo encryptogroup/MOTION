@@ -25,7 +25,7 @@ namespace ABYN::Communication {
     return result;
   }
 
-  PartyCommunicationHandler::PartyCommunicationHandler(ABYN::PartyPtr &party, ABYN::LoggerPtr &logger) :
+  PartyCommunicationHandler::PartyCommunicationHandler(ABYN::PartyPtr &party, const ABYN::LoggerPtr &logger) :
       party_(party), logger_(logger) {
 
     handler_info_ = fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}",

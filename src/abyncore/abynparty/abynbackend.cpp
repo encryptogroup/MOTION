@@ -11,17 +11,13 @@
 namespace ABYN {
 
   ABYNBackend::ABYNBackend(ABYNConfigurationPtr &abyn_config) : abyn_config_(abyn_config) {
-    logger_ = std::make_shared<ABYN::Logger>(abyn_config_->GetMyId(),
-                                             abyn_config_->GetLoggingSeverityLevel());
+    abyn_core_ = std::make_shared<ABYN::ABYNCore>(abyn_config);
+
     for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
       if (abyn_config_->GetParty(i) == nullptr) { continue; }
       abyn_config_->GetParty(i)->InitializeMyRandomnessGenerator();
-      abyn_config_->GetParty(i)->SetLogger(logger_);
+      abyn_config_->GetParty(i)->SetLogger(abyn_core_->GetLogger());
     }
-  }
-
-  size_t ABYNBackend::NextGateId() {
-    return global_gate_id_++;
   }
 
   void ABYNBackend::InitializeCommunicationHandlers() {
@@ -35,14 +31,15 @@ namespace ABYN {
           abyn_config_->GetParty(i)->GetIp(),
           abyn_config_->GetParty(i)->GetSocket()->local_endpoint().port(),
           abyn_config_->GetParty(i)->GetSocket()->remote_endpoint().port());
-      logger_->LogDebug(message);
+      abyn_core_->GetLogger()->LogDebug(message);
 
-      communication_handlers_.at(i) = std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i), logger_);
+      communication_handlers_.at(i) =
+          std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i), abyn_core_->GetLogger());
     }
   }
 
   void ABYNBackend::SendHelloToOthers() {
-    logger_->LogInfo("Send hello message to other parties");
+    abyn_core_->GetLogger()->LogInfo("Send hello message to other parties");
     for (auto destination_id = 0u; destination_id < abyn_config_->GetNumOfParties(); ++destination_id) {
       if (destination_id == abyn_config_->GetMyId()) { continue; }
       std::vector<u8> seed;
@@ -65,6 +62,15 @@ namespace ABYN {
     communication_handlers_.at(party_id)->SendMessage(message);
   }
 
+  void ABYNBackend::EvaluateSequential(){
+    //TODO
+  }
+
+  void ABYNBackend::EvaluateParallel(){
+//TODO
+  }
+
+
   void ABYNBackend::TerminateCommunication() {
     for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
       if (communication_handlers_.at(party_id)) { communication_handlers_.at(party_id)->TerminateCommunication(); }
@@ -83,7 +89,7 @@ namespace ABYN {
       if (handler) { success &= handler->VerifyHelloMessage(); }
     }
 
-    if (!success) { logger_->LogError("Hello message verification failed"); }
-    else { logger_->LogInfo("Successfully verified hello messages"); }
+    if (!success) { abyn_core_->GetLogger()->LogError("Hello message verification failed"); }
+    else { abyn_core_->GetLogger()->LogInfo("Successfully verified hello messages"); }
   }
 }

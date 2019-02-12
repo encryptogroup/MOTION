@@ -33,6 +33,10 @@ namespace ABYN {
 
     ABYNParty(ABYNParty &abynparty) = delete;
 
+    void EvaluateCircuit();
+
+    void Finish();
+
   protected:
 
 
@@ -66,7 +70,7 @@ namespace ABYN {
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> ShareArithmeticInput(size_t party_id, T input = 0) {
-      auto p = Gates::Arithmetic::ArithmeticInputGate(input, party_id, backend_);
+      auto p = Gates::Arithmetic::ArithmeticInputGate(input, party_id, backend_->GetCore());
       auto s = std::move(p.GetOutputShare());
       auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);
       return sa;
@@ -76,9 +80,6 @@ namespace ABYN {
 
     void Connect();
 
-    void Finish();
-
-    //TODO
     void Run(size_t repeats = 1);
 
     static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);

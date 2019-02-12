@@ -25,6 +25,9 @@ namespace ABYN {
 
     ~ABYNConfiguration() {}
 
+    size_t GetNumOfThreads() { return num_threads_; }
+
+    void SetNumOfThreads(size_t n) { num_threads_ = n; }
 
     std::vector<PartyPtr> &GetParties() { return parties_; }
 
@@ -40,7 +43,7 @@ namespace ABYN {
       severity_level_ = severity_level;
     }
 
-    bool OnlineAfterSetup(){return online_after_setup_;}
+    bool OnlineAfterSetup() { return online_after_setup_; }
 
     boost::log::trivial::severity_level GetLoggingSeverityLevel() { return severity_level_; }
 
@@ -50,6 +53,11 @@ namespace ABYN {
     boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
     bool online_after_setup_ = false;
+
+    //determines how many worker threads are used in openmp, but not in communication handlers!
+    //the latter always use at least 2 threads for each communication channel to send and receive data to prevent
+    //the communication become a bottleneck, e.g., in 10 Gbps networks.
+    size_t num_threads_ = std::thread::hardware_concurrency();
 
     ABYNConfiguration() = delete;
   };

@@ -4,8 +4,8 @@
 #include <iostream>
 #include <vector>
 
+#include "abynparty/abyncore.h"
 #include "share/share.h"
-#include "abynparty/abynbackend.h"
 #include "utility/typedefs.h"
 #include "utility/constants.h"
 
@@ -28,11 +28,11 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() = 0;
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
   protected:
     ABYN::Shares::SharePtr output_share_;
-    ABYN::ABYNBackendPtr backend_;
+    ABYN::ABYNCorePtr core_;
     ssize_t gate_id_ = -1;
     size_t n_parallel_values_ = 1;
 
@@ -60,7 +60,7 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() = 0;
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
   protected:
     ABYN::Shares::SharePtr parent_;
@@ -89,7 +89,7 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() = 0;
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
   protected:
     virtual ~InputGate() {};
@@ -114,14 +114,14 @@ namespace ABYN::Gates::Interfaces {
 
   class OutputGate : public OneGate {
   public:
-    OutputGate(ABYN::Shares::SharePtr &parent, ABYN::ABYNBackendPtr &backend) {
-      backend_ = backend;
+    OutputGate(ABYN::Shares::SharePtr &parent, const ABYN::ABYNCorePtr &core) {
+      core_ = core;
       parent_ = parent;
     };
 
     virtual void Evaluate() = 0;
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
     virtual ~OutputGate() {};
   };
@@ -150,7 +150,7 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() = 0;
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
   };
 
 
@@ -176,7 +176,7 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() {}
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() = 0;
+    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
   };
 }
 
@@ -204,34 +204,50 @@ namespace ABYN::Gates::Arithmetic {
     size_t party_id_ = false;
 
   public:
-    ArithmeticInputGate(T input, size_t party_id, ABYN::ABYNBackendPtr &backend) : party_id_(party_id) {
-      gate_id_ = backend_->NextGateId();
-      backend_ = backend;
-      if (party_id_ == backend_->GetConfig()->GetMyId()) { input_ = input; } //in case this is my input
-      backend_->GetLogger()->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+    ArithmeticInputGate(T input, size_t party_id, const ABYN::ABYNCorePtr &core) :
+    party_id_(party_id) {
+      core_ = core;
+      gate_id_ = core_->NextGateId();
+      if (party_id_ == core_->GetConfig()->GetMyId()) { input_ = input; } //in case this is my input
+      core_->GetLogger()->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     };
 
     virtual ~ArithmeticInputGate() {};
 
-    virtual void Evaluate() final {
-      auto my_id = backend_->GetConfig()->GetMyId();
+    //non-interactive input sharing based on distributed in advance randomness seeds
+    void Evaluate() override final {
+      auto my_id = core_->GetConfig()->GetMyId();
       if (party_id_ == my_id) {
         T diff = 0;
-        for (auto i = 0u; i < backend_->GetConfig()->GetNumOfParties(); ++i) {
+        std::string log_string{};
+        for (auto i = 0u; i < core_->GetConfig()->GetNumOfParties(); ++i) {
           if (i == my_id) { continue; }
-          diff += backend_->GetConfig()->GetParty(i)->GetMyRandomnessGenerator()->GetUnsigned<T>(gate_id_);
+          auto r = core_->GetConfig()->GetParty(i)->GetMyRandomnessGenerator()
+              ->template GetUnsigned<T>(gate_id_);
+          log_string.append(fmt::format("id#{}:{} ", r));
+          diff += r;
         }
         input_ -= diff;
+
+        auto s = fmt::format(
+            "My (id#{}) arithmetic input sharing, my input: {}, my share: {}, expected shares of other parties: {}",
+                             party_id_, input_, log_string);
+        core_->GetLogger()->LogTrace(s);
       } else {
-        input_ = backend_->GetConfig()->GetParty(party_id_)->GetMyRandomnessGenerator()->GetUnsigned<T>(gate_id_);
+        input_ = core_->GetConfig()->GetParty(party_id_)->GetMyRandomnessGenerator()
+            ->template GetUnsigned<T>(gate_id_);
+
+        auto s = fmt::format("Arithmetic input sharing of Party#{} input, got a share {} from the seed",
+                             party_id_, input_);
+        core_->GetLogger()->LogTrace(s);
       }
       output_share_ = std::move(
           std::static_pointer_cast<ABYN::Shares::Share>(
-              std::make_shared<ABYN::Shares::ArithmeticShare>(input_)));
+              std::make_shared<ABYN::Shares::ArithmeticShare<T>>(input_, core_)));
     };
 
     //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
-    virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_share_; };
+    const ABYN::Shares::SharePtr &GetOutputShare() override final { return output_share_; };
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -244,19 +260,19 @@ namespace ABYN::Gates::Arithmetic {
     bool my_output_ = false;
     bool others_get_output_ = false;
   public:
-    ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &previous_gate, size_t id, ABYNBackendPtr &backend) {
-      backend_ = backend;
+    ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &previous_gate, size_t id, const ABYNCorePtr &core) {
+      core_ = core;
       // TODO: implement
     }
 
     virtual ~ArithmeticOutputGate() {};
 
-    virtual void Evaluate() final {
+    void Evaluate() override final {
       //TODO: implement
       ;
     }
 
-    virtual ABYN::Shares::SharePtr &GetOutputShare() final { return output_; };
+    ABYN::Shares::SharePtr &GetOutputShare() override final { return output_; };
   };
 }
 

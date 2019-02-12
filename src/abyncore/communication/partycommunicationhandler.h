@@ -11,7 +11,7 @@ namespace ABYN::Communication {
   class PartyCommunicationHandler {
 
   public:
-    PartyCommunicationHandler(ABYN::PartyPtr &party, ABYN::LoggerPtr &logger);
+    PartyCommunicationHandler(ABYN::PartyPtr &party, const ABYN::LoggerPtr &logger);
 
     virtual ~PartyCommunicationHandler();
 

@@ -1,6 +1,6 @@
-#include <map>
-
 #include "abynparty.h"
+
+#include <map>
 
 namespace ABYN {
 
@@ -25,7 +25,21 @@ namespace ABYN {
     }
 
     backend_->SendHelloToOthers();
-    //VerifyHelloMessages();
+  }
+
+  void ABYNParty::Run(size_t repeats) {
+    backend_->VerifyHelloMessages();
+    for (auto i = 0ull; i < repeats; ++i) { EvaluateCircuit(); };
+    Finish();
+  }
+
+  void ABYNParty::EvaluateCircuit() {
+    if (configuration_->OnlineAfterSetup()) { backend_->EvaluateSequential(); }
+    else { backend_->EvaluateParallel(); }
+  }
+
+  void ABYNParty::Finish() {
+    backend_->TerminateCommunication();
   }
 
   std::vector<std::unique_ptr<ABYNParty>> ABYNParty::GetNLocalConnectedParties(size_t num_parties, u16 port) {
@@ -91,9 +105,5 @@ namespace ABYN {
       abyn_parties.push_back(f.get());
 
     return std::move(abyn_parties);
-  }
-
-  void ABYNParty::Finish() {
-    backend_->TerminateCommunication();
   }
 }
