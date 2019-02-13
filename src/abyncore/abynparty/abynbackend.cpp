@@ -62,11 +62,21 @@ namespace ABYN {
     communication_handlers_.at(party_id)->SendMessage(message);
   }
 
-  void ABYNBackend::EvaluateSequential(){
-    //TODO
+  void ABYNBackend::RegisterInputGate(Gates::Interfaces::InputGatePtr &input_gate) {
+    input_gates_.push_back(input_gate);
   }
 
-  void ABYNBackend::EvaluateParallel(){
+  void ABYNBackend::EvaluateSequential() {
+    //TODO
+    for (auto &gate : input_gates_) {
+      auto wires = gate->GetOutputShare()->GetWires();
+      for (auto &wire : wires) {
+        auto waiting_gates = wire->GetWaitingGatesIds();
+      }
+    }
+  }
+
+  void ABYNBackend::EvaluateParallel() {
 //TODO
   }
 

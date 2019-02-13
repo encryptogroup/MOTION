@@ -67,7 +67,7 @@ namespace ABYN {
 
     const BoostSocketPtr &GetSocket() { return boost_party_socket_; }
 
-    void ParseMessage(std::vector<u8> & raw_message);
+    void ParseMessage(std::vector<u8> && raw_message);
 
     DataStorage & GetDataStorage() {return data_storage_;}
 

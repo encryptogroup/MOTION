@@ -36,7 +36,7 @@ namespace ABYN::Gates::Interfaces {
     ssize_t gate_id_ = -1;
     size_t n_parallel_values_ = 1;
 
-    Gate() {};
+    Gate() {}
 
   private:
     Gate(Gate &) = delete;
@@ -56,7 +56,7 @@ namespace ABYN::Gates::Interfaces {
 
   class OneGate : public Gate {
   public:
-    virtual ~OneGate() {};
+    virtual ~OneGate() {}
 
     virtual void Evaluate() = 0;
 
@@ -65,7 +65,7 @@ namespace ABYN::Gates::Interfaces {
   protected:
     ABYN::Shares::SharePtr parent_;
 
-    OneGate() {};
+    OneGate() {}
 
   private:
     OneGate(OneGate &) = delete;
@@ -87,19 +87,21 @@ namespace ABYN::Gates::Interfaces {
 
   public:
 
-    virtual void Evaluate() = 0;
+  //  virtual void Evaluate() = 0;
 
-    virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
+   // virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
   protected:
-    virtual ~InputGate() {};
+    virtual ~InputGate() {}
 
-    InputGate() {};
+    InputGate() {}
 
   private:
     InputGate(InputGate &) = delete;
 
   };
+
+  using InputGatePtr = std::shared_ptr<InputGate>;
 
 
 //
@@ -117,14 +119,16 @@ namespace ABYN::Gates::Interfaces {
     OutputGate(ABYN::Shares::SharePtr &parent, const ABYN::ABYNCorePtr &core) {
       core_ = core;
       parent_ = parent;
-    };
+    }
 
     virtual void Evaluate() = 0;
 
     virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
-    virtual ~OutputGate() {};
+    virtual ~OutputGate() {}
   };
+
+  using OutputGatePtr = std::shared_ptr<OutputGate>;
 
 //
 //   |    | <- two SharePointers input
@@ -142,11 +146,11 @@ namespace ABYN::Gates::Interfaces {
     ABYN::Shares::SharePtr parent_a_;
     ABYN::Shares::SharePtr parent_b_;
 
-    TwoGate() {};
+    TwoGate() {}
 
   public:
 
-    virtual ~TwoGate() {};
+    virtual ~TwoGate() {}
 
     virtual void Evaluate() = 0;
 
@@ -169,10 +173,10 @@ namespace ABYN::Gates::Interfaces {
   protected:
     std::vector<ABYN::Shares::SharePtr> parents_;
 
-    nInputGate() {};
+    nInputGate() {}
 
   public:
-    virtual ~nInputGate() {};
+    virtual ~nInputGate() {}
 
     virtual void Evaluate() {}
 
@@ -195,7 +199,7 @@ namespace ABYN::Gates::Arithmetic {
 //TODO Implement interactive sharing
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  class ArithmeticInputGate : ABYN::Gates::Interfaces::InputGate {
+  class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
 
   protected:
     T input_;
@@ -205,14 +209,14 @@ namespace ABYN::Gates::Arithmetic {
 
   public:
     ArithmeticInputGate(T input, size_t party_id, const ABYN::ABYNCorePtr &core) :
-    party_id_(party_id) {
+        party_id_(party_id) {
       core_ = core;
       gate_id_ = core_->NextGateId();
       if (party_id_ == core_->GetConfig()->GetMyId()) { input_ = input; } //in case this is my input
       core_->GetLogger()->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
-    };
+    }
 
-    virtual ~ArithmeticInputGate() {};
+    virtual ~ArithmeticInputGate() {}
 
     //non-interactive input sharing based on distributed in advance randomness seeds
     void Evaluate() override final {
@@ -231,7 +235,7 @@ namespace ABYN::Gates::Arithmetic {
 
         auto s = fmt::format(
             "My (id#{}) arithmetic input sharing, my input: {}, my share: {}, expected shares of other parties: {}",
-                             party_id_, input_, log_string);
+            party_id_, input_, log_string);
         core_->GetLogger()->LogTrace(s);
       } else {
         input_ = core_->GetConfig()->GetParty(party_id_)->GetMyRandomnessGenerator()
@@ -244,14 +248,20 @@ namespace ABYN::Gates::Arithmetic {
       output_share_ = std::move(
           std::static_pointer_cast<ABYN::Shares::Share>(
               std::make_shared<ABYN::Shares::ArithmeticShare<T>>(input_, core_)));
-    };
+    }
 
     //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
-    const ABYN::Shares::SharePtr &GetOutputShare() override final { return output_share_; };
+    ABYN::Shares::ArithmeticSharePtr<T> GetOutputArithmeticShare() {
+      return std::dynamic_pointer_cast<ABYN::Shares::ArithmeticShare<T>>(output_share_);
+    }
+
+    const ABYN::Shares::SharePtr &GetOutputShare() override final {
+      return output_share_;
+    }
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  class ArithmeticOutputGate : ABYN::Gates::Interfaces::OutputGate {
+  class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
   protected:
     T output_;
     std::vector<T> shares_of_others_parties_;

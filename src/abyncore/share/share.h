@@ -6,32 +6,30 @@
 #include "utility/typedefs.h"
 #include "wire/wire.h"
 
-namespace ABYN::Gates::Interfaces {
-  class Gate;
-
-  using GatePtr = std::shared_ptr<Gate>;
-}
-
 namespace ABYN::Shares {
 
   class Share {
   public:
+    virtual ~Share() {}
+
     virtual Protocol GetSharingType() = 0;
 
     virtual bool IsConstantShare() = 0;
 
-    virtual ~Share() {}
+    virtual std::vector<Wires::WirePtr> GetWires() = 0;
+
+    virtual bool IsDone() = 0;
 
   protected:
+    Share() {};
+
     ABYNCorePtr core_;
     bool done_ = false;
-    std::vector<ABYN::Gates::Interfaces::GatePtr> waiting_gates_;
-
-    Share(){};
 
   private:
 
     Share(Share &) = delete;
+
     Share(const Share &) = delete;
   };
 
@@ -44,33 +42,38 @@ namespace ABYN::Shares {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticShare : public Share {
   public:
-    virtual std::vector<T> &GetValue() final { return wire_->GetRawValues(); }
-
-    virtual Protocol GetSharingType() final { return wire_->GetProtocol(); }
-
-    virtual bool IsConstantShare() final { return false; }
-
-    auto GetValueByteLength() { return sizeof(T); }
-
     ArithmeticShare(T input, const ABYNCorePtr &core) {
-      wire_ = std::make_shared<ArithmeticWire<T>>(input, core);
+      wire_ = std::make_shared<Wires::ArithmeticWire<T>>(input, core);
       core_ = core;
     }
 
     ~ArithmeticShare() {}
 
+    Protocol GetSharingType() override final { return wire_->GetProtocol(); }
+
+    bool IsConstantShare() override final { return false; }
+
+    std::vector<Wires::WirePtr> GetWires() override final {
+      std::vector<Wires::WirePtr> result;
+      result.push_back(std::static_pointer_cast<Wires::Wire>(wire_));
+      return std::move(result);
+    }
+
+    bool IsDone() override final { return wire_->IsDone(); }
+
+    const std::vector<T> &GetValue() const { return wire_->GetRawValues(); }
+
+    auto GetValueByteLength() { return sizeof(T); }
+
   protected:
     //Arithmetic share can have only one wire
-    ArithmeticWirePtr<T> wire_;
+    Wires::ArithmeticWirePtr<T> wire_;
 
   private:
-    ArithmeticShare(){};
+    ArithmeticShare() {};
 
     ArithmeticShare(ArithmeticShare &) = delete;
   };
-
-  //class <> ArithmeticShare<u8>;
-
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
@@ -89,14 +92,7 @@ namespace ABYN::Shares {
     std::vector<T> values_;
 
   public:
-    virtual std::vector<T> &GetValue() final { return values_; }
-
-    virtual Protocol GetSharingType() final { return ArithmeticGMW; }
-
-    virtual bool IsConstantShare() final { return true; }
-
-    ArithmeticConstantShare(T input, const ABYNCorePtr &core) : values_(
-        std::move(std::vector{input})) { core_ = core; }
+    ArithmeticConstantShare(T input, const ABYNCorePtr &core) : values_(std::move(std::vector{input})) { core_ = core; }
 
     ArithmeticConstantShare(std::vector<T> &input, const ABYNCorePtr &core) : values_(input) {
       core_ = core;
@@ -107,6 +103,15 @@ namespace ABYN::Shares {
     }
 
     ~ArithmeticConstantShare() {};
+
+    Protocol GetSharingType() override final { return ArithmeticGMW; }
+
+    bool IsConstantShare() override final { return true; }
+
+    bool IsDone() override final { return true; }
+
+    const std::vector<T> &GetValue() const { return values_; }
+
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

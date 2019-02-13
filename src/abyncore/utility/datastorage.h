@@ -13,7 +13,10 @@ namespace ABYN {
 
     ~DataStorage() {}
 
-    void SetReceivedHelloMessage(std::vector<u8> &hello_message) { received_hello_message_ = std::move(hello_message); }
+    void SetReceivedHelloMessage(std::vector<u8> &&hello_message) {
+      received_hello_message_ = std::move(hello_message);
+    }
+
 
     const ABYN::Communication::HelloMessage *GetReceivedHelloMessage() {
       if (received_hello_message_.empty()) { return nullptr; }

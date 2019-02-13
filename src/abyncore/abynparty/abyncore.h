@@ -7,8 +7,7 @@
 #include "utility/logger.h"
 
 namespace ABYN {
-  class
-  ABYNCore {
+  class ABYNCore {
   public:
     ABYNCore(ABYNConfigurationPtr &abyn_config) : abyn_config_(abyn_config) {
       logger_ = std::make_shared<ABYN::Logger>(abyn_config_->GetMyId(),
@@ -17,12 +16,15 @@ namespace ABYN {
 
     size_t NextGateId() { return global_gate_id_++; }
 
-    const LoggerPtr &GetLogger() { return logger_; };
+    size_t NextWireId() { return global_wire_id_++; }
 
-    const ABYNConfigurationPtr &GetConfig(){return abyn_config_;}
+    const LoggerPtr &GetLogger() { return logger_; }
+
+    const ABYNConfigurationPtr &GetConfig() { return abyn_config_; }
+
 
   private:
-    size_t global_gate_id_ = 0;
+    size_t global_gate_id_ = 0, global_wire_id_ = 0;
 
     ABYN::ABYNConfigurationPtr abyn_config_;
     ABYN::LoggerPtr logger_ = nullptr;

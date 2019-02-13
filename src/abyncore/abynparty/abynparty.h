@@ -61,7 +61,6 @@ namespace ABYN {
     ABYNParty(ABYNConfigurationPtr &configuration) : configuration_(configuration) {}
 
     ~ABYNParty() {
-      backend_->VerifyHelloMessages();
       backend_->WaitForConnectionEnd();
       backend_->GetLogger()->LogInfo("ABYNParty has been deallocated");
     }
@@ -70,10 +69,10 @@ namespace ABYN {
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> ShareArithmeticInput(size_t party_id, T input = 0) {
-      auto p = Gates::Arithmetic::ArithmeticInputGate(input, party_id, backend_->GetCore());
-      auto s = std::move(p.GetOutputShare());
-      auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(input)>>(s);
-      return sa;
+      auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(input, party_id, backend_->GetCore());
+      auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+      backend_->RegisterInputGate(in_gate_cast);
+      return in_gate->GetOutputArithmeticShare();
     }
 
     size_t GetNumOfParties() { return configuration_->GetNumOfParties(); }

@@ -164,7 +164,7 @@ namespace ABYN::Communication {
       while (handler->ContinueCommunication() || !handler->GetReceiveQueue().empty()) {
         if (!handler->GetReceiveQueue().empty()) {
           std::vector<u8> message_buffer(std::move(handler->GetReceiveQueue().front()));
-          handler->party_->ParseMessage(message_buffer);
+          handler->party_->ParseMessage(std::move(message_buffer));
           {
             std::scoped_lock(handler->GetReceiveMutex());
             handler->GetReceiveQueue().pop();

@@ -42,7 +42,7 @@ namespace ABYN {
     return std::move(fmt::format("Successfully connected to {}:{}\n", this->ip_, this->port_));
   };
 
-  void Party::ParseMessage(std::vector<u8> &raw_message) {
+  void Party::ParseMessage(std::vector<u8> &&raw_message) {
     using namespace ABYN::Communication;
     auto message = GetMessage(raw_message.data());
     flatbuffers::Verifier verifier(raw_message.data(), raw_message.size());
@@ -61,11 +61,11 @@ namespace ABYN {
           InitializeTheirRandomnessGenerator(key, iv);
           logger_->LogInfo(fmt::format("Received a randomness seed in hello message from Party#{}", id_));
         }
-        data_storage_.SetReceivedHelloMessage(raw_message);
+        data_storage_.SetReceivedHelloMessage(std::move(raw_message));
       }
         break;
       default:
-        break;
+        throw(std::runtime_error("Didn't recognize the message type"));
     }
   }
 

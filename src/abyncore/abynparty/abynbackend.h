@@ -16,7 +16,7 @@
 
 #include "crypto/aesrandomnessgenerator.h"
 
-#include "share/share.h"
+#include "gate/gate.h"
 
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
@@ -48,6 +48,8 @@ namespace ABYN {
 
     void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
+    void RegisterInputGate(Gates::Interfaces::InputGatePtr & input_gate);
+
     void EvaluateSequential();
 
     void EvaluateParallel();
@@ -56,7 +58,7 @@ namespace ABYN {
 
     void WaitForConnectionEnd();
 
-    const std::vector<ABYN::Shares::SharePtr> &GetInputs() const { return input_shares_; };
+    const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 
   private:
     ABYNBackend() = delete;
@@ -67,7 +69,9 @@ namespace ABYN {
 
     bool share_inputs_ = true;
 
-    std::vector<Shares::SharePtr> input_shares_;
+    std::vector<Gates::Interfaces::InputGatePtr> input_gates_;
+    std::vector<Gates::Interfaces::GatePtr> active_gates_;     //< gates that are currently being processed
+    std::vector<Gates::Interfaces::OutputGatePtr> ouput_gates_;
   };
 
   using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;

@@ -1,4 +1,4 @@
-set(FBS_NAMES hello_message message) #add the names of the new fbs files here
+set(FBS_NAMES output_message hello_message message) #add the names of the new fbs files here
 set(FBS_INCLUDE_PREFIX "${FBS_DIR_FULL_PREFIX}/include")
 set(FLATC_FULL_PATH "${FLATC_DIR}/flatc")
 
