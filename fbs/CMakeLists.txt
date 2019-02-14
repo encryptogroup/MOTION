@@ -1,5 +1,5 @@
 set(FBS_NAMES output_message hello_message message) #add the names of the new fbs files here
-set(FBS_INCLUDE_PREFIX "${FBS_DIR_FULL_PREFIX}/include")
+set(FBS_INCLUDE_PREFIX "${CMAKE_SOURCE_DIR}/src/abyncore/communication/fbs_headers")
 set(FLATC_FULL_PATH "${FLATC_DIR}/flatc")
 
 set(GENERATED_FILES "")

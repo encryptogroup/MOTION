@@ -13,8 +13,8 @@ README.html
 docs/*
 *.dump
 .idea*
+*_generated.h
 
-fbs/include/*
 src/abyncore/utility/config.h
 
 # build directory

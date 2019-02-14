@@ -12,7 +12,6 @@
 #include "utility/logger.h"
 
 #include "communication/partycommunicationhandler.h"
-#include "message_generated.h"
 
 #include "crypto/aesrandomnessgenerator.h"
 

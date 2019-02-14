@@ -1,7 +1,7 @@
 #ifndef MESSAGE_H
 #define MESSAGE_H
 
-#include "message_generated.h"
+#include "fbs_headers/message_generated.h"
 #include "utility/typedefs.h"
 
 namespace ABYN::Communication {

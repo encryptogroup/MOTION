@@ -1,8 +1,8 @@
 #ifndef DATASTORAGE_H
 #define DATASTORAGE_H
 
-#include "message_generated.h"
-#include "hello_message_generated.h"
+#include "communication/fbs_headers/message_generated.h"
+#include "communication/fbs_headers/hello_message_generated.h"
 
 #include "utility/typedefs.h"
 

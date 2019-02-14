@@ -5,7 +5,7 @@
 
 #include "utility/party.h"
 #include "utility/logger.h"
-#include "message_generated.h"
+#include "fbs_headers/message_generated.h"
 
 namespace ABYN::Communication {
   class PartyCommunicationHandler {

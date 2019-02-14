@@ -2,7 +2,7 @@
 #define HELLOMESSAGE_H
 
 #include "message.h"
-#include "hello_message_generated.h"
+#include "fbs_headers/hello_message_generated.h"
 #include "utility/typedefs.h"
 #include "utility/constants.h"
 
