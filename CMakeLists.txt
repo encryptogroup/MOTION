@@ -129,7 +129,8 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
 
-    option(FLATBUFFERS_BUILD_TESTS FALSE)
+    option(FLATBUFFERS_BUILD_FLATHASH OFF)
+    option(FLATBUFFERS_BUILD_TESTS OFF)
     set(FLATC_DIR "${PROJECT_BINARY_DIR}/bin")
     set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
     add_subdirectory(${FLATBUFFERS_SRC_DIR}

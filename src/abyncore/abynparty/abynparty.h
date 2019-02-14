@@ -47,16 +47,20 @@ namespace ABYN {
       backend_ = std::make_shared<ABYNBackend>(configuration_);
     }
 
-    ABYNParty(std::vector<PartyPtr> &&parties, size_t my_id) :
-        ABYNParty(parties, my_id) {}
+    ABYNParty(std::vector<PartyPtr> &&parties, size_t my_id) {
+      configuration_ = std::make_shared<ABYNConfiguration>(std::move(parties), my_id);
+      backend_ = std::make_shared<ABYNBackend>(configuration_);
+    }
 
     ABYNParty(std::initializer_list<PartyPtr> &list_parties, size_t my_id) {
       configuration_ = std::make_shared<ABYNConfiguration>(list_parties, my_id);
       backend_ = std::make_shared<ABYNBackend>(configuration_);
     }
 
-    ABYNParty(std::initializer_list<PartyPtr> &&list_parties, size_t my_id) :
-        ABYNParty(list_parties, my_id) {}
+    ABYNParty(std::initializer_list<PartyPtr> &&list_parties, size_t my_id) {
+      configuration_ = std::make_shared<ABYNConfiguration>(std::move(list_parties), my_id);
+      backend_ = std::make_shared<ABYNBackend>(configuration_);
+    }
 
     ABYNParty(ABYNConfigurationPtr &configuration) : configuration_(configuration) {}
 

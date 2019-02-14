@@ -15,12 +15,15 @@ namespace ABYN {
   class ABYNConfiguration {
   public:
 
-    ABYNConfiguration(std::vector<PartyPtr> &parties, size_t id);
+    ABYNConfiguration(const std::vector<PartyPtr> &parties, size_t id);
 
     ABYNConfiguration(std::vector<PartyPtr> &&parties, size_t id) :
         ABYNConfiguration(parties, id) {}
 
     ABYNConfiguration(const std::initializer_list<PartyPtr> &list_parties, size_t id) :
+        ABYNConfiguration(std::vector(list_parties), id) {}
+
+    ABYNConfiguration(std::initializer_list<PartyPtr> &&list_parties, size_t id) :
         ABYNConfiguration(std::vector(std::move(list_parties)), id) {}
 
     ~ABYNConfiguration() {}
