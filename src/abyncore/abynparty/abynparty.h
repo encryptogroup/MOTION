@@ -73,7 +73,9 @@ namespace ABYN {
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> ShareArithmeticInput(size_t party_id, T input = 0) {
-      auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(input, party_id, backend_->GetCore());
+      std::vector<T> input_vector{input};
+      auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
+          std::move(input_vector), party_id, backend_->GetCore());
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
       return in_gate->GetOutputArithmeticShare();

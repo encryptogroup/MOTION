@@ -1,6 +1,6 @@
 namespace ABYN.Communication;
 
-enum MessageType : ubyte {HelloMessage = 0} //add other types here after implementing them
+enum MessageType : ubyte {HelloMessage = 0, OutputMessage = 1} //add other types here after implementing them
 
 
 // General message interface that contains a header and payload, where payload is some raw flatbuffers::Struct.

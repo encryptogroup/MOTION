@@ -19,9 +19,6 @@ namespace {
   using namespace ABYN;
   using namespace ABYN::Arithmetic;
 
-  const u8 fixed_key[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
-  const u8 fixed_iv[8] = {16, 17, 18, 19, 20, 21, 22, 23};
-
   const auto TEST_ITERATIONS = 1; //increase if needed
 
   // A dummy first-try test
@@ -239,32 +236,56 @@ namespace {
     }
   }
 
+
   TEST(ABYNSharingTest, ArithmeticInputOutput) {
     for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
-      bool all_connected = false;
-      for (auto num_parties = 3u; num_parties < 5; ++num_parties) {
+      bool success = true;
+      size_t input_owner = 0, output_owner = 0;
+      for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
         try {
           std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
-          for (auto &abynparty : abyn_parties) {
-            auto input = 0u;
-            if (abynparty->GetConfiguration()->GetMyId() == 0) {
-              input = 65535;
-            }
-            abynparty->ShareArithmeticInput<u32>(abynparty->GetConfiguration()->GetMyId(), input);
-          }
+#pragma omp parallel num_threads(10) default(shared)
+          {
+#pragma omp single
+            {
+#pragma omp taskloop num_tasks(abyn_parties.size())
+              for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+                auto input = 0u;
+                if (abyn_parties.at(party_id)->GetConfiguration()->GetMyId() == input_owner) {
+                  input = 12345;
+                }
+                auto input_share = abyn_parties.at(party_id)->ShareArithmeticInput<u32>(input_owner, input);
+                auto output_gate =
+                    std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<u32>>(input_share, output_owner);
+                auto output_share = std::dynamic_pointer_cast<ArithmeticShare<u32>>(output_gate->GetOutputShare());
 
-          for (auto i = 0u; i < abyn_parties.size(); ++i) {
-            abyn_parties.at(i)->Run();
+                abyn_parties.at(party_id)->Run();
+
+               /* if(party_id != 0){
+                std::cerr << fmt::format("Party#{}: output share {}",
+                    party_id, output_share->GetArithmeticWire()->GetValuesOnWire().at(0));
+                }*/
+
+                if (abyn_parties.at(party_id)->GetConfiguration()->GetMyId() == output_owner) {
+                  auto wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<u32>>(
+                      output_share->GetWires().at(0));
+                  success &= input == wire->GetValuesOnWire().at(0);
+                }
+                input_owner = ++output_owner;
+              }
+            }
           }
         }
         catch (std::exception &e) {
           std::cerr << e.what() << std::endl;
-          all_connected = false;
+          success = false;
         }
+
       }
-      ASSERT_TRUE(all_connected);
+      ASSERT_TRUE(success);
     }
   }
+
 
 /*
     TEST(ArithmeticSharingTest, InputGateUnsigned16) {

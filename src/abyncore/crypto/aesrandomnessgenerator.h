@@ -27,6 +27,8 @@ namespace ABYN::Crypto {
 
     std::vector<u8> GetSeed();
 
+    bool &IsInitialized() { return initialized_; };
+
   private:
     static const size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
     size_t party_id_ = -1;
@@ -61,7 +63,9 @@ namespace ABYN::Crypto {
       u8 output[AES_BLOCK_SIZE], input[AES_BLOCK_SIZE];
 
       std::copy(std::begin(aes_ctr_nonce_), std::end(aes_ctr_nonce_), input);
-      std::copy(&gate_id, &gate_id + sizeof(gate_id), input + AESRandomnessGenerator::COUNTER_OFFSET);
+      std::copy(reinterpret_cast<u8 *>(&gate_id),
+                reinterpret_cast<u8 *>(&gate_id) + sizeof(gate_id),
+                input + AESRandomnessGenerator::COUNTER_OFFSET);
 
       //encrypt as in CTR mode, but without incrementing the counter after each encryption
       int output_length = Encrypt(input, output, 1);
@@ -104,14 +108,16 @@ namespace ABYN::Crypto {
         std::copy(std::begin(aes_ctr_nonce_),
                   std::end(aes_ctr_nonce_),
                   input.data() + i * AES_BLOCK_SIZE);
-        std::copy(&gate_id_copy, &gate_id_copy + sizeof(gate_id_copy),
+        std::copy(reinterpret_cast<u8 *>(&gate_id_copy),
+                  reinterpret_cast<u8 *>(&gate_id_copy) + sizeof(gate_id_copy),
                   input.data() + i * AES_BLOCK_SIZE + AESRandomnessGenerator::COUNTER_OFFSET);
       }
 
       //encrypt as in CTR mode, but without incrementing the counter after each encryption
       int output_length = Encrypt(input.data(), output.data(), num_of_gates);
+      assert(output_length >= 0);
 
-      if (output_length != AES_BLOCK_SIZE * num_of_gates) {
+      if (static_cast<size_t>(output_length) != AES_BLOCK_SIZE * num_of_gates) {
         throw (std::runtime_error(
             fmt::format("AES encryption output has length {}, expected {}",
                         output_length, AES_BLOCK_SIZE * num_of_gates)

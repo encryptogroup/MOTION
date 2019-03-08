@@ -7,11 +7,12 @@
 #include "utility/typedefs.h"
 #include "utility/constants.h"
 #include "utility/random.h"
+#include "utility/helpers.h"
 
 namespace ABYN {
 
   Party::Party(std::string ip, u16 port, ABYN::Role role, size_t id) :
-      ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
+      data_storage_(id), ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
     if (IsInvalidIp(ip.data())) {
       throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));
     }
@@ -30,7 +31,7 @@ namespace ABYN {
 
   std::string Party::Connect() {
     if (is_connected_) {
-      return std::move(fmt::format("Already connected to {}:{}\n", this->ip_, this->port_));
+      return std::move(fmt::format("Already connected to {}:{}\n", ip_, port_));
     } else if (role_ == ABYN::Role::Client) {
       InitializeSocketClient();
     } else {
@@ -39,7 +40,7 @@ namespace ABYN {
 
     is_connected_ = true;
 
-    return std::move(fmt::format("Successfully connected to {}:{}\n", this->ip_, this->port_));
+    return std::move(fmt::format("Successfully connected to {}:{}\n", ip_, port_));
   };
 
   void Party::ParseMessage(std::vector<u8> &&raw_message) {
@@ -59,13 +60,19 @@ namespace ABYN {
           const u8 *seed = seed_vector->data();
           std::vector<u8> key(seed, seed + AES_KEY_SIZE), iv(seed + AES_KEY_SIZE, seed + AES_KEY_SIZE + AES_IV_SIZE);
           InitializeTheirRandomnessGenerator(key, iv);
+          logger_->LogTrace(fmt::format("Initialized the randomness generator from Party#{} with Seed: {}",
+                                        id_, Helpers::Print::Hex(their_randomness_generator_->GetSeed())));
           logger_->LogInfo(fmt::format("Received a randomness seed in hello message from Party#{}", id_));
         }
         data_storage_.SetReceivedHelloMessage(std::move(raw_message));
       }
         break;
+      case MessageType_OutputMessage : {
+        data_storage_.SetReceivedOutputMessage(std::move(raw_message));
+      }
+        break;
       default:
-        throw(std::runtime_error("Didn't recognize the message type"));
+        throw (std::runtime_error("Didn't recognize the message type"));
     }
   }
 

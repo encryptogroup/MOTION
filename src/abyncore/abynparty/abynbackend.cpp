@@ -1,12 +1,14 @@
 #include "abynbackend.h"
 
-#define BOOST_FILESYSTEM_NO_DEPRECATED
+#include <algorithm>
 
 #include <fmt/format.h>
 
 #include "utility/constants.h"
 #include "communication/message.h"
 #include "communication/hellomessage.h"
+
+#define BOOST_FILESYSTEM_NO_DEPRECATED
 
 namespace ABYN {
 
@@ -17,12 +19,17 @@ namespace ABYN {
       if (abyn_config_->GetParty(i) == nullptr) { continue; }
       abyn_config_->GetParty(i)->InitializeMyRandomnessGenerator();
       abyn_config_->GetParty(i)->SetLogger(abyn_core_->GetLogger());
+      auto &logger = abyn_core_->GetLogger();
+      auto seed = std::move(abyn_config_->GetParty(i)->GetMyRandomnessGenerator()->GetSeed());
+      logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
+                                   i, Helpers::Print::Hex(seed)));
     }
   }
 
   void ABYNBackend::InitializeCommunicationHandlers() {
     using PartyCommunicationHandler = ABYN::Communication::PartyCommunicationHandler;
     communication_handlers_.resize(abyn_config_->GetNumOfParties(), nullptr);
+#pragma omp parallel for
     for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
       if (i == abyn_config_->GetMyId()) { continue; }
       auto message = fmt::format(
@@ -36,6 +43,7 @@ namespace ABYN {
       communication_handlers_.at(i) =
           std::make_shared<PartyCommunicationHandler>(abyn_config_->GetParty(i), abyn_core_->GetLogger());
     }
+    abyn_core_->RegisterCommunicationHandlers(communication_handlers_);
   }
 
   void ABYNBackend::SendHelloToOthers() {
@@ -48,7 +56,8 @@ namespace ABYN {
       }
 
       auto seed_ptr = share_inputs_ ? &seed : nullptr;
-      auto hello_message = ABYN::Communication::BuildHelloMessage(abyn_config_->GetMyId(), destination_id,
+      auto hello_message = ABYN::Communication::BuildHelloMessage(abyn_config_->GetMyId(),
+                                                                  destination_id,
                                                                   abyn_config_->GetNumOfParties(),
                                                                   seed_ptr,
                                                                   abyn_config_->OnlineAfterSetup(),
@@ -58,8 +67,7 @@ namespace ABYN {
   }
 
   void ABYNBackend::Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-    if (party_id == abyn_config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
-    communication_handlers_.at(party_id)->SendMessage(message);
+    abyn_core_->Send(party_id, message);
   }
 
   void ABYNBackend::RegisterInputGate(Gates::Interfaces::InputGatePtr &input_gate) {
@@ -67,11 +75,31 @@ namespace ABYN {
   }
 
   void ABYNBackend::EvaluateSequential() {
-    //TODO
-    for (auto &gate : input_gates_) {
-      auto wires = gate->GetOutputShare()->GetWires();
-      for (auto &wire : wires) {
-        auto waiting_gates = wire->GetWaitingGatesIds();
+#pragma omp parallel num_threads(abyn_config_->GetNumOfThreads()) default(shared)
+    {
+#pragma omp parallel sections
+      {
+
+#pragma omp section //evaluate input gates
+        {
+#pragma omp taskloop num_tasks(std::min(static_cast<size_t>(50), static_cast<size_t>(input_gates_.size())))
+          for (auto i = 0u; i < input_gates_.size(); ++i) {
+            input_gates_[i]->Evaluate();
+          }
+        }
+
+#pragma omp section //evaluate all other gates moved to the active queue
+        {
+          while (abyn_core_->GetNumOfEvaluatedGates() < abyn_core_->GetTotalNumOfGates()) {
+            auto gate_id = abyn_core_->GetNextGateFromOnlineQueue() == -1;
+            if (gate_id) {
+              std::this_thread::sleep_for(std::chrono::microseconds(100));
+            } else { //evaluate the gate
+#pragma omp task
+              abyn_core_->GetGate(gate_id)->Evaluate();
+            }
+          }
+        }
       }
     }
   }

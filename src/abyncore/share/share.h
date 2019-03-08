@@ -12,19 +12,24 @@ namespace ABYN::Shares {
   public:
     virtual ~Share() {}
 
-    virtual Protocol GetSharingType() = 0;
+    virtual size_t GetNumOfParallelValues() = 0;
 
-    virtual bool IsConstantShare() = 0;
+    virtual Protocol GetSharingType() = 0;
 
     virtual std::vector<Wires::WirePtr> GetWires() = 0;
 
-    virtual bool IsDone() = 0;
+    virtual const std::vector<Wires::WirePtr> GetWires() const = 0;
+
+    virtual const bool &Finished() = 0;
+
+    virtual std::shared_ptr<Share> Clone() = 0;
+
+    const ABYN::ABYNCorePtr &GetCore() { return core_; }
 
   protected:
     Share() {};
 
-    ABYNCorePtr core_;
-    bool done_ = false;
+    ABYN::ABYNCorePtr core_;
 
   private:
 
@@ -42,32 +47,76 @@ namespace ABYN::Shares {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticShare : public Share {
   public:
-    ArithmeticShare(T input, const ABYNCorePtr &core) {
-      wire_ = std::make_shared<Wires::ArithmeticWire<T>>(input, core);
+    ArithmeticShare(ABYN::Wires::WirePtr &wire) {
+      wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wire)};
+      if (!wires_.at(0)) { throw (std::runtime_error("Something went wrong with creating an arithmetic share")); }
+      core_ = wires_.at(0)->GetCore();
+    }
+
+    ArithmeticShare(ABYN::Wires::ArithmeticWirePtr<T> &wire) : wires_({wire}) {
+      core_ = wires_.at(0)->GetCore();
+    }
+
+    ArithmeticShare(std::vector<ABYN::Wires::ArithmeticWirePtr<T>> &wires) : wires_(wires) {
+      core_ = wires_.at(0)->GetCore();
+    }
+
+    ArithmeticShare(std::vector<ABYN::Wires::WirePtr> &wires) {
+      if (wires.size() == 0) { throw (std::runtime_error("Trying to create an arithmetic share without wires")); }
+      if (wires.size() > 1) {
+        throw (std::runtime_error(
+            fmt::format("Cannot create an arithmetic share from more than 1 wire; got {} wires", wires.size())));
+      }
+      wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wires.at(0))};
+      if (!wires_.at(0)) { throw (std::runtime_error("Something went wrong with creating an arithmetic share")); }
+      core_ = wires_.at(0)->GetCore();
+    }
+
+    ArithmeticShare(std::vector<T> & input, const ABYNCorePtr &core) {
       core_ = core;
+      wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
+    }
+
+    ArithmeticShare(T input, const ABYNCorePtr &core) {
+      core_ = core;
+      wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
     }
 
     ~ArithmeticShare() {}
 
-    Protocol GetSharingType() override final { return wire_->GetProtocol(); }
+    size_t GetNumOfParallelValues() override final { return wires_.at(0)->GetNumOfParallelValues(); };
 
-    bool IsConstantShare() override final { return false; }
+    Protocol GetSharingType() override final { return wires_.at(0)->GetProtocol(); }
+
+    const Wires::ArithmeticWirePtr<T> &GetArithmeticWire() { return wires_.at(0); }
 
     std::vector<Wires::WirePtr> GetWires() override final {
       std::vector<Wires::WirePtr> result;
-      result.push_back(std::static_pointer_cast<Wires::Wire>(wire_));
+      result.push_back(std::static_pointer_cast<Wires::Wire>(wires_.at(0)));
       return std::move(result);
     }
 
-    bool IsDone() override final { return wire_->IsDone(); }
+    virtual const std::vector<Wires::WirePtr> GetWires() const override final {
+      std::vector<Wires::WirePtr> result{std::static_pointer_cast<Wires::Wire>(wires_.at(0))};
+      return std::move(result);
+    }
 
-    const std::vector<T> &GetValue() const { return wire_->GetRawValues(); }
+    const bool &Finished() override final { return wires_.at(0)->IsReady(); }
+
+    const std::vector<T> &GetValue() const { return wires_->GetRawSharedValues(); }
 
     auto GetValueByteLength() { return sizeof(T); }
 
+    std::shared_ptr<Share> Clone() override final {
+      return std::static_pointer_cast<Share>(std::make_shared<ArithmeticShare<T>>(wires_));
+    }
+
+    std::shared_ptr<ArithmeticShare> NonVirtualClone() {
+      return std::make_shared<ArithmeticShare>(wires_);
+    }
+
   protected:
-    //Arithmetic share can have only one wire
-    Wires::ArithmeticWirePtr<T> wire_;
+    std::vector<Wires::ArithmeticWirePtr<T>> wires_;
 
   private:
     ArithmeticShare() {};
@@ -88,11 +137,14 @@ namespace ABYN::Shares {
 
     ArithmeticConstantShare(ArithmeticConstantShare &) = delete;
 
+    static const bool CONSTANT_ALWAYS_FINISHED = true;
   protected:
     std::vector<T> values_;
 
   public:
-    ArithmeticConstantShare(T input, const ABYNCorePtr &core) : values_(std::move(std::vector{input})) { core_ = core; }
+    ArithmeticConstantShare(T input, const ABYNCorePtr &core) : values_(std::move(std::vector{input})) {
+      core_ = core;
+    }
 
     ArithmeticConstantShare(std::vector<T> &input, const ABYNCorePtr &core) : values_(input) {
       core_ = core;
@@ -104,13 +156,17 @@ namespace ABYN::Shares {
 
     ~ArithmeticConstantShare() {};
 
+    size_t GetNumOfParallelValues() override final { return values_.size(); };
+
     Protocol GetSharingType() override final { return ArithmeticGMW; }
 
-    bool IsConstantShare() override final { return true; }
-
-    bool IsDone() override final { return true; }
+    const bool &Finished() override final { return CONSTANT_ALWAYS_FINISHED; }
 
     const std::vector<T> &GetValue() const { return values_; }
+
+    std::shared_ptr<Share> Clone() override final {
+      return std::static_pointer_cast<Share>(std::make_shared<ArithmeticConstantShare>(values_, core_));
+    };
 
   };
 

@@ -23,12 +23,14 @@ set(Boost_USE_STATIC_LIBS ON)
 find_package(OpenMP REQUIRED)
 
 if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if we are in the top level CMakeLists
-    set(CMAKE_VECTORIZATION_FLAGS "-ffunction-sections -Wall -maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2")
+    set(CMAKE_VECTORIZATION_FLAGS "-maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2")
     if (ABYN_AVX512)
         set(CMAKE_VECTORIZATION_FLAGS "${CMAKE_COMMON_FLAGS} -mavx512f")
     endif ()
 
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_VECTORIZATION_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -march=native -Wall")
+
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 

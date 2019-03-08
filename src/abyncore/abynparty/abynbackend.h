@@ -11,8 +11,6 @@
 #include "utility/constants.h"
 #include "utility/logger.h"
 
-#include "communication/partycommunicationhandler.h"
-
 #include "crypto/aesrandomnessgenerator.h"
 
 #include "gate/gate.h"
@@ -47,7 +45,7 @@ namespace ABYN {
 
     void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-    void RegisterInputGate(Gates::Interfaces::InputGatePtr & input_gate);
+    void RegisterInputGate(Gates::Interfaces::InputGatePtr &input_gate);
 
     void EvaluateSequential();
 
@@ -57,6 +55,8 @@ namespace ABYN {
 
     void WaitForConnectionEnd();
 
+    Gates::Interfaces::GatePtr GetGate(size_t gate_id) { return abyn_core_->GetGate(gate_id)->shared_from_this(); }
+
     const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 
   private:
@@ -64,13 +64,17 @@ namespace ABYN {
 
     ABYNConfigurationPtr abyn_config_;
     ABYNCorePtr abyn_core_;
+
     std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
 
     bool share_inputs_ = true;
 
+    std::vector<Gates::Interfaces::GatePtr> gates_;
+
     std::vector<Gates::Interfaces::InputGatePtr> input_gates_;
-    std::vector<Gates::Interfaces::GatePtr> active_gates_;     //< gates that are currently being processed
+    std::queue<Gates::Interfaces::GatePtr> active_gates_;     //< gates that are currently being processed
     std::vector<Gates::Interfaces::OutputGatePtr> ouput_gates_;
+
   };
 
   using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;
