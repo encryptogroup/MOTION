@@ -1,28 +1,32 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
+#include "typedefs.h"
+#include "flatbuffers/flatbuffers.h"
+#include "fmt/format.h"
+
 namespace ABYN::Helpers {
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  inline auto ToByteVector(const std::vector<T> &values) {
-    std::vector<u8> result(sizeof(T) * values.size());
-    std::copy(values.data(), values.data() + values.size(), result.data());
+  inline std::vector<u8> ToByteVector(const std::vector<T> &values) {
+    std::vector<u8> result(reinterpret_cast<const u8*>(values.data()),
+                           reinterpret_cast<const u8*>(values.data()) + sizeof(T) * values.size());
     return std::move(result);
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  inline auto FromByteVector(const std::vector<u8> &buffer) {
+  inline std::vector<T> FromByteVector(const std::vector<u8> &buffer) {
     assert(buffer.size() % sizeof(T) == 0); // buffer length is multiple of the element size
     std::vector<T> result(sizeof(T) * buffer.size());
-    std::copy(buffer.data(), buffer.data() + buffer.size(), result.data());
+    std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8*>(result.data()));
     return std::move(result);
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  inline auto FromByteVector(const flatbuffers::Vector<unsigned char> &buffer) {
+  inline std::vector<T> FromByteVector(const flatbuffers::Vector<u8> &buffer) {
     assert(buffer.size() % sizeof(T) == 0); // buffer length is multiple of the element size
-    std::vector<T> result(sizeof(T) * buffer.size());
-    std::copy(buffer.data(), buffer.data() + buffer.size(), result.data());
+    std::vector<T> result(sizeof(T) / buffer.size());
+    std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8*>(result.data()));
     return std::move(result);
   };
 
@@ -60,6 +64,34 @@ namespace ABYN::Helpers {
     }
 
     inline std::string Hex(const std::vector<u8> &&v) { return std::move(Hex(v)); }
+
+    inline std::string ToString(Protocol p) {
+      std::string result{""};
+      switch (p) {
+        case Protocol::ArithmeticGMW :
+          result.append("ArithmeticGMW");
+          break;
+        case Protocol::BooleanGMW :
+          result.append("BooleanGMW");
+          break;
+        case Protocol::BMR :
+          result.append("BMR");
+          break;
+        default:
+          result.append(fmt::format("InvalidProtocol with value {}", static_cast<int>(p)));
+          break;
+      }
+      return std::move(result);
+    };
+
+    template<typename T>
+    inline std::string ToString(std::vector<T> vector){
+      std::string result{""};
+      for(auto & v: vector){
+        result.append(std::to_string(v) + " ");
+      }
+      return std::move(result);
+    }
   }
 }
 

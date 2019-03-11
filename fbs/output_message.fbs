@@ -1,12 +1,12 @@
 namespace ABYN.Communication;
 
-table OutputWirePayload {
+table OutputWire {
   payload:[ubyte]; //uint8 output buffer
 }
 
 table OutputMessage {
   gate_id:uint64;
-  wires:[OutputWirePayload]; //store payload for each wire on the gate separately
+  wires:[OutputWire]; //store payload for each wire on the gate separately
 }
 
 root_type OutputMessage;

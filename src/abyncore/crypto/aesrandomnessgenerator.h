@@ -12,6 +12,7 @@
 
 #include <fmt/format.h>
 
+#include "utility/helpers.h"
 #include "utility/constants.h"
 #include "utility/typedefs.h"
 
@@ -92,16 +93,14 @@ namespace ABYN::Crypto {
         return {}; //return an empty vector if num_of_gates is zero
       }
 
-      while (!initialized_) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      }
+      Helpers::WaitFor(initialized_);
 
       //Pre-initialize output vector
       std::vector<T> results;
       results.reserve(num_of_gates);
 
-      std::vector<u8> output(AES_BLOCK_SIZE * num_of_gates);
-      std::vector<u8> input(AES_BLOCK_SIZE * num_of_gates);
+      auto size_in_bytes = AES_BLOCK_SIZE * (num_of_gates);
+      std::vector<u8> output(size_in_bytes + AES_BLOCK_SIZE), input(size_in_bytes + AES_BLOCK_SIZE);
 
       auto gate_id_copy = gate_id;
       for (auto i = 0u; i < num_of_gates; ++i, ++gate_id_copy) {
@@ -117,19 +116,19 @@ namespace ABYN::Crypto {
       int output_length = Encrypt(input.data(), output.data(), num_of_gates);
       assert(output_length >= 0);
 
-      if (static_cast<size_t>(output_length) != AES_BLOCK_SIZE * num_of_gates) {
+      if (static_cast<size_t>(output_length) != size_in_bytes) {
         throw (std::runtime_error(
             fmt::format("AES encryption output has length {}, expected {}",
-                        output_length, AES_BLOCK_SIZE * num_of_gates)
+                        output_length, size_in_bytes)
         ));
       }
 
       __uint128_t mod = std::numeric_limits<T>::max(), single_result;
       //combine resulting randomness xored with the gate_id, which is the actual input to AES-CTR
       for (auto i = 0u; i < num_of_gates; ++i) {
-        single_result = reinterpret_cast<u64 *>(output.data())[i * AES_BLOCK_SIZE];
+        single_result = reinterpret_cast<u64 *>(output.data())[i * 2];
         single_result <<= 64;
-        single_result ^= reinterpret_cast<u64 *>(output.data())[i * AES_BLOCK_SIZE + 1] ^ gate_id++;
+        single_result ^= reinterpret_cast<u64 *>(output.data())[i * 2 + 1] ^ gate_id++;
         single_result %= mod;
         results.push_back(static_cast<T>(single_result)); //static-cast the result to the smaller ring
       }

@@ -77,27 +77,23 @@ namespace ABYN {
   void ABYNBackend::EvaluateSequential() {
 #pragma omp parallel num_threads(abyn_config_->GetNumOfThreads()) default(shared)
     {
-#pragma omp parallel sections
+#pragma omp single nowait
       {
-
-#pragma omp section //evaluate input gates
-        {
 #pragma omp taskloop num_tasks(std::min(static_cast<size_t>(50), static_cast<size_t>(input_gates_.size())))
-          for (auto i = 0u; i < input_gates_.size(); ++i) {
-            input_gates_[i]->Evaluate();
-          }
+        for (auto i = 0u; i < input_gates_.size(); ++i) {
+          input_gates_[i]->Evaluate();
         }
 
-#pragma omp section //evaluate all other gates moved to the active queue
-        {
-          while (abyn_core_->GetNumOfEvaluatedGates() < abyn_core_->GetTotalNumOfGates()) {
-            auto gate_id = abyn_core_->GetNextGateFromOnlineQueue() == -1;
-            if (gate_id) {
-              std::this_thread::sleep_for(std::chrono::microseconds(100));
-            } else { //evaluate the gate
-#pragma omp task
+//evaluate all other gates moved to the active queue
+        while (abyn_core_->GetNumOfEvaluatedGates() < abyn_core_->GetTotalNumOfGates()) {
+          auto gate_id = abyn_core_->GetNextGateFromOnlineQueue();
+          if (gate_id < 0) {
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
+          } else { //evaluate the gate
+//#pragma omp task
+//            {
               abyn_core_->GetGate(gate_id)->Evaluate();
-            }
+//            }
           }
         }
       }

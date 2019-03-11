@@ -43,17 +43,13 @@ namespace ABYN::Wires {
         throw (std::runtime_error(fmt::format("Marking wire #{} as \"online phase ready\" twice", wire_id_)));
       }
       is_done_ = true;
-      for (auto gate_id: waiting_gate_ids_) {
-        Wire::UnregisterWireIdFromGate(gate_id, wire_id_, core_);
-      }
+      for (auto gate_id: waiting_gate_ids_) { Wire::UnregisterWireIdFromGate(gate_id, wire_id_, core_); }
+      waiting_gate_ids_.clear();
     }
 
-    // let the Gate class handle this to prevent cross-referencing
     const auto &GetWaitingGatesIds() const { return waiting_gate_ids_; }
 
-    const bool &IsReady() {
-      if (is_constant_) { return is_constant_; } else { return is_done_; }
-    };
+    const bool &IsReady() { if (is_constant_) { return is_constant_; } else { return is_done_; }};
 
     bool IsConstant() { return is_constant_; }
 

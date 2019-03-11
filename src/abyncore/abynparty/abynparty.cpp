@@ -35,7 +35,7 @@ namespace ABYN {
 
   void ABYNParty::EvaluateCircuit() {
     backend_->EvaluateSequential();
-    /*if (configuration_->OnlineAfterSetup()) { backend_->EvaluateSequential(); }
+    /*if (configuration_->OnlineAfterSetup()) { backend_->EvaluateSequential(); } //TODO
     else { backend_->EvaluateParallel(); }*/
   }
 

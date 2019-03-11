@@ -55,18 +55,18 @@ namespace ABYN::Gates::Interfaces {
     }
 
     bool DependenciesAreReady() {
-      return wire_dependencies_.size() > 0;
+      return wire_dependencies_.size() == 0;
     }
 
     void SetSetupIsReady() {
       std::scoped_lock lock(mutex_);
       setup_is_ready_ = true;
-      IfReadyAddToProcessingQueue();
     }
 
     void SetOnlineIsReady() {
       std::scoped_lock lock(mutex_);
       online_is_ready_ = true;
+      assert(output_share_);
       for (auto &wire : output_share_->GetWires()) {
         wire->SetOnlineFinished();
       }
@@ -79,16 +79,20 @@ namespace ABYN::Gates::Interfaces {
     ABYN::ABYNCorePtr core_;
     ssize_t gate_id_ = -1;
     std::unordered_set<size_t> wire_dependencies_;
+    GateType gate_type_ = InvalidGate;
+
     bool setup_is_ready_ = false;
     bool online_is_ready_ = false;
     bool requires_online_interaction_ = false;
+    bool added_to_active_queue = false;
 
     Gate() {}
 
   private:
     void IfReadyAddToProcessingQueue() {
-      if (requires_online_interaction_ && DependenciesAreReady() && SetupIsReady()) {
-        core_->AddToOnlineQueue(gate_id_);
+      if (DependenciesAreReady() && !added_to_active_queue) {
+        core_->AddToActiveQueue(gate_id_);
+        added_to_active_queue = true;
       }
     }
 
@@ -115,8 +119,6 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() = 0;
 
-    //   virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
-
   protected:
     ABYN::Shares::SharePtr parent_;
 
@@ -142,14 +144,10 @@ namespace ABYN::Gates::Interfaces {
 
   public:
 
-    //  virtual void Evaluate() = 0;
-
-    // virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
-
   protected:
     virtual ~InputGate() {}
 
-    InputGate() {}
+    InputGate() { gate_type_ = GateType::InputGate; }
 
   private:
     InputGate(InputGate &) = delete;
@@ -175,12 +173,11 @@ namespace ABYN::Gates::Interfaces {
       core_ = parent->GetCore();
       parent_ = parent;
       output_owner_ = output_owner;
+      gate_type_ = InteractiveGate;
       assert(output_owner_ >= 0);
     }
 
     virtual void Evaluate() = 0;
-
-    //  virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
 
     virtual ~OutputGate() {}
 
@@ -217,8 +214,6 @@ namespace ABYN::Gates::Interfaces {
     virtual ~TwoGate() {}
 
     virtual void Evaluate() = 0;
-
-    //  virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
   };
 
 
@@ -244,7 +239,6 @@ namespace ABYN::Gates::Interfaces {
 
     virtual void Evaluate() {}
 
-    //   virtual const ABYN::Shares::SharePtr &GetOutputShare() = 0;
   };
 }
 
@@ -283,6 +277,10 @@ namespace ABYN::Gates::Arithmetic {
       output_share_ = std::move(
           std::static_pointer_cast<ABYN::Shares::Share>(
               std::make_shared<ABYN::Shares::ArithmeticShare<T>>(input_, core_)));
+
+      auto gate_info = fmt::format("uint{}_t type, gate id {},", sizeof(T) * 8, gate_id_);
+      core_->GetLogger()->LogDebug(fmt::format("Allocate an ArithmeticInputGate with following properties: {}",
+                                               gate_info));
     }
 
     ArithmeticInputGate(std::vector<T> &&input, size_t party_id, const ABYN::ABYNCorePtr &core) :
@@ -328,6 +326,7 @@ namespace ABYN::Gates::Arithmetic {
       my_wire->GetMutableValuesOnWire() = std::move(result);
       SetOnlineIsReady();
       core_->NotifyEvaluatedGate();
+      core_->GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
     }
 
     //perhaps, we should return a copy of the pointer and not move it for the case we need it multiple times
@@ -359,18 +358,23 @@ namespace ABYN::Gates::Arithmetic {
 
     ArithmeticOutputGate(ABYN::Shares::ArithmeticSharePtr<T> &parent, size_t output_owner) :
         parent_finished_(parent->Finished()) {
+      if (parent->GetSharingType() != Protocol::ArithmeticGMW) {
+        auto sharing_type = Helpers::Print::ToString(parent->GetSharingType());
+        throw (std::runtime_error((fmt::format(
+            "Arithmetic output gate expects an arithmetic share, got a share of type {}", sharing_type))));
+      }
       parent_ = parent;
       output_owner_ = output_owner;
       output_.resize(parent->GetNumOfParallelValues());
+      requires_online_interaction_ = true;
+      gate_type_ = GateType::InteractiveGate;
 
       core_ = parent->GetCore();
       gate_id_ = core_->NextGateId();
       core_->RegisterNextGate(static_cast<Gate *>(this));
 
       RegisterWaitingFor(parent->GetWires().at(0)->GetWireId());
-      parent->GetWires().at(0)->RegisterWaitingGate(gate_id_);
-
-      if (is_my_output_) { shared_outputs_.resize(core_->GetConfig()->GetNumOfParties()); }
+      parent->GetArithmeticWire()->RegisterWaitingGate(gate_id_);
 
       assert(output_owner >= 0);
       if (core_->GetConfig()->GetMyId() == static_cast<size_t>(output_owner_)) { is_my_output_ = true; }
@@ -378,6 +382,10 @@ namespace ABYN::Gates::Arithmetic {
       output_share_ = std::move(
           std::static_pointer_cast<ABYN::Shares::Share>(
               std::make_shared<ABYN::Shares::ArithmeticShare<T>>(output_, core_)));
+
+      auto gate_info = fmt::format("uint{}_t type, gate id {},", sizeof(T) * 8, gate_id_);
+      core_->GetLogger()->LogTrace(fmt::format("Allocate an ArithmeticOutputGate with following properties: {}",
+                                               gate_info));
     }
 
     virtual ~ArithmeticOutputGate() {};
@@ -393,8 +401,10 @@ namespace ABYN::Gates::Arithmetic {
         //wait until all conditions are fulfilled
         Helpers::WaitFor(this->parent_finished_);
         auto &config = core_->GetConfig();
+        shared_outputs_.resize(core_->GetConfig()->GetNumOfParties());
 
         for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
+          if (i == config->GetMyId()) { continue; }
           bool success = false;
           auto &data_storage = config->GetParty(i)->GetDataStorage();
           assert(shared_outputs_.at(i).size() == 0);
@@ -406,11 +416,22 @@ namespace ABYN::Gates::Arithmetic {
             }
             if (!success) { std::this_thread::sleep_for(std::chrono::microseconds(100)); };
           }
-          ++i;
         }
+
 
         shared_outputs_.at(config->GetMyId()) = output_;
         output_ = std::move(Helpers::AddShares(shared_outputs_));
+
+        std::string shares{""};
+        for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
+          shares.append(fmt::format("id#{}:{} ", i, Helpers::Print::ToString(shared_outputs_.at(i))));
+        }
+
+        auto result = std::move(Helpers::Print::ToString(output_));
+
+        core_->GetLogger()->LogTrace(
+            fmt::format("Received output shares: {} from other parties, reconstructed result is {}", shares, result));
+
         std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_share_->GetWires().at(0))
             ->GetMutableValuesOnWire() = output_;
       } else {
@@ -420,6 +441,7 @@ namespace ABYN::Gates::Arithmetic {
       }
       SetOnlineIsReady();
       core_->NotifyEvaluatedGate();
+      core_->GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
     }
   };
 }

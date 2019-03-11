@@ -67,19 +67,20 @@ namespace ABYN {
 
     void UnregisterWire(size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
-    void AddToOnlineQueue(size_t gate_id) {
-      std::scoped_lock lock(online_queue_mutex_);
-      ready_gates_.push(gate_id);
+    void AddToActiveQueue(size_t gate_id) {
+      std::scoped_lock lock(active_queue_mutex_);
+      active_gates.push(gate_id);
+      logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
     }
 
     ssize_t GetNextGateFromOnlineQueue() {
-      if (ready_gates_.size() == 0) {
+      if (active_gates.size() == 0) {
         return -1;
       } else {
-        auto gate_id = ready_gates_.front();
+        auto gate_id = active_gates.front();
         assert(gate_id < std::numeric_limits<ssize_t>::max());
-        std::scoped_lock lock(online_queue_mutex_);
-        ready_gates_.pop();
+        std::scoped_lock lock(active_queue_mutex_);
+        active_gates.pop();
         return static_cast<size_t>(gate_id);
       }
     }
@@ -99,8 +100,8 @@ namespace ABYN {
     ABYN::ABYNConfigurationPtr abyn_config_;
     ABYN::LoggerPtr logger_ = nullptr;
 
-    std::queue<size_t> ready_gates_;
-    std::mutex online_queue_mutex_;
+    std::queue<size_t> active_gates;
+    std::mutex active_queue_mutex_;
 
     std::vector<ABYN::Gates::Interfaces::Gate *> gates_;
 

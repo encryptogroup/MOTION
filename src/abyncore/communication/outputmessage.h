@@ -8,12 +8,12 @@
 
 namespace ABYN::Communication {
   static flatbuffers::FlatBufferBuilder BuildOutputMessage(size_t gate_id, std::vector<u8> wire_payload) {
-    flatbuffers::FlatBufferBuilder builder_wire_payload(64);
-    auto wire_payload_root = CreateOutputWirePayloadDirect(builder_wire_payload, &wire_payload);
-    std::vector<decltype(wire_payload_root)> wires(1, wire_payload_root);
-
     flatbuffers::FlatBufferBuilder builder_output_message(64);
-    auto output_message_root = CreateOutputMessageDirect(builder_output_message, gate_id, &wires);
+    auto wire = CreateOutputWireDirect(builder_output_message, &wire_payload);
+    std::vector<flatbuffers::Offset<OutputWire>> wires{wire};
+
+    auto output_message_root = CreateOutputMessageDirect(
+        builder_output_message, static_cast<uint64_t>(gate_id), &wires);
     FinishOutputMessageBuffer(builder_output_message, output_message_root);
 
     return std::move(BuildMessage(

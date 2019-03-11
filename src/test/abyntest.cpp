@@ -214,7 +214,7 @@ namespace {
   TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_10) {
     for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
-      for (auto num_parties = 3u; num_parties < 10; ++num_parties) {
+      for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
         try {
           std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
           all_connected = true;
@@ -237,22 +237,79 @@ namespace {
   }
 
 
-  TEST(ABYNSharingTest, ArithmeticInputOutput) {
+  TEST(ABYNSharingTest, ArithmeticInputOutput_SIMD1) {
+    srand(time(NULL));
+    auto template_test = [](auto template_var) {
+      for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
+        bool success = true;
+        for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
+          decltype(template_var) input_owner = rand() % num_parties,
+          output_owner = rand() % num_parties,
+          global_input = rand();
+          try {
+            std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
+            {
+#pragma omp single
+              {
+#pragma omp taskloop num_tasks(abyn_parties.size())
+                for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+                  decltype(template_var) input = 0u;
+                  if (party_id == input_owner) {
+                    input = global_input;
+                  }
+                  auto input_share =
+                      abyn_parties.at(party_id)->ShareArithmeticInput<decltype(template_var)>(input_owner, input);
+                  auto output_gate =
+                      std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<decltype(template_var)>>(
+                          input_share, output_owner);
+                  auto output_share = std::dynamic_pointer_cast<ArithmeticShare<decltype(template_var)>>(
+                      output_gate->GetOutputShare());
+
+                  abyn_parties.at(party_id)->Run();
+
+                  if (party_id == output_owner) {
+                    auto wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<decltype(template_var)>>(
+                        output_share->GetWires().at(0));
+                    success &= wire->GetValuesOnWire().at(0) == global_input;
+                  }
+                }
+              }
+            }
+          }
+          catch (std::exception &e) {
+            std::cerr << e.what() << std::endl;
+            success = false;
+          }
+
+        }
+        ASSERT_TRUE(success);
+      }
+    };
+    //lambdas don't support templates, but only auto types. So, lets try to trick it.
+    template_test(static_cast<u8>(0));
+    template_test(static_cast<u16>(0));
+    template_test(static_cast<u32>(0));
+    template_test(static_cast<u64>(0));
+  }
+
+  TEST(ABYNSharingTest, ArithmeticInputOutput_SIMD10to100) {
+    srand(time(NULL));
     for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
       bool success = true;
-      size_t input_owner = 0, output_owner = 0;
       for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
+        size_t input_owner = rand() % num_parties, output_owner = rand() % num_parties, global_input = rand();
         try {
           std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
-#pragma omp parallel num_threads(10) default(shared)
+#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
           {
 #pragma omp single
             {
 #pragma omp taskloop num_tasks(abyn_parties.size())
               for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
                 auto input = 0u;
-                if (abyn_parties.at(party_id)->GetConfiguration()->GetMyId() == input_owner) {
-                  input = 12345;
+                if (party_id == input_owner) {
+                  input = global_input;
                 }
                 auto input_share = abyn_parties.at(party_id)->ShareArithmeticInput<u32>(input_owner, input);
                 auto output_gate =
@@ -261,17 +318,11 @@ namespace {
 
                 abyn_parties.at(party_id)->Run();
 
-               /* if(party_id != 0){
-                std::cerr << fmt::format("Party#{}: output share {}",
-                    party_id, output_share->GetArithmeticWire()->GetValuesOnWire().at(0));
-                }*/
-
-                if (abyn_parties.at(party_id)->GetConfiguration()->GetMyId() == output_owner) {
+                if (party_id == output_owner) {
                   auto wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<u32>>(
                       output_share->GetWires().at(0));
-                  success &= input == wire->GetValuesOnWire().at(0);
+                  success &= wire->GetValuesOnWire().at(0) == global_input;
                 }
-                input_owner = ++output_owner;
               }
             }
           }
@@ -394,6 +445,7 @@ namespace {
 
 // Check that ABYNParty throws an exception when using an incorrect IP address
   TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
+    srand(time(NULL));
     const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
 
     for (auto i = 0; i < TEST_ITERATIONS; ++i) {

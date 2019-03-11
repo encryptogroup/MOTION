@@ -23,7 +23,9 @@ namespace ABYN {
     void SetLogger(const ABYN::LoggerPtr &logger) { logger_ = logger; }
 
     void SetReceivedOutputMessage(std::vector<u8> &&output_message) {
-      const auto output_message_ptr = ABYN::Communication::GetOutputMessage(output_message.data());
+      auto message = ABYN::Communication::GetMessage(output_message.data());
+      auto output_message_ptr = ABYN::Communication::GetOutputMessage(message->payload()->data());
+
       auto gate_id = output_message_ptr->gate_id();
 
       auto ret = received_output_messages_.insert({gate_id, std::move(output_message)});
