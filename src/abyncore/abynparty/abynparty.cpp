@@ -40,7 +40,7 @@ namespace ABYN {
     backend_->TerminateCommunication();
   }
 
-  std::vector<std::unique_ptr<ABYNParty>> ABYNParty::GetNLocalConnectedParties(size_t num_parties, u16 port) {
+  std::vector<std::unique_ptr<ABYNParty>> ABYNParty::GetNLocalParties(size_t num_parties, u16 port) {
     if (num_parties < 3) {
       throw (std::runtime_error(fmt::format("Can generate only >= 3 local parties, current input: {}", num_parties)));
     }

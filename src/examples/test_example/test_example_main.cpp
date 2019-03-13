@@ -23,7 +23,7 @@ void test() {
   };
   std::cout << fmt::format("Input owner: {}, output owner: {}\n", input_owner, output_owner);
   try {
-    std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+    std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, 7777)));
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())

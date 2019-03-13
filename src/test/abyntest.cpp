@@ -19,7 +19,6 @@ namespace {
   const auto num_parties_list = {3u, 4u, 5u, 10u};
 
   using namespace ABYN;
-  using namespace ABYN::Arithmetic;
 
   const auto PORT_OFFSET = 7777u;
   const auto TEST_ITERATIONS = 1; //increase if needed
@@ -34,6 +33,22 @@ namespace {
     } else return rand();
   }
 
+  // Check that ABYNParty throws an exception when using an incorrect IP address
+  TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
+    srand(time(NULL));
+    const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
+
+    for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+      auto r_u8 = []() { return std::to_string((u8) rand()); };
+      auto rand_invalid_ip = [r_u8, incorrect_symbols]() {
+        std::string result = fmt::format("{}.{}.{}.{}", r_u8(), r_u8(), r_u8(), r_u8());
+        result.at(rand() % result.size()) = incorrect_symbols.at(rand() % incorrect_symbols.size());
+        return result;
+      };
+      auto must_throw_function = [rand_invalid_ip]() { Party(rand_invalid_ip(), rand(), ABYN::Role::Client, 0); };
+      ASSERT_ANY_THROW(must_throw_function());
+    }
+  }
 
   TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
     for (auto i = 0; i < TEST_ITERATIONS; ++i) {
@@ -230,13 +245,12 @@ namespace {
     }
   }
 
-  TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_10) {
+  TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_parties) {
     for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
       for (auto num_parties : num_parties_list) {
         try {
-          std::vector<ABYNPartyPtr> abyn_parties(
-              std::move(ABYNParty::GetNLocalConnectedParties(num_parties, PORT_OFFSET)));
+          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
           for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
           all_connected = true;
           for (auto &abynparty : abyn_parties) {
@@ -257,7 +271,7 @@ namespace {
     }
   }
 
-  TEST(ABYNSharingTest, ArithmeticInputOutput_SIMD_1_1K_10K) {
+  TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
     srand(time(NULL));
     auto template_test = [](auto template_var) {
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
@@ -271,8 +285,7 @@ namespace {
           for (T &e : global_input_1K) { e = my_rand<T>(); }
           for (T &e : global_input_10K) { e = my_rand<T>(); }
           try {
-            std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(
-                num_parties, PORT_OFFSET)));
+            std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
             for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -326,7 +339,7 @@ namespace {
   }
 
 
-  TEST(ABYNSharingTest, ArithmeticAddition_SIMD_1_1K_10K) {
+  TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
     srand(time(NULL));
     auto template_test = [](auto template_var) {
       using T = decltype(template_var);
@@ -349,8 +362,7 @@ namespace {
           }
         }
         try {
-          std::vector<ABYNPartyPtr> abyn_parties(std::move(
-              ABYNParty::GetNLocalConnectedParties(num_parties, PORT_OFFSET)));
+          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())
@@ -421,23 +433,6 @@ namespace {
     template_test(static_cast<u16>(0));
     template_test(static_cast<u32>(0));
     template_test(static_cast<u64>(0));
-  }
-
-// Check that ABYNParty throws an exception when using an incorrect IP address
-  TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
-    srand(time(NULL));
-    const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
-
-    for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-      auto r_u8 = []() { return std::to_string((u8) rand()); };
-      auto rand_invalid_ip = [r_u8, incorrect_symbols]() {
-        std::string result = fmt::format("{}.{}.{}.{}", r_u8(), r_u8(), r_u8(), r_u8());
-        result.at(rand() % result.size()) = incorrect_symbols.at(rand() % incorrect_symbols.size());
-        return result;
-      };
-      auto must_throw_function = [rand_invalid_ip]() { Party(rand_invalid_ip(), rand(), ABYN::Role::Client, 0); };
-      ASSERT_ANY_THROW(must_throw_function());
-    }
   }
 }
 

@@ -120,7 +120,7 @@ namespace ABYN {
 
     void Run(size_t repeats = 1);
 
-    static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);
+    static std::vector<std::unique_ptr<ABYNParty>> GetNLocalParties(size_t num_parties, u16 port);
 
     const auto &GetLogger() { return backend_->GetLogger(); }
   };
