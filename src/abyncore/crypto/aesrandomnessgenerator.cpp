@@ -12,19 +12,23 @@ namespace ABYN::Crypto {
   };
 
   int AESRandomnessGenerator::Encrypt(u8 *input, u8 *output, size_t num_of_blocks) {
-    int output_length;
+    int output_length, len;
 
     if (1 != EVP_EncryptInit_ex(ctx_, EVP_aes_128_ecb(), NULL, raw_key_, nullptr)) {
       throw (std::runtime_error(fmt::format("Could not re-initialize EVP context")));
     }
 
-    if (1 != EVP_EncryptUpdate(ctx_, output, &output_length, input, AES_BLOCK_SIZE * num_of_blocks)) {
+    if (1 != EVP_EncryptUpdate(ctx_, output, &len, input, AES_BLOCK_SIZE * num_of_blocks)) {
       throw (std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
     }
 
-    if (1 != EVP_EncryptFinal_ex(ctx_, output + output_length, &output_length)) {
+    output_length = len;
+
+    if (1 != EVP_EncryptFinal_ex(ctx_, output + len, &len)) {
       throw (std::runtime_error(fmt::format("Could not finalize EVP-AES encryption")));
     }
+
+    output_length += len;
     return output_length;
   }
 

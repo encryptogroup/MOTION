@@ -35,9 +35,14 @@ namespace ABYN {
 
     void LogError(std::string &&msg);
 
+    bool LoggingEnabled() { return logging_enabled_; }
+
+    void Logging(bool enable) { logging_enabled_ = enable; }
+
   private:
     logger_type logger_;
     size_t my_id_;
+    bool logging_enabled_ = true;
 
     Logger() = delete;
   };

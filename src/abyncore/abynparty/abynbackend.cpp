@@ -70,9 +70,14 @@ namespace ABYN {
     abyn_core_->Send(party_id, message);
   }
 
-  void ABYNBackend::RegisterInputGate(Gates::Interfaces::InputGatePtr &input_gate) {
+  void ABYNBackend::RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate) {
     input_gates_.push_back(input_gate);
+    RegisterGate(std::static_pointer_cast<Gates::Interfaces::Gate>(input_gate));
   }
+
+  void ABYNBackend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
+    gates_.push_back(gate);
+}
 
   void ABYNBackend::EvaluateSequential() {
 #pragma omp parallel num_threads(abyn_config_->GetNumOfThreads()) default(shared)

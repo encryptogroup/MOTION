@@ -116,7 +116,8 @@ namespace ABYN::Crypto {
       int output_length = Encrypt(input.data(), output.data(), num_of_gates);
       assert(output_length >= 0);
 
-      if (static_cast<size_t>(output_length) != size_in_bytes) {
+      if (static_cast<size_t>(output_length) < size_in_bytes ||
+          static_cast<size_t>(output_length) > size_in_bytes + AES_BLOCK_SIZE) {
         throw (std::runtime_error(
             fmt::format("AES encryption output has length {}, expected {}",
                         output_length, size_in_bytes)

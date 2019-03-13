@@ -7,23 +7,20 @@ namespace ABYN {
   void ABYNParty::Connect() {
 //assign 1 thread for each connection
     auto n = configuration_->GetNumOfParties();
-#pragma omp parallel num_threads(n)
-    {
+#pragma omp parallel num_threads(n + 1)
 #pragma omp single
-      {
+    {
 #pragma omp taskloop num_tasks(n) default(shared)
-        for (auto destination_id = 0u; destination_id < n; ++destination_id) {
-          if (destination_id == configuration_->GetMyId()) { continue; }
-          auto &p = configuration_->GetParty(destination_id);
-          backend_->GetLogger()->LogDebug(fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
+      for (auto destination_id = 0u; destination_id < n; ++destination_id) {
+        if (destination_id == configuration_->GetMyId()) { continue; }
+        auto &p = configuration_->GetParty(destination_id);
+        backend_->GetLogger()->LogDebug(fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
 
-          auto result = configuration_->GetParty(destination_id)->Connect();
-          backend_->GetLogger()->LogInfo(std::move(result));
-        }
-        backend_->InitializeCommunicationHandlers();
+        auto result = configuration_->GetParty(destination_id)->Connect();
+        backend_->GetLogger()->LogInfo(result);
       }
+      backend_->InitializeCommunicationHandlers();
     }
-
     backend_->SendHelloToOthers();
   }
 
@@ -48,8 +45,8 @@ namespace ABYN {
       throw (std::runtime_error(fmt::format("Can generate only >= 3 local parties, current input: {}", num_parties)));
     }
 
-    std::vector<ABYNPartyPtr> abyn_parties(0);
-    std::vector<std::future<ABYNPartyPtr>> futures(0);
+    std::vector<ABYNPartyPtr> abyn_parties(num_parties);
+    //std::vector<std::future<ABYNPartyPtr>> futures(0);
     std::map<u32, u16> assigned_ports;
 
     //portid generation function - we require symmetric port generation for parties, e.g., parties #4 and #7
@@ -74,36 +71,33 @@ namespace ABYN {
     }
 
     //generate parties using separate threads
+#pragma omp parallel num_threads(num_parties + 1)
+#pragma omp single
+#pragma omp taskloop num_tasks(num_parties)
     for (auto my_id = 0ul; my_id < num_parties; ++my_id) {
-      futures.push_back(std::async(std::launch::async,
-                                   [num_parties, my_id, &assigned_ports, &portid]() mutable {
-                                     std::vector<PartyPtr> parties;
-                                     for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
-                                       if (my_id == other_id) continue;
-                                       ABYN::Role role = other_id < my_id ?
-                                                         ABYN::Role::Client : ABYN::Role::Server;
+      std::vector<PartyPtr> parties;
+      for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
+        if (my_id == other_id) continue;
+        ABYN::Role role = other_id < my_id ?
+                          ABYN::Role::Client : ABYN::Role::Server;
 
-                                       u32 port_id = portid(my_id, other_id);
+        u32 port_id = portid(my_id, other_id);
 
-                                       u16 this_port;
-                                       auto search = assigned_ports.find(port_id);
-                                       if (search != assigned_ports.end()) {
-                                         this_port = search->second;
-                                       } else {
-                                         throw (std::runtime_error(
-                                             fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
-                                       };
+        u16 this_port;
+        auto search = assigned_ports.find(port_id);
+        if (search != assigned_ports.end()) {
+          this_port = search->second;
+        } else {
+          throw (std::runtime_error(
+              fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
+        };
 
-                                       parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", this_port, role, other_id));
-                                     }
-                                     auto abyn = std::move(std::make_unique<ABYNParty>(parties, my_id));
-                                     abyn->Connect();
-                                     return std::move(abyn);
-                                   }));
+        parties.emplace_back(
+            std::make_shared<Party>("127.0.0.1", this_port, role, other_id));
+      }
+      abyn_parties.at(my_id) = std::move(std::make_unique<ABYNParty>(parties, my_id));
+      abyn_parties.at(my_id)->Connect();
     }
-    for (auto &f : futures)
-      abyn_parties.push_back(f.get());
 
     return std::move(abyn_parties);
   }

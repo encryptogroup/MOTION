@@ -60,6 +60,13 @@ namespace ABYN::Wires {
 
     const ABYNCorePtr &GetCore() { return core_; }
 
+    static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> & wires){
+      std::string result{""};
+      for(auto & w : wires){result.append(fmt::format("{} ", w->GetWireId()));}
+      result.erase(result.end() - 1);
+      return std::move(result);
+    }
+
   protected:
     // number of values that are _logically_ processed in parallel
     size_t num_of_parallel_values_ = 0;

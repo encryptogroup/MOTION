@@ -55,7 +55,10 @@ namespace ABYN {
       communication_handlers_.at(party_id)->SendMessage(message);
     }
 
-    void RegisterNextGate(ABYN::Gates::Interfaces::Gate *gate) { gates_.push_back(gate); }
+    void RegisterNextGate(ABYN::Gates::Interfaces::Gate *gate) {
+      assert(gate != nullptr);
+      gates_.push_back(gate);
+    }
 
     ABYN::Gates::Interfaces::Gate *GetGate(size_t gate_id) { return gates_.at(gate_id); }
 

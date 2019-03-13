@@ -72,13 +72,46 @@ namespace ABYN {
     ABYNConfigurationPtr GetConfiguration() { return configuration_; }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    ArithmeticSharePtr<T> ShareArithmeticInput(size_t party_id, T input = 0) {
+    ArithmeticSharePtr<T> IN(size_t party_id, T input = 0) {
       std::vector<T> input_vector{input};
+      return IN(party_id, std::move(input_vector));
+    };
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    ArithmeticSharePtr<T> IN(size_t party_id, const std::vector<T> &input_vector = 0) {
+      auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
+          input_vector, party_id, backend_->GetCore());
+      auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+      backend_->RegisterInputGate(in_gate_cast);
+      return in_gate->GetOutputArithmeticShare();
+    }
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    ArithmeticSharePtr<T> IN(size_t party_id, std::vector<T> &&input_vector = 0) {
       auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
           std::move(input_vector), party_id, backend_->GetCore());
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
       return in_gate->GetOutputArithmeticShare();
+    }
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    ArithmeticSharePtr<T> OUT(ArithmeticSharePtr<T> parent, size_t output_owner) {
+      assert(parent);
+      auto out_gate = std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<T>>(parent, output_owner);
+      auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+      backend_->RegisterGate(out_gate_cast);
+      return out_gate->GetOutputArithmeticShare();
+    }
+
+    template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+    ArithmeticSharePtr<T> ADD(const ArithmeticSharePtr<T> &a, const ArithmeticSharePtr<T> &b) {
+      assert(a);
+      assert(b);
+      auto addition_gate = std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(a, b);
+      auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
+      backend_->RegisterGate(addition_gate_cast);
+      return addition_gate->GetOutputArithmeticShare();
     }
 
     size_t GetNumOfParties() { return configuration_->GetNumOfParties(); }
@@ -88,6 +121,8 @@ namespace ABYN {
     void Run(size_t repeats = 1);
 
     static std::vector<std::unique_ptr<ABYNParty>> GetNLocalConnectedParties(size_t num_parties, u16 port);
+
+    const auto &GetLogger() { return backend_->GetLogger(); }
   };
 
   using ABYNPartyPtr = std::unique_ptr<ABYNParty>;

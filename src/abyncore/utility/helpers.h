@@ -9,8 +9,8 @@ namespace ABYN::Helpers {
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   inline std::vector<u8> ToByteVector(const std::vector<T> &values) {
-    std::vector<u8> result(reinterpret_cast<const u8*>(values.data()),
-                           reinterpret_cast<const u8*>(values.data()) + sizeof(T) * values.size());
+    std::vector<u8> result(reinterpret_cast<const u8 *>(values.data()),
+                           reinterpret_cast<const u8 *>(values.data()) + sizeof(T) * values.size());
     return std::move(result);
   };
 
@@ -18,15 +18,15 @@ namespace ABYN::Helpers {
   inline std::vector<T> FromByteVector(const std::vector<u8> &buffer) {
     assert(buffer.size() % sizeof(T) == 0); // buffer length is multiple of the element size
     std::vector<T> result(sizeof(T) * buffer.size());
-    std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8*>(result.data()));
+    std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8 *>(result.data()));
     return std::move(result);
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   inline std::vector<T> FromByteVector(const flatbuffers::Vector<u8> &buffer) {
     assert(buffer.size() % sizeof(T) == 0); // buffer length is multiple of the element size
-    std::vector<T> result(sizeof(T) / buffer.size());
-    std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8*>(result.data()));
+    std::vector<T> result(buffer.size() / sizeof(T));
+    std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8 *>(result.data()));
     return std::move(result);
   };
 
@@ -37,7 +37,7 @@ namespace ABYN::Helpers {
   }
 
   template<typename T>
-  inline std::vector<T> AddShares(std::vector<std::vector<T>> vectors) {
+  inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
     if (vectors.size() == 0) { return {}; } //if empty input vector
 
     std::vector<T> result = vectors.at(0);
@@ -45,12 +45,60 @@ namespace ABYN::Helpers {
     for (auto i = 1u; i < vectors.size(); ++i) {
       auto &v = vectors.at(i);
       assert(v.size() == result.size()); //expect the vectors to be of the same size
+#pragma omp simd
       for (auto j = 0u; j < result.size(); ++j) {
         result.at(j) += v.at(j); //TODO: implement using AVX2 and AVX512
       }
     }
-
     return result;
+  }
+
+  template<typename T>
+  inline std::vector<T> AddVectors(std::vector<T> a, std::vector<T> b) {
+    assert(a.size() == b.size());
+    if (a.size() == 0) { return {}; } //if empty input vector
+    std::vector<T> result = a;
+#pragma omp simd
+    for (auto j = 0u; j < result.size(); ++j) {
+      result.at(j) += b.at(j); //TODO: implement using AVX2 and AVX512
+    }
+    return result;
+  }
+
+  template<typename T>
+  inline T SumReduction(const std::vector<T> &v) {
+    if (v.size() == 0) { return 0; }
+    else if (v.size() == 1) { return v.at(0); }
+    else {
+      T sum = 0;
+#pragma omp parallel for reduction(+:sum)
+      for (auto i = 0u; i < v.size(); ++i) {
+        sum += v.at(i);
+      }
+      return sum;
+    }
+  }
+
+  // +---------+--------------------------+
+  // | sum_0 = | v_00 + v_01 + ... + v_0m |
+  // |  ...    | ........................ |
+  // | sum_n = | v_n0 + v_n1 + ... + v_nm |
+  // +---------+--------------------------+
+
+  template<typename T>
+  inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
+    if (v.size() == 0) { return {}; }
+    else {
+      std::vector<T> sum(v.at(0).size());
+      for (auto i = 1u; i < v.size(); ++i) { assert(v.at(0).size() == v.at(i).size()); }
+#pragma omp parallel for
+      for (auto i = 0u; i < sum.size(); ++i) {
+        for (auto j = 0u; j < v.size(); ++j) {
+          sum.at(i) += v.at(j).at(i);
+        }
+      }
+      return std::move(sum);
+    }
   }
 
   namespace Print {
@@ -85,12 +133,21 @@ namespace ABYN::Helpers {
     };
 
     template<typename T>
-    inline std::string ToString(std::vector<T> vector){
+    inline std::string ToString(std::vector<T> vector) {
       std::string result{""};
-      for(auto & v: vector){
+      for (auto &v: vector) {
         result.append(std::to_string(v) + " ");
       }
       return std::move(result);
+    }
+  }
+
+  namespace Compare {
+    template<typename T>
+    inline bool Vectors(const std::vector<T> &a, const std::vector<T> &b) {
+      assert(a.size() == b.size());
+      for (auto i = 0u; i < a.size(); ++i) { if (a.at(i) != b.at(i)) { return false; }}
+      return true;
     }
   }
 }

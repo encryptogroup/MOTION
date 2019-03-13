@@ -45,7 +45,9 @@ namespace ABYN {
 
     void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-    void RegisterInputGate(Gates::Interfaces::InputGatePtr &input_gate);
+    void RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate);
+
+    void RegisterGate(const Gates::Interfaces::GatePtr &gate);
 
     void EvaluateSequential();
 
@@ -55,7 +57,7 @@ namespace ABYN {
 
     void WaitForConnectionEnd();
 
-    Gates::Interfaces::GatePtr GetGate(size_t gate_id) { return abyn_core_->GetGate(gate_id)->shared_from_this(); }
+    const Gates::Interfaces::GatePtr & GetGate(size_t gate_id) { return gates_.at(gate_id); }
 
     const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 
@@ -71,6 +73,7 @@ namespace ABYN {
 
     std::vector<Gates::Interfaces::InputGatePtr> input_gates_;
     std::queue<Gates::Interfaces::GatePtr> active_gates_;     //< gates that are currently being processed
+    std::vector<Gates::Interfaces::GatePtr> gates_;
 
   };
 

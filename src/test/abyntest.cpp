@@ -16,21 +16,31 @@
 
 namespace {
 
+  const auto num_parties_list = {3u, 4u, 5u, 10u};
+
   using namespace ABYN;
   using namespace ABYN::Arithmetic;
 
+  const auto PORT_OFFSET = 7777u;
   const auto TEST_ITERATIONS = 1; //increase if needed
+  const auto LOGGING_ENABLED = false;
 
-  // A dummy first-try test
-  // Test that arithmetic input gates work correctly
-  // TODO: modify after implementing input gates properly
+  template<typename T>
+  inline T my_rand() {
+    if (typeid(T) == typeid(u64)) {
+      u64 r = rand();
+      r <<= 32;
+      return r + rand();
+    } else return rand();
+  }
+
+
   TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
     for (auto i = 0; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
       //use std::threads, since omp (and pragmas in general) cannot be used in macros :(
       try {
         std::vector<ABYNPartyPtr> abyn_parties(0);
-        std::vector<std::future<ABYNPartyPtr>> futures(0);
 
 #pragma omp parallel num_threads(5) default(shared)
         {
@@ -41,9 +51,9 @@ namespace {
 #pragma omp task
             {
               std::vector<PartyPtr> parties;
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", 7773, ABYN::Role::Server, 1));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", 7774, ABYN::Role::Server, 2));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", 7775, ABYN::Role::Server, 3));
+              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
+              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
+              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server, 3));
               auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 0}));
               abyn->Connect();
 #pragma omp critical
@@ -57,9 +67,9 @@ namespace {
             {
               std::string ip = "127.0.0.1";
               std::vector<PartyPtr> parties;
-              parties.emplace_back(std::make_shared<Party>(ip, 7773, ABYN::Role::Client, 0));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", 7776, ABYN::Role::Server, 2));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", 7777, ABYN::Role::Server, 3));
+              parties.emplace_back(std::make_shared<Party>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
+              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
+              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server, 3));
               auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 1}));
               abyn->Connect();
 #pragma omp critical
@@ -72,11 +82,11 @@ namespace {
 #pragma omp task
             {
               std::string ip = "127.0.0.1";
-              u16 port = 7774;
+              u16 port = PORT_OFFSET + 1;
               auto abyn = std::move(ABYNPartyPtr(
                   new ABYNParty{{std::make_shared<Party>(ip, port, ABYN::Role::Client, 0),
-                                 std::make_shared<Party>(ip, 7776, ABYN::Role::Client, 1),
-                                 std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Server, 3)},
+                                 std::make_shared<Party>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
+                                 std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
                                 2}));
               abyn->Connect();
 #pragma omp critical
@@ -90,9 +100,9 @@ namespace {
             {
               auto abyn = std::move(ABYNPartyPtr(
                   new ABYNParty{
-                      {std::make_shared<Party>("127.0.0.1", 7775, ABYN::Role::Client, 0),
-                       std::make_shared<Party>("127.0.0.1", 7777, ABYN::Role::Client, 1),
-                       std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Client, 2)},
+                      {std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Client, 0),
+                       std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Client, 1),
+                       std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Client, 2)},
                       3}));
               abyn->Connect();
 #pragma omp critical
@@ -135,11 +145,13 @@ namespace {
                                      []() {
                                        std::vector<PartyPtr> parties;
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", 7773, ABYN::Role::Server, 1));
+                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", 7774, ABYN::Role::Server, 2));
+                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server,
+                                                                   2));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", 7775, ABYN::Role::Server, 3));
+                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server,
+                                                                   3));
                                        auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 0}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -150,11 +162,14 @@ namespace {
                                      []() {
                                        std::string ip = "127.0.0.1";
                                        std::vector<PartyPtr> parties;
-                                       parties.emplace_back(std::make_shared<Party>(ip, 7773, ABYN::Role::Client, 0));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", 7776, ABYN::Role::Server, 2));
+                                           std::make_shared<Party>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", 7777, ABYN::Role::Server, 3));
+                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server,
+                                                                   2));
+                                       parties.emplace_back(
+                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server,
+                                                                   3));
                                        auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 1}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -164,12 +179,13 @@ namespace {
         futures.push_back(std::async(std::launch::async,
                                      []() {
                                        std::string ip = "127.0.0.1";
-                                       u16 port = 7774;
+                                       u16 port = PORT_OFFSET + 1;
                                        auto abyn = std::move(ABYNPartyPtr(
                                            new ABYNParty{{std::make_shared<Party>(ip, port, ABYN::Role::Client, 0),
-                                                          std::make_shared<Party>(ip, 7776, ABYN::Role::Client, 1),
-                                                          std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Server,
-                                                                                  3)},
+                                                          std::make_shared<Party>(
+                                                              ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
+                                                          std::make_shared<Party>(
+                                                              "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
                                                          2}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -180,9 +196,12 @@ namespace {
                                      []() {
                                        auto abyn = std::move(ABYNPartyPtr(
                                            new ABYNParty{
-                                               {std::make_shared<Party>("127.0.0.1", 7775, ABYN::Role::Client, 0),
-                                                std::make_shared<Party>("127.0.0.1", 7777, ABYN::Role::Client, 1),
-                                                std::make_shared<Party>("127.0.0.1", 7778, ABYN::Role::Client, 2)},
+                                               {std::make_shared<Party>(
+                                                   "127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Client, 0),
+                                                std::make_shared<Party>(
+                                                    "127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Client, 1),
+                                                std::make_shared<Party>(
+                                                    "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Client, 2)},
                                                3}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -214,9 +233,11 @@ namespace {
   TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_10) {
     for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
-      for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
+      for (auto num_parties : num_parties_list) {
         try {
-          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+          std::vector<ABYNPartyPtr> abyn_parties(
+              std::move(ABYNParty::GetNLocalConnectedParties(num_parties, PORT_OFFSET)));
+          for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
           all_connected = true;
           for (auto &abynparty : abyn_parties) {
             for (auto &party: abynparty->GetConfiguration()->GetParties()) {
@@ -236,44 +257,56 @@ namespace {
     }
   }
 
-
-  TEST(ABYNSharingTest, ArithmeticInputOutput_SIMD1) {
+  TEST(ABYNSharingTest, ArithmeticInputOutput_SIMD_1_1K_10K) {
     srand(time(NULL));
     auto template_test = [](auto template_var) {
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
         bool success = true;
-        for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
-          decltype(template_var) input_owner = rand() % num_parties,
-          output_owner = rand() % num_parties,
-          global_input = rand();
+        for (auto num_parties : num_parties_list) {
+          size_t input_owner = rand() % num_parties,
+              output_owner = rand() % num_parties;
+          using T = decltype(template_var);
+          T global_input_1 = my_rand<T>();
+          std::vector<T> global_input_1K(1000), global_input_10K(10000);
+          for (T &e : global_input_1K) { e = my_rand<T>(); }
+          for (T &e : global_input_10K) { e = my_rand<T>(); }
           try {
-            std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+            std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(
+                num_parties, PORT_OFFSET)));
+            for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
-            {
 #pragma omp single
-              {
 #pragma omp taskloop num_tasks(abyn_parties.size())
-                for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-                  decltype(template_var) input = 0u;
-                  if (party_id == input_owner) {
-                    input = global_input;
-                  }
-                  auto input_share =
-                      abyn_parties.at(party_id)->ShareArithmeticInput<decltype(template_var)>(input_owner, input);
-                  auto output_gate =
-                      std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<decltype(template_var)>>(
-                          input_share, output_owner);
-                  auto output_share = std::dynamic_pointer_cast<ArithmeticShare<decltype(template_var)>>(
-                      output_gate->GetOutputShare());
+            for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+              T input_1 = 0u;
+              decltype(global_input_1K) input_1K(global_input_1K.size(), 0u);
+              decltype(global_input_1K) input_10K(global_input_10K.size(), 0u);
+              if (party_id == input_owner) {
+                input_1 = global_input_1;
+                input_1K = global_input_1K;
+                input_10K = global_input_10K;
+              }
+              auto input_share_1 = abyn_parties.at(party_id)->IN<T>(input_owner, input_1);
+              auto input_share_1K = abyn_parties.at(party_id)->IN<T>(input_owner, input_1K);
+              auto input_share_10K = abyn_parties.at(party_id)->IN<T>(input_owner, input_10K);
 
-                  abyn_parties.at(party_id)->Run();
+              auto output_share_1 = abyn_parties.at(party_id)->OUT(input_share_1, output_owner);
+              auto output_share_1K = abyn_parties.at(party_id)->OUT(input_share_1K, output_owner);
+              auto output_share_10K = abyn_parties.at(party_id)->OUT(input_share_10K, output_owner);
 
-                  if (party_id == output_owner) {
-                    auto wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<decltype(template_var)>>(
-                        output_share->GetWires().at(0));
-                    success &= wire->GetValuesOnWire().at(0) == global_input;
-                  }
-                }
+              abyn_parties.at(party_id)->Run();
+
+              if (party_id == output_owner) {
+                auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                    output_share_1->GetWires().at(0));
+                auto wire_1K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                    output_share_1K->GetWires().at(0));
+                auto wire_10K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                    output_share_10K->GetWires().at(0));
+
+                success &= wire_1->GetValuesOnWire().at(0) == global_input_1;
+                success &= Helpers::Compare::Vectors(wire_1K->GetValuesOnWire(), global_input_1K);
+                success &= Helpers::Compare::Vectors(wire_10K->GetValuesOnWire(), global_input_10K);
               }
             }
           }
@@ -281,7 +314,6 @@ namespace {
             std::cerr << e.what() << std::endl;
             success = false;
           }
-
         }
         ASSERT_TRUE(success);
       }
@@ -293,155 +325,103 @@ namespace {
     template_test(static_cast<u64>(0));
   }
 
-  TEST(ABYNSharingTest, ArithmeticInputOutput_SIMD10to100) {
+
+  TEST(ABYNSharingTest, ArithmeticAddition_SIMD_1_1K_10K) {
     srand(time(NULL));
-    for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
-      bool success = true;
-      for (auto num_parties = 3u; num_parties < 10u; ++num_parties) {
-        size_t input_owner = rand() % num_parties, output_owner = rand() % num_parties, global_input = rand();
+    auto template_test = [](auto template_var) {
+      using T = decltype(template_var);
+      const std::vector<T> _zero_v_1K(1000, 0), _zero_v_10K(10000, 0);
+      for (auto num_parties : num_parties_list) {
+        size_t output_owner = rand() % num_parties;
+        std::vector<T> in_1(num_parties);
+        std::vector<std::vector<T>> in_1K(num_parties), in_10K(num_parties);
+        for (auto &e : in_1) { e = my_rand<T>(); };
+        for (auto &v : in_1K) {
+          v.resize(1000);
+          for (auto &e : v) {
+            e = my_rand<T>();
+          }
+        }
+        for (auto &v : in_10K) {
+          v.resize(10000);
+          for (auto &e : v) {
+            e = my_rand<T>();
+          }
+        }
         try {
-          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalConnectedParties(num_parties, 7777)));
+          std::vector<ABYNPartyPtr> abyn_parties(std::move(
+              ABYNParty::GetNLocalConnectedParties(num_parties, PORT_OFFSET)));
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
-          {
 #pragma omp single
-            {
 #pragma omp taskloop num_tasks(abyn_parties.size())
-              for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-                auto input = 0u;
-                if (party_id == input_owner) {
-                  input = global_input;
-                }
-                auto input_share = abyn_parties.at(party_id)->ShareArithmeticInput<u32>(input_owner, input);
-                auto output_gate =
-                    std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<u32>>(input_share, output_owner);
-                auto output_share = std::dynamic_pointer_cast<ArithmeticShare<u32>>(output_gate->GetOutputShare());
+          for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+            std::vector<ABYN::Shares::ArithmeticSharePtr<T>> s_in_1, s_in_1K, s_in_10K;
+            for (auto j = 0u; j < num_parties; ++j) {
+              // If my input - real input, otherwise a dummy 0 (vector).
+              // Should not make any difference, just for consistency...
+              const T my_in_1 = party_id == j ? in_1.at(j) : 0;
+              const std::vector<T> &my_in_1K = party_id == j ? in_1K.at(j) : _zero_v_1K;
+              const std::vector<T> &my_in_10K = party_id == j ? in_10K.at(j) : _zero_v_10K;
 
-                abyn_parties.at(party_id)->Run();
+              s_in_1.push_back(abyn_parties.at(party_id)->IN<T>(j, my_in_1));
+              s_in_1K.push_back(abyn_parties.at(party_id)->IN<T>(j, my_in_1K));
+              s_in_10K.push_back(abyn_parties.at(party_id)->IN<T>(j, my_in_10K));
+            }
 
-                if (party_id == output_owner) {
-                  auto wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<u32>>(
-                      output_share->GetWires().at(0));
-                  success &= wire->GetValuesOnWire().at(0) == global_input;
-                }
+            auto s_add_1 = abyn_parties.at(party_id)->ADD(s_in_1.at(0), s_in_1.at(1));
+            auto s_add_1K = abyn_parties.at(party_id)->ADD(s_in_1K.at(0), s_in_1K.at(1));
+            auto s_add_10K = abyn_parties.at(party_id)->ADD(s_in_10K.at(0), s_in_10K.at(1));
+
+            for (auto j = 2u; j < num_parties; ++j) {
+              s_add_1 = abyn_parties.at(party_id)->ADD(s_add_1, s_in_1.at(j));
+              s_add_1K = abyn_parties.at(party_id)->ADD(s_add_1K, s_in_1K.at(j));
+              s_add_10K = abyn_parties.at(party_id)->ADD(s_add_10K, s_in_10K.at(j));
+            }
+
+            auto s_out_1 = abyn_parties.at(party_id)->OUT(s_add_1, output_owner);
+            auto s_out_1K = abyn_parties.at(party_id)->OUT(s_add_1K, output_owner);
+            auto s_out_10K = abyn_parties.at(party_id)->OUT(s_add_10K, output_owner);
+
+            abyn_parties.at(party_id)->Run();
+
+            if (party_id == output_owner) {
+              auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                  s_out_1->GetWires().at(0));
+              auto wire_1K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                  s_out_1K->GetWires().at(0));
+              auto wire_10K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                  s_out_10K->GetWires().at(0));
+
+              T circuit_result_1 = wire_1->GetValuesOnWire().at(0);
+              T expected_result_1 = Helpers::SumReduction(in_1);
+              EXPECT_EQ(circuit_result_1, expected_result_1);
+
+              const std::vector<T> &circuit_result_1K = wire_1K->GetValuesOnWire();
+              const std::vector<T> expected_result_1K = std::move(Helpers::RowSumReduction(in_1K));
+              for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
+                EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
+              }
+
+              const std::vector<T> &circuit_result_10K = wire_10K->GetValuesOnWire();
+              const std::vector<T> expected_result_10K = std::move(Helpers::RowSumReduction(in_10K));
+              for (auto i = 0u; i < circuit_result_10K.size(); ++i) {
+                EXPECT_EQ(circuit_result_10K.at(i), expected_result_10K.at(i));
               }
             }
           }
         }
         catch (std::exception &e) {
           std::cerr << e.what() << std::endl;
-          success = false;
         }
-
       }
-      ASSERT_TRUE(success);
-    }
+    };
+
+    //lambdas don't support templates, but only auto types. So, lets try to trick it.
+    template_test(static_cast<u8>(0));
+    template_test(static_cast<u16>(0));
+    template_test(static_cast<u32>(0));
+    template_test(static_cast<u64>(0));
   }
-
-
-/*
-    TEST(ArithmeticSharingTest, InputGateUnsigned16) {
-        for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-            u16 value = rand();
-            auto p = ArithmeticInputGate(value);
-            p.Evaluate();
-            auto s = p.GetOutputShare();
-            auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(value)>>(s);
-            auto test_value = sa->GetValue();
-            ASSERT_EQ(value, test_value);
-        }
-    }
-
-    TEST(ArithmeticSharingTest, InputGateUnsigned32) {
-        for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-            u32 value = rand();
-            auto p = ArithmeticInputGate(value);
-            p.Evaluate();
-            auto s = p.GetOutputShare();
-            auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(value)>>(s);
-            auto test_value = sa->GetValue();
-            ASSERT_EQ(value, test_value);
-        }
-    }
-
-    TEST(ArithmeticSharingTest, InputGateUnsigned64) {
-        for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-            u64 value = rand();
-            auto p = ArithmeticInputGate(value);
-            p.Evaluate();
-            auto s = p.GetOutputShare();
-            auto sa = std::dynamic_pointer_cast<ArithmeticShare<decltype(value)>>(s);
-            auto test_value = sa->GetValue();
-            ASSERT_EQ(value, test_value);
-        }
-    }
-
-    // Test that IPs and ports are set correctly after ABYNParty initialization
-    TEST(ABYNPartyAllocation, CorrectnessOfIPsAndPorts) {
-        const std::string d(".");
-
-        for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-            const auto number_of_parties = 5;
-
-            std::vector<u8> check_ports;
-            std::vector<std::string> check_ips;
-
-            auto r_u8 = []() {
-                return std::to_string((u8) rand());
-            };
-
-            auto rand_valid_ip = [r_u8, d]() {
-                return std::string(r_u8() + d + r_u8() + d + r_u8() + d + r_u8());
-            };
-
-            for (auto party_i = 0; party_i < number_of_parties; ++party_i) {
-                check_ips.push_back(rand_valid_ip());
-                check_ports.push_back(rand());
-            }
-
-            auto p3 = std::shared_ptr<ABYNParty>(
-                    new ABYNParty{
-                            Party(check_ips[0], check_ports[0], ABYN::Role::Client),
-                            Party(check_ips[1], check_ports[1], ABYN::Role::Client),
-                            Party(check_ips[2], check_ports[2], ABYN::Role::Client)});
-
-            auto p4 = std::shared_ptr<ABYNParty>(
-                    new ABYNParty{
-                            Party(check_ips[0], check_ports[0], ABYN::Role::Client),
-                            Party(check_ips[1], check_ports[1], ABYN::Role::Client),
-                            Party(check_ips[2], check_ports[2], ABYN::Role::Client),
-                            Party(check_ips[3], check_ports[3], ABYN::Role::Client)});
-
-            auto p5 = std::shared_ptr<ABYNParty>(
-                    new ABYNParty{
-                            Party(check_ips[0], check_ports[0], ABYN::Role::Client),
-                            Party(check_ips[1], check_ports[1], ABYN::Role::Client),
-                            Party(check_ips[2], check_ports[2], ABYN::Role::Client),
-                            Party(check_ips[3], check_ports[3], ABYN::Role::Client),
-                            Party(check_ips[4], check_ports[4], ABYN::Role::Client)});
-
-            std::vector<std::shared_ptr<ABYNParty >> p345{p3, p4, p5}, p45{p4, p5};
-
-            for (auto j = 0; j < number_of_parties; ++j) {
-                if (j < 3) {
-                    for (auto &p : p345) {
-                        //string.compare(s1, s2) = 0 if s1 equals s2
-                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetIp().compare(check_ips[j]), 0);
-                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetPort(), check_ports[j]);
-                    }
-                } else if (j < 4) {
-                    for (auto &p : p45) {
-                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetIp().compare(check_ips[j]), 0);
-                        ASSERT_EQ(p->GetConfiguration()->GetParty(j).GetPort(), check_ports[j]);
-                    }
-                } else {
-                    ASSERT_EQ(p5->GetConfiguration()->GetParty(j).GetIp().compare(check_ips[j]), 0);
-                    ASSERT_EQ(p5->GetConfiguration()->GetParty(j).GetPort(), check_ports[j]);
-                }
-
-            }
-        }
-    }
-*/
 
 // Check that ABYNParty throws an exception when using an incorrect IP address
   TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {

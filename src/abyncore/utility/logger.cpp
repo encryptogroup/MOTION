@@ -62,50 +62,50 @@ namespace ABYN {
   Logger::~Logger() {}
 
   void Logger::Log(logging::trivial::severity_level severity_level, std::string &msg) {
-    BOOST_LOG_SEV(logger_, severity_level) << msg;
+    if (logging_enabled_) { BOOST_LOG_SEV(logger_, severity_level) << msg; }
   }
 
   void Logger::Log(logging::trivial::severity_level severity_level, std::string &&msg) {
-    BOOST_LOG_SEV(logger_, severity_level) << msg;
+    if (logging_enabled_) { BOOST_LOG_SEV(logger_, severity_level) << msg; }
   }
 
   void Logger::LogTrace(std::string &msg) {
     if constexpr(ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
-      BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
+      if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg; }
     }
   }
 
   void Logger::LogTrace(std::string &&msg) {
     if constexpr(ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
-      BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
+      if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg; }
     }
   }
 
   void Logger::LogInfo(std::string &msg) {
-    BOOST_LOG_SEV(logger_, logging::trivial::info) << msg;
+    if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::info) << msg; }
   }
 
   void Logger::LogInfo(std::string &&msg) {
-    BOOST_LOG_SEV(logger_, logging::trivial::info) << msg;
+    if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::info) << msg; }
   }
 
   void Logger::LogDebug(std::string &msg) {
     if constexpr(ABYN_DEBUG) {
-      BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg;
+      if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg; }
     }
   }
 
   void Logger::LogDebug(std::string &&msg) {
     if constexpr(ABYN_DEBUG) {
-      BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg;
+      if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg; }
     }
   }
 
   void Logger::LogError(std::string &msg) {
-    BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
+    if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::error) << msg; }
   }
 
   void Logger::LogError(std::string &&msg) {
-    BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
+    if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::error) << msg; }
   }
 }
