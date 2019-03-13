@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <future>
 #include <functional>
+
 #include <fmt/format.h>
 #include <omp.h>
 
@@ -25,12 +26,19 @@ namespace {
   const auto LOGGING_ENABLED = false;
 
   template<typename T>
-  inline T my_rand() {
+  inline T Rand() {
     if (typeid(T) == typeid(u64)) {
       u64 r = rand();
       r <<= 32;
       return r + rand();
     } else return rand();
+  }
+
+  template<typename T>
+  inline std::vector<T> RandomVector(size_t size) {
+    std::vector<T> v(size);
+    std::generate(v.begin(), v.end(), Rand<T>);
+    return v;
   }
 
   // Check that ABYNParty throws an exception when using an incorrect IP address
@@ -280,10 +288,8 @@ namespace {
           size_t input_owner = rand() % num_parties,
               output_owner = rand() % num_parties;
           using T = decltype(template_var);
-          T global_input_1 = my_rand<T>();
-          std::vector<T> global_input_1K(1000), global_input_10K(10000);
-          for (T &e : global_input_1K) { e = my_rand<T>(); }
-          for (T &e : global_input_10K) { e = my_rand<T>(); }
+          T global_input_1 = Rand<T>();
+          std::vector<T> global_input_1K = RandomVector<T>(1000), global_input_10K = RandomVector<T>(10000);
           try {
             std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
             for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
@@ -292,8 +298,8 @@ namespace {
 #pragma omp taskloop num_tasks(abyn_parties.size())
             for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
               T input_1 = 0u;
-              decltype(global_input_1K) input_1K(global_input_1K.size(), 0u);
-              decltype(global_input_1K) input_10K(global_input_10K.size(), 0u);
+              std::vector<T> input_1K(global_input_1K.size(), 0u);
+              std::vector<T> input_10K(global_input_10K.size(), 0u);
               if (party_id == input_owner) {
                 input_1 = global_input_1;
                 input_1K = global_input_1K;
@@ -331,7 +337,7 @@ namespace {
         ASSERT_TRUE(success);
       }
     };
-    //lambdas don't support templates, but only auto types. So, lets try to trick it.
+    //lambdas don't support templates, but only auto types. So, lets try to trick them.
     template_test(static_cast<u8>(0));
     template_test(static_cast<u16>(0));
     template_test(static_cast<u32>(0));
@@ -346,21 +352,10 @@ namespace {
       const std::vector<T> _zero_v_1K(1000, 0), _zero_v_10K(10000, 0);
       for (auto num_parties : num_parties_list) {
         size_t output_owner = rand() % num_parties;
-        std::vector<T> in_1(num_parties);
+        std::vector<T> in_1 = RandomVector<T>(num_parties);
         std::vector<std::vector<T>> in_1K(num_parties), in_10K(num_parties);
-        for (auto &e : in_1) { e = my_rand<T>(); };
-        for (auto &v : in_1K) {
-          v.resize(1000);
-          for (auto &e : v) {
-            e = my_rand<T>();
-          }
-        }
-        for (auto &v : in_10K) {
-          v.resize(10000);
-          for (auto &e : v) {
-            e = my_rand<T>();
-          }
-        }
+        for (auto &v : in_1K) { v = RandomVector<T>(1000); }
+        for (auto &v : in_10K) { v = RandomVector<T>(10000); }
         try {
           std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
@@ -369,7 +364,7 @@ namespace {
           for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
             std::vector<ABYN::Shares::ArithmeticSharePtr<T>> s_in_1, s_in_1K, s_in_10K;
             for (auto j = 0u; j < num_parties; ++j) {
-              // If my input - real input, otherwise a dummy 0 (vector).
+              // If my input - real input, otherwise a dummy 0 (-vector).
               // Should not make any difference, just for consistency...
               const T my_in_1 = party_id == j ? in_1.at(j) : 0;
               const std::vector<T> &my_in_1K = party_id == j ? in_1K.at(j) : _zero_v_1K;
@@ -427,8 +422,7 @@ namespace {
         }
       }
     };
-
-    //lambdas don't support templates, but only auto types. So, lets try to trick it.
+    //lambdas don't support templates, but only auto types. So, lets try to trick them.
     template_test(static_cast<u8>(0));
     template_test(static_cast<u16>(0));
     template_test(static_cast<u32>(0));
