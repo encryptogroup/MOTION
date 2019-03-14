@@ -112,7 +112,6 @@ elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
     add_subdirectory(extern/OTExtension)
 endif ()
 
-set(BUILD_SHARED_LIBS TRUE)
 find_package(fmt QUIET)
 if (fmt_FOUND)
     message(STATUS "Found fmt")
@@ -124,6 +123,8 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
         execute_process(COMMAND git submodule update --init extern/fmt
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
+    set(BUILD_SHARED_LIBS ON)
+    set(FMT_TEST OFF)
     add_subdirectory(extern/fmt)
 endif ()
 
