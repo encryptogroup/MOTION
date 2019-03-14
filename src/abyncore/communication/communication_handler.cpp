@@ -1,4 +1,4 @@
-#include "partycommunicationhandler.h"
+#include "communication_handler.h"
 
 #include <algorithm>
 
@@ -25,7 +25,7 @@ namespace ABYN::Communication {
     return result;
   }
 
-  PartyCommunicationHandler::PartyCommunicationHandler(ABYN::PartyPtr &party, const ABYN::LoggerPtr &logger) :
+  CommunicationHandler::CommunicationHandler(ABYN::CommunicationContextPtr &party, const ABYN::LoggerPtr &logger) :
       party_(party), logger_(logger) {
 
     handler_info_ = fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}",
@@ -35,21 +35,21 @@ namespace ABYN::Communication {
                                 party->GetSocket()->remote_endpoint().port());
 
     sender_thread_ = std::thread([&]() {
-      PartyCommunicationHandler::ActAsSender(this);
+      CommunicationHandler::ActAsSender(this);
     });
 
     receiver_thread_ = std::thread([&]() {
-      PartyCommunicationHandler::ActAsReceiver(this);
+      CommunicationHandler::ActAsReceiver(this);
     });
   }
 
-  PartyCommunicationHandler::~PartyCommunicationHandler() {
+  CommunicationHandler::~CommunicationHandler() {
     continue_communication_ = false;
     if (sender_thread_.joinable()) { sender_thread_.join(); };
     if (receiver_thread_.joinable()) { receiver_thread_.join(); };
   }
 
-  void PartyCommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
+  void CommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
     u32 message_size = message.GetSize();
     auto message_detached = message.Release();
     auto message_raw_pointer = message_detached.data();
@@ -66,7 +66,7 @@ namespace ABYN::Communication {
     logger_->LogTrace(fmt::format("{}: Have put a {}-byte message to send queue", handler_info_, message_size));
   }
 
-  void PartyCommunicationHandler::TerminateCommunication() {
+  void CommunicationHandler::TerminateCommunication() {
     std::vector<u8> buffer = std::move(u32tou8(TERMINATION_MESSAGE));
     {
       std::scoped_lock lock(queue_send_mutex_);
@@ -76,7 +76,7 @@ namespace ABYN::Communication {
     logger_->LogTrace(fmt::format("{}: Put a termination message message to send queue", handler_info_));
   }
 
-  void PartyCommunicationHandler::WaitForConnectionEnd() {
+  void CommunicationHandler::WaitForConnectionEnd() {
     while (continue_communication_) {
       if (queue_send_.empty() && queue_receive_.empty() &&
           received_termination_message_ && sent_termination_message_) {
@@ -88,7 +88,7 @@ namespace ABYN::Communication {
     };
   }
 
-  void PartyCommunicationHandler::ActAsSender(PartyCommunicationHandler *handler) {
+  void CommunicationHandler::ActAsSender(CommunicationHandler *handler) {
     while (handler->ContinueCommunication()) {
       if (!handler->GetSendQueue().empty()) {
         auto &message = handler->GetSendQueue().front();
@@ -123,7 +123,7 @@ namespace ABYN::Communication {
     }
   }
 
-  void PartyCommunicationHandler::ActAsReceiver(PartyCommunicationHandler *handler) {
+  void CommunicationHandler::ActAsReceiver(CommunicationHandler *handler) {
 #pragma omp parallel
 #pragma omp single
     {
@@ -137,13 +137,13 @@ namespace ABYN::Communication {
           continue;
         }
 
-        u32 size = PartyCommunicationHandler::ParseHeader(handler);
+        u32 size = CommunicationHandler::ParseHeader(handler);
         static_assert(
             sizeof(size) == MESSAGE_SIZE_BYTELEN); // check consistency of the bytelen of the message size type
         if (size == 0) { continue; }
         else if (size == TERMINATION_MESSAGE) { break; };
 
-        std::vector<u8> message_buffer = PartyCommunicationHandler::ParseBody(handler, size);
+        std::vector<u8> message_buffer = CommunicationHandler::ParseBody(handler, size);
 
         {
           std::scoped_lock lock(handler->GetReceiveMutex());
@@ -176,7 +176,7 @@ namespace ABYN::Communication {
     }
   }
 
-  u32 PartyCommunicationHandler::ParseHeader(PartyCommunicationHandler *handler) {
+  u32 CommunicationHandler::ParseHeader(CommunicationHandler *handler) {
     boost::system::error_code ec;
     std::vector<u8> message_size_buffer(MESSAGE_SIZE_BYTELEN);
     //get the size of the next message
@@ -210,7 +210,7 @@ namespace ABYN::Communication {
   }
 
 
-  std::vector<u8> PartyCommunicationHandler::ParseBody(PartyCommunicationHandler *handler, u32 size) {
+  std::vector<u8> CommunicationHandler::ParseBody(CommunicationHandler *handler, u32 size) {
     boost::system::error_code ec;
     handler->GetSocket()->non_blocking(false);
     std::vector<u8> message_buffer(size);
@@ -223,7 +223,7 @@ namespace ABYN::Communication {
     return std::move(message_buffer);
   }
 
-  bool PartyCommunicationHandler::VerifyHelloMessage() {
+  bool CommunicationHandler::VerifyHelloMessage() {
     bool result = true;
     auto my_hm = party_->GetDataStorage().GetSentHelloMessage();
     while (my_hm == nullptr) {

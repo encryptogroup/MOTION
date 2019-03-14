@@ -7,11 +7,11 @@
 
 #include "abyncore.h"
 
-#include "utility/abynconfiguration.h"
+#include "utility/configuration.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
 
-#include "crypto/aesrandomnessgenerator.h"
+#include "crypto/aes_randomness_generator.h"
 
 #include "gate/gate.h"
 
@@ -19,19 +19,19 @@ static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ABYN {
 
-  class ABYNBackend {
+  class Backend {
 
   public:
 
-    ABYNBackend(ABYNConfigurationPtr &abyn_config);
+    Backend(ConfigurationPtr &abyn_config);
 
-    ~ABYNBackend() {};
+    ~Backend() {};
 
-    const ABYNConfigurationPtr &GetConfig() { return abyn_config_; }
+    const ConfigurationPtr &GetConfig() { return abyn_config_; }
 
     const LoggerPtr &GetLogger() { return abyn_core_->GetLogger(); }
 
-    const ABYNCorePtr &GetCore() { return abyn_core_; }
+    const CorePtr &GetCore() { return abyn_core_; }
 
     size_t NextGateId() const { return abyn_core_->NextGateId(); }
 
@@ -62,12 +62,12 @@ namespace ABYN {
     const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 
   private:
-    ABYNBackend() = delete;
+    Backend() = delete;
 
-    ABYNConfigurationPtr abyn_config_;
-    ABYNCorePtr abyn_core_;
+    ConfigurationPtr abyn_config_;
+    CorePtr abyn_core_;
 
-    std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
+    std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
 
     bool share_inputs_ = true;
 
@@ -77,7 +77,7 @@ namespace ABYN {
 
   };
 
-  using ABYNBackendPtr = std::shared_ptr<ABYNBackend>;
+  using BackendPtr = std::shared_ptr<Backend>;
 }
 
 #endif //ABYNBACKEND_H

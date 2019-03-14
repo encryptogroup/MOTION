@@ -5,9 +5,9 @@
 #include <queue>
 #include <atomic>
 
-#include "communication/partycommunicationhandler.h"
+#include "communication/communication_handler.h"
 
-#include "utility/abynconfiguration.h"
+#include "utility/configuration.h"
 #include "utility/logger.h"
 
 
@@ -23,11 +23,11 @@ namespace ABYN {
     class Wire;
   }
 
-  class ABYNCore {
+  class Core {
   public:
-    ABYNCore(ABYNConfigurationPtr &abyn_config) : abyn_config_(abyn_config) {
-      logger_ = std::make_shared<ABYN::Logger>(abyn_config_->GetMyId(),
-                                               abyn_config_->GetLoggingSeverityLevel());
+    Core(ConfigurationPtr &config) : config_(config) {
+      logger_ = std::make_shared<ABYN::Logger>(config_->GetMyId(),
+                                               config_->GetLoggingSeverityLevel());
     }
 
     size_t NextGateId() { return global_gate_id_++; }
@@ -43,15 +43,15 @@ namespace ABYN {
 
     const LoggerPtr &GetLogger() { return logger_; }
 
-    const ABYNConfigurationPtr &GetConfig() { return abyn_config_; }
+    const ConfigurationPtr &GetConfig() { return config_; }
 
     void RegisterCommunicationHandlers(
-        std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> &communication_handlers) {
+        std::vector<ABYN::Communication::CommunicationHandlerPtr> &communication_handlers) {
       communication_handlers_ = communication_handlers;
     }
 
     void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-      if (party_id == abyn_config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
+      if (party_id == config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
       communication_handlers_.at(party_id)->SendMessage(message);
     }
 
@@ -100,7 +100,7 @@ namespace ABYN {
         global_arithmetic_sharing_id_ = 0; //don't need atomic, since only one thread has access to these
     std::atomic<size_t> evaluated_gates = 0;
 
-    ABYN::ABYNConfigurationPtr abyn_config_;
+    ABYN::ConfigurationPtr config_;
     ABYN::LoggerPtr logger_ = nullptr;
 
     std::queue<size_t> active_gates;
@@ -110,16 +110,16 @@ namespace ABYN {
 
     std::vector<ABYN::Wires::Wire *> wires_;
 
-    std::vector<ABYN::Communication::PartyCommunicationHandlerPtr> communication_handlers_;
+    std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
 
-    ABYNCore() = delete;
+    Core() = delete;
 
-    ABYNCore(ABYNCore &) = delete;
+    Core(Core &) = delete;
 
-    ABYNCore(const ABYNCore &) = delete;
+    Core(const Core &) = delete;
   };
 
-  using ABYNCorePtr = std::shared_ptr<ABYNCore>;
+  using CorePtr = std::shared_ptr<Core>;
 }
 
 #endif //ABYNCORE_H

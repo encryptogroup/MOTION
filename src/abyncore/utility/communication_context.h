@@ -12,38 +12,39 @@
 #include <fmt/format.h>
 
 #include "utility/typedefs.h"
-#include "utility/datastorage.h"
+#include "utility/data_storage.h"
 #include "utility/logger.h"
 #include "utility/constants.h"
 
-#include "crypto/aesrandomnessgenerator.h"
+#include "crypto/aes_randomness_generator.h"
 
 namespace ABYN {
 
   using IoServicePtr = std::shared_ptr<boost::asio::io_service>;
   using BoostSocketPtr = std::shared_ptr<boost::asio::ip::tcp::socket>;
 
-  class Party {
+  ///Peer-related communication context
+  class CommunicationContext {
 
   public:
 
-    Party(const std::string ip, u16 port, ABYN::Role role, size_t id);
+    CommunicationContext(const std::string ip, u16 port, ABYN::Role role, size_t id);
 
-    Party(const char *ip, u16 port, ABYN::Role role, size_t id) :
-        Party(std::string(ip), port, role, id) {}
+    CommunicationContext(const char *ip, u16 port, ABYN::Role role, size_t id) :
+        CommunicationContext(std::string(ip), port, role, id) {}
 
-    Party(int socket, ABYN::Role role, size_t id) :
+    CommunicationContext(int socket, ABYN::Role role, size_t id) :
         data_storage_(id), role_(role), id_(id), party_socket_(socket), is_connected_(true) {
       boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
     }
 
-    Party(ABYN::Role role, size_t id, BoostSocketPtr &boost_socket) :
+    CommunicationContext(ABYN::Role role, size_t id, BoostSocketPtr &boost_socket) :
         data_storage_(id), role_(role), id_(id), boost_party_socket_(boost_socket), is_connected_(true) {
       party_socket_ = boost_party_socket_->native_handle();
     }
 
     // close the socket
-    ~Party() {
+    ~CommunicationContext() {
       if (is_connected_ || boost_party_socket_->is_open()) {
         boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
         boost_party_socket_->close();
@@ -109,11 +110,11 @@ namespace ABYN {
 
     void InitializeSocketClient();
 
-    Party() = delete;
+    CommunicationContext() = delete;
 
   };
 
-  using PartyPtr = std::shared_ptr<Party>;
+  using CommunicationContextPtr = std::shared_ptr<CommunicationContext>;
 
 }
 

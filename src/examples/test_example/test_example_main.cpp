@@ -3,7 +3,7 @@
 
 #include <fmt/format.h>
 
-#include "abynparty/abynparty.h"
+#include "abynparty/party.h"
 
 using namespace ABYN;
 
@@ -23,7 +23,7 @@ void test() {
   };
   std::cout << fmt::format("Input owner: {}, output owner: {}\n", input_owner, output_owner);
   try {
-    std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, 7777)));
+    std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, 7777)));
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())

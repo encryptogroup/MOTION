@@ -11,7 +11,7 @@
 #include <omp.h>
 
 #include "gate/gate.h"
-#include "abynparty/abynparty.h"
+#include "abynparty/party.h"
 #include "utility/typedefs.h"
 
 
@@ -53,7 +53,7 @@ namespace {
         result.at(rand() % result.size()) = incorrect_symbols.at(rand() % incorrect_symbols.size());
         return result;
       };
-      auto must_throw_function = [rand_invalid_ip]() { Party(rand_invalid_ip(), rand(), ABYN::Role::Client, 0); };
+      auto must_throw_function = [rand_invalid_ip]() { CommunicationContext(rand_invalid_ip(), rand(), ABYN::Role::Client, 0); };
       ASSERT_ANY_THROW(must_throw_function());
     }
   }
@@ -63,7 +63,7 @@ namespace {
       bool all_connected = false;
       //use std::threads, since omp (and pragmas in general) cannot be used in macros :(
       try {
-        std::vector<ABYNPartyPtr> abyn_parties(0);
+        std::vector<PartyPtr> abyn_parties(0);
 
 #pragma omp parallel num_threads(5) default(shared)
         {
@@ -73,11 +73,11 @@ namespace {
             //Party #0
 #pragma omp task
             {
-              std::vector<PartyPtr> parties;
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server, 3));
-              auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 0}));
+              std::vector<CommunicationContextPtr> parties;
+              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
+              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
+              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server, 3));
+              auto abyn = std::move(PartyPtr(new Party{parties, 0}));
               abyn->Connect();
 #pragma omp critical
               {
@@ -89,11 +89,11 @@ namespace {
 #pragma omp task
             {
               std::string ip = "127.0.0.1";
-              std::vector<PartyPtr> parties;
-              parties.emplace_back(std::make_shared<Party>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
-              parties.emplace_back(std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server, 3));
-              auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 1}));
+              std::vector<CommunicationContextPtr> parties;
+              parties.emplace_back(std::make_shared<CommunicationContext>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
+              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
+              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server, 3));
+              auto abyn = std::move(PartyPtr(new Party{parties, 1}));
               abyn->Connect();
 #pragma omp critical
               {
@@ -106,10 +106,10 @@ namespace {
             {
               std::string ip = "127.0.0.1";
               u16 port = PORT_OFFSET + 1;
-              auto abyn = std::move(ABYNPartyPtr(
-                  new ABYNParty{{std::make_shared<Party>(ip, port, ABYN::Role::Client, 0),
-                                 std::make_shared<Party>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
-                                 std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
+              auto abyn = std::move(PartyPtr(
+                  new Party{{std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
+                                 std::make_shared<CommunicationContext>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
+                                 std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
                                 2}));
               abyn->Connect();
 #pragma omp critical
@@ -121,11 +121,11 @@ namespace {
             //Party #3
 #pragma omp task
             {
-              auto abyn = std::move(ABYNPartyPtr(
-                  new ABYNParty{
-                      {std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Client, 0),
-                       std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Client, 1),
-                       std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Client, 2)},
+              auto abyn = std::move(PartyPtr(
+                  new Party{
+                      {std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Client, 0),
+                       std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Client, 1),
+                       std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Client, 2)},
                       3}));
               abyn->Connect();
 #pragma omp critical
@@ -160,22 +160,22 @@ namespace {
     for (auto i = 0; i < TEST_ITERATIONS; ++i) {
       bool all_connected = false;
       try {
-        std::vector<ABYNPartyPtr> abyn_parties(0);
-        std::vector<std::future<ABYNPartyPtr>> futures(0);
+        std::vector<PartyPtr> abyn_parties(0);
+        std::vector<std::future<PartyPtr>> futures(0);
 
         //Party #0
         futures.push_back(std::async(std::launch::async,
                                      []() {
-                                       std::vector<PartyPtr> parties;
+                                       std::vector<CommunicationContextPtr> parties;
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server,
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server,
                                                                    2));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server,
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server,
                                                                    3));
-                                       auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 0}));
+                                       auto abyn = std::move(PartyPtr(new Party{parties, 0}));
                                        abyn->Connect();
                                        return std::move(abyn);
                                      }));
@@ -184,16 +184,16 @@ namespace {
         futures.push_back(std::async(std::launch::async,
                                      []() {
                                        std::string ip = "127.0.0.1";
-                                       std::vector<PartyPtr> parties;
+                                       std::vector<CommunicationContextPtr> parties;
                                        parties.emplace_back(
-                                           std::make_shared<Party>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
+                                           std::make_shared<CommunicationContext>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server,
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server,
                                                                    2));
                                        parties.emplace_back(
-                                           std::make_shared<Party>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server,
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server,
                                                                    3));
-                                       auto abyn = std::move(ABYNPartyPtr(new ABYNParty{parties, 1}));
+                                       auto abyn = std::move(PartyPtr(new Party{parties, 1}));
                                        abyn->Connect();
                                        return std::move(abyn);
                                      }));
@@ -203,11 +203,11 @@ namespace {
                                      []() {
                                        std::string ip = "127.0.0.1";
                                        u16 port = PORT_OFFSET + 1;
-                                       auto abyn = std::move(ABYNPartyPtr(
-                                           new ABYNParty{{std::make_shared<Party>(ip, port, ABYN::Role::Client, 0),
-                                                          std::make_shared<Party>(
+                                       auto abyn = std::move(PartyPtr(
+                                           new Party{{std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
+                                                          std::make_shared<CommunicationContext>(
                                                               ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
-                                                          std::make_shared<Party>(
+                                                          std::make_shared<CommunicationContext>(
                                                               "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
                                                          2}));
                                        abyn->Connect();
@@ -217,13 +217,13 @@ namespace {
         //Party #3
         futures.push_back(std::async(std::launch::async,
                                      []() {
-                                       auto abyn = std::move(ABYNPartyPtr(
-                                           new ABYNParty{
-                                               {std::make_shared<Party>(
+                                       auto abyn = std::move(PartyPtr(
+                                           new Party{
+                                               {std::make_shared<CommunicationContext>(
                                                    "127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Client, 0),
-                                                std::make_shared<Party>(
+                                                std::make_shared<CommunicationContext>(
                                                     "127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Client, 1),
-                                                std::make_shared<Party>(
+                                                std::make_shared<CommunicationContext>(
                                                     "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Client, 2)},
                                                3}));
                                        abyn->Connect();
@@ -258,7 +258,7 @@ namespace {
       bool all_connected = false;
       for (auto num_parties : num_parties_list) {
         try {
-          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
           for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
           all_connected = true;
           for (auto &abynparty : abyn_parties) {
@@ -291,7 +291,7 @@ namespace {
           T global_input_1 = Rand<T>();
           std::vector<T> global_input_1K = RandomVector<T>(1000), global_input_10K = RandomVector<T>(10000);
           try {
-            std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
             for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -357,7 +357,7 @@ namespace {
         for (auto &v : in_1K) { v = RandomVector<T>(1000); }
         for (auto &v : in_10K) { v = RandomVector<T>(10000); }
         try {
-          std::vector<ABYNPartyPtr> abyn_parties(std::move(ABYNParty::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())

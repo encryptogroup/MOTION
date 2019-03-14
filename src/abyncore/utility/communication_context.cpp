@@ -1,4 +1,4 @@
-#include "party.h"
+#include "communication_context.h"
 
 #include <chrono>
 #include <cstdlib>
@@ -11,25 +11,25 @@
 
 namespace ABYN {
 
-  Party::Party(std::string ip, u16 port, ABYN::Role role, size_t id) :
+  CommunicationContext::CommunicationContext(std::string ip, u16 port, ABYN::Role role, size_t id) :
       data_storage_(id), ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
     if (IsInvalidIp(ip.data())) {
       throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));
     }
   };
 
-  void Party::InitializeMyRandomnessGenerator() {
+  void CommunicationContext::InitializeMyRandomnessGenerator() {
     std::vector<u8> key(ABYN::RandomVector(AES_KEY_SIZE)), iv(ABYN::RandomVector(AES_IV_SIZE));
     my_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
     my_randomness_generator_->Initialize(key.data(), iv.data());
   }
 
-  void Party::InitializeTheirRandomnessGenerator(std::vector<u8> &key, std::vector<u8> &iv) {
+  void CommunicationContext::InitializeTheirRandomnessGenerator(std::vector<u8> &key, std::vector<u8> &iv) {
     their_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
     their_randomness_generator_->Initialize(key.data(), iv.data());
   }
 
-  std::string Party::Connect() {
+  std::string CommunicationContext::Connect() {
     if (is_connected_) {
       return std::move(fmt::format("Already connected to {}:{}\n", ip_, port_));
     } else if (role_ == ABYN::Role::Client) {
@@ -43,7 +43,7 @@ namespace ABYN {
     return std::move(fmt::format("Successfully connected to {}:{}\n", ip_, port_));
   };
 
-  void Party::ParseMessage(std::vector<u8> &&raw_message) {
+  void CommunicationContext::ParseMessage(std::vector<u8> &&raw_message) {
     using namespace ABYN::Communication;
     auto message = GetMessage(raw_message.data());
     flatbuffers::Verifier verifier(raw_message.data(), raw_message.size());
@@ -76,7 +76,7 @@ namespace ABYN {
     }
   }
 
-  bool Party::IsInvalidIp(const char *ip) {
+  bool CommunicationContext::IsInvalidIp(const char *ip) {
     struct sockaddr_in sa;
     auto result = inet_pton(AF_INET, ip, &sa.sin_addr);
     if (result == -1) {
@@ -86,7 +86,7 @@ namespace ABYN {
     return result == 0;
   }
 
-  void Party::InitializeSocketServer() {
+  void CommunicationContext::InitializeSocketServer() {
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port_);
     boost::asio::ip::tcp::acceptor acceptor(*io_service_.get(), endpoint,
                                             boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -100,7 +100,7 @@ namespace ABYN {
     is_connected_ = true;
   };
 
-  void Party::InitializeSocketClient() {
+  void CommunicationContext::InitializeSocketClient() {
     boost::asio::ip::tcp::resolver resolver(*io_service_.get());
     boost::asio::ip::tcp::resolver::query query(ip_, std::to_string(port_));
     boost::system::error_code error;

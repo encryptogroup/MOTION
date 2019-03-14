@@ -58,7 +58,7 @@ namespace ABYN::Wires {
       return static_cast<size_t>(wire_id_);
     }
 
-    const ABYNCorePtr &GetCore() { return core_; }
+    const CorePtr &GetCore() { return core_; }
 
     static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> & wires){
       std::string result{""};
@@ -81,13 +81,13 @@ namespace ABYN::Wires {
 
     ssize_t wire_id_ = -1;
 
-    ABYNCorePtr core_;
+    CorePtr core_;
 
     std::unordered_set<size_t> waiting_gate_ids_;
 
     Wire() {};
 
-    static void UnregisterWireIdFromGate(size_t gate_id, size_t wire_id, ABYNCorePtr &core);
+    static void UnregisterWireIdFromGate(size_t gate_id, size_t wire_id, CorePtr &core);
 
   private:
 
@@ -108,7 +108,7 @@ namespace ABYN::Wires {
     std::vector<T> values_;
   public:
 
-    ArithmeticWire(std::vector<T> &&values, const ABYNCorePtr &core, bool is_constant = false) {
+    ArithmeticWire(std::vector<T> &&values, const CorePtr &core, bool is_constant = false) {
       is_constant_ = is_constant;
       core_ = core;
       values_ = std::move(values);
@@ -117,7 +117,7 @@ namespace ABYN::Wires {
       core_->RegisterNextWire(this);
     }
 
-    ArithmeticWire(std::vector<T> &values, const ABYNCorePtr &core, bool is_constant = false) {
+    ArithmeticWire(std::vector<T> &values, const CorePtr &core, bool is_constant = false) {
       is_constant_ = is_constant;
       core_ = core;
       values_ = values;
@@ -126,7 +126,7 @@ namespace ABYN::Wires {
       core_->RegisterNextWire(this);
     }
 
-    ArithmeticWire(T t, const ABYNCorePtr &core, bool is_constant = false) {
+    ArithmeticWire(T t, const CorePtr &core, bool is_constant = false) {
       is_constant_ = is_constant;
       core_ = core;
       values_.push_back(t);

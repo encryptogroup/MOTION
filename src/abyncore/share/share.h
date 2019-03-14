@@ -24,12 +24,12 @@ namespace ABYN::Shares {
 
     virtual std::shared_ptr<Share> Clone() = 0;
 
-    const ABYN::ABYNCorePtr &GetCore() { return core_; }
+    const ABYN::CorePtr &GetCore() { return core_; }
 
   protected:
     Share() {};
 
-    ABYN::ABYNCorePtr core_;
+    ABYN::CorePtr core_;
 
   private:
 
@@ -72,12 +72,12 @@ namespace ABYN::Shares {
       core_ = wires_.at(0)->GetCore();
     }
 
-    ArithmeticShare(std::vector<T> & input, const ABYNCorePtr &core) {
+    ArithmeticShare(std::vector<T> & input, const CorePtr &core) {
       core_ = core;
       wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
     }
 
-    ArithmeticShare(T input, const ABYNCorePtr &core) {
+    ArithmeticShare(T input, const CorePtr &core) {
       core_ = core;
       wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
     }
@@ -142,15 +142,15 @@ namespace ABYN::Shares {
     std::vector<T> values_;
 
   public:
-    ArithmeticConstantShare(T input, const ABYNCorePtr &core) : values_(std::move(std::vector{input})) {
+    ArithmeticConstantShare(T input, const CorePtr &core) : values_(std::move(std::vector{input})) {
       core_ = core;
     }
 
-    ArithmeticConstantShare(std::vector<T> &input, const ABYNCorePtr &core) : values_(input) {
+    ArithmeticConstantShare(std::vector<T> &input, const CorePtr &core) : values_(input) {
       core_ = core;
     }
 
-    ArithmeticConstantShare(std::vector<T> &&input, const ABYNCorePtr &core) : values_(std::move(input)) {
+    ArithmeticConstantShare(std::vector<T> &&input, const CorePtr &core) : values_(std::move(input)) {
       core_ = core;
     }
 

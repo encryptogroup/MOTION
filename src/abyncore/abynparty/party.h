@@ -8,8 +8,8 @@
 
 #include "utility/typedefs.h"
 #include "utility/constants.h"
-#include "utility/abynconfiguration.h"
-#include "abynparty/abynbackend.h"
+#include "utility/configuration.h"
+#include "abynparty/backend.h"
 #include "gate/gate.h"
 #include "share/share.h"
 //#include "OTExtension/ot/ot-ext.h"
@@ -22,16 +22,16 @@ namespace ABYN {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   using ArithmeticShare = ABYN::Shares::ArithmeticShare<T>;
 
-  class ABYNParty {
+  class Party {
 
   private:
-    ABYNConfigurationPtr configuration_;
-    ABYNBackendPtr backend_;
+    ConfigurationPtr configuration_;
+    BackendPtr backend_;
 
     //Let's make only ABYNConfiguration be copyable
-    ABYNParty() = delete;
+    Party() = delete;
 
-    ABYNParty(ABYNParty &abynparty) = delete;
+    Party(Party &party) = delete;
 
     void EvaluateCircuit();
 
@@ -42,34 +42,34 @@ namespace ABYN {
 
   public:
 
-    ABYNParty(std::vector<PartyPtr> &parties, size_t my_id) {
-      configuration_ = std::make_shared<ABYNConfiguration>(parties, my_id);
-      backend_ = std::make_shared<ABYNBackend>(configuration_);
+    Party(std::vector<CommunicationContextPtr> &parties, size_t my_id) {
+      configuration_ = std::make_shared<Configuration>(parties, my_id);
+      backend_ = std::make_shared<Backend>(configuration_);
     }
 
-    ABYNParty(std::vector<PartyPtr> &&parties, size_t my_id) {
-      configuration_ = std::make_shared<ABYNConfiguration>(std::move(parties), my_id);
-      backend_ = std::make_shared<ABYNBackend>(configuration_);
+    Party(std::vector<CommunicationContextPtr> &&parties, size_t my_id) {
+      configuration_ = std::make_shared<Configuration>(std::move(parties), my_id);
+      backend_ = std::make_shared<Backend>(configuration_);
     }
 
-    ABYNParty(std::initializer_list<PartyPtr> &list_parties, size_t my_id) {
-      configuration_ = std::make_shared<ABYNConfiguration>(list_parties, my_id);
-      backend_ = std::make_shared<ABYNBackend>(configuration_);
+    Party(std::initializer_list<CommunicationContextPtr> &list_parties, size_t my_id) {
+      configuration_ = std::make_shared<Configuration>(list_parties, my_id);
+      backend_ = std::make_shared<Backend>(configuration_);
     }
 
-    ABYNParty(std::initializer_list<PartyPtr> &&list_parties, size_t my_id) {
-      configuration_ = std::make_shared<ABYNConfiguration>(std::move(list_parties), my_id);
-      backend_ = std::make_shared<ABYNBackend>(configuration_);
+    Party(std::initializer_list<CommunicationContextPtr> &&list_parties, size_t my_id) {
+      configuration_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
+      backend_ = std::make_shared<Backend>(configuration_);
     }
 
-    ABYNParty(ABYNConfigurationPtr &configuration) : configuration_(configuration) {}
+    Party(ConfigurationPtr &configuration) : configuration_(configuration) {}
 
-    ~ABYNParty() {
+    ~Party() {
       backend_->WaitForConnectionEnd();
       backend_->GetLogger()->LogInfo("ABYNParty has been deallocated");
     }
 
-    ABYNConfigurationPtr GetConfiguration() { return configuration_; }
+    ConfigurationPtr GetConfiguration() { return configuration_; }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> IN(size_t party_id, T input = 0) {
@@ -120,12 +120,12 @@ namespace ABYN {
 
     void Run(size_t repeats = 1);
 
-    static std::vector<std::unique_ptr<ABYNParty>> GetNLocalParties(size_t num_parties, u16 port);
+    static std::vector<std::unique_ptr<Party>> GetNLocalParties(size_t num_parties, u16 port);
 
     const auto &GetLogger() { return backend_->GetLogger(); }
   };
 
-  using ABYNPartyPtr = std::unique_ptr<ABYNParty>;
+  using PartyPtr = std::unique_ptr<Party>;
 
 }
 #endif //ABYNPARTY_H

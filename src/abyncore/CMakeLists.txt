@@ -1,17 +1,17 @@
 include_directories(${PROJECT_SOURCE_DIR}/src/abyncore)
 
 add_library(abyn
-        abynparty/abynparty.cpp
-        abynparty/abynbackend.cpp
+        abynparty/party.cpp
+        abynparty/backend.cpp
         gate/gate.cpp
         share/share.cpp
         wire/wire.cpp
-        utility/party.cpp
-        utility/abynconfiguration.cpp
+        utility/communication_context.cpp
+        utility/configuration.cpp
         utility/logger.cpp
-        utility/datastorage.cpp
-        crypto/aesrandomnessgenerator.cpp
-        communication/partycommunicationhandler.cpp
+        utility/data_storage.cpp
+        crypto/aes_randomness_generator.cpp
+        communication/communication_handler.cpp
         )
 add_library(ABYN::abyn ALIAS abyn)
 

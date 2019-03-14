@@ -6,39 +6,37 @@
 #include <memory>
 #include <functional>
 
-#include "utility/party.h"
+#include "utility/communication_context.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
 
 namespace ABYN {
 
-  class ABYNConfiguration {
+  class Configuration {
   public:
 
-    ABYNConfiguration(const std::vector<PartyPtr> &parties, size_t id);
+    Configuration(const std::vector<CommunicationContextPtr> &contexts, size_t id);
 
-    ABYNConfiguration(std::vector<PartyPtr> &&parties, size_t id) :
-        ABYNConfiguration(parties, id) {}
+    Configuration(std::vector<CommunicationContextPtr> &&contexts, size_t id) :
+        Configuration(contexts, id) {}
 
-    ABYNConfiguration(const std::initializer_list<PartyPtr> &list_parties, size_t id) :
-        ABYNConfiguration(std::vector(list_parties), id) {}
+    Configuration(const std::initializer_list<CommunicationContextPtr> &contexts, size_t id) :
+        Configuration(std::vector(contexts), id) {}
 
-    ABYNConfiguration(std::initializer_list<PartyPtr> &&list_parties, size_t id) :
-        ABYNConfiguration(std::vector(std::move(list_parties)), id) {}
+    Configuration(std::initializer_list<CommunicationContextPtr> &&contexts, size_t id) :
+        Configuration(std::vector(std::move(contexts)), id) {}
 
-    ~ABYNConfiguration() {}
+    ~Configuration() {}
 
     size_t GetNumOfThreads() { return num_threads_; }
 
     void SetNumOfThreads(size_t n) { num_threads_ = n; }
 
-    std::vector<PartyPtr> &GetParties() { return parties_; }
+    std::vector<CommunicationContextPtr> &GetParties() { return communication_contexts_; }
 
-    size_t GetNumOfParties() { return parties_.size(); }
+    size_t GetNumOfParties() { return communication_contexts_.size(); }
 
-    PartyPtr &GetParty(uint i) { return parties_.at(i); }
-
-    void AddParty(PartyPtr &party) { parties_.push_back(party); }
+    CommunicationContextPtr &GetCommunicationContext(uint i) { return communication_contexts_.at(i); }
 
     size_t GetMyId() { return my_id_; }
 
@@ -52,7 +50,7 @@ namespace ABYN {
 
   private:
     ssize_t my_id_ = -1;
-    std::vector<ABYN::PartyPtr> parties_;
+    std::vector<ABYN::CommunicationContextPtr> communication_contexts_;
     boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
     bool online_after_setup_ = false;
@@ -62,10 +60,10 @@ namespace ABYN {
     //the communication become a bottleneck, e.g., in 10 Gbps networks.
     size_t num_threads_ = std::thread::hardware_concurrency();
 
-    ABYNConfiguration() = delete;
+    Configuration() = delete;
   };
 
-  using ABYNConfigurationPtr = std::shared_ptr<ABYNConfiguration>;
+  using ConfigurationPtr = std::shared_ptr<Configuration>;
 
 }
 

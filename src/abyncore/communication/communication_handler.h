@@ -3,17 +3,17 @@
 
 #include <queue>
 
-#include "utility/party.h"
+#include "utility/communication_context.h"
 #include "utility/logger.h"
 #include "fbs_headers/message_generated.h"
 
 namespace ABYN::Communication {
-  class PartyCommunicationHandler {
+  class CommunicationHandler {
 
   public:
-    PartyCommunicationHandler(ABYN::PartyPtr &party, const ABYN::LoggerPtr &logger);
+    CommunicationHandler(ABYN::CommunicationContextPtr &party, const ABYN::LoggerPtr &logger);
 
-    virtual ~PartyCommunicationHandler();
+    virtual ~CommunicationHandler();
 
     void SendMessage(flatbuffers::FlatBufferBuilder &message);
 
@@ -40,12 +40,12 @@ namespace ABYN::Communication {
     bool VerifyHelloMessage();
 
   private:
-    ABYN::PartyPtr party_;
+    ABYN::CommunicationContextPtr party_;
     ABYN::LoggerPtr logger_;
 
     std::string handler_info_;
 
-    PartyCommunicationHandler() = delete;
+    CommunicationHandler() = delete;
 
     std::mutex queue_receive_mutex_, queue_send_mutex_;
 
@@ -62,16 +62,16 @@ namespace ABYN::Communication {
 
     void SentTerminationMessage() { sent_termination_message_ = true; }
 
-    static void ActAsSender(PartyCommunicationHandler *handler);
+    static void ActAsSender(CommunicationHandler *handler);
 
-    static void ActAsReceiver(PartyCommunicationHandler *handler);
+    static void ActAsReceiver(CommunicationHandler *handler);
 
-    static u32 ParseHeader(PartyCommunicationHandler *handler);
+    static u32 ParseHeader(CommunicationHandler *handler);
 
-    static std::vector<u8> ParseBody(PartyCommunicationHandler *handler, u32 size);
+    static std::vector<u8> ParseBody(CommunicationHandler *handler, u32 size);
   };
 
-  using PartyCommunicationHandlerPtr = std::shared_ptr<PartyCommunicationHandler>;
+  using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
 }
 
 #endif //PARTYCOMMUNICATIONHANDLER_H

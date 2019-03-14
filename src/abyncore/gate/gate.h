@@ -12,7 +12,7 @@
 #include "utility/constants.h"
 #include "utility/helpers.h"
 
-#include "communication/outputmessage.h"
+#include "communication/output_message.h"
 
 //TODO: rearrange this code into multiple files
 
@@ -80,7 +80,7 @@ namespace ABYN::Gates::Interfaces {
 
   protected:
     ABYN::Shares::SharePtr output_share_;
-    ABYN::ABYNCorePtr core_;
+    ABYN::CorePtr core_;
     ssize_t gate_id_ = -1;
     std::unordered_set<size_t> wire_dependencies_;
     GateType gate_type_ = InvalidGate;
@@ -271,7 +271,7 @@ namespace ABYN::Gates::Arithmetic {
     size_t party_id_ = false;
 
   public:
-    ArithmeticInputGate(const std::vector<T> &input, size_t party_id, const ABYN::ABYNCorePtr &core) :
+    ArithmeticInputGate(const std::vector<T> &input, size_t party_id, const ABYN::CorePtr &core) :
         input_(input), party_id_(party_id) {
       core_ = core;
       gate_id_ = core_->NextGateId();
@@ -287,7 +287,7 @@ namespace ABYN::Gates::Arithmetic {
                                                gate_info));
     }
 
-    ArithmeticInputGate(std::vector<T> &&input, size_t party_id, const ABYN::ABYNCorePtr &core) :
+    ArithmeticInputGate(std::vector<T> &&input, size_t party_id, const ABYN::CorePtr &core) :
         ArithmeticInputGate(input, party_id, core) {}
 
     virtual ~ArithmeticInputGate() {}
@@ -303,7 +303,7 @@ namespace ABYN::Gates::Arithmetic {
         auto log_string = std::string("");
         for (auto i = 0u; i < core_->GetConfig()->GetNumOfParties(); ++i) {
           if (i == my_id) { continue; }
-          auto randomness = std::move(core_->GetConfig()->GetParty(i)->GetMyRandomnessGenerator()
+          auto randomness = std::move(core_->GetConfig()->GetCommunicationContext(i)->GetMyRandomnessGenerator()
                                           ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
           log_string.append(fmt::format("id#{}:{} ", i, randomness.at(0)));
           for (auto j = 0u; j < result.size(); ++j) { result.at(j) += randomness.at(j); }
@@ -315,7 +315,7 @@ namespace ABYN::Gates::Arithmetic {
             party_id_, gate_id_, input_.at(0) + result.at(0), input_.at(0), log_string);
         core_->GetLogger()->LogTrace(s);
       } else {
-        auto &rand_generator = core_->GetConfig()->GetParty(party_id_)->GetTheirRandomnessGenerator();
+        auto &rand_generator = core_->GetConfig()->GetCommunicationContext(party_id_)->GetTheirRandomnessGenerator();
         Helpers::WaitFor(rand_generator->IsInitialized());
         SetSetupIsReady();
 
@@ -410,7 +410,7 @@ namespace ABYN::Gates::Arithmetic {
         for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
           if (i == config->GetMyId()) { continue; }
           bool success = false;
-          auto &data_storage = config->GetParty(i)->GetDataStorage();
+          auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
           assert(shared_outputs_.at(i).size() == 0);
           while (!success) {
             auto message = data_storage.GetOutputMessage(gate_id_);
