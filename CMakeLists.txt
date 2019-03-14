@@ -148,10 +148,6 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
     add_subdirectory(fbs)
 endif ()
 
-include_directories(extern)
-include_directories(extern/flatbuffers/include)
-include_directories(src/abyncore)
-
 add_subdirectory(src/abyncore)
 
 if (ABYN_BUILD_TESTS)
