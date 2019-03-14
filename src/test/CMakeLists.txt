@@ -9,5 +9,5 @@ add_executable(abyntest
         )
 
 target_compile_options(abyntest PRIVATE "-Wall" "-Wextra")
-target_link_libraries(abyntest ABYN::abyn ENCRYPTO_utils::encrypto_utils fmt::fmt ${GTEST_LIBRARIES} ${GTEST_LDFLAGS})
+target_link_libraries(abyntest ABYN::abyn ENCRYPTO_utils::encrypto_utils fmt::fmt  ${GTEST_LIBRARIES} ${GTEST_LDFLAGS})
 target_compile_options(abyntest PUBLIC ${GTEST_CFLAGS} ${CMAKE_THREAD_LIBS_INIT})

@@ -3,6 +3,7 @@ project(ABYN LANGUAGES CXX)
 set(ABYN_VERSION 1.00)
 
 option(ABYN_BUILD_EXE "Build executables" ON)
+option(ABYN_BUILD_TESTS "Build tests" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -83,6 +84,24 @@ endif ()
 
 set(CMAKE_CXX_STANDARD 17)
 
+if (ABYN_BUILD_TESTS)
+    find_package(gtest QUIET)
+    if (gtest_FOUND)
+        message(STATUS "Found gtest")
+    elseif (NOT gtest_FOUND AND NOT TARGET gtest)
+        message("gtest was not found: add gtest subdirectory")
+        if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
+            find_package(Git REQUIRED)
+            message("initialize Git submodule: extern/googletest")
+            execute_process(COMMAND git submodule update --init extern/googletest
+                    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+        endif ()
+        option(BUILD_GMOCK Off)
+        option(INSTALL_GTEST Off)
+        add_subdirectory(extern/googletest)
+    endif ()
+endif ()
+
 find_package(ENCRYPTO_utils QUIET)
 if (ENCRYPTO_utils_FOUND)
     message(STATUS "Found ENCRYPTO_utils")
@@ -153,7 +172,10 @@ include_directories(src/abyncore)
 
 add_subdirectory(src/abyncore)
 
-if (ABYN_BUILD_EXE)
+if (ABYN_BUILD_TESTS)
     add_subdirectory(src/test)
+endif (ABYN_BUILD_TESTS)
+
+if (ABYN_BUILD_EXE)
     add_subdirectory(src/examples)
 endif (ABYN_BUILD_EXE)
