@@ -159,6 +159,14 @@ if (ABYN_BUILD_TESTS)
 endif (ABYN_BUILD_TESTS)
 
 if (ABYN_BUILD_EXE)
+    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
+        find_package(Git REQUIRED)
+        message("initialize Git submodule: extern/googletest")
+        execute_process(COMMAND git submodule update --init extern/googletest
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    endif ()
+
+    option(BUILD_GMOCK "Builds the googlemock subproject" OFF)
     add_subdirectory(extern/googletest EXCLUDE_FROM_ALL)
     add_subdirectory(src/examples)
 endif (ABYN_BUILD_EXE)
