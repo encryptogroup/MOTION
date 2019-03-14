@@ -26,9 +26,7 @@ script:
   - cd build_debug
   - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake .. -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On
   - make
-  - cd bin
-  - ls
-  - ./abytest
+  - ./bin/abyntest
 
 notifications:
   - email: false
