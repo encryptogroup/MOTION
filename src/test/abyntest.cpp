@@ -428,12 +428,12 @@ namespace {
     template_test(static_cast<u32>(0));
     template_test(static_cast<u64>(0));
   }
-
+/*
   [[maybe_unused]]
   int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
-  }
+  }*/
 }
 
 #endif
