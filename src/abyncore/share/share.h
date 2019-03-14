@@ -72,7 +72,7 @@ namespace ABYN::Shares {
       core_ = wires_.at(0)->GetCore();
     }
 
-    ArithmeticShare(std::vector<T> & input, const CorePtr &core) {
+    ArithmeticShare(std::vector<T> &input, const CorePtr &core) {
       core_ = core;
       wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
     }

@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <atomic>
 
-#include "abynparty/abyncore.h"
+#include "abynparty/core.h"
 #include "share/share.h"
 #include "utility/typedefs.h"
 #include "utility/constants.h"

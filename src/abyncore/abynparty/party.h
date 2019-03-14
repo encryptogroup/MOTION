@@ -25,7 +25,7 @@ namespace ABYN {
   class Party {
 
   private:
-    ConfigurationPtr configuration_;
+    ConfigurationPtr config_;
     BackendPtr backend_;
 
     //Let's make only ABYNConfiguration be copyable
@@ -43,33 +43,33 @@ namespace ABYN {
   public:
 
     Party(std::vector<CommunicationContextPtr> &parties, size_t my_id) {
-      configuration_ = std::make_shared<Configuration>(parties, my_id);
-      backend_ = std::make_shared<Backend>(configuration_);
+      config_ = std::make_shared<Configuration>(parties, my_id);
+      backend_ = std::make_shared<Backend>(config_);
     }
 
     Party(std::vector<CommunicationContextPtr> &&parties, size_t my_id) {
-      configuration_ = std::make_shared<Configuration>(std::move(parties), my_id);
-      backend_ = std::make_shared<Backend>(configuration_);
+      config_ = std::make_shared<Configuration>(std::move(parties), my_id);
+      backend_ = std::make_shared<Backend>(config_);
     }
 
     Party(std::initializer_list<CommunicationContextPtr> &list_parties, size_t my_id) {
-      configuration_ = std::make_shared<Configuration>(list_parties, my_id);
-      backend_ = std::make_shared<Backend>(configuration_);
+      config_ = std::make_shared<Configuration>(list_parties, my_id);
+      backend_ = std::make_shared<Backend>(config_);
     }
 
     Party(std::initializer_list<CommunicationContextPtr> &&list_parties, size_t my_id) {
-      configuration_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
-      backend_ = std::make_shared<Backend>(configuration_);
+      config_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
+      backend_ = std::make_shared<Backend>(config_);
     }
 
-    Party(ConfigurationPtr &configuration) : configuration_(configuration) {}
+    Party(ConfigurationPtr &configuration) : config_(configuration) {}
 
     ~Party() {
       backend_->WaitForConnectionEnd();
       backend_->GetLogger()->LogInfo("ABYNParty has been deallocated");
     }
 
-    ConfigurationPtr GetConfiguration() { return configuration_; }
+    ConfigurationPtr GetConfiguration() { return config_; }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ArithmeticSharePtr<T> IN(size_t party_id, T input = 0) {
@@ -114,7 +114,7 @@ namespace ABYN {
       return addition_gate->GetOutputArithmeticShare();
     }
 
-    size_t GetNumOfParties() { return configuration_->GetNumOfParties(); }
+    size_t GetNumOfParties() { return config_->GetNumOfParties(); }
 
     void Connect();
 

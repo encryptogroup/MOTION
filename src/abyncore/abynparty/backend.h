@@ -5,7 +5,7 @@
 #include <iterator>
 #include <algorithm>
 
-#include "abyncore.h"
+#include "core.h"
 
 #include "utility/configuration.h"
 #include "utility/constants.h"
@@ -23,17 +23,17 @@ namespace ABYN {
 
   public:
 
-    Backend(ConfigurationPtr &abyn_config);
+    Backend(ConfigurationPtr &config);
 
     ~Backend() {};
 
-    const ConfigurationPtr &GetConfig() { return abyn_config_; }
+    const ConfigurationPtr &GetConfig() { return config_; }
 
-    const LoggerPtr &GetLogger() { return abyn_core_->GetLogger(); }
+    const LoggerPtr &GetLogger() { return core_->GetLogger(); }
 
-    const CorePtr &GetCore() { return abyn_core_; }
+    const CorePtr &GetCore() { return core_; }
 
-    size_t NextGateId() const { return abyn_core_->NextGateId(); }
+    size_t NextGateId() const { return core_->NextGateId(); }
 
     void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE], size_t party_id);
 
@@ -57,15 +57,15 @@ namespace ABYN {
 
     void WaitForConnectionEnd();
 
-    const Gates::Interfaces::GatePtr & GetGate(size_t gate_id) { return gates_.at(gate_id); }
+    const Gates::Interfaces::GatePtr &GetGate(size_t gate_id) { return gates_.at(gate_id); }
 
     const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 
   private:
     Backend() = delete;
 
-    ConfigurationPtr abyn_config_;
-    CorePtr abyn_core_;
+    ConfigurationPtr config_;
+    CorePtr core_;
 
     std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
 

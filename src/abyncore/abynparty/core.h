@@ -98,6 +98,7 @@ namespace ABYN {
     size_t global_gate_id_ = 0,
         global_wire_id_ = 0,
         global_arithmetic_sharing_id_ = 0; //don't need atomic, since only one thread has access to these
+
     std::atomic<size_t> evaluated_gates = 0;
 
     ABYN::ConfigurationPtr config_;

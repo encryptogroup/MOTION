@@ -8,7 +8,7 @@
 #include <unordered_set>
 
 #include "utility/typedefs.h"
-#include "abynparty/abyncore.h"
+#include "abynparty/core.h"
 
 
 namespace ABYN::Gates::Interfaces {

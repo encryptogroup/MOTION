@@ -12,15 +12,15 @@
 
 namespace ABYN {
 
-  Backend::Backend(ConfigurationPtr &abyn_config) : abyn_config_(abyn_config) {
-    abyn_core_ = std::make_shared<ABYN::Core>(abyn_config);
+  Backend::Backend(ConfigurationPtr &config) : config_(config) {
+    core_ = std::make_shared<ABYN::Core>(config);
 
-    for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
-      if (abyn_config_->GetCommunicationContext(i) == nullptr) { continue; }
-      abyn_config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
-      abyn_config_->GetCommunicationContext(i)->SetLogger(abyn_core_->GetLogger());
-      auto &logger = abyn_core_->GetLogger();
-      auto seed = std::move(abyn_config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
+    for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
+      if (config_->GetCommunicationContext(i) == nullptr) { continue; }
+      config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
+      config_->GetCommunicationContext(i)->SetLogger(core_->GetLogger());
+      auto &logger = core_->GetLogger();
+      auto seed = std::move(config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
       logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
                                    i, Helpers::Print::Hex(seed)));
     }
@@ -28,46 +28,46 @@ namespace ABYN {
 
   void Backend::InitializeCommunicationHandlers() {
     using PartyCommunicationHandler = ABYN::Communication::CommunicationHandler;
-    communication_handlers_.resize(abyn_config_->GetNumOfParties(), nullptr);
+    communication_handlers_.resize(config_->GetNumOfParties(), nullptr);
 #pragma omp parallel for
-    for (auto i = 0u; i < abyn_config_->GetNumOfParties(); ++i) {
-      if (i == abyn_config_->GetMyId()) { continue; }
+    for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
+      if (i == config_->GetMyId()) { continue; }
       auto message = fmt::format(
           "Party #{} creates CommHandler for Party #{} with end ip {}, local port {} and remote port {}",
-          abyn_config_->GetMyId(), i,
-          abyn_config_->GetCommunicationContext(i)->GetIp(),
-          abyn_config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
-          abyn_config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
-      abyn_core_->GetLogger()->LogDebug(message);
+          config_->GetMyId(), i,
+          config_->GetCommunicationContext(i)->GetIp(),
+          config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
+          config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
+      core_->GetLogger()->LogDebug(message);
 
       communication_handlers_.at(i) =
-          std::make_shared<PartyCommunicationHandler>(abyn_config_->GetCommunicationContext(i), abyn_core_->GetLogger());
+          std::make_shared<PartyCommunicationHandler>(config_->GetCommunicationContext(i), core_->GetLogger());
     }
-    abyn_core_->RegisterCommunicationHandlers(communication_handlers_);
+    core_->RegisterCommunicationHandlers(communication_handlers_);
   }
 
   void Backend::SendHelloToOthers() {
-    abyn_core_->GetLogger()->LogInfo("Send hello message to other parties");
-    for (auto destination_id = 0u; destination_id < abyn_config_->GetNumOfParties(); ++destination_id) {
-      if (destination_id == abyn_config_->GetMyId()) { continue; }
+    core_->GetLogger()->LogInfo("Send hello message to other parties");
+    for (auto destination_id = 0u; destination_id < config_->GetNumOfParties(); ++destination_id) {
+      if (destination_id == config_->GetMyId()) { continue; }
       std::vector<u8> seed;
       if (share_inputs_) {
-        seed = std::move(abyn_config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed());
+        seed = std::move(config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed());
       }
 
       auto seed_ptr = share_inputs_ ? &seed : nullptr;
-      auto hello_message = ABYN::Communication::BuildHelloMessage(abyn_config_->GetMyId(),
+      auto hello_message = ABYN::Communication::BuildHelloMessage(config_->GetMyId(),
                                                                   destination_id,
-                                                                  abyn_config_->GetNumOfParties(),
+                                                                  config_->GetNumOfParties(),
                                                                   seed_ptr,
-                                                                  abyn_config_->OnlineAfterSetup(),
+                                                                  config_->OnlineAfterSetup(),
                                                                   ABYN::ABYN_VERSION);
       Send(destination_id, hello_message);
     }
   }
 
   void Backend::Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-    abyn_core_->Send(party_id, message);
+    core_->Send(party_id, message);
   }
 
   void Backend::RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate) {
@@ -80,7 +80,7 @@ namespace ABYN {
   }
 
   void Backend::EvaluateSequential() {
-#pragma omp parallel num_threads(abyn_config_->GetNumOfThreads()) default(shared)
+#pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
     {
 #pragma omp single nowait
       {
@@ -94,12 +94,12 @@ namespace ABYN {
 
 //evaluate all other gates moved to the active queue
 #pragma omp task
-        while (abyn_core_->GetNumOfEvaluatedGates() < abyn_core_->GetTotalNumOfGates()) {
-          auto gate_id = abyn_core_->GetNextGateFromOnlineQueue();
+        while (core_->GetNumOfEvaluatedGates() < core_->GetTotalNumOfGates()) {
+          auto gate_id = core_->GetNextGateFromOnlineQueue();
 #pragma omp task if(gate_id < 0) // doesn't make much sense, but will create a task if gate_id >= 0
           {
             assert(gate_id >= 0);
-            abyn_core_->GetGate(gate_id)->Evaluate();
+            core_->GetGate(gate_id)->Evaluate();
           }
           if (gate_id <= 0) { std::this_thread::sleep_for(std::chrono::microseconds(100)); }
         }
@@ -130,7 +130,7 @@ namespace ABYN {
       if (handler) { success &= handler->VerifyHelloMessage(); }
     }
 
-    if (!success) { abyn_core_->GetLogger()->LogError("Hello message verification failed"); }
-    else { abyn_core_->GetLogger()->LogInfo("Successfully verified hello messages"); }
+    if (!success) { core_->GetLogger()->LogError("Hello message verification failed"); }
+    else { core_->GetLogger()->LogInfo("Successfully verified hello messages"); }
   }
 }

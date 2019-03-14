@@ -53,7 +53,6 @@ namespace ABYN::Communication {
     std::queue<std::vector<u8>> queue_send_, queue_receive_;
 
 
-
     bool continue_communication_ = true;
 
     bool received_termination_message_ = false, sent_termination_message_ = false;

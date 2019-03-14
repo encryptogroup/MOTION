@@ -106,6 +106,11 @@ namespace ABYN::Communication {
         handler->logger_->LogTrace(fmt::format("{}: Written to the socket,  {}, message: {}",
                                                handler->GetInfo(), message_info, s));
 
+        if (message.size() > std::numeric_limits<u32>::max()) {
+          throw (std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
+                                                std::numeric_limits<u32>::max(), message.size())));
+        }
+
         boost::system::error_code ec;
         boost::asio::write(*handler->GetSocket().get(), boost::asio::buffer(message),
                            boost::asio::transfer_exactly(message.size()), ec);

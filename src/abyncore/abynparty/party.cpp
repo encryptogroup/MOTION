@@ -6,17 +6,17 @@ namespace ABYN {
 
   void Party::Connect() {
 //assign 1 thread for each connection
-    auto n = configuration_->GetNumOfParties();
+    auto n = config_->GetNumOfParties();
 #pragma omp parallel num_threads(n + 1)
 #pragma omp single
     {
 #pragma omp taskloop num_tasks(n) default(shared)
       for (auto destination_id = 0u; destination_id < n; ++destination_id) {
-        if (destination_id == configuration_->GetMyId()) { continue; }
-        auto &p = configuration_->GetCommunicationContext(destination_id);
+        if (destination_id == config_->GetMyId()) { continue; }
+        auto &p = config_->GetCommunicationContext(destination_id);
         backend_->GetLogger()->LogDebug(fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
 
-        auto result = configuration_->GetCommunicationContext(destination_id)->Connect();
+        auto result = config_->GetCommunicationContext(destination_id)->Connect();
         backend_->GetLogger()->LogInfo(result);
       }
       backend_->InitializeCommunicationHandlers();
@@ -46,7 +46,6 @@ namespace ABYN {
     }
 
     std::vector<PartyPtr> abyn_parties(num_parties);
-    //std::vector<std::future<ABYNPartyPtr>> futures(0);
     std::map<u32, u16> assigned_ports;
 
     //portid generation function - we require symmetric port generation for parties, e.g., parties #4 and #7
