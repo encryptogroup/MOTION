@@ -3,7 +3,6 @@ add_executable(abyntest
         )
 
 target_include_directories(abyntest PRIVATE
-        ${PROJECT_SOURCE_DIR}/src/abyncore
         ${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
 
 target_link_libraries(abyntest PUBLIC
