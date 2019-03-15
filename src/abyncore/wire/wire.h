@@ -20,11 +20,11 @@ namespace ABYN::Gates::Interfaces {
 namespace ABYN::Wires {
   class Wire {
   public:
-    size_t GetNumOfParallelValues() { return num_of_parallel_values_; }
+    size_t GetNumOfParallelValues() const { return num_of_parallel_values_; }
 
-    virtual enum CircuitType GetCircuitType() = 0;
+    virtual enum CircuitType GetCircuitType() const = 0;
 
-    virtual enum Protocol GetProtocol() = 0;
+    virtual enum Protocol GetProtocol() const = 0;
 
     virtual ~Wire() {}
 
@@ -49,20 +49,20 @@ namespace ABYN::Wires {
 
     const auto &GetWaitingGatesIds() const { return waiting_gate_ids_; }
 
-    const bool &IsReady() { if (is_constant_) { return is_constant_; } else { return is_done_; }};
+    const bool &IsReady() const { if (is_constant_) { return is_constant_; } else { return is_done_; }}
 
-    bool IsConstant() { return is_constant_; }
+    bool IsConstant() const { return is_constant_; }
 
-    size_t GetWireId() {
+    size_t GetWireId() const {
       assert(wire_id_ >= 0);
       return static_cast<size_t>(wire_id_);
     }
 
-    const CorePtr &GetCore() { return core_; }
+    const CorePtr &GetCore() const { return core_; }
 
-    static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> & wires){
+    static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
       std::string result{""};
-      for(auto & w : wires){result.append(fmt::format("{} ", w->GetWireId()));}
+      for (auto &w : wires) { result.append(fmt::format("{} ", w->GetWireId())); }
       result.erase(result.end() - 1);
       return std::move(result);
     }
@@ -104,8 +104,6 @@ namespace ABYN::Wires {
 // Allow only unsigned integers for Arithmetic wires.
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticWire : public Wire {
-  private:
-    std::vector<T> values_;
   public:
 
     ArithmeticWire(std::vector<T> &&values, const CorePtr &core, bool is_constant = false) {
@@ -117,7 +115,7 @@ namespace ABYN::Wires {
       core_->RegisterNextWire(this);
     }
 
-    ArithmeticWire(std::vector<T> &values, const CorePtr &core, bool is_constant = false) {
+    ArithmeticWire(const std::vector<T> &values, const CorePtr &core, bool is_constant = false) {
       is_constant_ = is_constant;
       core_ = core;
       values_ = values;
@@ -135,15 +133,18 @@ namespace ABYN::Wires {
       core_->RegisterNextWire(this);
     }
 
-    virtual ~ArithmeticWire() {};
+    virtual ~ArithmeticWire() {}
 
-    virtual Protocol GetProtocol() final { return Protocol::ArithmeticGMW; };
+    virtual Protocol GetProtocol() const final { return Protocol::ArithmeticGMW; }
 
-    virtual CircuitType GetCircuitType() final { return CircuitType::ArithmeticType; };
+    virtual CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
 
-    const std::vector<T> &GetValuesOnWire() { return values_; };
+    const std::vector<T> &GetValuesOnWire() { return values_; }
 
-    std::vector<T> &GetMutableValuesOnWire() { return values_; };
+    std::vector<T> &GetMutableValuesOnWire() { return values_; }
+
+  private:
+    std::vector<T> values_;
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -152,35 +153,80 @@ namespace ABYN::Wires {
   //TODO: implement boolean wires
   class BooleanWire : public Wire {
   public:
-    virtual CircuitType GetCircuitType() final { return CircuitType::BooleanType; }
 
     virtual ~BooleanWire() {}
 
-  private:
-    BooleanWire() = delete;
+    virtual CircuitType GetCircuitType() const final { return CircuitType::BooleanType; }
 
+    virtual Protocol GetProtocol() const = 0;
+
+  protected:
+    BooleanWire();
+
+  private:
     BooleanWire(BooleanWire &) = delete;
   };
 
+  using BooleanWirePtr = std::shared_ptr<BooleanWire>;
+
+
   class GMWWire : public BooleanWire {
   public:
+    GMWWire(std::vector<bool> &&values, const CorePtr &core, bool is_constant = false) {
+      values_ = std::move(values);
+      core_ = core;
+      is_constant_ = is_constant;
+      num_of_parallel_values_ = values_.size();
+      wire_id_ = core_->NextWireId();
+      core_->RegisterNextWire(this);
+    }
+
+    GMWWire(const std::vector<bool> &values, const CorePtr &core, bool is_constant = false) {
+      values_ = values;
+      core_ = core;
+      is_constant_ = is_constant;
+      num_of_parallel_values_ = values_.size();
+      wire_id_ = core_->NextWireId();
+      core_->RegisterNextWire(this);
+    }
+
+    GMWWire(bool value, const CorePtr &core, bool is_constant = false) {
+      values_ = {value};
+      core_ = core;
+      is_constant_ = is_constant;
+      num_of_parallel_values_ = 1;
+      wire_id_ = core_->NextWireId();
+      core_->RegisterNextWire(this);
+    }
+
     virtual ~GMWWire() {}
+
+    virtual Protocol GetProtocol() const final { return Protocol::BooleanGMW; }
 
   private:
     GMWWire() = delete;
 
     GMWWire(GMWWire &) = delete;
+
+  private:
+    std::vector<bool> values_;
   };
+
+  using GMWWirePtr = std::shared_ptr<GMWWire>;
 
   class BMRWire : BooleanWire {
   public:
     virtual ~BMRWire() {}
+
+    virtual Protocol GetProtocol() const final { return Protocol::BMR; }
 
   private:
     BMRWire() = delete;
 
     BMRWire(BMRWire &) = delete;
   };
+
+  using BMRWirePtr = std::shared_ptr<GMWWire>;
 
 }
 
