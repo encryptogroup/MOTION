@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(ABYN LANGUAGES CXX)
 set(ABYN_VERSION 1.00)
-cmake_policy(SET CMP0077 NEW)
+cmake_policy(SET CMP0075 NEW)
 
 option(ABYN_BUILD_EXE "Build executables" ON)
 option(ABYN_BUILD_TESTS "Build tests" ON)
