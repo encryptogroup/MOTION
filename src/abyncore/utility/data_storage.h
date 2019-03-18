@@ -42,7 +42,7 @@ namespace ABYN {
     std::vector<u8> received_hello_message_, sent_hello_message_;
     std::unordered_map<std::size_t, std::vector<u8>> received_output_messages_; // id, buffer
     ABYN::LoggerPtr logger_;
-    std::size_t id_ = -1;
+    std::int64_t id_ = -1;
   };
 }
 

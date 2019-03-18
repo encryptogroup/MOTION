@@ -1,14 +1,17 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
 
-#include <inttypes.h>
-
 namespace ABYN {
 
-  using u8 = uint8_t;
-  using u16 = uint16_t;
-  using u32 = uint32_t;
-  using u64 = uint64_t;
+  using u8 = unsigned char;
+  static_assert(sizeof(u8) == 1);
+  using u16 = unsigned short int;
+  static_assert(sizeof(u16) == 2);
+  using u32 = unsigned int;
+  static_assert(sizeof(u32) == 4);
+  using u64 = unsigned long long int;
+  static_assert(sizeof(u64) == 8);
+
 
   namespace Gates::Interfaces {};
   namespace Gates::Arithmetic {};

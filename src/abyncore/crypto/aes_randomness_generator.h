@@ -32,7 +32,7 @@ namespace ABYN::Crypto {
 
   private:
     static const std::size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
-    std::size_t party_id_ = -1;
+    std::int64_t party_id_ = -1;
 
     EVP_CIPHER_CTX *ctx_ = nullptr;                  /// AES context, created only once and reused further
     u8 raw_key_[AES_KEY_SIZE] = {0};                 /// AES key in raw u8 format

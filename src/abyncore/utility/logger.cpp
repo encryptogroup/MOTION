@@ -14,7 +14,7 @@
 #include <boost/log/sources/severity_channel_logger.hpp>
 
 #include <fmt/format.h>
-#include <fmt/time.h>
+#include <fmt/chrono.h>
 #include <boost/log/support/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 

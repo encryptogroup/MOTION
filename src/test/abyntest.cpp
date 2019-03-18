@@ -28,10 +28,10 @@ namespace {
   template<typename T>
   inline T Rand() {
     if (typeid(T) == typeid(u64)) {
-      u64 r = rand();
+      u64 r = std::rand();
       r <<= 32;
-      return r + rand();
-    } else return rand();
+      return r + std::rand();
+    } else return std::rand();
   }
 
   template<typename T>
@@ -43,17 +43,17 @@ namespace {
 
   // Check that ABYNParty throws an exception when using an incorrect IP address
   TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
-    srand(time(NULL));
+    std::srand(time(nullptr));
     const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
 
     for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-      auto r_u8 = []() { return std::to_string((u8) rand()); };
+      auto r_u8 = []() { return std::to_string((u8) std::rand()); };
       auto rand_invalid_ip = [r_u8, incorrect_symbols]() {
         std::string result = fmt::format("{}.{}.{}.{}", r_u8(), r_u8(), r_u8(), r_u8());
-        result.at(rand() % result.size()) = incorrect_symbols.at(rand() % incorrect_symbols.size());
+        result.at(std::rand() % result.size()) = incorrect_symbols.at(std::rand() % incorrect_symbols.size());
         return result;
       };
-      auto must_throw_function = [rand_invalid_ip]() { CommunicationContext(rand_invalid_ip(), rand(), ABYN::Role::Client, 0); };
+      auto must_throw_function = [rand_invalid_ip]() { CommunicationContext(rand_invalid_ip(), std::rand(), ABYN::Role::Client, 0); };
       ASSERT_ANY_THROW(must_throw_function());
     }
   }
@@ -280,13 +280,13 @@ namespace {
   }
 
   TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
-    srand(time(NULL));
+    std::srand(time(nullptr));
     auto template_test = [](auto template_var) {
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
         bool success = true;
         for (auto num_parties : num_parties_list) {
-          std::size_t input_owner = rand() % num_parties,
-              output_owner = rand() % num_parties;
+          std::size_t input_owner = std::rand() % num_parties,
+              output_owner = std::rand() % num_parties;
           using T = decltype(template_var);
           T global_input_1 = Rand<T>();
           std::vector<T> global_input_1K = RandomVector<T>(1000), global_input_10K = RandomVector<T>(10000);
@@ -346,12 +346,12 @@ namespace {
 
 
   TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
-    srand(time(NULL));
+    std::srand(time(nullptr));
     auto template_test = [](auto template_var) {
       using T = decltype(template_var);
       const std::vector<T> _zero_v_1K(1000, 0), _zero_v_10K(10000, 0);
       for (auto num_parties : num_parties_list) {
-        std::size_t output_owner = rand() % num_parties;
+        std::size_t output_owner = std::rand() % num_parties;
         std::vector<T> in_1 = RandomVector<T>(num_parties);
         std::vector<std::vector<T>> in_1K(num_parties), in_10K(num_parties);
         for (auto &v : in_1K) { v = RandomVector<T>(1000); }

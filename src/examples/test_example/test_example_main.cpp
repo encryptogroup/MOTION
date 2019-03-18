@@ -11,14 +11,14 @@ using namespace ABYN;
 template<typename T>
 void test() {
   auto num_parties = 4u;
-  srand(time(NULL));
-  std::size_t input_owner = rand() % num_parties, output_owner = rand() % num_parties;
+  std::srand(time(nullptr));
+  std::size_t input_owner = std::rand() % num_parties, output_owner = std::rand() % num_parties;
   std::vector<T> inputs(num_parties);
   for (auto &v : inputs) {
-    v = rand();
+    v = std::rand();
     if (sizeof(T) == 8) {
       v <<= 4;
-      v += rand();
+      v += std::rand();
     }
   };
   std::cout << fmt::format("Input owner: {}, output owner: {}\n", input_owner, output_owner);

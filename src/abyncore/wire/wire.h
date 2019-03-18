@@ -54,7 +54,6 @@ namespace ABYN::Wires {
     bool IsConstant() const { return is_constant_; }
 
     std::size_t GetWireId() const {
-      assert(wire_id_ >= 0);
       return static_cast<std::size_t>(wire_id_);
     }
 
@@ -79,7 +78,7 @@ namespace ABYN::Wires {
     // gates will wait for wires to be evaluated to proceed with their evaluation
     bool is_done_ = false;
 
-    std::size_t wire_id_ = -1;
+    std::int64_t wire_id_ = -1;
 
     CorePtr core_;
 

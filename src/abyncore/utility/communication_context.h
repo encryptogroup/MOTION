@@ -64,7 +64,7 @@ namespace ABYN {
 
     u16 GetPort() { return port_; }
 
-    std::size_t GetId() { return id_; }
+    std::int64_t GetId() { return id_; }
 
     bool IsConnected() { return is_connected_ && party_socket_ >= 0; }
 
@@ -91,7 +91,7 @@ namespace ABYN {
     std::string ip_;
     u16 port_ = 0;
     ABYN::Role role_ = ABYN::Role::InvalidRole;
-    std::size_t id_ = -1;
+    std::int64_t id_ = -1;
 
     int party_socket_ = -2;
 

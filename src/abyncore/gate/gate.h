@@ -31,7 +31,6 @@ namespace ABYN::Gates::Interfaces {
   public:
     virtual ~Gate() {
       std::scoped_lock lock(mutex_);
-      assert(gate_id_ >= 0);
       core_->UnregisterGate(gate_id_);
     };
 
@@ -79,7 +78,7 @@ namespace ABYN::Gates::Interfaces {
   protected:
     ABYN::Shares::SharePtr output_share_;
     ABYN::CorePtr core_;
-    std::size_t gate_id_ = -1;
+    std::int64_t gate_id_ = -1;
     std::unordered_set<std::size_t> wire_dependencies_;
     GateType gate_type_ = InvalidGate;
 
@@ -176,7 +175,6 @@ namespace ABYN::Gates::Interfaces {
       parent_ = parent;
       output_owner_ = output_owner;
       gate_type_ = InteractiveGate;
-      assert(output_owner_ >= 0);
     }
 
     virtual void Evaluate() = 0;
@@ -188,7 +186,7 @@ namespace ABYN::Gates::Interfaces {
 
     OutputGate(OutputGate &) = delete;
 
-    std::size_t output_owner_ = -1;
+    std::int64_t output_owner_ = -1;
   };
 
   using OutputGatePtr = std::shared_ptr<OutputGate>;
@@ -332,7 +330,7 @@ namespace ABYN::Gates::Arithmetic {
     }
 
   private:
-    std::size_t arithmetic_sharing_id_ = -1;
+    std::int64_t arithmetic_sharing_id_ = -1;
 
     std::vector<T> input_;
 
@@ -557,7 +555,7 @@ namespace ABYN::Gates::GMW{
 
     virtual void Evaluate() final {};
   private:
-    std::size_t boolean_sharing_id_ = -1;
+    std::int64_t boolean_sharing_id_ = -1;
 
     std::vector<bool> input_;
 

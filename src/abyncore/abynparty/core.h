@@ -83,7 +83,7 @@ namespace ABYN {
       logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
     }
 
-    std::size_t GetNextGateFromOnlineQueue() {
+    std::int64_t GetNextGateFromOnlineQueue() {
       if (active_gates.size() == 0) {
         return -1;
       } else {

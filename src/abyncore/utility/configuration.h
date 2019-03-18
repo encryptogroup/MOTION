@@ -49,7 +49,7 @@ namespace ABYN {
     boost::log::trivial::severity_level GetLoggingSeverityLevel() { return severity_level_; }
 
   private:
-    std::size_t my_id_ = -1;
+    std::int64_t my_id_ = -1;
     std::vector<ABYN::CommunicationContextPtr> communication_contexts_;
     boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
