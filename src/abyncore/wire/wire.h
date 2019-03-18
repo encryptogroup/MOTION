@@ -10,7 +10,7 @@
 #include "utility/typedefs.h"
 #include "abynparty/core.h"
 
-
+//forward-declare Gate class
 namespace ABYN::Gates::Interfaces {
   class Gate;
 
@@ -20,20 +20,20 @@ namespace ABYN::Gates::Interfaces {
 namespace ABYN::Wires {
   class Wire {
   public:
-    size_t GetNumOfParallelValues() const { return num_of_parallel_values_; }
+    std::size_t GetNumOfParallelValues() const { return num_of_parallel_values_; }
 
     virtual enum CircuitType GetCircuitType() const = 0;
 
     virtual enum Protocol GetProtocol() const = 0;
 
-    virtual ~Wire() {}
+    virtual ~Wire() { core_->UnregisterWire(wire_id_); }
 
-    void RegisterWaitingGate(size_t gate_id) {
+    void RegisterWaitingGate(std::size_t gate_id) {
       std::scoped_lock lock(mutex_);
       waiting_gate_ids_.insert(gate_id);
     }
 
-    void UnregisterWaitingGate(size_t gate_id) {
+    void UnregisterWaitingGate(std::size_t gate_id) {
       std::scoped_lock lock(mutex_);
       waiting_gate_ids_.erase(gate_id);
     }
@@ -53,9 +53,9 @@ namespace ABYN::Wires {
 
     bool IsConstant() const { return is_constant_; }
 
-    size_t GetWireId() const {
+    std::size_t GetWireId() const {
       assert(wire_id_ >= 0);
-      return static_cast<size_t>(wire_id_);
+      return static_cast<std::size_t>(wire_id_);
     }
 
     const CorePtr &GetCore() const { return core_; }
@@ -69,7 +69,7 @@ namespace ABYN::Wires {
 
   protected:
     // number of values that are _logically_ processed in parallel
-    size_t num_of_parallel_values_ = 0;
+    std::size_t num_of_parallel_values_ = 0;
 
     // flagging variables as constants is useful, since this allows for tricks, such as non-interactive
     // multiplication by a constant in (arithmetic) GMW
@@ -79,15 +79,15 @@ namespace ABYN::Wires {
     // gates will wait for wires to be evaluated to proceed with their evaluation
     bool is_done_ = false;
 
-    ssize_t wire_id_ = -1;
+    std::size_t wire_id_ = -1;
 
     CorePtr core_;
 
-    std::unordered_set<size_t> waiting_gate_ids_;
+    std::unordered_set<std::size_t> waiting_gate_ids_;
 
     Wire() {};
 
-    static void UnregisterWireIdFromGate(size_t gate_id, size_t wire_id, CorePtr &core);
+    static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id, CorePtr &core);
 
   private:
 

@@ -7,7 +7,7 @@
 #include "utility/constants.h"
 
 namespace ABYN::Communication {
-  static flatbuffers::FlatBufferBuilder BuildOutputMessage(size_t gate_id, std::vector<u8> wire_payload) {
+  static flatbuffers::FlatBufferBuilder BuildOutputMessage(std::size_t gate_id, std::vector<u8> wire_payload) {
     flatbuffers::FlatBufferBuilder builder_output_message(64);
     auto wire = CreateOutputWireDirect(builder_output_message, &wire_payload);
     std::vector<flatbuffers::Offset<OutputWire>> wires{wire};

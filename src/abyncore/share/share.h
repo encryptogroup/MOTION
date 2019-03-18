@@ -12,7 +12,7 @@ namespace ABYN::Shares {
   public:
     virtual ~Share() {}
 
-    virtual size_t GetNumOfParallelValues() = 0;
+    virtual std::size_t GetNumOfParallelValues() = 0;
 
     virtual Protocol GetSharingType() = 0;
 
@@ -89,7 +89,7 @@ namespace ABYN::Shares {
 
     ~ArithmeticShare() {}
 
-    size_t GetNumOfParallelValues() override final { return wires_.at(0)->GetNumOfParallelValues(); };
+    std::size_t GetNumOfParallelValues() override final { return wires_.at(0)->GetNumOfParallelValues(); };
 
     Protocol GetSharingType() override final { return wires_.at(0)->GetProtocol(); }
 
@@ -162,7 +162,7 @@ namespace ABYN::Shares {
 
     ~ArithmeticConstantShare() {};
 
-    size_t GetNumOfParallelValues() override final { return values_.size(); };
+    std::size_t GetNumOfParallelValues() override final { return values_.size(); };
 
     Protocol GetSharingType() override final { return ArithmeticGMW; }
 
@@ -224,7 +224,7 @@ namespace ABYN::Shares {
       return wires_;
     }
 
-    size_t GetNumOfParallelValues() override final { return wires_.size(); };
+    std::size_t GetNumOfParallelValues() override final { return wires_.size(); };
 
     Protocol GetSharingType() override final { return ArithmeticGMW; }
 

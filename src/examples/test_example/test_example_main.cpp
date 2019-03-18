@@ -12,7 +12,7 @@ template<typename T>
 void test() {
   auto num_parties = 4u;
   srand(time(NULL));
-  size_t input_owner = rand() % num_parties, output_owner = rand() % num_parties;
+  std::size_t input_owner = rand() % num_parties, output_owner = rand() % num_parties;
   std::vector<T> inputs(num_parties);
   for (auto &v : inputs) {
     v = rand();

@@ -33,9 +33,9 @@ namespace ABYN {
 
     const CorePtr &GetCore() { return core_; }
 
-    size_t NextGateId() const { return core_->NextGateId(); }
+    std::size_t NextGateId() const { return core_->NextGateId(); }
 
-    void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE], size_t party_id);
+    void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE], std::size_t party_id);
 
     void InitializeCommunicationHandlers();
 
@@ -43,7 +43,7 @@ namespace ABYN {
 
     void VerifyHelloMessages();
 
-    void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message);
+    void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
     void RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate);
 
@@ -57,7 +57,7 @@ namespace ABYN {
 
     void WaitForConnectionEnd();
 
-    const Gates::Interfaces::GatePtr &GetGate(size_t gate_id) { return gates_.at(gate_id); }
+    const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) { return gates_.at(gate_id); }
 
     const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 

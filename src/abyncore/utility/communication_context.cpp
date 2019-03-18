@@ -11,7 +11,7 @@
 
 namespace ABYN {
 
-  CommunicationContext::CommunicationContext(std::string ip, u16 port, ABYN::Role role, size_t id) :
+  CommunicationContext::CommunicationContext(std::string ip, u16 port, ABYN::Role role, std::size_t id) :
       data_storage_(id), ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
     if (IsInvalidIp(ip.data())) {
       throw (std::runtime_error(fmt::format("{} is invalid IP address", ip)));

@@ -17,7 +17,7 @@ namespace ABYN {
     logger_->LogDebug(fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
   }
 
-  const ABYN::Communication::OutputMessage *DataStorage::GetOutputMessage(size_t gate_id) {
+  const ABYN::Communication::OutputMessage *DataStorage::GetOutputMessage(std::size_t gate_id) {
     auto message = received_output_messages_.find(gate_id);
     if (message == received_output_messages_.end()) { return nullptr; }
     auto output_message = ABYN::Communication::GetMessage(message->second.data());
@@ -32,7 +32,7 @@ namespace ABYN {
     return ABYN::Communication::GetHelloMessage(hello_message->payload()->data());
   }
 
-  void DataStorage::SetSentHelloMessage(const u8 *message, size_t size) {
+  void DataStorage::SetSentHelloMessage(const u8 *message, std::size_t size) {
     std::vector<u8> buf(message, message + size);
     SetSentHelloMessage(std::move(buf));
   }

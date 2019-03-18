@@ -24,7 +24,7 @@ namespace ABYN {
     backend_->SendHelloToOthers();
   }
 
-  void Party::Run(size_t repeats) {
+  void Party::Run(std::size_t repeats) {
     backend_->VerifyHelloMessages();
     for (auto i = 0ull; i < repeats; ++i) { EvaluateCircuit(); };
     Finish();
@@ -40,7 +40,7 @@ namespace ABYN {
     backend_->TerminateCommunication();
   }
 
-  std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(size_t num_parties, u16 port) {
+  std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties, u16 port) {
     if (num_parties < 3) {
       throw (std::runtime_error(fmt::format("Can generate only >= 3 local parties, current input: {}", num_parties)));
     }

@@ -11,7 +11,7 @@ namespace ABYN {
   class Logger {
   public:
 //multiple instantiations of Logger in one application will cause duplicates in logs
-    Logger(size_t my_id, boost::log::trivial::severity_level severity_level);
+    Logger(std::size_t my_id, boost::log::trivial::severity_level severity_level);
 
     ~Logger();
 
@@ -41,7 +41,7 @@ namespace ABYN {
 
   private:
     logger_type logger_;
-    size_t my_id_;
+    std::size_t my_id_;
     bool logging_enabled_ = true;
 
     Logger() = delete;

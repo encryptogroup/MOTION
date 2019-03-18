@@ -26,10 +26,10 @@ namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace expr = boost::log::expressions;
 
-BOOST_LOG_ATTRIBUTE_KEYWORD(id_channel, "Channel", size_t)
+BOOST_LOG_ATTRIBUTE_KEYWORD(id_channel, "Channel", std::size_t)
 
 namespace ABYN {
-  Logger::Logger(size_t my_id, boost::log::trivial::severity_level severity_level) : my_id_(my_id) {
+  Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_level) : my_id_(my_id) {
     auto time_now = std::time(nullptr);
 
     //immediately write messages to the log file to see them also if the execution stalls

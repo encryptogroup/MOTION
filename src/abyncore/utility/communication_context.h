@@ -28,17 +28,17 @@ namespace ABYN {
 
   public:
 
-    CommunicationContext(const std::string ip, u16 port, ABYN::Role role, size_t id);
+    CommunicationContext(const std::string ip, u16 port, ABYN::Role role, std::size_t id);
 
-    CommunicationContext(const char *ip, u16 port, ABYN::Role role, size_t id) :
+    CommunicationContext(const char *ip, u16 port, ABYN::Role role, std::size_t id) :
         CommunicationContext(std::string(ip), port, role, id) {}
 
-    CommunicationContext(int socket, ABYN::Role role, size_t id) :
+    CommunicationContext(int socket, ABYN::Role role, std::size_t id) :
         data_storage_(id), role_(role), id_(id), party_socket_(socket), is_connected_(true) {
       boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
     }
 
-    CommunicationContext(ABYN::Role role, size_t id, BoostSocketPtr &boost_socket) :
+    CommunicationContext(ABYN::Role role, std::size_t id, BoostSocketPtr &boost_socket) :
         data_storage_(id), role_(role), id_(id), boost_party_socket_(boost_socket), is_connected_(true) {
       party_socket_ = boost_party_socket_->native_handle();
     }
@@ -64,7 +64,7 @@ namespace ABYN {
 
     u16 GetPort() { return port_; }
 
-    ssize_t GetId() { return id_; }
+    std::size_t GetId() { return id_; }
 
     bool IsConnected() { return is_connected_ && party_socket_ >= 0; }
 
@@ -91,7 +91,7 @@ namespace ABYN {
     std::string ip_;
     u16 port_ = 0;
     ABYN::Role role_ = ABYN::Role::InvalidRole;
-    ssize_t id_ = -1;
+    std::size_t id_ = -1;
 
     int party_socket_ = -2;
 

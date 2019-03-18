@@ -43,12 +43,12 @@ namespace ABYN::Gates::Interfaces {
 
     std::shared_ptr<Gate> GetShared() { return shared_from_this(); }
 
-    void RegisterWaitingFor(size_t wire_id) {
+    void RegisterWaitingFor(std::size_t wire_id) {
       std::scoped_lock lock(mutex_);
       wire_dependencies_.insert(wire_id);
     }
 
-    void UnregisterWaitingFor(size_t wire_id) {
+    void UnregisterWaitingFor(std::size_t wire_id) {
       std::scoped_lock lock(mutex_);
       if (wire_dependencies_.size() > 0 && wire_dependencies_.find(wire_id) != wire_dependencies_.end()) {
         wire_dependencies_.erase(wire_id);
@@ -79,8 +79,8 @@ namespace ABYN::Gates::Interfaces {
   protected:
     ABYN::Shares::SharePtr output_share_;
     ABYN::CorePtr core_;
-    ssize_t gate_id_ = -1;
-    std::unordered_set<size_t> wire_dependencies_;
+    std::size_t gate_id_ = -1;
+    std::unordered_set<std::size_t> wire_dependencies_;
     GateType gate_type_ = InvalidGate;
 
     bool setup_is_ready_ = false;
@@ -171,7 +171,7 @@ namespace ABYN::Gates::Interfaces {
 
   class OutputGate : public OneGate {
   public:
-    OutputGate(const ABYN::Shares::SharePtr &parent, size_t output_owner) {
+    OutputGate(const ABYN::Shares::SharePtr &parent, std::size_t output_owner) {
       core_ = parent->GetCore();
       parent_ = parent;
       output_owner_ = output_owner;
@@ -188,7 +188,7 @@ namespace ABYN::Gates::Interfaces {
 
     OutputGate(OutputGate &) = delete;
 
-    ssize_t output_owner_ = -1;
+    std::size_t output_owner_ = -1;
   };
 
   using OutputGatePtr = std::shared_ptr<OutputGate>;
@@ -262,7 +262,7 @@ namespace ABYN::Gates::Arithmetic {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
   public:
-    ArithmeticInputGate(const std::vector<T> &input, size_t party_id, const ABYN::CorePtr &core) :
+    ArithmeticInputGate(const std::vector<T> &input, std::size_t party_id, const ABYN::CorePtr &core) :
         input_(input), party_id_(party_id) {
       core_ = core;
       gate_id_ = core_->NextGateId();
@@ -278,7 +278,7 @@ namespace ABYN::Gates::Arithmetic {
                                                gate_info));
     }
 
-    ArithmeticInputGate(std::vector<T> &&input, size_t party_id, const ABYN::CorePtr &core) :
+    ArithmeticInputGate(std::vector<T> &&input, std::size_t party_id, const ABYN::CorePtr &core) :
         ArithmeticInputGate(input, party_id, core) {}
 
     virtual ~ArithmeticInputGate() {}
@@ -332,12 +332,12 @@ namespace ABYN::Gates::Arithmetic {
     }
 
   private:
-    ssize_t arithmetic_sharing_id_ = -1;
+    std::size_t arithmetic_sharing_id_ = -1;
 
     std::vector<T> input_;
 
     //indicates whether this party shares the input
-    size_t party_id_ = false;
+    std::size_t party_id_ = false;
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -355,7 +355,7 @@ namespace ABYN::Gates::Arithmetic {
 
   public:
 
-    ArithmeticOutputGate(const ABYN::Shares::ArithmeticSharePtr<T> &parent, size_t output_owner) :
+    ArithmeticOutputGate(const ABYN::Shares::ArithmeticSharePtr<T> &parent, std::size_t output_owner) :
         parent_finished_(parent->Finished()) {
       if (parent->GetSharingType() != Protocol::ArithmeticGMW) {
         auto sharing_type = Helpers::Print::ToString(parent->GetSharingType());
@@ -375,7 +375,7 @@ namespace ABYN::Gates::Arithmetic {
       RegisterWaitingFor(parent->GetWires().at(0)->GetWireId());
       parent->GetArithmeticWire()->RegisterWaitingGate(gate_id_);
 
-      if (core_->GetConfig()->GetMyId() == static_cast<size_t>(output_owner_)) { is_my_output_ = true; }
+      if (core_->GetConfig()->GetMyId() == static_cast<std::size_t>(output_owner_)) { is_my_output_ = true; }
 
       output_share_ = std::move(
           std::static_pointer_cast<ABYN::Shares::Share>(
@@ -534,7 +534,7 @@ namespace ABYN::Gates::GMW{
   class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
   public:
 
-    GMWInputGate(const std::vector<bool> &input, size_t party_id, const ABYN::CorePtr &core) :
+    GMWInputGate(const std::vector<bool> &input, std::size_t party_id, const ABYN::CorePtr &core) :
         input_(input), party_id_(party_id) {
       core_ = core;
       gate_id_ = core_->NextGateId();
@@ -550,19 +550,19 @@ namespace ABYN::Gates::GMW{
                                                gate_info));
     }
 
-    GMWInputGate(std::vector<bool> &&input, size_t party_id, const ABYN::CorePtr &core) :
+    GMWInputGate(std::vector<bool> &&input, std::size_t party_id, const ABYN::CorePtr &core) :
         GMWInputGate(input, party_id, core) {}
 
     virtual ~GMWInputGate() {}
 
     virtual void Evaluate() final {};
   private:
-    ssize_t boolean_sharing_id_ = -1;
+    std::size_t boolean_sharing_id_ = -1;
 
     std::vector<bool> input_;
 
     //indicates whether this party shares the input
-    size_t party_id_ = false;
+    std::size_t party_id_ = false;
   };
 }
 

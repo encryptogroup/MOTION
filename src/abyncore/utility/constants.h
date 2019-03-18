@@ -22,13 +22,13 @@ namespace ABYN {
   //Don't compile unnecessary code if verbose debugging is not needed
   const bool ABYN_VERBOSE_DEBUG = !ABYN_DEBUG ? false : ABYN_VERBOSE_DEBUG_WISH;
 
-  const size_t AES_KEY_SIZE = 16;
+  const std::size_t AES_KEY_SIZE = 16;
 
-  const size_t AES_BLOCK_SIZE_ = 16;
+  const std::size_t AES_BLOCK_SIZE_ = 16;
 
-  const size_t AES_IV_SIZE = AES_BLOCK_SIZE_ / 2;
+  const std::size_t AES_IV_SIZE = AES_BLOCK_SIZE_ / 2;
 
-  const size_t MESSAGE_SIZE_BYTELEN = sizeof(u32);
+  const std::size_t MESSAGE_SIZE_BYTELEN = sizeof(u32);
 
   const u32 MAX_MESSAGE_SIZE = std::numeric_limits<u32>::max() - 1; // 2^32 - 2, approx. 4.3 GB
 

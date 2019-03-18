@@ -42,22 +42,22 @@ namespace ABYN {
 
   public:
 
-    Party(std::vector<CommunicationContextPtr> &parties, size_t my_id) {
+    Party(std::vector<CommunicationContextPtr> &parties, std::size_t my_id) {
       config_ = std::make_shared<Configuration>(parties, my_id);
       backend_ = std::make_shared<Backend>(config_);
     }
 
-    Party(std::vector<CommunicationContextPtr> &&parties, size_t my_id) {
+    Party(std::vector<CommunicationContextPtr> &&parties, std::size_t my_id) {
       config_ = std::make_shared<Configuration>(std::move(parties), my_id);
       backend_ = std::make_shared<Backend>(config_);
     }
 
-    Party(std::initializer_list<CommunicationContextPtr> &list_parties, size_t my_id) {
+    Party(std::initializer_list<CommunicationContextPtr> &list_parties, std::size_t my_id) {
       config_ = std::make_shared<Configuration>(list_parties, my_id);
       backend_ = std::make_shared<Backend>(config_);
     }
 
-    Party(std::initializer_list<CommunicationContextPtr> &&list_parties, size_t my_id) {
+    Party(std::initializer_list<CommunicationContextPtr> &&list_parties, std::size_t my_id) {
       config_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
       backend_ = std::make_shared<Backend>(config_);
     }
@@ -72,13 +72,13 @@ namespace ABYN {
     ConfigurationPtr GetConfiguration() { return config_; }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    ArithmeticSharePtr<T> IN(size_t party_id, T input = 0) {
+    ArithmeticSharePtr<T> IN(std::size_t party_id, T input = 0) {
       std::vector<T> input_vector{input};
       return IN(party_id, std::move(input_vector));
     };
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    ArithmeticSharePtr<T> IN(size_t party_id, const std::vector<T> &input_vector = 0) {
+    ArithmeticSharePtr<T> IN(std::size_t party_id, const std::vector<T> &input_vector = 0) {
       auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
           input_vector, party_id, backend_->GetCore());
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
@@ -87,7 +87,7 @@ namespace ABYN {
     }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    ArithmeticSharePtr<T> IN(size_t party_id, std::vector<T> &&input_vector = 0) {
+    ArithmeticSharePtr<T> IN(std::size_t party_id, std::vector<T> &&input_vector = 0) {
       auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
           std::move(input_vector), party_id, backend_->GetCore());
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
@@ -96,7 +96,7 @@ namespace ABYN {
     }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    ArithmeticSharePtr<T> OUT(ArithmeticSharePtr<T> parent, size_t output_owner) {
+    ArithmeticSharePtr<T> OUT(ArithmeticSharePtr<T> parent, std::size_t output_owner) {
       assert(parent);
       auto out_gate = std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<T>>(parent, output_owner);
       auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
@@ -114,13 +114,13 @@ namespace ABYN {
       return addition_gate->GetOutputArithmeticShare();
     }
 
-    size_t GetNumOfParties() { return config_->GetNumOfParties(); }
+    std::size_t GetNumOfParties() { return config_->GetNumOfParties(); }
 
     void Connect();
 
-    void Run(size_t repeats = 1);
+    void Run(std::size_t repeats = 1);
 
-    static std::vector<std::unique_ptr<Party>> GetNLocalParties(size_t num_parties, u16 port);
+    static std::vector<std::unique_ptr<Party>> GetNLocalParties(std::size_t num_parties, u16 port);
 
     const auto &GetLogger() { return backend_->GetLogger(); }
   };

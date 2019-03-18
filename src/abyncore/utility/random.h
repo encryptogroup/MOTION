@@ -13,7 +13,7 @@ namespace ABYN {
     return value / divisor;
   }
 
-  static inline std::vector<u8> RandomVector(size_t size_in_bytes) {
+  static inline std::vector<u8> RandomVector(std::size_t size_in_bytes) {
     std::vector<u8> buffer(size_in_bytes);
     std::random_device random_device; // use real randomness to create seeds
     for (auto i = 0u; i < buffer.size();) {

@@ -20,7 +20,7 @@ namespace ABYN::Crypto {
 
   class AESRandomnessGenerator {
   public:
-    AESRandomnessGenerator(size_t party_id) : party_id_(party_id) {};
+    AESRandomnessGenerator(std::size_t party_id) : party_id_(party_id) {};
 
     void Initialize(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]);
 
@@ -31,8 +31,8 @@ namespace ABYN::Crypto {
     bool &IsInitialized() { return initialized_; };
 
   private:
-    static const size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
-    size_t party_id_ = -1;
+    static const std::size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
+    std::size_t party_id_ = -1;
 
     EVP_CIPHER_CTX *ctx_ = nullptr;                  /// AES context, created only once and reused further
     u8 raw_key_[AES_KEY_SIZE] = {0};                 /// AES key in raw u8 format
@@ -47,7 +47,7 @@ namespace ABYN::Crypto {
     /// which hopefully improves the efficiency of the automated OpenSSL routine for AES-CTR,
     /// where counter is incremented after each encryption.
     ///
-    int Encrypt(u8 *input, u8 *output, size_t num_of_blocks);
+    int Encrypt(u8 *input, u8 *output, std::size_t num_of_blocks);
 
     bool initialized_ = false;
 
@@ -55,7 +55,7 @@ namespace ABYN::Crypto {
     //---------------------------------------------- Template funtions ----------------------------------------------
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    T GetUnsigned(size_t gate_id) {
+    T GetUnsigned(std::size_t gate_id) {
 
       while (!initialized_) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -88,7 +88,7 @@ namespace ABYN::Crypto {
     };
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-    std::vector<T> GetUnsigned(size_t gate_id, size_t num_of_gates) {
+    std::vector<T> GetUnsigned(std::size_t gate_id, std::size_t num_of_gates) {
       if (num_of_gates == 0) {
         return {}; //return an empty vector if num_of_gates is zero
       }
@@ -116,8 +116,8 @@ namespace ABYN::Crypto {
       int output_length = Encrypt(input.data(), output.data(), num_of_gates);
       assert(output_length >= 0);
 
-      if (static_cast<size_t>(output_length) < size_in_bytes ||
-          static_cast<size_t>(output_length) > size_in_bytes + AES_BLOCK_SIZE) {
+      if (static_cast<std::size_t>(output_length) < size_in_bytes ||
+          static_cast<std::size_t>(output_length) > size_in_bytes + AES_BLOCK_SIZE) {
         throw (std::runtime_error(
             fmt::format("AES encryption output has length {}, expected {}",
                         output_length, size_in_bytes)

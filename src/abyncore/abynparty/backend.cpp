@@ -66,7 +66,7 @@ namespace ABYN {
     }
   }
 
-  void Backend::Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
+  void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
     core_->Send(party_id, message);
   }
 
@@ -86,7 +86,7 @@ namespace ABYN {
       {
 #pragma omp task
         {
-#pragma omp taskloop num_tasks(std::min(static_cast<size_t>(50), static_cast<size_t>(input_gates_.size())))
+#pragma omp taskloop num_tasks(std::min(static_cast<std::size_t>(50), static_cast<std::size_t>(input_gates_.size())))
           for (auto i = 0u; i < input_gates_.size(); ++i) {
             input_gates_[i]->Evaluate();
           }

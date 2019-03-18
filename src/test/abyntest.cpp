@@ -35,7 +35,7 @@ namespace {
   }
 
   template<typename T>
-  inline std::vector<T> RandomVector(size_t size) {
+  inline std::vector<T> RandomVector(std::size_t size) {
     std::vector<T> v(size);
     std::generate(v.begin(), v.end(), Rand<T>);
     return v;
@@ -285,7 +285,7 @@ namespace {
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
         bool success = true;
         for (auto num_parties : num_parties_list) {
-          size_t input_owner = rand() % num_parties,
+          std::size_t input_owner = rand() % num_parties,
               output_owner = rand() % num_parties;
           using T = decltype(template_var);
           T global_input_1 = Rand<T>();
@@ -351,7 +351,7 @@ namespace {
       using T = decltype(template_var);
       const std::vector<T> _zero_v_1K(1000, 0), _zero_v_10K(10000, 0);
       for (auto num_parties : num_parties_list) {
-        size_t output_owner = rand() % num_parties;
+        std::size_t output_owner = rand() % num_parties;
         std::vector<T> in_1 = RandomVector<T>(num_parties);
         std::vector<std::vector<T>> in_1K(num_parties), in_10K(num_parties);
         for (auto &v : in_1K) { v = RandomVector<T>(1000); }

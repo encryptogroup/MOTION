@@ -11,7 +11,7 @@ namespace ABYN::Crypto {
     initialized_ = true;
   };
 
-  int AESRandomnessGenerator::Encrypt(u8 *input, u8 *output, size_t num_of_blocks) {
+  int AESRandomnessGenerator::Encrypt(u8 *input, u8 *output, std::size_t num_of_blocks) {
     int output_length, len;
 
     if (1 != EVP_EncryptInit_ex(ctx_, EVP_aes_128_ecb(), NULL, raw_key_, nullptr)) {

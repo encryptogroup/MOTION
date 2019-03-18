@@ -30,18 +30,18 @@ namespace ABYN {
                                                config_->GetLoggingSeverityLevel());
     }
 
-    size_t NextGateId() { return global_gate_id_++; }
+    std::size_t NextGateId() { return global_gate_id_++; }
 
-    size_t NextWireId() { return global_wire_id_++; }
+    std::size_t NextWireId() { return global_wire_id_++; }
 
-    size_t NextArithmeticSharingId(size_t num_of_parallel_values) {
+    std::size_t NextArithmeticSharingId(std::size_t num_of_parallel_values) {
       assert(num_of_parallel_values != 0);
       auto old_id = global_arithmetic_sharing_id_;
       global_arithmetic_sharing_id_ += num_of_parallel_values;
       return old_id;
     }
 
-    size_t NextBooleanGMWSharingId(size_t num_of_parallel_values) {
+    std::size_t NextBooleanGMWSharingId(std::size_t num_of_parallel_values) {
       assert(num_of_parallel_values != 0);
       auto old_id = global_gmw_sharing_id_;
       global_gmw_sharing_id_ += num_of_parallel_values;
@@ -57,7 +57,7 @@ namespace ABYN {
       communication_handlers_ = communication_handlers;
     }
 
-    void Send(size_t party_id, flatbuffers::FlatBufferBuilder &message) {
+    void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
       if (party_id == config_->GetMyId()) { throw (std::runtime_error("Want to send message to myself")); }
       communication_handlers_.at(party_id)->SendMessage(message);
     }
@@ -67,52 +67,52 @@ namespace ABYN {
       gates_.push_back(gate);
     }
 
-    ABYN::Gates::Interfaces::Gate *GetGate(size_t gate_id) { return gates_.at(gate_id); }
+    ABYN::Gates::Interfaces::Gate *GetGate(std::size_t gate_id) const { return gates_.at(gate_id); }
 
-    void UnregisterGate(size_t gate_id) { gates_.at(gate_id) = nullptr; }
+    void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
 
     void RegisterNextWire(ABYN::Wires::Wire *wire) { wires_.push_back(wire); }
 
-    ABYN::Wires::Wire *GetWire(size_t wire_id) { return wires_.at(wire_id); }
+    ABYN::Wires::Wire *GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
 
-    void UnregisterWire(size_t wire_id) { wires_.at(wire_id) = nullptr; }
+    void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
-    void AddToActiveQueue(size_t gate_id) {
+    void AddToActiveQueue(std::size_t gate_id) {
       std::scoped_lock lock(active_queue_mutex_);
       active_gates.push(gate_id);
       logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
     }
 
-    ssize_t GetNextGateFromOnlineQueue() {
+    std::size_t GetNextGateFromOnlineQueue() {
       if (active_gates.size() == 0) {
         return -1;
       } else {
         auto gate_id = active_gates.front();
-        assert(gate_id < std::numeric_limits<ssize_t>::max());
+        assert(gate_id < std::numeric_limits<std::size_t>::max());
         std::scoped_lock lock(active_queue_mutex_);
         active_gates.pop();
-        return static_cast<size_t>(gate_id);
+        return static_cast<std::size_t>(gate_id);
       }
     }
 
     void NotifyEvaluatedGate() { evaluated_gates++; }
 
-    size_t GetNumOfEvaluatedGates() { return evaluated_gates; }
+    std::size_t GetNumOfEvaluatedGates() { return evaluated_gates; }
 
-    size_t GetTotalNumOfGates() { return global_gate_id_; }
+    std::size_t GetTotalNumOfGates() { return global_gate_id_; }
 
   private:
-    size_t global_gate_id_ = 0,
+    std::size_t global_gate_id_ = 0,
         global_wire_id_ = 0,
         global_arithmetic_sharing_id_ = 0,
         global_gmw_sharing_id_ = 0; //don't need atomic, since only one thread has access to these
 
-    std::atomic<size_t> evaluated_gates = 0;
+    std::atomic<std::size_t> evaluated_gates = 0;
 
     ABYN::ConfigurationPtr config_;
     ABYN::LoggerPtr logger_ = nullptr;
 
-    std::queue<size_t> active_gates;
+    std::queue<std::size_t> active_gates;
     std::mutex active_queue_mutex_;
 
     std::vector<ABYN::Gates::Interfaces::Gate *> gates_;

@@ -16,7 +16,7 @@
 namespace ABYN {
   class DataStorage {
   public:
-    DataStorage(ssize_t id) : id_(id) {}
+    DataStorage(std::size_t id) : id_(id) {}
 
     ~DataStorage() {}
 
@@ -24,7 +24,7 @@ namespace ABYN {
 
     void SetReceivedOutputMessage(std::vector<u8> &&output_message);
 
-    const ABYN::Communication::OutputMessage *GetOutputMessage(size_t gate_id);
+    const ABYN::Communication::OutputMessage *GetOutputMessage(std::size_t gate_id);
 
     void SetReceivedHelloMessage(std::vector<u8> &&hello_message) {
       received_hello_message_ = std::move(hello_message);
@@ -34,15 +34,15 @@ namespace ABYN {
 
     void SetSentHelloMessage(std::vector<u8> &&hello_message) { sent_hello_message_ = std::move(hello_message); }
 
-    void SetSentHelloMessage(const u8 *message, size_t size);
+    void SetSentHelloMessage(const u8 *message, std::size_t size);
 
     const ABYN::Communication::HelloMessage *GetSentHelloMessage();
 
   private:
     std::vector<u8> received_hello_message_, sent_hello_message_;
-    std::unordered_map<size_t, std::vector<u8>> received_output_messages_; // id, buffer
+    std::unordered_map<std::size_t, std::vector<u8>> received_output_messages_; // id, buffer
     ABYN::LoggerPtr logger_;
-    ssize_t id_ = -1;
+    std::size_t id_ = -1;
   };
 }
 
