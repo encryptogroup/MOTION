@@ -43,7 +43,7 @@ namespace {
 
   // Check that ABYNParty throws an exception when using an incorrect IP address
   TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
-    std::srand(time(nullptr));
+    std::srand(std::time(nullptr));
     const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
 
     for (auto i = 0; i < TEST_ITERATIONS; ++i) {
@@ -53,7 +53,9 @@ namespace {
         result.at(std::rand() % result.size()) = incorrect_symbols.at(std::rand() % incorrect_symbols.size());
         return result;
       };
-      auto must_throw_function = [rand_invalid_ip]() { CommunicationContext(rand_invalid_ip(), std::rand(), ABYN::Role::Client, 0); };
+      auto must_throw_function = [rand_invalid_ip]() {
+        CommunicationContext(rand_invalid_ip(), std::rand(), ABYN::Role::Client, 0);
+      };
       ASSERT_ANY_THROW(must_throw_function());
     }
   }
@@ -64,19 +66,20 @@ namespace {
       //use std::threads, since omp (and pragmas in general) cannot be used in macros :(
       try {
         std::vector<PartyPtr> abyn_parties(0);
-
 #pragma omp parallel num_threads(5) default(shared)
         {
-
 #pragma omp single
           {
             //Party #0
 #pragma omp task
             {
               std::vector<CommunicationContextPtr> parties;
-              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
-              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
-              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server, 3));
+              parties.emplace_back(
+                  std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
+              parties.emplace_back(
+                  std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
+              parties.emplace_back(
+                  std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server, 3));
               auto abyn = std::move(PartyPtr(new Party{parties, 0}));
               abyn->Connect();
 #pragma omp critical
@@ -84,15 +87,16 @@ namespace {
                 abyn_parties.push_back(std::move(abyn));
               }
             }
-
             //Party #1
 #pragma omp task
             {
               std::string ip = "127.0.0.1";
               std::vector<CommunicationContextPtr> parties;
               parties.emplace_back(std::make_shared<CommunicationContext>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
-              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
-              parties.emplace_back(std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server, 3));
+              parties.emplace_back(
+                  std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
+              parties.emplace_back(
+                  std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server, 3));
               auto abyn = std::move(PartyPtr(new Party{parties, 1}));
               abyn->Connect();
 #pragma omp critical
@@ -108,9 +112,10 @@ namespace {
               u16 port = PORT_OFFSET + 1;
               auto abyn = std::move(PartyPtr(
                   new Party{{std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
-                                 std::make_shared<CommunicationContext>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
-                                 std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
-                                2}));
+                             std::make_shared<CommunicationContext>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
+                             std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server,
+                                                                    3)},
+                            2}));
               abyn->Connect();
 #pragma omp critical
               {
@@ -168,13 +173,16 @@ namespace {
                                      []() {
                                        std::vector<CommunicationContextPtr> parties;
                                        parties.emplace_back(
-                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET,
+                                                                                  ABYN::Role::Server, 1));
                                        parties.emplace_back(
-                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server,
-                                                                   2));
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 1,
+                                                                                  ABYN::Role::Server,
+                                                                                  2));
                                        parties.emplace_back(
-                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server,
-                                                                   3));
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 2,
+                                                                                  ABYN::Role::Server,
+                                                                                  3));
                                        auto abyn = std::move(PartyPtr(new Party{parties, 0}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -186,13 +194,16 @@ namespace {
                                        std::string ip = "127.0.0.1";
                                        std::vector<CommunicationContextPtr> parties;
                                        parties.emplace_back(
-                                           std::make_shared<CommunicationContext>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
+                                           std::make_shared<CommunicationContext>(ip, PORT_OFFSET, ABYN::Role::Client,
+                                                                                  0));
                                        parties.emplace_back(
-                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server,
-                                                                   2));
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 3,
+                                                                                  ABYN::Role::Server,
+                                                                                  2));
                                        parties.emplace_back(
-                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server,
-                                                                   3));
+                                           std::make_shared<CommunicationContext>("127.0.0.1", PORT_OFFSET + 4,
+                                                                                  ABYN::Role::Server,
+                                                                                  3));
                                        auto abyn = std::move(PartyPtr(new Party{parties, 1}));
                                        abyn->Connect();
                                        return std::move(abyn);
@@ -204,12 +215,13 @@ namespace {
                                        std::string ip = "127.0.0.1";
                                        u16 port = PORT_OFFSET + 1;
                                        auto abyn = std::move(PartyPtr(
-                                           new Party{{std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
-                                                          std::make_shared<CommunicationContext>(
-                                                              ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
-                                                          std::make_shared<CommunicationContext>(
-                                                              "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
-                                                         2}));
+                                           new Party{
+                                               {std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
+                                                std::make_shared<CommunicationContext>(
+                                                    ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
+                                                std::make_shared<CommunicationContext>(
+                                                    "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
+                                               2}));
                                        abyn->Connect();
                                        return std::move(abyn);
                                      }));
@@ -280,7 +292,7 @@ namespace {
   }
 
   TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
-    std::srand(time(nullptr));
+    std::srand(std::time(nullptr));
     auto template_test = [](auto template_var) {
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
         bool success = true;
@@ -346,7 +358,7 @@ namespace {
 
 
   TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
-    std::srand(time(nullptr));
+    std::srand(std::time(nullptr));
     auto template_test = [](auto template_var) {
       using T = decltype(template_var);
       const std::vector<T> _zero_v_1K(1000, 0), _zero_v_10K(10000, 0);
@@ -429,6 +441,7 @@ namespace {
     template_test(static_cast<u64>(0));
   }
 }
+
 [[maybe_unused]]
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

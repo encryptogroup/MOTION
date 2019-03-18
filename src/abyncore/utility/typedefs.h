@@ -1,15 +1,17 @@
 #ifndef TYPEDEFS_H
 #define TYPEDEFS_H
 
+#include <cstdint>
+
 namespace ABYN {
 
-  using u8 = unsigned char;
+  using u8 = std::uint8_t;
   static_assert(sizeof(u8) == 1);
-  using u16 = unsigned short int;
+  using u16 = std::uint16_t;
   static_assert(sizeof(u16) == 2);
-  using u32 = unsigned int;
+  using u32 = std::uint32_t;
   static_assert(sizeof(u32) == 4);
-  using u64 = unsigned long long int;
+  using u64 = std::uint64_t;
   static_assert(sizeof(u64) == 8);
 
 
@@ -54,6 +56,8 @@ namespace ABYN {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   using MultiplicationTriple = std::tuple<T, T, T>;
 
+  template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  using MT = MultiplicationTriple<T>;
 }
 
 #endif //TYPEDEFS_H
