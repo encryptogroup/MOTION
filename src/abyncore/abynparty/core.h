@@ -41,6 +41,13 @@ namespace ABYN {
       return old_id;
     }
 
+    size_t NextBooleanGMWSharingId(size_t num_of_parallel_values) {
+      assert(num_of_parallel_values != 0);
+      auto old_id = global_gmw_sharing_id_;
+      global_gmw_sharing_id_ += num_of_parallel_values;
+      return old_id;
+    }
+
     const LoggerPtr &GetLogger() { return logger_; }
 
     const ConfigurationPtr &GetConfig() { return config_; }
@@ -97,7 +104,8 @@ namespace ABYN {
   private:
     size_t global_gate_id_ = 0,
         global_wire_id_ = 0,
-        global_arithmetic_sharing_id_ = 0; //don't need atomic, since only one thread has access to these
+        global_arithmetic_sharing_id_ = 0,
+        global_gmw_sharing_id_ = 0; //don't need atomic, since only one thread has access to these
 
     std::atomic<size_t> evaluated_gates = 0;
 

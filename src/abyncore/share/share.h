@@ -58,6 +58,11 @@ namespace ABYN::Shares {
     }
 
     ArithmeticShare(std::vector<ABYN::Wires::ArithmeticWirePtr<T>> &wires) : wires_(wires) {
+      if (wires.size() == 0) { throw (std::runtime_error("Trying to create an arithmetic share without wires")); }
+      if (wires.size() > 1) {
+        throw (std::runtime_error(
+            fmt::format("Cannot create an arithmetic share from more than 1 wire; got {} wires", wires.size())));
+      }
       core_ = wires_.at(0)->GetCore();
     }
 
@@ -108,6 +113,7 @@ namespace ABYN::Shares {
     auto GetValueByteLength() { return sizeof(T); }
 
     std::shared_ptr<Share> Clone() override final {
+      //TODO
       return std::static_pointer_cast<Share>(std::make_shared<ArithmeticShare<T>>(wires_));
     }
 
@@ -165,6 +171,7 @@ namespace ABYN::Shares {
     const std::vector<T> &GetValue() const { return values_; }
 
     std::shared_ptr<Share> Clone() override final {
+      //TODO
       return std::static_pointer_cast<Share>(std::make_shared<ArithmeticConstantShare>(values_, core_));
     };
 
@@ -173,5 +180,74 @@ namespace ABYN::Shares {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   using ArithmeticConstantSharePtr = std::shared_ptr<ArithmeticConstantShare<T>>;
 
+  class BooleanShare : public Share {
+  };
+
+  using BooleanSharePtr = std::shared_ptr<BooleanShare>;
+
+
+  class BooleanGMWShare : public BooleanShare {
+  public:
+    BooleanGMWShare(std::vector<bool> &input, CorePtr &core) {
+      core_ = core;
+      wires_ = {std::make_shared<Wires::GMWWire>(input, core)};
+    }
+
+    BooleanGMWShare(std::vector<bool> &&input, CorePtr &core) {
+      core_ = core;
+      wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), core)};
+    }
+
+    BooleanGMWShare(std::vector<std::vector<bool>> &input, CorePtr &core) {
+      if (input.size() == 0) { throw (std::runtime_error("Trying to create a Boolean GMW share without wires")); }
+      core_ = core;
+      for (auto &v : input) { wires_.push_back(std::make_shared<Wires::GMWWire>(v, core)); }
+    }
+
+    BooleanGMWShare(std::vector<std::vector<bool>> &&input, CorePtr &core) {
+      if (input.size() == 0) { throw (std::runtime_error("Trying to create a Boolean GMW share without wires")); }
+      core_ = core;
+      for (auto &v : input) { wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), core)); }
+    }
+
+    BooleanGMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
+      if (wires.size() == 0) { throw (std::runtime_error("Trying to create a Boolean GMW share without wires")); }
+      wires_ = wires;
+      this->core_ = wires.at(0)->GetCore();
+    }
+
+    virtual std::vector<Wires::WirePtr> GetWires() {
+      return wires_;
+    }
+
+    virtual const std::vector<Wires::WirePtr> GetWires() const {
+      return wires_;
+    }
+
+    size_t GetNumOfParallelValues() override final { return wires_.size(); };
+
+    Protocol GetSharingType() override final { return ArithmeticGMW; }
+
+    const bool &Finished() override final {
+      return finished_;
+    }
+
+    std::shared_ptr<Share> Clone() override final {
+      //TODO
+      return std::static_pointer_cast<Share>(std::make_shared<BooleanGMWShare>(wires_));
+    };
+  private:
+    std::vector<ABYN::Wires::WirePtr> wires_;
+    bool finished_ = false;
+  };
+
+  using BooleanGMWSharePtr = std::shared_ptr<BooleanGMWShare>;
+
+
+  class BMRShare : public BooleanShare {
+
+  };
+
+  using BMRSharePtr = std::shared_ptr<BMRShare>;
 }
 #endif //SHARE_H

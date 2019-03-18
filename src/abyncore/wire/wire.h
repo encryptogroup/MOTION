@@ -150,7 +150,7 @@ namespace ABYN::Wires {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   using ArithmeticWirePtr = std::shared_ptr<ArithmeticWire<T>>;
 
-  //TODO: implement boolean wires
+
   class BooleanWire : public Wire {
   public:
 
@@ -201,7 +201,7 @@ namespace ABYN::Wires {
 
     virtual ~GMWWire() {}
 
-    virtual Protocol GetProtocol() const final { return Protocol::BooleanGMW; }
+    Protocol GetProtocol() const override final { return Protocol::BooleanGMW; }
 
   private:
     GMWWire() = delete;

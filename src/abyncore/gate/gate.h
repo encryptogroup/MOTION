@@ -14,8 +14,6 @@
 
 #include "communication/output_message.h"
 
-//TODO: rearrange this code into multiple files
-
 namespace ABYN::Gates::Interfaces {
 
 //
@@ -263,13 +261,6 @@ namespace ABYN::Gates::Arithmetic {
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
-
-  protected:
-    std::vector<T> input_;
-
-    //indicates whether this party shares the input
-    size_t party_id_ = false;
-
   public:
     ArithmeticInputGate(const std::vector<T> &input, size_t party_id, const ABYN::CorePtr &core) :
         input_(input), party_id_(party_id) {
@@ -343,7 +334,10 @@ namespace ABYN::Gates::Arithmetic {
   private:
     ssize_t arithmetic_sharing_id_ = -1;
 
+    std::vector<T> input_;
 
+    //indicates whether this party shares the input
+    size_t party_id_ = false;
   };
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -533,7 +527,43 @@ namespace ABYN::Gates::Arithmetic {
 
     ArithmeticAdditionGate(Gate &) = delete;
   };
+
 }
 
+namespace ABYN::Gates::GMW{
+  class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
+  public:
+
+    GMWInputGate(const std::vector<bool> &input, size_t party_id, const ABYN::CorePtr &core) :
+        input_(input), party_id_(party_id) {
+      core_ = core;
+      gate_id_ = core_->NextGateId();
+      core_->RegisterNextGate(static_cast<Gate *>(this));
+      boolean_sharing_id_ = core_->NextBooleanGMWSharingId(input_.size());
+      core_->GetLogger()->LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+      output_share_ = std::move(
+          std::static_pointer_cast<ABYN::Shares::Share>(
+              std::make_shared<ABYN::Shares::BooleanGMWShare>(input_, core_)));
+
+      auto gate_info = fmt::format("gate id {},", gate_id_);
+      core_->GetLogger()->LogDebug(fmt::format("Allocate an ArithmeticInputGate with following properties: {}",
+                                               gate_info));
+    }
+
+    GMWInputGate(std::vector<bool> &&input, size_t party_id, const ABYN::CorePtr &core) :
+        GMWInputGate(input, party_id, core) {}
+
+    virtual ~GMWInputGate() {}
+
+    virtual void Evaluate() final {};
+  private:
+    ssize_t boolean_sharing_id_ = -1;
+
+    std::vector<bool> input_;
+
+    //indicates whether this party shares the input
+    size_t party_id_ = false;
+  };
+}
 
 #endif //GATE_H
