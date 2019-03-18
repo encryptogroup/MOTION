@@ -370,6 +370,7 @@ namespace {
         for (auto &v : in_10K) { v = RandomVector<T>(10000); }
         try {
           std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+          for (auto &p : abyn_parties) { p->GetLogger()->Logging(LOGGING_ENABLED); }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())

@@ -14,7 +14,7 @@
 #include <boost/log/sources/severity_channel_logger.hpp>
 
 #include <fmt/format.h>
-#include <fmt/chrono.h>
+#include <chrono>
 #include <boost/log/support/date_time.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 
@@ -30,12 +30,16 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(id_channel, "Channel", std::size_t)
 
 namespace ABYN {
   Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_level) : my_id_(my_id) {
-    auto time_now = std::time(nullptr);
 
     //immediately write messages to the log file to see them also if the execution stalls
     const auto auto_flush = ABYN_DEBUG ? true : false;
+    auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::stringstream stream;
+    stream << std::put_time(std::localtime(&time), "%Y.%m.%d--%H:%M:%S");
+    auto date = stream.str();
 
-    auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", *std::localtime(&time_now));
+    //auto date = fmt::format("{:%Y}.", std::chrono::system_clock::now().time_since_epoch());
+//    auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", std::chrono::system_clock::now().time_since_epoch());
     boost::shared_ptr<sinks::text_multifile_backend> backend =
         boost::make_shared<sinks::text_multifile_backend>();
 
