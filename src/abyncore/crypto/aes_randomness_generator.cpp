@@ -1,5 +1,11 @@
 #include "aes_randomness_generator.h"
 #include <openssl/evp.h>
+#include <openssl/opensslv.h>
+
+#if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
+#define EVP_MD_CTX_create() EVP_MD_CTX_new()
+#define EVP_MD_CTX_destroy() EVP_MD_CTX_free()
+#endif
 
 namespace ABYN::Crypto {
 
