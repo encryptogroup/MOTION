@@ -12,8 +12,8 @@
 #include <openssl/opensslv.h>
 
 #if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
-const auto & EVP_MD_CTX_new = EVP_MD_CTX_create();
-const auto & EVP_MD_CTX_free = EVP_MD_CTX_destroy();
+const auto & EVP_MD_CTX_new = EVP_MD_CTX_create;
+const auto & EVP_MD_CTX_free = EVP_MD_CTX_destroy;
 #endif
 
 #include <fmt/format.h>

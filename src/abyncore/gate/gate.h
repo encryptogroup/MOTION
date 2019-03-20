@@ -634,7 +634,9 @@ namespace ABYN::Gates::GMW {
       for (auto i = 0ull; i < my_wires.size(); ++i) {
         auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(my_wires.at(i));
         assert(my_wire);
-        my_wire->GetMutableValuesOnWire() = std::move(result.at(i));
+        auto buf = result.at(i).GetArr();
+        result.at(i).DetachBuf();
+        my_wire->GetMutableValuesOnWire().AttachBuf(buf);
       }
       SetOnlineIsReady();
       core_->IncrementEvaluatedGatesCounter();
