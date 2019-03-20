@@ -3,8 +3,8 @@
 #include <openssl/opensslv.h>
 
 #if (OPENSSL_VERSION_NUMBER < 0x1010100fL)
-#define EVP_MD_CTX_create() EVP_MD_CTX_new()
-#define EVP_MD_CTX_destroy() EVP_MD_CTX_free()
+using EVP_MD_CTX_new = EVP_MD_CTX_create();
+using EVP_MD_CTX_free = EVP_MD_CTX_destroy();
 #endif
 
 namespace ABYN::Crypto {

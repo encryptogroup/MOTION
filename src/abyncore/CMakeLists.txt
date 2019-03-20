@@ -23,8 +23,6 @@ add_custom_target(
 
 add_dependencies(abyn fbs-generation abyn_config)
 
-find_package(OpenSSL COMPONENTS Crypto SSL REQUIRED)
-
 target_include_directories(abyn PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
@@ -41,8 +39,8 @@ target_link_libraries(abyn
         PUBLIC GMP::GMP
         PUBLIC Threads::Threads
         PUBLIC ${Boost_LIBRARIES}
-        PUBLIC OpenSSL::SSL
         PUBLIC OpenSSL::Crypto
+        PUBLIC OpenSSL::SSL
         PRIVATE flatbuffers
         PRIVATE fmt::fmt-header-only
         )
