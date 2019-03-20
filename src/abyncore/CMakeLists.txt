@@ -39,6 +39,8 @@ target_link_libraries(abyn
         PUBLIC GMP::GMP
         PUBLIC Threads::Threads
         PUBLIC ${Boost_LIBRARIES}
+        PUBLIC OpenSSL::SSL
+        PUBLIC OpenSSL::Crypto
         PRIVATE flatbuffers
         PRIVATE fmt::fmt-header-only
         )
