@@ -3,6 +3,10 @@ project(ABYN LANGUAGES CXX)
 set(ABYN_VERSION 1.00)
 cmake_policy(SET CMP0075 NEW)
 
+if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
+    message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
+endif()
+
 option(ABYN_BUILD_EXE "Build executables" ON)
 option(ABYN_BUILD_TESTS "Build tests" ON)
 
@@ -11,9 +15,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(GMP REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(OpenMP REQUIRED)
 
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
-find_package(Boost
+find_package(Boost 1.66.0
         COMPONENTS
         log
         log_setup
@@ -22,7 +27,6 @@ find_package(Boost
         REQUIRED)
 set(Boost_USE_STATIC_LIBS ON)
 
-find_package(OpenMP REQUIRED)
 
 if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if we are in the top level CMakeLists
     set(CMAKE_VECTORIZATION_FLAGS "-maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2")
@@ -50,12 +54,9 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if 
 
     if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
         message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} is debug")
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
         set(CMAKE_XCODE_GENERATE_SCHEME ON)
         set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER ON)
         set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER_USE_AFTER_RETURN ON)
-    else ()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
     endif ()
 endif ()
 
