@@ -95,7 +95,7 @@ namespace ABYN {
       }
     }
 
-    void NotifyEvaluatedGate() { evaluated_gates++; }
+    void IncrementEvaluatedGatesCounter() { evaluated_gates++; }
 
     std::size_t GetNumOfEvaluatedGates() { return evaluated_gates; }
 

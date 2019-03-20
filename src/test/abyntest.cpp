@@ -292,6 +292,7 @@ namespace {
   }
 
   TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
+    const auto AGMW = ABYN::Protocol::ArithmeticGMW;
     std::srand(std::time(nullptr));
     auto template_test = [](auto template_var) {
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
@@ -317,9 +318,11 @@ namespace {
                 input_1K = global_input_1K;
                 input_10K = global_input_10K;
               }
-              auto input_share_1 = abyn_parties.at(party_id)->IN<T>(input_owner, input_1);
-              auto input_share_1K = abyn_parties.at(party_id)->IN<T>(input_owner, input_1K);
-              auto input_share_10K = abyn_parties.at(party_id)->IN<T>(input_owner, input_10K);
+              abyn_parties.at(party_id)->IN<AGMW>(input_owner, input_10K);
+
+              auto input_share_1 = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1);
+              auto input_share_1K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1K);
+              auto input_share_10K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_10K);
 
               auto output_share_1 = abyn_parties.at(party_id)->OUT(input_share_1, output_owner);
               auto output_share_1K = abyn_parties.at(party_id)->OUT(input_share_1K, output_owner);
@@ -358,6 +361,7 @@ namespace {
 
 
   TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
+    const auto AGMW = ABYN::Protocol::ArithmeticGMW;
     std::srand(std::time(nullptr));
     auto template_test = [](auto template_var) {
       using T = decltype(template_var);
@@ -375,7 +379,7 @@ namespace {
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())
           for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-            std::vector<ABYN::Shares::ArithmeticSharePtr<T>> s_in_1, s_in_1K, s_in_10K;
+            std::vector<ABYN::Shares::SharePtr> s_in_1, s_in_1K, s_in_10K;
             for (auto j = 0u; j < num_parties; ++j) {
               // If my input - real input, otherwise a dummy 0 (-vector).
               // Should not make any difference, just for consistency...
@@ -383,9 +387,9 @@ namespace {
               const std::vector<T> &my_in_1K = party_id == j ? in_1K.at(j) : _zero_v_1K;
               const std::vector<T> &my_in_10K = party_id == j ? in_10K.at(j) : _zero_v_10K;
 
-              s_in_1.push_back(abyn_parties.at(party_id)->IN<T>(j, my_in_1));
-              s_in_1K.push_back(abyn_parties.at(party_id)->IN<T>(j, my_in_1K));
-              s_in_10K.push_back(abyn_parties.at(party_id)->IN<T>(j, my_in_10K));
+              s_in_1.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(j, my_in_1));
+              s_in_1K.push_back(abyn_parties.at(party_id)->IN<AGMW,T>(j, my_in_1K));
+              s_in_10K.push_back(abyn_parties.at(party_id)->IN<AGMW,T>(j, my_in_10K));
             }
 
             auto s_add_1 = abyn_parties.at(party_id)->ADD(s_in_1.at(0), s_in_1.at(1));
