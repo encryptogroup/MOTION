@@ -61,12 +61,10 @@ namespace ABYN::Gates::Interfaces {
     }
 
     void SetSetupIsReady() {
-      std::scoped_lock lock(mutex_);
       setup_is_ready_ = true;
     }
 
     void SetOnlineIsReady() {
-      std::scoped_lock lock(mutex_);
       online_is_ready_ = true;
       assert(output_share_);
       for (auto &wire : output_share_->GetWires()) {
