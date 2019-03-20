@@ -85,13 +85,10 @@ namespace ABYN {
 #pragma omp single nowait
       {
 #pragma omp task
-        {
 #pragma omp taskloop num_tasks(std::min(static_cast<std::size_t>(50), static_cast<std::size_t>(input_gates_.size())))
           for (auto i = 0u; i < input_gates_.size(); ++i) {
             input_gates_[i]->Evaluate();
           }
-        }
-
 //evaluate all other gates moved to the active queue
 #pragma omp task
         while (core_->GetNumOfEvaluatedGates() < core_->GetTotalNumOfGates()) {
