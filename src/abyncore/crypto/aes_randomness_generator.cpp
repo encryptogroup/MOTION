@@ -1,25 +1,10 @@
 #include "aes_randomness_generator.h"
-#include <openssl/evp.h>
-#include <openssl/opensslv.h>
-
-#if (OPENSSL_VERSION_NUMBER < 0x1010100fL)
-const auto & EVP_MD_CTX_new = EVP_MD_CTX_create();
-const auto & EVP_MD_CTX_free = EVP_MD_CTX_destroy();
-#endif
 
 namespace ABYN::Crypto {
 
   void AESRandomnessGenerator::Initialize(u8 key[AES_KEY_SIZE], u8 iv[AES_BLOCK_SIZE / 2]) {
     std::copy(key, key + AES_KEY_SIZE, std::begin(raw_key_arithmetic_));
     std::copy(iv, iv + AES_BLOCK_SIZE / 2, std::begin(aes_ctr_nonce_arithmetic_));
-
-    if (!(ctx_arithmetic_ = EVP_CIPHER_CTX_new())) {
-      throw (std::runtime_error(fmt::format("Could not initialize EVP context")));
-    }
-
-    if (!(ctx_boolean_ = EVP_CIPHER_CTX_new())) {
-      throw (std::runtime_error(fmt::format("Could not initialize EVP context")));
-    }
 
     auto boolean_key = HashKey(key);
     std::copy(boolean_key.data(), boolean_key.data() + AES_KEY_SIZE, raw_key_boolean_);
@@ -44,7 +29,7 @@ namespace ABYN::Crypto {
       *reinterpret_cast<u64 *>(counter_pointer) = counter_value;
 
       //encrypt as in CTR mode, but without sequentially incrementing the counter after each encryption
-      int output_length = Encrypt(ctx_boolean_, input.data(), output.data(), 1);
+      int output_length = Encrypt(ctx_boolean_.get(), input.data(), output.data(), 1);
 
       if (static_cast<std::size_t>(output_length) < AES_BLOCK_SIZE ||
           static_cast<std::size_t>(output_length) > 2 * AES_BLOCK_SIZE) {

@@ -9,6 +9,12 @@
 #include <openssl/aes.h>
 #include <openssl/conf.h>
 #include <openssl/err.h>
+#include <openssl/opensslv.h>
+
+#if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
+const auto & EVP_MD_CTX_new = EVP_MD_CTX_create();
+const auto & EVP_MD_CTX_free = EVP_MD_CTX_destroy();
+#endif
 
 #include <fmt/format.h>
 
@@ -20,11 +26,16 @@ namespace ABYN::Crypto {
 
   class AESRandomnessGenerator {
   public:
-    AESRandomnessGenerator(std::size_t party_id) : party_id_(party_id) {}
+    AESRandomnessGenerator(std::size_t party_id) :
+        party_id_(party_id), ctx_arithmetic_(MakeCipherCtx()), ctx_boolean_(MakeCipherCtx()) {
+      if (!ctx_arithmetic_ || !ctx_boolean_) {
+        throw (std::runtime_error(fmt::format("Could not initialize EVP context")));
+      }
+    }
 
     void Initialize(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]);
 
-    ~AESRandomnessGenerator() { if (initialized_) EVP_CIPHER_CTX_free(ctx_arithmetic_); }
+    ~AESRandomnessGenerator() = default;
 
     std::vector<u8> GetSeed();
 
@@ -50,7 +61,7 @@ namespace ABYN::Crypto {
                 input + AESRandomnessGenerator::COUNTER_OFFSET);
 
       //encrypt as in CTR mode, but without sequentially incrementing the counter after each encryption
-      int output_length = Encrypt(ctx_arithmetic_, input, output, 1);
+      int output_length = Encrypt(ctx_arithmetic_.get(), input, output, 1);
 
       if (output_length != AES_BLOCK_SIZE) {
         throw (std::runtime_error(
@@ -94,7 +105,7 @@ namespace ABYN::Crypto {
       }
 
       //encrypt as in CTR mode, but without sequentially incrementing the counter after each encryption
-      int output_length = Encrypt(ctx_arithmetic_, input.data(), output.data(), num_of_gates);
+      int output_length = Encrypt(ctx_arithmetic_.get(), input.data(), output.data(), num_of_gates);
       assert(output_length >= 0);
 
       if (static_cast<std::size_t>(output_length) < size_in_bytes ||
@@ -124,8 +135,13 @@ namespace ABYN::Crypto {
     static const std::size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
     std::int64_t party_id_ = -1;
 
-    EVP_CIPHER_CTX *ctx_arithmetic_ = nullptr,
-        *ctx_boolean_ = nullptr;                                  /// AES context, created only once and reused further
+    /// AES context, created only once and reused further
+    using EVP_CIPHER_CTX_PTR = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
+    static constexpr auto MakeCipherCtx = []() {
+      return EVP_CIPHER_CTX_PTR(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);
+    };
+    EVP_CIPHER_CTX_PTR ctx_arithmetic_, ctx_boolean_;
+
     u8 raw_key_arithmetic_[AES_KEY_SIZE] = {0},
         raw_key_boolean_[AES_KEY_SIZE] = {0};                  /// AES key in raw u8 format
     u8 aes_ctr_nonce_arithmetic_[AES_BLOCK_SIZE / 2] = {0},
@@ -136,7 +152,7 @@ namespace ABYN::Crypto {
     /// which hopefully improves the efficiency of the automated OpenSSL routine for AES-CTR,
     /// where counter is incremented after each encryption.
     ///
-    int Encrypt(evp_cipher_ctx_st * ctx, u8 *input, u8 *output, std::size_t num_of_blocks);
+    int Encrypt(evp_cipher_ctx_st *ctx, u8 *input, u8 *output, std::size_t num_of_blocks);
 
     // use old key to generate randomness for a new key
     std::vector<u8> HashKey(const u8 old_key[AES_KEY_SIZE]);

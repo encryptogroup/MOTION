@@ -599,7 +599,6 @@ namespace ABYN::Gates::GMW {
       for (auto i = 0ull; i < result.size(); ++i) {
         if (party_id_ == my_id) {
           result.at(i).CreateExact(bits_);
-          result.at(i);
           auto log_string = std::string("");
           for (auto j = 0u; j < core_->GetConfig()->GetNumOfParties(); ++j) {
             if (j == my_id) { continue; }
@@ -611,6 +610,7 @@ namespace ABYN::Gates::GMW {
             CBitVector randomness;
             randomness.AttachBuf(randomness_vector.data(), randomness_vector.size());
             result.at(i).XOR(&randomness);
+            randomness.DetachBuf();
             sharing_id += bits_;
           }
           auto s = fmt::format(
@@ -622,7 +622,7 @@ namespace ABYN::Gates::GMW {
           Helpers::WaitFor(rand_generator->IsInitialized());
           SetSetupIsReady();
           auto randomness_v = std::move(rand_generator->GetBits(sharing_id, bits_));
-          result.at(i).AttachBuf(randomness_v.data(), randomness_v.size());
+          result.at(i).Copy(randomness_v.data(), 0, randomness_v.size());
 
           auto s = fmt::format("Arithmetic input sharing (gate#{}) of Party's#{} input, got a share {} from the seed",
                                gate_id_, party_id_, result.at(0).GetByte(0));
