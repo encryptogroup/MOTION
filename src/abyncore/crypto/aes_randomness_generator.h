@@ -24,7 +24,7 @@ namespace ABYN::Crypto {
 
     void Initialize(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]);
 
-    ~AESRandomnessGenerator() { if (initialized_) EVP_CIPHER_CTX_free(ctx_); }
+    ~AESRandomnessGenerator() { if (initialized_) EVP_CIPHER_CTX_free(ctx_arithmetic_); }
 
     std::vector<u8> GetSeed();
 
@@ -44,13 +44,13 @@ namespace ABYN::Crypto {
 
       u8 output[AES_BLOCK_SIZE], input[AES_BLOCK_SIZE];
 
-      std::copy(std::begin(aes_ctr_nonce_), std::end(aes_ctr_nonce_), input);
+      std::copy(std::begin(aes_ctr_nonce_arithmetic_), std::end(aes_ctr_nonce_arithmetic_), input);
       std::copy(reinterpret_cast<u8 *>(&gate_id),
                 reinterpret_cast<u8 *>(&gate_id) + sizeof(gate_id),
                 input + AESRandomnessGenerator::COUNTER_OFFSET);
 
       //encrypt as in CTR mode, but without sequentially incrementing the counter after each encryption
-      int output_length = Encrypt(ctx_, input, output, 1);
+      int output_length = Encrypt(ctx_arithmetic_, input, output, 1);
 
       if (output_length != AES_BLOCK_SIZE) {
         throw (std::runtime_error(
@@ -85,8 +85,8 @@ namespace ABYN::Crypto {
 
       auto gate_id_copy = gate_id;
       for (auto i = 0u; i < num_of_gates; ++i, ++gate_id_copy) {
-        std::copy(std::begin(aes_ctr_nonce_),
-                  std::end(aes_ctr_nonce_),
+        std::copy(std::begin(aes_ctr_nonce_arithmetic_),
+                  std::end(aes_ctr_nonce_arithmetic_),
                   input.data() + i * AES_BLOCK_SIZE);
         std::copy(reinterpret_cast<u8 *>(&gate_id_copy),
                   reinterpret_cast<u8 *>(&gate_id_copy) + sizeof(gate_id_copy),
@@ -94,7 +94,7 @@ namespace ABYN::Crypto {
       }
 
       //encrypt as in CTR mode, but without sequentially incrementing the counter after each encryption
-      int output_length = Encrypt(ctx_, input.data(), output.data(), num_of_gates);
+      int output_length = Encrypt(ctx_arithmetic_, input.data(), output.data(), num_of_gates);
       assert(output_length >= 0);
 
       if (static_cast<std::size_t>(output_length) < size_in_bytes ||
@@ -124,11 +124,11 @@ namespace ABYN::Crypto {
     static const std::size_t COUNTER_OFFSET = AES_BLOCK_SIZE / 2;/// Byte length of the AES-CTR nonce
     std::int64_t party_id_ = -1;
 
-    EVP_CIPHER_CTX *ctx_ = nullptr,
+    EVP_CIPHER_CTX *ctx_arithmetic_ = nullptr,
         *ctx_boolean_ = nullptr;                                  /// AES context, created only once and reused further
-    u8 raw_key_[AES_KEY_SIZE] = {0},
-        raw_key_boolean[AES_KEY_SIZE] = {0};                  /// AES key in raw u8 format
-    u8 aes_ctr_nonce_[AES_BLOCK_SIZE / 2] = {0},
+    u8 raw_key_arithmetic_[AES_KEY_SIZE] = {0},
+        raw_key_boolean_[AES_KEY_SIZE] = {0};                  /// AES key in raw u8 format
+    u8 aes_ctr_nonce_arithmetic_[AES_BLOCK_SIZE / 2] = {0},
         aes_ctr_nonce_boolean_[AES_BLOCK_SIZE / 2] = {0};     /// Raw AES CTR nonce that is used in the left part of IV
 
     ///

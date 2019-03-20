@@ -3,16 +3,17 @@
 #include <openssl/opensslv.h>
 
 #if (OPENSSL_VERSION_NUMBER < 0x1010100fL)
-using EVP_MD_CTX_new = EVP_MD_CTX_create();
-using EVP_MD_CTX_free = EVP_MD_CTX_destroy();
+const auto & EVP_MD_CTX_new = EVP_MD_CTX_create();
+const auto & EVP_MD_CTX_free = EVP_MD_CTX_destroy();
 #endif
 
 namespace ABYN::Crypto {
 
   void AESRandomnessGenerator::Initialize(u8 key[AES_KEY_SIZE], u8 iv[AES_BLOCK_SIZE / 2]) {
-    std::copy(key, key + AES_KEY_SIZE, std::begin(raw_key_));
-    std::copy(iv, iv + AES_BLOCK_SIZE / 2, std::begin(aes_ctr_nonce_));
-    if (!(ctx_ = EVP_CIPHER_CTX_new())) {
+    std::copy(key, key + AES_KEY_SIZE, std::begin(raw_key_arithmetic_));
+    std::copy(iv, iv + AES_BLOCK_SIZE / 2, std::begin(aes_ctr_nonce_arithmetic_));
+
+    if (!(ctx_arithmetic_ = EVP_CIPHER_CTX_new())) {
       throw (std::runtime_error(fmt::format("Could not initialize EVP context")));
     }
 
@@ -21,7 +22,7 @@ namespace ABYN::Crypto {
     }
 
     auto boolean_key = HashKey(key);
-    std::copy(boolean_key.data(), boolean_key.data() + AES_KEY_SIZE, raw_key_boolean);
+    std::copy(boolean_key.data(), boolean_key.data() + AES_KEY_SIZE, raw_key_boolean_);
 
     initialized_ = true;
   };
@@ -66,10 +67,10 @@ namespace ABYN::Crypto {
     return std::move(result);
   }
 
-  int AESRandomnessGenerator::Encrypt(evp_cipher_ctx_st * ctx, u8 *input, u8 *output, std::size_t num_of_blocks) {
+  int AESRandomnessGenerator::Encrypt(evp_cipher_ctx_st *ctx, u8 *input, u8 *output, std::size_t num_of_blocks) {
     int output_length, len;
 
-    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, raw_key_, nullptr)) {
+    if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, raw_key_arithmetic_, nullptr)) {
       throw (std::runtime_error(fmt::format("Could not re-initialize EVP context")));
     }
 
@@ -87,7 +88,7 @@ namespace ABYN::Crypto {
     return output_length;
   }
 
-  std::vector<u8> AESRandomnessGenerator::HashKey(const u8 old_key[AES_KEY_SIZE]){
+  std::vector<u8> AESRandomnessGenerator::HashKey(const u8 old_key[AES_KEY_SIZE]) {
     EVP_MD_CTX *mdctx = EVP_MD_CTX_new();
     u8 new_key[EVP_MAX_MD_SIZE];
     unsigned int md_len;
@@ -101,8 +102,8 @@ namespace ABYN::Crypto {
   }
 
   std::vector<u8> AESRandomnessGenerator::GetSeed() {
-    std::vector<u8> seed(raw_key_, raw_key_ + sizeof(raw_key_));
-    seed.insert(seed.end(), aes_ctr_nonce_, aes_ctr_nonce_ + sizeof(aes_ctr_nonce_));
+    std::vector<u8> seed(raw_key_arithmetic_, raw_key_arithmetic_ + sizeof(raw_key_arithmetic_));
+    seed.insert(seed.end(), aes_ctr_nonce_arithmetic_, aes_ctr_nonce_arithmetic_ + sizeof(aes_ctr_nonce_arithmetic_));
     return std::move(seed);
   }
 }

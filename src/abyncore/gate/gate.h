@@ -598,7 +598,7 @@ namespace ABYN::Gates::GMW {
       auto sharing_id = boolean_sharing_id_;
       for (auto i = 0ull; i < result.size(); ++i) {
         if (party_id_ == my_id) {
-          result.at(i).CreateZeros(bits_);
+          result.at(i).CreateExact(bits_);
           result.at(i);
           auto log_string = std::string("");
           for (auto j = 0u; j < core_->GetConfig()->GetNumOfParties(); ++j) {
