@@ -15,23 +15,23 @@ namespace ABYN {
 
     ~Logger();
 
-    void Log(boost::log::trivial::severity_level severity_level, std::string &msg);
+    void Log(boost::log::trivial::severity_level severity_level, const std::string &msg);
 
     void Log(boost::log::trivial::severity_level severity_level, std::string &&msg);
 
-    void LogTrace(std::string &msg);
+    void LogTrace(const std::string &msg);
 
     void LogTrace(std::string &&msg);
 
-    void LogInfo(std::string &msg);
+    void LogInfo(const std::string &msg);
 
     void LogInfo(std::string &&msg);
 
-    void LogDebug(std::string &msg);
+    void LogDebug(const std::string &msg);
 
     void LogDebug(std::string &&msg);
 
-    void LogError(std::string &msg);
+    void LogError(const std::string &msg);
 
     void LogError(std::string &&msg);
 

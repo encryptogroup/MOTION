@@ -5,6 +5,8 @@
 #include "flatbuffers/flatbuffers.h"
 #include "fmt/format.h"
 
+#include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
+
 namespace ABYN::Helpers {
 
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -145,9 +147,40 @@ namespace ABYN::Helpers {
   namespace Compare {
     template<typename T>
     inline bool Vectors(const std::vector<T> &a, const std::vector<T> &b) {
-      assert(a.size() == b.size());
+      if (a.size() != b.size()) { return false; }
       for (auto i = 0u; i < a.size(); ++i) { if (a.at(i) != b.at(i)) { return false; }}
       return true;
+    }
+
+    template<typename T>
+    inline bool Dimensions(const std::vector<std::vector<T>> &v) {
+      if (v.size() <= 1) { return true; }
+      else {
+        auto first_size = v.at(0).size();
+        for (auto i = 1u; i < v.size(); ++i) { if (first_size != v.at(i).size()) { return false; }}
+      }
+      return true;
+    }
+
+    inline bool Dimensions(const std::vector<CBitVector> &v) {
+      if (v.size() <= 1) { return true; }
+      else {
+        auto first_size = v.at(0).GetSize();
+        for (auto i = 1u; i < v.size(); ++i) { if (first_size != v.at(i).GetSize()) { return false; }}
+      }
+      return true;
+    }
+  }
+
+  inline std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
+    assert(divisor != 0);
+    return 1 + ((dividend - 1) / divisor);
+  }
+
+  namespace Convert {
+    inline std::size_t BitsToBytes(std::size_t bits) {
+      const std::size_t bits_in_bytes = 8;
+      return DivideAndCeil(bits, bits_in_bytes);
     }
   }
 }

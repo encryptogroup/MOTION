@@ -38,8 +38,6 @@ namespace ABYN {
     stream << std::put_time(std::localtime(&time), "%Y.%m.%d--%H:%M:%S");
     auto date = stream.str();
 
-    //auto date = fmt::format("{:%Y}.", std::chrono::system_clock::now().time_since_epoch());
-//    auto date = fmt::format("{:%Y.%m.%d--%H:%M:%S}.", std::chrono::system_clock::now().time_since_epoch());
     boost::shared_ptr<sinks::text_multifile_backend> backend =
         boost::make_shared<sinks::text_multifile_backend>();
 
@@ -65,7 +63,7 @@ namespace ABYN {
 
   Logger::~Logger() {}
 
-  void Logger::Log(logging::trivial::severity_level severity_level, std::string &msg) {
+  void Logger::Log(logging::trivial::severity_level severity_level, const std::string &msg) {
     if (logging_enabled_) { BOOST_LOG_SEV(logger_, severity_level) << msg; }
   }
 
@@ -73,7 +71,7 @@ namespace ABYN {
     if (logging_enabled_) { BOOST_LOG_SEV(logger_, severity_level) << msg; }
   }
 
-  void Logger::LogTrace(std::string &msg) {
+  void Logger::LogTrace(const std::string &msg) {
     if constexpr(ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
       if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg; }
     }
@@ -85,7 +83,7 @@ namespace ABYN {
     }
   }
 
-  void Logger::LogInfo(std::string &msg) {
+  void Logger::LogInfo(const std::string &msg) {
     if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::info) << msg; }
   }
 
@@ -93,7 +91,7 @@ namespace ABYN {
     if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::info) << msg; }
   }
 
-  void Logger::LogDebug(std::string &msg) {
+  void Logger::LogDebug(const std::string &msg) {
     if constexpr(ABYN_DEBUG) {
       if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg; }
     }
@@ -105,7 +103,7 @@ namespace ABYN {
     }
   }
 
-  void Logger::LogError(std::string &msg) {
+  void Logger::LogError(const std::string &msg) {
     if (logging_enabled_) { BOOST_LOG_SEV(logger_, logging::trivial::error) << msg; }
   }
 
