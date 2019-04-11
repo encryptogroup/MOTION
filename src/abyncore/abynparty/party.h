@@ -200,7 +200,7 @@ namespace ABYN {
     void EvaluateCircuit();
 
     void Finish();
-/*
+
     ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false) {
       std::vector<u8> input_vector{input};
       return BooleanGMWInput(party_id, std::move(input_vector), 1);
@@ -212,7 +212,7 @@ namespace ABYN {
       auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetCore(), bits);
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
-      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputGMWShare());
+      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
     };
 
     //if \param bits is set to 0, the bit-length of the input vector is taken
@@ -220,7 +220,7 @@ namespace ABYN {
       auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, backend_->GetCore(), bits);
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
-      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputGMWShare());
+      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
     };
 
     //if \param bits is set to 0, the bit-length of the input vector is taken
@@ -229,7 +229,7 @@ namespace ABYN {
       auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetCore(), bits);
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
-      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputGMWShare());
+      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
     };
 
     //if \param bits is set to 0, the bit-length of the input vector is taken
@@ -239,7 +239,7 @@ namespace ABYN {
           std::move(input), party_id, backend_->GetCore(), bits);
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
-      return std::static_pointer_cast<ABYN::Shares::Share>(in_gate->GetOutputGMWShare());
+      return std::static_pointer_cast<ABYN::Shares::Share>(in_gate->GetOutputAsGMWShare());
     };
 
     //if \param bits is set to 0, the bit-length of the input vector is taken
@@ -253,7 +253,7 @@ namespace ABYN {
     ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<T> &&input, std::size_t bits = 0) {
       throw (std::runtime_error("BooleanGMWInput for arbitrary types is not implemented yet"));
     }
-*/
+
     //if \param bits is set to 0, the bit-length of the input vector is taken
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ABYN::Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, T input = 0) {

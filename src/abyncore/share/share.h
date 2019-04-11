@@ -190,36 +190,39 @@ namespace ABYN::Shares {
   class GMWShare : public BooleanShare {
   public:
     GMWShare(std::vector<u8> &input, CorePtr &core, std::size_t bits) {
-      wires_ = {std::make_shared<Wires::GMWWire>(input, core)};
+      wires_ = {std::make_shared<Wires::GMWWire>(input, core, bits)};
       core_ = core;
       bits_ = bits;
     }
 
     GMWShare(std::vector<u8> &&input, CorePtr &core, std::size_t bits) {
-      wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), core)};
+      wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), core, bits)};
       core_ = core;
       bits_ = bits;
     }
 
     GMWShare(std::vector<std::vector<u8>> &input, CorePtr &core, std::size_t bits) {
       if (input.size() == 0) { throw (std::runtime_error("Trying to create a Boolean GMW share without wires")); }
-      for (auto &v : input) { wires_.push_back(std::make_shared<Wires::GMWWire>(v, core)); }
+      for (auto &v : input) { wires_.push_back(std::make_shared<Wires::GMWWire>(v, core, bits)); }
       core_ = core;
       bits_ = bits;
     }
 
     GMWShare(std::vector<std::vector<u8>> &&input, CorePtr &core, std::size_t bits) {
       if (input.size() == 0) { throw (std::runtime_error("Trying to create a Boolean GMW share without wires")); }
-      for (auto &v : input) { wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), core)); }
+      for (auto &v : input) { wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), core, bits)); }
       core_ = core;
       bits_ = bits;
     }
 
     GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
       if (wires.size() == 0) { throw (std::runtime_error("Trying to create a Boolean GMW share without wires")); }
+      if (wires_.at(0)->GetProtocol() != ABYN::Protocol::BooleanGMW) {
+        throw (std::runtime_error("Trying to create a Boolean GMW share from wires of different sharing type"));
+      }
       wires_ = wires;
       core_ = wires.at(0)->GetCore();
-      bits_ = wires.size();
+      bits_ = wires.at(0)->GetBitLength();
     }
 
     const std::vector<Wires::WirePtr> GetWires() const final {
