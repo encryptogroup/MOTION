@@ -96,7 +96,7 @@ namespace ABYN {
     ABYN::Shares::SharePtr IN(std::size_t party_id, T input, std::size_t bits = 0) {
       if constexpr (std::is_same_v<T, bool>) {
         static_assert(P != ABYN::Protocol::ArithmeticGMW);
-        //    return BooleanGMWInput(party_id, input);
+            return BooleanGMWInput(party_id, input);
       } else {
         return IN<P, T>(party_id, std::vector<T>{input}, bits);
       }
