@@ -537,7 +537,6 @@ namespace ABYN::Gates {
 
   namespace GMW {
 
-    /// @param bits_
     class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
     public:
       GMWInputGate(const std::vector<u8> &input, std::size_t party_id, const ABYN::CorePtr &core, std::size_t bits = 0)
@@ -652,16 +651,15 @@ namespace ABYN::Gates {
       }
 
     private:
-      std::vector<std::vector<u8>> input_;
+      std::vector<std::vector<u8>> input_; ///< two-dimensional vector for storing the raw inputs
 
-      std::size_t bits_;
+      std::size_t bits_; ///< Number of parallel values on wires
 
-      //indicates whether this party shares the input
-      std::size_t party_id_;
+      std::size_t party_id_; ///< Indicates whether which party shares the input
 
-      std::size_t boolean_sharing_id_;
+      std::size_t boolean_sharing_id_; ///< Sharing ID for Boolean GMW for generating correlated randomness using AES CTR
 
-      std::vector<CBitVector> output;
+      std::vector<CBitVector> output; ///< CBitVector for storing the raw outputs
     };
   }
 }
