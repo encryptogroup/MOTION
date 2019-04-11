@@ -295,8 +295,8 @@ namespace {
     const auto AGMW = ABYN::Protocol::ArithmeticGMW;
     std::srand(std::time(nullptr));
     auto template_test = [](auto template_var) {
+      std::atomic<bool> success = true;
       for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
-        bool success = true;
         for (auto num_parties : num_parties_list) {
           std::size_t input_owner = std::rand() % num_parties,
               output_owner = std::rand() % num_parties;
@@ -318,7 +318,6 @@ namespace {
                 input_1K = global_input_1K;
                 input_10K = global_input_10K;
               }
-              abyn_parties.at(party_id)->IN<AGMW>(input_owner, input_10K);
 
               auto input_share_1 = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1);
               auto input_share_1K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1K);
@@ -338,18 +337,20 @@ namespace {
                 auto wire_10K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
                     output_share_10K->GetWires().at(0));
 
-                success &= wire_1->GetValuesOnWire().at(0) == global_input_1;
-                success &= Helpers::Compare::Vectors(wire_1K->GetValuesOnWire(), global_input_1K);
-                success &= Helpers::Compare::Vectors(wire_10K->GetValuesOnWire(), global_input_10K);
+                assert(wire_1);
+                assert(wire_1K);
+                assert(wire_10K);
+
+                EXPECT_EQ(wire_1->GetValuesOnWire().at(0), global_input_1);
+                EXPECT_TRUE(Helpers::Compare::Vectors(wire_1K->GetValuesOnWire(), global_input_1K));
+                EXPECT_TRUE(Helpers::Compare::Vectors(wire_10K->GetValuesOnWire(), global_input_10K));
               }
             }
           }
           catch (std::exception &e) {
             std::cerr << e.what() << std::endl;
-            success = false;
           }
         }
-        ASSERT_TRUE(success);
       }
     };
     //lambdas don't support templates, but only auto types. So, lets try to trick them.
@@ -388,8 +389,8 @@ namespace {
               const std::vector<T> &my_in_10K = party_id == j ? in_10K.at(j) : _zero_v_10K;
 
               s_in_1.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(j, my_in_1));
-              s_in_1K.push_back(abyn_parties.at(party_id)->IN<AGMW,T>(j, my_in_1K));
-              s_in_10K.push_back(abyn_parties.at(party_id)->IN<AGMW,T>(j, my_in_10K));
+              s_in_1K.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(j, my_in_1K));
+              s_in_10K.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(j, my_in_10K));
             }
 
             auto s_add_1 = abyn_parties.at(party_id)->ADD(s_in_1.at(0), s_in_1.at(1));

@@ -44,13 +44,15 @@ namespace ABYN::Shares {
   template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   class ArithmeticShare : public Share {
   public:
-    ArithmeticShare(ABYN::Wires::WirePtr &wire) {
+    ArithmeticShare(const ABYN::Wires::WirePtr &wire) {
       wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wire)};
       if (!wires_.at(0)) { throw (std::runtime_error("Something went wrong with creating an arithmetic share")); }
       core_ = wires_.at(0)->GetCore();
     }
 
     ArithmeticShare(ABYN::Wires::ArithmeticWirePtr<T> &wire) : wires_({wire}) {
+      wires_ = {wire};
+      assert(wire);
       core_ = wires_.at(0)->GetCore();
     }
 

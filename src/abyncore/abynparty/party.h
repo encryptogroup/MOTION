@@ -61,7 +61,7 @@ namespace ABYN {
           return ArithmeticGMWInput(party_id, input);
         }
         case ABYN::Protocol::BooleanGMW: {
-          return BooleanGMWInput(party_id, input);
+//          return BooleanGMWInput(party_id, input);
         }
         case ABYN::Protocol::BMR: {
           throw (std::runtime_error("BMR protocol is not implemented yet"));
@@ -77,10 +77,10 @@ namespace ABYN {
     ABYN::Shares::SharePtr IN(std::size_t party_id, std::vector<T> &&input, std::size_t bits = 0) {
       switch (P) {
         case ABYN::Protocol::ArithmeticGMW: {
-         return ArithmeticGMWInput(party_id, std::move(input));
+          return ArithmeticGMWInput(party_id, std::move(input));
         }
         case ABYN::Protocol::BooleanGMW: {
-          return BooleanGMWInput(party_id, std::move(input));
+          //        return BooleanGMWInput(party_id, std::move(input));
         }
         case ABYN::Protocol::BMR: {
           throw (std::runtime_error("BMR input gate is not implemented yet"));
@@ -96,7 +96,7 @@ namespace ABYN {
     ABYN::Shares::SharePtr IN(std::size_t party_id, T input, std::size_t bits = 0) {
       if constexpr (std::is_same_v<T, bool>) {
         static_assert(P != ABYN::Protocol::ArithmeticGMW);
-        return BooleanGMWInput(party_id, input);
+        //    return BooleanGMWInput(party_id, input);
       } else {
         return IN<P, T>(party_id, std::vector<T>{input}, bits);
       }
@@ -200,7 +200,7 @@ namespace ABYN {
     void EvaluateCircuit();
 
     void Finish();
-
+/*
     ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false) {
       std::vector<u8> input_vector{input};
       return BooleanGMWInput(party_id, std::move(input_vector), 1);
@@ -253,7 +253,7 @@ namespace ABYN {
     ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<T> &&input, std::size_t bits = 0) {
       throw (std::runtime_error("BooleanGMWInput for arbitrary types is not implemented yet"));
     }
-
+*/
     //if \param bits is set to 0, the bit-length of the input vector is taken
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     ABYN::Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, T input = 0) {
@@ -267,7 +267,7 @@ namespace ABYN {
           input_vector, party_id, backend_->GetCore());
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
-      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputArithmeticShare());
+      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
     }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -276,7 +276,7 @@ namespace ABYN {
           std::move(input_vector), party_id, backend_->GetCore());
       auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
       backend_->RegisterInputGate(in_gate_cast);
-      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputArithmeticShare());
+      return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
     }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -285,7 +285,7 @@ namespace ABYN {
       auto out_gate = std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<T>>(parent, output_owner);
       auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
       backend_->RegisterGate(out_gate_cast);
-      return std::static_pointer_cast<ABYN::Shares::Share>(out_gate->GetOutputArithmeticShare());
+      return std::static_pointer_cast<ABYN::Shares::Share>(out_gate->GetOutputAsArithmeticShare());
     }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -300,10 +300,12 @@ namespace ABYN {
     ABYN::Shares::SharePtr ArithmeticGMWAddition(const ArithmeticSharePtr<T> &a, const ArithmeticSharePtr<T> &b) {
       assert(a);
       assert(b);
-      auto addition_gate = std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(a, b);
+      auto wire_a = a->GetArithmeticWire();
+      auto wire_b = b->GetArithmeticWire();
+      auto addition_gate = std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(wire_a, wire_b);
       auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
       backend_->RegisterGate(addition_gate_cast);
-      return std::static_pointer_cast<ABYN::Shares::Share>(addition_gate->GetOutputArithmeticShare());
+      return std::static_pointer_cast<ABYN::Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
     }
 
     template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
