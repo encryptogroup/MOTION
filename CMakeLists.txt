@@ -179,7 +179,7 @@ endif ()
           execute_process(COMMAND git submodule update --init extern/libOTe
                   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
       endif ()
-      add_subdirectory(extern/libOTe)
+#      add_subdirectory(extern/libOTe)
   endif ()
 
 
