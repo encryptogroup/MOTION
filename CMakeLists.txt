@@ -6,7 +6,7 @@ set(ABYN_VERSION 1.00)
 
 if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
-endif()
+endif ()
 
 option(ABYN_BUILD_EXE "Build executables" ON)
 option(ABYN_BUILD_TESTS "Build tests" ON)
@@ -150,6 +150,38 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
     add_subdirectory(${FLATBUFFERS_SRC_DIR}
             extern/flatbuffers)
     add_subdirectory(fbs)
+endif ()
+
+find_package(cryptoTools QUIET)
+if (cryptoTools_FOUND)
+    message(STATUS "Found cryptoTools")
+elseif (NOT cryptoTools_FOUND AND NOT TARGET cryptoTools::cryptoTools)
+    message("cryptoTools was not found: add cryptoTools subdirectory")
+    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/cryptoTools/CMakeLists.txt")
+        find_package(Git REQUIRED)
+        message("initialize Git submodule: extern/cryptoTools")
+        execute_process(COMMAND git submodule update --init extern/cryptoTools
+                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+    endif ()
+    add_subdirectory(extern/cryptoTools)
+endif ()
+
+
+if (INCLUDE_LIBOTE)
+    set(ENABLE_SIMPLESTOT ON)
+    find_package(libOTe QUIET)
+    if (libOTe_FOUND)
+        message(STATUS "Found libOTe")
+    elseif (NOT libOTe_FOUND AND NOT TARGET libOTe::libOTe)
+        message("libOTe was not found: add libOTe subdirectory")
+        if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/libOTe/CMakeLists.txt")
+            find_package(Git REQUIRED)
+            message("initialize Git submodule: extern/libOTe")
+            execute_process(COMMAND git submodule update --init extern/libOTe
+                    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+        endif ()
+        add_subdirectory(extern/libOTe)
+    endif ()
 endif ()
 
 add_subdirectory(src/abyncore)
