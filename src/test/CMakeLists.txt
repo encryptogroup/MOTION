@@ -8,4 +8,6 @@ target_include_directories(abyntest PRIVATE
 target_link_libraries(abyntest PUBLIC
         ABYN::abyn
         fmt::fmt
-        gtest)
+        gtest
+        ${SANITIZE_ADDRESS_LINK_OPT}
+        )

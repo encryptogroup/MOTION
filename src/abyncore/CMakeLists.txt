@@ -15,6 +15,7 @@ add_library(ABYN::abyn ALIAS abyn)
 
 target_compile_features(abyn PUBLIC cxx_std_17)
 target_compile_options(abyn PRIVATE "-Wall" "-Wextra")
+target_compile_options(abyn PRIVATE ${OMIT_FRAME_POINTER_COMP_OPT} ${SANITIZE_ADDRESS_COMP_OPT})
 
 add_custom_target(
         abyn_config ALL DEPENDS
@@ -28,6 +29,7 @@ target_include_directories(abyn PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/abyncore>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/cryptoTools>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/flatbuffers/include>
         ${Boost_INCLUDE_DIRS}
         )
@@ -44,6 +46,10 @@ target_link_libraries(abyn
         PRIVATE flatbuffers
         PRIVATE fmt::fmt-header-only
         )
+
+if (${SANITIZE_ADDRESS_LINK_OPT})
+    target_link_libraries(abyn PUBLIC ${SANITIZE_ADDRESS_LINK_OPT})
+endif ()
 
 install(TARGETS abyn
         EXPORT "${PROJECT_NAME}Targets"

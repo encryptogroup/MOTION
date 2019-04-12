@@ -7,6 +7,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "cryptoTools/cryptoTools/Common/BitVector.h"
 #include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
 
 #include "utility/typedefs.h"

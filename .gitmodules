@@ -15,7 +15,7 @@
 	url = https://github.com/google/googletest.git
 [submodule "extern/cryptoTools"]
 	path = extern/cryptoTools
-	url = https://github.com/Oleksandr-Tkachenko/cryptoTools.git
+	url = ssh://git@github.com/Oleksandr-Tkachenko/cryptoTools.git
 [submodule "extern/libOTe"]
 	path = extern/libOTe
-	url = https://github.com/Oleksandr-Tkachenko/libOTe.git
+	url = ssh://git@github.com/Oleksandr-Tkachenko/libOTe.git
