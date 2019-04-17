@@ -167,22 +167,21 @@ elseif (NOT cryptoTools_FOUND AND NOT TARGET cryptoTools::cryptoTools)
 endif ()
 
 
-if (INCLUDE_LIBOTE)
-    set(ENABLE_SIMPLESTOT ON)
-    find_package(libOTe QUIET)
-    if (libOTe_FOUND)
-        message(STATUS "Found libOTe")
-    elseif (NOT libOTe_FOUND AND NOT TARGET libOTe::libOTe)
-        message("libOTe was not found: add libOTe subdirectory")
-        if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/libOTe/CMakeLists.txt")
-            find_package(Git REQUIRED)
-            message("initialize Git submodule: extern/libOTe")
-            execute_process(COMMAND git submodule update --init extern/libOTe
-                    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-        endif ()
-        add_subdirectory(extern/libOTe)
-    endif ()
-endif ()
+  set(ENABLE_SIMPLESTOT ON)
+  find_package(libOTe QUIET)
+  if (libOTe_FOUND)
+      message(STATUS "Found libOTe")
+  elseif (NOT libOTe_FOUND AND NOT TARGET libOTe::libOTe)
+      message("libOTe was not found: add libOTe subdirectory")
+      if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/libOTe/CMakeLists.txt")
+          find_package(Git REQUIRED)
+          message("initialize Git submodule: extern/libOTe")
+          execute_process(COMMAND git submodule update --init extern/libOTe
+                  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+      endif ()
+#      add_subdirectory(extern/libOTe)
+  endif ()
+
 
 add_subdirectory(src/abyncore)
 
