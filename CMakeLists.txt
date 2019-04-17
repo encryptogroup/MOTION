@@ -55,9 +55,9 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if 
 
     if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
         message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} is debug")
-        set(CMAKE_XCODE_GENERATE_SCHEME ON)
-        set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER ON)
-        set(CMAKE_XCODE_SCHEME_ADDRESS_SANITIZER_USE_AFTER_RETURN ON)
+        SET(OMIT_FRAME_POINTER_COMP_OPT "-fno-omit-frame-pointer")
+        SET(SANITIZE_ADDRESS_COMP_OPT "-fsanitize=address")
+        set(SANITIZE_ADDRESS_LINK_OPT "-fsanitize=address")
     endif ()
 endif ()
 
