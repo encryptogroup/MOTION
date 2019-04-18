@@ -2,249 +2,260 @@
 #define WIRE_H
 
 #include <cstdlib>
-#include <string>
-#include <vector>
 #include <memory>
+#include <string>
 #include <unordered_set>
+#include <vector>
 
-#include "cryptoTools/cryptoTools/Common/BitVector.h"
 #include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
+#include "cryptoTools/cryptoTools/Common/BitVector.h"
 
-#include "utility/typedefs.h"
 #include "abynparty/core.h"
+#include "utility/typedefs.h"
 
-//forward-declare Gate class
+// forward-declare Gate class
 namespace ABYN::Gates::Interfaces {
-  class Gate;
+class Gate;
 
-  using GatePtr = std::shared_ptr<Gate>;
-}
+using GatePtr = std::shared_ptr<Gate>;
+}  // namespace ABYN::Gates::Interfaces
 
 namespace ABYN::Wires {
-  class Wire {
-  public:
-    std::size_t GetNumOfParallelValues() const { return num_of_parallel_values_; }
+class Wire {
+ public:
+  std::size_t GetNumOfParallelValues() const { return num_of_parallel_values_; }
 
-    virtual enum CircuitType GetCircuitType() const = 0;
+  virtual enum CircuitType GetCircuitType() const = 0;
 
-    virtual enum Protocol GetProtocol() const = 0;
+  virtual enum Protocol GetProtocol() const = 0;
 
-    virtual ~Wire() {
-      assert(wire_id_ >= 0);
-      core_->UnregisterWire(static_cast<std::size_t>(wire_id_));
+  virtual ~Wire() {
+    assert(wire_id_ >= 0);
+    core_->UnregisterWire(static_cast<std::size_t>(wire_id_));
+  }
+
+  void RegisterWaitingGate(std::size_t gate_id) {
+    std::scoped_lock lock(mutex_);
+    waiting_gate_ids_.insert(gate_id);
+  }
+
+  void UnregisterWaitingGate(std::size_t gate_id) {
+    std::scoped_lock lock(mutex_);
+    waiting_gate_ids_.erase(gate_id);
+  }
+
+  void SetOnlineFinished() {
+    if (is_done_) {
+      throw(std::runtime_error(fmt::format(
+          "Marking wire #{} as \"online phase ready\" twice", wire_id_)));
     }
-
-    void RegisterWaitingGate(std::size_t gate_id) {
-      std::scoped_lock lock(mutex_);
-      waiting_gate_ids_.insert(gate_id);
+    is_done_ = true;
+    assert(wire_id_ >= 0);
+    for (auto gate_id : waiting_gate_ids_) {
+      Wire::UnregisterWireIdFromGate(gate_id,
+                                     static_cast<std::size_t>(wire_id_), core_);
     }
+    waiting_gate_ids_.clear();
+  }
 
-    void UnregisterWaitingGate(std::size_t gate_id) {
-      std::scoped_lock lock(mutex_);
-      waiting_gate_ids_.erase(gate_id);
+  const auto &GetWaitingGatesIds() const { return waiting_gate_ids_; }
+
+  const bool &IsReady() const {
+    if (is_constant_) {
+      return is_constant_;
+    } else {
+      return is_done_;
     }
+  }
 
-    void SetOnlineFinished() {
-      if (is_done_) {
-        throw (std::runtime_error(fmt::format("Marking wire #{} as \"online phase ready\" twice", wire_id_)));
-      }
-      is_done_ = true;
-      assert(wire_id_ >= 0);
-      for (auto gate_id: waiting_gate_ids_) {
-        Wire::UnregisterWireIdFromGate(gate_id, static_cast<std::size_t>(wire_id_), core_);
-      }
-      waiting_gate_ids_.clear();
+  bool IsConstant() const { return is_constant_; }
+
+  std::size_t GetWireId() const { return static_cast<std::size_t>(wire_id_); }
+
+  const CorePtr &GetCore() const { return core_; }
+
+  static inline std::string PrintIds(
+      const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
+    std::string result;
+    for (auto &w : wires) {
+      result.append(fmt::format("{} ", w->GetWireId()));
     }
+    result.erase(result.end() - 1);
+    return std::move(result);
+  }
 
-    const auto &GetWaitingGatesIds() const { return waiting_gate_ids_; }
+  virtual std::size_t GetBitLength() = 0;
 
-    const bool &IsReady() const { if (is_constant_) { return is_constant_; } else { return is_done_; }}
+  // virtual std::size_t GetNumSIMDValues() = 0;
 
-    bool IsConstant() const { return is_constant_; }
+  Wire(const Wire &) = delete;
 
-    std::size_t GetWireId() const {
-      return static_cast<std::size_t>(wire_id_);
-    }
+  Wire(Wire &) = delete;
 
-    const CorePtr &GetCore() const { return core_; }
+ protected:
+  // number of values that are _logically_ processed in parallel
+  std::size_t num_of_parallel_values_ = 0;
 
-    static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
-      std::string result;
-      for (auto &w : wires) { result.append(fmt::format("{} ", w->GetWireId())); }
-      result.erase(result.end() - 1);
-      return std::move(result);
-    }
+  // flagging variables as constants is useful, since this allows for tricks,
+  // such as non-interactive multiplication by a constant in (arithmetic) GMW
+  bool is_constant_ = false;
 
-    virtual std::size_t GetBitLength() = 0;
+  // is ready flag is needed for callbacks, i.e.,
+  // gates will wait for wires to be evaluated to proceed with their evaluation
+  bool is_done_ = false;
 
-    //virtual std::size_t GetNumSIMDValues() = 0;
+  std::int64_t wire_id_ = -1;
 
-    Wire(const Wire &) = delete;
+  CorePtr core_;
 
-    Wire(Wire &) = delete;
+  std::unordered_set<std::size_t> waiting_gate_ids_;
 
-  protected:
-    // number of values that are _logically_ processed in parallel
-    std::size_t num_of_parallel_values_ = 0;
+  Wire() = default;
 
-    // flagging variables as constants is useful, since this allows for tricks, such as non-interactive
-    // multiplication by a constant in (arithmetic) GMW
-    bool is_constant_ = false;
+  static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id,
+                                       CorePtr &core);
 
-    // is ready flag is needed for callbacks, i.e.,
-    // gates will wait for wires to be evaluated to proceed with their evaluation
-    bool is_done_ = false;
+  void InitializationHelper() {
+    wire_id_ = core_->NextWireId();
+    core_->RegisterNextWire(this);
+  }
 
-    std::int64_t wire_id_ = -1;
+ private:
+  std::mutex mutex_;
+};
 
-    CorePtr core_;
-
-    std::unordered_set<std::size_t> waiting_gate_ids_;
-
-    Wire() = default;
-
-    static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id, CorePtr &core);
-
-    void InitializationHelper() {
-      wire_id_ = core_->NextWireId();
-      core_->RegisterNextWire(this);
-    }
-
-  private:
-
-    std::mutex mutex_;
-  };
-
-  using WirePtr = std::shared_ptr<Wire>;
-
+using WirePtr = std::shared_ptr<Wire>;
 
 // Allow only unsigned integers for Arithmetic wires.
-  template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  class ArithmeticWire : public Wire {
-  public:
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+class ArithmeticWire : public Wire {
+ public:
+  ArithmeticWire(std::vector<T> &&values, const CorePtr &core,
+                 bool is_constant = false) {
+    is_constant_ = is_constant;
+    core_ = core;
+    values_ = std::move(values);
+    num_of_parallel_values_ = values_.size();
+    InitializationHelper();
+  }
 
-    ArithmeticWire(std::vector<T> &&values, const CorePtr &core, bool is_constant = false) {
-      is_constant_ = is_constant;
-      core_ = core;
-      values_ = std::move(values);
-      num_of_parallel_values_ = values_.size();
-      InitializationHelper();
-    }
+  ArithmeticWire(const std::vector<T> &values, const CorePtr &core,
+                 bool is_constant = false) {
+    is_constant_ = is_constant;
+    core_ = core;
+    values_ = values;
+    num_of_parallel_values_ = values_.size();
+    InitializationHelper();
+  }
 
-    ArithmeticWire(const std::vector<T> &values, const CorePtr &core, bool is_constant = false) {
-      is_constant_ = is_constant;
-      core_ = core;
-      values_ = values;
-      num_of_parallel_values_ = values_.size();
-      InitializationHelper();
-    }
+  ArithmeticWire(T t, const CorePtr &core, bool is_constant = false) {
+    is_constant_ = is_constant;
+    core_ = core;
+    values_.push_back(t);
+    num_of_parallel_values_ = 1;
+    InitializationHelper();
+  }
 
-    ArithmeticWire(T t, const CorePtr &core, bool is_constant = false) {
-      is_constant_ = is_constant;
-      core_ = core;
-      values_.push_back(t);
-      num_of_parallel_values_ = 1;
-      InitializationHelper();
-    }
+  ~ArithmeticWire() final = default;
 
-    ~ArithmeticWire() final = default;
+  Protocol GetProtocol() const final { return Protocol::ArithmeticGMW; }
 
-    Protocol GetProtocol() const final { return Protocol::ArithmeticGMW; }
+  CircuitType GetCircuitType() const final {
+    return CircuitType::ArithmeticType;
+  }
 
-    CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
+  const std::vector<T> &GetValuesOnWire() const { return values_; }
 
-    const std::vector<T> &GetValuesOnWire() const { return values_; }
+  std::vector<T> &GetMutableValuesOnWire() { return values_; }
 
-    std::vector<T> &GetMutableValuesOnWire() { return values_; }
+  std::size_t GetBitLength() final { return sizeof(T) * 8; }
 
-    std::size_t GetBitLength() final { return sizeof(T) * 8; }
+ private:
+  std::vector<T> values_;
+};
 
-  private:
-    std::vector<T> values_;
-  };
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+using ArithmeticWirePtr = std::shared_ptr<ArithmeticWire<T>>;
 
-  template<typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  using ArithmeticWirePtr = std::shared_ptr<ArithmeticWire<T>>;
+class BooleanWire : public Wire {
+ public:
+  ~BooleanWire() override = default;
 
+  CircuitType GetCircuitType() const final { return CircuitType::BooleanType; }
 
-  class BooleanWire : public Wire {
-  public:
+  Protocol GetProtocol() const override = 0;
 
-    ~BooleanWire() override = default;
+  BooleanWire(BooleanWire &) = delete;
 
-    CircuitType GetCircuitType() const final { return CircuitType::BooleanType; }
+ protected:
+  BooleanWire() = default;
+};
 
-    Protocol GetProtocol() const override = 0;
+using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
-    BooleanWire(BooleanWire &) = delete;
+class GMWWire : public BooleanWire {
+ public:
+  GMWWire(std::vector<u8> &&values, const CorePtr &core,
+          std::size_t parallel_values = 1, bool is_constant = false) {
+    values_.AttachBuf(values.data(),
+                      Helpers::Convert::BitsToBytes(parallel_values));
+    core_ = core;
+    is_constant_ = is_constant;
+    num_of_parallel_values_ = parallel_values;
+    InitializationHelper();
+  }
 
-  protected:
-    BooleanWire() = default;
-  };
+  GMWWire(const std::vector<u8> &values, const CorePtr &core,
+          std::size_t parallel_values = 1, bool is_constant = false) {
+    values_.Copy(values.data(), 0,
+                 Helpers::Convert::BitsToBytes(parallel_values));
+    core_ = core;
+    is_constant_ = is_constant;
+    num_of_parallel_values_ = parallel_values;
+    InitializationHelper();
+  }
 
-  using BooleanWirePtr = std::shared_ptr<BooleanWire>;
+  GMWWire(bool value, const CorePtr &core, bool is_constant = false) {
+    values_ = {value};
+    core_ = core;
+    is_constant_ = is_constant;
+    num_of_parallel_values_ = 1;
+    InitializationHelper();
+  }
 
+  ~GMWWire() final = default;
 
-  class GMWWire : public BooleanWire {
-  public:
-    GMWWire(std::vector<u8> &&values, const CorePtr &core, std::size_t parallel_values = 1, bool is_constant = false) {
-      values_.AttachBuf(values.data(), Helpers::Convert::BitsToBytes(parallel_values));
-      core_ = core;
-      is_constant_ = is_constant;
-      num_of_parallel_values_ = parallel_values;
-      InitializationHelper();
-    }
+  Protocol GetProtocol() const final { return Protocol::BooleanGMW; }
 
-    GMWWire(const std::vector<u8> &values, const CorePtr &core, std::size_t parallel_values = 1,
-            bool is_constant = false) {
-      values_.Copy(values.data(), 0, Helpers::Convert::BitsToBytes(parallel_values));
-      core_ = core;
-      is_constant_ = is_constant;
-      num_of_parallel_values_ = parallel_values;
-      InitializationHelper();
-    }
+  GMWWire() = delete;
 
-    GMWWire(bool value, const CorePtr &core, bool is_constant = false) {
-      values_ = {value};
-      core_ = core;
-      is_constant_ = is_constant;
-      num_of_parallel_values_ = 1;
-      InitializationHelper();
-    }
+  GMWWire(GMWWire &) = delete;
 
-    ~GMWWire() final = default;
+  std::size_t GetBitLength() final { return 1; }
 
-    Protocol GetProtocol() const final { return Protocol::BooleanGMW; }
+  const CBitVector &GetValuesOnWire() const { return values_; }
 
-    GMWWire() = delete;
+  CBitVector &GetMutableValuesOnWire() { return values_; }
 
-    GMWWire(GMWWire &) = delete;
+ private:
+  CBitVector values_;
+};
 
-    std::size_t GetBitLength() final { return 1; }
+using GMWWirePtr = std::shared_ptr<GMWWire>;
 
-    const CBitVector &GetValuesOnWire() const { return values_; }
+class BMRWire : BooleanWire {
+ public:
+  ~BMRWire() final = default;
 
-    CBitVector &GetMutableValuesOnWire() { return values_; }
+  Protocol GetProtocol() const final { return Protocol::BMR; }
 
-  private:
-    CBitVector values_;
-  };
+  BMRWire() = delete;
 
-  using GMWWirePtr = std::shared_ptr<GMWWire>;
+  BMRWire(BMRWire &) = delete;
+};
 
-  class BMRWire : BooleanWire {
-  public:
-    ~BMRWire() final = default;
+using BMRWirePtr = std::shared_ptr<GMWWire>;
 
-    Protocol GetProtocol() const final { return Protocol::BMR; }
+}  // namespace ABYN::Wires
 
-    BMRWire() = delete;
-
-    BMRWire(BMRWire &) = delete;
-  };
-
-  using BMRWirePtr = std::shared_ptr<GMWWire>;
-
-}
-
-#endif //WIRE_H
+#endif  // WIRE_H

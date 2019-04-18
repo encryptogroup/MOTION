@@ -3,74 +3,73 @@
 
 #include <queue>
 
+#include "fbs_headers/message_generated.h"
 #include "utility/communication_context.h"
 #include "utility/logger.h"
-#include "fbs_headers/message_generated.h"
 
 namespace ABYN::Communication {
-  class CommunicationHandler {
+class CommunicationHandler {
+ public:
+  CommunicationHandler(ABYN::CommunicationContextPtr &party,
+                       const ABYN::LoggerPtr &logger);
 
-  public:
-    CommunicationHandler(ABYN::CommunicationContextPtr &party, const ABYN::LoggerPtr &logger);
+  virtual ~CommunicationHandler();
 
-    virtual ~CommunicationHandler();
+  void SendMessage(flatbuffers::FlatBufferBuilder &message);
 
-    void SendMessage(flatbuffers::FlatBufferBuilder &message);
+  const BoostSocketPtr GetSocket() { return party_->GetSocket(); }
 
-    const BoostSocketPtr GetSocket() { return party_->GetSocket(); }
+  bool ContinueCommunication() { return continue_communication_; }
 
-    bool ContinueCommunication() { return continue_communication_; }
+  void TerminateCommunication();
 
-    void TerminateCommunication();
+  void WaitForConnectionEnd();
 
-    void WaitForConnectionEnd();
+  std::queue<std::vector<u8>> &GetSendQueue() { return queue_send_; }
 
-    std::queue<std::vector<u8>> &GetSendQueue() { return queue_send_; }
+  std::queue<std::vector<u8>> &GetReceiveQueue() { return queue_receive_; }
 
-    std::queue<std::vector<u8>> &GetReceiveQueue() { return queue_receive_; }
+  std::mutex &GetSendMutex() { return queue_send_mutex_; }
 
-    std::mutex &GetSendMutex() { return queue_send_mutex_; }
+  std::mutex &GetReceiveMutex() { return queue_receive_mutex_; }
 
-    std::mutex &GetReceiveMutex() { return queue_receive_mutex_; }
+  ABYN::LoggerPtr &GetLogger() { return logger_; }
 
-    ABYN::LoggerPtr &GetLogger() { return logger_; }
+  const std::string &GetInfo() { return handler_info_; }
 
-    const std::string &GetInfo() { return handler_info_; }
+  bool VerifyHelloMessage();
 
-    bool VerifyHelloMessage();
+ private:
+  ABYN::CommunicationContextPtr party_;
+  ABYN::LoggerPtr logger_;
 
-  private:
-    ABYN::CommunicationContextPtr party_;
-    ABYN::LoggerPtr logger_;
+  std::string handler_info_;
 
-    std::string handler_info_;
+  CommunicationHandler() = delete;
 
-    CommunicationHandler() = delete;
+  std::mutex queue_receive_mutex_, queue_send_mutex_;
 
-    std::mutex queue_receive_mutex_, queue_send_mutex_;
+  std::thread sender_thread_, receiver_thread_;
+  std::queue<std::vector<u8>> queue_send_, queue_receive_;
 
-    std::thread sender_thread_, receiver_thread_;
-    std::queue<std::vector<u8>> queue_send_, queue_receive_;
+  bool continue_communication_ = true;
 
+  bool received_termination_message_ = false, sent_termination_message_ = false;
 
-    bool continue_communication_ = true;
+  void ReceivedTerminationMessage() { received_termination_message_ = true; }
 
-    bool received_termination_message_ = false, sent_termination_message_ = false;
+  void SentTerminationMessage() { sent_termination_message_ = true; }
 
-    void ReceivedTerminationMessage() { received_termination_message_ = true; }
+  static void ActAsSender(CommunicationHandler *handler);
 
-    void SentTerminationMessage() { sent_termination_message_ = true; }
+  static void ActAsReceiver(CommunicationHandler *handler);
 
-    static void ActAsSender(CommunicationHandler *handler);
+  static u32 ParseHeader(CommunicationHandler *handler);
 
-    static void ActAsReceiver(CommunicationHandler *handler);
+  static std::vector<u8> ParseBody(CommunicationHandler *handler, u32 size);
+};
 
-    static u32 ParseHeader(CommunicationHandler *handler);
+using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
+}  // namespace ABYN::Communication
 
-    static std::vector<u8> ParseBody(CommunicationHandler *handler, u32 size);
-  };
-
-  using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
-}
-
-#endif //PARTYCOMMUNICATIONHANDLER_H
+#endif  // PARTYCOMMUNICATIONHANDLER_H

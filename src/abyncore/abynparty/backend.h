@@ -1,9 +1,9 @@
 #ifndef ABYNBACKEND_H
 #define ABYNBACKEND_H
 
-#include <memory>
-#include <iterator>
 #include <algorithm>
+#include <iterator>
+#include <memory>
 
 #include "core.h"
 
@@ -19,65 +19,69 @@ static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ABYN {
 
-  class Backend {
+class Backend {
+ public:
+  Backend(ConfigurationPtr &config);
 
-  public:
+  ~Backend(){};
 
-    Backend(ConfigurationPtr &config);
+  const ConfigurationPtr &GetConfig() { return config_; }
 
-    ~Backend() {};
+  const LoggerPtr &GetLogger() { return core_->GetLogger(); }
 
-    const ConfigurationPtr &GetConfig() { return config_; }
+  const CorePtr &GetCore() { return core_; }
 
-    const LoggerPtr &GetLogger() { return core_->GetLogger(); }
+  std::size_t NextGateId() const { return core_->NextGateId(); }
 
-    const CorePtr &GetCore() { return core_; }
+  void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE],
+                                     std::size_t party_id);
 
-    std::size_t NextGateId() const { return core_->NextGateId(); }
+  void InitializeCommunicationHandlers();
 
-    void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE], std::size_t party_id);
+  void SendHelloToOthers();
 
-    void InitializeCommunicationHandlers();
+  void VerifyHelloMessages();
 
-    void SendHelloToOthers();
+  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-    void VerifyHelloMessages();
+  void RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate);
 
-    void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
+  void RegisterGate(const Gates::Interfaces::GatePtr &gate);
 
-    void RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate);
+  void EvaluateSequential();
 
-    void RegisterGate(const Gates::Interfaces::GatePtr &gate);
+  void EvaluateParallel();
 
-    void EvaluateSequential();
+  void TerminateCommunication();
 
-    void EvaluateParallel();
+  void WaitForConnectionEnd();
 
-    void TerminateCommunication();
+  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) {
+    return gates_.at(gate_id);
+  }
 
-    void WaitForConnectionEnd();
-
-    const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) { return gates_.at(gate_id); }
-
-    const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
-
-  private:
-    Backend() = delete;
-
-    ConfigurationPtr config_;
-    CorePtr core_;
-
-    std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
-
-    bool share_inputs_ = true;
-
-    std::vector<Gates::Interfaces::InputGatePtr> input_gates_;
-    std::queue<Gates::Interfaces::GatePtr> active_gates_;     //< gates that are currently being processed
-    std::vector<Gates::Interfaces::GatePtr> gates_;
-
+  const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const {
+    return input_gates_;
   };
 
-  using BackendPtr = std::shared_ptr<Backend>;
-}
+ private:
+  Backend() = delete;
 
-#endif //ABYNBACKEND_H
+  ConfigurationPtr config_;
+  CorePtr core_;
+
+  std::vector<ABYN::Communication::CommunicationHandlerPtr>
+      communication_handlers_;
+
+  bool share_inputs_ = true;
+
+  std::vector<Gates::Interfaces::InputGatePtr> input_gates_;
+  std::queue<Gates::Interfaces::GatePtr>
+      active_gates_;  //< gates that are currently being processed
+  std::vector<Gates::Interfaces::GatePtr> gates_;
+};
+
+using BackendPtr = std::shared_ptr<Backend>;
+}  // namespace ABYN
+
+#endif  // ABYNBACKEND_H

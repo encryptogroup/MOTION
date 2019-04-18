@@ -1,11 +1,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-namespace ABYN{
+namespace ABYN {
 
-  const bool ABYN_DEBUG = @ABYN_DEBUG@;
-  const float ABYN_VERSION = @ABYN_VERSION@;
+const bool ABYN_DEBUG = @ABYN_DEBUG@;
+const float ABYN_VERSION = @ABYN_VERSION@;
 
-};
+};  // namespace ABYN
 
-#endif //CONFIG_H
+#endif  // CONFIG_H

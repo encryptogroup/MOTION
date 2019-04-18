@@ -71,7 +71,6 @@ configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/abyncore/utility/config.h.in
         ${CMAKE_CURRENT_SOURCE_DIR}/src/abyncore/utility/config.h
         ESCAPE_QUOTES
-        @ONLY
 )
 
 # Write built executables and libraries to bin/ and lib/, respectively.
