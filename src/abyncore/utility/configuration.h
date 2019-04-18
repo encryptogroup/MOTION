@@ -68,7 +68,7 @@ class Configuration {
   // determines how many worker threads are used in openmp, but not in
   // communication handlers! the latter always use at least 2 threads for each
   // communication channel to send and receive data to prevent the communication
-  // become a bottleneck, e.g., in 10 Gbps networks.
+  // becoming a bottleneck, e.g., in 10 Gbps networks.
   std::size_t num_threads_ = std::thread::hardware_concurrency();
 
   Configuration() = delete;
