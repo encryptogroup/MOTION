@@ -25,8 +25,8 @@ class Wire;
 class Core {
  public:
   Core(ConfigurationPtr &config) : config_(config) {
-    logger_ = std::make_shared<ABYN::Logger>(
-        config_->GetMyId(), config_->GetLoggingSeverityLevel());
+    logger_ =
+        std::make_shared<ABYN::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
   }
 
   std::size_t NextGateId() { return global_gate_id_++; }
@@ -52,8 +52,7 @@ class Core {
   const ConfigurationPtr &GetConfig() { return config_; }
 
   void RegisterCommunicationHandlers(
-      std::vector<ABYN::Communication::CommunicationHandlerPtr>
-          &communication_handlers) {
+      std::vector<ABYN::Communication::CommunicationHandlerPtr> &communication_handlers) {
     communication_handlers_ = communication_handlers;
   }
 
@@ -69,25 +68,20 @@ class Core {
     gates_.push_back(gate);
   }
 
-  ABYN::Gates::Interfaces::Gate *GetGate(std::size_t gate_id) const {
-    return gates_.at(gate_id);
-  }
+  ABYN::Gates::Interfaces::Gate *GetGate(std::size_t gate_id) const { return gates_.at(gate_id); }
 
   void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
 
   void RegisterNextWire(ABYN::Wires::Wire *wire) { wires_.push_back(wire); }
 
-  ABYN::Wires::Wire *GetWire(std::size_t wire_id) const {
-    return wires_.at(wire_id);
-  }
+  ABYN::Wires::Wire *GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
 
   void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
   void AddToActiveQueue(std::size_t gate_id) {
     std::scoped_lock lock(active_queue_mutex_);
     active_gates.push(gate_id);
-    logger_->LogTrace(
-        fmt::format("Added gate #{} to the active queue", gate_id));
+    logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
   }
 
   std::int64_t GetNextGateFromOnlineQueue() {
@@ -109,11 +103,9 @@ class Core {
   std::size_t GetTotalNumOfGates() { return global_gate_id_; }
 
  private:
-  std::size_t
-      global_gate_id_ = 0,
-      global_wire_id_ = 0, global_arithmetic_sharing_id_ = 0,
-      global_gmw_sharing_id_ =
-          0;  // don't need atomic, since only one thread has access to these
+  std::size_t global_gate_id_ = 0, global_wire_id_ = 0, global_arithmetic_sharing_id_ = 0,
+              global_gmw_sharing_id_ =
+                  0;  // don't need atomic, since only one thread has access to these
 
   std::atomic<std::size_t> evaluated_gates = 0;
 
@@ -127,8 +119,7 @@ class Core {
 
   std::vector<ABYN::Wires::Wire *> wires_;
 
-  std::vector<ABYN::Communication::CommunicationHandlerPtr>
-      communication_handlers_;
+  std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
 
   Core() = delete;
 

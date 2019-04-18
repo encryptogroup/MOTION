@@ -46,14 +46,13 @@ class Wire {
 
   void SetOnlineFinished() {
     if (is_done_) {
-      throw(std::runtime_error(fmt::format(
-          "Marking wire #{} as \"online phase ready\" twice", wire_id_)));
+      throw(std::runtime_error(
+          fmt::format("Marking wire #{} as \"online phase ready\" twice", wire_id_)));
     }
     is_done_ = true;
     assert(wire_id_ >= 0);
     for (auto gate_id : waiting_gate_ids_) {
-      Wire::UnregisterWireIdFromGate(gate_id,
-                                     static_cast<std::size_t>(wire_id_), core_);
+      Wire::UnregisterWireIdFromGate(gate_id, static_cast<std::size_t>(wire_id_), core_);
     }
     waiting_gate_ids_.clear();
   }
@@ -74,8 +73,7 @@ class Wire {
 
   const CorePtr &GetCore() const { return core_; }
 
-  static inline std::string PrintIds(
-      const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
+  static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
     std::string result;
     for (auto &w : wires) {
       result.append(fmt::format("{} ", w->GetWireId()));
@@ -112,8 +110,7 @@ class Wire {
 
   Wire() = default;
 
-  static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id,
-                                       CorePtr &core);
+  static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id, CorePtr &core);
 
   void InitializationHelper() {
     wire_id_ = core_->NextWireId();
@@ -130,8 +127,7 @@ using WirePtr = std::shared_ptr<Wire>;
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticWire : public Wire {
  public:
-  ArithmeticWire(std::vector<T> &&values, const CorePtr &core,
-                 bool is_constant = false) {
+  ArithmeticWire(std::vector<T> &&values, const CorePtr &core, bool is_constant = false) {
     is_constant_ = is_constant;
     core_ = core;
     values_ = std::move(values);
@@ -139,8 +135,7 @@ class ArithmeticWire : public Wire {
     InitializationHelper();
   }
 
-  ArithmeticWire(const std::vector<T> &values, const CorePtr &core,
-                 bool is_constant = false) {
+  ArithmeticWire(const std::vector<T> &values, const CorePtr &core, bool is_constant = false) {
     is_constant_ = is_constant;
     core_ = core;
     values_ = values;
@@ -160,9 +155,7 @@ class ArithmeticWire : public Wire {
 
   Protocol GetProtocol() const final { return Protocol::ArithmeticGMW; }
 
-  CircuitType GetCircuitType() const final {
-    return CircuitType::ArithmeticType;
-  }
+  CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
 
   const std::vector<T> &GetValuesOnWire() const { return values_; }
 
@@ -195,20 +188,18 @@ using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(std::vector<u8> &&values, const CorePtr &core,
-          std::size_t parallel_values = 1, bool is_constant = false) {
-    values_.AttachBuf(values.data(),
-                      Helpers::Convert::BitsToBytes(parallel_values));
+  GMWWire(std::vector<u8> &&values, const CorePtr &core, std::size_t parallel_values = 1,
+          bool is_constant = false) {
+    values_.AttachBuf(values.data(), Helpers::Convert::BitsToBytes(parallel_values));
     core_ = core;
     is_constant_ = is_constant;
     num_of_parallel_values_ = parallel_values;
     InitializationHelper();
   }
 
-  GMWWire(const std::vector<u8> &values, const CorePtr &core,
-          std::size_t parallel_values = 1, bool is_constant = false) {
-    values_.Copy(values.data(), 0,
-                 Helpers::Convert::BitsToBytes(parallel_values));
+  GMWWire(const std::vector<u8> &values, const CorePtr &core, std::size_t parallel_values = 1,
+          bool is_constant = false) {
+    values_.Copy(values.data(), 0, Helpers::Convert::BitsToBytes(parallel_values));
     core_ = core;
     is_constant_ = is_constant;
     num_of_parallel_values_ = parallel_values;

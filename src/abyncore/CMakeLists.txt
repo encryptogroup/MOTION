@@ -34,8 +34,9 @@ target_include_directories(abyn PUBLIC
         ${Boost_INCLUDE_DIRS}
         )
 
+
 target_link_libraries(abyn
-        PRIVATE stdc++fs
+        PUBLIC stdc++fs
         PUBLIC OTExtension::otextension
         PUBLIC ENCRYPTO_utils::encrypto_utils
         PUBLIC GMP::GMP

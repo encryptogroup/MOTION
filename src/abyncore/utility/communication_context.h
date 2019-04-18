@@ -26,24 +26,17 @@ using BoostSocketPtr = std::shared_ptr<boost::asio::ip::tcp::socket>;
 /// Peer-related communication context
 class CommunicationContext {
  public:
-  CommunicationContext(const std::string ip, u16 port, ABYN::Role role,
-                       std::size_t id);
+  CommunicationContext(const std::string ip, u16 port, ABYN::Role role, std::size_t id);
 
-  CommunicationContext(const char *ip, u16 port, ABYN::Role role,
-                       std::size_t id)
+  CommunicationContext(const char *ip, u16 port, ABYN::Role role, std::size_t id)
       : CommunicationContext(std::string(ip), port, role, id) {}
 
   CommunicationContext(int socket, ABYN::Role role, std::size_t id)
-      : data_storage_(id),
-        role_(role),
-        id_(id),
-        party_socket_(socket),
-        is_connected_(true) {
+      : data_storage_(id), role_(role), id_(id), party_socket_(socket), is_connected_(true) {
     boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
   }
 
-  CommunicationContext(ABYN::Role role, std::size_t id,
-                       BoostSocketPtr &boost_socket)
+  CommunicationContext(ABYN::Role role, std::size_t id, BoostSocketPtr &boost_socket)
       : data_storage_(id),
         role_(role),
         id_(id),
@@ -55,16 +48,14 @@ class CommunicationContext {
   // close the socket
   ~CommunicationContext() {
     if (is_connected_ || boost_party_socket_->is_open()) {
-      boost_party_socket_->shutdown(
-          boost::asio::ip::tcp::socket::shutdown_both);
+      boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
       boost_party_socket_->close();
     }
   }
 
   void InitializeMyRandomnessGenerator();
 
-  void InitializeTheirRandomnessGenerator(std::vector<u8> &key,
-                                          std::vector<u8> &iv);
+  void InitializeTheirRandomnessGenerator(std::vector<u8> &key, std::vector<u8> &iv);
 
   void SetLogger(const ABYN::LoggerPtr &logger) {
     logger_ = logger;
@@ -87,13 +78,11 @@ class CommunicationContext {
 
   DataStorage &GetDataStorage() { return data_storage_; }
 
-  const std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator>
-      &GetMyRandomnessGenerator() {
+  const std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator> &GetMyRandomnessGenerator() {
     return my_randomness_generator_;
   }
 
-  const std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator>
-      &GetTheirRandomnessGenerator() {
+  const std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator> &GetTheirRandomnessGenerator() {
     return their_randomness_generator_;
   }
 
@@ -108,13 +97,12 @@ class CommunicationContext {
   int party_socket_ = -2;
 
   IoServicePtr io_service_{new boost::asio::io_service()};
-  BoostSocketPtr boost_party_socket_{
-      new boost::asio::ip::tcp::socket{*io_service_.get()}};
+  BoostSocketPtr boost_party_socket_{new boost::asio::ip::tcp::socket{*io_service_.get()}};
 
   ABYN::LoggerPtr logger_;
 
-  std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator>
-      my_randomness_generator_, their_randomness_generator_;
+  std::unique_ptr<ABYN::Crypto::AESRandomnessGenerator> my_randomness_generator_,
+      their_randomness_generator_;
 
   bool is_connected_ = false;
 

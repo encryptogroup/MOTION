@@ -7,8 +7,7 @@
 
 using namespace ABYN;
 
-
-template<typename T>
+template <typename T>
 void test() {
   auto num_parties = 4u;
   std::srand(time(nullptr));
@@ -29,18 +28,23 @@ void test() {
 #pragma omp taskloop num_tasks(abyn_parties.size())
     for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
       std::vector<T> private_inputs(num_parties, 0);
-      for (auto j = 0u; j < private_inputs.size(); ++j) { if (party_id == j) { private_inputs.at(j) = inputs.at(j); }}
+      for (auto j = 0u; j < private_inputs.size(); ++j) {
+        if (party_id == j) {
+          private_inputs.at(j) = inputs.at(j);
+        }
+      }
       bool in[4] = {true, true, true, false};
       auto s_in_0 = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(0, in[0]);
       auto s_in_1 = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(1, in[1]);
       auto s_in_2 = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(2, in[2]);
       auto s_in_3 = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(3, in[3]);
 
-      //auto added_share = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(s_in_0, s_in_1); // s_add = s_in_0 + s_in_1
-      //added_share = abyn_parties.at(party_id)->ADD(added_share, s_in_2); // s_add += s_in_2
-      //added_share = abyn_parties.at(party_id)->ADD(added_share, s_in_3); // s_add += s_in_3
+      // auto added_share = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(s_in_0, s_in_1); //
+      // s_add = s_in_0 + s_in_1 added_share = abyn_parties.at(party_id)->ADD(added_share, s_in_2);
+      // // s_add += s_in_2 added_share = abyn_parties.at(party_id)->ADD(added_share, s_in_3); //
+      // s_add += s_in_3
 
-      //auto output_share = abyn_parties.at(party_id)->OUT(added_share, output_owner);
+      // auto output_share = abyn_parties.at(party_id)->OUT(added_share, output_owner);
 
       abyn_parties.at(party_id)->Run();
 
@@ -54,8 +58,7 @@ void test() {
          assert(circuit_result == expected_result);
        }*/
     }
-  }
-  catch (std::exception &e) {
+  } catch (std::exception &e) {
     std::cerr << e.what() << std::endl;
   }
 }

@@ -14,18 +14,15 @@ namespace ABYN {
 
 class Configuration {
  public:
-  Configuration(const std::vector<CommunicationContextPtr> &contexts,
-                std::size_t id);
+  Configuration(const std::vector<CommunicationContextPtr> &contexts, std::size_t id);
 
   Configuration(std::vector<CommunicationContextPtr> &&contexts, std::size_t id)
       : Configuration(contexts, id) {}
 
-  Configuration(const std::initializer_list<CommunicationContextPtr> &contexts,
-                std::size_t id)
+  Configuration(const std::initializer_list<CommunicationContextPtr> &contexts, std::size_t id)
       : Configuration(std::vector(contexts), id) {}
 
-  Configuration(std::initializer_list<CommunicationContextPtr> &&contexts,
-                std::size_t id)
+  Configuration(std::initializer_list<CommunicationContextPtr> &&contexts, std::size_t id)
       : Configuration(std::vector(std::move(contexts)), id) {}
 
   ~Configuration() {}
@@ -34,34 +31,26 @@ class Configuration {
 
   void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
 
-  std::vector<CommunicationContextPtr> &GetParties() {
-    return communication_contexts_;
-  }
+  std::vector<CommunicationContextPtr> &GetParties() { return communication_contexts_; }
 
   std::size_t GetNumOfParties() { return communication_contexts_.size(); }
 
-  CommunicationContextPtr &GetCommunicationContext(uint i) {
-    return communication_contexts_.at(i);
-  }
+  CommunicationContextPtr &GetCommunicationContext(uint i) { return communication_contexts_.at(i); }
 
   std::size_t GetMyId() { return my_id_; }
 
-  void SetLoggingSeverityLevel(
-      boost::log::trivial::severity_level severity_level) {
+  void SetLoggingSeverityLevel(boost::log::trivial::severity_level severity_level) {
     severity_level_ = severity_level;
   }
 
   bool OnlineAfterSetup() { return online_after_setup_; }
 
-  boost::log::trivial::severity_level GetLoggingSeverityLevel() {
-    return severity_level_;
-  }
+  boost::log::trivial::severity_level GetLoggingSeverityLevel() { return severity_level_; }
 
  private:
   std::int64_t my_id_ = -1;
   std::vector<ABYN::CommunicationContextPtr> communication_contexts_;
-  boost::log::trivial::severity_level severity_level_ =
-      boost::log::trivial::info;
+  boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
   bool online_after_setup_ = false;
 

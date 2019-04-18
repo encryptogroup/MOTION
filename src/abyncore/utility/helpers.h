@@ -11,29 +11,24 @@ namespace ABYN::Helpers {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 inline std::vector<u8> ToByteVector(const std::vector<T> &values) {
-  std::vector<u8> result(
-      reinterpret_cast<const u8 *>(values.data()),
-      reinterpret_cast<const u8 *>(values.data()) + sizeof(T) * values.size());
+  std::vector<u8> result(reinterpret_cast<const u8 *>(values.data()),
+                         reinterpret_cast<const u8 *>(values.data()) + sizeof(T) * values.size());
   return std::move(result);
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 inline std::vector<T> FromByteVector(const std::vector<u8> &buffer) {
-  assert(buffer.size() % sizeof(T) ==
-         0);  // buffer length is multiple of the element size
+  assert(buffer.size() % sizeof(T) == 0);  // buffer length is multiple of the element size
   std::vector<T> result(sizeof(T) * buffer.size());
-  std::copy(buffer.data(), buffer.data() + buffer.size(),
-            reinterpret_cast<u8 *>(result.data()));
+  std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8 *>(result.data()));
   return std::move(result);
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 inline std::vector<T> FromByteVector(const flatbuffers::Vector<u8> &buffer) {
-  assert(buffer.size() % sizeof(T) ==
-         0);  // buffer length is multiple of the element size
+  assert(buffer.size() % sizeof(T) == 0);  // buffer length is multiple of the element size
   std::vector<T> result(buffer.size() / sizeof(T));
-  std::copy(buffer.data(), buffer.data() + buffer.size(),
-            reinterpret_cast<u8 *>(result.data()));
+  std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8 *>(result.data()));
   return std::move(result);
 };
 
@@ -53,8 +48,7 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
 
   for (auto i = 1u; i < vectors.size(); ++i) {
     auto &v = vectors.at(i);
-    assert(v.size() ==
-           result.size());  // expect the vectors to be of the same size
+    assert(v.size() == result.size());  // expect the vectors to be of the same size
 #pragma omp simd
     for (auto j = 0u; j < result.size(); ++j) {
       result.at(j) += v.at(j);  // TODO: implement using AVX2 and AVX512
@@ -143,8 +137,7 @@ inline std::string ToString(Protocol p) {
       result.append("BMR");
       break;
     default:
-      result.append(
-          fmt::format("InvalidProtocol with value {}", static_cast<int>(p)));
+      result.append(fmt::format("InvalidProtocol with value {}", static_cast<int>(p)));
       break;
   }
   return std::move(result);

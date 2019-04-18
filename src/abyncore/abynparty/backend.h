@@ -56,13 +56,9 @@ class Backend {
 
   void WaitForConnectionEnd();
 
-  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) {
-    return gates_.at(gate_id);
-  }
+  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) { return gates_.at(gate_id); }
 
-  const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const {
-    return input_gates_;
-  };
+  const std::vector<Gates::Interfaces::InputGatePtr> &GetInputs() const { return input_gates_; };
 
  private:
   Backend() = delete;
@@ -70,8 +66,7 @@ class Backend {
   ConfigurationPtr config_;
   CorePtr core_;
 
-  std::vector<ABYN::Communication::CommunicationHandlerPtr>
-      communication_handlers_;
+  std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
 
   bool share_inputs_ = true;
 

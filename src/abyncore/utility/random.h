@@ -18,8 +18,7 @@ static inline std::vector<u8> RandomVector(std::size_t size_in_bytes) {
   std::random_device random_device;  // use real randomness to create seeds
   for (auto i = 0u; i < buffer.size();) {
     try {
-      if (i + sizeof(u32) <=
-          buffer.size()) {  // if can write a u32 to the buffer directly
+      if (i + sizeof(u32) <= buffer.size()) {  // if can write a u32 to the buffer directly
         auto u32_ptr = reinterpret_cast<u32*>(buffer.data());
         u32_ptr[i / sizeof(u32)] = random_device();
       } else {  // if we need less bytes than sizeof(u32)

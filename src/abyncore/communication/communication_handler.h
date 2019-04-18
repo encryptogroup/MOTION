@@ -10,8 +10,7 @@
 namespace ABYN::Communication {
 class CommunicationHandler {
  public:
-  CommunicationHandler(ABYN::CommunicationContextPtr &party,
-                       const ABYN::LoggerPtr &logger);
+  CommunicationHandler(ABYN::CommunicationContextPtr &party, const ABYN::LoggerPtr &logger);
 
   virtual ~CommunicationHandler();
 

@@ -45,8 +45,7 @@ class ArithmeticShare : public Share {
   ArithmeticShare(const ABYN::Wires::WirePtr &wire) {
     wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wire)};
     if (!wires_.at(0)) {
-      throw(std::runtime_error(
-          "Something went wrong with creating an arithmetic share"));
+      throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
     core_ = wires_.at(0)->GetCore();
   }
@@ -57,11 +56,9 @@ class ArithmeticShare : public Share {
     core_ = wires_.at(0)->GetCore();
   }
 
-  ArithmeticShare(std::vector<ABYN::Wires::ArithmeticWirePtr<T>> &wires)
-      : wires_(wires) {
+  ArithmeticShare(std::vector<ABYN::Wires::ArithmeticWirePtr<T>> &wires) : wires_(wires) {
     if (wires.size() == 0) {
-      throw(std::runtime_error(
-          "Trying to create an arithmetic share without wires"));
+      throw(std::runtime_error("Trying to create an arithmetic share without wires"));
     }
     if (wires.size() > 1) {
       throw(
@@ -74,8 +71,7 @@ class ArithmeticShare : public Share {
 
   ArithmeticShare(std::vector<ABYN::Wires::WirePtr> &wires) {
     if (wires.size() == 0) {
-      throw(std::runtime_error(
-          "Trying to create an arithmetic share without wires"));
+      throw(std::runtime_error("Trying to create an arithmetic share without wires"));
     }
     if (wires.size() > 1) {
       throw(
@@ -85,8 +81,7 @@ class ArithmeticShare : public Share {
     }
     wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wires.at(0))};
     if (!wires_.at(0)) {
-      throw(std::runtime_error(
-          "Something went wrong with creating an arithmetic share"));
+      throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
     core_ = wires_.at(0)->GetCore();
   }
@@ -103,34 +98,26 @@ class ArithmeticShare : public Share {
 
   ~ArithmeticShare() override = default;
 
-  std::size_t GetNumOfParallelValues() final {
-    return wires_.at(0)->GetNumOfParallelValues();
-  };
+  std::size_t GetNumOfParallelValues() final { return wires_.at(0)->GetNumOfParallelValues(); };
 
   Protocol GetSharingType() final { return wires_.at(0)->GetProtocol(); }
 
-  const Wires::ArithmeticWirePtr<T> &GetArithmeticWire() {
-    return wires_.at(0);
-  }
+  const Wires::ArithmeticWirePtr<T> &GetArithmeticWire() { return wires_.at(0); }
 
   const std::vector<Wires::WirePtr> GetWires() const final {
-    std::vector<Wires::WirePtr> result{
-        std::static_pointer_cast<Wires::Wire>(wires_.at(0))};
+    std::vector<Wires::WirePtr> result{std::static_pointer_cast<Wires::Wire>(wires_.at(0))};
     return std::move(result);
   }
 
   const bool &Finished() { return wires_.at(0)->IsReady(); }
 
-  const std::vector<T> &GetValue() const {
-    return wires_->GetRawSharedValues();
-  }
+  const std::vector<T> &GetValue() const { return wires_->GetRawSharedValues(); }
 
   std::size_t GetBitLength() final { return sizeof(T) * 8; }
 
   std::shared_ptr<Share> Clone() final {
     // TODO
-    return std::static_pointer_cast<Share>(
-        std::make_shared<ArithmeticShare<T>>(wires_));
+    return std::static_pointer_cast<Share>(std::make_shared<ArithmeticShare<T>>(wires_));
   }
 
   std::shared_ptr<ArithmeticShare> NonVirtualClone() {
@@ -155,17 +142,13 @@ using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticConstantShare : public Share {
  public:
-  ArithmeticConstantShare(T input, const CorePtr &core) : values_({input}) {
+  ArithmeticConstantShare(T input, const CorePtr &core) : values_({input}) { core_ = core; }
+
+  ArithmeticConstantShare(std::vector<T> &input, const CorePtr &core) : values_(input) {
     core_ = core;
   }
 
-  ArithmeticConstantShare(std::vector<T> &input, const CorePtr &core)
-      : values_(input) {
-    core_ = core;
-  }
-
-  ArithmeticConstantShare(std::vector<T> &&input, const CorePtr &core)
-      : values_(std::move(input)) {
+  ArithmeticConstantShare(std::vector<T> &&input, const CorePtr &core) : values_(std::move(input)) {
     core_ = core;
   }
 
@@ -226,11 +209,9 @@ class GMWShare : public BooleanShare {
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<u8>> &input, CorePtr &core,
-           std::size_t bits) {
+  GMWShare(std::vector<std::vector<u8>> &input, CorePtr &core, std::size_t bits) {
     if (input.size() == 0) {
-      throw(std::runtime_error(
-          "Trying to create a Boolean GMW share without wires"));
+      throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
     for (auto &v : input) {
       wires_.push_back(std::make_shared<Wires::GMWWire>(v, core, bits));
@@ -239,15 +220,12 @@ class GMWShare : public BooleanShare {
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<u8>> &&input, CorePtr &core,
-           std::size_t bits) {
+  GMWShare(std::vector<std::vector<u8>> &&input, CorePtr &core, std::size_t bits) {
     if (input.size() == 0) {
-      throw(std::runtime_error(
-          "Trying to create a Boolean GMW share without wires"));
+      throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
     for (auto &v : input) {
-      wires_.push_back(
-          std::make_shared<Wires::GMWWire>(std::move(v), core, bits));
+      wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), core, bits));
     }
     core_ = core;
     bits_ = bits;
@@ -255,8 +233,7 @@ class GMWShare : public BooleanShare {
 
   GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
     if (wires.size() == 0) {
-      throw(std::runtime_error(
-          "Trying to create a Boolean GMW share without wires"));
+      throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
     if (wires_.at(0)->GetProtocol() != ABYN::Protocol::BooleanGMW) {
       throw(
