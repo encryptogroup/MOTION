@@ -114,6 +114,7 @@ elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
     add_subdirectory(extern/OTExtension)
 endif ()
 
+add_compile_definitions(FMT_HEADER_ONLY)
 find_package(fmt QUIET)
 if (fmt_FOUND)
     message(STATUS "Found fmt")
@@ -127,7 +128,7 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
     endif ()
     set(BUILD_SHARED_LIBS ON)
     set(FMT_TEST OFF)
-    add_subdirectory(extern/fmt)
+    add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
 endif ()
 
 find_package(flatbuffers QUIET)
@@ -142,13 +143,15 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
 
+    set(FLATBUFFERS_BUILD_FLATLIB ON)
     set(FLATBUFFERS_BUILD_FLATHASH OFF)
     set(FLATBUFFERS_BUILD_TESTS OFF)
     set(FLATC_DIR "${PROJECT_BINARY_DIR}/bin")
     set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
-    add_subdirectory(${FLATBUFFERS_SRC_DIR}
-            extern/flatbuffers)
-    add_subdirectory(fbs)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/extern/flatbuffers
+            ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build
+            EXCLUDE_FROM_ALL)
+    add_subdirectory(fbs EXCLUDE_FROM_ALL)
 endif ()
 
 find_package(cryptoTools QUIET)
@@ -162,7 +165,7 @@ elseif (NOT cryptoTools_FOUND AND NOT TARGET cryptoTools::cryptoTools)
         execute_process(COMMAND git submodule update --init extern/cryptoTools
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
-    add_subdirectory(extern/cryptoTools)
+    add_subdirectory(extern/cryptoTools EXCLUDE_FROM_ALL)
 endif ()
 
 
@@ -178,7 +181,7 @@ endif ()
           execute_process(COMMAND git submodule update --init extern/libOTe
                   WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
       endif ()
-#      add_subdirectory(extern/libOTe)
+      add_subdirectory(extern/libOTe EXCLUDE_FROM_ALL)
   endif ()
 
 
