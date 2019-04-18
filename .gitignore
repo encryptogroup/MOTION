@@ -34,3 +34,6 @@ CTestTestfile.cmake
 *Config.cmake
 *Targets.cmake
 *.cbp
+
+# VS Code Directory
+.vscode/
