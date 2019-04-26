@@ -203,8 +203,8 @@ class Party {
   void Finish();
 
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false) {
-    std::vector<u8> input_vector{input};
-    return BooleanGMWInput(party_id, std::move(input_vector), 1);
+    u8 input_byte = input == false ? 0 : 1;
+    return BooleanGMWInput(party_id, std::vector<u8> {input_byte}, 1);
   };
 
   // if \param bits is set to 0, the bit-length of the input vector is taken

@@ -80,19 +80,19 @@ class Core {
 
   void AddToActiveQueue(std::size_t gate_id) {
     std::scoped_lock lock(active_queue_mutex_);
-    active_gates.push(gate_id);
+    active_gates_.push(gate_id);
     logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
   }
 
   std::int64_t GetNextGateFromOnlineQueue() {
-    if (active_gates.size() == 0) {
+    if (active_gates_.size() == 0) {
       return -1;
     } else {
-      auto gate_id = active_gates.front();
+      auto gate_id = active_gates_.front();
       assert(gate_id < std::numeric_limits<std::size_t>::max());
       std::scoped_lock lock(active_queue_mutex_);
-      active_gates.pop();
-      return static_cast<std::size_t>(gate_id);
+      active_gates_.pop();
+      return static_cast<std::int64_t>(gate_id);
     }
   }
 
@@ -112,7 +112,7 @@ class Core {
   ABYN::ConfigurationPtr config_;
   ABYN::LoggerPtr logger_ = nullptr;
 
-  std::queue<std::size_t> active_gates;
+  std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
 
   std::vector<ABYN::Gates::Interfaces::Gate *> gates_;

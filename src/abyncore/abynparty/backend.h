@@ -71,8 +71,6 @@ class Backend {
   bool share_inputs_ = true;
 
   std::vector<Gates::Interfaces::InputGatePtr> input_gates_;
-  std::queue<Gates::Interfaces::GatePtr>
-      active_gates_;  //< gates that are currently being processed
   std::vector<Gates::Interfaces::GatePtr> gates_;
 };
 
