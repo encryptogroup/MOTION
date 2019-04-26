@@ -3,6 +3,7 @@
 
 #include <queue>
 #include <unordered_set>
+#include <mutex>
 
 #include <fmt/format.h>
 
@@ -24,7 +25,7 @@ class DataStorage {
 
   void SetReceivedOutputMessage(std::vector<u8> &&output_message);
 
-  const ABYN::Communication::OutputMessage *GetOutputMessage(std::size_t gate_id);
+  const ABYN::Communication::OutputMessage *GetOutputMessage(const std::size_t gate_id);
 
   void SetReceivedHelloMessage(std::vector<u8> &&hello_message) {
     received_hello_message_ = std::move(hello_message);
@@ -45,6 +46,7 @@ class DataStorage {
   std::unordered_map<std::size_t, std::vector<u8>> received_output_messages_;  // id, buffer
   ABYN::LoggerPtr logger_;
   std::int64_t id_ = -1;
+  std::mutex output_message_mutex_;
 };
 }  // namespace ABYN
 

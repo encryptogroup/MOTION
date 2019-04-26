@@ -8,6 +8,8 @@ void DataStorage::SetReceivedOutputMessage(std::vector<u8> &&output_message) {
 
   auto gate_id = output_message_ptr->gate_id();
 
+  //prevents inserting new elements while searching while GetOutputMessage() is called
+  std::scoped_lock lock(output_message_mutex_);
   auto ret = received_output_messages_.insert({gate_id, std::move(output_message)});
   if (!ret.second) {
     logger_->LogError(
@@ -19,12 +21,14 @@ void DataStorage::SetReceivedOutputMessage(std::vector<u8> &&output_message) {
       fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
 }
 
-const ABYN::Communication::OutputMessage *DataStorage::GetOutputMessage(std::size_t gate_id) {
-  auto message = received_output_messages_.find(gate_id);
-  if (message == received_output_messages_.end()) {
+const ABYN::Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
+  //prevent SetReceivedOutputMessage() to insert new elements while searching
+  std::scoped_lock lock(output_message_mutex_);
+  auto iterator = received_output_messages_.find(gate_id);
+  if (iterator == received_output_messages_.end()) {
     return nullptr;
   }
-  auto output_message = ABYN::Communication::GetMessage(message->second.data());
+  auto output_message = ABYN::Communication::GetMessage(iterator->second.data());
   assert(output_message != nullptr);
   return ABYN::Communication::GetOutputMessage(output_message->payload()->data());
 }
