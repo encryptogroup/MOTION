@@ -21,7 +21,7 @@ const auto num_parties_list = {3u, 4u, 5u, 10u};
 using namespace ABYN;
 
 const auto PORT_OFFSET = 7777u;
-const auto TEST_ITERATIONS = 1;  // increase if needed
+const auto TEST_ITERATIONS = 3;  // increase if needed
 const auto LOGGING_ENABLED = false;
 
 template <typename T>
@@ -279,8 +279,6 @@ TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
-    std::atomic<bool> success = true;
-    for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
       for (auto num_parties : num_parties_list) {
         std::size_t input_owner = std::rand() % num_parties,
                     output_owner = std::rand() % num_parties;
@@ -338,13 +336,14 @@ TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
           std::cerr << e.what() << std::endl;
         }
       }
-    }
   };
-  // lambdas don't support templates, but only auto types. So, lets try to trick them.
-  template_test(static_cast<u8>(0));
-  template_test(static_cast<u16>(0));
-  template_test(static_cast<u32>(0));
-  template_test(static_cast<u64>(0));
+  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+    // lambdas don't support templates, but only auto types. So, lets try to trick them.
+    template_test(static_cast<u8>(0));
+    template_test(static_cast<u16>(0));
+    template_test(static_cast<u32>(0));
+    template_test(static_cast<u64>(0));
+  }
 }
 
 TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
@@ -432,11 +431,13 @@ TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
       }
     }
   };
-  // lambdas don't support templates, but only auto types. So, lets try to trick them.
-  template_test(static_cast<u8>(0));
-  template_test(static_cast<u16>(0));
-  template_test(static_cast<u32>(0));
-  template_test(static_cast<u64>(0));
+  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+    // lambdas don't support templates, but only auto types. So, lets try to trick them.
+    template_test(static_cast<u8>(0));
+    template_test(static_cast<u16>(0));
+    template_test(static_cast<u32>(0));
+    template_test(static_cast<u64>(0));
+  }
 }
 }  // namespace
 
