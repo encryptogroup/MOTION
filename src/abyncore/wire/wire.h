@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
-#include "cryptoTools/cryptoTools/Common/BitVector.h"
+//#include "cryptoTools/cryptoTools/Common/BitVector.h"
 
 #include "abynparty/core.h"
 #include "utility/typedefs.h"

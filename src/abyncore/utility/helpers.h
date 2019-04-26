@@ -46,11 +46,11 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
 
   std::vector<T> result = vectors.at(0);
 
-  for (auto i = 1u; i < vectors.size(); ++i) {
+  for (auto i = 1ull; i < vectors.size(); ++i) {
     auto &v = vectors.at(i);
     assert(v.size() == result.size());  // expect the vectors to be of the same size
 #pragma omp simd
-    for (auto j = 0u; j < result.size(); ++j) {
+    for (auto j = 0ull; j < result.size(); ++j) {
       result.at(j) += v.at(j);  // TODO: implement using AVX2 and AVX512
     }
   }
@@ -65,7 +65,7 @@ inline std::vector<T> AddVectors(std::vector<T> a, std::vector<T> b) {
   }  // if empty input vector
   std::vector<T> result = a;
 #pragma omp simd
-  for (auto j = 0u; j < result.size(); ++j) {
+  for (auto j = 0ull; j < result.size(); ++j) {
     result.at(j) += b.at(j);  // TODO: implement using AVX2 and AVX512
   }
   return result;
@@ -80,7 +80,7 @@ inline T SumReduction(const std::vector<T> &v) {
   } else {
     T sum = 0;
 #pragma omp parallel for reduction(+ : sum)
-    for (auto i = 0u; i < v.size(); ++i) {
+    for (auto i = 0ull; i < v.size(); ++i) {
       sum += v.at(i);
     }
     return sum;
@@ -99,12 +99,12 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
     return {};
   } else {
     std::vector<T> sum(v.at(0).size());
-    for (auto i = 1u; i < v.size(); ++i) {
+    for (auto i = 1ull; i < v.size(); ++i) {
       assert(v.at(0).size() == v.at(i).size());
     }
 #pragma omp parallel for
-    for (auto i = 0u; i < sum.size(); ++i) {
-      for (auto j = 0u; j < v.size(); ++j) {
+    for (auto i = 0ull; i < sum.size(); ++i) {
+      for (auto j = 0ull; j < v.size(); ++j) {
         sum.at(i) += v.at(j).at(i);
       }
     }
@@ -115,7 +115,7 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
 namespace Print {
 inline std::string Hex(const std::vector<u8> &v) {
   std::string buffer("");
-  for (auto i = 0u; i < v.size(); ++i) {
+  for (auto i = 0ull; i < v.size(); ++i) {
     buffer.append(fmt::format("{0:#x} ", v.at(i)));
   }
   buffer.erase(buffer.end() - 1);  // remove the last whitespace
@@ -159,7 +159,7 @@ inline bool Vectors(const std::vector<T> &a, const std::vector<T> &b) {
   if (a.size() != b.size()) {
     return false;
   }
-  for (auto i = 0u; i < a.size(); ++i) {
+  for (auto i = 0ull; i < a.size(); ++i) {
     if (a.at(i) != b.at(i)) {
       return false;
     }
@@ -173,7 +173,7 @@ inline bool Dimensions(const std::vector<std::vector<T>> &v) {
     return true;
   } else {
     auto first_size = v.at(0).size();
-    for (auto i = 1u; i < v.size(); ++i) {
+    for (auto i = 1ull; i < v.size(); ++i) {
       if (first_size != v.at(i).size()) {
         return false;
       }
@@ -187,7 +187,7 @@ inline bool Dimensions(const std::vector<CBitVector> &v) {
     return true;
   } else {
     auto first_size = v.at(0).GetSize();
-    for (auto i = 1u; i < v.size(); ++i) {
+    for (auto i = 1ull; i < v.size(); ++i) {
       if (first_size != v.at(i).GetSize()) {
         return false;
       }

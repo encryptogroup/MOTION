@@ -235,10 +235,12 @@ class GMWShare : public BooleanShare {
     if (wires.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
-    if (wires_.at(0)->GetProtocol() != ABYN::Protocol::BooleanGMW) {
-      throw(
-          std::runtime_error("Trying to create a Boolean GMW share from wires "
-                             "of different sharing type"));
+    for (auto &wire : wires) {
+      if (wire->GetProtocol() != ABYN::Protocol::BooleanGMW) {
+        throw(
+            std::runtime_error("Trying to create a Boolean GMW share from wires "
+                               "of different sharing type"));
+      }
     }
     wires_ = wires;
     core_ = wires.at(0)->GetCore();

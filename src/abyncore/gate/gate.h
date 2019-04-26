@@ -70,6 +70,8 @@ class Gate : public std::enable_shared_from_this<Gate> {
 
   bool &SetupIsReady() { return setup_is_ready_; }
 
+  std::int64_t GetID() const { return gate_id_; }
+
   Gate(Gate &) = delete;
 
  protected:
@@ -267,61 +269,61 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
   // non-interactive input sharing based on distributed in advance randomness
   // seeds
   void Evaluate() final {
-    auto my_id = core_->GetConfig()->GetMyId();
-    std::vector<T> result;
-    if (static_cast<std::size_t>(input_owner_) == my_id) {
-      result.resize(input_.size());
-      SetSetupIsReady();  // we always generate the seed for input sharing
-                          // before we start evaluating the circuit
+      auto my_id = core_->GetConfig()->GetMyId();
+      std::vector<T> result;
+      if (static_cast<std::size_t>(input_owner_) == my_id) {
+        result.resize(input_.size());
+        SetSetupIsReady();  // we always generate the seed for input sharing
+                            // before we start evaluating the circuit
 
-      auto log_string = std::string("");
-      for (auto i = 0u; i < core_->GetConfig()->GetNumOfParties(); ++i) {
-        if (i == my_id) {
-          continue;
+        auto log_string = std::string("");
+        for (auto i = 0u; i < core_->GetConfig()->GetNumOfParties(); ++i) {
+          if (i == my_id) {
+            continue;
+          }
+          auto randomness =
+              std::move(core_->GetConfig()
+                            ->GetCommunicationContext(i)
+                            ->GetMyRandomnessGenerator()
+                            ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
+          log_string.append(fmt::format("id#{}:{} ", i, randomness.at(0)));
+          for (auto j = 0u; j < result.size(); ++j) {
+            result.at(j) += randomness.at(j);
+          }
         }
-        auto randomness =
-            std::move(core_->GetConfig()
-                          ->GetCommunicationContext(i)
-                          ->GetMyRandomnessGenerator()
-                          ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
-        log_string.append(fmt::format("id#{}:{} ", i, randomness.at(0)));
         for (auto j = 0u; j < result.size(); ++j) {
-          result.at(j) += randomness.at(j);
+          result.at(j) = input_.at(j) - result.at(j);
         }
+
+        auto s = fmt::format(
+            "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
+            "share: {}, expected shares of other parties: {}",
+            input_owner_, gate_id_, input_.at(0), result.at(0), log_string);
+        core_->GetLogger()->LogTrace(s);
+      } else {
+        auto &rand_generator = core_->GetConfig()
+                                   ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
+                                   ->GetTheirRandomnessGenerator();
+        Helpers::WaitFor(rand_generator->IsInitialized());
+        SetSetupIsReady();
+
+        result = std::move(
+            rand_generator->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
+
+        auto s = fmt::format(
+            "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
+            "{} from the seed",
+            gate_id_, input_owner_, result.at(0));
+        core_->GetLogger()->LogTrace(s);
       }
-      for (auto j = 0u; j < result.size(); ++j) {
-        result.at(j) = input_.at(j) - result.at(j);
-      }
-
-      auto s = fmt::format(
-          "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
-          "share: {}, expected shares of other parties: {}",
-          input_owner_, gate_id_, input_.at(0), result.at(0), log_string);
-      core_->GetLogger()->LogTrace(s);
-    } else {
-      auto &rand_generator = core_->GetConfig()
-                                 ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
-                                 ->GetTheirRandomnessGenerator();
-      Helpers::WaitFor(rand_generator->IsInitialized());
-      SetSetupIsReady();
-
-      result =
-          std::move(rand_generator->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
-
-      auto s = fmt::format(
-          "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
-          "{} from the seed",
-          gate_id_, input_owner_, result.at(0));
-      core_->GetLogger()->LogTrace(s);
-    }
-    auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
-    assert(my_wire);
-    my_wire->GetMutableValuesOnWire() = std::move(result);
-    SetOnlineIsReady();
-    core_->IncrementEvaluatedGatesCounter();
-    core_->GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
+      auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+      assert(my_wire);
+      my_wire->GetMutableValuesOnWire() = std::move(result);
+      SetOnlineIsReady();
+      core_->IncrementEvaluatedGatesCounter();
+      core_->GetLogger()->LogTrace(
+          fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
   }
-
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
   ABYN::Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
@@ -432,6 +434,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
           if (message != nullptr) {
             shared_outputs_.at(i) =
                 std::move(Helpers::FromByteVector<T>(*message->wires()->Get(0)->payload()));
+            assert(shared_outputs_.at(i).size() == output_.size());
             success = true;
           }
           if (!success) {
@@ -590,19 +593,20 @@ class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
     gate_id_ = core_->NextGateId();
     core_->RegisterNextGate(static_cast<Gate *>(this));
 
-    assert(input_.size() > 0);        // assert >=1 wire
-    assert(input_.at(0).size() > 0);  // assert >=1 SIMD bits
+    assert(input_.size() > 0u);        // assert >=1 wire
+    assert(input_.at(0).size() > 0u);  // assert >=1 SIMD bits
     // assert SIMD lengths of all wires are equal
     assert(ABYN::Helpers::Compare::Dimensions(input_));
 
-    if (bits_ == 0) {
+    if (bits_ == 0u) {
       bits_ = input_.at(0).size() * 8;
     }
 
-    auto input_size = input_.at(0).size();
-    boolean_sharing_id_ = core_->NextBooleanGMWSharingId(input_.size() * input_size * 8);
+    boolean_sharing_id_ = core_->NextBooleanGMWSharingId(input_.size() * bits_);
     core_->GetLogger()->LogTrace(
-        fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+        fmt::format("Created a BooleanGMWInputGate with global id {}", gate_id_));
+
+    output_wires_.reserve(input_.size());
     for (auto &v : input_) {
       auto wire = std::make_shared<Wires::GMWWire>(v, core_, bits_);
       output_wires_.push_back(std::static_pointer_cast<ABYN::Wires::Wire>(wire));
@@ -610,7 +614,7 @@ class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
 
     auto gate_info = fmt::format("gate id {},", gate_id_);
     core_->GetLogger()->LogDebug(
-        fmt::format("Allocate an ArithmeticInputGate with following properties: {}", gate_info));
+        fmt::format("Created a BooleanGMWInputGate with following properties: {}", gate_info));
   }
 
   ~GMWInputGate() final = default;
