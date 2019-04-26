@@ -85,27 +85,31 @@ void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) { gates_.push
 void Backend::EvaluateSequential() {
 #pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
   {
-#pragma omp single nowait
+#pragma omp single
     {
-#pragma omp task
-#pragma omp taskloop num_tasks( \
-    std::min(static_cast <std::size_t>(50), static_cast <std::size_t>(input_gates_.size())))
-      for (auto i = 0u; i < input_gates_.size(); ++i) {
-        input_gates_[i]->Evaluate();
+      for (auto &input_gate : input_gates_) {
+        core_->AddToActiveQueue(input_gate->GetID());
       }
-// evaluate all other gates moved to the active queue
-#pragma omp task
+      // evaluate all other gates moved to the active queue
       while (core_->GetNumOfEvaluatedGates() < core_->GetTotalNumOfGates()) {
-        auto gate_id = core_->GetNextGateFromOnlineQueue();
-#pragma omp task if (gate_id < 0)  // doesn't make much sense, but will create a
-                                   // task if gate_id >= 0
+        // get some active gates from the queue
+        std::vector<std::size_t> gates_ids;
         {
-          assert(gate_id >= 0);
-          core_->GetGate(gate_id)->Evaluate();
+          std::int64_t gate_id = -1;
+          do {
+            gate_id = core_->GetNextGateFromOnlineQueue();
+            if (gate_id >= 0) {
+              assert(static_cast<std::size_t>(gate_id) < core_->GetTotalNumOfGates());
+              gates_ids.push_back(static_cast<std::size_t>(gate_id));
+            }
+          } while (gate_id >= 0);
         }
-        if (gate_id <= 0) {
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
+        // evaluate the gates in a batch
+#pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
+        for (auto i = 0ull ; i < gates_ids.size(); ++i) {
+          core_->GetGate(gates_ids.at(i))->Evaluate();
         }
+#pragma omp taskwait //I'm not sure if there is an implicit taskwait after a taskloop
       }
     }
   }
