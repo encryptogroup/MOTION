@@ -1,5 +1,4 @@
-#ifndef MESSAGE_H
-#define MESSAGE_H
+#pragma once
 
 #include "fbs_headers/message_generated.h"
 #include "utility/typedefs.h"
@@ -16,9 +15,7 @@ static flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
 
 static flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t *payload,
                                                    std::size_t size) {
-  std::vector<u8> buffer(payload, payload + size);
+  std::vector<std::uint8_t> buffer(payload, payload + size);
   return std::move(BuildMessage(message_type, &buffer));
 }
 }  // namespace ABYN::Communication
-
-#endif  // MESSAGE_H

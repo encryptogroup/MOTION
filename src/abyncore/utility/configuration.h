@@ -1,5 +1,4 @@
-#ifndef ABYNCONFIGURATION_H
-#define ABYNCONFIGURATION_H
+#pragma once
 
 #include <cstdarg>
 #include <functional>
@@ -66,5 +65,3 @@ class Configuration {
 using ConfigurationPtr = std::shared_ptr<Configuration>;
 
 }  // namespace ABYN
-
-#endif  // ABYNCONFIGURATION_H

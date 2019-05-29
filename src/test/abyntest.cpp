@@ -16,18 +16,18 @@
 
 namespace {
 
-const auto num_parties_list = {3u, 4u, 5u, 10u};
+constexpr auto num_parties_list = {3u, 4u, 5u, 10u};
 
 using namespace ABYN;
 
-const auto PORT_OFFSET = 7777u;
-const auto TEST_ITERATIONS = 3;  // increase if needed
-const auto LOGGING_ENABLED = false;
+constexpr auto PORT_OFFSET = 7777u;
+constexpr auto TEST_ITERATIONS = 3;  // increase if needed
+constexpr auto LOGGING_ENABLED = false;
 
 template <typename T>
 inline T Rand() {
-  if (typeid(T) == typeid(u64)) {
-    u64 r = std::rand();
+  if (typeid(T) == typeid(std::uint64_t)) {
+    std::uint64_t r = std::rand();
     r <<= 32;
     return r + std::rand();
   } else
@@ -47,7 +47,7 @@ TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
   const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
 
   for (auto i = 0; i < TEST_ITERATIONS; ++i) {
-    auto r_u8 = []() { return std::to_string((u8)std::rand()); };
+    auto r_u8 = []() { return std::to_string((std::uint8_t)std::rand()); };
     auto rand_invalid_ip = [r_u8, incorrect_symbols]() {
       std::string result = fmt::format("{}.{}.{}.{}", r_u8(), r_u8(), r_u8(), r_u8());
       result.at(std::rand() % result.size()) =
@@ -107,7 +107,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
 #pragma omp task
           {
             std::string ip = "127.0.0.1";
-            u16 port = PORT_OFFSET + 1;
+            std::uint16_t port = PORT_OFFSET + 1;
             auto abyn = std::move(PartyPtr(new Party{
                 {std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
                  std::make_shared<CommunicationContext>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
@@ -197,7 +197,7 @@ TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
       // Party #2
       futures.push_back(std::async(std::launch::async, []() {
         std::string ip = "127.0.0.1";
-        u16 port = PORT_OFFSET + 1;
+        std::uint16_t port = PORT_OFFSET + 1;
         auto abyn = std::move(PartyPtr(new Party{
             {std::make_shared<CommunicationContext>(ip, port, ABYN::Role::Client, 0),
              std::make_shared<CommunicationContext>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
@@ -279,70 +279,69 @@ TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
-      for (auto num_parties : num_parties_list) {
-        std::size_t input_owner = std::rand() % num_parties,
-                    output_owner = std::rand() % num_parties;
-        using T = decltype(template_var);
-        T global_input_1 = Rand<T>();
-        std::vector<T> global_input_1K = RandomVector<T>(1000),
-                       global_input_10K = RandomVector<T>(10000);
-        try {
-          std::vector<PartyPtr> abyn_parties(
-              std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
-          for (auto &p : abyn_parties) {
-            p->GetLogger()->Logging(LOGGING_ENABLED);
-          }
+    for (auto num_parties : num_parties_list) {
+      std::size_t input_owner = std::rand() % num_parties, output_owner = std::rand() % num_parties;
+      using T = decltype(template_var);
+      T global_input_1 = Rand<T>();
+      std::vector<T> global_input_1K = RandomVector<T>(1000),
+                     global_input_10K = RandomVector<T>(10000);
+      try {
+        std::vector<PartyPtr> abyn_parties(
+            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : abyn_parties) {
+          p->GetLogger()->Logging(LOGGING_ENABLED);
+        }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())
-          for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-            T input_1 = 0u;
-            std::vector<T> input_1K(global_input_1K.size(), 0u);
-            std::vector<T> input_10K(global_input_10K.size(), 0u);
-            if (party_id == input_owner) {
-              input_1 = global_input_1;
-              input_1K = global_input_1K;
-              input_10K = global_input_10K;
-            }
-
-            auto input_share_1 = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1);
-            auto input_share_1K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1K);
-            auto input_share_10K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_10K);
-
-            auto output_share_1 = abyn_parties.at(party_id)->OUT(input_share_1, output_owner);
-            auto output_share_1K = abyn_parties.at(party_id)->OUT(input_share_1K, output_owner);
-            auto output_share_10K = abyn_parties.at(party_id)->OUT(input_share_10K, output_owner);
-
-            abyn_parties.at(party_id)->Run();
-
-            if (party_id == output_owner) {
-              auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
-                  output_share_1->GetWires().at(0));
-              auto wire_1K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
-                  output_share_1K->GetWires().at(0));
-              auto wire_10K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
-                  output_share_10K->GetWires().at(0));
-
-              assert(wire_1);
-              assert(wire_1K);
-              assert(wire_10K);
-
-              EXPECT_EQ(wire_1->GetValuesOnWire().at(0), global_input_1);
-              EXPECT_TRUE(Helpers::Compare::Vectors(wire_1K->GetValuesOnWire(), global_input_1K));
-              EXPECT_TRUE(Helpers::Compare::Vectors(wire_10K->GetValuesOnWire(), global_input_10K));
-            }
+        for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+          T input_1 = 0u;
+          std::vector<T> input_1K(global_input_1K.size(), 0u);
+          std::vector<T> input_10K(global_input_10K.size(), 0u);
+          if (party_id == input_owner) {
+            input_1 = global_input_1;
+            input_1K = global_input_1K;
+            input_10K = global_input_10K;
           }
-        } catch (std::exception &e) {
-          std::cerr << e.what() << std::endl;
+
+          auto input_share_1 = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1);
+          auto input_share_1K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_1K);
+          auto input_share_10K = abyn_parties.at(party_id)->IN<AGMW, T>(input_owner, input_10K);
+
+          auto output_share_1 = abyn_parties.at(party_id)->OUT(input_share_1, output_owner);
+          auto output_share_1K = abyn_parties.at(party_id)->OUT(input_share_1K, output_owner);
+          auto output_share_10K = abyn_parties.at(party_id)->OUT(input_share_10K, output_owner);
+
+          abyn_parties.at(party_id)->Run();
+
+          if (party_id == output_owner) {
+            auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                output_share_1->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                output_share_1K->GetWires().at(0));
+            auto wire_10K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                output_share_10K->GetWires().at(0));
+
+            assert(wire_1);
+            assert(wire_1K);
+            assert(wire_10K);
+
+            EXPECT_EQ(wire_1->GetValuesOnWire().at(0), global_input_1);
+            EXPECT_TRUE(Helpers::Compare::Vectors(wire_1K->GetValuesOnWire(), global_input_1K));
+            EXPECT_TRUE(Helpers::Compare::Vectors(wire_10K->GetValuesOnWire(), global_input_10K));
+          }
         }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
       }
+    }
   };
   for (auto i = 0; i < TEST_ITERATIONS; ++i) {
     // lambdas don't support templates, but only auto types. So, lets try to trick them.
-    template_test(static_cast<u8>(0));
-    template_test(static_cast<u16>(0));
-    template_test(static_cast<u32>(0));
-    template_test(static_cast<u64>(0));
+    template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint16_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
   }
 }
 
@@ -433,10 +432,10 @@ TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
   };
   for (auto i = 0; i < TEST_ITERATIONS; ++i) {
     // lambdas don't support templates, but only auto types. So, lets try to trick them.
-    template_test(static_cast<u8>(0));
-    template_test(static_cast<u16>(0));
-    template_test(static_cast<u32>(0));
-    template_test(static_cast<u64>(0));
+    template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint16_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
   }
 }
 }  // namespace

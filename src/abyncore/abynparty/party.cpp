@@ -43,20 +43,21 @@ void Party::EvaluateCircuit() {
 
 void Party::Finish() { backend_->TerminateCommunication(); }
 
-std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties, u16 port) {
+std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties,
+                                                            std::uint16_t port) {
   if (num_parties < 3) {
     throw(std::runtime_error(
         fmt::format("Can generate only >= 3 local parties, current input: {}", num_parties)));
   }
 
   std::vector<PartyPtr> abyn_parties(num_parties);
-  std::map<u32, u16> assigned_ports;
+  std::map<std::uint32_t, std::uint16_t> assigned_ports;
 
   // portid generation function - we require symmetric port generation for
   // parties, e.g., parties #4 and #7 independent of the position of the ids,
   // i.e., sort them always in ascending order and generate a bigger number out
   // of two ids.
-  auto portid = [](u32 my_id, u32 other_id) -> u32 {
+  auto portid = [](std::uint32_t my_id, std::uint32_t other_id) -> std::uint32_t {
     return other_id < my_id ? (other_id << 16) + (my_id) : (my_id << 16) + (other_id);
   };
 
@@ -66,7 +67,7 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
   for (auto my_id = 0ul; my_id < num_parties; ++my_id) {
     for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
       if (my_id == other_id) continue;
-      u32 port_id = portid(my_id, other_id);
+      std::uint32_t port_id = portid(my_id, other_id);
       if (assigned_ports.find(port_id) == assigned_ports.end()) {
         assigned_ports.insert({port_id, port++});
       }
@@ -83,9 +84,9 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
       if (my_id == other_id) continue;
       ABYN::Role role = other_id < my_id ? ABYN::Role::Client : ABYN::Role::Server;
 
-      u32 port_id = portid(my_id, other_id);
+      std::uint32_t port_id = portid(my_id, other_id);
 
-      u16 this_port;
+      std::uint16_t this_port;
       auto search = assigned_ports.find(port_id);
       if (search != assigned_ports.end()) {
         this_port = search->second;

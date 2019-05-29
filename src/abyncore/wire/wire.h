@@ -1,5 +1,4 @@
-#ifndef WIRE_H
-#define WIRE_H
+#pragma once
 
 #include <cstdlib>
 #include <memory>
@@ -188,7 +187,7 @@ using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(std::vector<u8> &&values, const CorePtr &core, std::size_t parallel_values = 1,
+  GMWWire(std::vector<std::uint8_t> &&values, const CorePtr &core, std::size_t parallel_values = 1,
           bool is_constant = false) {
     values_.AttachBuf(values.data(), Helpers::Convert::BitsToBytes(parallel_values));
     core_ = core;
@@ -197,8 +196,8 @@ class GMWWire : public BooleanWire {
     InitializationHelper();
   }
 
-  GMWWire(const std::vector<u8> &values, const CorePtr &core, std::size_t parallel_values = 1,
-          bool is_constant = false) {
+  GMWWire(const std::vector<std::uint8_t> &values, const CorePtr &core,
+          std::size_t parallel_values = 1, bool is_constant = false) {
     values_.Copy(values.data(), 0, Helpers::Convert::BitsToBytes(parallel_values));
     core_ = core;
     is_constant_ = is_constant;
@@ -248,5 +247,3 @@ class BMRWire : BooleanWire {
 using BMRWirePtr = std::shared_ptr<GMWWire>;
 
 }  // namespace ABYN::Wires
-
-#endif  // WIRE_H

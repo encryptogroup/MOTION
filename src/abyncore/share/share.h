@@ -1,5 +1,4 @@
-#ifndef SHARE_H
-#define SHARE_H
+#pragma once
 
 #include <memory>
 
@@ -197,19 +196,19 @@ using BooleanSharePtr = std::shared_ptr<BooleanShare>;
 
 class GMWShare : public BooleanShare {
  public:
-  GMWShare(std::vector<u8> &input, CorePtr &core, std::size_t bits) {
+  GMWShare(std::vector<std::uint8_t> &input, CorePtr &core, std::size_t bits) {
     wires_ = {std::make_shared<Wires::GMWWire>(input, core, bits)};
     core_ = core;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<u8> &&input, CorePtr &core, std::size_t bits) {
+  GMWShare(std::vector<std::uint8_t> &&input, CorePtr &core, std::size_t bits) {
     wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), core, bits)};
     core_ = core;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<u8>> &input, CorePtr &core, std::size_t bits) {
+  GMWShare(std::vector<std::vector<std::uint8_t>> &input, CorePtr &core, std::size_t bits) {
     if (input.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
@@ -220,7 +219,7 @@ class GMWShare : public BooleanShare {
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<u8>> &&input, CorePtr &core, std::size_t bits) {
+  GMWShare(std::vector<std::vector<std::uint8_t>> &&input, CorePtr &core, std::size_t bits) {
     if (input.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
@@ -273,4 +272,3 @@ class BMRShare : public BooleanShare {
 
 using BMRSharePtr = std::shared_ptr<BMRShare>;
 }  // namespace ABYN::Shares
-#endif  // SHARE_H

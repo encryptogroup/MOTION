@@ -1,5 +1,4 @@
-#ifndef ABYNPARTY_H
-#define ABYNPARTY_H
+#pragma once
 
 #include <fmt/format.h>
 #include <omp.h>
@@ -53,7 +52,8 @@ class Party {
 
   ConfigurationPtr GetConfiguration() { return config_; }
 
-  template <ABYN::Protocol P, typename T = u8, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <ABYN::Protocol P, typename T = std::uint8_t,
+            typename = std::enable_if_t<std::is_unsigned_v<T>>>
   ABYN::Shares::SharePtr IN(std::size_t party_id, const std::vector<T> &input,
                             std::size_t bits = 0) {
     switch (P) {
@@ -73,7 +73,8 @@ class Party {
     }
   }
 
-  template <ABYN::Protocol P, typename T = u8, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <ABYN::Protocol P, typename T = std::uint8_t,
+            typename = std::enable_if_t<std::is_unsigned_v<T>>>
   ABYN::Shares::SharePtr IN(std::size_t party_id, std::vector<T> &&input, std::size_t bits = 0) {
     switch (P) {
       case ABYN::Protocol::ArithmeticGMW: {
@@ -92,7 +93,8 @@ class Party {
     }
   }
 
-  template <ABYN::Protocol P, typename T = u8, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <ABYN::Protocol P, typename T = std::uint8_t,
+            typename = std::enable_if_t<std::is_unsigned_v<T>>>
   ABYN::Shares::SharePtr IN(std::size_t party_id, T input, std::size_t bits = 0) {
     if constexpr (std::is_same_v<T, bool>) {
       static_assert(P != ABYN::Protocol::ArithmeticGMW);
@@ -107,16 +109,16 @@ class Party {
       case ABYN::Protocol::ArithmeticGMW: {
         switch (parent->GetBitLength()) {
           case 8u: {
-            return ArithmeticGMWOutput<u8>(parent, output_owner);
+            return ArithmeticGMWOutput<std::uint8_t>(parent, output_owner);
           }
           case 16u: {
-            return ArithmeticGMWOutput<u16>(parent, output_owner);
+            return ArithmeticGMWOutput<std::uint16_t>(parent, output_owner);
           }
           case 32u: {
-            return ArithmeticGMWOutput<u32>(parent, output_owner);
+            return ArithmeticGMWOutput<std::uint32_t>(parent, output_owner);
           }
           case 64u: {
-            return ArithmeticGMWOutput<u64>(parent, output_owner);
+            return ArithmeticGMWOutput<std::uint64_t>(parent, output_owner);
           }
           default: {
             throw(std::runtime_error(
@@ -147,16 +149,16 @@ class Party {
         assert(a->GetBitLength() == b->GetBitLength());
         switch (a->GetBitLength()) {
           case 8u: {
-            return ArithmeticGMWAddition<u8>(a, b);
+            return ArithmeticGMWAddition<std::uint8_t>(a, b);
           }
           case 16u: {
-            return ArithmeticGMWAddition<u16>(a, b);
+            return ArithmeticGMWAddition<std::uint16_t>(a, b);
           }
           case 32u: {
-            return ArithmeticGMWAddition<u32>(a, b);
+            return ArithmeticGMWAddition<std::uint32_t>(a, b);
           }
           case 64u: {
-            return ArithmeticGMWAddition<u64>(a, b);
+            return ArithmeticGMWAddition<std::uint64_t>(a, b);
           }
           default: {
             throw(std::runtime_error(
@@ -185,7 +187,8 @@ class Party {
 
   void Run(std::size_t repeats = 1);
 
-  static std::vector<std::unique_ptr<Party>> GetNLocalParties(std::size_t num_parties, u16 port);
+  static std::vector<std::unique_ptr<Party>> GetNLocalParties(std::size_t num_parties,
+                                                              std::uint16_t port);
 
   const auto &GetLogger() { return backend_->GetLogger(); }
 
@@ -203,12 +206,13 @@ class Party {
   void Finish();
 
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false) {
-    u8 input_byte = input == false ? 0 : 1;
-    return BooleanGMWInput(party_id, std::vector<u8> {input_byte}, 1);
+    std::uint8_t input_byte = input == false ? 0 : 1;
+    return BooleanGMWInput(party_id, std::vector<std::uint8_t>{input_byte}, 1);
   };
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
-  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, const std::vector<u8> &input,
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id,
+                                         const std::vector<std::uint8_t> &input,
                                          std::size_t bits = 0) {
     auto in_gate =
         std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetCore(), bits);
@@ -218,7 +222,7 @@ class Party {
   };
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
-  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<u8> &&input,
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<std::uint8_t> &&input,
                                          std::size_t bits = 0) {
     auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id,
                                                               backend_->GetCore(), bits);
@@ -228,7 +232,8 @@ class Party {
   };
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
-  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<std::vector<u8>> &input,
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id,
+                                         std::vector<std::vector<std::uint8_t>> &input,
                                          std::size_t bits = 0) {
     auto in_gate =
         std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetCore(), bits);
@@ -238,7 +243,8 @@ class Party {
   };
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
-  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<std::vector<u8>> &&input,
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id,
+                                         std::vector<std::vector<std::uint8_t>> &&input,
                                          std::size_t bits = 0) {
     auto in_gate = std::make_shared<ABYN::Gates::GMW::GMWInputGate>(std::move(input), party_id,
                                                                     backend_->GetCore(), bits);
@@ -337,4 +343,3 @@ class Party {
 
 using PartyPtr = std::unique_ptr<Party>;
 }  // namespace ABYN
-#endif  // ABYNPARTY_H

@@ -1,5 +1,4 @@
-#ifndef LOGGER_H
-#define LOGGER_H
+#pragma once
 
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include <boost/log/trivial.hpp>
@@ -51,5 +50,3 @@ class Logger {
 
 using LoggerPtr = std::shared_ptr<Logger>;
 }  // namespace ABYN
-
-#endif  // LOGGER_H

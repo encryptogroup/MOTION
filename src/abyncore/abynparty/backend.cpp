@@ -57,7 +57,7 @@ void Backend::SendHelloToOthers() {
     if (destination_id == config_->GetMyId()) {
       continue;
     }
-    std::vector<u8> seed;
+    std::vector<std::uint8_t> seed;
     if (share_inputs_) {
       seed = std::move(
           config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed());
@@ -106,10 +106,10 @@ void Backend::EvaluateSequential() {
         }
         // evaluate the gates in a batch
 #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
-        for (auto i = 0ull ; i < gates_ids.size(); ++i) {
+        for (auto i = 0ull; i < gates_ids.size(); ++i) {
           core_->GetGate(gates_ids.at(i))->Evaluate();
         }
-#pragma omp taskwait //I'm not sure if there is an implicit taskwait after a taskloop
+#pragma omp taskwait  // I'm not sure if there is an implicit taskwait after a taskloop
       }
     }
   }

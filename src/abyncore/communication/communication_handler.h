@@ -1,5 +1,4 @@
-#ifndef PARTYCOMMUNICATIONHANDLER_H
-#define PARTYCOMMUNICATIONHANDLER_H
+#pragma once
 
 #include <queue>
 
@@ -24,9 +23,9 @@ class CommunicationHandler {
 
   void WaitForConnectionEnd();
 
-  std::queue<std::vector<u8>> &GetSendQueue() { return queue_send_; }
+  std::queue<std::vector<std::uint8_t>> &GetSendQueue() { return queue_send_; }
 
-  std::queue<std::vector<u8>> &GetReceiveQueue() { return queue_receive_; }
+  std::queue<std::vector<std::uint8_t>> &GetReceiveQueue() { return queue_receive_; }
 
   std::mutex &GetSendMutex() { return queue_send_mutex_; }
 
@@ -49,7 +48,7 @@ class CommunicationHandler {
   std::mutex queue_receive_mutex_, queue_send_mutex_;
 
   std::thread sender_thread_, receiver_thread_;
-  std::queue<std::vector<u8>> queue_send_, queue_receive_;
+  std::queue<std::vector<std::uint8_t>> queue_send_, queue_receive_;
 
   bool continue_communication_ = true;
 
@@ -63,12 +62,10 @@ class CommunicationHandler {
 
   static void ActAsReceiver(CommunicationHandler *handler);
 
-  static u32 ParseHeader(CommunicationHandler *handler);
+  static std::uint32_t ParseHeader(CommunicationHandler *handler);
 
-  static std::vector<u8> ParseBody(CommunicationHandler *handler, u32 size);
+  static std::vector<std::uint8_t> ParseBody(CommunicationHandler *handler, std::uint32_t size);
 };
 
 using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
 }  // namespace ABYN::Communication
-
-#endif  // PARTYCOMMUNICATIONHANDLER_H

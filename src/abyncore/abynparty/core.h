@@ -1,5 +1,4 @@
-#ifndef ABYNCORE_H
-#define ABYNCORE_H
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -130,5 +129,3 @@ class Core {
 
 using CorePtr = std::shared_ptr<Core>;
 }  // namespace ABYN
-
-#endif  // ABYNCORE_H

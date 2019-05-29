@@ -1,5 +1,4 @@
-#ifndef PARTY_H
-#define PARTY_H
+#pragma once
 
 #include <arpa/inet.h>
 #include <flatbuffers/flatbuffers.h>
@@ -26,9 +25,9 @@ using BoostSocketPtr = std::shared_ptr<boost::asio::ip::tcp::socket>;
 /// Peer-related communication context
 class CommunicationContext {
  public:
-  CommunicationContext(const std::string ip, u16 port, ABYN::Role role, std::size_t id);
+  CommunicationContext(const std::string ip, std::uint16_t port, ABYN::Role role, std::size_t id);
 
-  CommunicationContext(const char *ip, u16 port, ABYN::Role role, std::size_t id)
+  CommunicationContext(const char *ip, std::uint16_t port, ABYN::Role role, std::size_t id)
       : CommunicationContext(std::string(ip), port, role, id) {}
 
   CommunicationContext(int socket, ABYN::Role role, std::size_t id)
@@ -55,7 +54,8 @@ class CommunicationContext {
 
   void InitializeMyRandomnessGenerator();
 
-  void InitializeTheirRandomnessGenerator(std::vector<u8> &key, std::vector<u8> &iv);
+  void InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &key,
+                                          std::vector<std::uint8_t> &iv);
 
   void SetLogger(const ABYN::LoggerPtr &logger) {
     logger_ = logger;
@@ -64,7 +64,7 @@ class CommunicationContext {
 
   const std::string &GetIp() { return ip_; }
 
-  u16 GetPort() { return port_; }
+  std::uint16_t GetPort() { return port_; }
 
   std::int64_t GetId() { return id_; }
 
@@ -74,7 +74,7 @@ class CommunicationContext {
 
   const BoostSocketPtr &GetSocket() { return boost_party_socket_; }
 
-  void ParseMessage(std::vector<u8> &&raw_message);
+  void ParseMessage(std::vector<std::uint8_t> &&raw_message);
 
   DataStorage &GetDataStorage() { return data_storage_; }
 
@@ -90,7 +90,7 @@ class CommunicationContext {
   DataStorage data_storage_;
 
   std::string ip_;
-  u16 port_ = 0;
+  std::uint16_t port_ = 0;
   ABYN::Role role_ = ABYN::Role::InvalidRole;
   std::int64_t id_ = -1;
 
@@ -118,5 +118,3 @@ class CommunicationContext {
 using CommunicationContextPtr = std::shared_ptr<CommunicationContext>;
 
 }  // namespace ABYN
-
-#endif  // PARTY_H

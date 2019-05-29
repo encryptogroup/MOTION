@@ -6,11 +6,11 @@ include(CMakeFindDependencyMacro)
 
 find_dependency(OTExtension)
 find_dependency(ENCRYPTO_utils)
-find_dependency(fmt)
-find_dependency(flatbuffers)
 find_dependency(MIRACL)
 find_dependency(GMP)
 find_dependency(Threads)
+find_dependency(flatbuffers)
+find_dependency(fmt)
 
 if(NOT TARGET ABYN::abyn)
     include("${ABY_CMAKE_DIR}/ABYNTargets.cmake")

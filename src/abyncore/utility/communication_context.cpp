@@ -11,7 +11,7 @@
 
 namespace ABYN {
 
-CommunicationContext::CommunicationContext(std::string ip, u16 port, ABYN::Role role,
+CommunicationContext::CommunicationContext(std::string ip, std::uint16_t port, ABYN::Role role,
                                            std::size_t id)
     : data_storage_(id), ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
   if (IsInvalidIp(ip.data())) {
@@ -20,13 +20,14 @@ CommunicationContext::CommunicationContext(std::string ip, u16 port, ABYN::Role 
 };
 
 void CommunicationContext::InitializeMyRandomnessGenerator() {
-  std::vector<u8> key(ABYN::RandomVector(AES_KEY_SIZE)), iv(ABYN::RandomVector(AES_IV_SIZE));
+  std::vector<std::uint8_t> key(ABYN::RandomVector(AES_KEY_SIZE)),
+      iv(ABYN::RandomVector(AES_IV_SIZE));
   my_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
   my_randomness_generator_->Initialize(key.data(), iv.data());
 }
 
-void CommunicationContext::InitializeTheirRandomnessGenerator(std::vector<u8> &key,
-                                                              std::vector<u8> &iv) {
+void CommunicationContext::InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &key,
+                                                              std::vector<std::uint8_t> &iv) {
   their_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
   their_randomness_generator_->Initialize(key.data(), iv.data());
 }
@@ -45,7 +46,7 @@ std::string CommunicationContext::Connect() {
   return std::move(fmt::format("Successfully connected to {}:{}\n", ip_, port_));
 };
 
-void CommunicationContext::ParseMessage(std::vector<u8> &&raw_message) {
+void CommunicationContext::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
   using namespace ABYN::Communication;
   auto message = GetMessage(raw_message.data());
   flatbuffers::Verifier verifier(raw_message.data(), raw_message.size());
@@ -60,8 +61,8 @@ void CommunicationContext::ParseMessage(std::vector<u8> &&raw_message) {
     case MessageType_HelloMessage: {
       auto seed_vector = GetHelloMessage(message->payload()->data())->input_sharing_seed();
       if (seed_vector != nullptr && seed_vector->size() > 0) {
-        const u8 *seed = seed_vector->data();
-        std::vector<u8> key(seed, seed + AES_KEY_SIZE),
+        const std::uint8_t *seed = seed_vector->data();
+        std::vector<std::uint8_t> key(seed, seed + AES_KEY_SIZE),
             iv(seed + AES_KEY_SIZE, seed + AES_KEY_SIZE + AES_IV_SIZE);
         InitializeTheirRandomnessGenerator(key, iv);
         logger_->LogTrace(

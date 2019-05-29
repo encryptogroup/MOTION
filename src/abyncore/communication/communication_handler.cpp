@@ -8,8 +8,8 @@
 namespace ABYN::Communication {
 // use explicit conversion function to prevent implementation-dependent
 // conversion issues on different architectures
-std::vector<u8> u32tou8(u32 v) {
-  std::vector<u8> result(sizeof(u32));
+std::vector<std::uint8_t> u32tou8(std::uint32_t v) {
+  std::vector<std::uint8_t> result(sizeof(std::uint32_t));
   for (auto i = 0u; i < result.size(); ++i) {
     result[i] = (v >> i * 8) & 0xFF;
   }
@@ -18,9 +18,9 @@ std::vector<u8> u32tou8(u32 v) {
 
 // use explicit conversion function to prevent implementation-dependent
 // conversion issues on different architectures
-u32 u8tou32(std::vector<u8> &v) {
-  u32 result = 0;
-  for (auto i = 0u; i < sizeof(u32); ++i) {
+std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
+  std::uint32_t result = 0;
+  for (auto i = 0u; i < sizeof(std::uint32_t); ++i) {
     result += (v[i] << i * 8);
   }
   return result;
@@ -50,10 +50,10 @@ CommunicationHandler::~CommunicationHandler() {
 }
 
 void CommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
-  u32 message_size = message.GetSize();
+  std::uint32_t message_size = message.GetSize();
   auto message_detached = message.Release();
   auto message_raw_pointer = message_detached.data();
-  std::vector<u8> buffer = std::move(u32tou8(message_size));
+  std::vector<std::uint8_t> buffer = std::move(u32tou8(message_size));
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
     party_->GetDataStorage().SetSentHelloMessage(message_raw_pointer, message_size);
   }
@@ -68,7 +68,7 @@ void CommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) 
 }
 
 void CommunicationHandler::TerminateCommunication() {
-  std::vector<u8> buffer = std::move(u32tou8(TERMINATION_MESSAGE));
+  std::vector<std::uint8_t> buffer = std::move(u32tou8(TERMINATION_MESSAGE));
   {
     std::scoped_lock lock(queue_send_mutex_);
     queue_send_.push(std::move(buffer));
@@ -94,7 +94,8 @@ void CommunicationHandler::ActAsSender(CommunicationHandler *handler) {
   while (handler->ContinueCommunication()) {
     if (!handler->GetSendQueue().empty()) {
       auto &message = handler->GetSendQueue().front();
-      std::vector<u8> message_size_buffer(message.data(), message.data() + sizeof(u32));
+      std::vector<std::uint8_t> message_size_buffer(message.data(),
+                                                    message.data() + sizeof(std::uint32_t));
       auto message_size = u8tou32(message_size_buffer);
       std::string s;
       for (auto i = 0u; i < message.size(); ++i) {
@@ -110,9 +111,10 @@ void CommunicationHandler::ActAsSender(CommunicationHandler *handler) {
       handler->logger_->LogTrace(fmt::format("{}: Written to the socket,  {}, message: {}",
                                              handler->GetInfo(), message_info, s));
 
-      if (message.size() > std::numeric_limits<u32>::max()) {
+      if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
         throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
-                                             std::numeric_limits<u32>::max(), message.size())));
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             message.size())));
       }
 
       boost::system::error_code ec;
@@ -146,7 +148,7 @@ void CommunicationHandler::ActAsReceiver(CommunicationHandler *handler) {
         continue;
       }
 
-      u32 size = CommunicationHandler::ParseHeader(handler);
+      std::uint32_t size = CommunicationHandler::ParseHeader(handler);
       static_assert(sizeof(size) == MESSAGE_SIZE_BYTELEN);  // check consistency of the bytelen
                                                             // of the message size type
       if (size == 0) {
@@ -155,7 +157,7 @@ void CommunicationHandler::ActAsReceiver(CommunicationHandler *handler) {
         break;
       };
 
-      std::vector<u8> message_buffer = CommunicationHandler::ParseBody(handler, size);
+      std::vector<std::uint8_t> message_buffer = CommunicationHandler::ParseBody(handler, size);
 
       {
         std::scoped_lock lock(handler->GetReceiveMutex());
@@ -175,7 +177,7 @@ void CommunicationHandler::ActAsReceiver(CommunicationHandler *handler) {
 #pragma omp task
     while (handler->ContinueCommunication() || !handler->GetReceiveQueue().empty()) {
       if (!handler->GetReceiveQueue().empty()) {
-        std::vector<u8> message_buffer(std::move(handler->GetReceiveQueue().front()));
+        std::vector<std::uint8_t> message_buffer(std::move(handler->GetReceiveQueue().front()));
         handler->party_->ParseMessage(std::move(message_buffer));
         {
           std::scoped_lock(handler->GetReceiveMutex());
@@ -188,14 +190,14 @@ void CommunicationHandler::ActAsReceiver(CommunicationHandler *handler) {
   }
 }
 
-u32 CommunicationHandler::ParseHeader(CommunicationHandler *handler) {
+std::uint32_t CommunicationHandler::ParseHeader(CommunicationHandler *handler) {
   boost::system::error_code ec;
-  std::vector<u8> message_size_buffer(MESSAGE_SIZE_BYTELEN);
+  std::vector<std::uint8_t> message_size_buffer(MESSAGE_SIZE_BYTELEN);
   // get the size of the next message
   boost::asio::read(*handler->GetSocket().get(), boost::asio::buffer(message_size_buffer),
                     boost::asio::transfer_exactly(message_size_buffer.size()), ec);
 
-  u32 size = u8tou32(message_size_buffer);
+  std::uint32_t size = u8tou32(message_size_buffer);
 
   if (size > 0) {
     if (size == TERMINATION_MESSAGE) {
@@ -205,7 +207,7 @@ u32 CommunicationHandler::ParseHeader(CommunicationHandler *handler) {
     } else {
       std::string s;
       for (auto i = 0u; i < 4; ++i) {
-        s.append(fmt::format("{0:#x} ", reinterpret_cast<u8 *>(&size)[i]));
+        s.append(fmt::format("{0:#x} ", reinterpret_cast<std::uint8_t *>(&size)[i]));
       };
       handler->GetLogger()->LogTrace(
           fmt::format("{}: Got a new message from the socket and have read the "
@@ -223,10 +225,11 @@ u32 CommunicationHandler::ParseHeader(CommunicationHandler *handler) {
   return size;
 }
 
-std::vector<u8> CommunicationHandler::ParseBody(CommunicationHandler *handler, u32 size) {
+std::vector<std::uint8_t> CommunicationHandler::ParseBody(CommunicationHandler *handler,
+                                                          std::uint32_t size) {
   boost::system::error_code ec;
   handler->GetSocket()->non_blocking(false);
-  std::vector<u8> message_buffer(size);
+  std::vector<std::uint8_t> message_buffer(size);
   // get the message
   boost::asio::read(*(handler->GetSocket().get()), boost::asio::buffer(message_buffer),
                     boost::asio::transfer_exactly(message_buffer.size()), ec);

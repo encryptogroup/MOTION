@@ -1,5 +1,4 @@
-#ifndef OUTPUTMESSAGE_H
-#define OUTPUTMESSAGE_H
+#pragma once
 
 #include "fbs_headers/output_message_generated.h"
 #include "message.h"
@@ -8,7 +7,7 @@
 
 namespace ABYN::Communication {
 static flatbuffers::FlatBufferBuilder BuildOutputMessage(std::size_t gate_id,
-                                                         std::vector<u8> wire_payload) {
+                                                         std::vector<std::uint8_t> wire_payload) {
   flatbuffers::FlatBufferBuilder builder_output_message(64);
   auto wire = CreateOutputWireDirect(builder_output_message, &wire_payload);
   std::vector<flatbuffers::Offset<OutputWire>> wires{wire};
@@ -22,4 +21,3 @@ static flatbuffers::FlatBufferBuilder BuildOutputMessage(std::size_t gate_id,
                                 builder_output_message.GetSize()));
 }
 }  // namespace ABYN::Communication
-#endif  // OUTPUTMESSAGE_H

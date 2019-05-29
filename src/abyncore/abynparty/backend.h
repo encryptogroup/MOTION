@@ -1,5 +1,4 @@
-#ifndef ABYNBACKEND_H
-#define ABYNBACKEND_H
+#pragma once
 
 #include <algorithm>
 #include <iterator>
@@ -33,7 +32,7 @@ class Backend {
 
   std::size_t NextGateId() const { return core_->NextGateId(); }
 
-  void InitializeRandomnessGenerator(u8 key[AES_KEY_SIZE], u8 iv[AES_IV_SIZE],
+  void InitializeRandomnessGenerator(std::uint8_t key[AES_KEY_SIZE], std::uint8_t iv[AES_IV_SIZE],
                                      std::size_t party_id);
 
   void InitializeCommunicationHandlers();
@@ -76,5 +75,3 @@ class Backend {
 
 using BackendPtr = std::shared_ptr<Backend>;
 }  // namespace ABYN
-
-#endif  // ABYNBACKEND_H

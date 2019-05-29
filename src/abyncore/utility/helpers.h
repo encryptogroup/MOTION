@@ -1,5 +1,4 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#pragma once
 
 #include "flatbuffers/flatbuffers.h"
 #include "fmt/format.h"
@@ -10,25 +9,28 @@
 namespace ABYN::Helpers {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline std::vector<u8> ToByteVector(const std::vector<T> &values) {
-  std::vector<u8> result(reinterpret_cast<const u8 *>(values.data()),
-                         reinterpret_cast<const u8 *>(values.data()) + sizeof(T) * values.size());
+inline std::vector<std::uint8_t> ToByteVector(const std::vector<T> &values) {
+  std::vector<std::uint8_t> result(
+      reinterpret_cast<const std::uint8_t *>(values.data()),
+      reinterpret_cast<const std::uint8_t *>(values.data()) + sizeof(T) * values.size());
   return std::move(result);
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline std::vector<T> FromByteVector(const std::vector<u8> &buffer) {
+inline std::vector<T> FromByteVector(const std::vector<std::uint8_t> &buffer) {
   assert(buffer.size() % sizeof(T) == 0);  // buffer length is multiple of the element size
   std::vector<T> result(sizeof(T) * buffer.size());
-  std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8 *>(result.data()));
+  std::copy(buffer.data(), buffer.data() + buffer.size(),
+            reinterpret_cast<std::uint8_t *>(result.data()));
   return std::move(result);
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline std::vector<T> FromByteVector(const flatbuffers::Vector<u8> &buffer) {
+inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &buffer) {
   assert(buffer.size() % sizeof(T) == 0);  // buffer length is multiple of the element size
   std::vector<T> result(buffer.size() / sizeof(T));
-  std::copy(buffer.data(), buffer.data() + buffer.size(), reinterpret_cast<u8 *>(result.data()));
+  std::copy(buffer.data(), buffer.data() + buffer.size(),
+            reinterpret_cast<std::uint8_t *>(result.data()));
   return std::move(result);
 };
 
@@ -113,7 +115,7 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
 }
 
 namespace Print {
-inline std::string Hex(const std::vector<u8> &v) {
+inline std::string Hex(const std::vector<std::uint8_t> &v) {
   std::string buffer("");
   for (auto i = 0ull; i < v.size(); ++i) {
     buffer.append(fmt::format("{0:#x} ", v.at(i)));
@@ -122,7 +124,7 @@ inline std::string Hex(const std::vector<u8> &v) {
   return std::move(buffer);
 }
 
-inline std::string Hex(const std::vector<u8> &&v) { return std::move(Hex(v)); }
+inline std::string Hex(const std::vector<std::uint8_t> &&v) { return std::move(Hex(v)); }
 
 inline std::string ToString(Protocol p) {
   std::string result{""};
@@ -209,5 +211,3 @@ inline std::size_t BitsToBytes(std::size_t bits) {
 }
 }  // namespace Convert
 }  // namespace ABYN::Helpers
-
-#endif  // HELPERS_H

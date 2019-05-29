@@ -2,13 +2,13 @@
 
 namespace ABYN {
 
-void DataStorage::SetReceivedOutputMessage(std::vector<u8> &&output_message) {
+void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
   auto message = ABYN::Communication::GetMessage(output_message.data());
   auto output_message_ptr = ABYN::Communication::GetOutputMessage(message->payload()->data());
 
   auto gate_id = output_message_ptr->gate_id();
 
-  //prevents inserting new elements while searching while GetOutputMessage() is called
+  // prevents inserting new elements while searching while GetOutputMessage() is called
   std::scoped_lock lock(output_message_mutex_);
   auto ret = received_output_messages_.insert({gate_id, std::move(output_message)});
   if (!ret.second) {
@@ -22,7 +22,7 @@ void DataStorage::SetReceivedOutputMessage(std::vector<u8> &&output_message) {
 }
 
 const ABYN::Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
-  //prevent SetReceivedOutputMessage() to insert new elements while searching
+  // prevent SetReceivedOutputMessage() to insert new elements while searching
   std::scoped_lock lock(output_message_mutex_);
   auto iterator = received_output_messages_.find(gate_id);
   if (iterator == received_output_messages_.end()) {
@@ -42,8 +42,8 @@ const ABYN::Communication::HelloMessage *DataStorage::GetReceivedHelloMessage() 
   return ABYN::Communication::GetHelloMessage(hello_message->payload()->data());
 }
 
-void DataStorage::SetSentHelloMessage(const u8 *message, std::size_t size) {
-  std::vector<u8> buf(message, message + size);
+void DataStorage::SetSentHelloMessage(const std::uint8_t *message, std::size_t size) {
+  std::vector<std::uint8_t> buf(message, message + size);
   SetSentHelloMessage(std::move(buf));
 }
 

@@ -33,7 +33,7 @@ Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_l
     : my_id_(my_id) {
   // immediately write messages to the log file to see them also if the
   // execution stalls
-  const auto auto_flush = ABYN_DEBUG ? true : false;
+  constexpr auto auto_flush = ABYN_DEBUG ? true : false;
   auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   std::stringstream stream;
   stream << std::put_time(std::localtime(&time), "%Y.%m.%d--%H:%M:%S");

@@ -1,5 +1,4 @@
-#ifndef HELLOMESSAGE_H
-#define HELLOMESSAGE_H
+#pragma once
 
 #include "fbs_headers/hello_message_generated.h"
 #include "message.h"
@@ -21,5 +20,3 @@ static flatbuffers::FlatBufferBuilder BuildHelloMessage(
                                 builder_hello_message.GetSize()));
 }
 }  // namespace ABYN::Communication
-
-#endif  // HELLOMESSAGE_H
