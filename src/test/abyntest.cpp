@@ -21,7 +21,7 @@ constexpr auto num_parties_list = {3u, 4u, 5u, 10u};
 using namespace ABYN;
 
 constexpr auto PORT_OFFSET = 7777u;
-constexpr auto TEST_ITERATIONS = 3;  // increase if needed
+constexpr auto TEST_ITERATIONS = 1;  // increase if needed
 constexpr auto LOGGING_ENABLED = false;
 
 template <typename T>
@@ -275,7 +275,7 @@ TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_pa
   }
 }
 
-TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
+TEST(ABYNArithmeticTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
@@ -345,7 +345,7 @@ TEST(ABYNArithmeticTest, InputOutput_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNArithmeticTest, Addition_SIMD_1_1K_10K) {
+TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {

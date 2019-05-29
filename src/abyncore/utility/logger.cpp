@@ -61,12 +61,14 @@ Logger::~Logger() {}
 
 void Logger::Log(logging::trivial::severity_level severity_level, const std::string &msg) {
   if (logging_enabled_) {
+    std::scoped_lock<std::mutex> lock(write_mutex_);
     BOOST_LOG_SEV(logger_, severity_level) << msg;
   }
 }
 
 void Logger::Log(logging::trivial::severity_level severity_level, std::string &&msg) {
   if (logging_enabled_) {
+    std::scoped_lock<std::mutex> lock(write_mutex_);
     BOOST_LOG_SEV(logger_, severity_level) << msg;
   }
 }
@@ -74,6 +76,7 @@ void Logger::Log(logging::trivial::severity_level severity_level, std::string &&
 void Logger::LogTrace(const std::string &msg) {
   if constexpr (ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
     if (logging_enabled_) {
+      std::scoped_lock<std::mutex> lock(write_mutex_);
       BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
     }
   }
@@ -82,6 +85,7 @@ void Logger::LogTrace(const std::string &msg) {
 void Logger::LogTrace(std::string &&msg) {
   if constexpr (ABYN_DEBUG && ABYN_VERBOSE_DEBUG) {
     if (logging_enabled_) {
+      std::scoped_lock<std::mutex> lock(write_mutex_);
       BOOST_LOG_SEV(logger_, logging::trivial::trace) << msg;
     }
   }
@@ -89,12 +93,14 @@ void Logger::LogTrace(std::string &&msg) {
 
 void Logger::LogInfo(const std::string &msg) {
   if (logging_enabled_) {
+    std::scoped_lock<std::mutex> lock(write_mutex_);
     BOOST_LOG_SEV(logger_, logging::trivial::info) << msg;
   }
 }
 
 void Logger::LogInfo(std::string &&msg) {
   if (logging_enabled_) {
+    std::scoped_lock<std::mutex> lock(write_mutex_);
     BOOST_LOG_SEV(logger_, logging::trivial::info) << msg;
   }
 }
@@ -102,6 +108,7 @@ void Logger::LogInfo(std::string &&msg) {
 void Logger::LogDebug(const std::string &msg) {
   if constexpr (ABYN_DEBUG) {
     if (logging_enabled_) {
+      std::scoped_lock<std::mutex> lock(write_mutex_);
       BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg;
     }
   }
@@ -110,6 +117,7 @@ void Logger::LogDebug(const std::string &msg) {
 void Logger::LogDebug(std::string &&msg) {
   if constexpr (ABYN_DEBUG) {
     if (logging_enabled_) {
+      std::scoped_lock<std::mutex> lock(write_mutex_);
       BOOST_LOG_SEV(logger_, logging::trivial::debug) << msg;
     }
   }
@@ -117,12 +125,14 @@ void Logger::LogDebug(std::string &&msg) {
 
 void Logger::LogError(const std::string &msg) {
   if (logging_enabled_) {
+    std::scoped_lock<std::mutex> lock(write_mutex_);
     BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
   }
 }
 
 void Logger::LogError(std::string &&msg) {
   if (logging_enabled_) {
+    std::scoped_lock<std::mutex> lock(write_mutex_);
     BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
   }
 }

@@ -18,7 +18,6 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(OpenMP REQUIRED)
 
-ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 find_package(Boost 1.66.0
         COMPONENTS
         log
@@ -126,8 +125,8 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
         execute_process(COMMAND git submodule update --init extern/fmt
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
-    set(BUILD_SHARED_LIBS ON)
-    set(FMT_TEST OFF)
+    set(BUILD_SHARED_LIBS ON CACHE BOOL "Enable building shared libs" FORCE)
+    set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
     add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
 endif ()
 
@@ -143,9 +142,9 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
 
-    set(FLATBUFFERS_BUILD_FLATLIB ON)
-    set(FLATBUFFERS_BUILD_FLATHASH OFF)
-    set(FLATBUFFERS_BUILD_TESTS OFF)
+    set(FLATBUFFERS_BUILD_FLATLIB ON CACHE BOOL "Enable building flatlib" FORCE)
+    set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "Disable building flathash" FORCE)
+    set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "Disable building flatbuffers tests" FORCE)
     set(FLATC_DIR "${PROJECT_BINARY_DIR}/bin")
     set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
     add_subdirectory(${PROJECT_SOURCE_DIR}/extern/flatbuffers
@@ -169,7 +168,6 @@ elseif (NOT cryptoTools_FOUND AND NOT TARGET cryptoTools::cryptoTools)
 endif ()
 
 
-  set(ENABLE_SIMPLESTOT ON)
   find_package(libOTe QUIET)
   if (libOTe_FOUND)
       message(STATUS "Found libOTe")
@@ -195,7 +193,7 @@ if (ABYN_BUILD_TESTS)
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
 
-    set(BUILD_GMOCK OFF)
+    set(BUILD_GMOCK OFF CACHE BOOL "Disable building gmock" FORCE)
     add_subdirectory(extern/googletest EXCLUDE_FROM_ALL)
     add_subdirectory(src/test)
 endif (ABYN_BUILD_TESTS)

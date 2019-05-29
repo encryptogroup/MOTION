@@ -13,6 +13,8 @@ namespace ABYN {
 
 class Configuration {
  public:
+  Configuration() = delete;
+
   Configuration(const std::vector<CommunicationContextPtr> &contexts, std::size_t id);
 
   Configuration(std::vector<CommunicationContextPtr> &&contexts, std::size_t id)
@@ -24,7 +26,7 @@ class Configuration {
   Configuration(std::initializer_list<CommunicationContextPtr> &&contexts, std::size_t id)
       : Configuration(std::vector(std::move(contexts)), id) {}
 
-  ~Configuration() {}
+  ~Configuration() = default;
 
   std::size_t GetNumOfThreads() { return num_threads_; }
 
@@ -58,8 +60,6 @@ class Configuration {
   // communication channel to send and receive data to prevent the communication
   // becoming a bottleneck, e.g., in 10 Gbps networks.
   std::size_t num_threads_ = std::thread::hardware_concurrency();
-
-  Configuration() = delete;
 };
 
 using ConfigurationPtr = std::shared_ptr<Configuration>;

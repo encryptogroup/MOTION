@@ -9,5 +9,4 @@ target_link_libraries(abyntest PUBLIC
         ABYN::abyn
         fmt::fmt
         gtest
-        ${SANITIZE_ADDRESS_LINK_OPT}
         )

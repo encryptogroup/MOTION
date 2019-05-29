@@ -1,8 +1,11 @@
 #pragma once
 
+#define BOOST_LOG_DYN_LINK 1
+
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include <boost/log/trivial.hpp>
 #include <memory>
+#include <mutex>
 
 using logger_type =
     boost::log::sources::severity_channel_logger<boost::log::trivial::severity_level, std::size_t>;
@@ -44,6 +47,7 @@ class Logger {
   logger_type logger_;
   std::size_t my_id_;
   bool logging_enabled_ = true;
+  std::mutex write_mutex_;
 
   Logger() = delete;
 };
