@@ -19,7 +19,9 @@ using GatePtr = std::shared_ptr<Gate>;
 
 namespace Wires {
 class Wire;
-}
+
+using WirePtr = std::shared_ptr<Wire>;
+}  // namespace Wires
 
 class Core {
  public:
@@ -62,18 +64,27 @@ class Core {
     communication_handlers_.at(party_id)->SendMessage(message);
   }
 
-  void RegisterNextGate(ABYN::Gates::Interfaces::Gate *gate) {
+  void RegisterNextGate(ABYN::Gates::Interfaces::GatePtr gate) {
     assert(gate != nullptr);
     gates_.push_back(gate);
   }
 
-  ABYN::Gates::Interfaces::Gate *GetGate(std::size_t gate_id) const { return gates_.at(gate_id); }
+  void RegisterNextInputGate(ABYN::Gates::Interfaces::GatePtr gate) {
+    RegisterNextGate(gate);
+    assert(gate != nullptr);
+    input_gates_.push_back(gate);
+  }
+
+  const ABYN::Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const {
+    return gates_.at(gate_id);
+  }
+  const auto &GetInputGates() const { return input_gates_; }
 
   void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
 
-  void RegisterNextWire(ABYN::Wires::Wire *wire) { wires_.push_back(wire); }
+  void RegisterNextWire(ABYN::Wires::WirePtr wire) { wires_.push_back(wire); }
 
-  ABYN::Wires::Wire *GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
+  ABYN::Wires::WirePtr GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
 
   void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
@@ -114,9 +125,10 @@ class Core {
   std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
 
-  std::vector<ABYN::Gates::Interfaces::Gate *> gates_;
+  std::vector<ABYN::Gates::Interfaces::GatePtr> input_gates_;
+  std::vector<ABYN::Gates::Interfaces::GatePtr> gates_;
 
-  std::vector<ABYN::Wires::Wire *> wires_;
+  std::vector<ABYN::Wires::WirePtr> wires_;
 
   std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
 

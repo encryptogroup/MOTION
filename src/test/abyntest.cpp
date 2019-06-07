@@ -6,6 +6,7 @@
 #include <functional>
 #include <future>
 #include <vector>
+#include <random>
 
 #include <fmt/format.h>
 #include <omp.h>
@@ -26,12 +27,9 @@ constexpr auto LOGGING_ENABLED = false;
 
 template <typename T>
 inline T Rand() {
-  if (typeid(T) == typeid(std::uint64_t)) {
-    std::uint64_t r = std::rand();
-    r <<= 32;
-    return r + std::rand();
-  } else
-    return std::rand();
+  std::random_device rd("/dev/urandom");
+  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  return dist(rd);
 }
 
 template <typename T>

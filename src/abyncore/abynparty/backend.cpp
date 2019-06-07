@@ -76,18 +76,20 @@ void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message
 }
 
 void Backend::RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate) {
-  input_gates_.push_back(input_gate);
-  RegisterGate(std::static_pointer_cast<Gates::Interfaces::Gate>(input_gate));
+  auto gate = std::static_pointer_cast<Gates::Interfaces::Gate>(input_gate);
+  core_->RegisterNextInputGate(gate);
 }
 
-void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) { gates_.push_back(gate); }
+void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
+  core_->RegisterNextGate(gate);
+}
 
 void Backend::EvaluateSequential() {
 #pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
   {
 #pragma omp single
     {
-      for (auto &input_gate : input_gates_) {
+      for (auto &input_gate : core_->GetInputGates()) {
         core_->AddToActiveQueue(input_gate->GetID());
       }
       // evaluate all other gates moved to the active queue

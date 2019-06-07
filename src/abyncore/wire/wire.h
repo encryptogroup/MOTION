@@ -83,8 +83,6 @@ class Wire {
 
   virtual std::size_t GetBitLength() = 0;
 
-  // virtual std::size_t GetNumSIMDValues() = 0;
-
   Wire(const Wire &) = delete;
 
   Wire(Wire &) = delete;
@@ -113,7 +111,6 @@ class Wire {
 
   void InitializationHelper() {
     wire_id_ = core_->NextWireId();
-    core_->RegisterNextWire(this);
   }
 
  private:

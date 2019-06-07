@@ -14,7 +14,7 @@ inline static T CeilDivide(T value, T divisor) {
 
 static inline std::vector<std::uint8_t> RandomVector(std::size_t size_in_bytes) {
   std::vector<std::uint8_t> buffer(size_in_bytes);
-  std::random_device random_device;  // use real randomness to create seeds
+  std::random_device random_device("/dev/urandom");  // use real randomness to create seeds
   for (auto i = 0u; i < buffer.size();) {
     try {
       // if we can write a std::uint32_t to the buffer directly

@@ -251,12 +251,15 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
   void InitializationHelper() {
     static_assert(!std::is_same_v<T, bool>);
     gate_id_ = core_->NextGateId();
-    core_->RegisterNextGate(static_cast<Gate *>(this));
     arithmetic_sharing_id_ = core_->NextArithmeticSharingId(input_.size());
     core_->GetLogger()->LogTrace(
         fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     output_wires_ = {std::static_pointer_cast<ABYN::Wires::Wire>(
         std::make_shared<ABYN::Wires::ArithmeticWire<T>>(input_, core_))};
+    for (auto &w : output_wires_) {
+      core_->RegisterNextWire(w);
+    }
+
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, input_owner_);
     core_->GetLogger()->LogDebug(
@@ -386,7 +389,6 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
 
     core_ = parent->GetCore();
     gate_id_ = core_->NextGateId();
-    core_->RegisterNextGate(static_cast<Gate *>(this));
 
     RegisterWaitingFor(parent_.at(0)->GetWireId());
     parent_.at(0)->RegisterWaitingGate(gate_id_);
@@ -397,6 +399,9 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
 
     output_wires_ = {std::static_pointer_cast<ABYN::Wires::Wire>(
         std::make_shared<ABYN::Wires::ArithmeticWire<T>>(output_, core_))};
+    for(auto & w : output_wires_){
+      core_->RegisterNextWire(w);
+    }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, output_owner_);
@@ -488,7 +493,6 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
     gate_type_ = GateType::NonInteractiveGate;
 
     gate_id_ = core_->NextGateId();
-    core_->RegisterNextGate(static_cast<Gate *>(this));
 
     RegisterWaitingFor(parent_a_.at(0)->GetWireId());
     parent_a_.at(0)->RegisterWaitingGate(gate_id_);
@@ -498,6 +502,9 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
 
     output_wires_ = {std::move(std::static_pointer_cast<ABYN::Wires::Wire>(
         std::make_shared<ABYN::Wires::ArithmeticWire<T>>(output_, core_)))};
+    for(auto & w : output_wires_){
+      core_->RegisterNextWire(w);
+    }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
@@ -589,7 +596,6 @@ class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
 
   void InitializationHelper() {
     gate_id_ = core_->NextGateId();
-    core_->RegisterNextGate(static_cast<Gate *>(this));
 
     assert(input_.size() > 0u);        // assert >=1 wire
     assert(input_.at(0).size() > 0u);  // assert >=1 SIMD bits
@@ -608,6 +614,10 @@ class GMWInputGate : public ABYN::Gates::Interfaces::InputGate {
     for (auto &v : input_) {
       auto wire = std::make_shared<Wires::GMWWire>(v, core_, bits_);
       output_wires_.push_back(std::static_pointer_cast<ABYN::Wires::Wire>(wire));
+    }
+
+    for (auto &w : output_wires_) {
+      core_->RegisterNextWire(w);
     }
 
     auto gate_info = fmt::format("gate id {},", gate_id_);
