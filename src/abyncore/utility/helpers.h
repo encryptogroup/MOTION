@@ -1,10 +1,11 @@
 #pragma once
 
 #include "flatbuffers/flatbuffers.h"
-#include "fmt/format.h"
 #include "typedefs.h"
 
-#include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
+namespace ENCRYPTO {
+class BitVector;  // forward declaration
+}
 
 namespace ABYN::Helpers {
 
@@ -34,11 +35,7 @@ inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &bu
   return std::move(result);
 };
 
-inline void WaitFor(const bool &condition) {
-  while (!condition) {
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
-  }
-}
+void WaitFor(const bool &condition);
 
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
@@ -115,35 +112,11 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
 }
 
 namespace Print {
-inline std::string Hex(const std::vector<std::uint8_t> &v) {
-  std::string buffer("");
-  for (auto i = 0ull; i < v.size(); ++i) {
-    buffer.append(fmt::format("{0:#x} ", v.at(i)));
-  }
-  buffer.erase(buffer.end() - 1);  // remove the last whitespace
-  return std::move(buffer);
-}
+std::string Hex(const std::vector<std::uint8_t> &v);
 
 inline std::string Hex(const std::vector<std::uint8_t> &&v) { return std::move(Hex(v)); }
 
-inline std::string ToString(Protocol p) {
-  std::string result{""};
-  switch (p) {
-    case Protocol::ArithmeticGMW:
-      result.append("ArithmeticGMW");
-      break;
-    case Protocol::BooleanGMW:
-      result.append("BooleanGMW");
-      break;
-    case Protocol::BMR:
-      result.append("BMR");
-      break;
-    default:
-      result.append(fmt::format("InvalidProtocol with value {}", static_cast<int>(p)));
-      break;
-  }
-  return std::move(result);
-};
+std::string ToString(Protocol p);
 
 template <typename T>
 inline std::string ToString(std::vector<T> vector) {
@@ -184,30 +157,12 @@ inline bool Dimensions(const std::vector<std::vector<T>> &v) {
   return true;
 }
 
-inline bool Dimensions(const std::vector<CBitVector> &v) {
-  if (v.size() <= 1) {
-    return true;
-  } else {
-    auto first_size = v.at(0).GetSize();
-    for (auto i = 1ull; i < v.size(); ++i) {
-      if (first_size != v.at(i).GetSize()) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
+bool Dimensions(const std::vector<ENCRYPTO::BitVector> &v);
 }  // namespace Compare
 
-inline std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
-  assert(divisor != 0);
-  return 1 + ((dividend - 1) / divisor);
-}
+std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor);
 
 namespace Convert {
-inline std::size_t BitsToBytes(std::size_t bits) {
-  const std::size_t bits_in_bytes = 8;
-  return DivideAndCeil(bits, bits_in_bytes);
-}
+std::size_t BitsToBytes(std::size_t bits);
 }  // namespace Convert
 }  // namespace ABYN::Helpers

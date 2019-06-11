@@ -21,7 +21,7 @@ class Share {
 
   virtual std::shared_ptr<Share> Clone() = 0;
 
-  const ABYN::CorePtr &GetCore() const { return core_; }
+  std::weak_ptr<ABYN::Register> GetRegister() const { return register_; }
 
   Share(Share &) = delete;
 
@@ -30,7 +30,7 @@ class Share {
  protected:
   Share() = default;
 
-  ABYN::CorePtr core_;
+  std::weak_ptr<ABYN::Register> register_;
 };
 
 using SharePtr = std::shared_ptr<Share>;
@@ -46,13 +46,13 @@ class ArithmeticShare : public Share {
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    core_ = wires_.at(0)->GetCore();
+    register_ = wires_.at(0)->GetRegister();
   }
 
   ArithmeticShare(ABYN::Wires::ArithmeticWirePtr<T> &wire) : wires_({wire}) {
     wires_ = {wire};
     assert(wire);
-    core_ = wires_.at(0)->GetCore();
+    register_ = wires_.at(0)->GetRegister();
   }
 
   ArithmeticShare(std::vector<ABYN::Wires::ArithmeticWirePtr<T>> &wires) : wires_(wires) {
@@ -65,7 +65,7 @@ class ArithmeticShare : public Share {
                                          "from more than 1 wire; got {} wires",
                                          wires.size())));
     }
-    core_ = wires_.at(0)->GetCore();
+    register_ = wires_.at(0)->GetRegister();
   }
 
   ArithmeticShare(std::vector<ABYN::Wires::WirePtr> &wires) {
@@ -82,17 +82,17 @@ class ArithmeticShare : public Share {
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    core_ = wires_.at(0)->GetCore();
+    register_ = wires_.at(0)->GetRegister();
   }
 
-  ArithmeticShare(std::vector<T> &input, const CorePtr &core) {
-    core_ = core;
-    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
+  ArithmeticShare(std::vector<T> &input, const RegisterPtr &reg) {
+    register_ = reg;
+    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, reg)};
   }
 
-  ArithmeticShare(T input, const CorePtr &core) {
-    core_ = core;
-    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, core)};
+  ArithmeticShare(T input, const RegisterPtr &reg) {
+    register_ = reg;
+    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, reg)};
   }
 
   ~ArithmeticShare() override = default;
@@ -141,14 +141,15 @@ using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticConstantShare : public Share {
  public:
-  ArithmeticConstantShare(T input, const CorePtr &core) : values_({input}) { core_ = core; }
+  ArithmeticConstantShare(T input, const RegisterPtr &reg) : values_({input}) { register_ = reg; }
 
-  ArithmeticConstantShare(std::vector<T> &input, const CorePtr &core) : values_(input) {
-    core_ = core;
+  ArithmeticConstantShare(std::vector<T> &input, const RegisterPtr &reg) : values_(input) {
+    register_ = reg;
   }
 
-  ArithmeticConstantShare(std::vector<T> &&input, const CorePtr &core) : values_(std::move(input)) {
-    core_ = core;
+  ArithmeticConstantShare(std::vector<T> &&input, const RegisterPtr &reg)
+      : values_(std::move(input)) {
+    register_ = reg;
   }
 
   ~ArithmeticConstantShare() override = default;
@@ -162,7 +163,7 @@ class ArithmeticConstantShare : public Share {
   std::shared_ptr<Share> Clone() final {
     // TODO
     return std::static_pointer_cast<Share>(
-        std::make_shared<ArithmeticConstantShare>(values_, core_));
+        std::make_shared<ArithmeticConstantShare>(values_, register_));
   };
 
   ArithmeticConstantShare() = delete;
@@ -196,37 +197,37 @@ using BooleanSharePtr = std::shared_ptr<BooleanShare>;
 
 class GMWShare : public BooleanShare {
  public:
-  GMWShare(std::vector<std::uint8_t> &input, CorePtr &core, std::size_t bits) {
-    wires_ = {std::make_shared<Wires::GMWWire>(input, core, bits)};
-    core_ = core;
+  GMWShare(std::vector<std::uint8_t> &input, RegisterPtr &reg, std::size_t bits) {
+    wires_ = {std::make_shared<Wires::GMWWire>(input, reg, bits)};
+    register_ = reg;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::uint8_t> &&input, CorePtr &core, std::size_t bits) {
-    wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), core, bits)};
-    core_ = core;
+  GMWShare(std::vector<std::uint8_t> &&input, RegisterPtr &reg, std::size_t bits) {
+    wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), reg, bits)};
+    register_ = reg;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<std::uint8_t>> &input, CorePtr &core, std::size_t bits) {
+  GMWShare(std::vector<std::vector<std::uint8_t>> &input, RegisterPtr &reg, std::size_t bits) {
     if (input.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
     for (auto &v : input) {
-      wires_.push_back(std::make_shared<Wires::GMWWire>(v, core, bits));
+      wires_.push_back(std::make_shared<Wires::GMWWire>(v, reg, bits));
     }
-    core_ = core;
+    register_ = reg;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<std::uint8_t>> &&input, CorePtr &core, std::size_t bits) {
+  GMWShare(std::vector<std::vector<std::uint8_t>> &&input, RegisterPtr &reg, std::size_t bits) {
     if (input.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
     for (auto &v : input) {
-      wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), core, bits));
+      wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), reg, bits));
     }
-    core_ = core;
+    register_ = reg;
     bits_ = bits;
   }
 
@@ -242,7 +243,7 @@ class GMWShare : public BooleanShare {
       }
     }
     wires_ = wires;
-    core_ = wires.at(0)->GetCore();
+    register_ = wires.at(0)->GetRegister();
     bits_ = wires.at(0)->GetBitLength();
   }
 

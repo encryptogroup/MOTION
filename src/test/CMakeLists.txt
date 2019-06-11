@@ -1,5 +1,7 @@
 add_executable(abyntest
-        abyntest.cpp
+        test_abyn_main.cpp
+        test_abyn.cpp
+        test_bitvector.cpp
         )
 
 target_include_directories(abyntest PRIVATE

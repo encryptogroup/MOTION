@@ -1,11 +1,13 @@
 #include "communication_context.h"
 
+#include <flatbuffers/flatbuffers.h>
 #include <fmt/format.h>
 #include <chrono>
 #include <cstdlib>
 
 #include "utility/constants.h"
 #include "utility/helpers.h"
+#include "utility/logger.h"
 #include "utility/random.h"
 #include "utility/typedefs.h"
 
@@ -17,7 +19,34 @@ CommunicationContext::CommunicationContext(std::string ip, std::uint16_t port, A
   if (IsInvalidIp(ip.data())) {
     throw(std::runtime_error(fmt::format("{} is invalid IP address", ip)));
   }
-};
+}
+
+CommunicationContext::CommunicationContext(const char *ip, std::uint16_t port, ABYN::Role role,
+                                           std::size_t id)
+    : CommunicationContext(std::string(ip), port, role, id) {}
+
+CommunicationContext::CommunicationContext(int socket, ABYN::Role role, std::size_t id)
+    : data_storage_(id), role_(role), id_(id), party_socket_(socket), is_connected_(true) {
+  boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
+}
+
+CommunicationContext::CommunicationContext(ABYN::Role role, std::size_t id,
+                                           BoostSocketPtr &boost_socket)
+    : data_storage_(id),
+      role_(role),
+      id_(id),
+      boost_party_socket_(boost_socket),
+      is_connected_(true) {
+  party_socket_ = boost_party_socket_->native_handle();
+}
+
+// close the socket
+CommunicationContext::~CommunicationContext() {
+  if (is_connected_ || boost_party_socket_->is_open()) {
+    boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+    boost_party_socket_->close();
+  }
+}
 
 void CommunicationContext::InitializeMyRandomnessGenerator() {
   std::vector<std::uint8_t> key(ABYN::RandomVector(AES_KEY_SIZE)),
@@ -30,6 +59,11 @@ void CommunicationContext::InitializeTheirRandomnessGenerator(std::vector<std::u
                                                               std::vector<std::uint8_t> &iv) {
   their_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
   their_randomness_generator_->Initialize(key.data(), iv.data());
+}
+
+void CommunicationContext::SetLogger(const ABYN::LoggerPtr &logger) {
+  logger_ = logger;
+  data_storage_.SetLogger(logger);
 }
 
 std::string CommunicationContext::Connect() {

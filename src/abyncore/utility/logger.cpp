@@ -3,7 +3,6 @@
 #include <boost/log/attributes/scoped_attribute.hpp>
 #include <boost/log/core/core.hpp>
 #include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
 #include <boost/log/sinks/text_multifile_backend.hpp>
 #include <boost/log/sources/logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
@@ -39,10 +38,7 @@ Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_l
   stream << std::put_time(std::localtime(&time), "%Y.%m.%d--%H:%M:%S");
   auto date = stream.str();
 
-  boost::shared_ptr<sinks::text_multifile_backend> backend =
-      boost::make_shared<sinks::text_multifile_backend>();
-
-  logging::add_file_log(
+  g_file_sink = logging::add_file_log(
       keywords::file_name = fmt::format("log/id{}_{}_%N.log", my_id_, date).c_str(),
       keywords::format =
           (expr::stream << expr::format_date_time<boost::posix_time::ptime>("TimeStamp",
@@ -57,7 +53,10 @@ Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_l
   logger_ = logger_type(keywords::channel = my_id);
 }
 
-Logger::~Logger() {}
+Logger::~Logger() {
+  logging::core::get()->remove_sink(g_file_sink);
+  g_file_sink.reset();
+}
 
 void Logger::Log(logging::trivial::severity_level severity_level, const std::string &msg) {
   if (logging_enabled_) {

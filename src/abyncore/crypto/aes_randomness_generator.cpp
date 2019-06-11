@@ -1,5 +1,7 @@
 #include "aes_randomness_generator.h"
 
+#include "ENCRYPTO_utils/cbitvector.h"
+
 namespace ABYN::Crypto {
 
 void AESRandomnessGenerator::Initialize(std::uint8_t key[AES_KEY_SIZE],

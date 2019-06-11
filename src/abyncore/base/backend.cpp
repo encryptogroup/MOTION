@@ -1,11 +1,17 @@
 #include "backend.h"
 
 #include <algorithm>
+#include <iterator>
 
 #include <fmt/format.h>
 
+#include "configuration.h"
+#include "register.h"
+
 #include "communication/hello_message.h"
 #include "communication/message.h"
+#include "crypto/aes_randomness_generator.h"
+#include "gate/gate.h"
 #include "utility/constants.h"
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
@@ -13,21 +19,29 @@
 namespace ABYN {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
-  core_ = std::make_shared<ABYN::Core>(config);
+  register_ = std::make_shared<ABYN::Register>(config);
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (config_->GetCommunicationContext(i) == nullptr) {
-      continue;
+      if (i == config->GetMyId()) {
+        continue;
+      } else {
+        throw(std::runtime_error("One of the communication contexts is not initialized"));
+      }
     }
     config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
-    config_->GetCommunicationContext(i)->SetLogger(core_->GetLogger());
-    auto &logger = core_->GetLogger();
+    config_->GetCommunicationContext(i)->SetLogger(register_->GetLogger());
+    auto &logger = register_->GetLogger();
     auto seed =
         std::move(config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
     logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
                                  i, Helpers::Print::Hex(seed)));
   }
 }
+
+const LoggerPtr &Backend::GetLogger() { return register_->GetLogger(); }
+
+std::size_t Backend::NextGateId() const { return register_->NextGateId(); }
 
 void Backend::InitializeCommunicationHandlers() {
   using PartyCommunicationHandler = ABYN::Communication::CommunicationHandler;
@@ -43,16 +57,16 @@ void Backend::InitializeCommunicationHandlers() {
         config_->GetMyId(), i, config_->GetCommunicationContext(i)->GetIp(),
         config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
         config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
-    core_->GetLogger()->LogDebug(message);
+    register_->GetLogger()->LogDebug(message);
 
     communication_handlers_.at(i) = std::make_shared<PartyCommunicationHandler>(
-        config_->GetCommunicationContext(i), core_->GetLogger());
+        config_->GetCommunicationContext(i), register_->GetLogger());
   }
-  core_->RegisterCommunicationHandlers(communication_handlers_);
+  register_->RegisterCommunicationHandlers(communication_handlers_);
 }
 
 void Backend::SendHelloToOthers() {
-  core_->GetLogger()->LogInfo("Send hello message to other parties");
+  register_->GetLogger()->LogInfo("Send hello message to other parties");
   for (auto destination_id = 0u; destination_id < config_->GetNumOfParties(); ++destination_id) {
     if (destination_id == config_->GetMyId()) {
       continue;
@@ -72,16 +86,16 @@ void Backend::SendHelloToOthers() {
 }
 
 void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-  core_->Send(party_id, message);
+  register_->Send(party_id, message);
 }
 
 void Backend::RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate) {
   auto gate = std::static_pointer_cast<Gates::Interfaces::Gate>(input_gate);
-  core_->RegisterNextInputGate(gate);
+  register_->RegisterNextInputGate(gate);
 }
 
 void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
-  core_->RegisterNextGate(gate);
+  register_->RegisterNextGate(gate);
 }
 
 void Backend::EvaluateSequential() {
@@ -89,19 +103,19 @@ void Backend::EvaluateSequential() {
   {
 #pragma omp single
     {
-      for (auto &input_gate : core_->GetInputGates()) {
-        core_->AddToActiveQueue(input_gate->GetID());
+      for (auto &input_gate : register_->GetInputGates()) {
+        register_->AddToActiveQueue(input_gate->GetID());
       }
       // evaluate all other gates moved to the active queue
-      while (core_->GetNumOfEvaluatedGates() < core_->GetTotalNumOfGates()) {
+      while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
         // get some active gates from the queue
         std::vector<std::size_t> gates_ids;
         {
           std::int64_t gate_id = -1;
           do {
-            gate_id = core_->GetNextGateFromOnlineQueue();
+            gate_id = register_->GetNextGateFromOnlineQueue();
             if (gate_id >= 0) {
-              assert(static_cast<std::size_t>(gate_id) < core_->GetTotalNumOfGates());
+              assert(static_cast<std::size_t>(gate_id) < register_->GetTotalNumOfGates());
               gates_ids.push_back(static_cast<std::size_t>(gate_id));
             }
           } while (gate_id >= 0);
@@ -109,7 +123,7 @@ void Backend::EvaluateSequential() {
         // evaluate the gates in a batch
 #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
         for (auto i = 0ull; i < gates_ids.size(); ++i) {
-          core_->GetGate(gates_ids.at(i))->Evaluate();
+          register_->GetGate(gates_ids.at(i))->Evaluate();
         }
 #pragma omp taskwait  // I'm not sure if there is an implicit taskwait after a taskloop
       }
@@ -137,6 +151,14 @@ void Backend::WaitForConnectionEnd() {
   }
 }
 
+const Gates::Interfaces::GatePtr &Backend::GetGate(std::size_t gate_id) const {
+  return register_->GetGate(gate_id);
+}
+
+const std::vector<Gates::Interfaces::GatePtr> &Backend::GetInputGates() const {
+  return register_->GetInputGates();
+}
+
 void Backend::VerifyHelloMessages() {
   bool success = true;
   for (auto &handler : communication_handlers_) {
@@ -146,9 +168,9 @@ void Backend::VerifyHelloMessages() {
   }
 
   if (!success) {
-    core_->GetLogger()->LogError("Hello message verification failed");
+    register_->GetLogger()->LogError("Hello message verification failed");
   } else {
-    core_->GetLogger()->LogInfo("Successfully verified hello messages");
+    register_->GetLogger()->LogInfo("Successfully verified hello messages");
   }
 }
 }

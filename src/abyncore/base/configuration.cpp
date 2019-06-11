@@ -1,8 +1,14 @@
 #include "configuration.h"
 
+#include <functional>
+#include <thread>
+
+#include "communication/communication_context.h"
+
 namespace ABYN {
+
 Configuration::Configuration(const std::vector<CommunicationContextPtr> &contexts, std::size_t id)
-    : my_id_(id) {
+    : my_id_(id), num_threads_(std::thread::hardware_concurrency()) {
   communication_contexts_.resize(contexts.size() + 1, nullptr);
   if constexpr (ABYN::ABYN_VERBOSE_DEBUG) {
     severity_level_ = boost::log::trivial::trace;

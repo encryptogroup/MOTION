@@ -1,29 +1,26 @@
-#ifndef TEST_CPP
-#define TEST_CPP
-
-#include <gtest/gtest.h>
 #include <algorithm>
 #include <functional>
 #include <future>
-#include <vector>
 #include <random>
+#include <vector>
 
 #include <fmt/format.h>
+#include <gtest/gtest.h>
 #include <omp.h>
 
-#include "abynparty/party.h"
+#include "base/party.h"
 #include "gate/gate.h"
+#include "utility/bit_vector.h"
 #include "utility/typedefs.h"
 
-namespace {
+#include "test_constants.h"
 
 constexpr auto num_parties_list = {3u, 4u, 5u, 10u};
-
-using namespace ABYN;
-
 constexpr auto PORT_OFFSET = 7777u;
-constexpr auto TEST_ITERATIONS = 1;  // increase if needed
-constexpr auto LOGGING_ENABLED = false;
+constexpr auto DETAILED_LOGGING_ENABLED = false;
+
+namespace {
+using namespace ABYN;
 
 template <typename T>
 inline T Rand() {
@@ -44,7 +41,7 @@ TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
   std::srand(std::time(nullptr));
   const std::string_view incorrect_symbols("*-+;:,/?'[]_=abcdefghijklmnopqrstuvwxyz");
 
-  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     auto r_u8 = []() { return std::to_string((std::uint8_t)std::rand()); };
     auto rand_invalid_ip = [r_u8, incorrect_symbols]() {
       std::string result = fmt::format("{}.{}.{}.{}", r_u8(), r_u8(), r_u8(), r_u8());
@@ -60,7 +57,7 @@ TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
 }
 
 TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
-  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     bool all_connected = false;
     // use std::threads, since omp (and pragmas in general) cannot be used in macros :(
     try {
@@ -69,7 +66,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
       {
 #pragma omp single
         {
-          // Party #0
+// Party #0
 #pragma omp task
           {
             std::vector<CommunicationContextPtr> parties;
@@ -84,7 +81,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
 #pragma omp critical
             { abyn_parties.push_back(std::move(abyn)); }
           }
-          // Party #1
+// Party #1
 #pragma omp task
           {
             std::string ip = "127.0.0.1";
@@ -101,7 +98,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
             { abyn_parties.push_back(std::move(abyn)); }
           }
 
-          // Party #2
+// Party #2
 #pragma omp task
           {
             std::string ip = "127.0.0.1";
@@ -117,7 +114,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
             { abyn_parties.push_back(std::move(abyn)); }
           }
 
-          // Party #3
+// Party #3
 #pragma omp task
           {
             auto abyn = std::move(
@@ -157,7 +154,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
 }
 
 TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
-  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     bool all_connected = false;
     try {
       std::vector<PartyPtr> abyn_parties(0);
@@ -251,7 +248,7 @@ TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_pa
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Logging(LOGGING_ENABLED);
+          p->GetLogger()->Logging(DETAILED_LOGGING_ENABLED);
         }
         all_connected = true;
         for (auto &abynparty : abyn_parties) {
@@ -287,7 +284,7 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Logging(LOGGING_ENABLED);
+          p->GetLogger()->Logging(DETAILED_LOGGING_ENABLED);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -334,7 +331,7 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
       }
     }
   };
-  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     // lambdas don't support templates, but only auto types. So, lets try to trick them.
     template_test(static_cast<std::uint8_t>(0));
     template_test(static_cast<std::uint16_t>(0));
@@ -363,7 +360,7 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Logging(LOGGING_ENABLED);
+          p->GetLogger()->Logging(DETAILED_LOGGING_ENABLED);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -428,7 +425,7 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
       }
     }
   };
-  for (auto i = 0; i < TEST_ITERATIONS; ++i) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     // lambdas don't support templates, but only auto types. So, lets try to trick them.
     template_test(static_cast<std::uint8_t>(0));
     template_test(static_cast<std::uint16_t>(0));
@@ -437,10 +434,3 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
   }
 }
 }  // namespace
-
-[[maybe_unused]] int main(int argc, char **argv) {
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
-
-#endif

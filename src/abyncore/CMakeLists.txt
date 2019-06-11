@@ -1,15 +1,17 @@
 add_library(abyn
-        abynparty/party.cpp
-        abynparty/backend.cpp
+        base/backend.cpp
+        base/configuration.cpp
+        base/party.cpp
+        communication/communication_context.cpp
+        communication/communication_handler.cpp
+        crypto/aes_randomness_generator.cpp
         gate/gate.cpp
         share/share.cpp
-        wire/wire.cpp
-        utility/communication_context.cpp
-        utility/configuration.cpp
-        utility/logger.cpp
+        utility/bit_vector.cpp
         utility/data_storage.cpp
-        crypto/aes_randomness_generator.cpp
-        communication/communication_handler.cpp
+        utility/helpers.cpp
+        utility/logger.cpp
+        wire/wire.cpp
         )
 add_library(ABYN::abyn ALIAS abyn)
 
@@ -29,7 +31,7 @@ target_include_directories(abyn PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/abyncore>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/cryptoTools>
+ #       $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/cryptoTools>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/flatbuffers/include>
         ${Boost_INCLUDE_DIRS}
         )
@@ -37,7 +39,7 @@ target_include_directories(abyn PUBLIC
 
 target_link_libraries(abyn
         PUBLIC stdc++fs
-        PUBLIC OTExtension::otextension
+       # PUBLIC OTExtension::otextension
         PUBLIC ENCRYPTO_utils::encrypto_utils
         PUBLIC GMP::GMP
         PUBLIC Threads::Threads

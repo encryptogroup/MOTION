@@ -6,7 +6,7 @@
 
 #include "communication/communication_handler.h"
 
-#include "utility/configuration.h"
+#include "configuration.h"
 #include "utility/logger.h"
 
 namespace ABYN {
@@ -23,11 +23,20 @@ class Wire;
 using WirePtr = std::shared_ptr<Wire>;
 }  // namespace Wires
 
-class Core {
+class Register {
  public:
-  Core(ConfigurationPtr &config) : config_(config) {
+  Register(ConfigurationPtr &config) : config_(config) {
     logger_ =
         std::make_shared<ABYN::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
+  }
+
+  ~Register() {
+    /*while(gates_.size()){
+      std::this_thread::sleep_for(std::chrono::microseconds(10));
+    };*/
+    input_gates_.resize(0);
+    gates_.resize(0);
+    wires_.resize(0);
   }
 
   std::size_t NextGateId() { return global_gate_id_++; }
@@ -54,14 +63,20 @@ class Core {
 
   void RegisterCommunicationHandlers(
       std::vector<ABYN::Communication::CommunicationHandlerPtr> &communication_handlers) {
-    communication_handlers_ = communication_handlers;
+    for (auto i = 0ull; i < communication_handlers.size(); ++i) {
+      communication_handlers_.push_back(communication_handlers.at(i));
+    }
   }
 
   void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
     if (party_id == config_->GetMyId()) {
-      throw(std::runtime_error("Want to send message to myself"));
+      throw(std::runtime_error("Trying to send message to myself"));
     }
-    communication_handlers_.at(party_id)->SendMessage(message);
+    if (auto shared_ptr_comm_handler = communication_handlers_.at(party_id).lock()) {
+      shared_ptr_comm_handler->SendMessage(message);
+    } else {
+      throw(std::runtime_error("Trying to use a destroyed communication handler"));
+    }
   }
 
   void RegisterNextGate(ABYN::Gates::Interfaces::GatePtr gate) {
@@ -130,14 +145,14 @@ class Core {
 
   std::vector<ABYN::Wires::WirePtr> wires_;
 
-  std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
+  std::vector<std::weak_ptr<ABYN::Communication::CommunicationHandler>> communication_handlers_;
 
-  Core() = delete;
+  Register() = delete;
 
-  Core(Core &) = delete;
+  Register(Register &) = delete;
 
-  Core(const Core &) = delete;
+  Register(const Register &) = delete;
 };
 
-using CorePtr = std::shared_ptr<Core>;
+using RegisterPtr = std::shared_ptr<Register>;
 }  // namespace ABYN

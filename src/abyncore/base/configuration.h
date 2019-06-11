@@ -1,15 +1,14 @@
 #pragma once
 
-#include <cstdarg>
-#include <functional>
+#include <boost/log/trivial.hpp>
+
 #include <memory>
 #include <vector>
 
-#include "utility/communication_context.h"
-#include "utility/constants.h"
-#include "utility/logger.h"
-
 namespace ABYN {
+
+class CommunicationContext;
+using CommunicationContextPtr = std::shared_ptr<CommunicationContext>;
 
 class Configuration {
  public:
@@ -59,7 +58,7 @@ class Configuration {
   // communication handlers! the latter always use at least 2 threads for each
   // communication channel to send and receive data to prevent the communication
   // becoming a bottleneck, e.g., in 10 Gbps networks.
-  std::size_t num_threads_ = std::thread::hardware_concurrency();
+  std::size_t num_threads_;
 };
 
 using ConfigurationPtr = std::shared_ptr<Configuration>;

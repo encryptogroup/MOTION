@@ -2,6 +2,8 @@
 
 #define BOOST_LOG_DYN_LINK 1
 
+#include <boost/log/sinks/sync_frontend.hpp>
+#include <boost/log/sinks/text_file_backend.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
 #include <boost/log/trivial.hpp>
 #include <memory>
@@ -44,6 +46,8 @@ class Logger {
   void Logging(bool enable) { logging_enabled_ = enable; }
 
  private:
+  boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>>
+      g_file_sink;
   logger_type logger_;
   std::size_t my_id_;
   bool logging_enabled_ = true;

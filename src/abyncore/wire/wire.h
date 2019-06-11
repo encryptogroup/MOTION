@@ -9,7 +9,8 @@
 #include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
 //#include "cryptoTools/cryptoTools/Common/BitVector.h"
 
-#include "abynparty/core.h"
+#include "base/register.h"
+#include "utility/bit_vector.h"
 #include "utility/typedefs.h"
 
 // forward-declare Gate class
@@ -30,7 +31,9 @@ class Wire {
 
   virtual ~Wire() {
     assert(wire_id_ >= 0);
-    core_->UnregisterWire(static_cast<std::size_t>(wire_id_));
+    /*auto shared_ptr_core = core_.lock();
+    assert(shared_ptr_core);
+    shared_ptr_core->UnregisterWire(static_cast<std::size_t>(wire_id_));*/
   }
 
   void RegisterWaitingGate(std::size_t gate_id) {
@@ -51,7 +54,9 @@ class Wire {
     is_done_ = true;
     assert(wire_id_ >= 0);
     for (auto gate_id : waiting_gate_ids_) {
-      Wire::UnregisterWireIdFromGate(gate_id, static_cast<std::size_t>(wire_id_), core_);
+      auto shared_ptr_reg = register_.lock();
+      assert(shared_ptr_reg);
+      Wire::UnregisterWireIdFromGate(gate_id, static_cast<std::size_t>(wire_id_), shared_ptr_reg);
     }
     waiting_gate_ids_.clear();
   }
@@ -70,7 +75,7 @@ class Wire {
 
   std::size_t GetWireId() const { return static_cast<std::size_t>(wire_id_); }
 
-  const CorePtr &GetCore() const { return core_; }
+  std::weak_ptr<ABYN::Register> GetRegister() const { return register_; }
 
   static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
     std::string result;
@@ -81,7 +86,7 @@ class Wire {
     return std::move(result);
   }
 
-  virtual std::size_t GetBitLength() = 0;
+  virtual std::size_t GetBitLength() const = 0;
 
   Wire(const Wire &) = delete;
 
@@ -101,16 +106,19 @@ class Wire {
 
   std::int64_t wire_id_ = -1;
 
-  CorePtr core_;
+  std::weak_ptr<ABYN::Register> register_;
 
   std::unordered_set<std::size_t> waiting_gate_ids_;
 
   Wire() = default;
 
-  static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id, CorePtr &core);
+  static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id,
+                                       std::weak_ptr<ABYN::Register> reg);
 
   void InitializationHelper() {
-    wire_id_ = core_->NextWireId();
+    auto shared_ptr_reg = register_.lock();
+    assert(shared_ptr_reg);
+    wire_id_ = shared_ptr_reg->NextWireId();
   }
 
  private:
@@ -123,25 +131,26 @@ using WirePtr = std::shared_ptr<Wire>;
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticWire : public Wire {
  public:
-  ArithmeticWire(std::vector<T> &&values, const CorePtr &core, bool is_constant = false) {
+  ArithmeticWire(std::vector<T> &&values, std::weak_ptr<Register> reg, bool is_constant = false) {
     is_constant_ = is_constant;
-    core_ = core;
+    register_ = reg;
     values_ = std::move(values);
     num_of_parallel_values_ = values_.size();
     InitializationHelper();
   }
 
-  ArithmeticWire(const std::vector<T> &values, const CorePtr &core, bool is_constant = false) {
+  ArithmeticWire(const std::vector<T> &values, std::weak_ptr<Register> reg,
+                 bool is_constant = false) {
     is_constant_ = is_constant;
-    core_ = core;
+    register_ = reg;
     values_ = values;
     num_of_parallel_values_ = values_.size();
     InitializationHelper();
   }
 
-  ArithmeticWire(T t, const CorePtr &core, bool is_constant = false) {
+  ArithmeticWire(T t, std::weak_ptr<Register> reg, bool is_constant = false) {
     is_constant_ = is_constant;
-    core_ = core;
+    register_ = reg;
     values_.push_back(t);
     num_of_parallel_values_ = 1;
     InitializationHelper();
@@ -157,7 +166,7 @@ class ArithmeticWire : public Wire {
 
   std::vector<T> &GetMutableValuesOnWire() { return values_; }
 
-  std::size_t GetBitLength() final { return sizeof(T) * 8; }
+  std::size_t GetBitLength() const final { return sizeof(T) * 8; }
 
  private:
   std::vector<T> values_;
@@ -184,27 +193,27 @@ using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(std::vector<std::uint8_t> &&values, const CorePtr &core, std::size_t parallel_values = 1,
-          bool is_constant = false) {
+  GMWWire(std::vector<std::uint8_t> &&values, std::weak_ptr<Register> reg,
+          std::size_t parallel_values = 1, bool is_constant = false) {
     values_.AttachBuf(values.data(), Helpers::Convert::BitsToBytes(parallel_values));
-    core_ = core;
+    register_ = reg;
     is_constant_ = is_constant;
     num_of_parallel_values_ = parallel_values;
     InitializationHelper();
   }
 
-  GMWWire(const std::vector<std::uint8_t> &values, const CorePtr &core,
+  GMWWire(const std::vector<std::uint8_t> &values, std::weak_ptr<Register> reg,
           std::size_t parallel_values = 1, bool is_constant = false) {
     values_.Copy(values.data(), 0, Helpers::Convert::BitsToBytes(parallel_values));
-    core_ = core;
+    register_ = reg;
     is_constant_ = is_constant;
     num_of_parallel_values_ = parallel_values;
     InitializationHelper();
   }
 
-  GMWWire(bool value, const CorePtr &core, bool is_constant = false) {
+  GMWWire(bool value, std::weak_ptr<Register> reg, bool is_constant = false) {
     values_ = {value};
-    core_ = core;
+    register_ = reg;
     is_constant_ = is_constant;
     num_of_parallel_values_ = 1;
     InitializationHelper();
@@ -218,7 +227,7 @@ class GMWWire : public BooleanWire {
 
   GMWWire(GMWWire &) = delete;
 
-  std::size_t GetBitLength() final { return 1; }
+  std::size_t GetBitLength() const final { return 1; }
 
   const CBitVector &GetValuesOnWire() const { return values_; }
 

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 namespace ABYN {
 
 namespace Gates::Interfaces {};
@@ -35,10 +33,10 @@ enum Role {
 };
 
 enum GateType {
-  InvalidGate = -1,
-  InputGate = 0,
-  InteractiveGate = 1,
-  NonInteractiveGate = 2,
+  InputGate = 0u,
+  InteractiveGate = 1u,
+  NonInteractiveGate = 2u,
+  InvalidGate = 3u
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

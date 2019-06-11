@@ -2,20 +2,28 @@
 
 #include <queue>
 
+#include "communication_context.h"
 #include "fbs_headers/message_generated.h"
-#include "utility/communication_context.h"
 #include "utility/logger.h"
 
 namespace ABYN::Communication {
 class CommunicationHandler {
  public:
+  CommunicationHandler() = delete;
+
   CommunicationHandler(ABYN::CommunicationContextPtr &party, const ABYN::LoggerPtr &logger);
 
   virtual ~CommunicationHandler();
 
   void SendMessage(flatbuffers::FlatBufferBuilder &message);
 
-  const BoostSocketPtr GetSocket() { return party_->GetSocket(); }
+  const BoostSocketPtr GetSocket() {
+    if (auto shared_ptr_party = party_.lock()) {
+      return shared_ptr_party->GetSocket();
+    } else {
+      return nullptr;
+    }
+  }
 
   bool ContinueCommunication() { return continue_communication_; }
 
@@ -38,18 +46,16 @@ class CommunicationHandler {
   bool VerifyHelloMessage();
 
  private:
-  ABYN::CommunicationContextPtr party_;
+  std::weak_ptr<ABYN::CommunicationContext> party_;
   ABYN::LoggerPtr logger_;
 
   std::string handler_info_;
 
-  CommunicationHandler() = delete;
-
   std::mutex queue_receive_mutex_, queue_send_mutex_;
 
   std::thread sender_thread_, receiver_thread_;
-  std::queue<std::vector<std::uint8_t>> queue_send_, queue_receive_;
 
+  std::queue<std::vector<std::uint8_t>> queue_send_, queue_receive_;
   bool continue_communication_ = true;
 
   bool received_termination_message_ = false, sent_termination_message_ = false;
@@ -58,13 +64,13 @@ class CommunicationHandler {
 
   void SentTerminationMessage() { sent_termination_message_ = true; }
 
-  static void ActAsSender(CommunicationHandler *handler);
+  void ActAsSender();
 
-  static void ActAsReceiver(CommunicationHandler *handler);
+  void ActAsReceiver();
 
-  static std::uint32_t ParseHeader(CommunicationHandler *handler);
+  std::uint32_t ParseHeader();
 
-  static std::vector<std::uint8_t> ParseBody(CommunicationHandler *handler, std::uint32_t size);
+  std::vector<std::uint8_t> ParseBody(std::uint32_t size);
 };
 
 using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;

@@ -5,13 +5,12 @@
 #include <memory>
 #include <vector>
 
-#include "abynparty/backend.h"
+#include "base/backend.h"
+#include "configuration.h"
 #include "gate/gate.h"
 #include "share/share.h"
-#include "utility/configuration.h"
 #include "utility/constants.h"
 #include "utility/typedefs.h"
-//#include "OTExtension/ot/ot-ext.h"
 
 namespace ABYN {
 
@@ -104,82 +103,9 @@ class Party {
     }
   }
 
-  ABYN::Shares::SharePtr OUT(ABYN::Shares::SharePtr parent, std::size_t output_owner) {
-    switch (parent->GetSharingType()) {
-      case ABYN::Protocol::ArithmeticGMW: {
-        switch (parent->GetBitLength()) {
-          case 8u: {
-            return ArithmeticGMWOutput<std::uint8_t>(parent, output_owner);
-          }
-          case 16u: {
-            return ArithmeticGMWOutput<std::uint16_t>(parent, output_owner);
-          }
-          case 32u: {
-            return ArithmeticGMWOutput<std::uint32_t>(parent, output_owner);
-          }
-          case 64u: {
-            return ArithmeticGMWOutput<std::uint64_t>(parent, output_owner);
-          }
-          default: {
-            throw(std::runtime_error(
-                fmt::format("Unknown arithmetic ring of {} bilength", parent->GetBitLength())));
-          }
-        }
-      }
-      case ABYN::Protocol::BooleanGMW: {
-        throw(std::runtime_error("BooleanGMW output gate is not implemented yet"));
-        // return BooleanGMWOutput(parent, output_owner);
-      }
-      case ABYN::Protocol::BMR: {
-        throw(std::runtime_error("BMR output gate is not implemented yet"));
-        // TODO
-      }
-      default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}",
-                                             static_cast<uint>(parent->GetSharingType()))));
-      }
-    }
-  }
+  ABYN::Shares::SharePtr OUT(ABYN::Shares::SharePtr parent, std::size_t output_owner);
 
-  ABYN::Shares::SharePtr ADD(const ABYN::Shares::SharePtr &a, const ABYN::Shares::SharePtr &b) {
-    assert(a->GetSharingType() == b->GetSharingType());
-
-    switch (a->GetSharingType()) {
-      case ABYN::Protocol::ArithmeticGMW: {
-        assert(a->GetBitLength() == b->GetBitLength());
-        switch (a->GetBitLength()) {
-          case 8u: {
-            return ArithmeticGMWAddition<std::uint8_t>(a, b);
-          }
-          case 16u: {
-            return ArithmeticGMWAddition<std::uint16_t>(a, b);
-          }
-          case 32u: {
-            return ArithmeticGMWAddition<std::uint32_t>(a, b);
-          }
-          case 64u: {
-            return ArithmeticGMWAddition<std::uint64_t>(a, b);
-          }
-          default: {
-            throw(std::runtime_error(
-                fmt::format("Unknown arithmetic ring of {} bilength", a->GetBitLength())));
-          }
-        }
-      }
-      case ABYN::Protocol::BooleanGMW: {
-        throw(std::runtime_error("BooleanGMW addition gate is not implemented yet"));
-        // return BooleanGMWOutput(parent, output_owner);
-      }
-      case ABYN::Protocol::BMR: {
-        throw(std::runtime_error("BMR addition gate is not implemented yet"));
-        // TODO
-      }
-      default: {
-        throw(std::runtime_error(
-            fmt::format("Unknown protocol with id {}", static_cast<uint>(a->GetSharingType()))));
-      }
-    }
-  }
+  ABYN::Shares::SharePtr ADD(const ABYN::Shares::SharePtr &a, const ABYN::Shares::SharePtr &b);
 
   std::size_t GetNumOfParties() { return config_->GetNumOfParties(); }
 
@@ -215,7 +141,7 @@ class Party {
                                          const std::vector<std::uint8_t> &input,
                                          std::size_t bits = 0) {
     auto in_gate =
-        std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetCore(), bits);
+        std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetRegister(), bits);
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -225,7 +151,7 @@ class Party {
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<std::uint8_t> &&input,
                                          std::size_t bits = 0) {
     auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id,
-                                                              backend_->GetCore(), bits);
+                                                              backend_->GetRegister(), bits);
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -236,7 +162,7 @@ class Party {
                                          std::vector<std::vector<std::uint8_t>> &input,
                                          std::size_t bits = 0) {
     auto in_gate =
-        std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetCore(), bits);
+        std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetRegister(), bits);
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -247,7 +173,7 @@ class Party {
                                          std::vector<std::vector<std::uint8_t>> &&input,
                                          std::size_t bits = 0) {
     auto in_gate = std::make_shared<ABYN::Gates::GMW::GMWInputGate>(std::move(input), party_id,
-                                                                    backend_->GetCore(), bits);
+                                                                    backend_->GetRegister(), bits);
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<ABYN::Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -278,7 +204,7 @@ class Party {
   ABYN::Shares::SharePtr ArithmeticGMWInput(std::size_t party_id,
                                             const std::vector<T> &input_vector) {
     auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
-        input_vector, party_id, backend_->GetCore());
+        input_vector, party_id, backend_->GetRegister());
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
@@ -287,7 +213,7 @@ class Party {
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   ABYN::Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, std::vector<T> &&input_vector) {
     auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
-        std::move(input_vector), party_id, backend_->GetCore());
+        std::move(input_vector), party_id, backend_->GetRegister());
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());

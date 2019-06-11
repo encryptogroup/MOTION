@@ -1,36 +1,48 @@
 #pragma once
 
-#include <algorithm>
-#include <iterator>
 #include <memory>
 
-#include "core.h"
+#include "flatbuffers/flatbuffers.h"
 
-#include "utility/configuration.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
-
-#include "crypto/aes_randomness_generator.h"
-
-#include "gate/gate.h"
 
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ABYN {
 
+class Configuration;
+using ConfigurationPtr = std::shared_ptr<Configuration>;
+
+class Register;
+using RegisterPtr = std::shared_ptr<Register>;
+
+namespace Gates::Interfaces {
+class Gate;
+using GatePtr = std::shared_ptr<Gate>;
+
+class InputGate;
+using InputGatePtr = std::shared_ptr<InputGate>;
+}  // namespace Gates::Interfaces
+
+namespace Communication {
+class CommunicationHandler;
+using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
+}  // namespace Communication
+
 class Backend {
  public:
   Backend(ConfigurationPtr &config);
 
-  ~Backend(){};
+  ~Backend() = default;
 
   const ConfigurationPtr &GetConfig() { return config_; }
 
-  const LoggerPtr &GetLogger() { return core_->GetLogger(); }
+  const LoggerPtr &GetLogger();
 
-  const CorePtr &GetCore() { return core_; }
+  const RegisterPtr &GetRegister() { return register_; }
 
-  std::size_t NextGateId() const { return core_->NextGateId(); }
+  std::size_t NextGateId() const;
 
   void InitializeRandomnessGenerator(std::uint8_t key[AES_KEY_SIZE], std::uint8_t iv[AES_IV_SIZE],
                                      std::size_t party_id);
@@ -55,19 +67,17 @@ class Backend {
 
   void WaitForConnectionEnd();
 
-  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) { return core_->GetGate(gate_id); }
+  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const;
 
-  const std::vector<Gates::Interfaces::GatePtr> &GetInputGates() const {
-    return core_->GetInputGates();
-  };
+  const std::vector<Gates::Interfaces::GatePtr> &GetInputGates() const;
 
  private:
   Backend() = delete;
 
   ConfigurationPtr config_;
-  CorePtr core_;
+  RegisterPtr register_;
 
-  std::vector<ABYN::Communication::CommunicationHandlerPtr> communication_handlers_;
+  std::vector<Communication::CommunicationHandlerPtr> communication_handlers_;
 
   bool share_inputs_ = true;
 };
