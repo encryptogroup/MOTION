@@ -32,7 +32,7 @@ BitVector::BitVector(const std::vector<std::byte>& data, std::size_t n_bits) : b
 
   auto bit_offset = n_bits % 8;
   if (bit_offset > 0u) {
-    data_vector_.at(byte_size) &= TRUNCATION_BIT_MASK[bit_offset];
+    data_vector_.at(byte_size) &= TRUNCATION_BIT_MASK[bit_offset - 1];
   }
 }
 
@@ -61,6 +61,16 @@ BitVector::BitVector(const std::vector<bool>& data, std::size_t n_bits) : bit_si
   for (auto i = 0ull; i < data.size(); ++i) {
     Set(data.at(i), i);
   }
+}
+
+void BitVector::operator=(const BitVector& other) {
+  bit_size_ = other.bit_size_;
+  data_vector_ = other.data_vector_;
+}
+
+void BitVector::operator=(BitVector&& other) {
+  bit_size_ = other.bit_size_;
+  data_vector_ = std::move(other.data_vector_);
 }
 
 void BitVector::Set(bool value) {
@@ -224,8 +234,7 @@ void BitVector::Append(BitVector&& other) {
       for (auto i = 0ull; i < other.data_vector_.size(); ++i) {
         data_vector_.at(old_byte_offset) |= (other.data_vector_.at(i) >> old_bit_offset);
         if (i + 1 < other.data_vector_.size() || old_bit_offset + (other.bit_size_ % 8) > 8u) {
-          data_vector_.at(old_byte_offset + 1) |=
-              other.data_vector_.at(i) << (8 - old_bit_offset);
+          data_vector_.at(old_byte_offset + 1) |= other.data_vector_.at(i) << (8 - old_bit_offset);
         }
         ++old_byte_offset;
       }
@@ -239,6 +248,56 @@ void BitVector::Append(const BitVector& other) {
     BitVector bv(other);
     Append(std::move(bv));
   }
+}
+
+BitVector BitVector::Subset(std::size_t from, std::size_t to) {
+  assert(from <= to);
+
+  if (from > bit_size_ || to > bit_size_) {
+    throw std::out_of_range(fmt::format("Accessing positions {} to {} of {}", from, to, bit_size_));
+  }
+
+  BitVector bv;
+  if (from == to) {
+    return bv;
+  }
+
+  bv.Resize(to - from);
+
+  auto from_bit_offset = from % 8;
+  auto to_bit_offset = to % 8;
+
+  if (from_bit_offset == 0u) {
+    for (auto i = 0ull; i < bv.data_vector_.size(); ++i) {
+      bv.data_vector_.at(i) = data_vector_.at((from / 8) + i);
+    }
+    if (to_bit_offset > 0u) {
+      bv.data_vector_.at(bv.data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[to_bit_offset - 1];
+    }
+  } else if (from_bit_offset + bv.bit_size_ <= 8u) {
+    bv.data_vector_.at(0) = data_vector_.at(from / 8);
+    bv.data_vector_.at(0) <<= from_bit_offset;
+    bv.data_vector_.at(0) &= TRUNCATION_BIT_MASK[bv.bit_size_];
+  } else {
+    auto new_byte_offset = 0ull;
+    auto bit_counter = 0ull;
+    for (; bit_counter < bv.bit_size_; ++new_byte_offset) {
+      auto left_part = data_vector_.at((from / 8) + new_byte_offset) << from_bit_offset;
+      bv.data_vector_.at(new_byte_offset) |= left_part;
+      bit_counter += 8 - from_bit_offset;
+      if (bit_counter < bv.bit_size_) {
+        auto right_part =
+            data_vector_.at((from / 8) + new_byte_offset + 1) >> (8 - from_bit_offset);
+        bv.data_vector_.at(new_byte_offset) |= right_part;
+        bit_counter += from_bit_offset;
+      }
+    }
+    if (bv.bit_size_ % 8 > 0u) {
+      bv.data_vector_.at(bv.data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[(bv.bit_size_ % 8)];
+    }
+  }
+
+  return bv;
 }
 
 }

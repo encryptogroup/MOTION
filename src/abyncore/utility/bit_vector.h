@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <cstddef>
+#include <vector>
 
 namespace ENCRYPTO {
 
@@ -24,6 +24,10 @@ class BitVector {
 
   BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {}
 
+  void operator=(const BitVector& other);
+
+  void operator=(BitVector&& other);
+
   void Set(bool value);
 
   void Set(bool value, std::size_t pos);
@@ -31,10 +35,12 @@ class BitVector {
   bool Get(std::size_t pos);
 
   BitVector operator&(const BitVector& other);
-
   BitVector operator^(const BitVector& other);
-
   BitVector operator|(const BitVector& other);
+
+  BitVector operator&=(const BitVector& other) { return *this | other; }
+  BitVector operator^=(const BitVector& other) { return *this | other; }
+  BitVector operator|=(const BitVector& other) { return *this | other; }
 
   bool operator[](std::size_t pos) { return Get(pos); }
 
@@ -51,6 +57,8 @@ class BitVector {
   void Append(const BitVector& other);
 
   void Append(BitVector&& other);
+
+  BitVector Subset(std::size_t from, std::size_t to);
 
  private:
   std::vector<std::byte> data_vector_;
