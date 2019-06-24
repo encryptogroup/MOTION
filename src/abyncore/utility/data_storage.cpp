@@ -1,5 +1,7 @@
 #include "data_storage.h"
 
+#include "utility/logger.h"
+
 namespace ABYN {
 
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {

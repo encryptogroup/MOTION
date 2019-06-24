@@ -1,7 +1,11 @@
-#include "communication_handler.h"
+#include "handler.h"
 
 #include <algorithm>
 
+#include "fmt/format.h"
+
+#include "context.h"
+#include "message.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
 
@@ -26,8 +30,7 @@ std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
   return result;
 }
 
-CommunicationHandler::CommunicationHandler(ABYN::CommunicationContextPtr &party,
-                                           const ABYN::LoggerPtr &logger)
+Handler::Handler(ContextPtr &party, const ABYN::LoggerPtr &logger)
     : party_(party), logger_(logger) {
   handler_info_ =
       fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}", party->GetId(),
@@ -39,7 +42,7 @@ CommunicationHandler::CommunicationHandler(ABYN::CommunicationContextPtr &party,
   receiver_thread_ = std::thread([&]() { ActAsReceiver(); });
 }
 
-CommunicationHandler::~CommunicationHandler() {
+Handler::~Handler() {
   continue_communication_ = false;
   if (sender_thread_.joinable()) {
     sender_thread_.join();
@@ -49,30 +52,41 @@ CommunicationHandler::~CommunicationHandler() {
   };
 }
 
-void CommunicationHandler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
-  std::uint32_t message_size = message.GetSize();
+void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
   auto message_detached = message.Release();
   auto message_raw_pointer = message_detached.data();
-  std::vector<std::uint8_t> buffer = std::move(u32tou8(message_size));
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
     if (auto shared_ptr_party = party_.lock()) {
-      shared_ptr_party->GetDataStorage().SetSentHelloMessage(message_raw_pointer, message_size);
+      shared_ptr_party->GetDataStorage().SetSentHelloMessage(message_raw_pointer,
+                                                             message_detached.size());
     } else {
       throw(std::runtime_error("Party instance destroyed before its communication handler"));
     }
   }
-  buffer.insert(buffer.end(), message_raw_pointer, message_raw_pointer + message_size);
+  std::vector<std::uint8_t> buffer(message_raw_pointer,
+                                   message_raw_pointer + message_detached.size());
   {
     std::scoped_lock lock(queue_send_mutex_);
     queue_send_.push(std::move(buffer));
   }
 
-  logger_->LogTrace(
-      fmt::format("{}: Have put a {}-byte message to send queue", handler_info_, message_size));
+  logger_->LogTrace(fmt::format("{}: Have put a {}-byte message to send queue", handler_info_,
+                                message_detached.size()));
 }
 
-void CommunicationHandler::TerminateCommunication() {
-  std::vector<std::uint8_t> buffer = std::move(u32tou8(TERMINATION_MESSAGE));
+const BoostSocketPtr Handler::GetSocket() {
+  if (auto shared_ptr_party = party_.lock()) {
+    return shared_ptr_party->GetSocket();
+  } else {
+    return nullptr;
+  }
+}
+
+void Handler::TerminateCommunication() {
+  auto message = BuildMessage(MessageType_TerminationMessage, nullptr);
+  std::vector<std::uint8_t> buffer(
+      message.GetBufferPointer(),
+      message.GetBufferPointer() + message.GetSize());  // std::move(u32tou8(TERMINATION_MESSAGE));
   {
     std::scoped_lock lock(queue_send_mutex_);
     queue_send_.push(std::move(buffer));
@@ -80,9 +94,11 @@ void CommunicationHandler::TerminateCommunication() {
 
   logger_->LogTrace(
       fmt::format("{}: Put a termination message message to send queue", handler_info_));
+
+  SentTerminationMessage();
 }
 
-void CommunicationHandler::WaitForConnectionEnd() {
+void Handler::WaitForConnectionEnd() {
   while (continue_communication_) {
     if (queue_send_.empty() && queue_receive_.empty() && received_termination_message_ &&
         sent_termination_message_) {
@@ -94,26 +110,20 @@ void CommunicationHandler::WaitForConnectionEnd() {
   }
 }
 
-void CommunicationHandler::ActAsSender() {
+void Handler::ActAsSender() {
   while (ContinueCommunication()) {
     if (!GetSendQueue().empty()) {
       auto &message = GetSendQueue().front();
-      std::vector<std::uint8_t> message_size_buffer(message.data(),
-                                                    message.data() + sizeof(std::uint32_t));
-      auto message_size = u8tou32(message_size_buffer);
+      // std::vector<std::uint8_t> message_size_buffer(message.data(),
+      //                                              message.data() + sizeof(std::uint32_t));
+      // auto message_size = message.size();//u8tou32(message_size_buffer);
       std::string s;
       for (auto i = 0u; i < message.size(); ++i) {
         s.append(fmt::format("{0:#x} ", message.at(i)));
       };
 
-      if (message_size == TERMINATION_MESSAGE) {
-        SentTerminationMessage();
-      }
-      auto message_info = message_size == TERMINATION_MESSAGE
-                              ? fmt::format("termination packet")
-                              : fmt::format("size: {}", message_size);
-      logger_->LogTrace(fmt::format("{}: Written to the socket,  {}, message: {}",
-                                             GetInfo(), message_info, s));
+      logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}", GetInfo(),
+                                    message.size(), s));
 
       if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
         throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
@@ -121,6 +131,8 @@ void CommunicationHandler::ActAsSender() {
                                              message.size())));
       }
 
+      auto message_size = u32tou8(message.size());
+      message.insert(message.begin(), message_size.begin(), message_size.end());
       boost::system::error_code ec;
       boost::asio::write(*GetSocket().get(), boost::asio::buffer(message),
                          boost::asio::transfer_exactly(message.size()), ec);
@@ -138,7 +150,7 @@ void CommunicationHandler::ActAsSender() {
   }
 }
 
-void CommunicationHandler::ActAsReceiver() {
+void Handler::ActAsReceiver() {
   //#pragma omp parallel
   //#pragma omp single
   {
@@ -152,15 +164,21 @@ void CommunicationHandler::ActAsReceiver() {
         }
 
         std::uint32_t size = ParseHeader();
-        static_assert(sizeof(size) == MESSAGE_SIZE_BYTELEN);  // check consistency of the bytelen
-                                                              // of the message size type
+        static_assert(sizeof(size) == MESSAGE_SIZE_BYTELEN);  // check consistency of the byte
+                                                              // length of the message size type
         if (size == 0) {
           continue;
-        } else if (size == TERMINATION_MESSAGE) {
-          break;
-        };
+        }
 
         std::vector<std::uint8_t> message_buffer = ParseBody(size);
+        auto message = GetMessage(message_buffer.data());
+        flatbuffers::Verifier verifier(message_buffer.data(), message_buffer.size());
+        assert(message->Verify(verifier));
+        if (message->message_type() == MessageType_TerminationMessage) {
+          ReceivedTerminationMessage();
+          GetLogger()->LogTrace(
+              fmt::format("{}: Got a termination message from the socket", GetInfo()));
+        }
 
         {
           std::scoped_lock lock(GetReceiveMutex());
@@ -172,12 +190,12 @@ void CommunicationHandler::ActAsReceiver() {
         for (auto i = 0u; i < message_buffer.size(); ++i) {
           s.append(fmt::format("{0:#x} ", message_buffer.at(i)));
         }
-        GetLogger()->LogTrace(fmt::format("{}: Read message body of size {}, message: {}",
-                                                   GetInfo(), size, s));
+        GetLogger()->LogTrace(
+            fmt::format("{}: Read message body of size {}, message: {}", GetInfo(), size, s));
       }
     });
     // separate thread for parsing received messages
-    // TODO: consider >= 4GB messages. Add a (2^32-2)-size continue header?
+    // TODO: consider >= 4GB messages.
     //#pragma omp task
     std::thread thread_parse([this]() {
       while (ContinueCommunication() || !GetReceiveQueue().empty()) {
@@ -194,7 +212,7 @@ void CommunicationHandler::ActAsReceiver() {
             GetReceiveQueue().pop();
           }
         } else {
-          std::this_thread::sleep_for(std::chrono::milliseconds(1));
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
       }
     });
@@ -203,7 +221,7 @@ void CommunicationHandler::ActAsReceiver() {
   }
 }
 
-std::uint32_t CommunicationHandler::ParseHeader() {
+std::uint32_t Handler::ParseHeader() {
   boost::system::error_code ec;
   std::vector<std::uint8_t> message_size_buffer(MESSAGE_SIZE_BYTELEN);
   // get the size of the next message
@@ -213,20 +231,14 @@ std::uint32_t CommunicationHandler::ParseHeader() {
   std::uint32_t size = u8tou32(message_size_buffer);
 
   if (size > 0) {
-    if (size == TERMINATION_MESSAGE) {
-      ReceivedTerminationMessage();
-      GetLogger()->LogTrace(
-          fmt::format("{}: Got a termination message from the socket", GetInfo()));
-    } else {
-      std::string s;
-      for (auto i = 0u; i < 4; ++i) {
-        s.append(fmt::format("{0:#x} ", reinterpret_cast<std::uint8_t *>(&size)[i]));
-      };
-      GetLogger()->LogTrace(
-          fmt::format("{}: Got a new message from the socket and have read the "
-                      "header (size: {}), header: {}",
-                      GetInfo(), size, s));
-    }
+    std::string s;
+    for (auto i = 0u; i < 4; ++i) {
+      s.append(fmt::format("{0:#x} ", reinterpret_cast<std::uint8_t *>(&size)[i]));
+    };
+    GetLogger()->LogTrace(
+        fmt::format("{}: Got a new message from the socket and have read the "
+                    "header (size: {}), header: {}",
+                    GetInfo(), size, s));
   } else if (size == 0 ||
              (ec == boost::asio::error::would_block || ec == boost::asio::error::eof)) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -234,11 +246,10 @@ std::uint32_t CommunicationHandler::ParseHeader() {
   } else if (ec) {
     throw(std::runtime_error(fmt::format("Error while reading from socket: {}", ec.message())));
   }
-
   return size;
 }
 
-std::vector<std::uint8_t> CommunicationHandler::ParseBody(std::uint32_t size) {
+std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
   boost::system::error_code ec;
   GetSocket()->non_blocking(false);
   std::vector<std::uint8_t> message_buffer(size);
@@ -251,7 +262,7 @@ std::vector<std::uint8_t> CommunicationHandler::ParseBody(std::uint32_t size) {
   return std::move(message_buffer);
 }
 
-bool CommunicationHandler::VerifyHelloMessage() {
+bool Handler::VerifyHelloMessage() {
   bool result = true;
   if (auto shared_ptr_party = party_.lock()) {
     auto my_hm = shared_ptr_party->GetDataStorage().GetSentHelloMessage();

@@ -4,12 +4,14 @@
 #include <memory>
 #include <queue>
 
-#include "communication/communication_handler.h"
+#include "communication/handler.h"
 
 #include "configuration.h"
-#include "utility/logger.h"
 
 namespace ABYN {
+
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
 
 namespace Gates::Interfaces {
 class Gate;
@@ -25,70 +27,34 @@ using WirePtr = std::shared_ptr<Wire>;
 
 class Register {
  public:
-  Register(ConfigurationPtr &config) : config_(config) {
-    logger_ =
-        std::make_shared<ABYN::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
-  }
+  Register() = delete;
 
-  ~Register() {
-    /*while(gates_.size()){
-      std::this_thread::sleep_for(std::chrono::microseconds(10));
-    };*/
-    input_gates_.resize(0);
-    gates_.resize(0);
-    wires_.resize(0);
-  }
+  Register(const Register &) = delete;
 
-  std::size_t NextGateId() { return global_gate_id_++; }
+  Register(ConfigurationPtr &config);
 
-  std::size_t NextWireId() { return global_wire_id_++; }
+  ~Register();
 
-  std::size_t NextArithmeticSharingId(std::size_t num_of_parallel_values) {
-    assert(num_of_parallel_values != 0);
-    auto old_id = global_arithmetic_sharing_id_;
-    global_arithmetic_sharing_id_ += num_of_parallel_values;
-    return old_id;
-  }
+  std::size_t NextGateId();
 
-  std::size_t NextBooleanGMWSharingId(std::size_t num_of_parallel_values) {
-    assert(num_of_parallel_values != 0);
-    auto old_id = global_gmw_sharing_id_;
-    global_gmw_sharing_id_ += num_of_parallel_values;
-    return old_id;
-  }
+  std::size_t NextWireId();
 
-  const LoggerPtr &GetLogger() { return logger_; }
+  std::size_t NextArithmeticSharingId(std::size_t num_of_parallel_values);
 
-  const ConfigurationPtr &GetConfig() { return config_; }
+  std::size_t NextBooleanGMWSharingId(std::size_t num_of_parallel_values);
+
+  const LoggerPtr &GetLogger();
+
+  const ConfigurationPtr &GetConfig();
 
   void RegisterCommunicationHandlers(
-      std::vector<ABYN::Communication::CommunicationHandlerPtr> &communication_handlers) {
-    for (auto i = 0ull; i < communication_handlers.size(); ++i) {
-      communication_handlers_.push_back(communication_handlers.at(i));
-    }
-  }
+      std::vector<ABYN::Communication::HandlerPtr> &communication_handlers);
 
-  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-    if (party_id == config_->GetMyId()) {
-      throw(std::runtime_error("Trying to send message to myself"));
-    }
-    if (auto shared_ptr_comm_handler = communication_handlers_.at(party_id).lock()) {
-      shared_ptr_comm_handler->SendMessage(message);
-    } else {
-      throw(std::runtime_error("Trying to use a destroyed communication handler"));
-    }
-  }
+  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-  void RegisterNextGate(ABYN::Gates::Interfaces::GatePtr gate) {
-    assert(gate != nullptr);
-    gates_.push_back(gate);
-  }
+  void RegisterNextGate(ABYN::Gates::Interfaces::GatePtr gate);
 
-  void RegisterNextInputGate(ABYN::Gates::Interfaces::GatePtr gate) {
-    RegisterNextGate(gate);
-    assert(gate != nullptr);
-    input_gates_.push_back(gate);
-  }
+  void RegisterNextInputGate(ABYN::Gates::Interfaces::GatePtr gate);
 
   const ABYN::Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const {
     return gates_.at(gate_id);
@@ -103,23 +69,9 @@ class Register {
 
   void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
-  void AddToActiveQueue(std::size_t gate_id) {
-    std::scoped_lock lock(active_queue_mutex_);
-    active_gates_.push(gate_id);
-    logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
-  }
+  void AddToActiveQueue(std::size_t gate_id);
 
-  std::int64_t GetNextGateFromOnlineQueue() {
-    if (active_gates_.size() == 0) {
-      return -1;
-    } else {
-      auto gate_id = active_gates_.front();
-      assert(gate_id < std::numeric_limits<std::size_t>::max());
-      std::scoped_lock lock(active_queue_mutex_);
-      active_gates_.pop();
-      return static_cast<std::int64_t>(gate_id);
-    }
-  }
+  std::int64_t GetNextGateFromOnlineQueue();
 
   void IncrementEvaluatedGatesCounter() { evaluated_gates++; }
 
@@ -145,13 +97,7 @@ class Register {
 
   std::vector<ABYN::Wires::WirePtr> wires_;
 
-  std::vector<std::weak_ptr<ABYN::Communication::CommunicationHandler>> communication_handlers_;
-
-  Register() = delete;
-
-  Register(Register &) = delete;
-
-  Register(const Register &) = delete;
+  std::vector<std::weak_ptr<ABYN::Communication::Handler>> communication_handlers_;
 };
 
 using RegisterPtr = std::shared_ptr<Register>;

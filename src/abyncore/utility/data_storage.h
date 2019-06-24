@@ -10,10 +10,13 @@
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/fbs_headers/output_message_generated.h"
 
-#include "utility/logger.h"
 #include "utility/typedefs.h"
 
 namespace ABYN {
+
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
+
 class DataStorage {
  public:
   DataStorage(std::size_t id) : id_(id) {}

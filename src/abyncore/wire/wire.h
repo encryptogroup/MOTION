@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <vector>
 
-#include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
+//#include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
 //#include "cryptoTools/cryptoTools/Common/BitVector.h"
 
 #include "base/register.h"
@@ -23,53 +23,23 @@ using GatePtr = std::shared_ptr<Gate>;
 namespace ABYN::Wires {
 class Wire {
  public:
-  std::size_t GetNumOfParallelValues() const { return num_of_parallel_values_; }
+  std::size_t GetNumOfParallelValues() const;
 
   virtual enum CircuitType GetCircuitType() const = 0;
 
   virtual enum Protocol GetProtocol() const = 0;
 
-  virtual ~Wire() {
-    assert(wire_id_ >= 0);
-    /*auto shared_ptr_core = core_.lock();
-    assert(shared_ptr_core);
-    shared_ptr_core->UnregisterWire(static_cast<std::size_t>(wire_id_));*/
-  }
+  virtual ~Wire();
 
-  void RegisterWaitingGate(std::size_t gate_id) {
-    std::scoped_lock lock(mutex_);
-    waiting_gate_ids_.insert(gate_id);
-  }
+  void RegisterWaitingGate(std::size_t gate_id);
 
-  void UnregisterWaitingGate(std::size_t gate_id) {
-    std::scoped_lock lock(mutex_);
-    waiting_gate_ids_.erase(gate_id);
-  }
+  void UnregisterWaitingGate(std::size_t gate_id);
 
-  void SetOnlineFinished() {
-    if (is_done_) {
-      throw(std::runtime_error(
-          fmt::format("Marking wire #{} as \"online phase ready\" twice", wire_id_)));
-    }
-    is_done_ = true;
-    assert(wire_id_ >= 0);
-    for (auto gate_id : waiting_gate_ids_) {
-      auto shared_ptr_reg = register_.lock();
-      assert(shared_ptr_reg);
-      Wire::UnregisterWireIdFromGate(gate_id, static_cast<std::size_t>(wire_id_), shared_ptr_reg);
-    }
-    waiting_gate_ids_.clear();
-  }
+  void SetOnlineFinished();
 
   const auto &GetWaitingGatesIds() const { return waiting_gate_ids_; }
 
-  const bool &IsReady() const {
-    if (is_constant_) {
-      return is_constant_;
-    } else {
-      return is_done_;
-    }
-  }
+  const bool &IsReady() const;
 
   bool IsConstant() const { return is_constant_; }
 
@@ -77,20 +47,11 @@ class Wire {
 
   std::weak_ptr<ABYN::Register> GetRegister() const { return register_; }
 
-  static inline std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
-    std::string result;
-    for (auto &w : wires) {
-      result.append(fmt::format("{} ", w->GetWireId()));
-    }
-    result.erase(result.end() - 1);
-    return std::move(result);
-  }
+  static std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires);
 
   virtual std::size_t GetBitLength() const = 0;
 
   Wire(const Wire &) = delete;
-
-  Wire(Wire &) = delete;
 
  protected:
   // number of values that are _logically_ processed in parallel
@@ -115,11 +76,7 @@ class Wire {
   static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id,
                                        std::weak_ptr<ABYN::Register> reg);
 
-  void InitializationHelper() {
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
-    wire_id_ = shared_ptr_reg->NextWireId();
-  }
+  void InitializationHelper();
 
  private:
   std::mutex mutex_;
@@ -193,26 +150,43 @@ using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(std::vector<std::uint8_t> &&values, std::weak_ptr<Register> reg,
+  GMWWire(ENCRYPTO::BitVector &&values, std::weak_ptr<Register> reg, bool is_constant = false) {
+    values_ = std::move(values);
+    register_ = reg;
+    is_constant_ = is_constant;
+    num_of_parallel_values_ = values_.GetSize();
+    InitializationHelper();
+  }
+
+  GMWWire(const ENCRYPTO::BitVector &values, std::weak_ptr<Register> reg,
+          bool is_constant = false) {
+    values_ = values;
+    register_ = reg;
+    is_constant_ = is_constant;
+    num_of_parallel_values_ = values_.GetSize();
+    InitializationHelper();
+  }
+  /*
+  GMWWire(std::vector<std::byte> &&values, std::weak_ptr<Register> reg,
           std::size_t parallel_values = 1, bool is_constant = false) {
-    values_.AttachBuf(values.data(), Helpers::Convert::BitsToBytes(parallel_values));
+    values_ = std::move(ENCRYPTO::BitVector(values, parallel_values));
     register_ = reg;
     is_constant_ = is_constant;
     num_of_parallel_values_ = parallel_values;
     InitializationHelper();
   }
 
-  GMWWire(const std::vector<std::uint8_t> &values, std::weak_ptr<Register> reg,
+  GMWWire(const std::vector<std::byte> &values, std::weak_ptr<Register> reg,
           std::size_t parallel_values = 1, bool is_constant = false) {
-    values_.Copy(values.data(), 0, Helpers::Convert::BitsToBytes(parallel_values));
+    values_ = ENCRYPTO::BitVector(values, parallel_values);
     register_ = reg;
     is_constant_ = is_constant;
     num_of_parallel_values_ = parallel_values;
     InitializationHelper();
-  }
+  }*/
 
   GMWWire(bool value, std::weak_ptr<Register> reg, bool is_constant = false) {
-    values_ = {value};
+    values_.Append(value);
     register_ = reg;
     is_constant_ = is_constant;
     num_of_parallel_values_ = 1;
@@ -229,12 +203,12 @@ class GMWWire : public BooleanWire {
 
   std::size_t GetBitLength() const final { return 1; }
 
-  const CBitVector &GetValuesOnWire() const { return values_; }
+  const ENCRYPTO::BitVector &GetValuesOnWire() const { return values_; }
 
-  CBitVector &GetMutableValuesOnWire() { return values_; }
+  ENCRYPTO::BitVector &GetMutableValuesOnWire() { return values_; }
 
  private:
-  CBitVector values_;
+  ENCRYPTO::BitVector values_;
 };
 
 using GMWWirePtr = std::shared_ptr<GMWWire>;

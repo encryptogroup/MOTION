@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "fmt/format.h"
+
 #include "utility/typedefs.h"
 #include "wire/wire.h"
 
@@ -197,19 +199,20 @@ using BooleanSharePtr = std::shared_ptr<BooleanShare>;
 
 class GMWShare : public BooleanShare {
  public:
-  GMWShare(std::vector<std::uint8_t> &input, RegisterPtr &reg, std::size_t bits) {
+  /*
+  GMWShare(std::vector<std::byte> &input, RegisterPtr &reg, std::size_t bits) {
     wires_ = {std::make_shared<Wires::GMWWire>(input, reg, bits)};
     register_ = reg;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::uint8_t> &&input, RegisterPtr &reg, std::size_t bits) {
+  GMWShare(std::vector<std::byte> &&input, RegisterPtr &reg, std::size_t bits) {
     wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), reg, bits)};
     register_ = reg;
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<std::uint8_t>> &input, RegisterPtr &reg, std::size_t bits) {
+  GMWShare(std::vector<std::vector<std::byte>> &input, RegisterPtr &reg, std::size_t bits) {
     if (input.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
@@ -220,7 +223,7 @@ class GMWShare : public BooleanShare {
     bits_ = bits;
   }
 
-  GMWShare(std::vector<std::vector<std::uint8_t>> &&input, RegisterPtr &reg, std::size_t bits) {
+  GMWShare(std::vector<std::vector<std::byte>> &&input, RegisterPtr &reg, std::size_t bits) {
     if (input.size() == 0) {
       throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
     }
@@ -229,7 +232,7 @@ class GMWShare : public BooleanShare {
     }
     register_ = reg;
     bits_ = bits;
-  }
+  }*/
 
   GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
     if (wires.size() == 0) {
@@ -242,6 +245,7 @@ class GMWShare : public BooleanShare {
                                "of different sharing type"));
       }
     }
+
     wires_ = wires;
     register_ = wires.at(0)->GetRegister();
     bits_ = wires.at(0)->GetBitLength();
@@ -251,12 +255,11 @@ class GMWShare : public BooleanShare {
 
   std::size_t GetNumOfParallelValues() final { return wires_.size(); };
 
-  Protocol GetSharingType() final { return ArithmeticGMW; }
+  Protocol GetSharingType() final { return BooleanGMW; }
 
   std::size_t GetBitLength() final { return wires_.size(); }
 
   std::shared_ptr<Share> Clone() final {
-    // TODO
     return std::static_pointer_cast<Share>(std::make_shared<GMWShare>(wires_));
   };
 

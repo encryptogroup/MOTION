@@ -41,9 +41,9 @@ class Logger {
 
   void LogError(std::string &&msg);
 
-  bool LoggingEnabled() { return logging_enabled_; }
+  bool IsEnabled() { return logging_enabled_; }
 
-  void Logging(bool enable) { logging_enabled_ = enable; }
+  void Enable(bool enable) { logging_enabled_ = enable; }
 
  private:
   boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>>

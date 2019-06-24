@@ -2,28 +2,33 @@
 
 #include <queue>
 
-#include "communication_context.h"
-#include "fbs_headers/message_generated.h"
-#include "utility/logger.h"
+#include <boost/asio.hpp>
+#include <boost/asio/ip/tcp.hpp>
 
-namespace ABYN::Communication {
-class CommunicationHandler {
+#include "flatbuffers/flatbuffers.h"
+
+namespace ABYN {
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
+
+using IoServicePtr = std::shared_ptr<boost::asio::io_service>;
+using BoostSocketPtr = std::shared_ptr<boost::asio::ip::tcp::socket>;
+
+namespace Communication {
+class Context;
+using ContextPtr = std::shared_ptr<Context>;
+
+class Handler {
  public:
-  CommunicationHandler() = delete;
+  Handler() = delete;
 
-  CommunicationHandler(ABYN::CommunicationContextPtr &party, const ABYN::LoggerPtr &logger);
+  Handler(ContextPtr &party, const LoggerPtr &logger);
 
-  virtual ~CommunicationHandler();
+  virtual ~Handler();
 
   void SendMessage(flatbuffers::FlatBufferBuilder &message);
 
-  const BoostSocketPtr GetSocket() {
-    if (auto shared_ptr_party = party_.lock()) {
-      return shared_ptr_party->GetSocket();
-    } else {
-      return nullptr;
-    }
-  }
+  const BoostSocketPtr GetSocket();
 
   bool ContinueCommunication() { return continue_communication_; }
 
@@ -46,7 +51,7 @@ class CommunicationHandler {
   bool VerifyHelloMessage();
 
  private:
-  std::weak_ptr<ABYN::CommunicationContext> party_;
+  std::weak_ptr<Context> party_;
   ABYN::LoggerPtr logger_;
 
   std::string handler_info_;
@@ -73,5 +78,6 @@ class CommunicationHandler {
   std::vector<std::uint8_t> ParseBody(std::uint32_t size);
 };
 
-using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
-}  // namespace ABYN::Communication
+using HandlerPtr = std::shared_ptr<Handler>;
+}  // namespace Communication
+}

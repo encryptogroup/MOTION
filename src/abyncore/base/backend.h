@@ -5,11 +5,12 @@
 #include "flatbuffers/flatbuffers.h"
 
 #include "utility/constants.h"
-#include "utility/logger.h"
 
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ABYN {
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
 
 class Configuration;
 using ConfigurationPtr = std::shared_ptr<Configuration>;
@@ -26,26 +27,25 @@ using InputGatePtr = std::shared_ptr<InputGate>;
 }  // namespace Gates::Interfaces
 
 namespace Communication {
-class CommunicationHandler;
-using CommunicationHandlerPtr = std::shared_ptr<CommunicationHandler>;
+class Handler;
+using HandlerPtr = std::shared_ptr<Handler>;
 }  // namespace Communication
 
 class Backend {
  public:
+  Backend() = delete;
+
   Backend(ConfigurationPtr &config);
 
   ~Backend() = default;
 
-  const ConfigurationPtr &GetConfig() { return config_; }
+  const ConfigurationPtr &GetConfig() const noexcept { return config_; }
 
-  const LoggerPtr &GetLogger();
+  const LoggerPtr &GetLogger() const noexcept;
 
-  const RegisterPtr &GetRegister() { return register_; }
+  const RegisterPtr &GetRegister() const noexcept { return register_; }
 
   std::size_t NextGateId() const;
-
-  void InitializeRandomnessGenerator(std::uint8_t key[AES_KEY_SIZE], std::uint8_t iv[AES_IV_SIZE],
-                                     std::size_t party_id);
 
   void InitializeCommunicationHandlers();
 
@@ -72,12 +72,10 @@ class Backend {
   const std::vector<Gates::Interfaces::GatePtr> &GetInputGates() const;
 
  private:
-  Backend() = delete;
-
   ConfigurationPtr config_;
   RegisterPtr register_;
 
-  std::vector<Communication::CommunicationHandlerPtr> communication_handlers_;
+  std::vector<Communication::HandlerPtr> communication_handlers_;
 
   bool share_inputs_ = true;
 };

@@ -23,23 +23,26 @@ using LoggerPtr = std::shared_ptr<Logger>;
 using IoServicePtr = std::shared_ptr<boost::asio::io_service>;
 using BoostSocketPtr = std::shared_ptr<boost::asio::ip::tcp::socket>;
 
+namespace Communication {
 /// Peer-related communication context
-class CommunicationContext {
+class Context {
  public:
-  CommunicationContext(const std::string ip, std::uint16_t port, Role role, std::size_t id);
+  Context() = delete;
+  Context(const Context &) = delete;
 
-  CommunicationContext(const char *ip, std::uint16_t port, Role role, std::size_t id);
+  Context(const std::string ip, std::uint16_t port, Role role, std::size_t id);
 
-  CommunicationContext(int socket, Role role, std::size_t id);
+  Context(const char *ip, std::uint16_t port, Role role, std::size_t id);
 
-  CommunicationContext(Role role, std::size_t id, BoostSocketPtr &boost_socket);
+  Context(int socket, Role role, std::size_t id);
 
-  ~CommunicationContext();
+  Context(Role role, std::size_t id, BoostSocketPtr &boost_socket);
+
+  ~Context();
 
   void InitializeMyRandomnessGenerator();
 
-  void InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &key,
-                                          std::vector<std::uint8_t> &iv);
+  void InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &seed);
 
   void SetLogger(const LoggerPtr &logger);
 
@@ -92,10 +95,8 @@ class CommunicationContext {
   void InitializeSocketServer();
 
   void InitializeSocketClient();
-
-  CommunicationContext() = delete;
 };
 
-using CommunicationContextPtr = std::shared_ptr<CommunicationContext>;
-
+using ContextPtr = std::shared_ptr<Context>;
+}  // namespace Communication
 }  // namespace ABYN

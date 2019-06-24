@@ -2,7 +2,52 @@
 
 #include <map>
 
+#include "utility/logger.h"
+
 namespace ABYN {
+
+Party::Party(std::vector<Communication::ContextPtr> &parties, std::size_t my_id) {
+  config_ = std::make_shared<Configuration>(parties, my_id);
+  backend_ = std::make_shared<Backend>(config_);
+}
+
+Party::Party(std::vector<Communication::ContextPtr> &&parties, std::size_t my_id) {
+  config_ = std::make_shared<Configuration>(std::move(parties), my_id);
+  backend_ = std::make_shared<Backend>(config_);
+}
+
+Party::Party(std::initializer_list<Communication::ContextPtr> &list_parties,
+             std::size_t my_id) {
+  config_ = std::make_shared<Configuration>(list_parties, my_id);
+  backend_ = std::make_shared<Backend>(config_);
+}
+
+Party::Party(std::initializer_list<Communication::ContextPtr> &&list_parties,
+             std::size_t my_id) {
+  config_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
+  backend_ = std::make_shared<Backend>(config_);
+}
+
+Party::~Party() {
+  backend_->WaitForConnectionEnd();
+  backend_->GetLogger()->LogInfo("ABYN::Party has been deallocated");
+}
+
+ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id, bool input) {
+  ENCRYPTO::BitVector input_bv;
+  input_bv.Append(input);
+  return BooleanGMWInput(party_id, input_bv);
+};
+
+// if \param bits is set to 0, the bit-length of the input vector is taken
+ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
+                                              const ENCRYPTO::BitVector &input) {
+  auto in_gate =
+      std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetRegister());
+  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  backend_->RegisterInputGate(in_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
+};
 
 ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t output_owner) {
   switch (parent->GetSharingType()) {
@@ -27,8 +72,7 @@ ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t out
       }
     }
     case ABYN::Protocol::BooleanGMW: {
-      throw(std::runtime_error("BooleanGMW output gate is not implemented yet"));
-      // return BooleanGMWOutput(parent, output_owner);
+      return BooleanGMWOutput(parent, output_owner);
     }
     case ABYN::Protocol::BMR: {
       throw(std::runtime_error("BMR output gate is not implemented yet"));
@@ -157,7 +201,7 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
 #pragma omp single
 #pragma omp taskloop num_tasks(num_parties)
   for (auto my_id = 0ul; my_id < num_parties; ++my_id) {
-    std::vector<CommunicationContextPtr> parties;
+    std::vector<Communication::ContextPtr> parties;
     for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
       if (my_id == other_id) continue;
       ABYN::Role role = other_id < my_id ? ABYN::Role::Client : ABYN::Role::Server;
@@ -173,8 +217,8 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
             fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
       };
 
-      parties.emplace_back(
-          std::make_shared<CommunicationContext>("127.0.0.1", this_port, role, other_id));
+      parties.emplace_back(std::make_shared<Communication::Context>(
+          "127.0.0.1", this_port, role, other_id));
     }
     abyn_parties.at(my_id) = std::move(std::make_unique<Party>(parties, my_id));
     abyn_parties.at(my_id)->Connect();

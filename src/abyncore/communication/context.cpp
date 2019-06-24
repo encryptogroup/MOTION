@@ -1,4 +1,4 @@
-#include "communication_context.h"
+#include "context.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include <fmt/format.h>
@@ -11,9 +11,9 @@
 #include "utility/random.h"
 #include "utility/typedefs.h"
 
-namespace ABYN {
+namespace ABYN::Communication {
 
-CommunicationContext::CommunicationContext(std::string ip, std::uint16_t port, ABYN::Role role,
+Context::Context(std::string ip, std::uint16_t port, Role role,
                                            std::size_t id)
     : data_storage_(id), ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
   if (IsInvalidIp(ip.data())) {
@@ -21,17 +21,16 @@ CommunicationContext::CommunicationContext(std::string ip, std::uint16_t port, A
   }
 }
 
-CommunicationContext::CommunicationContext(const char *ip, std::uint16_t port, ABYN::Role role,
+Context::Context(const char *ip, std::uint16_t port, Role role,
                                            std::size_t id)
-    : CommunicationContext(std::string(ip), port, role, id) {}
+    : Context(std::string(ip), port, role, id) {}
 
-CommunicationContext::CommunicationContext(int socket, ABYN::Role role, std::size_t id)
+Context::Context(int socket, Role role, std::size_t id)
     : data_storage_(id), role_(role), id_(id), party_socket_(socket), is_connected_(true) {
   boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
 }
 
-CommunicationContext::CommunicationContext(ABYN::Role role, std::size_t id,
-                                           BoostSocketPtr &boost_socket)
+Context::Context(Role role, std::size_t id, BoostSocketPtr &boost_socket)
     : data_storage_(id),
       role_(role),
       id_(id),
@@ -41,35 +40,34 @@ CommunicationContext::CommunicationContext(ABYN::Role role, std::size_t id,
 }
 
 // close the socket
-CommunicationContext::~CommunicationContext() {
+Context::~Context() {
   if (is_connected_ || boost_party_socket_->is_open()) {
     boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
     boost_party_socket_->close();
   }
 }
 
-void CommunicationContext::InitializeMyRandomnessGenerator() {
-  std::vector<std::uint8_t> key(ABYN::RandomVector(AES_KEY_SIZE)),
-      iv(ABYN::RandomVector(AES_IV_SIZE));
-  my_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
-  my_randomness_generator_->Initialize(key.data(), iv.data());
+void Context::InitializeMyRandomnessGenerator() {
+  std::vector<std::uint8_t> master_seed(
+      RandomVector(Crypto::AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH));
+  my_randomness_generator_ = std::make_unique<Crypto::AESRandomnessGenerator>(id_);
+  my_randomness_generator_->Initialize(master_seed.data());
 }
 
-void CommunicationContext::InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &key,
-                                                              std::vector<std::uint8_t> &iv) {
-  their_randomness_generator_ = std::make_unique<ABYN::Crypto::AESRandomnessGenerator>(id_);
-  their_randomness_generator_->Initialize(key.data(), iv.data());
+void Context::InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &seed) {
+  their_randomness_generator_ = std::make_unique<Crypto::AESRandomnessGenerator>(id_);
+  their_randomness_generator_->Initialize(seed.data());
 }
 
-void CommunicationContext::SetLogger(const ABYN::LoggerPtr &logger) {
+void Context::SetLogger(const LoggerPtr &logger) {
   logger_ = logger;
   data_storage_.SetLogger(logger);
 }
 
-std::string CommunicationContext::Connect() {
+std::string Context::Connect() {
   if (is_connected_) {
     return std::move(fmt::format("Already connected to {}:{}\n", ip_, port_));
-  } else if (role_ == ABYN::Role::Client) {
+  } else if (role_ == Role::Client) {
     InitializeSocketClient();
   } else {
     InitializeSocketServer();
@@ -80,8 +78,7 @@ std::string CommunicationContext::Connect() {
   return std::move(fmt::format("Successfully connected to {}:{}\n", ip_, port_));
 };
 
-void CommunicationContext::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
-  using namespace ABYN::Communication;
+void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
   auto message = GetMessage(raw_message.data());
   flatbuffers::Verifier verifier(raw_message.data(), raw_message.size());
   if (VerifyMessageBuffer(verifier) != true) {
@@ -96,9 +93,9 @@ void CommunicationContext::ParseMessage(std::vector<std::uint8_t> &&raw_message)
       auto seed_vector = GetHelloMessage(message->payload()->data())->input_sharing_seed();
       if (seed_vector != nullptr && seed_vector->size() > 0) {
         const std::uint8_t *seed = seed_vector->data();
-        std::vector<std::uint8_t> key(seed, seed + AES_KEY_SIZE),
-            iv(seed + AES_KEY_SIZE, seed + AES_KEY_SIZE + AES_IV_SIZE);
-        InitializeTheirRandomnessGenerator(key, iv);
+        auto seed_len = Crypto::AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH;
+        std::vector<std::uint8_t> seed_v(seed, seed + seed_len);
+        InitializeTheirRandomnessGenerator(seed_v);
         logger_->LogTrace(
             fmt::format("Initialized the randomness generator from Party#{} with Seed: {}", id_,
                         Helpers::Print::Hex(their_randomness_generator_->GetSeed())));
@@ -110,12 +107,15 @@ void CommunicationContext::ParseMessage(std::vector<std::uint8_t> &&raw_message)
     case MessageType_OutputMessage: {
       data_storage_.SetReceivedOutputMessage(std::move(raw_message));
     } break;
+    case MessageType_TerminationMessage: {
+      //
+    } break;
     default:
       throw(std::runtime_error("Didn't recognize the message type"));
   }
 }
 
-bool CommunicationContext::IsInvalidIp(const char *ip) {
+bool Context::IsInvalidIp(const char *ip) {
   struct sockaddr_in sa;
   auto result = inet_pton(AF_INET, ip, &sa.sin_addr);
   if (result == -1) {
@@ -125,7 +125,7 @@ bool CommunicationContext::IsInvalidIp(const char *ip) {
   return result == 0;
 }
 
-void CommunicationContext::InitializeSocketServer() {
+void Context::InitializeSocketServer() {
   boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), port_);
   boost::asio::ip::tcp::acceptor acceptor(*io_service_.get(), endpoint,
                                           boost::asio::ip::tcp::acceptor::reuse_address(true));
@@ -139,7 +139,7 @@ void CommunicationContext::InitializeSocketServer() {
   is_connected_ = true;
 };
 
-void CommunicationContext::InitializeSocketClient() {
+void Context::InitializeSocketClient() {
   boost::asio::ip::tcp::resolver resolver(*io_service_.get());
   boost::asio::ip::tcp::resolver::query query(ip_, std::to_string(port_));
   boost::system::error_code error;

@@ -2,8 +2,12 @@ add_library(abyn
         base/backend.cpp
         base/configuration.cpp
         base/party.cpp
-        communication/communication_context.cpp
-        communication/communication_handler.cpp
+        base/register.cpp
+        communication/context.cpp
+        communication/handler.cpp
+        communication/hello_message.cpp
+        communication/message.cpp
+        communication/output_message.cpp
         crypto/aes_randomness_generator.cpp
         gate/gate.cpp
         share/share.cpp
@@ -14,6 +18,8 @@ add_library(abyn
         wire/wire.cpp
         )
 add_library(ABYN::abyn ALIAS abyn)
+
+target_compile_definitions(abyn PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
 
 target_compile_features(abyn PUBLIC cxx_std_17)
 target_compile_options(abyn PRIVATE "-Wall" "-Wextra")
@@ -31,21 +37,16 @@ target_include_directories(abyn PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/abyncore>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern>
- #       $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/cryptoTools>
         $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/flatbuffers/include>
         ${Boost_INCLUDE_DIRS}
         )
 
 
 target_link_libraries(abyn
-        PUBLIC stdc++fs
-       # PUBLIC OTExtension::otextension
-        PUBLIC ENCRYPTO_utils::encrypto_utils
-        PUBLIC GMP::GMP
-        PUBLIC Threads::Threads
         PUBLIC ${Boost_LIBRARIES}
-        PUBLIC OpenSSL::Crypto
-        PUBLIC OpenSSL::SSL
+        PRIVATE Threads::Threads
+        PRIVATE OpenSSL::Crypto
+        PRIVATE OpenSSL::SSL
         PRIVATE flatbuffers
         PRIVATE fmt::fmt-header-only
         )

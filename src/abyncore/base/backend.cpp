@@ -13,6 +13,7 @@
 #include "crypto/aes_randomness_generator.h"
 #include "gate/gate.h"
 #include "utility/constants.h"
+#include "utility/logger.h"
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 
@@ -39,12 +40,11 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
   }
 }
 
-const LoggerPtr &Backend::GetLogger() { return register_->GetLogger(); }
+const LoggerPtr &Backend::GetLogger() const noexcept { return register_->GetLogger(); }
 
 std::size_t Backend::NextGateId() const { return register_->NextGateId(); }
 
 void Backend::InitializeCommunicationHandlers() {
-  using PartyCommunicationHandler = ABYN::Communication::CommunicationHandler;
   communication_handlers_.resize(config_->GetNumOfParties(), nullptr);
 #pragma omp parallel for
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
@@ -59,7 +59,7 @@ void Backend::InitializeCommunicationHandlers() {
         config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
     register_->GetLogger()->LogDebug(message);
 
-    communication_handlers_.at(i) = std::make_shared<PartyCommunicationHandler>(
+    communication_handlers_.at(i) = std::make_shared<Communication::Handler>(
         config_->GetCommunicationContext(i), register_->GetLogger());
   }
   register_->RegisterCommunicationHandlers(communication_handlers_);

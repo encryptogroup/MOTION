@@ -7,22 +7,27 @@
 
 namespace ABYN {
 
-class CommunicationContext;
-using CommunicationContextPtr = std::shared_ptr<CommunicationContext>;
+namespace Communication {
+class Context;
+using ContextPtr = std::shared_ptr<Context>;
+}  // namespace Communication
 
 class Configuration {
  public:
   Configuration() = delete;
 
-  Configuration(const std::vector<CommunicationContextPtr> &contexts, std::size_t id);
+  Configuration(const std::vector<Communication::ContextPtr> &contexts,
+                std::size_t id);
 
-  Configuration(std::vector<CommunicationContextPtr> &&contexts, std::size_t id)
+  Configuration(std::vector<Communication::ContextPtr> &&contexts, std::size_t id)
       : Configuration(contexts, id) {}
 
-  Configuration(const std::initializer_list<CommunicationContextPtr> &contexts, std::size_t id)
+  Configuration(const std::initializer_list<Communication::ContextPtr> &contexts,
+                std::size_t id)
       : Configuration(std::vector(contexts), id) {}
 
-  Configuration(std::initializer_list<CommunicationContextPtr> &&contexts, std::size_t id)
+  Configuration(std::initializer_list<Communication::ContextPtr> &&contexts,
+                std::size_t id)
       : Configuration(std::vector(std::move(contexts)), id) {}
 
   ~Configuration() = default;
@@ -31,11 +36,15 @@ class Configuration {
 
   void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
 
-  std::vector<CommunicationContextPtr> &GetParties() { return communication_contexts_; }
+  std::vector<Communication::ContextPtr> &GetParties() {
+    return communication_contexts_;
+  }
 
   std::size_t GetNumOfParties() { return communication_contexts_.size(); }
 
-  CommunicationContextPtr &GetCommunicationContext(uint i) { return communication_contexts_.at(i); }
+  Communication::ContextPtr &GetCommunicationContext(uint i) {
+    return communication_contexts_.at(i);
+  }
 
   std::size_t GetMyId() { return my_id_; }
 
@@ -49,7 +58,7 @@ class Configuration {
 
  private:
   std::int64_t my_id_ = -1;
-  std::vector<ABYN::CommunicationContextPtr> communication_contexts_;
+  std::vector<Communication::ContextPtr> communication_contexts_;
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
   bool online_after_setup_ = false;

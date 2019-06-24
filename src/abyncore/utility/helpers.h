@@ -1,7 +1,9 @@
 #pragma once
 
 #include "flatbuffers/flatbuffers.h"
+
 #include "typedefs.h"
+#include "bit_vector.h"
 
 namespace ENCRYPTO {
 class BitVector;  // forward declaration
@@ -108,6 +110,35 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
       }
     }
     return std::move(sum);
+  }
+}
+
+inline std::vector<ENCRYPTO::BitVector> XORBitVectors(const std::vector<ENCRYPTO::BitVector> &a,
+                                                      const std::vector<ENCRYPTO::BitVector> &b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  } else {
+    std::vector<ENCRYPTO::BitVector> result(a.begin(), a.end());
+    for (auto i = 0ull; i < a.size(); ++i) {
+      result.at(i) ^= b.at(i);
+    }
+    return result;
+  }
+}
+
+inline std::vector<ENCRYPTO::BitVector> XORBitVectors(
+    const std::vector<std::vector<ENCRYPTO::BitVector>> &vectors) {
+  if (vectors.size() == 0) {
+    return {};
+  } else if (vectors.size() == 1) {
+    return vectors.at(0);
+  } else {
+    auto result = vectors.at(0);
+    for (auto i = 1ull; i < vectors.size(); ++i) {
+      result = XORBitVectors(result, vectors.at(i));
+    }
+    return result;
   }
 }
 

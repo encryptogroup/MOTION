@@ -14,53 +14,43 @@
 
 namespace ABYN {
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticSharePtr = ABYN::Shares::ArithmeticSharePtr<T>;
+class Logger;
+using LoggerPtr = std::shared_ptr<Logger>;
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticShare = ABYN::Shares::ArithmeticShare<T>;
+using ArithmeticSharePtr = Shares::ArithmeticSharePtr<T>;
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+using ArithmeticShare = Shares::ArithmeticShare<T>;
 
 class Party {
  public:
-  Party(std::vector<CommunicationContextPtr> &parties, std::size_t my_id) {
-    config_ = std::make_shared<Configuration>(parties, my_id);
-    backend_ = std::make_shared<Backend>(config_);
-  }
+  Party(std::vector<Communication::ContextPtr> &parties, std::size_t my_id);
 
-  Party(std::vector<CommunicationContextPtr> &&parties, std::size_t my_id) {
-    config_ = std::make_shared<Configuration>(std::move(parties), my_id);
-    backend_ = std::make_shared<Backend>(config_);
-  }
+  Party(std::vector<Communication::ContextPtr> &&parties, std::size_t my_id);
 
-  Party(std::initializer_list<CommunicationContextPtr> &list_parties, std::size_t my_id) {
-    config_ = std::make_shared<Configuration>(list_parties, my_id);
-    backend_ = std::make_shared<Backend>(config_);
-  }
+  Party(std::initializer_list<Communication::ContextPtr> &list_parties,
+        std::size_t my_id);
 
-  Party(std::initializer_list<CommunicationContextPtr> &&list_parties, std::size_t my_id) {
-    config_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
-    backend_ = std::make_shared<Backend>(config_);
-  }
+  Party(std::initializer_list<Communication::ContextPtr> &&list_parties,
+        std::size_t my_id);
 
   Party(ConfigurationPtr &configuration) : config_(configuration) {}
 
-  ~Party() {
-    backend_->WaitForConnectionEnd();
-    backend_->GetLogger()->LogInfo("ABYN::Party has been deallocated");
-  }
+  ~Party();
 
   ConfigurationPtr GetConfiguration() { return config_; }
 
   template <ABYN::Protocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  ABYN::Shares::SharePtr IN(std::size_t party_id, const std::vector<T> &input,
+  ABYN::Shares::SharePtr IN(const std::vector<T> &input, std::size_t party_id,
                             std::size_t bits = 0) {
     switch (P) {
       case ABYN::Protocol::ArithmeticGMW: {
         return ArithmeticGMWInput(party_id, input);
       }
       case ABYN::Protocol::BooleanGMW: {
-        //          return BooleanGMWInput(party_id, input);
+        return BooleanGMWInput(party_id, input);
       }
       case ABYN::Protocol::BMR: {
         throw(std::runtime_error("BMR protocol is not implemented yet"));
@@ -74,13 +64,13 @@ class Party {
 
   template <ABYN::Protocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  ABYN::Shares::SharePtr IN(std::size_t party_id, std::vector<T> &&input, std::size_t bits = 0) {
+  ABYN::Shares::SharePtr IN(std::vector<T> &&input, std::size_t party_id, std::size_t bits = 0) {
     switch (P) {
       case ABYN::Protocol::ArithmeticGMW: {
         return ArithmeticGMWInput(party_id, std::move(input));
       }
       case ABYN::Protocol::BooleanGMW: {
-        //        return BooleanGMWInput(party_id, std::move(input));
+        return BooleanGMWInput(party_id, std::move(input));
       }
       case ABYN::Protocol::BMR: {
         throw(std::runtime_error("BMR input gate is not implemented yet"));
@@ -94,12 +84,12 @@ class Party {
 
   template <ABYN::Protocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  ABYN::Shares::SharePtr IN(std::size_t party_id, T input, std::size_t bits = 0) {
+  ABYN::Shares::SharePtr IN(T input, std::size_t party_id, std::size_t bits = 0) {
     if constexpr (std::is_same_v<T, bool>) {
       static_assert(P != ABYN::Protocol::ArithmeticGMW);
       return BooleanGMWInput(party_id, input);
     } else {
-      return IN<P, T>(party_id, std::vector<T>{input}, bits);
+      return IN<P, T>(std::vector<T>{input}, party_id, bits);
     }
   }
 
@@ -122,23 +112,23 @@ class Party {
   ConfigurationPtr config_;
   BackendPtr backend_;
 
-  // Let's make only ABYNConfiguration be copyable
   Party() = delete;
 
+  // Let's make only Configuration be copyable
   Party(Party &party) = delete;
 
   void EvaluateCircuit();
 
   void Finish();
 
-  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false) {
-    std::uint8_t input_byte = input == false ? 0 : 1;
-    return BooleanGMWInput(party_id, std::vector<std::uint8_t>{input_byte}, 1);
-  };
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false);
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input);
+  /*
+  // if \param bits is set to 0, the bit-length of the input vector is taken
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id,
-                                         const std::vector<std::uint8_t> &input,
+                                         const std::vector<std::byte> &input,
                                          std::size_t bits = 0) {
     auto in_gate =
         std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetRegister(), bits);
@@ -148,7 +138,7 @@ class Party {
   };
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
-  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<std::uint8_t> &&input,
+  ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<std::byte> &&input,
                                          std::size_t bits = 0) {
     auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id,
                                                               backend_->GetRegister(), bits);
@@ -178,7 +168,7 @@ class Party {
     backend_->RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<ABYN::Shares::Share>(in_gate->GetOutputAsGMWShare());
   };
-
+*/
   // if \param bits is set to 0, the bit-length of the input vector is taken
   template <typename T>
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, const std::vector<T> &input,
@@ -191,6 +181,15 @@ class Party {
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<T> &&input,
                                          std::size_t bits = 0) {
     throw(std::runtime_error("BooleanGMWInput for arbitrary types is not implemented yet"));
+  }
+
+  ABYN::Shares::SharePtr BooleanGMWOutput(const ABYN::Shares::SharePtr &parent,
+                                          std::size_t output_owner) {
+    assert(parent);
+    auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent->GetWires(), output_owner);
+    auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+    backend_->RegisterGate(out_gate_cast);
+    return std::static_pointer_cast<ABYN::Shares::Share>(out_gate->GetOutputAsShare());
   }
 
   // if \param bits is set to 0, the bit-length of the input vector is taken

@@ -7,8 +7,6 @@
 #include "config.h"
 #include "typedefs.h"
 
-#define OMP_NESTED TRUE
-
 namespace ABYN {
 
 // just in case if we all of a sudden will decide to change the name
@@ -31,10 +29,5 @@ constexpr std::size_t MESSAGE_SIZE_BYTELEN = sizeof(std::uint32_t);
 
 // 2^32 - 2, approx. 4.3 GB
 constexpr std::uint32_t MAX_MESSAGE_SIZE = std::numeric_limits<std::uint32_t>::max() - 1;
-
-constexpr std::uint32_t TERMINATION_MESSAGE =
-    std::numeric_limits<std::uint32_t>::max();  // 2^32 - 1
-
-constexpr std::uint8_t TERMINATION_MESSAGE_U8[4]{0xFF, 0xFF, 0xFF, 0xFF};
 
 }  // namespace ABYN
