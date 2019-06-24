@@ -1,9 +1,3 @@
-[submodule "extern/ENCRYPTO_utils"]
-	path = extern/ENCRYPTO_utils
-	url = https://github.com/encryptogroup/ENCRYPTO_utils.git
-[submodule "extern/OTExtension"]
-	path = extern/OTExtension
-	url = https://github.com/encryptogroup/OTExtension.git
 [submodule "extern/fmt"]
 	path = extern/fmt
 	url = https://github.com/fmtlib/fmt.git
@@ -13,9 +7,3 @@
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = https://github.com/google/googletest.git
-[submodule "extern/cryptoTools"]
-	path = extern/cryptoTools
-	url = ssh://git@github.com/Oleksandr-Tkachenko/cryptoTools.git
-[submodule "extern/libOTe"]
-	path = extern/libOTe
-	url = ssh://git@github.com/Oleksandr-Tkachenko/libOTe.git
