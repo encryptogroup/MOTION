@@ -88,7 +88,6 @@ endif ()
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_definitions(FMT_HEADER_ONLY)
 find_package(fmt QUIET)
 if (fmt_FOUND)
     message(STATUS "Found fmt")
@@ -100,7 +99,7 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
         execute_process(COMMAND git submodule update --init extern/fmt
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
-    set(BUILD_SHARED_LIBS ON CACHE BOOL "Enable building shared libs" FORCE)
+
     set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
     add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
 endif ()
