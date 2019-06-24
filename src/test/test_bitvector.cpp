@@ -7,18 +7,20 @@
 #include "test_constants.h"
 
 namespace {
-
 TEST(BitVector, OutOfBoundsException) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
     for (auto i = 0ull, j = 1ull; i < 20; ++i) {
-      auto should_throw_set = [](std::size_t size) {
+      std::random_device rd;
+      std::uniform_int_distribution<std::uint64_t> dist(0ul, 1000000ul);
+
+      auto should_throw_set = [&](std::size_t size) {
         ENCRYPTO::BitVector bv(size);
-        bv.Set(true, size + std::rand());
+        bv.Set(true, size + dist(rd));
       };
 
-      auto should_throw_get = [](auto size) {
+      auto should_throw_get = [&](auto size) {
         ENCRYPTO::BitVector bv(size);
-        bv.Set(true, size + std::rand());
+        bv.Set(true, size + dist(rd));
       };
 
       ASSERT_ANY_THROW(should_throw_set(j));
@@ -131,6 +133,19 @@ TEST(BitVector, VectorVectorOperations) {
         ASSERT_TRUE(result_xor.at(i) == bv_xor.Get(i));
         ASSERT_TRUE(result_or.at(i) == bv_or.Get(i));
       }
+
+      auto bv0_copy = bv0;
+      std::uniform_int_distribution<uint64_t> dist_size(0, bv0_copy.GetSize() - 1);
+      for (auto i = 0ull; i < 10; ++i) {
+        auto pos = dist_size(rd);
+        bool value = bv0_copy.Get(pos);
+
+        ASSERT_TRUE(bv0 == bv0_copy);
+        bv0_copy.Set(!value, pos);
+        ASSERT_FALSE(bv0 == bv0_copy);
+        bv0_copy.Set(value, pos);
+        ASSERT_TRUE(bv0 == bv0_copy);
+      }
     }
   }
 }  // namespace
@@ -173,13 +188,23 @@ TEST(BitVector, Append) {
       for (auto i = 0ull; i < stl_vectors.size(); ++i) {
         ASSERT_EQ(stl_vector_result.at(i), bit_vector_result.Get(i));
       }
+
+      ASSERT_EQ(stl_vector_result.size(), bit_vector_result.GetSize());
     }
   }
 }
 
 TEST(BitVector, Subset) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+    std::vector<std::size_t> sizes;
+    for (auto i = 1; i < 20; ++i) {
+      sizes.push_back(i);
+    }
+
     for (auto i = 4ull; i < 100000; i *= 2) {
+      sizes.push_back(i);
+    }
+    for (auto i : sizes) {
       std::vector<bool> stl_vector(i);
       ENCRYPTO::BitVector bit_vector(i);
 
@@ -201,6 +226,56 @@ TEST(BitVector, Subset) {
 
       for (auto j = 0ull; j < stl_vector_subset.size(); ++j) {
         ASSERT_EQ(stl_vector_subset.at(j), bit_vector_subset.Get(j));
+      }
+
+      ASSERT_EQ(stl_vector_subset.size(), bit_vector_subset.GetSize());
+    }
+  }
+}
+
+TEST(BitVector, AppendSubset) {
+  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+    std::vector<std::size_t> sizes;
+    for (auto i = 1; i < 20; ++i) {
+      sizes.push_back(i);
+    }
+    for (auto i = 128ull; i < 10000; i *= 2) {
+      sizes.push_back(i);
+    }
+    for (auto size : sizes) {
+      std::vector<bool> stl_vector_result;
+      ENCRYPTO::BitVector bit_vector_result;
+      for (auto subset_i = 0ull; subset_i < 20u; ++subset_i) {
+        std::vector<bool> stl_vector(size);
+        ENCRYPTO::BitVector bit_vector(size);
+
+        std::random_device rd("/dev/urandom");
+        std::uniform_int_distribution<uint64_t> dist_from(0, size / 2);
+        std::uniform_int_distribution<uint64_t> dist_to(size / 2, size - 1);
+        std::uniform_int_distribution<uint64_t> dist_bool(0, 1);
+
+        for (auto j = 0ull; j < stl_vector.size(); ++j) {
+          stl_vector.at(j) = dist_bool(rd);
+          bit_vector.Set(stl_vector.at(j), j);
+        }
+
+        auto from = dist_from(rd);
+        auto to = dist_to(rd);
+
+        std::vector<bool> stl_vector_subset(stl_vector.begin() + from, stl_vector.begin() + to);
+        ENCRYPTO::BitVector bit_vector_subset = bit_vector.Subset(from, to);
+
+        for (auto j = 0ull; j < stl_vector_subset.size(); ++j) {
+          ASSERT_EQ(stl_vector_subset.at(j), bit_vector_subset.Get(j));
+        }
+
+        stl_vector_result.insert(stl_vector_result.end(), stl_vector_subset.begin(),
+                                 stl_vector_subset.end());
+        bit_vector_result.Append(bit_vector_subset);
+      }
+
+      for (auto j = 0ull; j < stl_vector_result.size(); ++j) {
+        ASSERT_EQ(stl_vector_result.at(j), bit_vector_result.Get(j));
       }
     }
   }

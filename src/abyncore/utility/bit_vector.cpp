@@ -19,8 +19,12 @@ constexpr std::byte TRUNCATION_BIT_MASK[] = {
     std::byte(0b10000000), std::byte(0b11000000), std::byte(0b11100000), std::byte(0b111110000),
     std::byte(0b11111000), std::byte(0b11111100), std::byte(0b11111110), std::byte(0b11111111)};
 
-BitVector::BitVector(std::size_t n_bits) : bit_size_(n_bits) {
-  data_vector_.resize(ABYN::Helpers::Convert::BitsToBytes(n_bits), std::byte(0));
+BitVector::BitVector(std::size_t n_bits, bool value) noexcept : bit_size_(n_bits) {
+  std::byte value_byte = value ? std::byte(0xFF) : std::byte(0);
+  data_vector_.resize(ABYN::Helpers::Convert::BitsToBytes(n_bits), value_byte);
+  if (value) {
+    TruncateToFit();
+  }
 }
 
 BitVector::BitVector(const std::vector<std::byte>& data, std::size_t n_bits) : bit_size_(n_bits) {
@@ -30,10 +34,7 @@ BitVector::BitVector(const std::vector<std::byte>& data, std::size_t n_bits) : b
   }
   data_vector_.insert(data_vector_.begin(), data.begin(), data.end());
 
-  auto bit_offset = n_bits % 8;
-  if (bit_offset > 0u) {
-    data_vector_.at(byte_size) &= TRUNCATION_BIT_MASK[bit_offset - 1];
-  }
+  TruncateToFit();
 }
 
 BitVector::BitVector(std::vector<std::byte>&& data, std::size_t n_bits) : bit_size_(n_bits) {
@@ -44,10 +45,7 @@ BitVector::BitVector(std::vector<std::byte>&& data, std::size_t n_bits) : bit_si
   data_vector_ = std::move(data);
   data_vector_.resize(byte_size);
 
-  auto bit_offset = n_bits % 8;
-  if (bit_offset > 0u) {
-    data_vector_.at(byte_size) &= TRUNCATION_BIT_MASK[bit_offset];
-  }
+  TruncateToFit();
 }
 
 BitVector::BitVector(const std::vector<bool>& data, std::size_t n_bits) : bit_size_(n_bits) {
@@ -59,21 +57,38 @@ BitVector::BitVector(const std::vector<bool>& data, std::size_t n_bits) : bit_si
   data_vector_.resize(byte_size, std::byte(0));
 
   for (auto i = 0ull; i < data.size(); ++i) {
-    Set(data.at(i), i);
+    if (data.at(i)) {
+      Set(data.at(i), i);
+    }
   }
 }
 
-void BitVector::operator=(const BitVector& other) {
+void BitVector::operator=(const BitVector& other) noexcept {
   bit_size_ = other.bit_size_;
   data_vector_ = other.data_vector_;
 }
 
-void BitVector::operator=(BitVector&& other) {
+void BitVector::operator=(BitVector&& other) noexcept {
   bit_size_ = other.bit_size_;
   data_vector_ = std::move(other.data_vector_);
 }
 
-void BitVector::Set(bool value) {
+bool BitVector::operator==(const BitVector& other) noexcept {
+  if (bit_size_ != other.bit_size_) {
+    return false;
+  }
+  assert(data_vector_.size() == other.data_vector_.size());
+
+  for (auto i = 0ull; i < data_vector_.size(); ++i) {
+    if (data_vector_.at(i) != other.data_vector_.at(i)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void BitVector::Set(bool value) noexcept {
   for (auto& byte : data_vector_) {
     if (value) {  // set
       byte |= std::byte(0xFFu);
@@ -82,10 +97,8 @@ void BitVector::Set(bool value) {
     }
   }
 
-  std::size_t bit_offset = bit_size_ % 8;
-  if (value && bit_offset != 0u) {
-    std::size_t byte_offset = bit_size_ / 8;
-    data_vector_.at(byte_offset) &= TRUNCATION_BIT_MASK[bit_offset];
+  if (value) {
+    TruncateToFit();
   }
 }
 
@@ -104,7 +117,7 @@ void BitVector::Set(bool value, std::size_t pos) {
   }
 }
 
-bool BitVector::Get(std::size_t pos) {
+bool BitVector::Get(std::size_t pos) const {
   if (pos >= bit_size_) {
     throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", pos, bit_size_));
   }
@@ -118,7 +131,7 @@ bool BitVector::Get(std::size_t pos) {
   return result == SET_BIT_MASK[bit_offset];
 }
 
-BitVector BitVector::operator&(const BitVector& other) {
+BitVector BitVector::operator&(const BitVector& other) const noexcept {
   auto max_bit_size = std::max(bit_size_, other.bit_size_);
   auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
 
@@ -131,7 +144,7 @@ BitVector BitVector::operator&(const BitVector& other) {
   return result;
 }
 
-BitVector BitVector::operator^(const BitVector& other) {
+BitVector BitVector::operator^(const BitVector& other) const noexcept {
   auto max_bit_size = std::max(bit_size_, other.bit_size_);
   auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
   auto max_byte_size = ABYN::Helpers::Convert::BitsToBytes(max_bit_size);
@@ -155,7 +168,7 @@ BitVector BitVector::operator^(const BitVector& other) {
   return result;
 }
 
-BitVector BitVector::operator|(const BitVector& other) {
+BitVector BitVector::operator|(const BitVector& other) const noexcept {
   auto max_bit_size = std::max(bit_size_, other.bit_size_);
   auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
   auto max_byte_size = ABYN::Helpers::Convert::BitsToBytes(max_bit_size);
@@ -179,18 +192,14 @@ BitVector BitVector::operator|(const BitVector& other) {
   return result;
 }
 
-void BitVector::Resize(std::size_t n_bits) {
+void BitVector::Resize(std::size_t n_bits) noexcept {
   bit_size_ = n_bits;
   auto byte_size = ABYN::Helpers::Convert::BitsToBytes(bit_size_);
   data_vector_.resize(byte_size, std::byte(0));
-
-  auto bit_offset = n_bits % 8;
-  if (bit_offset > 0u) {
-    data_vector_.at(byte_size - 1) &= TRUNCATION_BIT_MASK[bit_offset];
-  }
+  TruncateToFit();
 }
 
-void BitVector::Append(bool bit) {
+void BitVector::Append(bool bit) noexcept {
   auto bit_offset = bit_size_ % 8;
   if (bit_offset == 0u) {
     if (bit) {
@@ -206,7 +215,7 @@ void BitVector::Append(bool bit) {
   ++bit_size_;
 }
 
-void BitVector::Append(BitVector&& other) {
+void BitVector::Append(BitVector&& other) noexcept {
   if (other.bit_size_ > 0u) {
     auto old_bit_offset = bit_size_ % 8;
 
@@ -231,11 +240,14 @@ void BitVector::Append(BitVector&& other) {
     } else {
       auto old_byte_offset = data_vector_.size() - 1;
       data_vector_.resize(new_byte_size, std::byte(0));
-      for (auto i = 0ull; i < other.data_vector_.size(); ++i) {
+      for (std::size_t i = 0; i < other.data_vector_.size(); ++i) {
         data_vector_.at(old_byte_offset) |= (other.data_vector_.at(i) >> old_bit_offset);
-        if (i + 1 < other.data_vector_.size() || old_bit_offset + (other.bit_size_ % 8) > 8u) {
+        bool other_has_next_block = i + 1 < other.data_vector_.size();
+        bool last_shift_needed = old_bit_offset + (other.bit_size_ % 8) > 8u;
+        bool other_fits_byte_size = other.bit_size_ % 8 == 0;
+        if (other_has_next_block || last_shift_needed || other_fits_byte_size) {
           data_vector_.at(old_byte_offset + 1) |= other.data_vector_.at(i) << (8 - old_bit_offset);
-        }
+        };
         ++old_byte_offset;
       }
     }
@@ -243,14 +255,14 @@ void BitVector::Append(BitVector&& other) {
   }
 }
 
-void BitVector::Append(const BitVector& other) {
+void BitVector::Append(const BitVector& other) noexcept {
   if (other.bit_size_ > 0u) {
     BitVector bv(other);
     Append(std::move(bv));
   }
 }
 
-BitVector BitVector::Subset(std::size_t from, std::size_t to) {
+BitVector BitVector::Subset(std::size_t from, std::size_t to) const {
   assert(from <= to);
 
   if (from > bit_size_ || to > bit_size_) {
@@ -265,19 +277,14 @@ BitVector BitVector::Subset(std::size_t from, std::size_t to) {
   bv.Resize(to - from);
 
   auto from_bit_offset = from % 8;
-  auto to_bit_offset = to % 8;
 
   if (from_bit_offset == 0u) {
     for (auto i = 0ull; i < bv.data_vector_.size(); ++i) {
       bv.data_vector_.at(i) = data_vector_.at((from / 8) + i);
     }
-    if (to_bit_offset > 0u) {
-      bv.data_vector_.at(bv.data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[to_bit_offset - 1];
-    }
   } else if (from_bit_offset + bv.bit_size_ <= 8u) {
     bv.data_vector_.at(0) = data_vector_.at(from / 8);
     bv.data_vector_.at(0) <<= from_bit_offset;
-    bv.data_vector_.at(0) &= TRUNCATION_BIT_MASK[bv.bit_size_];
   } else {
     auto new_byte_offset = 0ull;
     auto bit_counter = 0ull;
@@ -292,12 +299,26 @@ BitVector BitVector::Subset(std::size_t from, std::size_t to) {
         bit_counter += from_bit_offset;
       }
     }
-    if (bv.bit_size_ % 8 > 0u) {
-      bv.data_vector_.at(bv.data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[(bv.bit_size_ % 8)];
-    }
   }
 
+  bv.TruncateToFit();
+
   return bv;
+}
+
+const std::string BitVector::AsString() const noexcept {
+  std::string result;
+  for (auto i = 0ull; i < bit_size_; ++i) {
+    result.append(std::to_string(Get(i)));
+  }
+  return std::move(result);
+}
+
+void BitVector::TruncateToFit() noexcept {
+  auto bit_offset = bit_size_ % 8;
+  if (bit_offset > 0u) {
+    data_vector_.at(data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[bit_offset - 1];
+  }
 }
 
 }

@@ -2,18 +2,19 @@
 
 #include <cstddef>
 #include <vector>
+#include <string>
 
 namespace ENCRYPTO {
-
 class BitVector {
  public:
-  BitVector() : bit_size_(0){};
+  BitVector() noexcept : bit_size_(0){};
 
-  BitVector(std::size_t n_bits);
+  BitVector(std::size_t n_bits, bool value = false) noexcept;
 
-  BitVector(BitVector&& bv) : data_vector_(std::move(bv.data_vector_)), bit_size_(bv.bit_size_) {}
+  BitVector(BitVector&& bv) noexcept
+      : data_vector_(std::move(bv.data_vector_)), bit_size_(bv.bit_size_) {}
 
-  BitVector(const BitVector& bv)
+  BitVector(const BitVector& bv) noexcept
       : data_vector_(bv.data_vector_.begin(), bv.data_vector_.end()), bit_size_(bv.bit_size_) {}
 
   BitVector(const std::vector<std::byte>& data, std::size_t n_bits);
@@ -24,45 +25,51 @@ class BitVector {
 
   BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {}
 
-  void operator=(const BitVector& other);
+  void operator=(const BitVector& other) noexcept;
 
-  void operator=(BitVector&& other);
+  void operator=(BitVector&& other) noexcept;
 
-  void Set(bool value);
+  bool operator==(const BitVector& other) noexcept;
+
+  void Set(bool value) noexcept;
 
   void Set(bool value, std::size_t pos);
 
-  bool Get(std::size_t pos);
+  bool Get(std::size_t pos) const;
 
-  BitVector operator&(const BitVector& other);
-  BitVector operator^(const BitVector& other);
-  BitVector operator|(const BitVector& other);
+  BitVector operator&(const BitVector& other) const noexcept;
+  BitVector operator^(const BitVector& other) const noexcept;
+  BitVector operator|(const BitVector& other) const noexcept;
 
-  BitVector operator&=(const BitVector& other) { return *this | other; }
-  BitVector operator^=(const BitVector& other) { return *this | other; }
+  BitVector operator&=(const BitVector& other) { return *this & other; }
+  BitVector operator^=(const BitVector& other) { return *this ^ other; }
   BitVector operator|=(const BitVector& other) { return *this | other; }
 
   bool operator[](std::size_t pos) { return Get(pos); }
 
-  void Resize(std::size_t n_bits);
+  void Resize(std::size_t n_bits) noexcept;
 
-  const auto GetSize() const { return bit_size_; }
+  const auto GetSize() const noexcept { return bit_size_; }
 
-  const auto& GetData() const { return data_vector_; }
+  const auto& GetData() const noexcept { return data_vector_; }
 
-  auto& GetMutableData() { return data_vector_; }
+  auto& GetMutableData() noexcept { return data_vector_; }
 
-  void Append(bool bit);
+  void Append(bool bit) noexcept;
 
-  void Append(const BitVector& other);
+  void Append(const BitVector& other) noexcept;
 
-  void Append(BitVector&& other);
+  void Append(BitVector&& other) noexcept;
 
-  BitVector Subset(std::size_t from, std::size_t to);
+  BitVector Subset(std::size_t from, std::size_t to) const;
+
+  const std::string AsString() const noexcept;
 
  private:
   std::vector<std::byte> data_vector_;
 
   std::size_t bit_size_;
+
+  void TruncateToFit() noexcept;
 };
 }
