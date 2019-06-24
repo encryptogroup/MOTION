@@ -116,7 +116,7 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
 
-    set(FLATBUFFERS_BUILD_FLATLIB ON CACHE BOOL "Enable building flatlib" FORCE)
+    set(FLATBUFFERS_BUILD_FLATLIB OFF CACHE BOOL "Enable building flatlib" FORCE)
     set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "Disable building flathash" FORCE)
     set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "Disable building flatbuffers tests" FORCE)
     set(FLATC_DIR "${PROJECT_BINARY_DIR}/bin")
