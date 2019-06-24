@@ -53,7 +53,7 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if 
     message("BUILD TYPE: " ${CMAKE_BUILD_TYPE})
 
     if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
-        message("CMAKE_BUILD_TYPE ${CMAKE_BUILD_TYPE} is debug")
+        message("CMAKE_BUILD_TYPE is debug")
         #SET(OMIT_FRAME_POINTER_COMP_OPT "-fno-omit-frame-pointer")
         #SET(SANITIZE_ADDRESS_COMP_OPT "-fsanitize=address")
         #set(SANITIZE_ADDRESS_LINK_OPT "-fsanitize=address")
@@ -99,9 +99,9 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
         execute_process(COMMAND git submodule update --init extern/fmt
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
-
-    set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
-    add_subdirectory(extern/fmt EXCLUDE_FROM_ALL)
+    add_definitions(-DFMT_HEADER_ONLY=TRUE)
+    #set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
+    #add_subdirectory(extern/fmt)
 endif ()
 
 find_package(flatbuffers QUIET)
@@ -122,9 +122,8 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
     set(FLATC_DIR "${PROJECT_BINARY_DIR}/bin")
     set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
     add_subdirectory(${PROJECT_SOURCE_DIR}/extern/flatbuffers
-            ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build
-            EXCLUDE_FROM_ALL)
-    add_subdirectory(fbs EXCLUDE_FROM_ALL)
+            ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build)
+    add_subdirectory(fbs)
 endif ()
 
 add_subdirectory(src/abyncore)

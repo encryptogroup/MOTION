@@ -7,8 +7,7 @@ add_executable(abyntest
 target_include_directories(abyntest PRIVATE
         ${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
 
-target_link_libraries(abyntest PUBLIC
+target_link_libraries(abyntest PRIVATE
         ABYN::abyn
-        fmt::fmt
         gtest
         )
