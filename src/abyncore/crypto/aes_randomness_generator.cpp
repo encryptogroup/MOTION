@@ -93,7 +93,12 @@ std::vector<std::uint8_t> AESRandomnessGenerator::HashKey(
   std::uint8_t digest[EVP_MAX_MD_SIZE];
   unsigned int md_len;
 
+#if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
+  EVP_DigestInit_ex(mdctx, EVP_sha512(), NULL);
+#else
   EVP_DigestInit_ex(mdctx, EVP_blake2b512(), NULL);
+#endif
+
   EVP_DigestUpdate(mdctx, seed_padded.data(), seed_padded.size());
   EVP_DigestFinal_ex(mdctx, digest, &md_len);
   EVP_MD_CTX_free(mdctx);
