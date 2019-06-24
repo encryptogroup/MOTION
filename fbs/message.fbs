@@ -1,10 +1,13 @@
 namespace ABYN.Communication;
 
-enum MessageType : ubyte {HelloMessage = 0, OutputMessage = 1} //add other types here after implementing them
+//add new message types here
+enum MessageType : ubyte {HelloMessage = 0, OutputMessage = 1, TerminationMessage = 2}
+
+// TODO: implement message splitting if the size of a single message goes over 2^32 - 1 bits
 
 
-// General message interface that contains a header and payload, where payload is some raw flatbuffers::Struct.
-// This is generally needed because flatbuffers doesn't provide functionality to transfer serialized binary structures 
+// General message interface that contains a header and a payload, where payload is some raw flatbuffers::Struct.
+// This is generally needed because flatbuffers doesn't provide a functionality to transfer serialized binary structures
 // of variable size and type over the network, so we need to manually ensure that the other party knows how many bytes
 // it has to read for this message and what type of message it is. Thus, general idea: send uint32-bit byte-length
 // of the message and the message directly afterwards.

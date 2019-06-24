@@ -17,6 +17,7 @@ static auto &EVP_MD_CTX_free = EVP_MD_CTX_destroy;
 
 #include <fmt/format.h>
 
+#include "utility/bit_vector.h"
 #include "utility/constants.h"
 #include "utility/helpers.h"
 #include "utility/typedefs.h"
@@ -25,6 +26,8 @@ namespace ABYN::Crypto {
 
 class AESRandomnessGenerator {
  public:
+  constexpr static std::size_t MASTER_SEED_BYTE_LENGTH = 32;
+
   AESRandomnessGenerator(std::size_t party_id)
       : party_id_(party_id), ctx_arithmetic_(MakeCipherCtx()), ctx_boolean_(MakeCipherCtx()) {
     if (!ctx_arithmetic_ || !ctx_boolean_) {
@@ -32,7 +35,7 @@ class AESRandomnessGenerator {
     }
   }
 
-  void Initialize(unsigned char key[AES_KEY_SIZE], unsigned char iv[AES_BLOCK_SIZE / 2]);
+  void Initialize(unsigned char seed[AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH]);
 
   ~AESRandomnessGenerator() = default;
 
@@ -55,7 +58,8 @@ class AESRandomnessGenerator {
     std::uint8_t output[AES_BLOCK_SIZE], input[AES_BLOCK_SIZE];
 
     std::copy(std::begin(aes_ctr_nonce_arithmetic_), std::end(aes_ctr_nonce_arithmetic_), input);
-    std::copy(reinterpret_cast<std::uint8_t *>(&gate_id), reinterpret_cast<std::uint8_t *>(&gate_id) + sizeof(gate_id),
+    std::copy(reinterpret_cast<std::uint8_t *>(&gate_id),
+              reinterpret_cast<std::uint8_t *>(&gate_id) + sizeof(gate_id),
               input + AESRandomnessGenerator::COUNTER_OFFSET);
 
     // encrypt as in CTR mode, but without sequentially incrementing the counter
@@ -69,7 +73,8 @@ class AESRandomnessGenerator {
 
     // combine resulting randomness xored with the gate_id, which is the actual
     // input to AES-CTR
-    __uint128_t result = reinterpret_cast<std::uint64_t *>(output)[0], mod = std::numeric_limits<T>::max();
+    __uint128_t result = reinterpret_cast<std::uint64_t *>(output)[0],
+                mod = std::numeric_limits<T>::max();
     result <<= 64;
     result ^= reinterpret_cast<std::uint64_t *>(output)[1] ^ gate_id;
     result %= mod;
@@ -91,7 +96,8 @@ class AESRandomnessGenerator {
     results.reserve(num_of_gates);
 
     auto size_in_bytes = AES_BLOCK_SIZE * (num_of_gates);
-    std::vector<std::uint8_t> output(size_in_bytes + AES_BLOCK_SIZE), input(size_in_bytes + AES_BLOCK_SIZE);
+    std::vector<std::uint8_t> output(size_in_bytes + AES_BLOCK_SIZE),
+        input(size_in_bytes + AES_BLOCK_SIZE);
 
     auto gate_id_copy = gate_id;
     for (auto i = 0u; i < num_of_gates; ++i, ++gate_id_copy) {
@@ -128,7 +134,7 @@ class AESRandomnessGenerator {
     return std::move(results);
   }
 
-  std::vector<std::uint8_t> GetBits(std::size_t gate_id, std::size_t num_of_gates);
+  ENCRYPTO::BitVector GetBits(std::size_t gate_id, std::size_t num_of_gates);
 
  private:
   static constexpr std::size_t COUNTER_OFFSET =
@@ -142,12 +148,12 @@ class AESRandomnessGenerator {
   };
   EVP_CIPHER_CTX_PTR ctx_arithmetic_, ctx_boolean_;
 
+  std::uint8_t master_seed_[AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH] = {0};
   std::uint8_t raw_key_arithmetic_[AES_KEY_SIZE] = {0},
-     raw_key_boolean_[AES_KEY_SIZE] = {0};  /// AES key in raw std::uint8_t format
-  std::uint8_t aes_ctr_nonce_arithmetic_[AES_BLOCK_SIZE / 2] = {0},
-                                                aes_ctr_nonce_boolean_[AES_BLOCK_SIZE / 2] = {
-                                                    0};  /// Raw AES CTR nonce that is used in
-                                                         /// the left part of IV
+               raw_key_boolean_[AES_KEY_SIZE] = {0};  /// AES key in raw std::uint8_t format
+  std::uint8_t aes_ctr_nonce_arithmetic_[AES_BLOCK_SIZE / 2] = {0};
+  std::uint8_t aes_ctr_nonce_boolean_[AES_BLOCK_SIZE / 2] = {0};  /// Raw AES CTR nonce that is used
+                                                                  /// in the left part of IV
 
   ///
   /// \brief Encrypt a sequence of bytes using 128-bit AES-ECB to further
@@ -155,14 +161,21 @@ class AESRandomnessGenerator {
   /// automated OpenSSL routine for AES-CTR, where counter is incremented after
   /// each encryption.
   ///
-  int Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *input, std::uint8_t *output, std::size_t num_of_blocks);
+  int Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *input, std::uint8_t *output,
+              std::size_t num_of_blocks);
+
+  enum KeyType {
+    ArithmeticGMWKey = 1u,
+    ArithmeticGMWNonce = 2u,
+    BooleanGMWKey = 3u,
+    BooleanGMWNonce = 4u
+  };
 
   // use old key to generate randomness for a new key
-  std::vector<std::uint8_t> HashKey(const std::uint8_t old_key[AES_KEY_SIZE]);
+  std::vector<std::uint8_t> HashKey(const std::uint8_t old_key[AES_KEY_SIZE], KeyType key_type);
 
   bool initialized_ = false;
 
-  std::vector<std::uint8_t> random_bits;
-  size_t random_bits_counter = 0;
+  ENCRYPTO::BitVector random_bits;
 };
 }  // namespace ABYN::Crypto
