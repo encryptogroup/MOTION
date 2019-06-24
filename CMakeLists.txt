@@ -58,6 +58,9 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if 
         #SET(SANITIZE_ADDRESS_COMP_OPT "-fsanitize=address")
         #set(SANITIZE_ADDRESS_LINK_OPT "-fsanitize=address")
     endif ()
+
+    #enable for compilation time debugging
+    #set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 endif ()
 
 if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
@@ -84,34 +87,6 @@ if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 endif ()
 
 set(CMAKE_CXX_STANDARD 17)
-
-find_package(ENCRYPTO_utils QUIET)
-if (ENCRYPTO_utils_FOUND)
-    message(STATUS "Found ENCRYPTO_utils")
-elseif (NOT ENCRYPTO_utils_FOUND AND NOT TARGET ENCRYPTO_utils::encrypto_utils)
-    message("ENCRYPTO_utils was not found: add ENCRYPTO_utils subdirectory")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/ENCRYPTO_utils/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/ENCRYPTO_utils")
-        execute_process(COMMAND git submodule update --init extern/ENCRYPTO_utils
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
-    add_subdirectory(extern/ENCRYPTO_utils)
-endif ()
-
-find_package(OTExtension QUIET)
-if (OTExtension_FOUND)
-    message(STATUS "Found OTExtension")
-elseif (NOT OTExtension_FOUND AND NOT TARGET OTExtension::otextension)
-    message("OTExtension was not found: add OTExtension subdirectory")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/OTExtension/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/OTExtension")
-        execute_process(COMMAND git submodule update --init extern/OTExtension
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
-    add_subdirectory(extern/OTExtension)
-endif ()
 
 add_compile_definitions(FMT_HEADER_ONLY)
 find_package(fmt QUIET)
@@ -152,36 +127,6 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
             EXCLUDE_FROM_ALL)
     add_subdirectory(fbs EXCLUDE_FROM_ALL)
 endif ()
-
-find_package(cryptoTools QUIET)
-if (cryptoTools_FOUND)
-    message(STATUS "Found cryptoTools")
-elseif (NOT cryptoTools_FOUND AND NOT TARGET cryptoTools::cryptoTools)
-    message("cryptoTools was not found: add cryptoTools subdirectory")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/cryptoTools/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/cryptoTools")
-        execute_process(COMMAND git submodule update --init extern/cryptoTools
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
-    add_subdirectory(extern/cryptoTools EXCLUDE_FROM_ALL)
-endif ()
-
-
-  find_package(libOTe QUIET)
-  if (libOTe_FOUND)
-      message(STATUS "Found libOTe")
-  elseif (NOT libOTe_FOUND AND NOT TARGET libOTe::libOTe)
-      message("libOTe was not found: add libOTe subdirectory")
-      if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/libOTe/CMakeLists.txt")
-          find_package(Git REQUIRED)
-          message("initialize Git submodule: extern/libOTe")
-          execute_process(COMMAND git submodule update --init extern/libOTe
-                  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-      endif ()
-      add_subdirectory(extern/libOTe EXCLUDE_FROM_ALL)
-  endif ()
-
 
 add_subdirectory(src/abyncore)
 
