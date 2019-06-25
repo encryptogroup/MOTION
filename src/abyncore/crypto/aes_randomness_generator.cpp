@@ -2,6 +2,13 @@
 
 namespace ABYN::Crypto {
 
+AESRandomnessGenerator::AESRandomnessGenerator(std::size_t party_id)
+    : party_id_(party_id), ctx_arithmetic_(MakeCipherCtx()), ctx_boolean_(MakeCipherCtx()) {
+  if (!ctx_arithmetic_ || !ctx_boolean_) {
+    throw(std::runtime_error(fmt::format("Could not initialize EVP context")));
+  }
+}
+
 void AESRandomnessGenerator::Initialize(
     std::uint8_t seed[AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH]) {
   std::copy(seed, seed + MASTER_SEED_BYTE_LENGTH, std::begin(master_seed_));
@@ -22,10 +29,13 @@ void AESRandomnessGenerator::Initialize(
     auto digest = HashKey(master_seed_, KeyType::BooleanGMWNonce);
     std::copy(digest.data(), digest.data() + AES_BLOCK_SIZE / 2, aes_ctr_nonce_boolean_);
   }
+
   initialized_ = true;
 }
 
 ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::size_t num_of_gates) {
+  std::scoped_lock<std::mutex> lock(random_bits_mutex);
+
   if (num_of_gates == 0) {
     return {};  // return an empty vector if num_of_gates is zero
   }
@@ -34,17 +44,18 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
 
   const size_t BITS_IN_CIPHERTEXT = AES_BLOCK_SIZE * 8;
 
-  std::vector<std::uint8_t> input(AES_BLOCK_SIZE), output(AES_BLOCK_SIZE * 2);
-  std::vector<std::byte> output_bytes;
+  std::vector<std::uint8_t> input(AES_BLOCK_SIZE * 2), output(AES_BLOCK_SIZE * 2);
   std::copy(std::begin(aes_ctr_nonce_boolean_), std::end(aes_ctr_nonce_boolean_), input.data());
-  while (random_bits.GetSize() < (gate_id + num_of_gates)) {
+  while (random_bits_.GetSize() < (gate_id + num_of_gates)) {
+    std::vector<std::byte> output_bytes;
     auto counter_pointer = input.data() + AESRandomnessGenerator::COUNTER_OFFSET;
-    auto counter_value = random_bits.GetSize() / BITS_IN_CIPHERTEXT;
+    auto counter_value = random_bits_.GetSize() / BITS_IN_CIPHERTEXT;
     *reinterpret_cast<std::uint64_t *>(counter_pointer) = counter_value;
 
     // encrypt as in CTR mode, but without sequentially incrementing the counter
     // after each encryption
-    int output_length = Encrypt(ctx_boolean_.get(), input.data(), output.data(), 1);
+    int output_length =
+        Encrypt(ctx_boolean_.get(), raw_key_boolean_, input.data(), output.data(), 1);
 
     if (static_cast<std::size_t>(output_length) < AES_BLOCK_SIZE ||
         static_cast<std::size_t>(output_length) > 2 * AES_BLOCK_SIZE) {
@@ -55,17 +66,18 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
     for (auto i = 0ull; i < AES_BLOCK_SIZE; ++i) {
       output_bytes.push_back(std::byte(output.at(i)));
     }
-    random_bits.Append(ENCRYPTO::BitVector(output_bytes, BITS_IN_CIPHERTEXT));
+    auto randomness = ENCRYPTO::BitVector(std::move(output_bytes), BITS_IN_CIPHERTEXT);
+    random_bits_.Append(randomness);
   }
 
-  return std::move(random_bits.Subset(gate_id, gate_id + num_of_gates));
+  return std::move(random_bits_.Subset(gate_id, gate_id + num_of_gates));
 }
 
-int AESRandomnessGenerator::Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *input,
+int AESRandomnessGenerator::Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *key, std::uint8_t *input,
                                     std::uint8_t *output, std::size_t num_of_blocks) {
   int output_length, len;
 
-  if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, raw_key_arithmetic_, nullptr)) {
+  if (1 != EVP_EncryptInit_ex(ctx, EVP_aes_128_ecb(), NULL, key, nullptr)) {
     throw(std::runtime_error(fmt::format("Could not re-initialize EVP context")));
   }
 

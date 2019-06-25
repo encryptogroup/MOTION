@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <mutex>
 #include <thread>
 #include <vector>
 
@@ -28,12 +29,7 @@ class AESRandomnessGenerator {
  public:
   constexpr static std::size_t MASTER_SEED_BYTE_LENGTH = 32;
 
-  AESRandomnessGenerator(std::size_t party_id)
-      : party_id_(party_id), ctx_arithmetic_(MakeCipherCtx()), ctx_boolean_(MakeCipherCtx()) {
-    if (!ctx_arithmetic_ || !ctx_boolean_) {
-      throw(std::runtime_error(fmt::format("Could not initialize EVP context")));
-    }
-  }
+  AESRandomnessGenerator(std::size_t party_id);
 
   void Initialize(unsigned char seed[AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH]);
 
@@ -64,7 +60,7 @@ class AESRandomnessGenerator {
 
     // encrypt as in CTR mode, but without sequentially incrementing the counter
     // after each encryption
-    int output_length = Encrypt(ctx_arithmetic_.get(), input, output, 1);
+    int output_length = Encrypt(ctx_arithmetic_.get(), raw_key_arithmetic_, input, output, 1);
 
     if (output_length != AES_BLOCK_SIZE) {
       throw(std::runtime_error(fmt::format("AES encryption output has length {}, expected {}",
@@ -110,7 +106,8 @@ class AESRandomnessGenerator {
 
     // encrypt as in CTR mode, but without sequentially incrementing the counter
     // after each encryption
-    int output_length = Encrypt(ctx_arithmetic_.get(), input.data(), output.data(), num_of_gates);
+    int output_length = Encrypt(ctx_arithmetic_.get(), raw_key_arithmetic_, input.data(),
+                                output.data(), num_of_gates);
     assert(output_length >= 0);
 
     if (static_cast<std::size_t>(output_length) < size_in_bytes ||
@@ -161,7 +158,7 @@ class AESRandomnessGenerator {
   /// automated OpenSSL routine for AES-CTR, where counter is incremented after
   /// each encryption.
   ///
-  int Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *input, std::uint8_t *output,
+  int Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *key, std::uint8_t *input, std::uint8_t *output,
               std::size_t num_of_blocks);
 
   enum KeyType {
@@ -176,6 +173,8 @@ class AESRandomnessGenerator {
 
   bool initialized_ = false;
 
-  ENCRYPTO::BitVector random_bits;
+  ENCRYPTO::BitVector random_bits_;
+
+  std::mutex random_bits_mutex;
 };
 }  // namespace ABYN::Crypto
