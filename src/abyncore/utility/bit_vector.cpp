@@ -1,6 +1,8 @@
 #include "bit_vector.h"
 
 #include <iostream>
+#include <random>
+
 #include "fmt/format.h"
 
 #include "helpers.h"
@@ -73,7 +75,7 @@ void BitVector::operator=(BitVector&& other) noexcept {
   data_vector_ = std::move(other.data_vector_);
 }
 
-bool BitVector::operator==(const BitVector& other) noexcept {
+bool BitVector::operator==(const BitVector& other) const noexcept {
   if (bit_size_ != other.bit_size_) {
     return false;
   }
@@ -215,7 +217,7 @@ void BitVector::Append(bool bit) noexcept {
   ++bit_size_;
 }
 
-void BitVector::Append(BitVector&& other) noexcept {
+void BitVector::Append(const BitVector& other) noexcept {
   if (other.bit_size_ > 0u) {
     auto old_bit_offset = bit_size_ % 8;
 
@@ -255,10 +257,9 @@ void BitVector::Append(BitVector&& other) noexcept {
   }
 }
 
-void BitVector::Append(const BitVector& other) noexcept {
+void BitVector::Append(BitVector&& other) noexcept {
   if (other.bit_size_ > 0u) {
-    BitVector bv(other);
-    Append(std::move(bv));
+    Append(other);
   }
 }
 
@@ -319,6 +320,26 @@ void BitVector::TruncateToFit() noexcept {
   if (bit_offset > 0u) {
     data_vector_.at(data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[bit_offset - 1];
   }
+}
+
+BitVector BitVector::Random(std::size_t size) noexcept {
+  std::random_device rd;
+  std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
+  std::uniform_int_distribution<std::uint64_t> dist_bool(0, 1);
+
+  BitVector bv(size);
+  auto ptr = reinterpret_cast<std::uint64_t*>(bv.data_vector_.data());
+
+  for (auto i = 0ull; i + 64 <= size; i += 64) {
+    *(ptr + (i / 64)) = dist(rd);
+  }
+
+  const auto offset = size - (size % 64);
+  for (auto i = 0ull; offset + i < size; ++i) {
+    bv.Set(dist_bool(rd) == true, offset + i);
+  }
+
+  return std::move(bv);
 }
 
 }

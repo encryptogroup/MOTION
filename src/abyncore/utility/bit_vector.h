@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstddef>
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace ENCRYPTO {
 class BitVector {
@@ -29,7 +29,7 @@ class BitVector {
 
   void operator=(BitVector&& other) noexcept;
 
-  bool operator==(const BitVector& other) noexcept;
+  bool operator==(const BitVector& other) const noexcept;
 
   void Set(bool value) noexcept;
 
@@ -41,9 +41,9 @@ class BitVector {
   BitVector operator^(const BitVector& other) const noexcept;
   BitVector operator|(const BitVector& other) const noexcept;
 
-  BitVector operator&=(const BitVector& other) { return *this & other; }
-  BitVector operator^=(const BitVector& other) { return *this ^ other; }
-  BitVector operator|=(const BitVector& other) { return *this | other; }
+  void operator&=(const BitVector& other) { *this = *this & other; }
+  void operator^=(const BitVector& other) { *this = *this ^ other; }
+  void operator|=(const BitVector& other) { *this = *this | other; }
 
   bool operator[](std::size_t pos) { return Get(pos); }
 
@@ -64,6 +64,8 @@ class BitVector {
   BitVector Subset(std::size_t from, std::size_t to) const;
 
   const std::string AsString() const noexcept;
+
+  static BitVector Random(std::size_t size) noexcept;
 
  private:
   std::vector<std::byte> data_vector_;
