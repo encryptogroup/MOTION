@@ -665,10 +665,6 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
     // assert SIMD lengths of all wires are equal
     assert(ABYN::Helpers::Compare::Dimensions(input_));
 
-    if (bits_ == 0u) {
-      bits_ = input_.at(0).GetSize() * 8;
-    }
-
     boolean_sharing_id_ = shared_ptr_reg->NextBooleanGMWSharingId(input_.size() * bits_);
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Created a BooleanGMWInputGate with global id {}", gate_id_));
@@ -716,9 +712,10 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
               shared_ptr_reg->GetConfig()->GetCommunicationContext(j)->GetMyRandomnessGenerator();
           auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
           log_string.append(fmt::format("id#{}:{} ", j, randomness.AsString()));
+
           result.at(i) ^= randomness;
-          sharing_id += bits_;
         }
+        sharing_id += bits_;
         auto s = fmt::format(
             "My (id#{}) Boolean input sharing for gate#{}, my input: {}, my "
             "share: {}, expected shares of other parties: {}",
@@ -729,8 +726,8 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
                                    ->GetCommunicationContext(party_id_)
                                    ->GetTheirRandomnessGenerator();
         Helpers::WaitFor(rand_generator->IsInitialized());
-        auto randomness_v = std::move(rand_generator->GetBits(sharing_id, bits_));
-        result.at(i) = randomness_v;
+        auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
+        result.at(i) = randomness;
 
         auto s = fmt::format(
             "Boolean input sharing (gate#{}) of Party's#{} input, got a "
