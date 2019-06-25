@@ -134,6 +134,19 @@ TEST(BitVector, VectorVectorOperations) {
         ASSERT_TRUE(result_or.at(i) == bv_or.Get(i));
       }
 
+      auto bv_and_old = bv_and;
+      bv_and &= bv_and;
+
+      bv_xor ^= bv_xor;
+      ENCRYPTO::BitVector bv_zero(bv_xor.GetSize(), false);
+
+      auto bv_or_old = bv_or;
+      bv_or |= bv_or;
+
+      ASSERT_TRUE(bv_and_old == bv_and);
+      ASSERT_TRUE(bv_xor == bv_zero);
+      ASSERT_TRUE(bv_or_old == bv_or);
+
       auto bv0_copy = bv0;
       std::uniform_int_distribution<uint64_t> dist_size(0, bv0_copy.GetSize() - 1);
       for (auto i = 0ull; i < 10; ++i) {
@@ -185,7 +198,7 @@ TEST(BitVector, Append) {
         bit_vector_result.Append(bit_vectors.at(i));
       }
 
-      for (auto i = 0ull; i < stl_vectors.size(); ++i) {
+      for (auto i = 0ull; i < stl_vector_result.size(); ++i) {
         ASSERT_EQ(stl_vector_result.at(i), bit_vector_result.Get(i));
       }
 
