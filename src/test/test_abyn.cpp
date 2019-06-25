@@ -70,8 +70,8 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
 #pragma omp task
           {
             std::vector<Communication::ContextPtr> parties;
-            parties.emplace_back(std::make_shared<Communication::Context>(
-                "127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
+            parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET,
+                                                                          ABYN::Role::Server, 1));
             parties.emplace_back(std::make_shared<Communication::Context>(
                 "127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
             parties.emplace_back(std::make_shared<Communication::Context>(
@@ -86,8 +86,8 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
           {
             std::string ip = "127.0.0.1";
             std::vector<Communication::ContextPtr> parties;
-            parties.emplace_back(std::make_shared<Communication::Context>(
-                ip, PORT_OFFSET, ABYN::Role::Client, 0));
+            parties.emplace_back(
+                std::make_shared<Communication::Context>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
             parties.emplace_back(std::make_shared<Communication::Context>(
                 "127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
             parties.emplace_back(std::make_shared<Communication::Context>(
@@ -103,14 +103,13 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
           {
             std::string ip = "127.0.0.1";
             std::uint16_t port = PORT_OFFSET + 1;
-            auto abyn = std::move(
-                PartyPtr(new Party{{std::make_shared<Communication::Context>(
-                                        ip, port, ABYN::Role::Client, 0),
-                                    std::make_shared<Communication::Context>(
-                                        ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
-                                    std::make_shared<Communication::Context>(
-                                        "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Server, 3)},
-                                   2}));
+            auto abyn = std::move(PartyPtr(new Party{
+                {std::make_shared<Communication::Context>(ip, port, ABYN::Role::Client, 0),
+                 std::make_shared<Communication::Context>(ip, PORT_OFFSET + 3, ABYN::Role::Client,
+                                                          1),
+                 std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 5,
+                                                          ABYN::Role::Server, 3)},
+                2}));
             abyn->Connect();
 #pragma omp critical
             { abyn_parties.push_back(std::move(abyn)); }
@@ -165,12 +164,12 @@ TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
       // Party #0
       futures.push_back(std::async(std::launch::async, []() {
         std::vector<Communication::ContextPtr> parties;
-        parties.emplace_back(std::make_shared<Communication::Context>(
-            "127.0.0.1", PORT_OFFSET, ABYN::Role::Server, 1));
-        parties.emplace_back(std::make_shared<Communication::Context>(
-            "127.0.0.1", PORT_OFFSET + 1, ABYN::Role::Server, 2));
-        parties.emplace_back(std::make_shared<Communication::Context>(
-            "127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Server, 3));
+        parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET,
+                                                                      ABYN::Role::Server, 1));
+        parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 1,
+                                                                      ABYN::Role::Server, 2));
+        parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 2,
+                                                                      ABYN::Role::Server, 3));
         auto abyn = std::move(PartyPtr(new Party{parties, 0}));
         abyn->Connect();
         return std::move(abyn);
@@ -180,12 +179,12 @@ TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
       futures.push_back(std::async(std::launch::async, []() {
         std::string ip = "127.0.0.1";
         std::vector<Communication::ContextPtr> parties;
-        parties.emplace_back(std::make_shared<Communication::Context>(
-            ip, PORT_OFFSET, ABYN::Role::Client, 0));
-        parties.emplace_back(std::make_shared<Communication::Context>(
-            "127.0.0.1", PORT_OFFSET + 3, ABYN::Role::Server, 2));
-        parties.emplace_back(std::make_shared<Communication::Context>(
-            "127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Server, 3));
+        parties.emplace_back(
+            std::make_shared<Communication::Context>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
+        parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 3,
+                                                                      ABYN::Role::Server, 2));
+        parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 4,
+                                                                      ABYN::Role::Server, 3));
         auto abyn = std::move(PartyPtr(new Party{parties, 1}));
         abyn->Connect();
         return std::move(abyn);
@@ -197,10 +196,9 @@ TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
         std::uint16_t port = PORT_OFFSET + 1;
         auto abyn = std::move(PartyPtr(new Party{
             {std::make_shared<Communication::Context>(ip, port, ABYN::Role::Client, 0),
-             std::make_shared<Communication::Context>(ip, PORT_OFFSET + 3,
-                                                                   ABYN::Role::Client, 1),
+             std::make_shared<Communication::Context>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
              std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 5,
-                                                                   ABYN::Role::Server, 3)},
+                                                      ABYN::Role::Server, 3)},
             2}));
         abyn->Connect();
         return std::move(abyn);
@@ -273,7 +271,7 @@ TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_pa
   }
 }
 
-TEST(ABYNArithmeticTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
+TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
@@ -302,9 +300,9 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
             input_10K = global_input_10K;
           }
 
-          auto input_share_1 = abyn_parties.at(party_id)->IN<AGMW, T>(input_1, input_owner);
-          auto input_share_1K = abyn_parties.at(party_id)->IN<AGMW, T>(input_1K, input_owner);
-          auto input_share_10K = abyn_parties.at(party_id)->IN<AGMW, T>(input_10K, input_owner);
+          auto input_share_1 = abyn_parties.at(party_id)->IN<AGMW>(input_1, input_owner);
+          auto input_share_1K = abyn_parties.at(party_id)->IN<AGMW>(input_1K, input_owner);
+          auto input_share_10K = abyn_parties.at(party_id)->IN<AGMW>(input_10K, input_owner);
 
           auto output_share_1 = abyn_parties.at(party_id)->OUT(input_share_1, output_owner);
           auto output_share_1K = abyn_parties.at(party_id)->OUT(input_share_1K, output_owner);
@@ -343,7 +341,7 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
+TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
@@ -377,9 +375,9 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
             const std::vector<T> &my_in_1K = party_id == j ? in_1K.at(j) : _zero_v_1K;
             const std::vector<T> &my_in_10K = party_id == j ? in_10K.at(j) : _zero_v_10K;
 
-            s_in_1.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(my_in_1, j));
-            s_in_1K.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(my_in_1K, j));
-            s_in_10K.push_back(abyn_parties.at(party_id)->IN<AGMW, T>(my_in_10K, j));
+            s_in_1.push_back(abyn_parties.at(party_id)->IN<AGMW>(my_in_1, j));
+            s_in_1K.push_back(abyn_parties.at(party_id)->IN<AGMW>(my_in_1K, j));
+            s_in_10K.push_back(abyn_parties.at(party_id)->IN<AGMW>(my_in_10K, j));
           }
 
           auto s_add_1 = abyn_parties.at(party_id)->ADD(s_in_1.at(0), s_in_1.at(1));
@@ -434,6 +432,69 @@ TEST(ABYNArithmeticTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
     template_test(static_cast<std::uint16_t>(0));
     template_test(static_cast<std::uint32_t>(0));
     template_test(static_cast<std::uint64_t>(0));
+  }
+}
+
+TEST(ABYNBooleanGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
+    const auto BGMW = ABYN::Protocol::BooleanGMW;
+    std::srand(std::time(nullptr));
+    for (auto num_parties : num_parties_list) {
+      const std::size_t input_owner = std::rand() % num_parties,
+                        output_owner = std::rand() % num_parties;
+      const auto global_input_1 = (std::rand() % 2) == 1;
+      const auto global_input_1K = ENCRYPTO::BitVector::Random(1000),
+           global_input_10K = ENCRYPTO::BitVector::Random(10000);
+      try {
+        std::vector<PartyPtr> abyn_parties(
+            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : abyn_parties) {
+          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+        }
+#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(abyn_parties.size())
+        for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+          bool input_1 = false;
+          ENCRYPTO::BitVector input_1K(global_input_1K.GetSize(), false);
+          ENCRYPTO::BitVector input_10K(global_input_10K.GetSize(), false);
+          if (party_id == input_owner) {
+            input_1 = global_input_1;
+            input_1K = global_input_1K;
+            input_10K = global_input_10K;
+          }
+
+          auto input_share_1 = abyn_parties.at(party_id)->IN<BGMW>(input_1, input_owner);
+          auto input_share_1K = abyn_parties.at(party_id)->IN<BGMW>(input_1K, input_owner);
+          auto input_share_10K = abyn_parties.at(party_id)->IN<BGMW>(input_10K, input_owner);
+
+          auto output_share_1 = abyn_parties.at(party_id)->OUT(input_share_1, output_owner);
+          auto output_share_1K = abyn_parties.at(party_id)->OUT(input_share_1K, output_owner);
+          auto output_share_10K = abyn_parties.at(party_id)->OUT(input_share_10K, output_owner);
+
+          abyn_parties.at(party_id)->Run();
+
+          if (party_id == output_owner) {
+            auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(
+                output_share_1->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(
+                output_share_1K->GetWires().at(0));
+            auto wire_10K = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(
+                output_share_10K->GetWires().at(0));
+
+            assert(wire_1);
+            assert(wire_1K);
+            assert(wire_10K);
+
+            EXPECT_EQ(wire_1->GetValuesOnWire().Get(0), global_input_1);
+            EXPECT_EQ(wire_1K->GetValuesOnWire(), global_input_1K);
+            EXPECT_EQ(wire_10K->GetValuesOnWire(), global_input_10K);
+          }
+        }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
   }
 }
 }  // namespace
