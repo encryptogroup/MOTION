@@ -592,7 +592,7 @@ namespace GMW {
 
 class GMWInputGate : public Gates::Interfaces::InputGate {
  public:
-  GMWInputGate(const ENCRYPTO::BitVector &input, std::size_t party_id, std::weak_ptr<Register> reg)
+  /*GMWInputGate(const ENCRYPTO::BitVector &input, std::size_t party_id, std::weak_ptr<Register> reg)
       : input_({input}), bits_(input.GetSize()), party_id_(party_id) {
     register_ = reg;
     InitializationHelper();
@@ -602,7 +602,7 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
       : input_({std::move(input)}), bits_(input.GetSize()), party_id_(party_id) {
     register_ = reg;
     InitializationHelper();
-  }
+  }*/
 
   GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id,
                std::weak_ptr<Register> reg)
@@ -849,12 +849,11 @@ class GMWOutputGate : public Interfaces::OutputGate {
         assert(gmw_wire);
         wires.push_back(gmw_wire);
         output_.at(i) = wires.at(wires.size() - 1)->GetValuesOnWire();
+        ++i;
       }
     }
-
     auto shared_ptr_reg = register_.lock();
     assert(shared_ptr_reg);
-
     if (is_my_output_) {
       // wait until all conditions are fulfilled
       for (auto &wire : wires) {
@@ -886,7 +885,7 @@ class GMWOutputGate : public Interfaces::OutputGate {
           }
           if (!success) {
             std::this_thread::sleep_for(std::chrono::microseconds(100));
-          };
+          }
         }
       }
 

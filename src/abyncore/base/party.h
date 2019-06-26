@@ -25,11 +25,14 @@ using ArithmeticShare = Shares::ArithmeticShare<T>;
 
 class Party {
  public:
+  Party() = delete;
+
+  // Let's make only Configuration be copyable
+  Party(Party &party) = delete;
+
   Party(std::vector<Communication::ContextPtr> &parties, std::size_t my_id);
 
   Party(std::vector<Communication::ContextPtr> &&parties, std::size_t my_id);
-
-  Party(std::initializer_list<Communication::ContextPtr> &list_parties, std::size_t my_id);
 
   Party(std::initializer_list<Communication::ContextPtr> &&list_parties, std::size_t my_id);
 
@@ -38,6 +41,40 @@ class Party {
   ~Party();
 
   ConfigurationPtr GetConfiguration() { return config_; }
+
+  template <Protocol P>
+  Shares::SharePtr IN(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id) {
+    static_assert(P != Protocol::ArithmeticGMW);
+    switch (P) {
+      case Protocol::BooleanGMW: {
+        return BooleanGMWInput(party_id, input);
+      }
+      case Protocol::BMR: {
+        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+        // TODO
+      }
+      default: {
+        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+      }
+    }
+  }
+
+  template <Protocol P>
+  Shares::SharePtr IN(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id) {
+    static_assert(P != Protocol::ArithmeticGMW);
+    switch (P) {
+      case Protocol::BooleanGMW: {
+        return BooleanGMWInput(party_id, std::move(input));
+      }
+      case Protocol::BMR: {
+        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+        // TODO
+      }
+      default: {
+        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+      }
+    }
+  }
 
   template <Protocol P>
   Shares::SharePtr IN(const ENCRYPTO::BitVector &input, std::size_t party_id) {
@@ -58,8 +95,19 @@ class Party {
 
   template <Protocol P>
   Shares::SharePtr IN(ENCRYPTO::BitVector &&input, std::size_t party_id) {
-    static_assert(P == Protocol::BooleanGMW);
-    return BooleanGMWInput(party_id, input);
+    static_assert(P != Protocol::ArithmeticGMW);
+    switch (P) {
+      case Protocol::BooleanGMW: {
+        return BooleanGMWInput(party_id, std::move(input));
+      }
+      case Protocol::BMR: {
+        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+        // TODO
+      }
+      default: {
+        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+      }
+    }
   }
 
   template <Protocol P, typename T = std::uint8_t,
@@ -70,7 +118,9 @@ class Party {
         return ArithmeticGMWInput(party_id, input);
       }
       case Protocol::BooleanGMW: {
-        return BooleanGMWInput(party_id, input);
+        throw(std::runtime_error(
+            fmt::format("Non-binary types have to be converted to BitVectors in BooleanGMW, "
+                        "consider using TODO function for the input")));
       }
       case Protocol::BMR: {
         static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
@@ -90,7 +140,9 @@ class Party {
         return ArithmeticGMWInput(party_id, std::move(input));
       }
       case Protocol::BooleanGMW: {
-        return BooleanGMWInput(party_id, std::move(input));
+        throw(std::runtime_error(
+            fmt::format("Non-binary types have to be converted to BitVectors in BooleanGMW, "
+                        "consider using TODO function for the input")));
       }
       case Protocol::BMR: {
         static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
@@ -151,11 +203,6 @@ class Party {
   ConfigurationPtr config_;
   BackendPtr backend_;
 
-  Party() = delete;
-
-  // Let's make only Configuration be copyable
-  Party(Party &party) = delete;
-
   void EvaluateCircuit();
 
   void Finish();
@@ -165,9 +212,17 @@ class Party {
   // if \param bits is set to 0, the bit-length of the input vector is taken
   Shares::SharePtr BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input);
 
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input);
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id,
+                                   const std::vector<ENCRYPTO::BitVector> &input);
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<ENCRYPTO::BitVector> &&input);
+
   Shares::SharePtr BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
 
   Shares::SharePtr BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b);
+
   /*
   // if \param bits is set to 0, the bit-length of the input vector is taken
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id,
@@ -212,19 +267,6 @@ class Party {
     return std::static_pointer_cast<ABYN::Shares::Share>(in_gate->GetOutputAsGMWShare());
   };
 */
-  // if \param bits is set to 0, the bit-length of the input vector is taken
-  template <typename T>
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, const std::vector<T> &input,
-                                   std::size_t bits = 0) {
-    throw(std::runtime_error("BooleanGMWInput for arbitrary types is not implemented yet"));
-  }
-
-  // if \param bits is set to 0, the bit-length of the input vector is taken
-  template <typename T>
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<T> &&input,
-                                   std::size_t bits = 0) {
-    throw(std::runtime_error("BooleanGMWInput for arbitrary types is not implemented yet"));
-  }
 
   Shares::SharePtr BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner) {
     assert(parent);

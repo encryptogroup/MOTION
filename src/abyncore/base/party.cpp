@@ -16,11 +16,6 @@ Party::Party(std::vector<Communication::ContextPtr> &&parties, std::size_t my_id
   backend_ = std::make_shared<Backend>(config_);
 }
 
-Party::Party(std::initializer_list<Communication::ContextPtr> &list_parties, std::size_t my_id) {
-  config_ = std::make_shared<Configuration>(list_parties, my_id);
-  backend_ = std::make_shared<Backend>(config_);
-}
-
 Party::Party(std::initializer_list<Communication::ContextPtr> &&list_parties, std::size_t my_id) {
   config_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
   backend_ = std::make_shared<Backend>(config_);
@@ -32,16 +27,31 @@ Party::~Party() {
 }
 
 ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id, bool input) {
-  ENCRYPTO::BitVector input_bv;
-  input_bv.Append(input);
-  return BooleanGMWInput(party_id, input_bv);
-};
+  return BooleanGMWInput(party_id, ENCRYPTO::BitVector(1, input));
+}
 
-// if \param bits is set to 0, the bit-length of the input vector is taken
 ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
                                               const ENCRYPTO::BitVector &input) {
+  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{input});
+}
+
+ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input) {
+  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{std::move(input)});
+}
+
+ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
+                                              const std::vector<ENCRYPTO::BitVector> &input) {
   auto in_gate =
       std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetRegister());
+  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  backend_->RegisterInputGate(in_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
+}
+
+ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
+                                              std::vector<ENCRYPTO::BitVector> &&input) {
+  auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id,
+                                                            backend_->GetRegister());
   auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   backend_->RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -236,7 +246,7 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
       parties.emplace_back(
           std::make_shared<Communication::Context>("127.0.0.1", this_port, role, other_id));
     }
-    abyn_parties.at(my_id) = std::move(std::make_unique<Party>(parties, my_id));
+    abyn_parties.at(my_id) = std::make_unique<Party>(std::move(parties), my_id);
     abyn_parties.at(my_id)->Connect();
   }
 
