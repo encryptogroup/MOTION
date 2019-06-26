@@ -199,77 +199,12 @@ using BooleanSharePtr = std::shared_ptr<BooleanShare>;
 
 class GMWShare : public BooleanShare {
  public:
-  /*
-  GMWShare(std::vector<std::byte> &input, RegisterPtr &reg, std::size_t bits) {
-    wires_ = {std::make_shared<Wires::GMWWire>(input, reg, bits)};
-    register_ = reg;
-    bits_ = bits;
-  }
 
-  GMWShare(std::vector<std::byte> &&input, RegisterPtr &reg, std::size_t bits) {
-    wires_ = {std::make_shared<Wires::GMWWire>(std::move(input), reg, bits)};
-    register_ = reg;
-    bits_ = bits;
-  }
-
-  GMWShare(std::vector<std::vector<std::byte>> &input, RegisterPtr &reg, std::size_t bits) {
-    if (input.size() == 0) {
-      throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
-    }
-    for (auto &v : input) {
-      wires_.push_back(std::make_shared<Wires::GMWWire>(v, reg, bits));
-    }
-    register_ = reg;
-    bits_ = bits;
-  }
-
-  GMWShare(std::vector<std::vector<std::byte>> &&input, RegisterPtr &reg, std::size_t bits) {
-    if (input.size() == 0) {
-      throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
-    }
-    for (auto &v : input) {
-      wires_.push_back(std::make_shared<Wires::GMWWire>(std::move(v), reg, bits));
-    }
-    register_ = reg;
-    bits_ = bits;
-  }*/
-
-  GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
-    if (wires.size() == 0) {
-      throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
-    }
-    for (auto &wire : wires) {
-      if (wire->GetProtocol() != ABYN::Protocol::BooleanGMW) {
-        throw(
-            std::runtime_error("Trying to create a Boolean GMW share from wires "
-                               "of different sharing type"));
-      }
-    }
-
-    wires_ = wires;
-    if constexpr (DEBUG) {
-      assert(wires_.size() > 0);
-      auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
-      assert(gmw_wire);
-      auto size = gmw_wire->GetValuesOnWire().GetSize();
-
-      for (auto i = 0ull; i < wires_.size(); ++i) {
-        auto gmw_wire_next = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
-        assert(gmw_wire_next);
-        assert(size == gmw_wire_next->GetValuesOnWire().GetSize());
-      }
-    }
-    register_ = wires.at(0)->GetRegister();
-    bits_ = wires.at(0)->GetBitLength();
-  }
+  GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires);
 
   const std::vector<Wires::WirePtr> GetWires() const final { return wires_; }
 
-  std::size_t GetNumOfParallelValues() final {
-    auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
-    assert(gmw_wire);
-    return gmw_wire->GetValuesOnWire().GetSize();
-  };
+  std::size_t GetNumOfParallelValues() final;
 
   Protocol GetSharingType() final { return BooleanGMW; }
 
@@ -277,7 +212,7 @@ class GMWShare : public BooleanShare {
 
   std::shared_ptr<Share> Clone() final {
     return std::static_pointer_cast<Share>(std::make_shared<GMWShare>(wires_));
-  };
+  }
 
  private:
   std::vector<ABYN::Wires::WirePtr> wires_;
