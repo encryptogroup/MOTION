@@ -532,7 +532,7 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
     shared_ptr_reg->GetLogger()->LogTrace(
-        fmt::format("Allocate an ArithmeticAdditionGate with following properties: {}", gate_info));
+        fmt::format("Created an ArithmeticAdditionGate with following properties: {}", gate_info));
 
     SetSetupIsReady();
   }
@@ -760,7 +760,6 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
  private:
   /// two-dimensional vector for storing the raw inputs
   std::vector<ENCRYPTO::BitVector> input_;
-  std::vector<ENCRYPTO::BitVector> output_;  ///< BitVector for storing the raw outputs
 
   std::size_t bits_;                ///< Number of parallel values on wires
   std::size_t party_id_;            ///< Indicates whether which party shares the input
@@ -832,7 +831,7 @@ class GMWOutputGate : public Interfaces::OutputGate {
     }
 
     auto gate_info =
-        fmt::format("bitlength , gate id {}, owner {}", output_.size(), gate_id_, output_owner_);
+        fmt::format("bitlength {}, gate id {}, owner {}", output_.size(), gate_id_, output_owner_);
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Allocate an Boolean GMWOutputGate with following properties: {}", gate_info));
 
@@ -846,7 +845,9 @@ class GMWOutputGate : public Interfaces::OutputGate {
     {
       std::size_t i = 0;
       for (auto &wire : parent_) {
-        wires.push_back(std::dynamic_pointer_cast<Wires::GMWWire>(wire));
+        auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wire);
+        assert(gmw_wire);
+        wires.push_back(gmw_wire);
         output_.at(i) = wires.at(wires.size() - 1)->GetValuesOnWire();
       }
     }
@@ -856,7 +857,9 @@ class GMWOutputGate : public Interfaces::OutputGate {
 
     if (is_my_output_) {
       // wait until all conditions are fulfilled
-      Helpers::WaitFor(parent_finished_);
+      for (auto &wire : wires) {
+        Helpers::WaitFor(wire->IsReady());
+      }
 
       auto &config = shared_ptr_reg->GetConfig();
       shared_outputs_.resize(shared_ptr_reg->GetConfig()->GetNumOfParties());
@@ -934,6 +937,112 @@ class GMWOutputGate : public Interfaces::OutputGate {
     assert(result);
     return result;
   }
+};
+
+class GMWXORGate : public Gates::Interfaces::TwoGate {
+ public:
+  GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b)
+      : parent_a_finished_(a->GetWires().at(0)->IsReady()),
+        parent_b_finished_(b->GetWires().at(0)->IsReady()) {
+    parent_a_ = a->GetWires();
+    parent_b_ = b->GetWires();
+
+    assert(parent_a_.size() > 0);
+    assert(parent_b_.size() == parent_b_.size());
+
+    register_ = parent_a_.at(0)->GetRegister();
+
+    requires_online_interaction_ = false;
+    gate_type_ = GateType::NonInteractiveGate;
+
+    auto shared_ptr_reg = register_.lock();
+    assert(shared_ptr_reg);
+
+    gate_id_ = shared_ptr_reg->NextGateId();
+
+    for (auto &wire : parent_a_) {
+      RegisterWaitingFor(wire->GetWireId());
+      wire->RegisterWaitingGate(gate_id_);
+    }
+
+    for (auto &wire : parent_b_) {
+      RegisterWaitingFor(wire->GetWireId());
+      wire->RegisterWaitingGate(gate_id_);
+    }
+
+    output_wires_.resize(parent_a_.size());
+    const ENCRYPTO::BitVector tmp_bv(a->GetNumOfParallelValues());
+    for (auto &w : output_wires_) {
+      w = std::move(std::static_pointer_cast<Wires::Wire>(
+          std::make_shared<Wires::GMWWire>(tmp_bv, register_)));
+    }
+
+    for (auto &w : output_wires_) {
+      shared_ptr_reg->RegisterNextWire(w);
+    }
+
+    auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
+                                 parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+    shared_ptr_reg->GetLogger()->LogTrace(
+        fmt::format("Created a BooleanGMW XOR gate with following properties: {}", gate_info));
+
+    SetSetupIsReady();
+  }
+
+  ~GMWXORGate() final = default;
+
+  void Evaluate() final {
+    for (auto &wire : parent_a_) {
+      Helpers::WaitFor(wire->IsReady());
+    }
+
+    for (auto &wire : parent_b_) {
+      Helpers::WaitFor(wire->IsReady());
+    }
+
+    for (auto i = 0ull; i < parent_a_.size(); ++i) {
+      auto wire_a = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
+      auto wire_b = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
+
+      assert(wire_a);
+      assert(wire_b);
+
+      auto output = wire_a->GetValuesOnWire() ^ wire_b->GetValuesOnWire();
+
+      auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
+      assert(gmw_wire);
+      gmw_wire->GetMutableValuesOnWire() = std::move(output);
+    }
+
+    SetOnlineIsReady();
+
+    auto shared_ptr_reg = register_.lock();
+    assert(shared_ptr_reg);
+
+    shared_ptr_reg->IncrementEvaluatedGatesCounter();
+    shared_ptr_reg->GetLogger()->LogTrace(
+        fmt::format("Evaluated BooleanGMW XOR Gate with id#{}", gate_id_));
+  }
+
+  const Shares::GMWSharePtr GetOutputAsGMWShare() const {
+    auto result = std::make_shared<Shares::GMWShare>(output_wires_);
+    assert(result);
+    return result;
+  }
+
+  const Shares::SharePtr GetOutputAsShare() const {
+    auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsGMWShare());
+    assert(result);
+    return result;
+  }
+
+  GMWXORGate() = delete;
+
+  GMWXORGate(const Gate &) = delete;
+
+ protected:
+  const bool &parent_a_finished_;
+  const bool &parent_b_finished_;
 };
 
 }  // namespace GMW

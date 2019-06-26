@@ -16,14 +16,12 @@ Party::Party(std::vector<Communication::ContextPtr> &&parties, std::size_t my_id
   backend_ = std::make_shared<Backend>(config_);
 }
 
-Party::Party(std::initializer_list<Communication::ContextPtr> &list_parties,
-             std::size_t my_id) {
+Party::Party(std::initializer_list<Communication::ContextPtr> &list_parties, std::size_t my_id) {
   config_ = std::make_shared<Configuration>(list_parties, my_id);
   backend_ = std::make_shared<Backend>(config_);
 }
 
-Party::Party(std::initializer_list<Communication::ContextPtr> &&list_parties,
-             std::size_t my_id) {
+Party::Party(std::initializer_list<Communication::ContextPtr> &&list_parties, std::size_t my_id) {
   config_ = std::make_shared<Configuration>(std::move(list_parties), my_id);
   backend_ = std::make_shared<Backend>(config_);
 }
@@ -47,7 +45,25 @@ ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
   auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   backend_->RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
-};
+}
+
+Shares::SharePtr Party::BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b) {
+  assert(a);
+  assert(b);
+  auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(a, b);
+  backend_->RegisterGate(xor_gate);
+  return xor_gate->GetOutputAsShare();
+}
+
+Shares::SharePtr Party::BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+  assert(a);
+  assert(b);
+  auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  assert(casted_parent_a_ptr);
+  assert(casted_parent_b_ptr);
+  return BooleanGMWXOR(casted_parent_a_ptr, casted_parent_b_ptr);
+}
 
 ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t output_owner) {
   switch (parent->GetSharingType()) {
@@ -153,7 +169,7 @@ void Party::Run(std::size_t repeats) {
   backend_->VerifyHelloMessages();
   for (auto i = 0ull; i < repeats; ++i) {
     EvaluateCircuit();
-  };
+  }
   Finish();
 }
 
@@ -217,8 +233,8 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
             fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
       };
 
-      parties.emplace_back(std::make_shared<Communication::Context>(
-          "127.0.0.1", this_port, role, other_id));
+      parties.emplace_back(
+          std::make_shared<Communication::Context>("127.0.0.1", this_port, role, other_id));
     }
     abyn_parties.at(my_id) = std::move(std::make_unique<Party>(parties, my_id));
     abyn_parties.at(my_id)->Connect();

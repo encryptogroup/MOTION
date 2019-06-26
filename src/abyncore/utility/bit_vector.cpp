@@ -163,7 +163,7 @@ BitVector BitVector::operator^(const BitVector& other) const noexcept {
 
   const auto& larger_vector =
       data_vector_.size() > other.data_vector_.size() ? data_vector_ : other.data_vector_;
-  for (; i < min_byte_size; ++i) {
+  for (; i < max_byte_size; ++i) {
     result.data_vector_.at(i) ^= larger_vector.at(i);
   }
 
@@ -187,7 +187,7 @@ BitVector BitVector::operator|(const BitVector& other) const noexcept {
 
   const auto& larger_vector =
       data_vector_.size() > other.data_vector_.size() ? data_vector_ : other.data_vector_;
-  for (; i < min_byte_size; ++i) {
+  for (; i < max_byte_size; ++i) {
     result.data_vector_.at(i) = larger_vector.at(i);
   }
 

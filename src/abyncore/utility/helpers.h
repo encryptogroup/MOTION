@@ -2,8 +2,8 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "typedefs.h"
 #include "bit_vector.h"
+#include "typedefs.h"
 
 namespace ENCRYPTO {
 class BitVector;  // forward declaration
@@ -110,6 +110,48 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
       }
     }
     return std::move(sum);
+  }
+}
+
+inline bool XORReduceBitVector(const ENCRYPTO::BitVector &vector) {
+  if (vector.GetSize() == 0) {
+    return {};
+  } else if (vector.GetSize() == 1) {
+    return vector.Get(0);
+  } else if (vector.GetSize() <= 64) {
+    bool result = vector.Get(0);
+    for (auto i = 1ull; i < vector.GetSize(); ++i) {
+      result ^= vector.Get(i);
+    }
+    return result;
+  } else {
+    auto raw_vector = vector.GetData();
+    std::byte b = raw_vector.at(0);
+    for (auto i = 1ull; i < raw_vector.size(); ++i) {
+      b ^= raw_vector.at(i);
+    }
+    ENCRYPTO::BitVector bv({b}, 8);
+    bool result = bv.Get(0);
+
+    for (auto i = 1; i < 8; ++i) {
+      result ^= bv.Get(i);
+    }
+
+    return result;
+  }
+}
+
+inline ENCRYPTO::BitVector XORBitVectors(const std::vector<ENCRYPTO::BitVector> &vectors) {
+  if (vectors.size() == 0) {
+    return {};
+  } else if (vectors.size() == 1) {
+    return vectors.at(0);
+  } else {
+    auto result = vectors.at(0);
+    for (auto i = 1ull; i < vectors.size(); ++i) {
+      result ^= vectors.at(i);
+    }
+    return result;
   }
 }
 

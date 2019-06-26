@@ -113,6 +113,25 @@ class Party {
     }
   }
 
+  Shares::SharePtr XOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+    assert(a);
+    assert(b);
+    assert(a->GetSharingType() != Protocol::ArithmeticGMW);
+    assert(a->GetSharingType() == b->GetSharingType());
+    switch (a->GetSharingType()) {
+      case Protocol::BooleanGMW: {
+        return BooleanGMWXOR(a, b);
+      }
+      case Protocol::BMR: {
+        throw std::runtime_error("BMR protocol is not implemented yet");
+        // TODO
+      }
+      default: {
+        throw(std::runtime_error("Unknown protocol"));
+      }
+    }
+  }
+
   Shares::SharePtr OUT(Shares::SharePtr parent, std::size_t output_owner);
 
   Shares::SharePtr ADD(const Shares::SharePtr &a, const Shares::SharePtr &b);
@@ -145,6 +164,10 @@ class Party {
 
   // if \param bits is set to 0, the bit-length of the input vector is taken
   Shares::SharePtr BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input);
+
+  Shares::SharePtr BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
+
+  Shares::SharePtr BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b);
   /*
   // if \param bits is set to 0, the bit-length of the input vector is taken
   ABYN::Shares::SharePtr BooleanGMWInput(std::size_t party_id,

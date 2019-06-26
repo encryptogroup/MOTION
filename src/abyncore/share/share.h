@@ -247,13 +247,29 @@ class GMWShare : public BooleanShare {
     }
 
     wires_ = wires;
+    if constexpr (DEBUG) {
+      assert(wires_.size() > 0);
+      auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
+      assert(gmw_wire);
+      auto size = gmw_wire->GetValuesOnWire().GetSize();
+
+      for (auto i = 0ull; i < wires_.size(); ++i) {
+        auto gmw_wire_next = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
+        assert(gmw_wire_next);
+        assert(size == gmw_wire_next->GetValuesOnWire().GetSize());
+      }
+    }
     register_ = wires.at(0)->GetRegister();
     bits_ = wires.at(0)->GetBitLength();
   }
 
   const std::vector<Wires::WirePtr> GetWires() const final { return wires_; }
 
-  std::size_t GetNumOfParallelValues() final { return wires_.size(); };
+  std::size_t GetNumOfParallelValues() final {
+    auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
+    assert(gmw_wire);
+    return gmw_wire->GetValuesOnWire().GetSize();
+  };
 
   Protocol GetSharingType() final { return BooleanGMW; }
 
