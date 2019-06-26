@@ -498,7 +498,7 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_SIMD_1_1K_10K) {
+TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K_10K) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     const auto BGMW = ABYN::Protocol::BooleanGMW;
     std::srand(std::time(nullptr));
@@ -509,6 +509,7 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_SIMD_1_1K_10K) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
       }
       std::vector<ENCRYPTO::BitVector> global_input_1K(num_parties), global_input_10K(num_parties);
+
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
         global_input_1K.at(j) = ENCRYPTO::BitVector::Random(1000);
         global_input_10K.at(j) = ENCRYPTO::BitVector::Random(10000);
@@ -576,6 +577,78 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_SIMD_1_1K_10K) {
                       Helpers::XORReduceBitVector(global_input_1));
             EXPECT_EQ(wire_1K->GetValuesOnWire(), Helpers::XORBitVectors(global_input_1K));
             EXPECT_EQ(wire_10K->GetValuesOnWire(), Helpers::XORBitVectors(global_input_10K));
+          }
+        }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
+  }
+}
+
+TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_64_bit_SIMD_1K) {
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
+    const auto BGMW = ABYN::Protocol::BooleanGMW;
+    std::srand(std::time(nullptr));
+    for (auto num_parties : num_parties_list) {
+      const std::size_t output_owner = std::rand() % num_parties;
+      std::vector<std::vector<ENCRYPTO::BitVector>> global_input_1K_64_bit(num_parties);
+      for (auto &bv_v : global_input_1K_64_bit) {
+        bv_v.resize(64);
+        for (auto &bv : bv_v) {
+          bv = ENCRYPTO::BitVector::Random(1000);
+        }
+      }
+      std::vector<ENCRYPTO::BitVector> dummy_input_1K_64_bit(64, ENCRYPTO::BitVector(1000, false));
+
+      try {
+        std::vector<PartyPtr> abyn_parties(
+            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : abyn_parties) {
+          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+        }
+#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(abyn_parties.size())
+        for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+          std::vector<Shares::SharePtr> input_share_1K_64_bit;
+
+          for (auto j = 0ull; j < num_parties; ++j) {
+            if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+              input_share_1K_64_bit.push_back(
+                  abyn_parties.at(party_id)->IN<BGMW>(global_input_1K_64_bit.at(j), j));
+            } else {
+              input_share_1K_64_bit.push_back(
+                  abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1K_64_bit, j));
+            }
+          }
+
+          auto xor_1K_64_bit = abyn_parties.at(party_id)->XOR(input_share_1K_64_bit.at(0),
+                                                              input_share_1K_64_bit.at(1));
+
+          for (auto j = 2ull; j < num_parties; ++j) {
+            xor_1K_64_bit =
+                abyn_parties.at(party_id)->XOR(xor_1K_64_bit, input_share_1K_64_bit.at(j));
+          }
+
+          auto output_share_1K_64_bit = abyn_parties.at(party_id)->OUT(xor_1K_64_bit, output_owner);
+
+          abyn_parties.at(party_id)->Run();
+
+          if (party_id == output_owner) {
+            for (auto j = 0ull; j < global_input_1K_64_bit.size(); ++j) {
+              auto wire_1K_64_bit_single = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(
+                  output_share_1K_64_bit->GetWires().at(j));
+              assert(wire_1K_64_bit_single);
+
+              std::vector<ENCRYPTO::BitVector> global_input_1K_64_bit_single;
+              for (auto k = 0ull; k < num_parties; ++k) {
+                global_input_1K_64_bit_single.push_back(global_input_1K_64_bit.at(k).at(j));
+              }
+
+              EXPECT_EQ(wire_1K_64_bit_single->GetValuesOnWire(),
+                        Helpers::XORBitVectors(global_input_1K_64_bit_single));
+            }
           }
         }
       } catch (std::exception &e) {
