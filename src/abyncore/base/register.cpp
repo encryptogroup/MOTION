@@ -2,6 +2,8 @@
 
 #include "fmt/format.h"
 
+#include "configuration.h"
+#include "communication/handler.h"
 #include "utility/logger.h"
 
 namespace ABYN {
@@ -20,27 +22,27 @@ Register::~Register() {
   wires_.resize(0);
 }
 
-std::size_t Register::NextGateId() { return global_gate_id_++; }
+std::size_t Register::NextGateId() noexcept { return global_gate_id_++; }
 
-std::size_t Register::NextWireId() { return global_wire_id_++; }
+std::size_t Register::NextWireId() noexcept { return global_wire_id_++; }
 
 std::size_t Register::NextArithmeticSharingId(std::size_t num_of_parallel_values) {
   assert(num_of_parallel_values != 0);
-  auto old_id = global_arithmetic_sharing_id_;
-  global_arithmetic_sharing_id_ += num_of_parallel_values;
+  auto old_id = global_arithmetic_gmw_sharing_id_;
+  global_arithmetic_gmw_sharing_id_ += num_of_parallel_values;
   return old_id;
 }
 
 std::size_t Register::NextBooleanGMWSharingId(std::size_t num_of_parallel_values) {
   assert(num_of_parallel_values != 0);
-  auto old_id = global_gmw_sharing_id_;
-  global_gmw_sharing_id_ += num_of_parallel_values;
+  auto old_id = global_boolean_gmw_sharing_id_;
+  global_boolean_gmw_sharing_id_ += num_of_parallel_values;
   return old_id;
 }
 
-const LoggerPtr &Register::GetLogger() { return logger_; }
+const LoggerPtr &Register::GetLogger() const noexcept { return logger_; }
 
-const ConfigurationPtr &Register::GetConfig() { return config_; }
+const ConfigurationPtr &Register::GetConfig() const noexcept { return config_; }
 
 void Register::RegisterCommunicationHandlers(
     std::vector<ABYN::Communication::HandlerPtr> &communication_handlers) {

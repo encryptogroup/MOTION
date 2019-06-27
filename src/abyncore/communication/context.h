@@ -10,7 +10,6 @@
 
 #include "crypto/aes_randomness_generator.h"
 #include "utility/constants.h"
-#include "utility/data_storage.h"
 #include "utility/typedefs.h"
 
 namespace ABYN {
@@ -60,7 +59,7 @@ class Context {
 
   void ParseMessage(std::vector<std::uint8_t> &&raw_message);
 
-  DataStorage &GetDataStorage() { return data_storage_; }
+  std::shared_ptr<DataStorage> &GetDataStorage() { return data_storage_; }
 
   const std::unique_ptr<Crypto::AESRandomnessGenerator> &GetMyRandomnessGenerator() {
     return my_randomness_generator_;
@@ -71,7 +70,7 @@ class Context {
   }
 
  private:
-  DataStorage data_storage_;
+  std::shared_ptr<DataStorage> data_storage_;
 
   std::string ip_;
   std::uint16_t port_ = 0;

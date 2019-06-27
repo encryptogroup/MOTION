@@ -7,6 +7,7 @@
 #include "context.h"
 #include "message.h"
 #include "utility/constants.h"
+#include "utility/data_storage.h"
 #include "utility/logger.h"
 
 namespace ABYN::Communication {
@@ -57,7 +58,7 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
   auto message_raw_pointer = message_detached.data();
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
     if (auto shared_ptr_party = party_.lock()) {
-      shared_ptr_party->GetDataStorage().SetSentHelloMessage(message_raw_pointer,
+      shared_ptr_party->GetDataStorage()->SetSentHelloMessage(message_raw_pointer,
                                                              message_detached.size());
     } else {
       throw(std::runtime_error("Party instance destroyed before its communication handler"));
@@ -265,16 +266,16 @@ std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
 bool Handler::VerifyHelloMessage() {
   bool result = true;
   if (auto shared_ptr_party = party_.lock()) {
-    auto my_hm = shared_ptr_party->GetDataStorage().GetSentHelloMessage();
+    auto my_hm = shared_ptr_party->GetDataStorage()->GetSentHelloMessage();
     while (my_hm == nullptr) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      my_hm = shared_ptr_party->GetDataStorage().GetSentHelloMessage();
+      my_hm = shared_ptr_party->GetDataStorage()->GetSentHelloMessage();
     }
 
-    auto their_hm = shared_ptr_party->GetDataStorage().GetReceivedHelloMessage();
+    auto their_hm = shared_ptr_party->GetDataStorage()->GetReceivedHelloMessage();
     while (their_hm == nullptr) {
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      their_hm = shared_ptr_party->GetDataStorage().GetReceivedHelloMessage();
+      their_hm = shared_ptr_party->GetDataStorage()->GetReceivedHelloMessage();
     }
 
     if (shared_ptr_party) {

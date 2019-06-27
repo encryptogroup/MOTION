@@ -7,12 +7,14 @@
 
 #include "fmt/format.h"
 
+#include "base/configuration.h"
 #include "base/register.h"
 #include "communication/context.h"
 #include "communication/output_message.h"
 #include "crypto/aes_randomness_generator.h"
 #include "share/share.h"
 #include "utility/constants.h"
+#include "utility/data_storage.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
 #include "utility/typedefs.h"
@@ -33,12 +35,7 @@ namespace Interfaces {
 
 class Gate {
  public:
-  virtual ~Gate(){
-      /*  std::scoped_lock lock(mutex_);
-        if(auto shared_ptr_core = core_.lock()) {
-          shared_ptr_core->UnregisterGate(gate_id_);
-        }*/
-  };
+  virtual ~Gate() = default;
 
   virtual void EvaluateSetup() = 0;
 
@@ -467,7 +464,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
         auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
         assert(shared_outputs_.at(i).size() == 0);
         while (!success) {
-          auto message = data_storage.GetOutputMessage(gate_id_);
+          auto message = data_storage->GetOutputMessage(gate_id_);
           if (message != nullptr) {
             shared_outputs_.at(i) =
                 std::move(Helpers::FromByteVector<T>(*message->wires()->Get(0)->payload()));
@@ -865,7 +862,7 @@ class GMWOutputGate : public Interfaces::OutputGate {
         auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
         shared_outputs_.at(i).resize(output_.size());
         while (!success) {
-          auto message = data_storage.GetOutputMessage(gate_id_);
+          auto message = data_storage->GetOutputMessage(gate_id_);
           if (message != nullptr) {
             for (auto j = 0ull; j < message->wires()->size(); ++j) {
               auto payload = message->wires()->Get(j)->payload();

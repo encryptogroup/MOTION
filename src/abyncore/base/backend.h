@@ -4,8 +4,6 @@
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "utility/constants.h"
-
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ABYN {

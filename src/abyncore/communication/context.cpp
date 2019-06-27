@@ -6,6 +6,7 @@
 #include <cstdlib>
 
 #include "utility/constants.h"
+#include "utility/data_storage.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
 #include "utility/random.h"
@@ -13,25 +14,32 @@
 
 namespace ABYN::Communication {
 
-Context::Context(std::string ip, std::uint16_t port, Role role,
-                                           std::size_t id)
-    : data_storage_(id), ip_(ip.c_str()), port_(port), role_(role), id_(id), is_connected_(false) {
+Context::Context(std::string ip, std::uint16_t port, Role role, std::size_t id)
+    : data_storage_(std::make_shared<DataStorage>(id)),
+      ip_(ip.c_str()),
+      port_(port),
+      role_(role),
+      id_(id),
+      is_connected_(false) {
   if (IsInvalidIp(ip.data())) {
     throw(std::runtime_error(fmt::format("{} is invalid IP address", ip)));
   }
 }
 
-Context::Context(const char *ip, std::uint16_t port, Role role,
-                                           std::size_t id)
+Context::Context(const char *ip, std::uint16_t port, Role role, std::size_t id)
     : Context(std::string(ip), port, role, id) {}
 
 Context::Context(int socket, Role role, std::size_t id)
-    : data_storage_(id), role_(role), id_(id), party_socket_(socket), is_connected_(true) {
+    : data_storage_(std::make_shared<DataStorage>(id)),
+      role_(role),
+      id_(id),
+      party_socket_(socket),
+      is_connected_(true) {
   boost_party_socket_->assign(boost::asio::ip::tcp::v4(), socket);
 }
 
 Context::Context(Role role, std::size_t id, BoostSocketPtr &boost_socket)
-    : data_storage_(id),
+    : data_storage_(std::make_shared<DataStorage>(id)),
       role_(role),
       id_(id),
       boost_party_socket_(boost_socket),
@@ -61,7 +69,7 @@ void Context::InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &seed
 
 void Context::SetLogger(const LoggerPtr &logger) {
   logger_ = logger;
-  data_storage_.SetLogger(logger);
+  data_storage_->SetLogger(logger);
 }
 
 std::string Context::Connect() {
@@ -102,10 +110,10 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
         logger_->LogInfo(
             fmt::format("Received a randomness seed in hello message from Party#{}", id_));
       }
-      data_storage_.SetReceivedHelloMessage(std::move(raw_message));
+      data_storage_->SetReceivedHelloMessage(std::move(raw_message));
     } break;
     case MessageType_OutputMessage: {
-      data_storage_.SetReceivedOutputMessage(std::move(raw_message));
+      data_storage_->SetReceivedOutputMessage(std::move(raw_message));
     } break;
     case MessageType_TerminationMessage: {
       //

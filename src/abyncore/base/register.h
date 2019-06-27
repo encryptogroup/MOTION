@@ -2,11 +2,10 @@
 
 #include <atomic>
 #include <memory>
+#include <mutex>
 #include <queue>
 
-#include "communication/handler.h"
-
-#include "configuration.h"
+#include "flatbuffers/flatbuffers.h"
 
 namespace ABYN {
 
@@ -15,17 +14,23 @@ namespace ABYN {
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
+class Configuration;
+using ConfigurationPtr = std::shared_ptr<Configuration>;
+
 namespace Gates::Interfaces {
 class Gate;
-
 using GatePtr = std::shared_ptr<Gate>;
 }  // namespace Gates::Interfaces
 
 namespace Wires {
 class Wire;
-
 using WirePtr = std::shared_ptr<Wire>;
 }  // namespace Wires
+
+namespace Communication {
+class Handler;
+using HandlerPtr = std::shared_ptr<Handler>;
+}  // namespace Communication
 
 // forward declarations <<
 
@@ -39,17 +44,17 @@ class Register {
 
   ~Register();
 
-  std::size_t NextGateId();
+  std::size_t NextGateId() noexcept;
 
-  std::size_t NextWireId();
+  std::size_t NextWireId() noexcept;
 
   std::size_t NextArithmeticSharingId(std::size_t num_of_parallel_values);
 
   std::size_t NextBooleanGMWSharingId(std::size_t num_of_parallel_values);
 
-  const LoggerPtr &GetLogger();
+  const LoggerPtr &GetLogger() const noexcept;
 
-  const ConfigurationPtr &GetConfig();
+  const ConfigurationPtr &GetConfig() const noexcept;
 
   void RegisterCommunicationHandlers(
       std::vector<Communication::HandlerPtr> &communication_handlers);
@@ -86,9 +91,9 @@ class Register {
   std::size_t GetTotalNumOfGates() { return global_gate_id_; }
 
  private:
-  std::size_t global_gate_id_ = 0, global_wire_id_ = 0, global_arithmetic_sharing_id_ = 0,
-              global_gmw_sharing_id_ =
-                  0;  // don't need atomic, since only one thread has access to these
+  // don't need atomic here, since only the master thread has access to these
+  std::size_t global_gate_id_ = 0, global_wire_id_ = 0, global_arithmetic_gmw_sharing_id_ = 0,
+              global_boolean_gmw_sharing_id_ = 0;
 
   std::atomic<std::size_t> evaluated_gates = 0;
 

@@ -8,11 +8,13 @@
 #include "configuration.h"
 #include "register.h"
 
+#include "communication/handler.h"
 #include "communication/hello_message.h"
 #include "communication/message.h"
 #include "crypto/aes_randomness_generator.h"
 #include "gate/gate.h"
 #include "utility/constants.h"
+#include "utility/data_storage.h"
 #include "utility/logger.h"
 
 #define BOOST_FILESYSTEM_NO_DEPRECATED
