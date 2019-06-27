@@ -56,7 +56,7 @@ TEST(ABYNPartyAllocation, IncorrectIPMustThrow) {
   }
 }
 
-TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
+TEST(ABYNParty, NetworkConnection_OpenMP) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     bool all_connected = false;
     // use std::threads, since omp (and pragmas in general) cannot be used in macros :(
@@ -154,7 +154,7 @@ TEST(ABYNPartyTest, NetworkConnection_OpenMP) {
   }
 }
 
-TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
+TEST(ABYNParty, NetworkConnection_ManualThreads) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     bool all_connected = false;
     try {
@@ -241,7 +241,7 @@ TEST(ABYNPartyTest, NetworkConnection_ManualThreads) {
   }
 }
 
-TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_parties) {
+TEST(ABYNParty, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_parties) {
   for (auto i = 0u; i < TEST_ITERATIONS; ++i) {
     bool all_connected = false;
     for (auto num_parties : num_parties_list) {
@@ -271,7 +271,7 @@ TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_pa
   }
 }
 
-TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
+TEST(ABYNArithmeticGMW_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
@@ -342,7 +342,7 @@ TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
+TEST(ABYNArithmeticGMW_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
   const auto AGMW = ABYN::Protocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
   auto template_test = [](auto template_var) {
@@ -437,7 +437,7 @@ TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNBooleanGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
+TEST(ABYNBooleanGMW_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     const auto BGMW = ABYN::Protocol::BooleanGMW;
     std::srand(std::time(nullptr));
@@ -501,7 +501,7 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K_10K) {
+TEST(ABYNBooleanGMW_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K_10K) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     const auto BGMW = ABYN::Protocol::BooleanGMW;
     std::srand(std::time(nullptr));
@@ -590,7 +590,7 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K_10K) {
   }
 }
 
-TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_64_bit_SIMD_1K) {
+TEST(ABYNBooleanGMW_3_4_5_10_parties, XOR_64_bit_SIMD_1K) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     const auto BGMW = ABYN::Protocol::BooleanGMW;
     std::srand(std::time(nullptr));
