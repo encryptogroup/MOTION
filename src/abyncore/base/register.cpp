@@ -8,6 +8,7 @@ namespace ABYN {
 
 Register::Register(ConfigurationPtr &config) : config_(config) {
   logger_ = std::make_shared<ABYN::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
+  logger_->SetEnabled(config_->GetLoggingEnabled());
 }
 
 Register::~Register() {

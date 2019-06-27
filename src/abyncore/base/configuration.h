@@ -16,18 +16,15 @@ class Configuration {
  public:
   Configuration() = delete;
 
-  Configuration(const std::vector<Communication::ContextPtr> &contexts,
-                std::size_t id);
+  Configuration(const std::vector<Communication::ContextPtr> &contexts, std::size_t id);
 
   Configuration(std::vector<Communication::ContextPtr> &&contexts, std::size_t id)
       : Configuration(contexts, id) {}
 
-  Configuration(const std::initializer_list<Communication::ContextPtr> &contexts,
-                std::size_t id)
+  Configuration(const std::initializer_list<Communication::ContextPtr> &contexts, std::size_t id)
       : Configuration(std::vector(contexts), id) {}
 
-  Configuration(std::initializer_list<Communication::ContextPtr> &&contexts,
-                std::size_t id)
+  Configuration(std::initializer_list<Communication::ContextPtr> &&contexts, std::size_t id)
       : Configuration(std::vector(std::move(contexts)), id) {}
 
   ~Configuration() = default;
@@ -36,9 +33,7 @@ class Configuration {
 
   void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
 
-  std::vector<Communication::ContextPtr> &GetParties() {
-    return communication_contexts_;
-  }
+  std::vector<Communication::ContextPtr> &GetParties() { return communication_contexts_; }
 
   std::size_t GetNumOfParties() { return communication_contexts_.size(); }
 
@@ -52,7 +47,13 @@ class Configuration {
     severity_level_ = severity_level;
   }
 
-  bool OnlineAfterSetup() { return online_after_setup_; }
+  bool GetOnlineAfterSetup() { return online_after_setup_; }
+
+  void SetOnlineAfterSetup(bool value);
+
+  void SetLoggingEnabled(bool value = true) { logging_enabled_ = value; }
+
+  bool GetLoggingEnabled() { return logging_enabled_; }
 
   boost::log::trivial::severity_level GetLoggingSeverityLevel() { return severity_level_; }
 
@@ -61,6 +62,10 @@ class Configuration {
   std::vector<Communication::ContextPtr> communication_contexts_;
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
+  bool logging_enabled_ = true;
+
+  /// @param online_after_setup_ if set true, we wait for the setup phase to be finished completely
+  /// until proceeding to the online phase
   bool online_after_setup_ = false;
 
   // determines how many worker threads are used in openmp, but not in

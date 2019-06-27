@@ -75,7 +75,16 @@ Shares::SharePtr Party::BooleanGMWXOR(const Shares::SharePtr &a, const Shares::S
   return BooleanGMWXOR(casted_parent_a_ptr, casted_parent_b_ptr);
 }
 
+Shares::SharePtr Party::BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner) {
+  assert(parent);
+  auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent->GetWires(), output_owner);
+  auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+  backend_->RegisterGate(out_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
+}
+
 ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t output_owner) {
+  assert(parent);
   switch (parent->GetSharingType()) {
     case ABYN::Protocol::ArithmeticGMW: {
       switch (parent->GetBitLength()) {
@@ -113,6 +122,8 @@ ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t out
 
 ABYN::Shares::SharePtr Party::ADD(const ABYN::Shares::SharePtr &a,
                                   const ABYN::Shares::SharePtr &b) {
+  assert(a);
+  assert(b);
   assert(a->GetSharingType() == b->GetSharingType());
 
   switch (a->GetSharingType()) {
@@ -184,9 +195,11 @@ void Party::Run(std::size_t repeats) {
 }
 
 void Party::EvaluateCircuit() {
-  backend_->EvaluateSequential();
-  /*if (configuration_->OnlineAfterSetup()) { backend_->EvaluateSequential(); }
-  //TODO else { backend_->EvaluateParallel(); }*/
+  if (config_->GetOnlineAfterSetup()) {
+    backend_->EvaluateSequential();
+  } else {
+    backend_->EvaluateParallel();
+  }
 }
 
 void Party::Finish() { backend_->TerminateCommunication(); }

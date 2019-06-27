@@ -10,6 +10,8 @@
 
 namespace ABYN {
 
+// >> forward declarations
+
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
@@ -24,6 +26,8 @@ class Wire;
 
 using WirePtr = std::shared_ptr<Wire>;
 }  // namespace Wires
+
+// forward declarations <<
 
 class Register {
  public:
@@ -48,24 +52,26 @@ class Register {
   const ConfigurationPtr &GetConfig();
 
   void RegisterCommunicationHandlers(
-      std::vector<ABYN::Communication::HandlerPtr> &communication_handlers);
+      std::vector<Communication::HandlerPtr> &communication_handlers);
 
   void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-  void RegisterNextGate(ABYN::Gates::Interfaces::GatePtr gate);
+  void RegisterNextGate(Gates::Interfaces::GatePtr gate);
 
-  void RegisterNextInputGate(ABYN::Gates::Interfaces::GatePtr gate);
+  void RegisterNextInputGate(Gates::Interfaces::GatePtr gate);
 
-  const ABYN::Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const {
+  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const {
     return gates_.at(gate_id);
   }
   const auto &GetInputGates() const { return input_gates_; }
 
+  auto &GetGates() const { return gates_; }
+
   void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
 
-  void RegisterNextWire(ABYN::Wires::WirePtr wire) { wires_.push_back(wire); }
+  void RegisterNextWire(Wires::WirePtr wire) { wires_.push_back(wire); }
 
-  ABYN::Wires::WirePtr GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
+  Wires::WirePtr GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
 
   void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
@@ -86,18 +92,18 @@ class Register {
 
   std::atomic<std::size_t> evaluated_gates = 0;
 
-  ABYN::ConfigurationPtr config_;
-  ABYN::LoggerPtr logger_ = nullptr;
+  ConfigurationPtr config_;
+  LoggerPtr logger_;
 
   std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
 
-  std::vector<ABYN::Gates::Interfaces::GatePtr> input_gates_;
-  std::vector<ABYN::Gates::Interfaces::GatePtr> gates_;
+  std::vector<Gates::Interfaces::GatePtr> input_gates_;
+  std::vector<Gates::Interfaces::GatePtr> gates_;
 
-  std::vector<ABYN::Wires::WirePtr> wires_;
+  std::vector<Wires::WirePtr> wires_;
 
-  std::vector<std::weak_ptr<ABYN::Communication::Handler>> communication_handlers_;
+  std::vector<std::weak_ptr<Communication::Handler>> communication_handlers_;
 };
 
 using RegisterPtr = std::shared_ptr<Register>;

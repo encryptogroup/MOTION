@@ -40,7 +40,9 @@ class Gate {
         }*/
   };
 
-  virtual void Evaluate() = 0;
+  virtual void EvaluateSetup() = 0;
+
+  virtual void EvaluateOnline() = 0;
 
   const std::vector<ABYN::Wires::WirePtr> &GetOutputWires() const { return output_wires_; }
 
@@ -120,8 +122,6 @@ class OneGate : public Gate {
  public:
   ~OneGate() override = default;
 
-  void Evaluate() override = 0;
-
   OneGate(OneGate &) = delete;
 
  protected:
@@ -170,7 +170,7 @@ class OutputGate : public OneGate {
 
   OutputGate(OutputGate &) = delete;
 
-  OutputGate() { gate_type_ = GateType::InputGate; }
+  OutputGate() { gate_type_ = GateType::InteractiveGate; }
 
  protected:
   std::int64_t output_owner_ = -1;
@@ -197,8 +197,6 @@ class TwoGate : public Gate {
 
  public:
   ~TwoGate() override = default;
-
-  void Evaluate() override = 0;
 };
 
 //
@@ -277,18 +275,34 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
 
   ~ArithmeticInputGate() final = default;
 
+  void EvaluateSetup() final {
+    auto shared_ptr_reg = register_.lock();
+    assert(shared_ptr_reg);
+    auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
+    if (static_cast<std::size_t>(input_owner_) == my_id) {
+      // we always generate seeds for the input sharing
+      // before we start evaluating the circuit
+    } else {
+      auto &rand_generator = shared_ptr_reg->GetConfig()
+                                 ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
+                                 ->GetTheirRandomnessGenerator();
+      Helpers::WaitFor(rand_generator->IsInitialized());
+    }
+    SetSetupIsReady();
+  }
+
   // non-interactive input sharing based on distributed in advance randomness
   // seeds
-  void Evaluate() final {
+  void EvaluateOnline() final {
+    assert(setup_is_ready_);
+
     auto shared_ptr_reg = register_.lock();
     assert(shared_ptr_reg);
     auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
     std::vector<T> result;
+
     if (static_cast<std::size_t>(input_owner_) == my_id) {
       result.resize(input_.size());
-      SetSetupIsReady();  // we always generate the seed for input sharing
-                          // before we start evaluating the circuit
-
       auto log_string = std::string("");
       for (auto i = 0u; i < shared_ptr_reg->GetConfig()->GetNumOfParties(); ++i) {
         if (i == my_id) {
@@ -317,8 +331,6 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
       auto &rand_generator = shared_ptr_reg->GetConfig()
                                  ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
                                  ->GetTheirRandomnessGenerator();
-      Helpers::WaitFor(rand_generator->IsInitialized());
-      SetSetupIsReady();
 
       result =
           std::move(rand_generator->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
@@ -361,17 +373,6 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
- protected:
-  std::vector<T> output_;
-  std::vector<std::vector<T>> shared_outputs_;
-
-  // indicates whether this party obtains the output
-  bool is_my_output_ = false;
-
-  const bool &parent_finished_;
-
-  std::mutex m;
-
  public:
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -383,8 +384,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
     return result;
   }
 
-  ArithmeticOutputGate(const ABYN::Wires::ArithmeticWirePtr<T> &parent, std::size_t output_owner)
-      : parent_finished_(parent->IsReady()) {
+  ArithmeticOutputGate(const ABYN::Wires::ArithmeticWirePtr<T> &parent, std::size_t output_owner) {
     if (parent->GetProtocol() != Protocol::ArithmeticGMW) {
       auto sharing_type = Helpers::Print::ToString(parent->GetProtocol());
       throw(
@@ -395,7 +395,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
 
     parent_ = {parent};
     output_owner_ = output_owner;
-    output_.resize(parent->GetNumOfParallelValues());
+
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;
 
@@ -412,8 +412,9 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
       is_my_output_ = true;
     }
 
+    std::vector<T> placeholder_vector(parent->GetNumOfParallelValues());
     output_wires_ = {std::static_pointer_cast<ABYN::Wires::Wire>(
-        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(output_, register_))};
+        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, register_))};
     for (auto &w : output_wires_) {
       shared_ptr_reg->RegisterNextWire(w);
     }
@@ -424,25 +425,39 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
         fmt::format("Allocate an ArithmeticOutputGate with following properties: {}", gate_info));
   }
 
-  ArithmeticOutputGate(const ABYN::Shares::ArithmeticSharePtr<T> &parent, std::size_t output_owner)
-      : ArithmeticOutputGate(parent->GetArithmeticWire(), output_owner) {}
+  ArithmeticOutputGate(const Shares::ArithmeticSharePtr<T> &parent, std::size_t output_owner)
+      : ArithmeticOutputGate(parent->GetArithmeticWire(), output_owner) {
+    assert(parent);
+  }
+
+  ArithmeticOutputGate(const Shares::SharePtr &parent, std::size_t output_owner)
+      : ArithmeticOutputGate(std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(parent),
+                             output_owner) {
+    assert(parent);
+  }
 
   ~ArithmeticOutputGate() final = default;
 
-  void Evaluate() final {
+  void EvaluateSetup() final { SetSetupIsReady(); }
+
+  void EvaluateOnline() final {
+    assert(setup_is_ready_);
+
     auto arithmetic_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_.at(0));
     assert(arithmetic_wire);
-    output_ = arithmetic_wire->GetValuesOnWire();
+
+    std::vector<T> output_ = arithmetic_wire->GetValuesOnWire();
 
     auto shared_ptr_reg = register_.lock();
     assert(shared_ptr_reg);
 
     if (is_my_output_) {
       // wait until all conditions are fulfilled
-      Helpers::WaitFor(parent_finished_);
+      Helpers::WaitFor(parent_.at(0)->IsReady());
 
       auto &config = shared_ptr_reg->GetConfig();
-      shared_outputs_.resize(shared_ptr_reg->GetConfig()->GetNumOfParties());
+
+      std::vector<std::vector<T>> shared_outputs_(shared_ptr_reg->GetConfig()->GetNumOfParties());
 
       for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
         if (i == config->GetMyId()) {
@@ -461,7 +476,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
           }
           if (!success) {
             std::this_thread::sleep_for(std::chrono::microseconds(100));
-          };
+          }
         }
       }
 
@@ -494,20 +509,25 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
   }
+
+ protected:
+  // indicates whether this party obtains the output
+  bool is_my_output_ = false;
+
+  std::mutex m;
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
  public:
   ArithmeticAdditionGate(const ABYN::Wires::ArithmeticWirePtr<T> &a,
-                         const ABYN::Wires::ArithmeticWirePtr<T> &b)
-      : parent_a_finished_(a->IsReady()), parent_b_finished_(b->IsReady()) {
+                         const ABYN::Wires::ArithmeticWirePtr<T> &b) {
     parent_a_ = {std::static_pointer_cast<ABYN::Wires::Wire>(a)};
     parent_b_ = {std::static_pointer_cast<ABYN::Wires::Wire>(b)};
     register_ = parent_a_.at(0)->GetRegister();
 
     assert(parent_a_.at(0)->GetNumOfParallelValues() == parent_b_.at(0)->GetNumOfParallelValues());
-    output_.resize(parent_a_.at(0)->GetNumOfParallelValues());
+
     requires_online_interaction_ = false;
     gate_type_ = GateType::NonInteractiveGate;
 
@@ -522,8 +542,10 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
     RegisterWaitingFor(parent_b_.at(0)->GetWireId());
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
+    std::vector<T> placeholder_vector;
+    placeholder_vector.resize(parent_a_.at(0)->GetNumOfParallelValues());
     output_wires_ = {std::move(std::static_pointer_cast<ABYN::Wires::Wire>(
-        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(output_, register_)))};
+        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, register_)))};
     for (auto &w : output_wires_) {
       shared_ptr_reg->RegisterNextWire(w);
     }
@@ -533,15 +555,17 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Created an ArithmeticAdditionGate with following properties: {}", gate_info));
-
-    SetSetupIsReady();
   }
 
   ~ArithmeticAdditionGate() final = default;
 
-  void Evaluate() final {
-    Helpers::WaitFor(parent_a_finished_);
-    Helpers::WaitFor(parent_b_finished_);
+  void EvaluateSetup() final { SetSetupIsReady(); }
+
+  void EvaluateOnline() final {
+    assert(setup_is_ready_);
+
+    Helpers::WaitFor(parent_a_.at(0)->IsReady());
+    Helpers::WaitFor(parent_b_.at(0)->IsReady());
 
     auto wire_a = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_a_.at(0));
     auto wire_b = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_b_.at(0));
@@ -549,12 +573,12 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
     assert(wire_a);
     assert(wire_b);
 
-    output_ = Helpers::AddVectors(wire_a->GetValuesOnWire(), wire_b->GetValuesOnWire());
+    std::vector<T> output;
+    output = Helpers::AddVectors(wire_a->GetValuesOnWire(), wire_b->GetValuesOnWire());
 
     auto arithmetic_wire =
         std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
-    arithmetic_wire->GetMutableValuesOnWire() = std::move(output_);
-    assert(output_.size() == 0);
+    arithmetic_wire->GetMutableValuesOnWire() = std::move(output);
 
     SetOnlineIsReady();
 
@@ -581,9 +605,6 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
   ArithmeticAdditionGate(Gate &) = delete;
 
  protected:
-  const bool &parent_a_finished_;
-  const bool &parent_b_finished_;
-  std::vector<T> output_;
 };
 
 }  // namespace Arithmetic
@@ -592,21 +613,9 @@ namespace GMW {
 
 class GMWInputGate : public Gates::Interfaces::InputGate {
  public:
-  /*GMWInputGate(const ENCRYPTO::BitVector &input, std::size_t party_id, std::weak_ptr<Register> reg)
-      : input_({input}), bits_(input.GetSize()), party_id_(party_id) {
-    register_ = reg;
-    InitializationHelper();
-  }
-
-  GMWInputGate(ENCRYPTO::BitVector &&input, std::size_t party_id, std::weak_ptr<Register> reg)
-      : input_({std::move(input)}), bits_(input.GetSize()), party_id_(party_id) {
-    register_ = reg;
-    InitializationHelper();
-  }*/
-
   GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id,
                std::weak_ptr<Register> reg)
-      : input_(input), party_id_(party_id) {
+      : input_(input), input_owner_id_(party_id) {
     bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
     register_ = reg;
     InitializationHelper();
@@ -614,47 +623,18 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
 
   GMWInputGate(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id,
                std::weak_ptr<Register> reg)
-      : input_(std::move(input)), party_id_(party_id) {
+      : input_(std::move(input)), input_owner_id_(party_id) {
     bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
     register_ = reg;
     InitializationHelper();
   }
 
-  /*
-    GMWInputGate(const std::vector<std::byte> &input, std::size_t party_id,
-                 std::weak_ptr<Register> reg, std::size_t bits = 0)
-        : input_({input}), bits_(bits), party_id_(party_id) {
-      register_ = reg;
-      InitializationHelper();
-    }
-
-    GMWInputGate(std::vector<std::byte> &&input, std::size_t party_id, std::weak_ptr<Register> reg,
-                 std::size_t bits = 0)
-        : input_({std::move(input)}), bits_(bits), party_id_(party_id) {
-      register_ = reg;
-      InitializationHelper();
-    }
-
-    GMWInputGate(const std::vector<std::vector<std::byte>> &input, std::size_t party_id,
-                 std::weak_ptr<Register> reg, std::size_t bits = 0)
-        : input_({input}), bits_(bits), party_id_(party_id) {
-      register_ = reg;
-      InitializationHelper();
-    }
-
-    GMWInputGate(std::vector<std::vector<std::byte>> &&input, std::size_t party_id,
-                 std::weak_ptr<Register> reg, std::size_t bits = 0)
-        : input_({std::move(input)}), bits_(bits), party_id_(party_id) {
-      register_ = reg;
-      InitializationHelper();
-    }*/
-
   void InitializationHelper() {
     auto shared_ptr_reg = register_.lock();
     assert(shared_ptr_reg);
 
-    if (party_id_ >= shared_ptr_reg->GetConfig()->GetNumOfParties()) {
-      throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", party_id_,
+    if (input_owner_id_ >= shared_ptr_reg->GetConfig()->GetNumOfParties()) {
+      throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
                                            shared_ptr_reg->GetConfig()->GetNumOfParties()));
     }
 
@@ -686,28 +666,42 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
 
   ~GMWInputGate() final = default;
 
-  void Evaluate() final {
+  void EvaluateSetup() final {
     auto shared_ptr_reg = register_.lock();
     assert(shared_ptr_reg);
 
     auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
-    // we always generate the seed for input sharing before we start evaluating
-    // the circuit
-    if (party_id_ == my_id) {
-      SetSetupIsReady();
+
+    if (input_owner_id_ == my_id) {
+      // we always generate our own seeds for the input sharing before we start evaluating
+      // the circuit, hence, nothing to wait here for
+    } else {
+      auto &rand_generator = shared_ptr_reg->GetConfig()
+                                 ->GetCommunicationContext(input_owner_id_)
+                                 ->GetTheirRandomnessGenerator();
+      Helpers::WaitFor(rand_generator->IsInitialized());
     }
+    SetSetupIsReady();
+  }
+
+  void EvaluateOnline() final {
+    assert(setup_is_ready_);
+
+    auto shared_ptr_reg = register_.lock();
+    assert(shared_ptr_reg);
+
+    auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
 
     std::vector<ENCRYPTO::BitVector> result(input_.size());
     auto sharing_id = boolean_sharing_id_;
     for (auto i = 0ull; i < result.size(); ++i) {
-      if (party_id_ == my_id) {
+      if (input_owner_id_ == my_id) {
         result.at(i) = input_.at(i);
         auto log_string = std::string("");
         for (auto j = 0u; j < shared_ptr_reg->GetConfig()->GetNumOfParties(); ++j) {
           if (j == my_id) {
             continue;
           }
-
           auto &rand_generator =
               shared_ptr_reg->GetConfig()->GetCommunicationContext(j)->GetMyRandomnessGenerator();
           auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
@@ -719,20 +713,20 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
         auto s = fmt::format(
             "My (id#{}) Boolean input sharing for gate#{}, my input: {}, my "
             "share: {}, expected shares of other parties: {}",
-            party_id_, gate_id_, input_.at(i).AsString(), result.at(i).AsString(), log_string);
+            input_owner_id_, gate_id_, input_.at(i).AsString(), result.at(i).AsString(),
+            log_string);
         shared_ptr_reg->GetLogger()->LogTrace(s);
       } else {
         auto &rand_generator = shared_ptr_reg->GetConfig()
-                                   ->GetCommunicationContext(party_id_)
+                                   ->GetCommunicationContext(input_owner_id_)
                                    ->GetTheirRandomnessGenerator();
-        Helpers::WaitFor(rand_generator->IsInitialized());
         auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
         result.at(i) = randomness;
 
         auto s = fmt::format(
             "Boolean input sharing (gate#{}) of Party's#{} input, got a "
             "share {} from the seed",
-            gate_id_, party_id_, result.at(i).AsString());
+            gate_id_, input_owner_id_, result.at(i).AsString());
         shared_ptr_reg->GetLogger()->LogTrace(s);
         sharing_id += bits_;
       }
@@ -746,8 +740,6 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
     shared_ptr_reg->IncrementEvaluatedGatesCounter();
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Evaluated Boolean GMWInputGate with id#{}", gate_id_));
-
-    SetSetupIsReady();
     SetOnlineIsReady();
   };
 
@@ -762,7 +754,7 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
   std::vector<ENCRYPTO::BitVector> input_;
 
   std::size_t bits_;                ///< Number of parallel values on wires
-  std::size_t party_id_;            ///< Indicates whether which party shares the input
+  std::size_t input_owner_id_;      ///< Indicates whether which party shares the input
   std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
                                     ///< correlated randomness using AES CTR
 };
@@ -834,13 +826,15 @@ class GMWOutputGate : public Interfaces::OutputGate {
         fmt::format("bitlength {}, gate id {}, owner {}", output_.size(), gate_id_, output_owner_);
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Allocate an Boolean GMWOutputGate with following properties: {}", gate_info));
-
-    SetSetupIsReady();
   }
 
   ~GMWOutputGate() final = default;
 
-  void Evaluate() final {
+  void EvaluateSetup() final { SetSetupIsReady(); }
+
+  void EvaluateOnline() final {
+    assert(setup_is_ready_);
+
     std::vector<Wires::GMWWirePtr> wires;
     {
       std::size_t i = 0;
@@ -940,9 +934,7 @@ class GMWOutputGate : public Interfaces::OutputGate {
 
 class GMWXORGate : public Gates::Interfaces::TwoGate {
  public:
-  GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b)
-      : parent_a_finished_(a->GetWires().at(0)->IsReady()),
-        parent_b_finished_(b->GetWires().at(0)->IsReady()) {
+  GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b) {
     parent_a_ = a->GetWires();
     parent_b_ = b->GetWires();
 
@@ -984,13 +976,15 @@ class GMWXORGate : public Gates::Interfaces::TwoGate {
                                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
     shared_ptr_reg->GetLogger()->LogTrace(
         fmt::format("Created a BooleanGMW XOR gate with following properties: {}", gate_info));
-
-    SetSetupIsReady();
   }
 
   ~GMWXORGate() final = default;
 
-  void Evaluate() final {
+  void EvaluateSetup() final { SetSetupIsReady(); }
+
+  void EvaluateOnline() final {
+    assert(setup_is_ready_);
+
     for (auto &wire : parent_a_) {
       Helpers::WaitFor(wire->IsReady());
     }
@@ -1040,8 +1034,6 @@ class GMWXORGate : public Gates::Interfaces::TwoGate {
   GMWXORGate(const Gate &) = delete;
 
  protected:
-  const bool &parent_a_finished_;
-  const bool &parent_b_finished_;
 };
 
 }  // namespace GMW

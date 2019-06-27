@@ -7,8 +7,7 @@
 
 namespace ABYN {
 
-Configuration::Configuration(const std::vector<Communication::ContextPtr> &contexts,
-                             std::size_t id)
+Configuration::Configuration(const std::vector<Communication::ContextPtr> &contexts, std::size_t id)
     : my_id_(id), num_threads_(std::thread::hardware_concurrency()) {
   communication_contexts_.resize(contexts.size() + 1, nullptr);
   if constexpr (ABYN::ABYN_VERBOSE_DEBUG) {
@@ -34,5 +33,7 @@ Configuration::Configuration(const std::vector<Communication::ContextPtr> &conte
   if (communication_contexts_.at(my_id_) != nullptr) {
     throw(std::runtime_error("Someone else has my id"));
   }
-};
+}
+
+void Configuration::SetOnlineAfterSetup(bool value) { online_after_setup_ = value; }
 }

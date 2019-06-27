@@ -20,7 +20,7 @@
 namespace ABYN {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
-  register_ = std::make_shared<ABYN::Register>(config);
+  register_ = std::make_shared<Register>(config);
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (config_->GetCommunicationContext(i) == nullptr) {
@@ -80,7 +80,7 @@ void Backend::SendHelloToOthers() {
     auto seed_ptr = share_inputs_ ? &seed : nullptr;
     auto hello_message = ABYN::Communication::BuildHelloMessage(
         config_->GetMyId(), destination_id, config_->GetNumOfParties(), seed_ptr,
-        config_->OnlineAfterSetup(), ABYN::ABYN_VERSION);
+        config_->GetOnlineAfterSetup(), ABYN::ABYN_VERSION);
     Send(destination_id, hello_message);
   }
 }
@@ -99,6 +99,51 @@ void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
 }
 
 void Backend::EvaluateSequential() {
+  register_->GetLogger()->LogInfo(
+      "Start evaluating the circuit gates sequentially (online after all finished setup)");
+#pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
+  {
+#pragma omp single
+    {
+      {
+        auto &gates = register_->GetGates();
+#pragma omp taskloop num_tasks(std::min(gates.size(), config_->GetNumOfThreads()))
+        for (auto i = 0ull; i < gates.size(); ++i) {
+          gates.at(i)->EvaluateSetup();
+        }
+#pragma omp taskwait
+      }
+      for (auto &input_gate : register_->GetInputGates()) {
+        register_->AddToActiveQueue(input_gate->GetID());
+      }
+      // evaluate all other gates moved to the active queue
+      while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+        // get some active gates from the queue
+        std::vector<std::size_t> gates_ids;
+        {
+          std::int64_t gate_id;
+          do {
+            gate_id = register_->GetNextGateFromOnlineQueue();
+            if (gate_id >= 0) {
+              assert(static_cast<std::size_t>(gate_id) < register_->GetTotalNumOfGates());
+              gates_ids.push_back(static_cast<std::size_t>(gate_id));
+            }
+          } while (gate_id >= 0);
+        }
+        // evaluate the gates in a batch
+#pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
+        for (auto i = 0ull; i < gates_ids.size(); ++i) {
+          register_->GetGate(gates_ids.at(i))->EvaluateOnline();
+        }
+#pragma omp taskwait
+      }
+    }
+  }
+}
+
+void Backend::EvaluateParallel() {
+  register_->GetLogger()->LogInfo(
+      "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 #pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
   {
 #pragma omp single
@@ -111,7 +156,7 @@ void Backend::EvaluateSequential() {
         // get some active gates from the queue
         std::vector<std::size_t> gates_ids;
         {
-          std::int64_t gate_id = -1;
+          std::int64_t gate_id;
           do {
             gate_id = register_->GetNextGateFromOnlineQueue();
             if (gate_id >= 0) {
@@ -123,16 +168,13 @@ void Backend::EvaluateSequential() {
         // evaluate the gates in a batch
 #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
         for (auto i = 0ull; i < gates_ids.size(); ++i) {
-          register_->GetGate(gates_ids.at(i))->Evaluate();
+          register_->GetGate(gates_ids.at(i))->EvaluateSetup();
+          register_->GetGate(gates_ids.at(i))->EvaluateOnline();
         }
-#pragma omp taskwait  // I'm not sure if there is an implicit taskwait after a taskloop
+#pragma omp taskwait
       }
     }
   }
-}
-
-void Backend::EvaluateParallel() {
-  // TODO
 }
 
 void Backend::TerminateCommunication() {
