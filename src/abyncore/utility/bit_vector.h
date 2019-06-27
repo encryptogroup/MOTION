@@ -61,6 +61,10 @@ class BitVector {
 
   void Append(BitVector&& other) noexcept;
 
+  void Assign(const BitVector& other) noexcept { *this = other; }
+
+  void Assign(BitVector&& other) noexcept { *this = std::move(other); }
+
   BitVector Subset(std::size_t from, std::size_t to) const;
 
   const std::string AsString() const noexcept;
