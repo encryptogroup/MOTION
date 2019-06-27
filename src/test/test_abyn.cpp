@@ -249,7 +249,7 @@ TEST(ABYNPartyTest, NetworkConnection_LocalPartiesFromStaticFunction_3_4_5_10_pa
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
         }
         all_connected = true;
         for (auto &abynparty : abyn_parties) {
@@ -285,7 +285,8 @@ TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -361,7 +362,8 @@ TEST(ABYNArithmeticGMWTest_3_4_5_10_parties, Addition_SIMD_1_1K_10K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -449,7 +451,8 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, InputOutput_SIMD_1_1K_10K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -521,7 +524,8 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K_10K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single
@@ -605,7 +609,8 @@ TEST(ABYNBooleanGMWTest_3_4_5_10_parties, XOR_64_bit_SIMD_1K) {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
-          p->GetLogger()->Enable(DETAILED_LOGGING_ENABLED);
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
         }
 #pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
 #pragma omp single

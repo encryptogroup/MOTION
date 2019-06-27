@@ -1,3 +1,3 @@
 #pragma once
 
-constexpr auto TEST_ITERATIONS = 1u;  // increase if needed
+constexpr auto TEST_ITERATIONS = 2u;  // increase if needed
