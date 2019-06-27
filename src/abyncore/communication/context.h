@@ -27,6 +27,7 @@ namespace Communication {
 class Context {
  public:
   Context() = delete;
+
   Context(const Context &) = delete;
 
   Context(const std::string ip, std::uint16_t port, Role role, std::size_t id);

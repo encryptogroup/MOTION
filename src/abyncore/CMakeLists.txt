@@ -12,6 +12,7 @@ add_library(abyn
         gate/gate.cpp
         share/share.cpp
         utility/bit_vector.cpp
+        utility/condition.cpp
         utility/data_storage.cpp
         utility/helpers.cpp
         utility/logger.cpp
