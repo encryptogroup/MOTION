@@ -135,4 +135,9 @@ void Logger::LogError(std::string &&msg) {
     BOOST_LOG_SEV(logger_, logging::trivial::error) << msg;
   }
 }
+
+void Logger::SetEnabled(bool enable) {
+  logging_enabled_ = enable;
+  boost::log::core::get()->set_logging_enabled(enable);
+}
 }
