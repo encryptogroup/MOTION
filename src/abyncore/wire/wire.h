@@ -166,24 +166,6 @@ class GMWWire : public BooleanWire {
     num_of_parallel_values_ = values_.GetSize();
     InitializationHelper();
   }
-  /*
-  GMWWire(std::vector<std::byte> &&values, std::weak_ptr<Register> reg,
-          std::size_t parallel_values = 1, bool is_constant = false) {
-    values_ = std::move(ENCRYPTO::BitVector(values, parallel_values));
-    register_ = reg;
-    is_constant_ = is_constant;
-    num_of_parallel_values_ = parallel_values;
-    InitializationHelper();
-  }
-
-  GMWWire(const std::vector<std::byte> &values, std::weak_ptr<Register> reg,
-          std::size_t parallel_values = 1, bool is_constant = false) {
-    values_ = ENCRYPTO::BitVector(values, parallel_values);
-    register_ = reg;
-    is_constant_ = is_constant;
-    num_of_parallel_values_ = parallel_values;
-    InitializationHelper();
-  }*/
 
   GMWWire(bool value, std::weak_ptr<Register> reg, bool is_constant = false) {
     values_.Append(value);

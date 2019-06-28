@@ -5,9 +5,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/backend.h"
 #include "configuration.h"
-#include "gate/gate.h"
+#include "base/backend.h"
+#include "gate/arithmetic_gmw_gate.h"
+#include "gate/boolean_gmw_gate.h"
 #include "share/share.h"
 #include "utility/constants.h"
 #include "utility/typedefs.h"

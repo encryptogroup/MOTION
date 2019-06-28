@@ -7,12 +7,14 @@ namespace ENCRYPTO {
 
 class Condition {
  public:
+  // registers the condition function that encapsulates the condition checking
   Condition(std::function<bool()> f) : condition_function_(f) {}
 
   ~Condition() = default;
   Condition() = delete;
   Condition(Condition &) = delete;
 
+  // checks if the condition was satisfied
   bool operator()() { return condition_function_(); }
 
   bool Wait();
@@ -35,7 +37,7 @@ class Condition {
  private:
   std::condition_variable condition_variable_;
   std::mutex mutex_;
-  std::function<bool()> condition_function_;
+  const std::function<bool()> condition_function_;
 };
 
 }

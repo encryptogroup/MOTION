@@ -10,6 +10,7 @@ add_library(abyn
         communication/output_message.cpp
         crypto/aes_randomness_generator.cpp
         gate/gate.cpp
+        gate/boolean_gmw_gate.cpp
         share/share.cpp
         utility/bit_vector.cpp
         utility/condition.cpp

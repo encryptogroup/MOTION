@@ -8,6 +8,7 @@
 #include "configuration.h"
 #include "register.h"
 
+#include "communication/context.h"
 #include "communication/handler.h"
 #include "communication/hello_message.h"
 #include "communication/message.h"

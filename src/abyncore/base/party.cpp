@@ -2,6 +2,7 @@
 
 #include <map>
 
+#include "communication/context.h"
 #include "utility/logger.h"
 
 namespace ABYN {
