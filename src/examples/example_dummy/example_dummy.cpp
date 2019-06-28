@@ -5,13 +5,15 @@
 #include <fmt/format.h>
 
 #include "base/party.h"
+#include "wire/boolean_gmw_wire.h"
 
 using namespace ABYN;
 
 constexpr std::uint16_t PORT_OFFSET = 7777;
 
 void test() {
-  for (auto i = 0ull; i < 2000; ++i) {
+  std::random_device rd("/dev/urandom");
+  for (auto i = 0ull; i < 10; ++i) {
     constexpr auto num_parties = 4u;
     std::srand(time(nullptr));
     std::size_t input_owner = std::rand() % num_parties, output_owner = std::rand() % num_parties;
@@ -24,11 +26,11 @@ void test() {
       futures.push_back(std::async(std::launch::async, []() {
         std::vector<Communication::ContextPtr> parties;
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET,
-                                                                    ABYN::Role::Server, 1));
+                                                                      ABYN::Role::Server, 1));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 1,
-                                                                    ABYN::Role::Server, 2));
+                                                                      ABYN::Role::Server, 2));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 2,
-                                                                    ABYN::Role::Server, 3));
+                                                                      ABYN::Role::Server, 3));
         auto abyn = std::move(PartyPtr(new Party{parties, 0}));
         abyn->Connect();
         return std::move(abyn);
@@ -41,10 +43,10 @@ void test() {
         parties.emplace_back(
             std::make_shared<Communication::Context>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 3,
-                                                                    ABYN::Role::Server, 2));
+                                                                      ABYN::Role::Server, 2));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 4,
-                                                                    ABYN::Role::Server, 3));
-        auto abyn = std::move(PartyPtr(new Party{parties, 1}));
+                                                                      ABYN::Role::Server, 3));
+        auto abyn = std::move(std::make_unique<Party>(parties, 1));
         abyn->Connect();
         return std::move(abyn);
       }));
@@ -57,7 +59,7 @@ void test() {
             {std::make_shared<Communication::Context>(ip, port, ABYN::Role::Client, 0),
              std::make_shared<Communication::Context>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
              std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 5,
-                                                    ABYN::Role::Server, 3)},
+                                                      ABYN::Role::Server, 3)},
             2}));
         abyn->Connect();
         return std::move(abyn);
@@ -79,6 +81,22 @@ void test() {
 
       for (auto &f : futures) abyn_parties.push_back(f.get());
 
+      std::uniform_int_distribution<std::uint64_t> dist(0, 1);
+
+      const std::size_t output_owner = std::rand() % num_parties;
+      std::vector<bool> global_input_1(num_parties);
+      for (auto j = 0ull; j < global_input_1.size(); ++j) {
+        global_input_1.at(j) = (std::rand() % 2) == 1;
+      }
+      std::vector<ENCRYPTO::BitVector> global_input_1K(num_parties), global_input_10K(num_parties);
+      for (auto j = 0ull; j < global_input_1K.size(); ++j) {
+        global_input_1K.at(j) = ENCRYPTO::BitVector::Random(1000);
+        global_input_10K.at(j) = ENCRYPTO::BitVector::Random(10000);
+      }
+      bool dummy_input_1 = false;
+      ENCRYPTO::BitVector dummy_input_1K(1000, false);
+      ENCRYPTO::BitVector dummy_input_10K(10000, false);
+
       // std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, 7777)));
       std::vector<std::thread> threads;
       //#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
@@ -86,44 +104,53 @@ void test() {
       //#pragma omp taskloop num_tasks(abyn_parties.size())
       for (auto &party : abyn_parties) {
         threads.emplace_back([&]() {
-          bool in[4] = {true, true, true, false};
-          bool out[4] = {false, false, false, false};
-          Shares::SharePtr s_in[4], s_out[4];
+          const auto BGMW = Protocol::BooleanGMW;
+          std::vector<Shares::SharePtr> input_share_1, input_share_1K, input_share_10K;
 
-          for (auto i = 0ull; i < 4u; ++i) {
-            s_in[i] = party->IN<Protocol::BooleanGMW>(in[i], i);
-            s_out[i] = party->OUT(s_in[i], i);
+          for (auto j = 0ull; j < num_parties; ++j) {
+            if (j == party->GetConfiguration()->GetMyId()) {
+              input_share_1.push_back(party->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
+              input_share_1K.push_back(party->IN<BGMW>(global_input_1K.at(j), j));
+              input_share_10K.push_back(party->IN<BGMW>(global_input_10K.at(j), j));
+            } else {
+              input_share_1.push_back(party->IN<BGMW>(dummy_input_1, j));
+              input_share_1K.push_back(party->IN<BGMW>(dummy_input_1K, j));
+              input_share_10K.push_back(party->IN<BGMW>(dummy_input_10K, j));
+            }
           }
-          // auto added_share = abyn_parties.at(party_id)->IN<Protocol::BooleanGMW>(s_in_0, s_in_1);
-          // // s_add = s_in_0 + s_in_1 added_share = abyn_parties.at(party_id)->ADD(added_share,
-          // s_in_2);
-          // // s_add += s_in_2 added_share = abyn_parties.at(party_id)->ADD(added_share, s_in_3);
-          // // s_add += s_in_3
 
-          // auto output_share = abyn_parties.at(party_id)->OUT(added_share, output_owner);
+          auto xor_1 = party->XOR(input_share_1.at(0), input_share_1.at(1));
+          auto xor_1K = party->XOR(input_share_1K.at(0), input_share_1K.at(1));
+          auto xor_10K = party->XOR(input_share_10K.at(0), input_share_10K.at(1));
+
+          for (auto j = 2ull; j < num_parties; ++j) {
+            xor_1 = party->XOR(xor_1, input_share_1.at(j));
+            xor_1K = party->XOR(xor_1K, input_share_1K.at(j));
+            xor_10K = party->XOR(xor_10K, input_share_10K.at(j));
+          }
+
+          auto output_share_1 = party->OUT(xor_1, output_owner);
+          auto output_share_1K = party->OUT(xor_1K, output_owner);
+          auto output_share_10K = party->OUT(xor_10K, output_owner);
 
           party->Run();
 
-          for (auto i = 0ull; i < 4u; ++i) {
-            auto wire = std::dynamic_pointer_cast<Wires::GMWWire>(s_out[i]->GetWires().at(0));
-            assert(wire);
-            out[i] = wire->GetValuesOnWire().Get(0);
+          if (party->GetConfiguration()->GetMyId() == output_owner) {
+            auto wire_1 =
+                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1->GetWires().at(0));
+            auto wire_1K =
+                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1K->GetWires().at(0));
+            auto wire_10K =
+                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_10K->GetWires().at(0));
+
+            assert(wire_1);
+            assert(wire_1K);
+            assert(wire_10K);
+
+            assert(wire_1->GetValuesOnWire().Get(0) == Helpers::XORReduceBitVector(global_input_1));
+            assert(wire_1K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_1K));
+            assert(wire_10K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_10K));
           }
-
-          auto tmp_in = in[party->GetConfiguration()->GetMyId()];
-          auto tmp_out = out[party->GetConfiguration()->GetMyId()];
-
-          assert(tmp_in == tmp_out);
-
-          /* if (party_id == output_owner) {
-             auto wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
-                 output_share->GetWires().at(0));
-             T circuit_result = wire->GetValuesOnWire().at(0);
-             T expected_result = inputs.at(0) + inputs.at(1) + inputs.at(2) + inputs.at(3);
-             std::cout << "Circuit result : " << unsigned(circuit_result) <<
-                       " \t Expected result: " << unsigned(expected_result) << "\n";
-             assert(circuit_result == expected_result);
-           }*/
         });
       }
       for (auto &t : threads) {
