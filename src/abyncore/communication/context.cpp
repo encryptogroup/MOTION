@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdlib>
 
+#include "crypto/aes_randomness_generator.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
 #include "utility/helpers.h"

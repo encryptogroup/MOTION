@@ -8,12 +8,13 @@
 #include <boost/asio.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
-#include "crypto/aes_randomness_generator.h"
 #include "utility/constants.h"
 #include "utility/typedefs.h"
 
 namespace ABYN {
-
+namespace Crypto {
+class AESRandomnessGenerator;
+}
 class DataStorage;
 
 class Logger;

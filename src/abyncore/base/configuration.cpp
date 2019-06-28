@@ -3,6 +3,8 @@
 #include <functional>
 #include <thread>
 
+#include "fmt/format.h"
+
 #include "communication/context.h"
 
 namespace ABYN {

@@ -6,8 +6,10 @@
 
 #include "communication/context.h"
 #include "communication/output_message.h"
-#include "share/share.h"
+#include "crypto/aes_randomness_generator.h"
+#include "share/arithmetic_gmw_share.h"
 #include "utility/data_storage.h"
+#include "utility/helpers.h"
 #include "utility/logger.h"
 
 namespace ABYN::Gates::Arithmetic {

@@ -5,8 +5,11 @@
 #include "base/configuration.h"
 #include "communication/context.h"
 #include "communication/output_message.h"
+#include "crypto/aes_randomness_generator.h"
 #include "utility/data_storage.h"
+#include "utility/helpers.h"
 #include "utility/logger.h"
+#include "wire/boolean_gmw_wire.h"
 
 namespace ABYN::Gates::GMW {
 

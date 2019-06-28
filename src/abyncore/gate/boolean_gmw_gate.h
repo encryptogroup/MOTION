@@ -2,7 +2,8 @@
 
 #include "gate.h"
 
-#include "share/share.h"
+#include "share/boolean_gmw_share.h"
+#include "utility/bit_vector.h"
 
 namespace ABYN::Gates::GMW {
 
