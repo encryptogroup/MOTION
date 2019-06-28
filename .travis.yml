@@ -27,12 +27,6 @@ script:
   - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake .. -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On
   - make
   - ./bin/abyntest
-  - cd ..
-  - mkdir build_release
-  - cd build_release
-  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake .. -DCMAKE_BUILD_TYPE=Release -DABYN_BUILD_TESTS=On
-  - make
-  - ./bin/abyntest
 
 notifications:
   - email: false
