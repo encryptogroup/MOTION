@@ -62,10 +62,10 @@ target_include_directories(abyn PUBLIC
 
 target_link_libraries(abyn
         PUBLIC ${Boost_LIBRARIES}
+        PUBLIC OpenMP::OpenMP_CXX
         PRIVATE Threads::Threads
         PRIVATE OpenSSL::Crypto
         PRIVATE OpenSSL::SSL
-        PRIVATE OpenMP::OpenMP_CXX
         )
 
 if (${SANITIZE_ADDRESS_LINK_OPT})
