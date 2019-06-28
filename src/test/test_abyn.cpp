@@ -12,6 +12,7 @@
 #include "gate/gate.h"
 #include "utility/bit_vector.h"
 #include "utility/typedefs.h"
+#include "wire/boolean_gmw_wire.h"
 
 #include "test_constants.h"
 
