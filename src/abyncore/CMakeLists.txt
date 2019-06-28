@@ -23,16 +23,30 @@ add_library(abyn
         )
 add_library(ABYN::abyn ALIAS abyn)
 
+
+if (ABYN_AVX512)
+    set(ABYN_AVX512_FLAG "-mavx512f")
+endif ()
+
+#set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 target_compile_definitions(abyn PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
 
 target_compile_features(abyn PRIVATE cxx_std_17)
-target_compile_options(abyn PRIVATE "-Wall" "-Wextra")
-target_compile_options(abyn PRIVATE ${OMIT_FRAME_POINTER_COMP_OPT} ${SANITIZE_ADDRESS_COMP_OPT})
+target_compile_options(abyn PRIVATE
+        -Wall -Wextra
+        -maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2
+        -ffunction-sections -march=native
+        ${ABYN_AVX512_FLAG})
 
 add_custom_target(
         abyn_config ALL DEPENDS
         "${PROJECT_SOURCE_DIR}/src/abyncore/utility/config.h.in"
 )
+
+if (ABYN_COMPILATION_TIME_DEBUGGING)
+    set_property(TARGET abyn PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+endif ()
 
 add_dependencies(abyn fbs-generation abyn_config)
 
@@ -51,6 +65,7 @@ target_link_libraries(abyn
         PRIVATE Threads::Threads
         PRIVATE OpenSSL::Crypto
         PRIVATE OpenSSL::SSL
+        PRIVATE OpenMP::OpenMP_CXX
         )
 
 if (${SANITIZE_ADDRESS_LINK_OPT})

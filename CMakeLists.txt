@@ -28,21 +28,7 @@ find_package(Boost 1.66.0
 set(Boost_USE_STATIC_LIBS ON)
 
 
-if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if we are in the top level CMakeLists
-    set(CMAKE_VECTORIZATION_FLAGS "-maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2")
-    if (ABYN_AVX512)
-        set(CMAKE_VECTORIZATION_FLAGS "${CMAKE_VECTORIZATION_FLAGS} -mavx512f")
-    endif ()
-
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_VECTORIZATION_FLAGS} ${OpenMP_CXX_FLAGS}")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffunction-sections -march=native -Wall")
-
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-    set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG")
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
-
+if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     # Set build type to `Release` if non was specified:
     if (NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -51,16 +37,6 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}") #set flags if 
     endif (NOT CMAKE_BUILD_TYPE)
 
     message("BUILD TYPE: " ${CMAKE_BUILD_TYPE})
-
-    if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
-        message("CMAKE_BUILD_TYPE is debug")
-        #SET(OMIT_FRAME_POINTER_COMP_OPT "-fno-omit-frame-pointer")
-        #SET(SANITIZE_ADDRESS_COMP_OPT "-fsanitize=address")
-        #set(SANITIZE_ADDRESS_LINK_OPT "-fsanitize=address")
-    endif ()
-
-    #enable for compilation time debugging
-    #set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
 endif ()
 
 if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
