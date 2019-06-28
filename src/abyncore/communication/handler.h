@@ -7,6 +7,10 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+namespace ENCRYPTO {
+class Condition;
+}
+
 namespace ABYN {
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
@@ -40,9 +44,9 @@ class Handler {
 
   std::queue<std::vector<std::uint8_t>> &GetReceiveQueue() { return queue_receive_; }
 
-  std::mutex &GetSendMutex() { return queue_send_mutex_; }
+  std::mutex &GetSendMutex() { return send_queue_mutex_; }
 
-  std::mutex &GetReceiveMutex() { return queue_receive_mutex_; }
+  std::mutex &GetReceiveMutex() { return receive_queue_mutex_; }
 
   ABYN::LoggerPtr &GetLogger() { return logger_; }
 
@@ -56,7 +60,7 @@ class Handler {
 
   std::string handler_info_;
 
-  std::mutex queue_receive_mutex_, queue_send_mutex_;
+  std::mutex receive_queue_mutex_, send_queue_mutex_;
 
   std::thread sender_thread_, receiver_thread_;
 
@@ -64,6 +68,8 @@ class Handler {
   bool continue_communication_ = true;
 
   bool received_termination_message_ = false, sent_termination_message_ = false;
+
+  std::unique_ptr<ENCRYPTO::Condition> received_new_msg_, there_is_smth_to_send_;
 
   void ReceivedTerminationMessage() { received_termination_message_ = true; }
 

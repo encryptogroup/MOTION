@@ -12,6 +12,10 @@
 
 #include "utility/typedefs.h"
 
+namespace ENCRYPTO {
+class Condition;
+}
+
 namespace ABYN {
 
 class Logger;
@@ -19,7 +23,7 @@ using LoggerPtr = std::shared_ptr<Logger>;
 
 class DataStorage {
  public:
-  DataStorage(std::size_t id) : id_(id) {}
+  DataStorage(std::size_t id);
 
   ~DataStorage() = default;
 
@@ -29,11 +33,15 @@ class DataStorage {
 
   const ABYN::Communication::OutputMessage *GetOutputMessage(const std::size_t gate_id);
 
-  void SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message) {
-    received_hello_message_ = std::move(hello_message);
-  }
+  const ABYN::Communication::OutputMessage *GetOutputMessageCondition(const std::size_t gate_id);
+
+  void SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message);
 
   const ABYN::Communication::HelloMessage *GetReceivedHelloMessage();
+
+  std::shared_ptr<ENCRYPTO::Condition> &GetReceivedHelloMessageCondition() {
+    return rcv_hello_msg_cond;
+  }
 
   void SetSentHelloMessage(std::vector<std::uint8_t> &&hello_message) {
     sent_hello_message_ = std::move(hello_message);
@@ -43,10 +51,20 @@ class DataStorage {
 
   const ABYN::Communication::HelloMessage *GetSentHelloMessage();
 
+  std::shared_ptr<ENCRYPTO::Condition> &GetSentHelloMessageCondition() {
+    return snt_hello_msg_cond;
+  }
+
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;
+  std::shared_ptr<ENCRYPTO::Condition> rcv_hello_msg_cond, snt_hello_msg_cond;
+
+  // id, buffer
   std::unordered_map<std::size_t, std::vector<std::uint8_t>>
-      received_output_messages_;  // id, buffer
+      received_output_messages_;
+  // id, condition
+  std::unordered_map<std::size_t, std::shared_ptr<ENCRYPTO::Condition>> output_message_conditions_;
+
   ABYN::LoggerPtr logger_;
   std::int64_t id_ = -1;
   std::mutex output_message_mutex_;

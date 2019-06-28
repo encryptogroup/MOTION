@@ -6,6 +6,7 @@
 
 #include "context.h"
 #include "message.h"
+#include "utility/condition.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
 #include "utility/logger.h"
@@ -31,12 +32,17 @@ std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
   return result;
 }
 
-Handler::Handler(ContextPtr &party, const ABYN::LoggerPtr &logger)
-    : party_(party), logger_(logger) {
+Handler::Handler(ContextPtr &party, const LoggerPtr &logger) : party_(party), logger_(logger) {
   handler_info_ =
       fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}", party->GetId(),
                   party->GetIp(), party->GetSocket()->local_endpoint().port(),
                   party->GetSocket()->remote_endpoint().port());
+
+  received_new_msg_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() { return !queue_receive_.empty(); });
+
+  there_is_smth_to_send_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() { return !queue_send_.empty(); });
 
   sender_thread_ = std::thread([&]() { ActAsSender(); });
 
@@ -47,10 +53,10 @@ Handler::~Handler() {
   continue_communication_ = false;
   if (sender_thread_.joinable()) {
     sender_thread_.join();
-  };
+  }
   if (receiver_thread_.joinable()) {
     receiver_thread_.join();
-  };
+  }
 }
 
 void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
@@ -59,7 +65,7 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
     if (auto shared_ptr_party = party_.lock()) {
       shared_ptr_party->GetDataStorage()->SetSentHelloMessage(message_raw_pointer,
-                                                             message_detached.size());
+                                                              message_detached.size());
     } else {
       throw(std::runtime_error("Party instance destroyed before its communication handler"));
     }
@@ -67,9 +73,10 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
   std::vector<std::uint8_t> buffer(message_raw_pointer,
                                    message_raw_pointer + message_detached.size());
   {
-    std::scoped_lock lock(queue_send_mutex_);
+    std::scoped_lock lock(send_queue_mutex_, there_is_smth_to_send_->GetMutex());
     queue_send_.push(std::move(buffer));
   }
+  there_is_smth_to_send_->NotifyAll();
 
   logger_->LogTrace(fmt::format("{}: Have put a {}-byte message to send queue", handler_info_,
                                 message_detached.size()));
@@ -85,13 +92,14 @@ const BoostSocketPtr Handler::GetSocket() {
 
 void Handler::TerminateCommunication() {
   auto message = BuildMessage(MessageType_TerminationMessage, nullptr);
-  std::vector<std::uint8_t> buffer(
-      message.GetBufferPointer(),
-      message.GetBufferPointer() + message.GetSize());  // std::move(u32tou8(TERMINATION_MESSAGE));
+  std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
+                                   message.GetBufferPointer() + message.GetSize());
   {
-    std::scoped_lock lock(queue_send_mutex_);
+    std::scoped_lock lock(send_queue_mutex_, there_is_smth_to_send_->GetMutex());
     queue_send_.push(std::move(buffer));
   }
+
+  there_is_smth_to_send_->NotifyAll();
 
   logger_->LogTrace(
       fmt::format("{}: Put a termination message message to send queue", handler_info_));
@@ -106,47 +114,50 @@ void Handler::WaitForConnectionEnd() {
       continue_communication_ = false;
       logger_->LogInfo(fmt::format("{}: terminated.", handler_info_));
     } else {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
     }
   }
 }
 
 void Handler::ActAsSender() {
   while (ContinueCommunication()) {
+    if (GetSendQueue().empty()) {
+      there_is_smth_to_send_->WaitFor(std::chrono::milliseconds(1));
+    }
+
     if (!GetSendQueue().empty()) {
-      auto &message = GetSendQueue().front();
-      // std::vector<std::uint8_t> message_size_buffer(message.data(),
-      //                                              message.data() + sizeof(std::uint32_t));
-      // auto message_size = message.size();//u8tou32(message_size_buffer);
-      std::string s;
-      for (auto i = 0u; i < message.size(); ++i) {
-        s.append(fmt::format("{0:#x} ", message.at(i)));
-      };
-
-      logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}", GetInfo(),
-                                    message.size(), s));
-
-      if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
-        throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
-                                             std::numeric_limits<std::uint32_t>::max(),
-                                             message.size())));
-      }
-
-      auto message_size = u32tou8(message.size());
-      message.insert(message.begin(), message_size.begin(), message_size.end());
-      boost::system::error_code ec;
-      boost::asio::write(*GetSocket().get(), boost::asio::buffer(message),
-                         boost::asio::transfer_exactly(message.size()), ec);
-      if (ec) {
-        throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
-      }
+      std::queue<std::vector<std::uint8_t>> tmp_queue;
       {
-        std::scoped_lock lock(GetSendMutex());
-        GetSendQueue().pop();
+        std::scoped_lock<std::mutex, std::mutex> lock(GetSendMutex(),
+                                                      there_is_smth_to_send_->GetMutex());
+        tmp_queue = std::move(GetSendQueue());
       }
+      while (!tmp_queue.empty()) {
+        std::vector<std::uint8_t> &message = tmp_queue.front();
+        std::string s;
+        for (auto i = 0u; i < message.size(); ++i) {
+          s.append(fmt::format("{0:#x} ", message.at(i)));
+        }
 
-    } else {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}", GetInfo(),
+                                      message.size(), s));
+
+        if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
+          throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
+                                               std::numeric_limits<std::uint32_t>::max(),
+                                               message.size())));
+        }
+
+        auto message_size = u32tou8(message.size());
+        message.insert(message.begin(), message_size.begin(), message_size.end());
+        boost::system::error_code ec;
+        boost::asio::write(*GetSocket().get(), boost::asio::buffer(message),
+                           boost::asio::transfer_exactly(message.size()), ec);
+        if (ec) {
+          throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
+        }
+        tmp_queue.pop();
+      }
     }
   }
 }
@@ -160,7 +171,7 @@ void Handler::ActAsReceiver() {
     std::thread thread_rcv([this]() {
       while (ContinueCommunication()) {
         if (GetSocket()->available() == 0) {
-          std::this_thread::sleep_for(std::chrono::milliseconds(1));
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
           continue;
         }
 
@@ -172,9 +183,14 @@ void Handler::ActAsReceiver() {
         }
 
         std::vector<std::uint8_t> message_buffer = ParseBody(size);
+
         auto message = GetMessage(message_buffer.data());
-        flatbuffers::Verifier verifier(message_buffer.data(), message_buffer.size());
-        assert(message->Verify(verifier));
+
+        if constexpr (ABYN_DEBUG) {
+          flatbuffers::Verifier verifier(message_buffer.data(), message_buffer.size());
+          assert(message->Verify(verifier));
+        }
+
         if (message->message_type() == MessageType_TerminationMessage) {
           ReceivedTerminationMessage();
           GetLogger()->LogTrace(
@@ -182,9 +198,10 @@ void Handler::ActAsReceiver() {
         }
 
         {
-          std::scoped_lock lock(GetReceiveMutex());
+          std::scoped_lock lock(GetReceiveMutex(), received_new_msg_->GetMutex());
           GetReceiveQueue().push(std::move(message_buffer));
         }
+        received_new_msg_->NotifyAll();
         GetSocket()->non_blocking(true);
 
         std::string s;
@@ -200,27 +217,29 @@ void Handler::ActAsReceiver() {
     //#pragma omp task
     std::thread thread_parse([this]() {
       while (ContinueCommunication() || !GetReceiveQueue().empty()) {
+        if (GetReceiveQueue().empty()) {
+          received_new_msg_->WaitFor(std::chrono::microseconds(200));
+        }
         if (!GetReceiveQueue().empty()) {
-          std::vector<std::uint8_t> message_buffer(std::move(GetReceiveQueue().front()));
-          if (auto shared_ptr_party = party_.lock()) {
-            shared_ptr_party->ParseMessage(std::move(message_buffer));
-          } else {
-            throw(std::runtime_error("Trying to use a destroyed communication handler"));
-          }
-
+          std::queue<std::vector<std::uint8_t>> tmp_queue;
           {
-            std::scoped_lock lock(GetReceiveMutex());
-            GetReceiveQueue().pop();
+            std::scoped_lock lock(GetReceiveMutex(), received_new_msg_->GetMutex());
+            tmp_queue = std::move(GetReceiveQueue());
           }
-        } else {
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
+          while (!tmp_queue.empty()) {
+            auto &message_buffer = tmp_queue.front();
+            auto shared_ptr_party = party_.lock();
+            assert(shared_ptr_party);
+            shared_ptr_party->ParseMessage(std::move(message_buffer));
+            tmp_queue.pop();
+          }
         }
       }
     });
     thread_rcv.join();
     thread_parse.join();
   }
-}
+}  // namespace ABYN::Communication
 
 std::uint32_t Handler::ParseHeader() {
   boost::system::error_code ec;
@@ -242,7 +261,6 @@ std::uint32_t Handler::ParseHeader() {
                     GetInfo(), size, s));
   } else if (size == 0 ||
              (ec == boost::asio::error::would_block || ec == boost::asio::error::eof)) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
     return 0;
   } else if (ec) {
     throw(std::runtime_error(fmt::format("Error while reading from socket: {}", ec.message())));
@@ -265,59 +283,56 @@ std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
 
 bool Handler::VerifyHelloMessage() {
   bool result = true;
-  if (auto shared_ptr_party = party_.lock()) {
-    auto my_hm = shared_ptr_party->GetDataStorage()->GetSentHelloMessage();
-    while (my_hm == nullptr) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      my_hm = shared_ptr_party->GetDataStorage()->GetSentHelloMessage();
-    }
+  auto shared_ptr_party = party_.lock();
+  assert(shared_ptr_party);
+  auto data_storage = shared_ptr_party->GetDataStorage();
+  auto *my_hm = data_storage->GetSentHelloMessage();
+  while (my_hm == nullptr) {
+    data_storage->GetSentHelloMessageCondition()->WaitFor(std::chrono::microseconds(200));
+    my_hm = data_storage->GetSentHelloMessage();
+  }
 
-    auto their_hm = shared_ptr_party->GetDataStorage()->GetReceivedHelloMessage();
-    while (their_hm == nullptr) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
-      their_hm = shared_ptr_party->GetDataStorage()->GetReceivedHelloMessage();
-    }
+  auto their_hm = data_storage->GetReceivedHelloMessage();
+  while (their_hm == nullptr) {
+    data_storage->GetReceivedHelloMessageCondition()->WaitFor(std::chrono::microseconds(200));
+    their_hm = data_storage->GetReceivedHelloMessage();
+  }
 
-    if (shared_ptr_party) {
-      if (my_hm->ABYN_version() != their_hm->ABYN_version()) {
-        logger_->LogError(fmt::format("{}: Different {} versions: mine is {}, theirs is {}",
-                                      handler_info_, FRAMEWORK_NAME, ABYN_VERSION,
-                                      their_hm->ABYN_version()));
-        result = false;
-      }
-      if (my_hm->num_of_parties() != their_hm->num_of_parties()) {
-        logger_->LogError(
-            fmt::format("{}: different total number of parties: mine is {}, theirs is {}",
-                        handler_info_, my_hm->num_of_parties(), their_hm->num_of_parties()));
-        result = false;
-      }
-      if (their_hm->destination_id() != my_hm->source_id()) {
-        logger_->LogError(fmt::format("{}: wrong destination id: mine is #{}, but received #{}",
-                                      handler_info_, my_hm->source_id(),
-                                      their_hm->destination_id()));
-        result = false;
-      }
-      if (my_hm->destination_id() != their_hm->source_id()) {
-        logger_->LogError(fmt::format("{}: wrong source id: my info is #{}, but received #{}",
-                                      handler_info_, my_hm->destination_id(),
-                                      their_hm->source_id()));
-        result = false;
-      }
-      if (my_hm->online_after_setup() != my_hm->online_after_setup()) {
-        logger_->LogError(fmt::format(
-            "{}: different \"online after setup\" setting: my info "
-            "is #{}, but received #{}",
-            handler_info_, my_hm->online_after_setup(), their_hm->online_after_setup()));
-        result = false;
-      }
-      if (my_hm->input_sharing_seed() == nullptr || my_hm->input_sharing_seed()->size() == 0) {
-        logger_->LogInfo(fmt::format("{}: received no AES seeds", handler_info_));
-      } else {
-        logger_->LogInfo(fmt::format("{}: received an AES seed", handler_info_));
-      }
+  if (shared_ptr_party) {
+    if (my_hm->ABYN_version() != their_hm->ABYN_version()) {
+      logger_->LogError(fmt::format("{}: Different {} versions: mine is {}, theirs is {}",
+                                    handler_info_, FRAMEWORK_NAME, ABYN_VERSION,
+                                    their_hm->ABYN_version()));
+      result = false;
     }
-  } else {
-    throw(std::runtime_error("Trying to use a destroyed communication handler"));
+    if (my_hm->num_of_parties() != their_hm->num_of_parties()) {
+      logger_->LogError(
+          fmt::format("{}: different total number of parties: mine is {}, theirs is {}",
+                      handler_info_, my_hm->num_of_parties(), their_hm->num_of_parties()));
+      result = false;
+    }
+    if (their_hm->destination_id() != my_hm->source_id()) {
+      logger_->LogError(fmt::format("{}: wrong destination id: mine is #{}, but received #{}",
+                                    handler_info_, my_hm->source_id(), their_hm->destination_id()));
+      result = false;
+    }
+    if (my_hm->destination_id() != their_hm->source_id()) {
+      logger_->LogError(fmt::format("{}: wrong source id: my info is #{}, but received #{}",
+                                    handler_info_, my_hm->destination_id(), their_hm->source_id()));
+      result = false;
+    }
+    if (my_hm->online_after_setup() != my_hm->online_after_setup()) {
+      logger_->LogError(
+          fmt::format("{}: different \"online after setup\" setting: my info "
+                      "is #{}, but received #{}",
+                      handler_info_, my_hm->online_after_setup(), their_hm->online_after_setup()));
+      result = false;
+    }
+    if (my_hm->input_sharing_seed() == nullptr || my_hm->input_sharing_seed()->size() == 0) {
+      logger_->LogInfo(fmt::format("{}: received no AES seeds", handler_info_));
+    } else {
+      logger_->LogInfo(fmt::format("{}: received an AES seed", handler_info_));
+    }
   }
   return result;
 }

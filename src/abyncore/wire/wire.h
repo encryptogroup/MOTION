@@ -8,6 +8,10 @@
 
 #include "utility/typedefs.h"
 
+namespace ENCRYPTO {
+class Condition;
+}
+
 namespace ABYN {
 class Register;
 }
@@ -31,13 +35,15 @@ class Wire {
 
   void RegisterWaitingGate(std::size_t gate_id);
 
-  void UnregisterWaitingGate(std::size_t gate_id);
-
   void SetOnlineFinished();
 
-  const auto &GetWaitingGatesIds() const { return waiting_gate_ids_; }
+  const auto &GetWaitingGatesIds() const noexcept { return waiting_gate_ids_; }
 
-  const bool &IsReady() const;
+  const bool &IsReady() const noexcept;
+
+  std::shared_ptr<ENCRYPTO::Condition> GetIsReadyCondition() const noexcept {
+    return is_done_condition_;
+  }
 
   bool IsConstant() const { return is_constant_; }
 
@@ -63,13 +69,15 @@ class Wire {
   // gates will wait for wires to be evaluated to proceed with their evaluation
   bool is_done_ = false;
 
+  std::shared_ptr<ENCRYPTO::Condition> is_done_condition_;
+
   std::int64_t wire_id_ = -1;
 
   std::weak_ptr<ABYN::Register> register_;
 
   std::unordered_set<std::size_t> waiting_gate_ids_;
 
-  Wire() = default;
+  Wire();
 
   static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id,
                                        std::weak_ptr<ABYN::Register> reg);

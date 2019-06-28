@@ -115,11 +115,11 @@ TEST(Condition, WaitForFalse) {
     }
 
     std::future<bool> wait_1 = std::async(std::launch::async, [&condition]() {
-      return condition.WaitFor(std::chrono::microseconds(100));
+      return condition.WaitFor(std::chrono::seconds(100));
     });
 
     std::future<bool> wait_2 = std::async(std::launch::async, [&condition]() {
-      return condition.WaitFor(std::chrono::microseconds(100));
+      return condition.WaitFor(std::chrono::seconds(100));
     });
 
     condition.NotifyAll();
@@ -163,10 +163,10 @@ TEST(Condition, WaitForComplexFunction) {
     }
 
     std::future<bool> wait_1 = std::async(std::launch::async, [&condition]() {
-      return condition.WaitFor(std::chrono::milliseconds(1));
+      return condition.WaitFor(std::chrono::seconds(100));
     });
     std::future<bool> wait_2 = std::async(std::launch::async, [&condition]() {
-      return condition.WaitFor(std::chrono::milliseconds(1));
+      return condition.WaitFor(std::chrono::seconds(100));
     });
 
     condition.NotifyAll();

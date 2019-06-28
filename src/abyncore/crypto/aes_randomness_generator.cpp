@@ -7,6 +7,7 @@ AESRandomnessGenerator::AESRandomnessGenerator(std::size_t party_id)
   if (!ctx_arithmetic_ || !ctx_boolean_) {
     throw(std::runtime_error(fmt::format("Could not initialize EVP context")));
   }
+  initialized_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return initialized_; });
 }
 
 void AESRandomnessGenerator::Initialize(
@@ -30,7 +31,11 @@ void AESRandomnessGenerator::Initialize(
     std::copy(digest.data(), digest.data() + AES_BLOCK_SIZE / 2, aes_ctr_nonce_boolean_);
   }
 
-  initialized_ = true;
+  {
+    std::scoped_lock lock(initialized_condition_->GetMutex());
+    initialized_ = true;
+  }
+  initialized_condition_->NotifyAll();
 }
 
 ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::size_t num_of_gates) {
@@ -40,7 +45,9 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
     return {};  // return an empty vector if num_of_gates is zero
   }
 
-  Helpers::WaitFor(initialized_);
+  while (!initialized_) {
+    initialized_condition_->WaitFor(std::chrono::milliseconds(1));
+  }
 
   const size_t BITS_IN_CIPHERTEXT = AES_BLOCK_SIZE * 8;
 

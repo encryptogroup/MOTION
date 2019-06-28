@@ -14,9 +14,6 @@ Register::Register(ConfigurationPtr &config) : config_(config) {
 }
 
 Register::~Register() {
-  /*while(gates_.size()){
-    std::this_thread::sleep_for(std::chrono::microseconds(10));
-  };*/
   input_gates_.resize(0);
   gates_.resize(0);
   wires_.resize(0);
@@ -62,12 +59,12 @@ void Register::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &messag
   }
 }
 
-void Register::RegisterNextGate(ABYN::Gates::Interfaces::GatePtr gate) {
+void Register::RegisterNextGate(ABYN::Gates::GatePtr gate) {
   assert(gate != nullptr);
   gates_.push_back(gate);
 }
 
-void Register::RegisterNextInputGate(ABYN::Gates::Interfaces::GatePtr gate) {
+void Register::RegisterNextInputGate(ABYN::Gates::GatePtr gate) {
   RegisterNextGate(gate);
   assert(gate != nullptr);
   input_gates_.push_back(gate);

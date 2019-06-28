@@ -1,52 +1,103 @@
 #include "data_storage.h"
 
+#include <mutex>
+
+#include "utility/condition.h"
 #include "utility/logger.h"
 
 namespace ABYN {
 
+DataStorage::DataStorage(std::size_t id) : id_(id) {
+  rcv_hello_msg_cond =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return !received_hello_message_.empty(); });
+  snt_hello_msg_cond =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return !sent_hello_message_.empty(); });
+};
+
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
-  auto message = ABYN::Communication::GetMessage(output_message.data());
-  auto output_message_ptr = ABYN::Communication::GetOutputMessage(message->payload()->data());
+  auto message = Communication::GetMessage(output_message.data());
+  auto output_message_ptr = Communication::GetOutputMessage(message->payload()->data());
 
   auto gate_id = output_message_ptr->gate_id();
 
   // prevents inserting new elements while searching while GetOutputMessage() is called
   std::scoped_lock lock(output_message_mutex_);
-  auto ret = received_output_messages_.insert({gate_id, std::move(output_message)});
-  if (!ret.second) {
-    logger_->LogError(
-        fmt::format("Failed to insert new output message from Party#{} for "
-                    "gate#{}, found another buffer on its place",
-                    id_, gate_id));
+
+  if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
+    // don't need to check anything
+    output_message_conditions_.emplace(
+        gate_id, std::make_shared<ENCRYPTO::Condition>([]() { return true; }));
   }
-  logger_->LogDebug(
-      fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
+  {
+    std::scoped_lock lock_cond(output_message_conditions_.find(gate_id)->second->GetMutex());
+
+    auto ret = received_output_messages_.emplace(gate_id, std::move(output_message));
+    if (!ret.second) {
+      logger_->LogError(
+          fmt::format("Failed to insert new output message from Party#{} for "
+                      "gate#{}, found another buffer on its place",
+                      id_, gate_id));
+    }
+    logger_->LogDebug(
+        fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
+  }
+
+  output_message_conditions_.find(gate_id)->second->NotifyAll();
 }
 
-const ABYN::Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
+const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
   // prevent SetReceivedOutputMessage() to insert new elements while searching
   std::scoped_lock lock(output_message_mutex_);
+
+  // create condition if there is no
+  if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
+    output_message_conditions_.emplace(
+        gate_id, std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
+          return received_output_messages_.find(gate_id) != received_output_messages_.end();
+        }));
+  }
+
+  // try to find the output message
   auto iterator = received_output_messages_.find(gate_id);
   if (iterator == received_output_messages_.end()) {
-    return nullptr;
+    // blocking wait if the is no message yet
+    output_message_conditions_.find(gate_id)->second->WaitFor(std::chrono::milliseconds(1));
+    // try to find it again, if we were notified through the Condition class
+    auto iterator2 = received_output_messages_.find(gate_id);
+    if (iterator2 == received_output_messages_.end()) {
+      // return nullptr if we are here due to timeout and there is no message yet
+      return nullptr;
+    }
   }
-  auto output_message = ABYN::Communication::GetMessage(iterator->second.data());
+  auto output_message = Communication::GetMessage(iterator->second.data());
   assert(output_message != nullptr);
-  return ABYN::Communication::GetOutputMessage(output_message->payload()->data());
+  return Communication::GetOutputMessage(output_message->payload()->data());
 }
 
-const ABYN::Communication::HelloMessage *DataStorage::GetReceivedHelloMessage() {
+void DataStorage::SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message) {
+  {
+    std::scoped_lock<std::mutex> lock(rcv_hello_msg_cond->GetMutex());
+    received_hello_message_ = std::move(hello_message);
+  }
+  rcv_hello_msg_cond->NotifyAll();
+}
+
+const Communication::HelloMessage *DataStorage::GetReceivedHelloMessage() {
   if (received_hello_message_.empty()) {
     return nullptr;
   }
-  auto hello_message = ABYN::Communication::GetMessage(received_hello_message_.data());
+  auto hello_message = Communication::GetMessage(received_hello_message_.data());
   assert(hello_message != nullptr);
-  return ABYN::Communication::GetHelloMessage(hello_message->payload()->data());
+  return Communication::GetHelloMessage(hello_message->payload()->data());
 }
 
 void DataStorage::SetSentHelloMessage(const std::uint8_t *message, std::size_t size) {
-  std::vector<std::uint8_t> buf(message, message + size);
-  SetSentHelloMessage(std::move(buf));
+  {
+    std::scoped_lock<std::mutex> lock(snt_hello_msg_cond->GetMutex());
+    std::vector<std::uint8_t> buf(message, message + size);
+    SetSentHelloMessage(std::move(buf));
+  }
+  snt_hello_msg_cond->NotifyAll();
 }
 
 const ABYN::Communication::HelloMessage *DataStorage::GetSentHelloMessage() {

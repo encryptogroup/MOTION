@@ -77,7 +77,10 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
       auto &rand_generator = shared_ptr_reg->GetConfig()
                                  ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
                                  ->GetTheirRandomnessGenerator();
-      Helpers::WaitFor(rand_generator->IsInitialized());
+
+      while (!rand_generator->IsInitialized()) {
+        rand_generator->GetInitializedCondition()->WaitFor(std::chrono::milliseconds(1));
+      }
     }
     SetSetupIsReady();
   }
@@ -244,7 +247,9 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
 
     if (is_my_output_) {
       // wait until all conditions are fulfilled
-      Helpers::WaitFor(parent_.at(0)->IsReady());
+      while (!parent_.at(0)->IsReady()) {
+        parent_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
+      }
 
       auto &config = shared_ptr_reg->GetConfig();
 
@@ -264,9 +269,6 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
                 std::move(Helpers::FromByteVector<T>(*message->wires()->Get(0)->payload()));
             assert(shared_outputs_.at(i).size() == output_.size());
             success = true;
-          }
-          if (!success) {
-            std::this_thread::sleep_for(std::chrono::microseconds(100));
           }
         }
       }
@@ -355,8 +357,12 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
   void EvaluateOnline() final {
     assert(setup_is_ready_);
 
-    Helpers::WaitFor(parent_a_.at(0)->IsReady());
-    Helpers::WaitFor(parent_b_.at(0)->IsReady());
+    while (!parent_a_.at(0)->IsReady()) {
+      parent_a_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
+    }
+    while (!parent_b_.at(0)->IsReady()) {
+      parent_a_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
+    }
 
     auto wire_a = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_a_.at(0));
     auto wire_b = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_b_.at(0));

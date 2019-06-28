@@ -17,10 +17,13 @@ using LoggerPtr = std::shared_ptr<Logger>;
 class Configuration;
 using ConfigurationPtr = std::shared_ptr<Configuration>;
 
-namespace Gates::Interfaces {
+namespace Gates {
+namespace Interfaces {
 class Gate;
+}  // namespace Interfaces
+using Gate = Interfaces::Gate;
 using GatePtr = std::shared_ptr<Gate>;
-}  // namespace Gates::Interfaces
+}  // namespace Gates
 
 namespace Wires {
 class Wire;
@@ -61,13 +64,11 @@ class Register {
 
   void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
 
-  void RegisterNextGate(Gates::Interfaces::GatePtr gate);
+  void RegisterNextGate(Gates::GatePtr gate);
 
-  void RegisterNextInputGate(Gates::Interfaces::GatePtr gate);
+  void RegisterNextInputGate(Gates::GatePtr gate);
 
-  const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const {
-    return gates_.at(gate_id);
-  }
+  const Gates::GatePtr &GetGate(std::size_t gate_id) const { return gates_.at(gate_id); }
   const auto &GetInputGates() const { return input_gates_; }
 
   auto &GetGates() const { return gates_; }
@@ -103,8 +104,8 @@ class Register {
   std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
 
-  std::vector<Gates::Interfaces::GatePtr> input_gates_;
-  std::vector<Gates::Interfaces::GatePtr> gates_;
+  std::vector<Gates::GatePtr> input_gates_;
+  std::vector<Gates::GatePtr> gates_;
 
   std::vector<Wires::WirePtr> wires_;
 

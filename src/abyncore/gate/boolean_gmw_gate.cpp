@@ -77,7 +77,10 @@ void GMWInputGate::EvaluateSetup() {
     auto &rand_generator = shared_ptr_reg->GetConfig()
                                ->GetCommunicationContext(input_owner_id_)
                                ->GetTheirRandomnessGenerator();
-    Helpers::WaitFor(rand_generator->IsInitialized());
+
+    while (!rand_generator->IsInitialized()) {
+      rand_generator->GetInitializedCondition()->WaitFor(std::chrono::milliseconds(1));
+    }
   }
   SetSetupIsReady();
 }
@@ -220,7 +223,9 @@ void GMWOutputGate::EvaluateOnline() {
   if (is_my_output_) {
     // wait until all conditions are fulfilled
     for (auto &wire : wires) {
-      Helpers::WaitFor(wire->IsReady());
+      while (!wire->IsReady()) {
+        wire->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
+      }
     }
 
     auto &config = shared_ptr_reg->GetConfig();
@@ -245,9 +250,6 @@ void GMWOutputGate::EvaluateOnline() {
             assert(shared_outputs_.at(i).size() == output_.size());
             success = true;
           }
-        }
-        if (!success) {
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
       }
     }
@@ -348,11 +350,15 @@ void GMWXORGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
   for (auto &wire : parent_a_) {
-    Helpers::WaitFor(wire->IsReady());
+    while (!wire->IsReady()) {
+      wire->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
+    }
   }
 
   for (auto &wire : parent_b_) {
-    Helpers::WaitFor(wire->IsReady());
+    while (!wire->IsReady()) {
+      wire->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
+    }
   }
 
   for (auto i = 0ull; i < parent_a_.size(); ++i) {

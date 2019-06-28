@@ -19,9 +19,14 @@ static auto &EVP_MD_CTX_free = EVP_MD_CTX_destroy;
 #include <fmt/format.h>
 
 #include "utility/bit_vector.h"
+#include "utility/condition.h"
 #include "utility/constants.h"
 #include "utility/helpers.h"
 #include "utility/typedefs.h"
+
+namespace ENCRYPTO {
+class Condition;
+}
 
 namespace ABYN::Crypto {
 
@@ -39,6 +44,10 @@ class AESRandomnessGenerator {
 
   bool &IsInitialized() { return initialized_; }
 
+  std::unique_ptr<ENCRYPTO::Condition> &GetInitializedCondition() noexcept {
+    return initialized_condition_;
+  }
+
   AESRandomnessGenerator(AESRandomnessGenerator &) = delete;
 
   AESRandomnessGenerator() = delete;
@@ -48,7 +57,7 @@ class AESRandomnessGenerator {
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   T GetUnsigned(std::size_t gate_id) {
     while (!initialized_) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      initialized_condition_->WaitFor(std::chrono::milliseconds(1));
     }
 
     std::uint8_t output[AES_BLOCK_SIZE], input[AES_BLOCK_SIZE];
@@ -85,7 +94,9 @@ class AESRandomnessGenerator {
       return {};  // return an empty vector if num_of_gates is zero
     }
 
-    Helpers::WaitFor(initialized_);
+    while (!initialized_) {
+      initialized_condition_->WaitFor(std::chrono::milliseconds(1));
+    }
 
     // Pre-initialize output vector
     std::vector<T> results;
@@ -176,5 +187,7 @@ class AESRandomnessGenerator {
   ENCRYPTO::BitVector random_bits_;
 
   std::mutex random_bits_mutex;
+
+  std::unique_ptr<ENCRYPTO::Condition> initialized_condition_;
 };
 }  // namespace ABYN::Crypto
