@@ -11,12 +11,14 @@ add_library(abyn
         crypto/aes_randomness_generator.cpp
         gate/gate.cpp
         gate/boolean_gmw_gate.cpp
+        share/boolean_gmw_share.cpp
         share/share.cpp
         utility/bit_vector.cpp
         utility/condition.cpp
         utility/data_storage.cpp
         utility/helpers.cpp
         utility/logger.cpp
+        wire/boolean_gmw_wire.cpp
         wire/wire.cpp
         )
 add_library(ABYN::abyn ALIAS abyn)
