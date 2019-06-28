@@ -1,21 +1,19 @@
 #pragma once
 
-#include <cstdlib>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
-//#include "ENCRYPTO_utils/src/ENCRYPTO_utils/cbitvector.h"
-//#include "cryptoTools/cryptoTools/Common/BitVector.h"
-
-#include "base/register.h"
-#include "utility/bit_vector.h"
 #include "utility/typedefs.h"
 
-// forward-declare Gate class
+namespace ABYN {
+class Register;
+}
+
 namespace ABYN::Gates::Interfaces {
-class Gate;
+class Gate;  // forward declaration
 
 using GatePtr = std::shared_ptr<Gate>;
 }  // namespace ABYN::Gates::Interfaces
@@ -84,54 +82,6 @@ class Wire {
 
 using WirePtr = std::shared_ptr<Wire>;
 
-// Allow only unsigned integers for Arithmetic wires.
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticWire : public Wire {
- public:
-  ArithmeticWire(std::vector<T> &&values, std::weak_ptr<Register> reg, bool is_constant = false) {
-    is_constant_ = is_constant;
-    register_ = reg;
-    values_ = std::move(values);
-    num_of_parallel_values_ = values_.size();
-    InitializationHelper();
-  }
-
-  ArithmeticWire(const std::vector<T> &values, std::weak_ptr<Register> reg,
-                 bool is_constant = false) {
-    is_constant_ = is_constant;
-    register_ = reg;
-    values_ = values;
-    num_of_parallel_values_ = values_.size();
-    InitializationHelper();
-  }
-
-  ArithmeticWire(T t, std::weak_ptr<Register> reg, bool is_constant = false) {
-    is_constant_ = is_constant;
-    register_ = reg;
-    values_.push_back(t);
-    num_of_parallel_values_ = 1;
-    InitializationHelper();
-  }
-
-  ~ArithmeticWire() final = default;
-
-  Protocol GetProtocol() const final { return Protocol::ArithmeticGMW; }
-
-  CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
-
-  const std::vector<T> &GetValuesOnWire() const { return values_; }
-
-  std::vector<T> &GetMutableValuesOnWire() { return values_; }
-
-  std::size_t GetBitLength() const final { return sizeof(T) * 8; }
-
- private:
-  std::vector<T> values_;
-};
-
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticWirePtr = std::shared_ptr<ArithmeticWire<T>>;
-
 class BooleanWire : public Wire {
  public:
   ~BooleanWire() override = default;
@@ -148,53 +98,6 @@ class BooleanWire : public Wire {
 
 using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
-class GMWWire : public BooleanWire {
- public:
-  GMWWire(ENCRYPTO::BitVector &&values, std::weak_ptr<Register> reg, bool is_constant = false) {
-    values_ = std::move(values);
-    register_ = reg;
-    is_constant_ = is_constant;
-    num_of_parallel_values_ = values_.GetSize();
-    InitializationHelper();
-  }
-
-  GMWWire(const ENCRYPTO::BitVector &values, std::weak_ptr<Register> reg,
-          bool is_constant = false) {
-    values_ = values;
-    register_ = reg;
-    is_constant_ = is_constant;
-    num_of_parallel_values_ = values_.GetSize();
-    InitializationHelper();
-  }
-
-  GMWWire(bool value, std::weak_ptr<Register> reg, bool is_constant = false) {
-    values_.Append(value);
-    register_ = reg;
-    is_constant_ = is_constant;
-    num_of_parallel_values_ = 1;
-    InitializationHelper();
-  }
-
-  ~GMWWire() final = default;
-
-  Protocol GetProtocol() const final { return Protocol::BooleanGMW; }
-
-  GMWWire() = delete;
-
-  GMWWire(GMWWire &) = delete;
-
-  std::size_t GetBitLength() const final { return 1; }
-
-  const ENCRYPTO::BitVector &GetValuesOnWire() const { return values_; }
-
-  ENCRYPTO::BitVector &GetMutableValuesOnWire() { return values_; }
-
- private:
-  ENCRYPTO::BitVector values_;
-};
-
-using GMWWirePtr = std::shared_ptr<GMWWire>;
-
 class BMRWire : BooleanWire {
  public:
   ~BMRWire() final = default;
@@ -206,6 +109,6 @@ class BMRWire : BooleanWire {
   BMRWire(BMRWire &) = delete;
 };
 
-using BMRWirePtr = std::shared_ptr<GMWWire>;
+using BMRWirePtr = std::shared_ptr<BMRWire>;
 
 }  // namespace ABYN::Wires
