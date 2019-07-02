@@ -49,31 +49,40 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
     initialized_condition_->WaitFor(std::chrono::milliseconds(1));
   }
 
-  const size_t BITS_IN_CIPHERTEXT = AES_BLOCK_SIZE * 8;
+  constexpr std::size_t BITS_IN_CIPHERTEXT = AES_BLOCK_SIZE * 8;
+  constexpr std::size_t CIPHERTEXTS_IN_BATCH = 100;
+  // initialization for the encryption is costly, so perform random bit generation in a batch
+  constexpr std::size_t BITS_IN_BATCH = BITS_IN_CIPHERTEXT * CIPHERTEXTS_IN_BATCH;
+  constexpr std::size_t BYTES_IN_BATCH = BITS_IN_BATCH / 8;
 
-  std::vector<std::uint8_t> input(AES_BLOCK_SIZE * 2), output(AES_BLOCK_SIZE * 2);
-  std::copy(std::begin(aes_ctr_nonce_boolean_), std::end(aes_ctr_nonce_boolean_), input.data());
   while (random_bits_.GetSize() < (gate_id + num_of_gates)) {
-    std::vector<std::byte> output_bytes;
-    auto counter_pointer = input.data() + AESRandomnessGenerator::COUNTER_OFFSET;
-    auto counter_value = random_bits_.GetSize() / BITS_IN_CIPHERTEXT;
-    *reinterpret_cast<std::uint64_t *>(counter_pointer) = counter_value;
+    std::vector<std::uint8_t> input(BYTES_IN_BATCH + AES_BLOCK_SIZE),
+        output(BYTES_IN_BATCH + AES_BLOCK_SIZE);
+    for (auto offset = random_bits_.GetSize() / AES_BLOCK_SIZE_; offset < CIPHERTEXTS_IN_BATCH;
+         ++offset) {
+      auto ptr = input.data() + offset * AES_BLOCK_SIZE_;
+      // copy nonce
+      std::copy(std::begin(aes_ctr_nonce_boolean_), std::end(aes_ctr_nonce_boolean_), ptr);
+      // copy counter value
+      *reinterpret_cast<uint64_t *>(ptr + AES_BLOCK_SIZE_ / 2) = offset;
+    }
 
+    std::vector<std::byte> output_bytes;
     // encrypt as in CTR mode, but without sequentially incrementing the counter
     // after each encryption
-    int output_length =
-        Encrypt(ctx_boolean_.get(), raw_key_boolean_, input.data(), output.data(), 1);
+    int output_length = Encrypt(ctx_boolean_.get(), raw_key_boolean_, input.data(), output.data(),
+                                CIPHERTEXTS_IN_BATCH);
 
-    if (static_cast<std::size_t>(output_length) < AES_BLOCK_SIZE ||
-        static_cast<std::size_t>(output_length) > 2 * AES_BLOCK_SIZE) {
+    if (static_cast<std::size_t>(output_length) < BYTES_IN_BATCH ||
+        static_cast<std::size_t>(output_length) > BYTES_IN_BATCH + AES_BLOCK_SIZE) {
       throw(std::runtime_error(fmt::format("AES encryption output has length {}, expected {}",
-                                           output_length, 2 * AES_BLOCK_SIZE)));
+                                           output_length, BYTES_IN_BATCH)));
     }
 
-    for (auto i = 0ull; i < AES_BLOCK_SIZE; ++i) {
+    for (auto i = 0ull; i < BYTES_IN_BATCH; ++i) {
       output_bytes.push_back(std::byte(output.at(i)));
     }
-    auto randomness = ENCRYPTO::BitVector(std::move(output_bytes), BITS_IN_CIPHERTEXT);
+    auto randomness = ENCRYPTO::BitVector(std::move(output_bytes), BITS_IN_BATCH);
     random_bits_.Append(randomness);
   }
 
