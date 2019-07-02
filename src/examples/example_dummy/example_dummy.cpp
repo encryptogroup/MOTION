@@ -13,7 +13,7 @@ constexpr std::uint16_t PORT_OFFSET = 7777;
 
 void test() {
   std::random_device rd("/dev/urandom");
-  for (auto i = 0ull; i < 10; ++i) {
+  for (auto i = 0ull; i < 1u; ++i) {
     constexpr auto num_parties = 4u;
     std::srand(time(nullptr));
     std::size_t input_owner = std::rand() % num_parties, output_owner = std::rand() % num_parties;
@@ -88,14 +88,14 @@ void test() {
       for (auto j = 0ull; j < global_input_1.size(); ++j) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
       }
-      std::vector<ENCRYPTO::BitVector> global_input_1K(num_parties), global_input_10K(num_parties);
+      std::vector<ENCRYPTO::BitVector> global_input_1K(num_parties), global_input_100K(num_parties);
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
         global_input_1K.at(j) = ENCRYPTO::BitVector::Random(1000);
-        global_input_10K.at(j) = ENCRYPTO::BitVector::Random(10000);
+        global_input_100K.at(j) = ENCRYPTO::BitVector::Random(100000);
       }
       bool dummy_input_1 = false;
       ENCRYPTO::BitVector dummy_input_1K(1000, false);
-      ENCRYPTO::BitVector dummy_input_10K(10000, false);
+      ENCRYPTO::BitVector dummy_input_100K(100000, false);
 
       // std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, 7777)));
       std::vector<std::thread> threads;
@@ -105,33 +105,55 @@ void test() {
       for (auto &party : abyn_parties) {
         threads.emplace_back([&]() {
           const auto BGMW = Protocol::BooleanGMW;
-          std::vector<Shares::SharePtr> input_share_1, input_share_1K, input_share_10K;
+          std::vector<Shares::SharePtr> input_share_1, input_share_1K, input_share_100K;
+          auto _100K_vector_size = 1000;
+          std::vector<std::vector<Shares::SharePtr>> input_share_100K_vector(_100K_vector_size);
+          std::vector<Shares::SharePtr> output_share_100K_vector(_100K_vector_size);
 
           for (auto j = 0ull; j < num_parties; ++j) {
             if (j == party->GetConfiguration()->GetMyId()) {
               input_share_1.push_back(party->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
               input_share_1K.push_back(party->IN<BGMW>(global_input_1K.at(j), j));
-              input_share_10K.push_back(party->IN<BGMW>(global_input_10K.at(j), j));
+              input_share_100K.push_back(party->IN<BGMW>(global_input_100K.at(j), j));
             } else {
               input_share_1.push_back(party->IN<BGMW>(dummy_input_1, j));
               input_share_1K.push_back(party->IN<BGMW>(dummy_input_1K, j));
-              input_share_10K.push_back(party->IN<BGMW>(dummy_input_10K, j));
+              input_share_100K.push_back(party->IN<BGMW>(dummy_input_100K, j));
             }
           }
 
           auto xor_1 = party->XOR(input_share_1.at(0), input_share_1.at(1));
           auto xor_1K = party->XOR(input_share_1K.at(0), input_share_1K.at(1));
-          auto xor_10K = party->XOR(input_share_10K.at(0), input_share_10K.at(1));
+          auto xor_100K = party->XOR(input_share_100K.at(0), input_share_100K.at(1));
 
           for (auto j = 2ull; j < num_parties; ++j) {
             xor_1 = party->XOR(xor_1, input_share_1.at(j));
             xor_1K = party->XOR(xor_1K, input_share_1K.at(j));
-            xor_10K = party->XOR(xor_10K, input_share_10K.at(j));
+            xor_100K = party->XOR(xor_100K, input_share_100K.at(j));
           }
 
           auto output_share_1 = party->OUT(xor_1, output_owner);
           auto output_share_1K = party->OUT(xor_1K, output_owner);
-          auto output_share_10K = party->OUT(xor_10K, output_owner);
+          auto output_share_100K = party->OUT(xor_100K, output_owner);
+
+          for (auto k = 0ull; k < input_share_100K_vector.size(); ++k) {
+            for (auto j = 0ull; j < num_parties; ++j) {
+              if (j == party->GetConfiguration()->GetMyId()) {
+                input_share_100K_vector.at(k).push_back(party->IN<BGMW>(global_input_100K.at(j), j));
+              } else {
+                input_share_100K_vector.at(k).push_back(party->IN<BGMW>(dummy_input_100K, j));
+              }
+            }
+
+            auto xor_100Kv =
+                party->XOR(input_share_100K_vector.at(k).at(0), input_share_100K_vector.at(k).at(1));
+
+            for (auto j = 2ull; j < num_parties; ++j) {
+              xor_100Kv = party->XOR(xor_100Kv, input_share_100K_vector.at(k).at(j));
+            }
+
+            output_share_100K_vector.at(k) = party->OUT(xor_100Kv, output_owner);
+          }
 
           party->Run();
 
@@ -140,16 +162,25 @@ void test() {
                 std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1->GetWires().at(0));
             auto wire_1K =
                 std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1K->GetWires().at(0));
-            auto wire_10K =
-                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_10K->GetWires().at(0));
+            auto wire_100K =
+                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_100K->GetWires().at(0));
 
             assert(wire_1);
             assert(wire_1K);
-            assert(wire_10K);
+            assert(wire_100K);
 
             assert(wire_1->GetValuesOnWire().Get(0) == Helpers::XORReduceBitVector(global_input_1));
             assert(wire_1K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_1K));
-            assert(wire_10K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_10K));
+            assert(wire_100K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_100K));
+
+            for (auto &s : output_share_100K_vector) {
+              auto wire_100K_v =
+                  std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(s->GetWires().at(0));
+
+              assert(wire_100K_v);
+
+              assert(wire_100K_v->GetValuesOnWire() == Helpers::XORBitVectors(global_input_100K));
+            }
           }
         });
       }
