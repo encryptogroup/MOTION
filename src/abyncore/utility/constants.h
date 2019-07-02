@@ -14,7 +14,7 @@ constexpr std::string_view FRAMEWORK_NAME{"ABYN"};
 
 constexpr auto MB = 1024 * 1024;
 
-constexpr bool ABYN_VERBOSE_DEBUG_WISH = true;
+constexpr bool ABYN_VERBOSE_DEBUG_WISH = false;
 
 // Don't compile unnecessary code if verbose debugging is not needed
 constexpr bool ABYN_VERBOSE_DEBUG = !ABYN_DEBUG ? false : ABYN_VERBOSE_DEBUG_WISH;

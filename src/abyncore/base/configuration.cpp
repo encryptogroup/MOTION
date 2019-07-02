@@ -12,7 +12,7 @@ namespace ABYN {
 Configuration::Configuration(const std::vector<Communication::ContextPtr> &contexts, std::size_t id)
     : my_id_(id), num_threads_(std::thread::hardware_concurrency()) {
   communication_contexts_.resize(contexts.size() + 1, nullptr);
-  if constexpr (ABYN::ABYN_VERBOSE_DEBUG) {
+  if constexpr (ABYN_VERBOSE_DEBUG) {
     severity_level_ = boost::log::trivial::trace;
   } else if constexpr (ABYN_DEBUG) {
     severity_level_ = boost::log::trivial::debug;

@@ -107,7 +107,9 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
                           ->GetCommunicationContext(i)
                           ->GetMyRandomnessGenerator()
                           ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
-        log_string.append(fmt::format("id#{}:{} ", i, randomness.at(0)));
+        if constexpr (ABYN_VERBOSE_DEBUG) {
+          log_string.append(fmt::format("id#{}:{} ", i, randomness.at(0)));
+        }
         for (auto j = 0u; j < result.size(); ++j) {
           result.at(j) += randomness.at(j);
         }
@@ -116,11 +118,13 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
         result.at(j) = input_.at(j) - result.at(j);
       }
 
-      auto s = fmt::format(
-          "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
-          "share: {}, expected shares of other parties: {}",
-          input_owner_, gate_id_, input_.at(0), result.at(0), log_string);
-      shared_ptr_reg->GetLogger()->LogTrace(s);
+      if constexpr (ABYN_VERBOSE_DEBUG) {
+        auto s = fmt::format(
+            "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
+            "share: {}, expected shares of other parties: {}",
+            input_owner_, gate_id_, input_.at(0), result.at(0), log_string);
+        shared_ptr_reg->GetLogger()->LogTrace(s);
+      }
     } else {
       auto &rand_generator = shared_ptr_reg->GetConfig()
                                  ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
@@ -129,11 +133,13 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
       result =
           std::move(rand_generator->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
 
-      auto s = fmt::format(
-          "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
-          "{} from the seed",
-          gate_id_, input_owner_, result.at(0));
-      shared_ptr_reg->GetLogger()->LogTrace(s);
+      if constexpr (ABYN_VERBOSE_DEBUG) {
+        auto s = fmt::format(
+            "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
+            "{} from the seed",
+            gate_id_, input_owner_, result.at(0));
+        shared_ptr_reg->GetLogger()->LogTrace(s);
+      }
     }
     auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(my_wire);
@@ -276,20 +282,23 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
       shared_outputs_.at(config->GetMyId()) = output_;
       output_ = std::move(Helpers::AddVectors(shared_outputs_));
 
-      std::string shares{""};
-      for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
-        shares.append(fmt::format("id#{}:{} ", i, Helpers::Print::ToString(shared_outputs_.at(i))));
+      if constexpr (ABYN_VERBOSE_DEBUG) {
+        std::string shares{""};
+        for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
+          shares.append(
+              fmt::format("id#{}:{} ", i, Helpers::Print::ToString(shared_outputs_.at(i))));
+        }
+
+        auto result = std::move(Helpers::Print::ToString(output_));
+
+        shared_ptr_reg->GetLogger()->LogTrace(
+            fmt::format("Received output shares: {} from other parties, "
+                        "reconstructed result is {}",
+                        shares, result));
       }
 
-      auto result = std::move(Helpers::Print::ToString(output_));
-
-      shared_ptr_reg->GetLogger()->LogTrace(
-          fmt::format("Received output shares: {} from other parties, "
-                      "reconstructed result is {}",
-                      shares, result));
-
       auto arithmetic_output_wire =
-          std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+          std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
       assert(arithmetic_output_wire);
       arithmetic_output_wire->GetMutableValuesOnWire() = output_;
     } else {
@@ -299,7 +308,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
     }
     SetOnlineIsReady();
     shared_ptr_reg->IncrementEvaluatedGatesCounter();
-    shared_ptr_reg->GetLogger()->LogTrace(
+    shared_ptr_reg->GetLogger()->LogDebug(
         fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
   }
 
@@ -383,7 +392,7 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
     assert(shared_ptr_reg);
 
     shared_ptr_reg->IncrementEvaluatedGatesCounter();
-    shared_ptr_reg->GetLogger()->LogTrace(
+    shared_ptr_reg->GetLogger()->LogDebug(
         fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
   }
 

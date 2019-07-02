@@ -249,7 +249,7 @@ void BitVector::Append(const BitVector& other) noexcept {
         bool other_fits_byte_size = other.bit_size_ % 8 == 0;
         if (other_has_next_block || last_shift_needed || other_fits_byte_size) {
           data_vector_.at(old_byte_offset + 1) |= other.data_vector_.at(i) << (8 - old_bit_offset);
-        };
+        }
         ++old_byte_offset;
       }
     }

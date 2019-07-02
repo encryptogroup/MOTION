@@ -134,13 +134,15 @@ void Handler::ActAsSender() {
       }
       while (!tmp_queue.empty()) {
         std::vector<std::uint8_t> &message = tmp_queue.front();
-        std::string s;
-        for (auto i = 0u; i < message.size(); ++i) {
-          s.append(fmt::format("{0:#x} ", message.at(i)));
-        }
 
-        logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}", GetInfo(),
-                                      message.size(), s));
+        if constexpr (ABYN_VERBOSE_DEBUG) {
+          std::string s;
+          for (auto i = 0u; i < message.size(); ++i) {
+            s.append(fmt::format("{0:#x} ", message.at(i)));
+          }
+          logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}",
+                                        GetInfo(), message.size(), s));
+        }
 
         if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
           throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
@@ -151,7 +153,14 @@ void Handler::ActAsSender() {
         auto message_size = u32tou8(message.size());
         message.insert(message.begin(), message_size.begin(), message_size.end());
         boost::system::error_code ec;
-        boost::asio::write(*GetSocket().get(), boost::asio::buffer(message),
+        auto boost_socket = GetSocket();
+        assert(boost_socket);
+        assert(boost_socket->is_open());
+        boost_socket->wait(boost::asio::ip::tcp::socket::wait_write, ec);
+        if (ec) {
+          throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
+        }
+        boost::asio::write(*boost_socket.get(), boost::asio::buffer(message),
                            boost::asio::transfer_exactly(message.size()), ec);
         if (ec) {
           throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
@@ -193,8 +202,10 @@ void Handler::ActAsReceiver() {
 
         if (message->message_type() == MessageType_TerminationMessage) {
           ReceivedTerminationMessage();
-          GetLogger()->LogTrace(
-              fmt::format("{}: Got a termination message from the socket", GetInfo()));
+          if constexpr (ABYN_VERBOSE_DEBUG) {
+            GetLogger()->LogTrace(
+                fmt::format("{}: Got a termination message from the socket", GetInfo()));
+          }
         }
 
         {
@@ -202,14 +213,16 @@ void Handler::ActAsReceiver() {
           GetReceiveQueue().push(std::move(message_buffer));
         }
         received_new_msg_->NotifyAll();
-        GetSocket()->non_blocking(true);
+        GetSocket()->non_blocking(false);
 
-        std::string s;
-        for (auto i = 0u; i < message_buffer.size(); ++i) {
-          s.append(fmt::format("{0:#x} ", message_buffer.at(i)));
+        if constexpr (ABYN_VERBOSE_DEBUG) {
+          std::string s;
+          for (auto i = 0u; i < message_buffer.size(); ++i) {
+            s.append(fmt::format("{0:#x} ", message_buffer.at(i)));
+          }
+          GetLogger()->LogTrace(
+              fmt::format("{}: Read message body of size {}, message: {}", GetInfo(), size, s));
         }
-        GetLogger()->LogTrace(
-            fmt::format("{}: Read message body of size {}, message: {}", GetInfo(), size, s));
       }
     });
     // separate thread for parsing received messages
@@ -273,7 +286,7 @@ std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
   GetSocket()->non_blocking(false);
   std::vector<std::uint8_t> message_buffer(size);
   // get the message
-  boost::asio::read(*(GetSocket().get()), boost::asio::buffer(message_buffer),
+  boost::asio::read(*GetSocket().get(), boost::asio::buffer(message_buffer),
                     boost::asio::transfer_exactly(message_buffer.size()), ec);
   if (ec) {
     throw(std::runtime_error(fmt::format("Error while reading from socket: {}", ec.message())));

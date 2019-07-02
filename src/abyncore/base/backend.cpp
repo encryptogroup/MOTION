@@ -38,8 +38,11 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
     auto &logger = register_->GetLogger();
     auto seed =
         std::move(config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
-    logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
-                                 i, Helpers::Print::Hex(seed)));
+
+    if constexpr (ABYN_VERBOSE_DEBUG) {
+      logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
+                                   i, Helpers::Print::Hex(seed)));
+    }
   }
 }
 
@@ -54,13 +57,16 @@ void Backend::InitializeCommunicationHandlers() {
     if (i == config_->GetMyId()) {
       continue;
     }
-    auto message = fmt::format(
-        "Party #{} creates CommHandler for Party #{} with end ip {}, local "
-        "port {} and remote port {}",
-        config_->GetMyId(), i, config_->GetCommunicationContext(i)->GetIp(),
-        config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
-        config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
-    register_->GetLogger()->LogDebug(message);
+
+    if constexpr (ABYN_DEBUG) {
+      auto message = fmt::format(
+          "Party #{} created CommHandler for Party #{} with end ip {}, local "
+          "port {} and remote port {}",
+          config_->GetMyId(), i, config_->GetCommunicationContext(i)->GetIp(),
+          config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
+          config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
+      register_->GetLogger()->LogDebug(message);
+    }
 
     communication_handlers_.at(i) = std::make_shared<Communication::Handler>(
         config_->GetCommunicationContext(i), register_->GetLogger());

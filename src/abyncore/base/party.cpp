@@ -175,10 +175,11 @@ void Party::Connect() {
       if (destination_id == config_->GetMyId()) {
         continue;
       }
-      auto &p = config_->GetCommunicationContext(destination_id);
-      backend_->GetLogger()->LogDebug(
-          fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
-
+      if constexpr (ABYN_DEBUG) {
+        auto &p = config_->GetCommunicationContext(destination_id);
+        backend_->GetLogger()->LogDebug(
+            fmt::format("Trying to connect to {}:{}\n", p->GetIp().data(), p->GetPort()));
+      }
       auto result = config_->GetCommunicationContext(destination_id)->Connect();
       backend_->GetLogger()->LogInfo(result);
     }
@@ -203,7 +204,11 @@ void Party::EvaluateCircuit() {
   }
 }
 
-void Party::Finish() { backend_->TerminateCommunication(); }
+void Party::Finish() {
+  backend_->TerminateCommunication();
+  backend_->GetLogger()->LogInfo(
+      fmt::format("Finished evaluating {} gates", backend_->GetRegister()->GetTotalNumOfGates()));
+};
 
 std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties,
                                                             std::uint16_t port) {
