@@ -8,8 +8,8 @@ if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
 endif ()
 
-option(ABYN_BUILD_EXE "Build executables" ON)
-option(ABYN_BUILD_TESTS "Build tests" ON)
+option(ABYN_BUILD_EXE "Build executables" OFF)
+option(ABYN_BUILD_TESTS "Build tests" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -62,8 +62,6 @@ if (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
 endif ()
 
-set(CMAKE_CXX_STANDARD 17)
-
 find_package(fmt QUIET)
 if (fmt_FOUND)
     message(STATUS "Found fmt")
@@ -114,9 +112,9 @@ if (ABYN_BUILD_TESTS)
 
     set(BUILD_GMOCK OFF CACHE BOOL "Disable building gmock" FORCE)
     add_subdirectory(extern/googletest EXCLUDE_FROM_ALL)
-    add_subdirectory(src/test)
+    add_subdirectory(src/test EXCLUDE_FROM_ALL)
 endif (ABYN_BUILD_TESTS)
 
 if (ABYN_BUILD_EXE)
-    add_subdirectory(src/examples)
+    add_subdirectory(src/examples EXCLUDE_FROM_ALL)
 endif (ABYN_BUILD_EXE)
