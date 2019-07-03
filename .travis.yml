@@ -24,7 +24,7 @@ before_install:
 script:
   - mkdir build_debug
   - cd build_debug
-  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake .. --target abyntest -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On -j 4
+  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake --target abyntest -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On -j 4 ..
   - make
   - ./bin/abyntest
 
