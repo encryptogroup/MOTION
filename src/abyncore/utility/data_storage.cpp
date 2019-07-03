@@ -46,31 +46,35 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
 }
 
 const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
-  // prevent SetReceivedOutputMessage() to insert new elements while searching
-  std::scoped_lock lock(output_message_mutex_);
+  std::unordered_map<std::size_t, std::vector<std::uint8_t>>::iterator iterator, end;
+  {
+    // prevent SetReceivedOutputMessage() to insert new elements while searching
+    std::scoped_lock lock(output_message_mutex_);
 
-  // create condition if there is no
-  if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
-    output_message_conditions_.emplace(
-        gate_id, std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
-          return received_output_messages_.find(gate_id) != received_output_messages_.end();
-        }));
+    // create condition if there is no
+    if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
+      output_message_conditions_.emplace(
+          gate_id, std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
+            return received_output_messages_.find(gate_id) != received_output_messages_.end();
+          }));
+    }
+
+    // try to find the output message
+    iterator = received_output_messages_.find(gate_id);
+    end = received_output_messages_.end();
   }
 
-  // try to find the output message
-  auto iterator = received_output_messages_.find(gate_id);
-  if (iterator == received_output_messages_.end()) {
+  while (iterator == end) {
     // blocking wait if the is no message yet
     output_message_conditions_.find(gate_id)->second->WaitFor(std::chrono::milliseconds(1));
+    std::scoped_lock lock(output_message_mutex_);
     // try to find it again, if we were notified through the Condition class
-    auto iterator2 = received_output_messages_.find(gate_id);
-    if (iterator2 == received_output_messages_.end()) {
-      // return nullptr if we are here due to timeout and there is no message yet
-      return nullptr;
-    }
+    iterator = received_output_messages_.find(gate_id);
+    end = received_output_messages_.end();
   }
   auto output_message = Communication::GetMessage(iterator->second.data());
   assert(output_message != nullptr);
+
   return Communication::GetOutputMessage(output_message->payload()->data());
 }
 
