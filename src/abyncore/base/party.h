@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "configuration.h"
 #include "base/backend.h"
+#include "configuration.h"
 #include "gate/arithmetic_gmw_gate.h"
 #include "gate/boolean_gmw_gate.h"
 #include "share/share.h"
@@ -37,7 +37,8 @@ class Party {
 
   Party(std::initializer_list<Communication::ContextPtr> &&list_parties, std::size_t my_id);
 
-  Party(ConfigurationPtr &configuration) : config_(configuration) {}
+  Party(ConfigurationPtr &configuration)
+      : config_(configuration), backend_(std::make_shared<Backend>(config_)) {}
 
   ~Party();
 
@@ -196,7 +197,8 @@ class Party {
   void Run(std::size_t repeats = 1);
 
   static std::vector<std::unique_ptr<Party>> GetNLocalParties(std::size_t num_parties,
-                                                              std::uint16_t port);
+                                                              std::uint16_t port,
+                                                              bool logging = false);
 
   const auto &GetLogger() { return backend_->GetLogger(); }
 

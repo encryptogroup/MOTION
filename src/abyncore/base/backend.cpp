@@ -23,11 +23,11 @@
 namespace ABYN {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
-  register_ = std::make_shared<Register>(config);
+  register_ = std::make_shared<Register>(config_);
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (config_->GetCommunicationContext(i) == nullptr) {
-      if (i == config->GetMyId()) {
+      if (i == config_->GetMyId()) {
         continue;
       } else {
         throw(std::runtime_error("One of the communication contexts is not initialized"));
@@ -36,10 +36,10 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
     config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
     config_->GetCommunicationContext(i)->SetLogger(register_->GetLogger());
     auto &logger = register_->GetLogger();
-    auto seed =
-        std::move(config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
 
     if constexpr (ABYN_VERBOSE_DEBUG) {
+      auto seed =
+          std::move(config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
       logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
                                    i, Helpers::Print::Hex(seed)));
     }

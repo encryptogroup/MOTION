@@ -211,7 +211,7 @@ void Party::Finish() {
 };
 
 std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties,
-                                                            std::uint16_t port) {
+                                                            std::uint16_t port, bool logging) {
   if (num_parties < 3) {
     throw(std::runtime_error(
         fmt::format("Can generate only >= 3 local parties, current input: {}", num_parties)));
@@ -265,7 +265,9 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
       parties.emplace_back(
           std::make_shared<Communication::Context>("127.0.0.1", this_port, role, other_id));
     }
-    abyn_parties.at(my_id) = std::make_unique<Party>(std::move(parties), my_id);
+    auto config = std::make_shared<Configuration>(std::move(parties), my_id);
+    config->SetLoggingEnabled(logging);
+    abyn_parties.at(my_id) = std::make_unique<Party>(config);
     abyn_parties.at(my_id)->Connect();
   }
 
