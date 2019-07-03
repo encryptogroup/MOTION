@@ -5,6 +5,8 @@ add_executable(abyntest
         test_misc.cpp
         )
 
+target_compile_features(abyntest PRIVATE cxx_std_17)
+
 target_include_directories(abyntest PRIVATE
         ${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
 

@@ -142,7 +142,7 @@ TEST(Condition, WaitForComplexFunction) {
     auto condition = tmp_struct.GetCondition();
 
     std::future<bool> wait_0 = std::async(std::launch::async, [&condition]() {
-      return condition.WaitFor(std::chrono::microseconds(1));
+      return condition.WaitFor(std::chrono::microseconds(5));
     });
 
     {
@@ -157,17 +157,17 @@ TEST(Condition, WaitForComplexFunction) {
     wait_0.wait();
     ASSERT_FALSE(wait_0.get());
 
-    {
-      std::scoped_lock<std::mutex>(condition.GetMutex());
-      tmp_struct.v.erase(tmp_struct.v.end() - 1);
-    }
-
     std::future<bool> wait_1 = std::async(std::launch::async, [&condition]() {
       return condition.WaitFor(std::chrono::seconds(100));
     });
     std::future<bool> wait_2 = std::async(std::launch::async, [&condition]() {
       return condition.WaitFor(std::chrono::seconds(100));
     });
+
+    {
+      std::scoped_lock<std::mutex>(condition.GetMutex());
+      tmp_struct.v.erase(tmp_struct.v.end() - 1);
+    }
 
     condition.NotifyAll();
 
