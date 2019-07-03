@@ -112,9 +112,9 @@ if (ABYN_BUILD_TESTS)
 
     set(BUILD_GMOCK OFF CACHE BOOL "Disable building gmock" FORCE)
     add_subdirectory(extern/googletest EXCLUDE_FROM_ALL)
-    add_subdirectory(src/test EXCLUDE_FROM_ALL)
+    add_subdirectory(src/test)
 endif (ABYN_BUILD_TESTS)
 
 if (ABYN_BUILD_EXE)
-    add_subdirectory(src/examples EXCLUDE_FROM_ALL)
+    add_subdirectory(src/examples)
 endif (ABYN_BUILD_EXE)
