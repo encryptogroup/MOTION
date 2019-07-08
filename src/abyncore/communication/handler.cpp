@@ -32,11 +32,11 @@ std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
   return result;
 }
 
-Handler::Handler(ContextPtr &party, const LoggerPtr &logger) : party_(party), logger_(logger) {
+Handler::Handler(ContextPtr &context, const LoggerPtr &logger) : context_(context), logger_(logger) {
   handler_info_ =
-      fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}", party->GetId(),
-                  party->GetIp(), party->GetSocket()->local_endpoint().port(),
-                  party->GetSocket()->remote_endpoint().port());
+      fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}", context->GetId(),
+                  context->GetIp(), context->GetSocket()->local_endpoint().port(),
+                  context->GetSocket()->remote_endpoint().port());
 
   received_new_msg_ =
       std::make_unique<ENCRYPTO::Condition>([this]() { return !queue_receive_.empty(); });
@@ -63,7 +63,7 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
   auto message_detached = message.Release();
   auto message_raw_pointer = message_detached.data();
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
-    if (auto shared_ptr_party = party_.lock()) {
+    if (auto shared_ptr_party = context_.lock()) {
       shared_ptr_party->GetDataStorage()->SetSentHelloMessage(message_raw_pointer,
                                                               message_detached.size());
     } else {
@@ -83,7 +83,7 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
 }
 
 const BoostSocketPtr Handler::GetSocket() {
-  if (auto shared_ptr_party = party_.lock()) {
+  if (auto shared_ptr_party = context_.lock()) {
     return shared_ptr_party->GetSocket();
   } else {
     return nullptr;
@@ -206,6 +206,7 @@ void Handler::ActAsReceiver() {
             GetLogger()->LogTrace(
                 fmt::format("{}: Got a termination message from the socket", GetInfo()));
           }
+          break;
         }
 
         {
@@ -231,7 +232,7 @@ void Handler::ActAsReceiver() {
     std::thread thread_parse([this]() {
       while (ContinueCommunication() || !GetReceiveQueue().empty()) {
         if (GetReceiveQueue().empty()) {
-          received_new_msg_->WaitFor(std::chrono::microseconds(200));
+          received_new_msg_->WaitFor(std::chrono::milliseconds(1));
         }
         if (!GetReceiveQueue().empty()) {
           std::queue<std::vector<std::uint8_t>> tmp_queue;
@@ -241,7 +242,7 @@ void Handler::ActAsReceiver() {
           }
           while (!tmp_queue.empty()) {
             auto &message_buffer = tmp_queue.front();
-            auto shared_ptr_party = party_.lock();
+            auto shared_ptr_party = context_.lock();
             assert(shared_ptr_party);
             shared_ptr_party->ParseMessage(std::move(message_buffer));
             tmp_queue.pop();
@@ -296,7 +297,7 @@ std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
 
 bool Handler::VerifyHelloMessage() {
   bool result = true;
-  auto shared_ptr_party = party_.lock();
+  auto shared_ptr_party = context_.lock();
   assert(shared_ptr_party);
   auto data_storage = shared_ptr_party->GetDataStorage();
   auto *my_hm = data_storage->GetSentHelloMessage();
@@ -349,4 +350,17 @@ bool Handler::VerifyHelloMessage() {
   }
   return result;
 }
+
+void Handler::Reset(){
+  auto shared_ptr_context = context_.lock();
+  assert(shared_ptr_context);
+  shared_ptr_context->GetDataStorage()->Reset();
+}
+
+void Handler::Clear(){
+  auto shared_ptr_context = context_.lock();
+  assert(shared_ptr_context);
+  shared_ptr_context->GetDataStorage()->Clear();
+}
+
 }  // namespace ABYN::Communication

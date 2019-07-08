@@ -26,7 +26,7 @@ class Handler {
  public:
   Handler() = delete;
 
-  Handler(ContextPtr &party, const LoggerPtr &logger);
+  Handler(ContextPtr &context, const LoggerPtr &logger);
 
   virtual ~Handler();
 
@@ -54,8 +54,12 @@ class Handler {
 
   bool VerifyHelloMessage();
 
+  void Reset();
+
+  void Clear();
+
  private:
-  std::weak_ptr<Context> party_;
+  std::weak_ptr<Context> context_;
   LoggerPtr logger_;
   std::string handler_info_;
   std::mutex receive_queue_mutex_, send_queue_mutex_;
