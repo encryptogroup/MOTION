@@ -2,6 +2,8 @@
 
 #include <map>
 
+#include "base/backend.h"
+#include "base/register.h"
 #include "communication/context.h"
 #include "utility/logger.h"
 
@@ -23,83 +25,27 @@ Party::Party(std::initializer_list<Communication::ContextPtr> &&list_parties, st
 }
 
 Party::~Party() {
+  Finish();
   backend_->WaitForConnectionEnd();
   backend_->GetLogger()->LogInfo("ABYN::Party has been deallocated");
 }
 
-ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id, bool input) {
-  return BooleanGMWInput(party_id, ENCRYPTO::BitVector(1, input));
-}
-
-ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
-                                              const ENCRYPTO::BitVector &input) {
-  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{input});
-}
-
-ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input) {
-  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{std::move(input)});
-}
-
-ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
-                                              const std::vector<ENCRYPTO::BitVector> &input) {
-  auto in_gate =
-      std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, backend_->GetRegister());
-  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
-  backend_->RegisterInputGate(in_gate_cast);
-  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
-}
-
-ABYN::Shares::SharePtr Party::BooleanGMWInput(std::size_t party_id,
-                                              std::vector<ENCRYPTO::BitVector> &&input) {
-  auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id,
-                                                            backend_->GetRegister());
-  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
-  backend_->RegisterInputGate(in_gate_cast);
-  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
-}
-
-Shares::SharePtr Party::BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b) {
-  assert(a);
-  assert(b);
-  auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(a, b);
-  backend_->RegisterGate(xor_gate);
-  return xor_gate->GetOutputAsShare();
-}
-
-Shares::SharePtr Party::BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
-  assert(a);
-  assert(b);
-  auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(a);
-  auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(b);
-  assert(casted_parent_a_ptr);
-  assert(casted_parent_b_ptr);
-  return BooleanGMWXOR(casted_parent_a_ptr, casted_parent_b_ptr);
-}
-
-Shares::SharePtr Party::BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner) {
-  assert(parent);
-  auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent->GetWires(), output_owner);
-  auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
-  backend_->RegisterGate(out_gate_cast);
-  return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
-}
-
-ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t output_owner) {
+Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
   assert(parent);
   switch (parent->GetSharingType()) {
-    case ABYN::Protocol::ArithmeticGMW: {
+    case MPCProtocol::ArithmeticGMW: {
       switch (parent->GetBitLength()) {
         case 8u: {
-          return ArithmeticGMWOutput<std::uint8_t>(parent, output_owner);
+          return backend_->ArithmeticGMWOutput<std::uint8_t>(parent, output_owner);
         }
         case 16u: {
-          return ArithmeticGMWOutput<std::uint16_t>(parent, output_owner);
+          return backend_->ArithmeticGMWOutput<std::uint16_t>(parent, output_owner);
         }
         case 32u: {
-          return ArithmeticGMWOutput<std::uint32_t>(parent, output_owner);
+          return backend_->ArithmeticGMWOutput<std::uint32_t>(parent, output_owner);
         }
         case 64u: {
-          return ArithmeticGMWOutput<std::uint64_t>(parent, output_owner);
+          return backend_->ArithmeticGMWOutput<std::uint64_t>(parent, output_owner);
         }
         default: {
           throw(std::runtime_error(
@@ -107,10 +53,10 @@ ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t out
         }
       }
     }
-    case ABYN::Protocol::BooleanGMW: {
-      return BooleanGMWOutput(parent, output_owner);
+    case MPCProtocol::BooleanGMW: {
+      return backend_->BooleanGMWOutput(parent, output_owner);
     }
-    case ABYN::Protocol::BMR: {
+    case MPCProtocol::BMR: {
       throw(std::runtime_error("BMR output gate is not implemented yet"));
       // TODO
     }
@@ -121,27 +67,26 @@ ABYN::Shares::SharePtr Party::OUT(ABYN::Shares::SharePtr parent, std::size_t out
   }
 }
 
-ABYN::Shares::SharePtr Party::ADD(const ABYN::Shares::SharePtr &a,
-                                  const ABYN::Shares::SharePtr &b) {
+Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
   assert(a->GetSharingType() == b->GetSharingType());
 
   switch (a->GetSharingType()) {
-    case ABYN::Protocol::ArithmeticGMW: {
+    case MPCProtocol::ArithmeticGMW: {
       assert(a->GetBitLength() == b->GetBitLength());
       switch (a->GetBitLength()) {
         case 8u: {
-          return ArithmeticGMWAddition<std::uint8_t>(a, b);
+          return backend_->ArithmeticGMWAddition<std::uint8_t>(a, b);
         }
         case 16u: {
-          return ArithmeticGMWAddition<std::uint16_t>(a, b);
+          return backend_->ArithmeticGMWAddition<std::uint16_t>(a, b);
         }
         case 32u: {
-          return ArithmeticGMWAddition<std::uint32_t>(a, b);
+          return backend_->ArithmeticGMWAddition<std::uint32_t>(a, b);
         }
         case 64u: {
-          return ArithmeticGMWAddition<std::uint64_t>(a, b);
+          return backend_->ArithmeticGMWAddition<std::uint64_t>(a, b);
         }
         default: {
           throw(std::runtime_error(
@@ -149,11 +94,11 @@ ABYN::Shares::SharePtr Party::ADD(const ABYN::Shares::SharePtr &a,
         }
       }
     }
-    case ABYN::Protocol::BooleanGMW: {
+    case MPCProtocol::BooleanGMW: {
       throw(std::runtime_error("BooleanGMW addition gate is not implemented yet"));
       // return BooleanGMWOutput(parent, output_owner);
     }
-    case ABYN::Protocol::BMR: {
+    case MPCProtocol::BMR: {
       throw(std::runtime_error("BMR addition gate is not implemented yet"));
       // TODO
     }
@@ -186,15 +131,25 @@ void Party::Connect() {
     backend_->InitializeCommunicationHandlers();
   }
   backend_->SendHelloToOthers();
+  connected_ = true;
 }
 
 void Party::Run(std::size_t repeats) {
+  if (!IsConnected()) {
+    Connect();
+  }
   backend_->VerifyHelloMessages();
   for (auto i = 0ull; i < repeats; ++i) {
+    if (i > 0) {
+      Clear();
+    }
     EvaluateCircuit();
   }
-  Finish();
 }
+
+void Party::Reset() { backend_->Reset(); }
+
+void Party::Clear() { backend_->Clear(); }
 
 void Party::EvaluateCircuit() {
   if (config_->GetOnlineAfterSetup()) {
@@ -205,16 +160,19 @@ void Party::EvaluateCircuit() {
 }
 
 void Party::Finish() {
-  backend_->TerminateCommunication();
-  backend_->GetLogger()->LogInfo(
-      fmt::format("Finished evaluating {} gates", backend_->GetRegister()->GetTotalNumOfGates()));
-};
+  if (!finished_) {
+    backend_->TerminateCommunication();
+    backend_->GetLogger()->LogInfo(
+        fmt::format("Finished evaluating {} gates", backend_->GetRegister()->GetTotalNumOfGates()));
+    finished_ = true;
+  }
+}
 
 std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties,
                                                             std::uint16_t port, bool logging) {
-  if (num_parties < 3) {
+  if (num_parties < 2) {
     throw(std::runtime_error(
-        fmt::format("Can generate only >= 3 local parties, current input: {}", num_parties)));
+        fmt::format("Can generate only >= 2 local parties, current input: {}", num_parties)));
   }
 
   std::vector<PartyPtr> abyn_parties(num_parties);
@@ -249,7 +207,7 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
     std::vector<Communication::ContextPtr> parties;
     for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
       if (my_id == other_id) continue;
-      ABYN::Role role = other_id < my_id ? ABYN::Role::Client : ABYN::Role::Server;
+      auto role = other_id < my_id ? Role::Client : Role::Server;
 
       std::uint32_t port_id = portid(my_id, other_id);
 

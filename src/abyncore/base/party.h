@@ -7,9 +7,7 @@
 
 #include "base/backend.h"
 #include "configuration.h"
-#include "gate/arithmetic_gmw_gate.h"
-#include "gate/boolean_gmw_gate.h"
-#include "share/share.h"
+#include "crypto/oblivious_transfer/ot_provider.h"
 #include "utility/constants.h"
 #include "utility/typedefs.h"
 
@@ -17,12 +15,6 @@ namespace ABYN {
 
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
-
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticSharePtr = Shares::ArithmeticSharePtr<T>;
-
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticShare = Shares::ArithmeticShare<T>;
 
 class Party {
  public:
@@ -44,15 +36,15 @@ class Party {
 
   ConfigurationPtr GetConfiguration() { return config_; }
 
-  template <Protocol P>
+  template <MPCProtocol P>
   Shares::SharePtr IN(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id) {
-    static_assert(P != Protocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticGMW);
     switch (P) {
-      case Protocol::BooleanGMW: {
-        return BooleanGMWInput(party_id, input);
+      case MPCProtocol::BooleanGMW: {
+        return backend_->BooleanGMWInput(party_id, input);
       }
-      case Protocol::BMR: {
-        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+      case MPCProtocol::BMR: {
+        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
         // TODO
       }
       default: {
@@ -61,15 +53,15 @@ class Party {
     }
   }
 
-  template <Protocol P>
+  template <MPCProtocol P>
   Shares::SharePtr IN(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id) {
-    static_assert(P != Protocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticGMW);
     switch (P) {
-      case Protocol::BooleanGMW: {
-        return BooleanGMWInput(party_id, std::move(input));
+      case MPCProtocol::BooleanGMW: {
+        return backend_->BooleanGMWInput(party_id, std::move(input));
       }
-      case Protocol::BMR: {
-        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+      case MPCProtocol::BMR: {
+        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
         // TODO
       }
       default: {
@@ -78,15 +70,15 @@ class Party {
     }
   }
 
-  template <Protocol P>
+  template <MPCProtocol P>
   Shares::SharePtr IN(const ENCRYPTO::BitVector &input, std::size_t party_id) {
-    static_assert(P != Protocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticGMW);
     switch (P) {
-      case Protocol::BooleanGMW: {
-        return BooleanGMWInput(party_id, input);
+      case MPCProtocol::BooleanGMW: {
+        return backend_->BooleanGMWInput(party_id, input);
       }
-      case Protocol::BMR: {
-        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+      case MPCProtocol::BMR: {
+        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
         // TODO
       }
       default: {
@@ -95,15 +87,15 @@ class Party {
     }
   }
 
-  template <Protocol P>
+  template <MPCProtocol P>
   Shares::SharePtr IN(ENCRYPTO::BitVector &&input, std::size_t party_id) {
-    static_assert(P != Protocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticGMW);
     switch (P) {
-      case Protocol::BooleanGMW: {
-        return BooleanGMWInput(party_id, std::move(input));
+      case MPCProtocol::BooleanGMW: {
+        return backend_->BooleanGMWInput(party_id, std::move(input));
       }
-      case Protocol::BMR: {
-        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+      case MPCProtocol::BMR: {
+        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
         // TODO
       }
       default: {
@@ -112,20 +104,20 @@ class Party {
     }
   }
 
-  template <Protocol P, typename T = std::uint8_t,
+  template <MPCProtocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr IN(const std::vector<T> &input, std::size_t party_id) {
     switch (P) {
-      case Protocol::ArithmeticGMW: {
-        return ArithmeticGMWInput(party_id, input);
+      case MPCProtocol::ArithmeticGMW: {
+        return backend_->ArithmeticGMWInput(party_id, input);
       }
-      case Protocol::BooleanGMW: {
+      case MPCProtocol::BooleanGMW: {
         throw(std::runtime_error(
             fmt::format("Non-binary types have to be converted to BitVectors in BooleanGMW, "
                         "consider using TODO function for the input")));
       }
-      case Protocol::BMR: {
-        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+      case MPCProtocol::BMR: {
+        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
         // TODO
       }
       default: {
@@ -134,20 +126,20 @@ class Party {
     }
   }
 
-  template <Protocol P, typename T = std::uint8_t,
+  template <MPCProtocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr IN(std::vector<T> &&input, std::size_t party_id) {
     switch (P) {
-      case Protocol::ArithmeticGMW: {
-        return ArithmeticGMWInput(party_id, std::move(input));
+      case MPCProtocol::ArithmeticGMW: {
+        return backend_->ArithmeticGMWInput(party_id, std::move(input));
       }
-      case Protocol::BooleanGMW: {
+      case MPCProtocol::BooleanGMW: {
         throw(std::runtime_error(
             fmt::format("Non-binary types have to be converted to BitVectors in BooleanGMW, "
                         "consider using TODO function for the input")));
       }
-      case Protocol::BMR: {
-        static_assert(P != Protocol::BMR, "BMR protocol is not implemented yet");
+      case MPCProtocol::BMR: {
+        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
         // TODO
       }
       default: {
@@ -156,12 +148,12 @@ class Party {
     }
   }
 
-  template <Protocol P, typename T = std::uint8_t,
+  template <MPCProtocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr IN(T input, std::size_t party_id) {
     if constexpr (std::is_same_v<T, bool>) {
-      static_assert(P != Protocol::ArithmeticGMW, "Invalid input");
-      return BooleanGMWInput(party_id, input);
+      static_assert(P != MPCProtocol::ArithmeticGMW, "Invalid input");
+      return backend_->BooleanGMWInput(party_id, input);
     } else {
       return IN<P, T>(std::vector<T>{input}, party_id);
     }
@@ -170,13 +162,13 @@ class Party {
   Shares::SharePtr XOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
     assert(a);
     assert(b);
-    assert(a->GetSharingType() != Protocol::ArithmeticGMW);
+    assert(a->GetSharingType() != MPCProtocol::ArithmeticGMW);
     assert(a->GetSharingType() == b->GetSharingType());
     switch (a->GetSharingType()) {
-      case Protocol::BooleanGMW: {
-        return BooleanGMWXOR(a, b);
+      case MPCProtocol::BooleanGMW: {
+        return backend_->BooleanGMWXOR(a, b);
       }
-      case Protocol::BMR: {
+      case MPCProtocol::BMR: {
         throw std::runtime_error("BMR protocol is not implemented yet");
         // TODO
       }
@@ -192,108 +184,54 @@ class Party {
 
   std::size_t GetNumOfParties() { return config_->GetNumOfParties(); }
 
+  /// \brief Establishes connections between the parties.
   void Connect();
 
+  bool IsConnected() { return connected_; }
+
+  /// \brief Evaluates the constructed gates a predefined number of times.
+  /// This is realized via repeatedly calling Party::Clear() after each evaluation.
+  /// If Connect() was not called yet, it is called automatically at the beginning of this method.
+  /// @param repeats Number of iterations.
   void Run(std::size_t repeats = 1);
 
+  /// \brief Destroys all the gates and wires that were constructed until now.
+  void Reset();
+
+  /// \brief Interprets the gates and wires as newly created, i.e., Party::Run()
+  /// can be executed again.
+  void Clear();
+
+  /// \brief Gets a std::vector of std::unique_ptrs to locally constructed ABYN parties connected
+  /// via TCP.
+  /// @param num_parties Number of ABYN parties.
+  /// @param port TCP port offset.
+  /// @param logging Enables/disables logging completely.
   static std::vector<std::unique_ptr<Party>> GetNLocalParties(std::size_t num_parties,
                                                               std::uint16_t port,
                                                               bool logging = false);
 
   const auto &GetLogger() { return backend_->GetLogger(); }
 
+  /// \brief Sends a termination message to all of the connected parties.
+  /// In case a TCP connection is used, this will internally be interpreted as a signal to
+  /// disconnect.
+  ///
+  /// This method is executed by the ABYN::Party destructor, but if the parties are run locally,
+  /// e.g., for testing purposes, the user SHALL ensure that Party::Finish() is run in parallel
+  /// or otherwise the desctructors will likely be called sequentially which will result in a
+  /// deadlock, since both connected parties must have sent a termination message and the
+  /// destructor will wait for the other party to send the signal.
+  /// It is allowed to call Party::Finish() multiple times.
+  void Finish();
+
  private:
   ConfigurationPtr config_;
   BackendPtr backend_;
+  bool finished_ = false;
+  bool connected_ = false;
 
   void EvaluateCircuit();
-
-  void Finish();
-
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false);
-
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input);
-
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input);
-
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id,
-                                   const std::vector<ENCRYPTO::BitVector> &input);
-
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<ENCRYPTO::BitVector> &&input);
-
-  Shares::SharePtr BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
-
-  Shares::SharePtr BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b);
-
-  Shares::SharePtr BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner);
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, T input = 0) {
-    std::vector<T> input_vector{input};
-    return IN(party_id, std::move(input_vector));
-  };
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, const std::vector<T> &input_vector) {
-    auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
-        input_vector, party_id, backend_->GetRegister());
-    auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
-    backend_->RegisterInputGate(in_gate_cast);
-    return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
-  }
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, std::vector<T> &&input_vector) {
-    auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
-        std::move(input_vector), party_id, backend_->GetRegister());
-    auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
-    backend_->RegisterInputGate(in_gate_cast);
-    return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
-  }
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWOutput(const ArithmeticSharePtr<T> &parent,
-                                       std::size_t output_owner) {
-    assert(parent);
-    auto out_gate =
-        std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<T>>(parent, output_owner);
-    auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
-    backend_->RegisterGate(out_gate_cast);
-    return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsArithmeticShare());
-  }
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner) {
-    assert(parent);
-    auto casted_parent_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(parent);
-    assert(casted_parent_ptr);
-    return ArithmeticGMWOutput(casted_parent_ptr, output_owner);
-  }
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWAddition(const ArithmeticSharePtr<T> &a,
-                                         const ArithmeticSharePtr<T> &b) {
-    assert(a);
-    assert(b);
-    auto wire_a = a->GetArithmeticWire();
-    auto wire_b = b->GetArithmeticWire();
-    auto addition_gate =
-        std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(wire_a, wire_b);
-    auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
-    backend_->RegisterGate(addition_gate_cast);
-    return std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
-  }
-
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr ArithmeticGMWAddition(const Shares::SharePtr &a, const Shares::SharePtr &b) {
-    assert(a);
-    assert(b);
-    auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(a);
-    auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(b);
-    assert(casted_parent_a_ptr);
-    assert(casted_parent_b_ptr);
-    return ArithmeticGMWAddition(casted_parent_a_ptr, casted_parent_b_ptr);
-  }
 };
 
 using PartyPtr = std::unique_ptr<Party>;

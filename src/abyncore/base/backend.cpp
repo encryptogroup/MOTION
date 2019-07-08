@@ -13,7 +13,7 @@
 #include "communication/hello_message.h"
 #include "communication/message.h"
 #include "crypto/aes_randomness_generator.h"
-#include "gate/gate.h"
+#include "gate/boolean_gmw_gate.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
 #include "utility/logger.h"
@@ -26,13 +26,12 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
   register_ = std::make_shared<Register>(config_);
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
-    if (config_->GetCommunicationContext(i) == nullptr) {
-      if (i == config_->GetMyId()) {
-        continue;
-      } else {
-        throw(std::runtime_error("One of the communication contexts is not initialized"));
-      }
+    if (i != config_->GetMyId()) {
+      assert(config_->GetCommunicationContext(i));
+    } else {
+      continue;
     }
+
     config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
     config_->GetCommunicationContext(i)->SetLogger(register_->GetLogger());
     auto &logger = register_->GetLogger();
@@ -134,7 +133,6 @@ void Backend::EvaluateSequential() {
           do {
             gate_id = register_->GetNextGateFromOnlineQueue();
             if (gate_id >= 0) {
-              assert(static_cast<std::size_t>(gate_id) < register_->GetTotalNumOfGates());
               gates_ids.push_back(static_cast<std::size_t>(gate_id));
             }
           } while (gate_id >= 0);
@@ -169,7 +167,6 @@ void Backend::EvaluateParallel() {
           do {
             gate_id = register_->GetNextGateFromOnlineQueue();
             if (gate_id >= 0) {
-              assert(static_cast<std::size_t>(gate_id) < register_->GetTotalNumOfGates());
               gates_ids.push_back(static_cast<std::size_t>(gate_id));
             }
           } while (gate_id >= 0);
@@ -188,7 +185,8 @@ void Backend::EvaluateParallel() {
 
 void Backend::TerminateCommunication() {
   for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
-    if (communication_handlers_.at(party_id)) {
+    if (GetConfig()->GetMyId() != party_id) {
+      assert(communication_handlers_.at(party_id));
       communication_handlers_.at(party_id)->TerminateCommunication();
     }
   }
@@ -223,5 +221,65 @@ void Backend::VerifyHelloMessages() {
   } else {
     register_->GetLogger()->LogInfo("Successfully verified hello messages");
   }
+}
+
+void Backend::Reset() { register_->Reset(); }
+
+void Backend::Clear() { register_->Clear(); }
+
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, bool input) {
+  return BooleanGMWInput(party_id, ENCRYPTO::BitVector(1, input));
+}
+
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input) {
+  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{input});
+}
+
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input) {
+  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{std::move(input)});
+}
+
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
+                                          const std::vector<ENCRYPTO::BitVector> &input) {
+  auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
+  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  RegisterInputGate(in_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
+}
+
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
+                                          std::vector<ENCRYPTO::BitVector> &&input) {
+  auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
+  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  RegisterInputGate(in_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
+}
+
+Shares::SharePtr Backend::BooleanGMWXOR(const Shares::GMWSharePtr &a,
+                                        const Shares::GMWSharePtr &b) {
+  assert(a);
+  assert(b);
+  auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(a, b);
+  RegisterGate(xor_gate);
+  return xor_gate->GetOutputAsShare();
+}
+
+Shares::SharePtr Backend::BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+  assert(a);
+  assert(b);
+  auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  assert(casted_parent_a_ptr);
+  assert(casted_parent_b_ptr);
+  return BooleanGMWXOR(casted_parent_a_ptr, casted_parent_b_ptr);
+}
+
+Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
+                                           std::size_t output_owner) {
+  assert(parent);
+  auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent->GetWires(), output_owner);
+  auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+  RegisterGate(out_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
 }
 }

@@ -4,6 +4,8 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+#include "gate/arithmetic_gmw_gate.h"
+
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ABYN {
@@ -15,6 +17,11 @@ using ConfigurationPtr = std::shared_ptr<Configuration>;
 
 class Register;
 using RegisterPtr = std::shared_ptr<Register>;
+
+namespace Shares {
+class GMWShare;
+using GMWSharePtr = std::shared_ptr<GMWShare>;
+}  // namespace Shares
 
 namespace Gates::Interfaces {
 class Gate;
@@ -29,7 +36,7 @@ class Handler;
 using HandlerPtr = std::shared_ptr<Handler>;
 }  // namespace Communication
 
-class Backend {
+class Backend : public std::enable_shared_from_this<Backend> {
  public:
   Backend() = delete;
 
@@ -68,6 +75,95 @@ class Backend {
   const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const;
 
   const std::vector<Gates::Interfaces::GatePtr> &GetInputGates() const;
+
+  void Reset();
+
+  void Clear();
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id, bool input = false);
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input);
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input);
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id,
+                                   const std::vector<ENCRYPTO::BitVector> &input);
+
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<ENCRYPTO::BitVector> &&input);
+
+  Shares::SharePtr BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
+
+  Shares::SharePtr BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b);
+
+  Shares::SharePtr BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner);
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, T input = 0) {
+    std::vector<T> input_vector{input};
+    return ArithmeticGMWInput(party_id, std::move(input_vector));
+  };
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, const std::vector<T> &input_vector) {
+    auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
+        input_vector, party_id, weak_from_this());
+    auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+    RegisterInputGate(in_gate_cast);
+    return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, std::vector<T> &&input_vector) {
+    auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
+        std::move(input_vector), party_id, weak_from_this());
+    auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+    RegisterInputGate(in_gate_cast);
+    return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWOutput(const Shares::ArithmeticSharePtr<T> &parent,
+                                       std::size_t output_owner) {
+    assert(parent);
+    auto out_gate =
+        std::make_shared<Gates::Arithmetic::ArithmeticOutputGate<T>>(parent, output_owner);
+    auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+    RegisterGate(out_gate_cast);
+    return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsArithmeticShare());
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner) {
+    assert(parent);
+    auto casted_parent_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(parent);
+    assert(casted_parent_ptr);
+    return ArithmeticGMWOutput(casted_parent_ptr, output_owner);
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWAddition(const Shares::ArithmeticSharePtr<T> &a,
+                                         const Shares::ArithmeticSharePtr<T> &b) {
+    assert(a);
+    assert(b);
+    auto wire_a = a->GetArithmeticWire();
+    auto wire_b = b->GetArithmeticWire();
+    auto addition_gate =
+        std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(wire_a, wire_b);
+    auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
+    RegisterGate(addition_gate_cast);
+    return std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWAddition(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+    assert(a);
+    assert(b);
+    auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(a);
+    auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(b);
+    assert(casted_parent_a_ptr);
+    assert(casted_parent_b_ptr);
+    return ArithmeticGMWAddition(casted_parent_a_ptr, casted_parent_b_ptr);
+  }
 
  private:
   ConfigurationPtr config_;
