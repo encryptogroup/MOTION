@@ -55,6 +55,10 @@ class DataStorage {
     return snt_hello_msg_cond;
   }
 
+  void Reset();
+
+  void Clear();
+
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;
   std::shared_ptr<ENCRYPTO::Condition> rcv_hello_msg_cond, snt_hello_msg_cond;

@@ -113,4 +113,8 @@ const ABYN::Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
   return ABYN::Communication::GetHelloMessage(hm->payload()->data());
 }
 
+void DataStorage::Reset() { received_output_messages_.clear(); }
+
+void DataStorage::Clear() { received_output_messages_.clear(); }
+
 }

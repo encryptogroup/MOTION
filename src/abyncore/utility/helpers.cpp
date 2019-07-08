@@ -95,16 +95,16 @@ std::string Hex(const std::vector<std::uint8_t> &v) {
   return std::move(buffer);
 }
 
-std::string ToString(Protocol p) {
+std::string ToString(MPCProtocol p) {
   std::string result{""};
   switch (p) {
-    case Protocol::ArithmeticGMW:
+    case MPCProtocol::ArithmeticGMW:
       result.append("ArithmeticGMW");
       break;
-    case Protocol::BooleanGMW:
+    case MPCProtocol::BooleanGMW:
       result.append("BooleanGMW");
       break;
-    case Protocol::BMR:
+    case MPCProtocol::BMR:
       result.append("BMR");
       break;
     default:

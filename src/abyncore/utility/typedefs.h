@@ -13,30 +13,30 @@ namespace Arithmetic = Gates::Arithmetic;
 namespace Boolean = Gates::Boolean;
 namespace Conversion = Gates::Conversion;
 
-enum Protocol {
-  ArithmeticGMW = 0u,
-  BooleanGMW = 1u,
-  BMR = 2u,
-  InvalidProtocol = 3u  // for checking whether the value is valid
+enum MPCProtocol : uint {
+  ArithmeticGMW = 0,
+  BooleanGMW = 1,
+  BMR = 2,
+  InvalidProtocol = 3  // for checking whether the value is valid
 };
 
-enum CircuitType {
-  ArithmeticType = 0u,
-  BooleanType = 1u,
-  InvalidType = 2u  // for checking whether the value is valid
+enum CircuitType : uint {
+  ArithmeticType = 0,
+  BooleanType = 1,
+  InvalidType = 2  // for checking whether the value is valid
 };
 
-enum Role {
-  Server = 0u,
-  Client = 1u,
-  InvalidRole = 2u  // for checking whether the value is valid
+enum Role : uint {
+  Server = 0,
+  Client = 1,
+  InvalidRole = 2  // for checking whether the value is valid
 };
 
-enum GateType {
-  InputGate = 0u,
-  InteractiveGate = 1u,
-  NonInteractiveGate = 2u,
-  InvalidGate = 3u
+enum GateType : uint {
+  InputGate = 0,
+  InteractiveGate = 1,
+  NonInteractiveGate = 2,
+  InvalidGate = 3
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

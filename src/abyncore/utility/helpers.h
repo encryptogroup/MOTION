@@ -128,7 +128,7 @@ std::string Hex(const std::vector<std::uint8_t> &v);
 
 inline std::string Hex(const std::vector<std::uint8_t> &&v) { return std::move(Hex(v)); }
 
-std::string ToString(Protocol p);
+std::string ToString(MPCProtocol p);
 
 template <typename T>
 inline std::string ToString(std::vector<T> vector) {
