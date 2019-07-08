@@ -10,10 +10,10 @@ namespace ABYN::Gates::GMW {
 class GMWInputGate : public Gates::Interfaces::InputGate {
  public:
   GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id,
-               std::weak_ptr<Register> reg);
+               std::weak_ptr<Backend> reg);
 
   GMWInputGate(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id,
-               std::weak_ptr<Register> reg);
+               std::weak_ptr<Backend> reg);
 
   void InitializationHelper();
 

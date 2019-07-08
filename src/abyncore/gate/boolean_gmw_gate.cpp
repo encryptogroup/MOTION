@@ -2,7 +2,9 @@
 
 #include "fmt/format.h"
 
+#include "base/backend.h"
 #include "base/configuration.h"
+#include "base/register.h"
 #include "communication/context.h"
 #include "communication/output_message.h"
 #include "crypto/aes_randomness_generator.h"
@@ -14,72 +16,72 @@
 namespace ABYN::Gates::GMW {
 
 GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id,
-                           std::weak_ptr<Register> reg)
+                           std::weak_ptr<Backend> backend)
     : input_(input), input_owner_id_(party_id) {
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
-  register_ = reg;
+  backend_ = backend;
   InitializationHelper();
 }
 
 GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id,
-                           std::weak_ptr<Register> reg)
+                           std::weak_ptr<Backend> backend)
     : input_(std::move(input)), input_owner_id_(party_id) {
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
-  register_ = reg;
+  backend_ = backend;
   InitializationHelper();
 }
 
 void GMWInputGate::InitializationHelper() {
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
 
-  if (input_owner_id_ >= shared_ptr_reg->GetConfig()->GetNumOfParties()) {
+  if (input_owner_id_ >= ptr_backend->GetConfig()->GetNumOfParties()) {
     throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
-                                         shared_ptr_reg->GetConfig()->GetNumOfParties()));
+                                         ptr_backend->GetConfig()->GetNumOfParties()));
   }
 
-  gate_id_ = shared_ptr_reg->NextGateId();
+  gate_id_ = ptr_backend->GetRegister()->NextGateId();
 
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
   assert(ABYN::Helpers::Compare::Dimensions(input_));
 
-  boolean_sharing_id_ = shared_ptr_reg->NextBooleanGMWSharingId(input_.size() * bits_);
+  boolean_sharing_id_ = ptr_backend->GetRegister()->NextBooleanGMWSharingId(input_.size() * bits_);
 
   if constexpr (ABYN_VERBOSE_DEBUG) {
-    shared_ptr_reg->GetLogger()->LogTrace(
+    ptr_backend->GetLogger()->LogTrace(
         fmt::format("Created a BooleanGMWInputGate with global id {}", gate_id_));
   }
 
   output_wires_.reserve(input_.size());
   for (auto &v : input_) {
-    auto wire = std::make_shared<Wires::GMWWire>(v, shared_ptr_reg, bits_);
+    auto wire = std::make_shared<Wires::GMWWire>(v, backend_, bits_);
     output_wires_.push_back(std::static_pointer_cast<ABYN::Wires::Wire>(wire));
   }
 
   for (auto &w : output_wires_) {
-    shared_ptr_reg->RegisterNextWire(w);
+    ptr_backend->GetRegister()->RegisterNextWire(w);
   }
 
   if constexpr (ABYN_DEBUG) {
     auto gate_info = fmt::format("gate id {},", gate_id_);
-    shared_ptr_reg->GetLogger()->LogDebug(
+    ptr_backend->GetLogger()->LogDebug(
         fmt::format("Created a BooleanGMWInputGate with following properties: {}", gate_info));
   }
 }
 
 void GMWInputGate::EvaluateSetup() {
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
 
-  auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
+  auto my_id = ptr_backend->GetConfig()->GetMyId();
 
   if (input_owner_id_ == my_id) {
     // we always generate our own seeds for the input sharing before we start evaluating
     // the circuit, hence, nothing to wait here for
   } else {
-    auto &rand_generator = shared_ptr_reg->GetConfig()
+    auto &rand_generator = ptr_backend->GetConfig()
                                ->GetCommunicationContext(input_owner_id_)
                                ->GetTheirRandomnessGenerator();
 
@@ -93,10 +95,10 @@ void GMWInputGate::EvaluateSetup() {
 void GMWInputGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
 
-  auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
+  auto my_id = ptr_backend->GetConfig()->GetMyId();
 
   std::vector<ENCRYPTO::BitVector> result(input_.size());
   auto sharing_id = boolean_sharing_id_;
@@ -104,12 +106,12 @@ void GMWInputGate::EvaluateOnline() {
     if (input_owner_id_ == my_id) {
       result.at(i) = input_.at(i);
       auto log_string = std::string("");
-      for (auto j = 0u; j < shared_ptr_reg->GetConfig()->GetNumOfParties(); ++j) {
+      for (auto j = 0u; j < ptr_backend->GetConfig()->GetNumOfParties(); ++j) {
         if (j == my_id) {
           continue;
         }
         auto &rand_generator =
-            shared_ptr_reg->GetConfig()->GetCommunicationContext(j)->GetMyRandomnessGenerator();
+            ptr_backend->GetConfig()->GetCommunicationContext(j)->GetMyRandomnessGenerator();
         auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
 
         if constexpr (ABYN_VERBOSE_DEBUG) {
@@ -126,10 +128,10 @@ void GMWInputGate::EvaluateOnline() {
             "share: {}, expected shares of other parties: {}",
             input_owner_id_, gate_id_, input_.at(i).AsString(), result.at(i).AsString(),
             log_string);
-        shared_ptr_reg->GetLogger()->LogTrace(s);
+        ptr_backend->GetLogger()->LogTrace(s);
       }
     } else {
-      auto &rand_generator = shared_ptr_reg->GetConfig()
+      auto &rand_generator = ptr_backend->GetConfig()
                                  ->GetCommunicationContext(input_owner_id_)
                                  ->GetTheirRandomnessGenerator();
       auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
@@ -140,7 +142,7 @@ void GMWInputGate::EvaluateOnline() {
             "Boolean input sharing (gate#{}) of Party's#{} input, got a "
             "share {} from the seed",
             gate_id_, input_owner_id_, result.at(i).AsString());
-        shared_ptr_reg->GetLogger()->LogTrace(s);
+        ptr_backend->GetLogger()->LogTrace(s);
       }
       sharing_id += bits_;
     }
@@ -151,9 +153,9 @@ void GMWInputGate::EvaluateOnline() {
     auto buf = result.at(i);
     my_wire->GetMutableValuesOnWire() = buf;
   }
-  shared_ptr_reg->IncrementEvaluatedGatesCounter();
+  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (ABYN_VERBOSE_DEBUG) {
-    shared_ptr_reg->GetLogger()->LogTrace(
+    ptr_backend->GetLogger()->LogTrace(
         fmt::format("Evaluated Boolean GMWInputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
@@ -166,7 +168,7 @@ const Shares::GMWSharePtr GMWInputGate::GetOutputAsGMWShare() {
 }
 
 GMWOutputGate::GMWOutputGate(const std::vector<Wires::WirePtr> &parent, std::size_t output_owner) {
-  if (parent.at(0)->GetProtocol() != Protocol::BooleanGMW) {
+  if (parent.at(0)->GetProtocol() != MPCProtocol::BooleanGMW) {
     auto sharing_type = Helpers::Print::ToString(parent.at(0)->GetProtocol());
     throw std::runtime_error(
         fmt::format("Boolean output gate expects an Boolean share, "
@@ -185,40 +187,40 @@ GMWOutputGate::GMWOutputGate(const std::vector<Wires::WirePtr> &parent, std::siz
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
 
-  register_ = parent.at(0)->GetRegister();
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  backend_ = parent.at(0)->GetBackend();
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
 
-  if (output_owner >= shared_ptr_reg->GetConfig()->GetNumOfParties()) {
+  if (output_owner >= ptr_backend->GetConfig()->GetNumOfParties()) {
     throw std::runtime_error(fmt::format("Invalid output owner: {} of {}", output_owner,
-                                         shared_ptr_reg->GetConfig()->GetNumOfParties()));
+                                         ptr_backend->GetConfig()->GetNumOfParties()));
   }
 
-  gate_id_ = shared_ptr_reg->NextGateId();
+  gate_id_ = ptr_backend->GetRegister()->NextGateId();
 
   for (auto &wire : parent_) {
     RegisterWaitingFor(wire->GetWireId());  // mark this gate as waiting for @param wire
     wire->RegisterWaitingGate(gate_id_);    // register this gate in @param wire as waiting
   }
 
-  if (shared_ptr_reg->GetConfig()->GetMyId() == static_cast<std::size_t>(output_owner_)) {
+  if (ptr_backend->GetConfig()->GetMyId() == static_cast<std::size_t>(output_owner_)) {
     is_my_output_ = true;
   }
 
   for (auto &bv : output_) {
     output_wires_.push_back(std::static_pointer_cast<ABYN::Wires::Wire>(
-        std::make_shared<Wires::GMWWire>(bv, register_)));
+        std::make_shared<Wires::GMWWire>(bv, ptr_backend)));
   }
 
   for (auto &wire : output_wires_) {
-    shared_ptr_reg->RegisterNextWire(wire);
+    ptr_backend->GetRegister()->RegisterNextWire(wire);
   }
 
   auto gate_info =
       fmt::format("bitlength {}, gate id {}, owner {}", output_.size(), gate_id_, output_owner_);
 
   if constexpr (ABYN_VERBOSE_DEBUG) {
-    shared_ptr_reg->GetLogger()->LogTrace(
+    ptr_backend->GetLogger()->LogTrace(
         fmt::format("Allocate an Boolean GMWOutputGate with following properties: {}", gate_info));
   }
 }
@@ -237,8 +239,9 @@ void GMWOutputGate::EvaluateOnline() {
       ++i;
     }
   }
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+
   if (is_my_output_) {
     // wait until all conditions are fulfilled
     for (auto &wire : wires) {
@@ -247,8 +250,8 @@ void GMWOutputGate::EvaluateOnline() {
       }
     }
 
-    auto &config = shared_ptr_reg->GetConfig();
-    shared_outputs_.resize(shared_ptr_reg->GetConfig()->GetNumOfParties());
+    auto &config = ptr_backend->GetConfig();
+    shared_outputs_.resize(ptr_backend->GetConfig()->GetNumOfParties());
 
     for (auto i = 0ull; i < config->GetNumOfParties(); ++i) {
       if (i == config->GetMyId()) {
@@ -282,7 +285,7 @@ void GMWOutputGate::EvaluateOnline() {
         shares.append(fmt::format("id#{}:{} ", i, shared_outputs_.at(i).at(0).AsString()));
       }
 
-      shared_ptr_reg->GetLogger()->LogTrace(
+      ptr_backend->GetLogger()->LogTrace(
           fmt::format("Received output shares: {} from other parties, "
                       "reconstructed result is {}",
                       shares, output_.at(0).AsString()));
@@ -296,7 +299,7 @@ void GMWOutputGate::EvaluateOnline() {
       payloads.emplace_back(data_ptr, data_ptr + size);
     }
     auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payloads);
-    shared_ptr_reg->Send(output_owner_, output_message);
+    ptr_backend->Send(output_owner_, output_message);
   }
   std::vector<Wires::GMWWirePtr> gmw_output_wires;
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
@@ -305,10 +308,10 @@ void GMWOutputGate::EvaluateOnline() {
     assert(gmw_output_wires.at(i));
     gmw_output_wires.at(i)->GetMutableValuesOnWire() = output_.at(i);
   }
-  shared_ptr_reg->IncrementEvaluatedGatesCounter();
+  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
 
   if constexpr (ABYN_DEBUG) {
-    shared_ptr_reg->GetLogger()->LogDebug(
+    ptr_backend->GetLogger()->LogDebug(
         fmt::format("Evaluated Boolean GMWOutputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
@@ -333,15 +336,15 @@ GMWXORGate::GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &
   assert(parent_a_.size() > 0);
   assert(parent_b_.size() == parent_b_.size());
 
-  register_ = parent_a_.at(0)->GetRegister();
+  backend_ = parent_a_.at(0)->GetBackend();
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
 
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
 
-  gate_id_ = shared_ptr_reg->NextGateId();
+  gate_id_ = ptr_backend->GetRegister()->NextGateId();
 
   for (auto &wire : parent_a_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -357,17 +360,17 @@ GMWXORGate::GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &
   const ENCRYPTO::BitVector tmp_bv(a->GetNumOfParallelValues());
   for (auto &w : output_wires_) {
     w = std::move(
-        std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, register_)));
+        std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_)));
   }
 
   for (auto &w : output_wires_) {
-    shared_ptr_reg->RegisterNextWire(w);
+    ptr_backend->GetRegister()->RegisterNextWire(w);
   }
 
   if constexpr (ABYN_DEBUG) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
                                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    shared_ptr_reg->GetLogger()->LogDebug(
+    ptr_backend->GetLogger()->LogDebug(
         fmt::format("Created a BooleanGMW XOR gate with following properties: {}", gate_info));
   }
 }
@@ -403,13 +406,13 @@ void GMWXORGate::EvaluateOnline() {
 
   SetOnlineIsReady();
 
-  auto shared_ptr_reg = register_.lock();
-  assert(shared_ptr_reg);
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
 
-  shared_ptr_reg->IncrementEvaluatedGatesCounter();
+  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
 
   if constexpr (ABYN_VERBOSE_DEBUG) {
-    shared_ptr_reg->GetLogger()->LogTrace(
+    ptr_backend->GetLogger()->LogTrace(
         fmt::format("Evaluated BooleanGMW XOR Gate with id#{}", gate_id_));
   }
 }

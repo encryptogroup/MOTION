@@ -1,10 +1,24 @@
 #pragma once
 
+#include <atomic>
+#include <memory>
+#include <mutex>
 #include <unordered_set>
 #include <vector>
 
-#include "base/register.h"
-#include "wire/wire.h"
+#include "utility/typedefs.h"
+
+namespace ABYN::Wires{
+class Wire;
+using WirePtr = std::shared_ptr<Wire>;
+}
+
+namespace ABYN{
+class Backend;
+class Register;
+class Configuration;
+class Logger;
+}
 
 namespace ABYN::Gates::Interfaces {
 
@@ -29,31 +43,17 @@ class Gate {
 
   const std::vector<Wires::WirePtr> &GetOutputWires() const { return output_wires_; }
 
-  void RegisterWaitingFor(std::size_t wire_id) {
-    std::scoped_lock lock(mutex_);
-    wire_dependencies_.insert(wire_id);
-  }
+  void Clear();
 
-  void UnregisterWaitingFor(std::size_t wire_id) {
-    std::scoped_lock lock(mutex_);
-    if (wire_dependencies_.size() > 0 &&
-        wire_dependencies_.find(wire_id) != wire_dependencies_.end()) {
-      wire_dependencies_.erase(wire_id);
-    }
-    IfReadyAddToProcessingQueue();
-  }
+  void RegisterWaitingFor(std::size_t wire_id);
 
-  bool DependenciesAreReady() { return wire_dependencies_.size() == 0; }
+  void SignalDependencyIsReady();
+
+  bool AreDependenciesReady() { return wire_dependencies_.size() == num_ready_dependencies; }
 
   void SetSetupIsReady() { setup_is_ready_ = true; }
 
-  void SetOnlineIsReady() {
-    online_is_ready_ = true;
-    for (auto &wire : output_wires_) {
-      assert(wire);
-      wire->SetOnlineFinished();
-    }
-  }
+  void SetOnlineIsReady();
 
   bool &SetupIsReady() { return setup_is_ready_; }
 
@@ -63,7 +63,7 @@ class Gate {
 
  protected:
   std::vector<Wires::WirePtr> output_wires_;
-  std::weak_ptr<Register> register_;
+  std::weak_ptr<Backend> backend_;
   std::int64_t gate_id_ = -1;
   std::unordered_set<std::size_t> wire_dependencies_;
 
@@ -74,17 +74,16 @@ class Gate {
 
   bool added_to_active_queue = false;
 
+  std::atomic<std::size_t> num_ready_dependencies = 0;
+
   Gate() = default;
 
+  std::shared_ptr<Register> GetRegister();
+  std::shared_ptr<Configuration> GetConfig();
+  std::shared_ptr<Logger> GetLogger();
+
  private:
-  void IfReadyAddToProcessingQueue() {
-    if (DependenciesAreReady() && !added_to_active_queue) {
-      auto shared_ptr_reg = register_.lock();
-      assert(shared_ptr_reg);
-      shared_ptr_reg->AddToActiveQueue(gate_id_);
-      added_to_active_queue = true;
-    }
-  }
+  void IfReadyAddToProcessingQueue();
 
   std::mutex mutex_;
 };

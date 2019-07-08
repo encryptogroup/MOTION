@@ -4,6 +4,8 @@
 
 #include "fmt/format.h"
 
+#include "base/configuration.h"
+#include "base/register.h"
 #include "communication/context.h"
 #include "communication/output_message.h"
 #include "crypto/aes_randomness_generator.h"
@@ -25,56 +27,53 @@ namespace ABYN::Gates::Arithmetic {
 //
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
+class ArithmeticInputGate : public Interfaces::InputGate {
  public:
   ArithmeticInputGate(const std::vector<T> &input, std::size_t input_owner,
-                      std::weak_ptr<ABYN::Register> reg)
+                      std::weak_ptr<Backend> backend)
       : input_(input) {
     input_owner_ = input_owner;
-    register_ = reg;
+    backend_ = backend;
     InitializationHelper();
   }
 
   ArithmeticInputGate(std::vector<T> &&input, std::size_t input_owner,
-                      std::weak_ptr<ABYN::Register> reg)
+                      std::weak_ptr<Backend> backend)
       : input_(std::move(input)) {
     input_owner_ = input_owner;
-    register_ = reg;
+    backend_ = backend;
     InitializationHelper();
   }
 
   void InitializationHelper() {
     static_assert(!std::is_same_v<T, bool>);
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
 
-    gate_id_ = shared_ptr_reg->NextGateId();
-    arithmetic_sharing_id_ = shared_ptr_reg->NextArithmeticSharingId(input_.size());
-    shared_ptr_reg->GetLogger()->LogTrace(
+    gate_id_ = GetRegister()->NextGateId();
+    arithmetic_sharing_id_ = GetRegister()->NextArithmeticSharingId(input_.size());
+    GetLogger()->LogTrace(
         fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     output_wires_ = {std::static_pointer_cast<ABYN::Wires::Wire>(
-        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(input_, register_))};
+        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(input_, backend_))};
     for (auto &w : output_wires_) {
-      shared_ptr_reg->RegisterNextWire(w);
+      GetRegister()->RegisterNextWire(w);
     }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, input_owner_);
-    shared_ptr_reg->GetLogger()->LogDebug(
+    GetLogger()->LogDebug(
         fmt::format("Allocate an ArithmeticInputGate with following properties: {}", gate_info));
   }
 
   ~ArithmeticInputGate() final = default;
 
   void EvaluateSetup() final {
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
-    auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
+    auto my_id = GetRegister()->GetConfig()->GetMyId();
     if (static_cast<std::size_t>(input_owner_) == my_id) {
       // we always generate seeds for the input sharing
       // before we start evaluating the circuit
     } else {
-      auto &rand_generator = shared_ptr_reg->GetConfig()
+      auto &rand_generator = GetRegister()
+                                 ->GetConfig()
                                  ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
                                  ->GetTheirRandomnessGenerator();
 
@@ -90,20 +89,18 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
   void EvaluateOnline() final {
     assert(setup_is_ready_);
 
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
-    auto my_id = shared_ptr_reg->GetConfig()->GetMyId();
+    auto my_id = GetConfig()->GetMyId();
     std::vector<T> result;
 
     if (static_cast<std::size_t>(input_owner_) == my_id) {
       result.resize(input_.size());
       auto log_string = std::string("");
-      for (auto i = 0u; i < shared_ptr_reg->GetConfig()->GetNumOfParties(); ++i) {
+      for (auto i = 0u; i < GetConfig()->GetNumOfParties(); ++i) {
         if (i == my_id) {
           continue;
         }
         auto randomness =
-            std::move(shared_ptr_reg->GetConfig()
+            std::move(GetConfig()
                           ->GetCommunicationContext(i)
                           ->GetMyRandomnessGenerator()
                           ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
@@ -123,10 +120,10 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
             "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
             "share: {}, expected shares of other parties: {}",
             input_owner_, gate_id_, input_.at(0), result.at(0), log_string);
-        shared_ptr_reg->GetLogger()->LogTrace(s);
+        GetLogger()->LogTrace(s);
       }
     } else {
-      auto &rand_generator = shared_ptr_reg->GetConfig()
+      auto &rand_generator = GetConfig()
                                  ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
                                  ->GetTheirRandomnessGenerator();
 
@@ -138,29 +135,28 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
             "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
             "{} from the seed",
             gate_id_, input_owner_, result.at(0));
-        shared_ptr_reg->GetLogger()->LogTrace(s);
+        GetLogger()->LogTrace(s);
       }
     }
     auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(my_wire);
     my_wire->GetMutableValuesOnWire() = std::move(result);
     SetOnlineIsReady();
-    shared_ptr_reg->IncrementEvaluatedGatesCounter();
-    shared_ptr_reg->GetLogger()->LogTrace(
-        fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
+    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
   }
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
-  ABYN::Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
+  Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
     auto arithmetic_wire = GetOutputArithmeticWire();
-    auto result = std::make_shared<ABYN::Shares::ArithmeticShare<T>>(arithmetic_wire);
+    auto result = std::make_shared<Shares::ArithmeticShare<T>>(arithmetic_wire);
     return result;
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
-  ABYN::Wires::ArithmeticWirePtr<T> GetOutputArithmeticWire() {
-    auto result = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+  Wires::ArithmeticWirePtr<T> GetOutputArithmeticWire() {
+    auto result = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(result);
     return result;
   }
@@ -172,20 +168,21 @@ class ArithmeticInputGate : public ABYN::Gates::Interfaces::InputGate {
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
+class ArithmeticOutputGate : public Gates::Interfaces::OutputGate {
  public:
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
-  ABYN::Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+  Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
+    auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(arithmetic_wire);
-    auto result = std::make_shared<ABYN::Shares::ArithmeticShare<T>>(arithmetic_wire);
+    auto result = std::make_shared<Shares::ArithmeticShare<T>>(arithmetic_wire);
     return result;
   }
 
-  ArithmeticOutputGate(const ABYN::Wires::ArithmeticWirePtr<T> &parent, std::size_t output_owner) {
-    if (parent->GetProtocol() != Protocol::ArithmeticGMW) {
+  ArithmeticOutputGate(const Wires::ArithmeticWirePtr<T> &parent, std::size_t output_owner) {
+    assert(parent);
+
+    if (parent->GetProtocol() != MPCProtocol::ArithmeticGMW) {
       auto sharing_type = Helpers::Print::ToString(parent->GetProtocol());
       throw(
           std::runtime_error((fmt::format("Arithmetic output gate expects an arithmetic share, "
@@ -193,35 +190,32 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
                                           sharing_type))));
     }
 
+    backend_ = parent->GetBackend();
     parent_ = {parent};
     output_owner_ = output_owner;
 
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;
 
-    register_ = parent->GetRegister();
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
-
-    gate_id_ = shared_ptr_reg->NextGateId();
+    gate_id_ = GetRegister()->NextGateId();
 
     RegisterWaitingFor(parent_.at(0)->GetWireId());
     parent_.at(0)->RegisterWaitingGate(gate_id_);
 
-    if (shared_ptr_reg->GetConfig()->GetMyId() == static_cast<std::size_t>(output_owner_)) {
+    if (GetConfig()->GetMyId() == static_cast<std::size_t>(output_owner_)) {
       is_my_output_ = true;
     }
 
     std::vector<T> placeholder_vector(parent->GetNumOfParallelValues());
     output_wires_ = {std::static_pointer_cast<ABYN::Wires::Wire>(
-        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, register_))};
+        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, backend_))};
     for (auto &w : output_wires_) {
-      shared_ptr_reg->RegisterNextWire(w);
+      GetRegister()->RegisterNextWire(w);
     }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, output_owner_);
-    shared_ptr_reg->GetLogger()->LogTrace(
+    GetLogger()->LogTrace(
         fmt::format("Allocate an ArithmeticOutputGate with following properties: {}", gate_info));
   }
 
@@ -243,13 +237,10 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
   void EvaluateOnline() final {
     assert(setup_is_ready_);
 
-    auto arithmetic_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
     assert(arithmetic_wire);
 
     std::vector<T> output_ = arithmetic_wire->GetValuesOnWire();
-
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
 
     if (is_my_output_) {
       // wait until all conditions are fulfilled
@@ -257,9 +248,9 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
         parent_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
       }
 
-      auto &config = shared_ptr_reg->GetConfig();
+      auto config = GetConfig();
 
-      std::vector<std::vector<T>> shared_outputs_(shared_ptr_reg->GetConfig()->GetNumOfParties());
+      std::vector<std::vector<T>> shared_outputs_(GetConfig()->GetNumOfParties());
 
       for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
         if (i == config->GetMyId()) {
@@ -291,7 +282,7 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
 
         auto result = std::move(Helpers::Print::ToString(output_));
 
-        shared_ptr_reg->GetLogger()->LogTrace(
+        GetLogger()->LogTrace(
             fmt::format("Received output shares: {} from other parties, "
                         "reconstructed result is {}",
                         shares, result));
@@ -304,12 +295,11 @@ class ArithmeticOutputGate : public ABYN::Gates::Interfaces::OutputGate {
     } else {
       auto payload = Helpers::ToByteVector(output_);
       auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payload);
-      shared_ptr_reg->Send(output_owner_, output_message);
+      GetRegister()->Send(output_owner_, output_message);
     }
     SetOnlineIsReady();
-    shared_ptr_reg->IncrementEvaluatedGatesCounter();
-    shared_ptr_reg->GetLogger()->LogDebug(
-        fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
+    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
   }
 
  protected:
@@ -326,17 +316,14 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
                          const ABYN::Wires::ArithmeticWirePtr<T> &b) {
     parent_a_ = {std::static_pointer_cast<ABYN::Wires::Wire>(a)};
     parent_b_ = {std::static_pointer_cast<ABYN::Wires::Wire>(b)};
-    register_ = parent_a_.at(0)->GetRegister();
+    backend_ = parent_a_.at(0)->GetBackend();
 
     assert(parent_a_.at(0)->GetNumOfParallelValues() == parent_b_.at(0)->GetNumOfParallelValues());
 
     requires_online_interaction_ = false;
     gate_type_ = GateType::NonInteractiveGate;
 
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
-
-    gate_id_ = shared_ptr_reg->NextGateId();
+    gate_id_ = GetRegister()->NextGateId();
 
     RegisterWaitingFor(parent_a_.at(0)->GetWireId());
     parent_a_.at(0)->RegisterWaitingGate(gate_id_);
@@ -347,15 +334,15 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
     std::vector<T> placeholder_vector;
     placeholder_vector.resize(parent_a_.at(0)->GetNumOfParallelValues());
     output_wires_ = {std::move(std::static_pointer_cast<ABYN::Wires::Wire>(
-        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, register_)))};
+        std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, backend_)))};
     for (auto &w : output_wires_) {
-      shared_ptr_reg->RegisterNextWire(w);
+      GetRegister()->RegisterNextWire(w);
     }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    shared_ptr_reg->GetLogger()->LogTrace(
+    GetLogger()->LogTrace(
         fmt::format("Created an ArithmeticAdditionGate with following properties: {}", gate_info));
   }
 
@@ -388,12 +375,8 @@ class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
 
     SetOnlineIsReady();
 
-    auto shared_ptr_reg = register_.lock();
-    assert(shared_ptr_reg);
-
-    shared_ptr_reg->IncrementEvaluatedGatesCounter();
-    shared_ptr_reg->GetLogger()->LogDebug(
-        fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
+    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
