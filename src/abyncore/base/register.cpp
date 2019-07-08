@@ -2,8 +2,9 @@
 
 #include "fmt/format.h"
 
-#include "configuration.h"
 #include "communication/handler.h"
+#include "configuration.h"
+#include "gate/gate.h"
 #include "utility/logger.h"
 
 namespace ABYN {
@@ -86,6 +87,32 @@ std::int64_t Register::GetNextGateFromOnlineQueue() {
     active_gates_.pop();
     return static_cast<std::int64_t>(gate_id);
   }
+}
+
+void Register::Reset() {
+  if (!gates_.empty()) {
+    gate_id_offset_ = global_gate_id_;
+  }
+
+  if (!wires_.empty()) {
+    wire_id_offset_ = global_wire_id_;
+  }
+
+  wires_.resize(0);
+  gates_.resize(0);
+  input_gates_.resize(0);
+
+  assert(active_gates_.empty());
+
+  evaluated_gates = 0;
+}
+
+void Register::Clear() {
+  assert(active_gates_.empty());
+  for (auto &gate : gates_) {
+    gate->Clear();
+  }
+  evaluated_gates = 0;
 }
 
 }  // namespace ABYN

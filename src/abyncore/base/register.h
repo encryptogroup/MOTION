@@ -70,7 +70,9 @@ class Register {
 
   void RegisterNextInputGate(Gates::GatePtr gate);
 
-  const Gates::GatePtr &GetGate(std::size_t gate_id) const { return gates_.at(gate_id); }
+  const Gates::GatePtr &GetGate(std::size_t gate_id) const {
+    return gates_.at(gate_id - gate_id_offset_);
+  }
   const auto &GetInputGates() const { return input_gates_; }
 
   auto &GetGates() const { return gates_; }
@@ -79,7 +81,7 @@ class Register {
 
   void RegisterNextWire(Wires::WirePtr wire) { wires_.push_back(wire); }
 
-  Wires::WirePtr GetWire(std::size_t wire_id) const { return wires_.at(wire_id); }
+  Wires::WirePtr GetWire(std::size_t wire_id) const { return wires_.at(wire_id - wire_id_offset_); }
 
   void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
@@ -91,12 +93,18 @@ class Register {
 
   std::size_t GetNumOfEvaluatedGates() { return evaluated_gates; }
 
-  std::size_t GetTotalNumOfGates() { return global_gate_id_; }
+  std::size_t GetTotalNumOfGates() { return global_gate_id_ - gate_id_offset_; }
+
+  void Reset();
+
+  void Clear();
 
  private:
   // don't need atomic here, since only the master thread has access to these
-  std::size_t global_gate_id_ = 0, global_wire_id_ = 0, global_arithmetic_gmw_sharing_id_ = 0,
-              global_boolean_gmw_sharing_id_ = 0;
+  std::size_t global_gate_id_ = 0, global_wire_id_ = 0;
+  std::size_t global_arithmetic_gmw_sharing_id_ = 0, global_boolean_gmw_sharing_id_ = 0;
+
+  std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
   std::atomic<std::size_t> evaluated_gates = 0;
 
