@@ -8,26 +8,27 @@ namespace ABYN::Wires {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticWire : public Wire {
  public:
-  ArithmeticWire(std::vector<T> &&values, std::weak_ptr<Register> reg, bool is_constant = false) {
+  ArithmeticWire(std::vector<T> &&values, std::weak_ptr<Backend> backend,
+                 bool is_constant = false) {
     is_constant_ = is_constant;
-    register_ = reg;
+    backend_ = backend;
     values_ = std::move(values);
     num_of_parallel_values_ = values_.size();
     InitializationHelper();
   }
 
-  ArithmeticWire(const std::vector<T> &values, std::weak_ptr<Register> reg,
+  ArithmeticWire(const std::vector<T> &values, std::weak_ptr<Backend> backend,
                  bool is_constant = false) {
     is_constant_ = is_constant;
-    register_ = reg;
+    backend_ = backend;
     values_ = values;
     num_of_parallel_values_ = values_.size();
     InitializationHelper();
   }
 
-  ArithmeticWire(T t, std::weak_ptr<Register> reg, bool is_constant = false) {
+  ArithmeticWire(T t, std::weak_ptr<Backend> backend, bool is_constant = false) {
     is_constant_ = is_constant;
-    register_ = reg;
+    backend_ = backend;
     values_.push_back(t);
     num_of_parallel_values_ = 1;
     InitializationHelper();
@@ -35,7 +36,7 @@ class ArithmeticWire : public Wire {
 
   ~ArithmeticWire() final = default;
 
-  Protocol GetProtocol() const final { return Protocol::ArithmeticGMW; }
+  MPCProtocol GetProtocol() const final { return MPCProtocol::ArithmeticGMW; }
 
   CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
 

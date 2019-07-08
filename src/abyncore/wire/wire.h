@@ -13,7 +13,7 @@ class Condition;
 }
 
 namespace ABYN {
-class Register;
+class Backend;
 }
 
 namespace ABYN::Gates::Interfaces {
@@ -29,7 +29,7 @@ class Wire {
 
   virtual enum CircuitType GetCircuitType() const = 0;
 
-  virtual enum Protocol GetProtocol() const = 0;
+  virtual enum MPCProtocol GetProtocol() const = 0;
 
   virtual ~Wire();
 
@@ -49,16 +49,19 @@ class Wire {
 
   std::size_t GetWireId() const { return static_cast<std::size_t>(wire_id_); }
 
-  std::weak_ptr<ABYN::Register> GetRegister() const { return register_; }
+  std::weak_ptr<ABYN::Backend> GetBackend() const { return backend_; }
 
   static std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires);
 
   virtual std::size_t GetBitLength() const = 0;
 
+  void Clear() { is_done_ = false; }
+
   Wire(const Wire &) = delete;
 
  protected:
-  // number of values that are _logically_ processed in parallel
+
+  /// Number of values that are _logically_ processed in parallel
   std::size_t num_of_parallel_values_ = 0;
 
   // flagging variables as constants is useful, since this allows for tricks,
@@ -73,14 +76,13 @@ class Wire {
 
   std::int64_t wire_id_ = -1;
 
-  std::weak_ptr<ABYN::Register> register_;
+  std::weak_ptr<Backend> backend_;
 
   std::unordered_set<std::size_t> waiting_gate_ids_;
 
   Wire();
 
-  static void UnregisterWireIdFromGate(std::size_t gate_id, std::size_t wire_id,
-                                       std::weak_ptr<ABYN::Register> reg);
+  static void SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> reg);
 
   void InitializationHelper();
 
@@ -96,7 +98,7 @@ class BooleanWire : public Wire {
 
   CircuitType GetCircuitType() const final { return CircuitType::BooleanType; }
 
-  Protocol GetProtocol() const override = 0;
+  MPCProtocol GetProtocol() const override = 0;
 
   BooleanWire(BooleanWire &) = delete;
 
@@ -110,7 +112,7 @@ class BMRWire : BooleanWire {
  public:
   ~BMRWire() final = default;
 
-  Protocol GetProtocol() const final { return Protocol::BMR; }
+  MPCProtocol GetProtocol() const final { return MPCProtocol::BMR; }
 
   BMRWire() = delete;
 
