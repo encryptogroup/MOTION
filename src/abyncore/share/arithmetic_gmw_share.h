@@ -16,13 +16,13 @@ class ArithmeticShare : public Share {
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    register_ = wires_.at(0)->GetRegister();
+    backend_ = wires_.at(0)->GetBackend();
   }
 
   ArithmeticShare(Wires::ArithmeticWirePtr<T> &wire) : wires_({wire}) {
     wires_ = {wire};
     assert(wire);
-    register_ = wires_.at(0)->GetRegister();
+    backend_ = wires_.at(0)->GetBackend();
   }
 
   ArithmeticShare(std::vector<Wires::ArithmeticWirePtr<T>> &wires) : wires_(wires) {
@@ -35,7 +35,7 @@ class ArithmeticShare : public Share {
                                          "from more than 1 wire; got {} wires",
                                          wires.size())));
     }
-    register_ = wires_.at(0)->GetRegister();
+    backend_ = wires_.at(0)->GetBackend();
   }
 
   ArithmeticShare(std::vector<Wires::WirePtr> &wires) {
@@ -52,24 +52,28 @@ class ArithmeticShare : public Share {
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    register_ = wires_.at(0)->GetRegister();
+    backend_ = wires_.at(0)->GetRegister();
   }
 
-  ArithmeticShare(std::vector<T> &input, const RegisterPtr &reg) {
-    register_ = reg;
-    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, reg)};
+  ArithmeticShare(std::vector<T> &input, const std::weak_ptr<Backend> &backend) {
+    backend_ = backend;
+    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
 
-  ArithmeticShare(T input, const RegisterPtr &reg) {
-    register_ = reg;
-    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, reg)};
+  ArithmeticShare(T input, const std::weak_ptr<Backend> &backend) {
+    backend_ = backend;
+    wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
+
+  std::shared_ptr<ArithmeticShare> operator+(const std::shared_ptr<ArithmeticShare> &other) {}
 
   ~ArithmeticShare() override = default;
 
-  std::size_t GetNumOfParallelValues() final { return wires_.at(0)->GetNumOfParallelValues(); };
+  std::size_t GetNumOfParallelValues() const noexcept final {
+    return wires_.at(0)->GetNumOfParallelValues();
+  };
 
-  Protocol GetSharingType() final { return wires_.at(0)->GetProtocol(); }
+  MPCProtocol GetSharingType() const noexcept final { return wires_.at(0)->GetProtocol(); }
 
   const Wires::ArithmeticWirePtr<T> &GetArithmeticWire() { return wires_.at(0); }
 
@@ -82,7 +86,7 @@ class ArithmeticShare : public Share {
 
   const std::vector<T> &GetValue() const { return wires_->GetRawSharedValues(); }
 
-  std::size_t GetBitLength() final { return sizeof(T) * 8; }
+  std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
 
   std::shared_ptr<Share> Clone() final {
     // TODO
@@ -111,36 +115,39 @@ using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticConstantShare : public Share {
  public:
-  ArithmeticConstantShare(T input, const RegisterPtr &reg) : values_({input}) { register_ = reg; }
-
-  ArithmeticConstantShare(std::vector<T> &input, const RegisterPtr &reg) : values_(input) {
-    register_ = reg;
+  ArithmeticConstantShare(T input, const std::weak_ptr<Backend> &backend) : values_({input}) {
+    backend_ = backend;
   }
 
-  ArithmeticConstantShare(std::vector<T> &&input, const RegisterPtr &reg)
+  ArithmeticConstantShare(std::vector<T> &input, const std::weak_ptr<Backend> &backend)
+      : values_(input) {
+    backend_ = backend;
+  }
+
+  ArithmeticConstantShare(std::vector<T> &&input, const std::weak_ptr<Backend> &backend)
       : values_(std::move(input)) {
-    register_ = reg;
+    backend_ = backend;
   }
 
   ~ArithmeticConstantShare() override = default;
 
-  std::size_t GetNumOfParallelValues() final { return values_.size(); };
+  std::size_t GetNumOfParallelValues() const noexcept final { return values_.size(); };
 
-  Protocol GetSharingType() final { return ArithmeticGMW; }
+  MPCProtocol GetSharingType() const noexcept final { return ArithmeticGMW; }
 
   const std::vector<T> &GetValue() const { return values_; }
 
   std::shared_ptr<Share> Clone() final {
     // TODO
     return std::static_pointer_cast<Share>(
-        std::make_shared<ArithmeticConstantShare>(values_, register_));
+        std::make_shared<ArithmeticConstantShare>(values_, backend_));
   };
 
   ArithmeticConstantShare() = delete;
 
   ArithmeticConstantShare(ArithmeticConstantShare &) = delete;
 
-  std::size_t GetBitLength() final { return sizeof(T) * 8; }
+  std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
 
  protected:
   std::vector<T> values_;

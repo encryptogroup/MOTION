@@ -8,13 +8,13 @@ class GMWShare : public BooleanShare {
  public:
   GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires);
 
-  const std::vector<Wires::WirePtr> GetWires() const final { return wires_; }
+  const std::vector<Wires::WirePtr> GetWires() const noexcept final { return wires_; }
 
-  std::size_t GetNumOfParallelValues() final;
+  std::size_t GetNumOfParallelValues() const noexcept final;
 
-  Protocol GetSharingType() final { return BooleanGMW; }
+  MPCProtocol GetSharingType() const noexcept final;
 
-  std::size_t GetBitLength() final { return wires_.size(); }
+  std::size_t GetBitLength() const noexcept final { return wires_.size(); }
 
   std::shared_ptr<Share> Clone() final {
     return std::static_pointer_cast<Share>(std::make_shared<GMWShare>(wires_));

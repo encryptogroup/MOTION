@@ -3,35 +3,39 @@
 #include <memory>
 #include <vector>
 
-#include "utility/typedefs.h"
-
 namespace ABYN::Wires {
 class Wire;  // forward declaration
 using WirePtr = std::shared_ptr<Wire>;
 }  // namespace ABYN::Wires
 
 namespace ABYN {
-class Register;  // forward declaration
-using RegisterPtr = std::shared_ptr<Register>;
+class Backend;  // forward declaration
+using BackendPtr = std::shared_ptr<Backend>;
+
+class Register;
+
+enum MPCProtocol : uint;
 }  // namespace ABYN
 
 namespace ABYN::Shares {
 
-class Share {
+ class Share : public std::enable_shared_from_this<Share> {
  public:
   virtual ~Share() = default;
 
-  virtual std::size_t GetNumOfParallelValues() = 0;
+  virtual std::size_t GetNumOfParallelValues() const noexcept = 0;
 
-  virtual Protocol GetSharingType() = 0;
+  virtual MPCProtocol GetSharingType() const noexcept= 0;
 
-  virtual std::size_t GetBitLength() = 0;
+  virtual std::size_t GetBitLength() const noexcept = 0;
 
   virtual const std::vector<Wires::WirePtr> GetWires() const = 0;
 
   virtual std::shared_ptr<Share> Clone() = 0;
 
-  std::weak_ptr<ABYN::Register> GetRegister() const { return register_; }
+  std::weak_ptr<Backend> GetBackend() const { return backend_; }
+
+  std::shared_ptr<Register> GetRegister();
 
   Share(Share &) = delete;
 
@@ -40,7 +44,7 @@ class Share {
  protected:
   Share() = default;
 
-  std::weak_ptr<ABYN::Register> register_;
+  std::weak_ptr<Backend> backend_;
 };
 
 using SharePtr = std::shared_ptr<Share>;

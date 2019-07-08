@@ -18,7 +18,7 @@ class ShareWrapper {
   void operator=(const ShareWrapper &sw) { share_ = sw.share_; }
 
   ShareWrapper operator^(const ShareWrapper &other) {
-    if (share_->GetSharingType() == Protocol::ArithmeticGMW) {
+    if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
       throw std::runtime_error(
           "Boolean primitive operations are only supported for Boolean GMW shares");
     }
@@ -43,10 +43,10 @@ class ShareWrapper {
 
   ShareWrapper operator+(const ShareWrapper &other) {
     assert(*other);
-    assert(share_->GetSharingType() == Protocol::ArithmeticGMW);
+    assert(share_->GetSharingType() == MPCProtocol::ArithmeticGMW);
     assert(share_->GetSharingType() == other->GetSharingType());
     assert(share_->GetBitLength() == other->GetBitLength());
-    if (share_->GetSharingType() != Protocol::ArithmeticGMW) {
+    if (share_->GetSharingType() != MPCProtocol::ArithmeticGMW) {
       throw std::runtime_error(
           "Arithmetic primitive operations are only supported for arithmetic GMW shares");
     }
@@ -83,7 +83,7 @@ class ShareWrapper {
     auto backend = share_->GetBackend().lock();
     assert(backend);
     switch (share_->GetSharingType()) {
-      case Protocol::ArithmeticGMW: {
+      case MPCProtocol::ArithmeticGMW: {
         switch (share_->GetBitLength()) {
           case 8u: {
             return backend->ArithmeticGMWOutput<std::uint8_t>(share_, output_owner);
@@ -103,10 +103,10 @@ class ShareWrapper {
           }
         }
       }
-      case Protocol::BooleanGMW: {
+      case MPCProtocol::BooleanGMW: {
         return backend->BooleanGMWOutput(share_, output_owner);
       }
-      case Protocol::BMR: {
+      case MPCProtocol::BMR: {
         throw(std::runtime_error("BMR output gate is not implemented yet"));
         // TODO
       }

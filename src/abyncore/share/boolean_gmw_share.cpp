@@ -5,14 +5,20 @@
 #include "utility/config.h"
 #include "wire/boolean_gmw_wire.h"
 
+#include "base/backend.h"
+#include "gate/boolean_gmw_gate.h"
+#include "utility/typedefs.h"
+
 namespace ABYN::Shares {
+
+MPCProtocol GMWShare::GetSharingType() const noexcept { return BooleanGMW; }
 
 GMWShare::GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
   if (wires.size() == 0) {
     throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
   }
   for (auto &wire : wires) {
-    if (wire->GetProtocol() != ABYN::Protocol::BooleanGMW) {
+    if (wire->GetProtocol() != ABYN::MPCProtocol::BooleanGMW) {
       throw(
           std::runtime_error("Trying to create a Boolean GMW share from wires "
                              "of different sharing type"));
@@ -34,11 +40,11 @@ GMWShare::GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
       assert(size == gmw_wire_next->GetValuesOnWire().GetSize());
     }
   }
-  register_ = wires.at(0)->GetRegister();
+  backend_ = wires.at(0)->GetBackend();
   bits_ = wires.at(0)->GetBitLength();
 }
 
-std::size_t GMWShare::GetNumOfParallelValues() {
+std::size_t GMWShare::GetNumOfParallelValues() const noexcept {
   auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
   assert(gmw_wire);
   return gmw_wire->GetValuesOnWire().GetSize();
