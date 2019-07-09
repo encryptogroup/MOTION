@@ -142,7 +142,11 @@ class AESRandomnessGenerator {
     return std::move(results);
   }
 
-  ENCRYPTO::BitVector GetBits(std::size_t gate_id, std::size_t num_of_gates);
+  ENCRYPTO::BitVector GetBits(std::size_t gate_id, std::size_t num_of_bits);
+
+  void ClearBitPool();
+
+  void ResetBitPool();
 
  private:
   static constexpr std::size_t COUNTER_OFFSET =
@@ -186,7 +190,10 @@ class AESRandomnessGenerator {
 
   ENCRYPTO::BitVector random_bits_;
 
-  std::mutex random_bits_mutex;
+  std::size_t random_bits_offset_ = 0;
+  std::size_t random_bits_used_ = 0;
+
+  std::mutex random_bits_mutex_;
 
   std::unique_ptr<ENCRYPTO::Condition> initialized_condition_;
 };

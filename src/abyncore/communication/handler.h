@@ -58,6 +58,9 @@ class Handler {
 
   void Clear();
 
+  /// \brief Syncronizes the communication handler
+  void Sync();
+
  private:
   std::weak_ptr<Context> context_;
   LoggerPtr logger_;

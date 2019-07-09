@@ -1,5 +1,6 @@
 #pragma once
 
+#include <utility/condition.h>
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -89,15 +90,19 @@ class Register {
 
   std::int64_t GetNextGateFromOnlineQueue();
 
-  void IncrementEvaluatedGatesCounter() { evaluated_gates++; }
+  void IncrementEvaluatedGatesCounter();
 
-  std::size_t GetNumOfEvaluatedGates() { return evaluated_gates; }
+  std::size_t GetNumOfEvaluatedGates() { return evaluated_gates_; }
 
   std::size_t GetTotalNumOfGates() { return global_gate_id_ - gate_id_offset_; }
 
   void Reset();
 
   void Clear();
+
+  std::shared_ptr<ENCRYPTO::Condition> GetNumOfEvaluatedGatesCondition() {
+    return evaluated_gates_condition_;
+  };
 
  private:
   // don't need atomic here, since only the master thread has access to these
@@ -106,7 +111,8 @@ class Register {
 
   std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
-  std::atomic<std::size_t> evaluated_gates = 0;
+  std::size_t evaluated_gates_ = 0;
+  std::shared_ptr<ENCRYPTO::Condition> evaluated_gates_condition_;
 
   ConfigurationPtr config_;
   LoggerPtr logger_;

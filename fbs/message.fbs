@@ -1,7 +1,7 @@
 namespace ABYN.Communication;
 
 //add new message types here
-enum MessageType : ubyte {HelloMessage = 0, OutputMessage = 1, TerminationMessage = 2}
+enum MessageType : ubyte {HelloMessage = 0, OutputMessage = 1, TerminationMessage = 2, SynchronizationMessage = 3}
 
 // TODO: implement message splitting if the size of a single message goes over 2^32 - 1 bits
 

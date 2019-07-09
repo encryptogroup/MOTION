@@ -30,7 +30,6 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
   std::vector<ENCRYPTO::BitVector> input_;
 
   std::size_t bits_;                ///< Number of parallel values on wires
-  std::size_t input_owner_id_;      ///< Indicates whether which party shares the input
   std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
   ///< correlated randomness using AES CTR
 };

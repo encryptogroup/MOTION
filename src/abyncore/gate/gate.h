@@ -131,7 +131,7 @@ class InputGate : public OneGate {
 
   InputGate(InputGate &) = delete;
 
-  std::int64_t input_owner_ = -1;
+  std::int64_t input_owner_id_ = -1;
 };
 
 using InputGatePtr = std::shared_ptr<InputGate>;

@@ -139,17 +139,28 @@ void Party::Run(std::size_t repeats) {
     Connect();
   }
   backend_->VerifyHelloMessages();
-  for (auto i = 0ull; i < repeats; ++i) {
-    if (i > 0) {
+  for (auto i = 0ull; i < repeats && backend_->GetRegister()->GetTotalNumOfGates() > 0; ++i) {
+    if (i > 0u) {
       Clear();
     }
+    GetLogger()->LogDebug(fmt::format("{}-th circuit evaluation\n", i));
     EvaluateCircuit();
   }
 }
 
-void Party::Reset() { backend_->Reset(); }
+void Party::Reset() {
+  backend_->Reset();
+  backend_->GetLogger()->LogDebug("Party reset");
+  backend_->Sync();
+  backend_->GetLogger()->LogDebug("Party sync");
+}
 
-void Party::Clear() { backend_->Clear(); }
+void Party::Clear() {
+  backend_->Clear();
+  backend_->GetLogger()->LogDebug("Party clear");
+  backend_->Sync();
+  backend_->GetLogger()->LogDebug("Party sync");
+}
 
 void Party::EvaluateCircuit() {
   if (config_->GetOnlineAfterSetup()) {

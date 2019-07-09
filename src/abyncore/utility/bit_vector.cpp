@@ -315,6 +315,11 @@ const std::string BitVector::AsString() const noexcept {
   return std::move(result);
 }
 
+void BitVector::Clear() noexcept {
+  data_vector_.clear();
+  bit_size_ = 0;
+}
+
 void BitVector::TruncateToFit() noexcept {
   auto bit_offset = bit_size_ % 8;
   if (bit_offset > 0u) {

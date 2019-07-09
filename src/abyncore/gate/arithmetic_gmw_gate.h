@@ -32,7 +32,7 @@ class ArithmeticInputGate : public Interfaces::InputGate {
   ArithmeticInputGate(const std::vector<T> &input, std::size_t input_owner,
                       std::weak_ptr<Backend> backend)
       : input_(input) {
-    input_owner_ = input_owner;
+    input_owner_id_ = input_owner;
     backend_ = backend;
     InitializationHelper();
   }
@@ -40,7 +40,7 @@ class ArithmeticInputGate : public Interfaces::InputGate {
   ArithmeticInputGate(std::vector<T> &&input, std::size_t input_owner,
                       std::weak_ptr<Backend> backend)
       : input_(std::move(input)) {
-    input_owner_ = input_owner;
+    input_owner_id_ = input_owner;
     backend_ = backend;
     InitializationHelper();
   }
@@ -59,7 +59,7 @@ class ArithmeticInputGate : public Interfaces::InputGate {
     }
 
     auto gate_info =
-        fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, input_owner_);
+        fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, input_owner_id_);
     GetLogger()->LogDebug(
         fmt::format("Allocate an ArithmeticInputGate with following properties: {}", gate_info));
   }
@@ -68,13 +68,13 @@ class ArithmeticInputGate : public Interfaces::InputGate {
 
   void EvaluateSetup() final {
     auto my_id = GetRegister()->GetConfig()->GetMyId();
-    if (static_cast<std::size_t>(input_owner_) == my_id) {
+    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       // we always generate seeds for the input sharing
       // before we start evaluating the circuit
     } else {
       auto &rand_generator = GetRegister()
                                  ->GetConfig()
-                                 ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
+                                 ->GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
                                  ->GetTheirRandomnessGenerator();
 
       while (!rand_generator->IsInitialized()) {
@@ -92,7 +92,7 @@ class ArithmeticInputGate : public Interfaces::InputGate {
     auto my_id = GetConfig()->GetMyId();
     std::vector<T> result;
 
-    if (static_cast<std::size_t>(input_owner_) == my_id) {
+    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       result.resize(input_.size());
       auto log_string = std::string("");
       for (auto i = 0u; i < GetConfig()->GetNumOfParties(); ++i) {
@@ -119,12 +119,12 @@ class ArithmeticInputGate : public Interfaces::InputGate {
         auto s = fmt::format(
             "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
             "share: {}, expected shares of other parties: {}",
-            input_owner_, gate_id_, input_.at(0), result.at(0), log_string);
+            input_owner_id_, gate_id_, input_.at(0), result.at(0), log_string);
         GetLogger()->LogTrace(s);
       }
     } else {
       auto &rand_generator = GetConfig()
-                                 ->GetCommunicationContext(static_cast<std::size_t>(input_owner_))
+                                 ->GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
                                  ->GetTheirRandomnessGenerator();
 
       result =
@@ -134,7 +134,7 @@ class ArithmeticInputGate : public Interfaces::InputGate {
         auto s = fmt::format(
             "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
             "{} from the seed",
-            gate_id_, input_owner_, result.at(0));
+            gate_id_, input_owner_id_, result.at(0));
         GetLogger()->LogTrace(s);
       }
     }

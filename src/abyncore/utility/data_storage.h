@@ -27,17 +27,17 @@ class DataStorage {
 
   ~DataStorage() = default;
 
-  void SetLogger(const ABYN::LoggerPtr &logger) { logger_ = logger; }
+  void SetLogger(const LoggerPtr &logger) { logger_ = logger; }
 
   void SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message);
 
-  const ABYN::Communication::OutputMessage *GetOutputMessage(const std::size_t gate_id);
+  const Communication::OutputMessage *GetOutputMessage(const std::size_t gate_id);
 
-  const ABYN::Communication::OutputMessage *GetOutputMessageCondition(const std::size_t gate_id);
+  const Communication::OutputMessage *GetOutputMessageCondition(const std::size_t gate_id);
 
   void SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message);
 
-  const ABYN::Communication::HelloMessage *GetReceivedHelloMessage();
+  const Communication::HelloMessage *GetReceivedHelloMessage();
 
   std::shared_ptr<ENCRYPTO::Condition> &GetReceivedHelloMessageCondition() {
     return rcv_hello_msg_cond;
@@ -49,7 +49,7 @@ class DataStorage {
 
   void SetSentHelloMessage(const std::uint8_t *message, std::size_t size);
 
-  const ABYN::Communication::HelloMessage *GetSentHelloMessage();
+  const Communication::HelloMessage *GetSentHelloMessage();
 
   std::shared_ptr<ENCRYPTO::Condition> &GetSentHelloMessageCondition() {
     return snt_hello_msg_cond;
@@ -59,17 +59,22 @@ class DataStorage {
 
   void Clear();
 
+  bool SetSyncState(bool state);
+
+  std::shared_ptr<ENCRYPTO::Condition> &GetSyncCondition();
+
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;
-  std::shared_ptr<ENCRYPTO::Condition> rcv_hello_msg_cond, snt_hello_msg_cond;
+  std::shared_ptr<ENCRYPTO::Condition> rcv_hello_msg_cond, snt_hello_msg_cond, sync_condition_;
+
+  bool sync_message_received_ = false;
 
   // id, buffer
-  std::unordered_map<std::size_t, std::vector<std::uint8_t>>
-      received_output_messages_;
+  std::unordered_map<std::size_t, std::vector<std::uint8_t>> received_output_messages_;
   // id, condition
   std::unordered_map<std::size_t, std::shared_ptr<ENCRYPTO::Condition>> output_message_conditions_;
 
-  ABYN::LoggerPtr logger_;
+  LoggerPtr logger_;
   std::int64_t id_ = -1;
   std::mutex output_message_mutex_;
 };

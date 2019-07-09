@@ -165,6 +165,10 @@ class Backend : public std::enable_shared_from_this<Backend> {
     return ArithmeticGMWAddition(casted_parent_a_ptr, casted_parent_b_ptr);
   }
 
+
+  /// \brief Blocking wait for synchronizing between parties. Called in Clear() and Reset()
+  void Sync();
+
  private:
   ConfigurationPtr config_;
   RegisterPtr register_;

@@ -17,7 +17,8 @@ namespace ABYN::Gates::GMW {
 
 GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id,
                            std::weak_ptr<Backend> backend)
-    : input_(input), input_owner_id_(party_id) {
+    : input_(input) {
+  input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
   backend_ = backend;
   InitializationHelper();
@@ -25,7 +26,8 @@ GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::s
 
 GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id,
                            std::weak_ptr<Backend> backend)
-    : input_(std::move(input)), input_owner_id_(party_id) {
+    : input_(std::move(input)) {
+  input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
   backend_ = backend;
   InitializationHelper();
@@ -35,7 +37,7 @@ void GMWInputGate::InitializationHelper() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
 
-  if (input_owner_id_ >= ptr_backend->GetConfig()->GetNumOfParties()) {
+  if (static_cast<std::size_t>(input_owner_id_) >= ptr_backend->GetConfig()->GetNumOfParties()) {
     throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
                                          ptr_backend->GetConfig()->GetNumOfParties()));
   }
@@ -77,7 +79,7 @@ void GMWInputGate::EvaluateSetup() {
 
   auto my_id = ptr_backend->GetConfig()->GetMyId();
 
-  if (input_owner_id_ == my_id) {
+  if (static_cast<std::size_t>(input_owner_id_) == my_id) {
     // we always generate our own seeds for the input sharing before we start evaluating
     // the circuit, hence, nothing to wait here for
   } else {
@@ -103,7 +105,7 @@ void GMWInputGate::EvaluateOnline() {
   std::vector<ENCRYPTO::BitVector> result(input_.size());
   auto sharing_id = boolean_sharing_id_;
   for (auto i = 0ull; i < result.size(); ++i) {
-    if (input_owner_id_ == my_id) {
+    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       result.at(i) = input_.at(i);
       auto log_string = std::string("");
       for (auto j = 0u; j < ptr_backend->GetConfig()->GetNumOfParties(); ++j) {

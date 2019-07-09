@@ -38,10 +38,10 @@ void AESRandomnessGenerator::Initialize(
   initialized_condition_->NotifyAll();
 }
 
-ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::size_t num_of_gates) {
-  std::scoped_lock<std::mutex> lock(random_bits_mutex);
+ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::size_t num_of_bits) {
+  std::scoped_lock<std::mutex> lock(random_bits_mutex_);
 
-  if (num_of_gates == 0) {
+  if (num_of_bits == 0) {
     return {};  // return an empty vector if num_of_gates is zero
   }
 
@@ -55,7 +55,7 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
   constexpr std::size_t BITS_IN_BATCH = BITS_IN_CIPHERTEXT * CIPHERTEXTS_IN_BATCH;
   constexpr std::size_t BYTES_IN_BATCH = BITS_IN_BATCH / 8;
 
-  while (random_bits_.GetSize() < (gate_id + num_of_gates)) {
+  while (random_bits_.GetSize() < (gate_id + num_of_bits)) {
     std::vector<std::uint8_t> input(BYTES_IN_BATCH + AES_BLOCK_SIZE),
         output(BYTES_IN_BATCH + AES_BLOCK_SIZE);
     for (auto offset = random_bits_.GetSize() / AES_BLOCK_SIZE_; offset < CIPHERTEXTS_IN_BATCH;
@@ -86,7 +86,14 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
     random_bits_.Append(randomness);
   }
 
-  return std::move(random_bits_.Subset(gate_id, gate_id + num_of_gates));
+  const auto requested = gate_id - random_bits_offset_ + num_of_bits;
+  if (requested > random_bits_used_) {
+    random_bits_used_ = requested;
+  }
+
+  assert(gate_id >= random_bits_offset_);
+  return std::move(random_bits_.Subset(gate_id - random_bits_offset_,
+                                       gate_id + num_of_bits - random_bits_offset_));
 }
 
 int AESRandomnessGenerator::Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *key, std::uint8_t *input,
@@ -136,5 +143,17 @@ std::vector<std::uint8_t> AESRandomnessGenerator::HashKey(
 
 std::vector<std::uint8_t> AESRandomnessGenerator::GetSeed() {
   return std::vector<std::uint8_t>(master_seed_, master_seed_ + sizeof(master_seed_));
+}
+
+void AESRandomnessGenerator::ClearBitPool() { random_bits_ = ENCRYPTO::BitVector(); }
+
+void AESRandomnessGenerator::ResetBitPool() {
+  if (random_bits_used_ == random_bits_.GetSize()) {
+    random_bits_.Clear();
+  } else {
+    random_bits_ = random_bits_.Subset(random_bits_used_, random_bits_.GetSize() - 1);
+  }
+  random_bits_offset_ += random_bits_used_;
+  random_bits_used_ = 0;
 }
 }

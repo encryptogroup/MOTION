@@ -104,7 +104,7 @@ void test() {
       //#pragma omp taskloop num_tasks(abyn_parties.size())
       for (auto &party : abyn_parties) {
         threads.emplace_back([&]() {
-          const auto BGMW = Protocol::BooleanGMW;
+          const auto BGMW = MPCProtocol::BooleanGMW;
           std::vector<Shares::SharePtr> input_share_1, input_share_1K, input_share_100K;
           auto _100K_vector_size = 1000;
           std::vector<std::vector<Shares::SharePtr>> input_share_100K_vector(_100K_vector_size);
@@ -182,6 +182,8 @@ void test() {
               assert(wire_100K_v->GetValuesOnWire() == Helpers::XORBitVectors(global_input_100K));
             }
           }
+
+          party->Finish();
         });
       }
       for (auto &t : threads) {

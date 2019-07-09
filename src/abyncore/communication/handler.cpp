@@ -5,6 +5,7 @@
 #include "fmt/format.h"
 
 #include "context.h"
+#include "crypto/aes_randomness_generator.h"
 #include "message.h"
 #include "utility/condition.h"
 #include "utility/constants.h"
@@ -32,10 +33,11 @@ std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
   return result;
 }
 
-Handler::Handler(ContextPtr &context, const LoggerPtr &logger) : context_(context), logger_(logger) {
+Handler::Handler(ContextPtr &context, const LoggerPtr &logger)
+    : context_(context), logger_(logger) {
   handler_info_ =
-      fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}", context->GetId(),
-                  context->GetIp(), context->GetSocket()->local_endpoint().port(),
+      fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}",
+                  context->GetId(), context->GetIp(), context->GetSocket()->local_endpoint().port(),
                   context->GetSocket()->remote_endpoint().port());
 
   received_new_msg_ =
@@ -63,12 +65,10 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
   auto message_detached = message.Release();
   auto message_raw_pointer = message_detached.data();
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
-    if (auto shared_ptr_party = context_.lock()) {
-      shared_ptr_party->GetDataStorage()->SetSentHelloMessage(message_raw_pointer,
+    auto shared_ptr_context = context_.lock();
+    assert(shared_ptr_context);
+    shared_ptr_context->GetDataStorage()->SetSentHelloMessage(message_raw_pointer,
                                                               message_detached.size());
-    } else {
-      throw(std::runtime_error("Party instance destroyed before its communication handler"));
-    }
   }
   std::vector<std::uint8_t> buffer(message_raw_pointer,
                                    message_raw_pointer + message_detached.size());
@@ -83,8 +83,8 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
 }
 
 const BoostSocketPtr Handler::GetSocket() {
-  if (auto shared_ptr_party = context_.lock()) {
-    return shared_ptr_party->GetSocket();
+  if (auto shared_ptr_context = context_.lock()) {
+    return shared_ptr_context->GetSocket();
   } else {
     return nullptr;
   }
@@ -242,9 +242,9 @@ void Handler::ActAsReceiver() {
           }
           while (!tmp_queue.empty()) {
             auto &message_buffer = tmp_queue.front();
-            auto shared_ptr_party = context_.lock();
-            assert(shared_ptr_party);
-            shared_ptr_party->ParseMessage(std::move(message_buffer));
+            auto shared_ptr_context = context_.lock();
+            assert(shared_ptr_context);
+            shared_ptr_context->ParseMessage(std::move(message_buffer));
             tmp_queue.pop();
           }
         }
@@ -297,9 +297,9 @@ std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
 
 bool Handler::VerifyHelloMessage() {
   bool result = true;
-  auto shared_ptr_party = context_.lock();
-  assert(shared_ptr_party);
-  auto data_storage = shared_ptr_party->GetDataStorage();
+  auto shared_ptr_context = context_.lock();
+  assert(shared_ptr_context);
+  auto data_storage = shared_ptr_context->GetDataStorage();
   auto *my_hm = data_storage->GetSentHelloMessage();
   while (my_hm == nullptr) {
     data_storage->GetSentHelloMessageCondition()->WaitFor(std::chrono::microseconds(200));
@@ -312,7 +312,7 @@ bool Handler::VerifyHelloMessage() {
     their_hm = data_storage->GetReceivedHelloMessage();
   }
 
-  if (shared_ptr_party) {
+  if (shared_ptr_context) {
     if (my_hm->ABYN_version() != their_hm->ABYN_version()) {
       logger_->LogError(fmt::format("{}: Different {} versions: mine is {}, theirs is {}",
                                     handler_info_, FRAMEWORK_NAME, ABYN_VERSION,
@@ -351,16 +351,42 @@ bool Handler::VerifyHelloMessage() {
   return result;
 }
 
-void Handler::Reset(){
+void Handler::Reset() {
   auto shared_ptr_context = context_.lock();
   assert(shared_ptr_context);
   shared_ptr_context->GetDataStorage()->Reset();
+  shared_ptr_context->GetMyRandomnessGenerator()->ResetBitPool();
+  shared_ptr_context->GetTheirRandomnessGenerator()->ResetBitPool();
 }
 
-void Handler::Clear(){
+void Handler::Clear() {
   auto shared_ptr_context = context_.lock();
   assert(shared_ptr_context);
   shared_ptr_context->GetDataStorage()->Clear();
+  shared_ptr_context->GetMyRandomnessGenerator()->ClearBitPool();
+  shared_ptr_context->GetTheirRandomnessGenerator()->ClearBitPool();
+}
+
+void Handler::Sync() {
+  auto message = BuildMessage(MessageType_SynchronizationMessage, nullptr);
+  std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
+                                   message.GetBufferPointer() + message.GetSize());
+  {
+    std::scoped_lock lock(send_queue_mutex_, there_is_smth_to_send_->GetMutex());
+    queue_send_.push(std::move(buffer));
+  }
+
+  there_is_smth_to_send_->NotifyAll();
+
+  auto shared_ptr_context = context_.lock();
+  assert(shared_ptr_context);
+  auto &sync_condition = shared_ptr_context->GetDataStorage()->GetSyncCondition();
+  while (!(*sync_condition)()) {
+    sync_condition->WaitFor(std::chrono::milliseconds(1));
+  }
+
+  // assert old state was true
+  assert(shared_ptr_context->GetDataStorage()->SetSyncState(false));
 }
 
 }  // namespace ABYN::Communication

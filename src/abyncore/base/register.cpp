@@ -5,6 +5,7 @@
 #include "communication/handler.h"
 #include "configuration.h"
 #include "gate/gate.h"
+#include "utility/condition.h"
 #include "utility/logger.h"
 
 namespace ABYN {
@@ -12,12 +13,15 @@ namespace ABYN {
 Register::Register(ConfigurationPtr &config) : config_(config) {
   logger_ = std::make_shared<ABYN::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
   logger_->SetEnabled(config_->GetLoggingEnabled());
+
+  evaluated_gates_condition_ =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return evaluated_gates_ == gates_.size(); });
 }
 
 Register::~Register() {
-  input_gates_.resize(0);
-  gates_.resize(0);
-  wires_.resize(0);
+  input_gates_.clear();
+  gates_.clear();
+  wires_.clear();
 }
 
 std::size_t Register::NextGateId() noexcept { return global_gate_id_++; }
@@ -89,7 +93,17 @@ std::int64_t Register::GetNextGateFromOnlineQueue() {
   }
 }
 
+void Register::IncrementEvaluatedGatesCounter() {
+  {
+    std::scoped_lock lock(evaluated_gates_condition_->GetMutex());
+    ++evaluated_gates_;
+  }
+  evaluated_gates_condition_->NotifyAll();
+}
+
 void Register::Reset() {
+  assert(active_gates_.empty());
+  assert(evaluated_gates_ == gates_.size());
   if (!gates_.empty()) {
     gate_id_offset_ = global_gate_id_;
   }
@@ -98,21 +112,36 @@ void Register::Reset() {
     wire_id_offset_ = global_wire_id_;
   }
 
-  wires_.resize(0);
-  gates_.resize(0);
-  input_gates_.resize(0);
+  wires_.clear();
+  gates_.clear();
+  input_gates_.clear();
+  evaluated_gates_ = 0;
 
-  assert(active_gates_.empty());
-
-  evaluated_gates = 0;
+  for (auto i = 0ull; i < communication_handlers_.size(); ++i) {
+    if (GetConfig()->GetMyId() == i) {
+      continue;
+    }
+    auto handler_ptr = communication_handlers_.at(i).lock();
+    assert(handler_ptr);
+    handler_ptr->Reset();
+  }
 }
 
 void Register::Clear() {
   assert(active_gates_.empty());
+  assert(evaluated_gates_ == gates_.size());
   for (auto &gate : gates_) {
     gate->Clear();
   }
-  evaluated_gates = 0;
+  evaluated_gates_ = 0;
+  for (auto i = 0ull; i < communication_handlers_.size(); ++i) {
+    if (GetConfig()->GetMyId() == i) {
+      continue;
+    }
+    auto handler_ptr = communication_handlers_.at(i).lock();
+    assert(handler_ptr);
+    handler_ptr->Clear();
+  }
 }
 
 }  // namespace ABYN

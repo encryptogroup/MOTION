@@ -17,32 +17,36 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
   auto message = Communication::GetMessage(output_message.data());
   auto output_message_ptr = Communication::GetOutputMessage(message->payload()->data());
+  std::shared_ptr<ENCRYPTO::Condition> cond;
 
   auto gate_id = output_message_ptr->gate_id();
-
-  // prevents inserting new elements while searching while GetOutputMessage() is called
-  std::scoped_lock lock(output_message_mutex_);
-
-  if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
-    // don't need to check anything
-    output_message_conditions_.emplace(
-        gate_id, std::make_shared<ENCRYPTO::Condition>([]() { return true; }));
-  }
   {
-    std::scoped_lock lock_cond(output_message_conditions_.find(gate_id)->second->GetMutex());
+    // prevents inserting new elements while searching while GetOutputMessage() is called
+    std::scoped_lock lock(output_message_mutex_);
 
-    auto ret = received_output_messages_.emplace(gate_id, std::move(output_message));
-    if (!ret.second) {
-      logger_->LogError(
-          fmt::format("Failed to insert new output message from Party#{} for "
-                      "gate#{}, found another buffer on its place",
-                      id_, gate_id));
+    if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
+      // don't need to check anything
+      output_message_conditions_.emplace(
+          gate_id, std::make_shared<ENCRYPTO::Condition>([]() { return true; }));
     }
-    logger_->LogDebug(
-        fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
+    {
+      std::scoped_lock lock_cond(output_message_conditions_.find(gate_id)->second->GetMutex());
+
+      auto ret = received_output_messages_.emplace(gate_id, std::move(output_message));
+      if (!ret.second) {
+        logger_->LogError(
+            fmt::format("Failed to insert new output message from Party#{} for "
+                        "gate#{}, found another buffer on its place",
+                        id_, gate_id));
+      }
+      logger_->LogDebug(
+          fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
+    }
+
+    cond = output_message_conditions_.find(gate_id)->second;
   }
 
-  output_message_conditions_.find(gate_id)->second->NotifyAll();
+  cond->NotifyAll();
 }
 
 const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
@@ -104,17 +108,41 @@ void DataStorage::SetSentHelloMessage(const std::uint8_t *message, std::size_t s
   snt_hello_msg_cond->NotifyAll();
 }
 
-const ABYN::Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
+const Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
   if (sent_hello_message_.empty()) {
     return nullptr;
   }
-  auto hm = ABYN::Communication::GetMessage(sent_hello_message_.data());
+  auto hm = Communication::GetMessage(sent_hello_message_.data());
   assert(hm != nullptr);
-  return ABYN::Communication::GetHelloMessage(hm->payload()->data());
+  return Communication::GetHelloMessage(hm->payload()->data());
 }
 
-void DataStorage::Reset() { received_output_messages_.clear(); }
+void DataStorage::Reset() { Clear(); }
 
-void DataStorage::Clear() { received_output_messages_.clear(); }
+void DataStorage::Clear() {
+  received_output_messages_.clear();
+  output_message_conditions_.clear();
+}
+
+bool DataStorage::SetSyncState(bool state) {
+  if (!sync_condition_) {
+    sync_condition_ =
+        std::make_shared<ENCRYPTO::Condition>([this]() { return sync_message_received_; });
+  }
+  {
+    std::scoped_lock lock(sync_condition_->GetMutex());
+    std::swap(sync_message_received_, state);
+  }
+  sync_condition_->NotifyAll();
+  return state;
+}
+
+std::shared_ptr<ENCRYPTO::Condition> &DataStorage::GetSyncCondition() {
+  if (!sync_condition_) {
+    sync_condition_ =
+        std::make_shared<ENCRYPTO::Condition>([this]() { return sync_message_received_; });
+  }
+  return sync_condition_;
+}
 
 }

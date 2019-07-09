@@ -7,7 +7,7 @@
 
 #include "base/backend.h"
 #include "configuration.h"
-#include "crypto/oblivious_transfer/ot_provider.h"
+//#include "crypto/oblivious_transfer/ot_provider.h"
 #include "utility/constants.h"
 #include "utility/typedefs.h"
 

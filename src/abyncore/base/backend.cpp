@@ -249,7 +249,8 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           std::vector<ENCRYPTO::BitVector> &&input) {
-  auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
+  auto in_gate =
+      std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
   auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -281,5 +282,19 @@ Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
   auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
   RegisterGate(out_gate_cast);
   return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
+}
+
+void Backend::Sync() {
+  //auto sync_condition = register_->GetNumOfEvaluatedGatesCondition();
+  //std::scoped_lock lock(sync_condition->GetMutex());
+  //while (!(*sync_condition)()) {
+  //  sync_condition->WaitFor(std::chrono::milliseconds(1));
+  //}
+  for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
+    if (i == config_->GetMyId()) {
+      continue;
+    }
+    communication_handlers_.at(i)->Sync();
+  }
 }
 }

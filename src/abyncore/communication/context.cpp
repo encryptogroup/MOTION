@@ -119,6 +119,9 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
     case MessageType_TerminationMessage: {
       //
     } break;
+    case MessageType_SynchronizationMessage: {
+      data_storage_->SetSyncState(true);
+    } break;
     default:
       throw(std::runtime_error("Didn't recognize the message type"));
   }

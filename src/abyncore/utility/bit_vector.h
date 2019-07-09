@@ -69,6 +69,8 @@ class BitVector {
 
   const std::string AsString() const noexcept;
 
+  void Clear() noexcept;
+
   static BitVector Random(std::size_t size) noexcept;
 
  private:
