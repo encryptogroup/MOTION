@@ -1,5 +1,30 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "data_storage.h"
 
+#include <iostream>
 #include <mutex>
 
 #include "utility/condition.h"
@@ -12,9 +37,10 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
       std::make_shared<ENCRYPTO::Condition>([this]() { return !received_hello_message_.empty(); });
   snt_hello_msg_cond =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !sent_hello_message_.empty(); });
-};
+}
 
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
+  assert(!output_message.empty());
   auto message = Communication::GetMessage(output_message.data());
   auto output_message_ptr = Communication::GetOutputMessage(message->payload()->data());
   std::shared_ptr<ENCRYPTO::Condition> cond;
@@ -23,15 +49,18 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
   {
     // prevents inserting new elements while searching while GetOutputMessage() is called
     std::scoped_lock lock(output_message_mutex_);
-
     if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
+      cond = std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
+        return received_output_messages_.find(gate_id) != received_output_messages_.end();
+      });
       // don't need to check anything
-      output_message_conditions_.emplace(
-          gate_id, std::make_shared<ENCRYPTO::Condition>([]() { return true; }));
+      output_message_conditions_.emplace(gate_id, cond);
+    } else {
+      cond = output_message_conditions_.find(gate_id)->second;
     }
-    {
-      std::scoped_lock lock_cond(output_message_conditions_.find(gate_id)->second->GetMutex());
 
+    {
+      std::scoped_lock lock_cond(cond->GetMutex());
       auto ret = received_output_messages_.emplace(gate_id, std::move(output_message));
       if (!ret.second) {
         logger_->LogError(
@@ -42,19 +71,16 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
       logger_->LogDebug(
           fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
     }
-
-    cond = output_message_conditions_.find(gate_id)->second;
   }
-
   cond->NotifyAll();
-}
+}  // namespace ABYN
 
 const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
   std::unordered_map<std::size_t, std::vector<std::uint8_t>>::iterator iterator, end;
+  std::shared_ptr<ENCRYPTO::Condition> cond;
   {
     // prevent SetReceivedOutputMessage() to insert new elements while searching
     std::scoped_lock lock(output_message_mutex_);
-
     // create condition if there is no
     if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
       output_message_conditions_.emplace(
@@ -62,23 +88,20 @@ const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::siz
             return received_output_messages_.find(gate_id) != received_output_messages_.end();
           }));
     }
-
-    // try to find the output message
-    iterator = received_output_messages_.find(gate_id);
-    end = received_output_messages_.end();
   }
-
-  while (iterator == end) {
-    // blocking wait if the is no message yet
-    output_message_conditions_.find(gate_id)->second->WaitFor(std::chrono::milliseconds(1));
+  {
     std::scoped_lock lock(output_message_mutex_);
-    // try to find it again, if we were notified through the Condition class
-    iterator = received_output_messages_.find(gate_id);
-    end = received_output_messages_.end();
+    cond = output_message_conditions_.find(gate_id)->second;
   }
-  auto output_message = Communication::GetMessage(iterator->second.data());
+  while (!(*cond)()) {
+    cond->WaitFor(std::chrono::milliseconds(1));
+  }
+  std::scoped_lock lock(output_message_mutex_);
+  auto iter = received_output_messages_.find(gate_id);
+  assert(iter != received_output_messages_.end());
+  auto output_message =
+      Communication::GetMessage(iter->second.data());
   assert(output_message != nullptr);
-
   return Communication::GetOutputMessage(output_message->payload()->data());
 }
 
@@ -117,11 +140,13 @@ const Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
   return Communication::GetHelloMessage(hm->payload()->data());
 }
 
-void DataStorage::Reset() { Clear(); }
+void DataStorage::Reset() {
+  Clear();
+  output_message_conditions_.clear();
+}
 
 void DataStorage::Clear() {
   received_output_messages_.clear();
-  output_message_conditions_.clear();
 }
 
 bool DataStorage::SetSyncState(bool state) {
@@ -144,5 +169,4 @@ std::shared_ptr<ENCRYPTO::Condition> &DataStorage::GetSyncCondition() {
   }
   return sync_condition_;
 }
-
 }
