@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "backend.h"
 
 #include <algorithm>
@@ -174,8 +198,9 @@ void Backend::EvaluateParallel() {
         // evaluate the gates in a batch
 #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
         for (auto i = 0ull; i < gates_ids.size(); ++i) {
-          register_->GetGate(gates_ids.at(i))->EvaluateSetup();
-          register_->GetGate(gates_ids.at(i))->EvaluateOnline();
+          auto gate = register_->GetGate(gates_ids.at(i));
+          gate->EvaluateSetup();
+          gate->EvaluateOnline();
         }
 #pragma omp taskwait
       }
@@ -231,16 +256,16 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, bool input) {
   return BooleanGMWInput(party_id, ENCRYPTO::BitVector(1, input));
 }
 
-Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector &input) {
-  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{input});
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector<> &input) {
+  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector<>>{input});
 }
 
-Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector &&input) {
-  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector>{std::move(input)});
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVector<> &&input) {
+  return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector<>>{std::move(input)});
 }
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
-                                          const std::vector<ENCRYPTO::BitVector> &input) {
+                                          const std::vector<ENCRYPTO::BitVector<>> &input) {
   auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
   auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
@@ -248,7 +273,7 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
 }
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
-                                          std::vector<ENCRYPTO::BitVector> &&input) {
+                                          std::vector<ENCRYPTO::BitVector<>> &&input) {
   auto in_gate =
       std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
   auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
@@ -285,11 +310,6 @@ Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
 }
 
 void Backend::Sync() {
-  //auto sync_condition = register_->GetNumOfEvaluatedGatesCondition();
-  //std::scoped_lock lock(sync_condition->GetMutex());
-  //while (!(*sync_condition)()) {
-  //  sync_condition->WaitFor(std::chrono::milliseconds(1));
-  //}
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (i == config_->GetMyId()) {
       continue;

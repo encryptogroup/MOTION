@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "party.h"
 
 #include <map>
@@ -135,6 +159,7 @@ void Party::Connect() {
 }
 
 void Party::Run(std::size_t repeats) {
+  backend_->GetLogger()->LogDebug("Party run");
   if (!IsConnected()) {
     Connect();
   }
@@ -143,23 +168,23 @@ void Party::Run(std::size_t repeats) {
     if (i > 0u) {
       Clear();
     }
-    GetLogger()->LogDebug(fmt::format("{}-th circuit evaluation\n", i));
+    GetLogger()->LogDebug(fmt::format("Circuit evaluation #{}", i));
     EvaluateCircuit();
   }
 }
 
 void Party::Reset() {
-  backend_->Reset();
   backend_->GetLogger()->LogDebug("Party reset");
-  backend_->Sync();
+  backend_->Reset();
   backend_->GetLogger()->LogDebug("Party sync");
+  backend_->Sync();
 }
 
 void Party::Clear() {
-  backend_->Clear();
   backend_->GetLogger()->LogDebug("Party clear");
-  backend_->Sync();
+  backend_->Clear();
   backend_->GetLogger()->LogDebug("Party sync");
+  backend_->Sync();
 }
 
 void Party::EvaluateCircuit() {
