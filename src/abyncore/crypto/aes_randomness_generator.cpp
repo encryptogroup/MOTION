@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "aes_randomness_generator.h"
 
 namespace ABYN::Crypto {
@@ -38,7 +62,7 @@ void AESRandomnessGenerator::Initialize(
   initialized_condition_->NotifyAll();
 }
 
-ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::size_t num_of_bits) {
+ENCRYPTO::BitVector<> AESRandomnessGenerator::GetBits(std::size_t gate_id, std::size_t num_of_bits) {
   std::scoped_lock<std::mutex> lock(random_bits_mutex_);
 
   if (num_of_bits == 0) {
@@ -55,7 +79,7 @@ ENCRYPTO::BitVector AESRandomnessGenerator::GetBits(std::size_t gate_id, std::si
   constexpr std::size_t BITS_IN_BATCH = BITS_IN_CIPHERTEXT * CIPHERTEXTS_IN_BATCH;
   constexpr std::size_t BYTES_IN_BATCH = BITS_IN_BATCH / 8;
 
-  while (random_bits_.GetSize() < (gate_id + num_of_bits)) {
+  while (random_bits_.GetSize() < (gate_id - random_bits_offset_ + num_of_bits)) {
     std::vector<std::uint8_t> input(BYTES_IN_BATCH + AES_BLOCK_SIZE),
         output(BYTES_IN_BATCH + AES_BLOCK_SIZE);
     for (auto offset = random_bits_.GetSize() / AES_BLOCK_SIZE_; offset < CIPHERTEXTS_IN_BATCH;
@@ -145,7 +169,7 @@ std::vector<std::uint8_t> AESRandomnessGenerator::GetSeed() {
   return std::vector<std::uint8_t>(master_seed_, master_seed_ + sizeof(master_seed_));
 }
 
-void AESRandomnessGenerator::ClearBitPool() { random_bits_ = ENCRYPTO::BitVector(); }
+void AESRandomnessGenerator::ClearBitPool() { random_bits_ = ENCRYPTO::BitVector<>(); }
 
 void AESRandomnessGenerator::ResetBitPool() {
   if (random_bits_used_ == random_bits_.GetSize()) {
