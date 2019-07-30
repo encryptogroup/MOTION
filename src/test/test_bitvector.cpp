@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <random>
 
 #include <gtest/gtest.h>
@@ -9,17 +33,17 @@
 namespace {
 TEST(BitVector, OutOfBoundsException) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    for (auto i = 0ull, j = 1ull; i < 20; ++i) {
+    for (auto i = 0ull, j = 1ull; i < 20u; ++i) {
       std::random_device rd;
-      std::uniform_int_distribution<std::uint64_t> dist(0ul, 1000000ul);
+      std::uniform_int_distribution<std::uint64_t> dist(0ul, 1'000'000ul);
 
       auto should_throw_set = [&](std::size_t size) {
-        ENCRYPTO::BitVector bv(size);
+        ENCRYPTO::BitVector<> bv(size);
         bv.Set(true, size + dist(rd));
       };
 
       auto should_throw_get = [&](auto size) {
-        ENCRYPTO::BitVector bv(size);
+        ENCRYPTO::BitVector<> bv(size);
         bv.Set(true, size + dist(rd));
       };
 
@@ -33,7 +57,7 @@ TEST(BitVector, OutOfBoundsException) {
 
 TEST(BitVector, SingleBitOperations) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    ENCRYPTO::BitVector bv(1);
+    ENCRYPTO::BitVector<> bv(1);
     ASSERT_FALSE(bv.Get(0));
 
     bv.Set(true, 0);
@@ -43,7 +67,7 @@ TEST(BitVector, SingleBitOperations) {
     ASSERT_FALSE(bv.Get(0));
 
     std::random_device rd;
-    std::uniform_int_distribution<std::uint64_t> dist(0ul, 1000000ul);
+    std::uniform_int_distribution<std::uint64_t> dist(0ul, 1'000'000ul);
     std::size_t size = dist(rd);
 
     bv.Resize(size);
@@ -74,8 +98,8 @@ TEST(BitVector, SingleBitOperations) {
 
 TEST(BitVector, AllBitsOperations) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    for (auto size = 1ull; size <= 1000000; size *= 10) {
-      ENCRYPTO::BitVector bv(size);
+    for (auto size = 1ull; size <= 1'000'000u; size *= 10) {
+      ENCRYPTO::BitVector<> bv(size);
       bv.Set(true);
 
       ASSERT_TRUE(bv.Get(0));
@@ -103,9 +127,9 @@ TEST(BitVector, AllBitsOperations) {
 
 TEST(BitVector, VectorVectorOperations) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    for (auto size = 1ull; size <= 100000; size *= 10) {
-      ENCRYPTO::BitVector bv0(size);
-      ENCRYPTO::BitVector bv1(size);
+    for (auto size = 1ull; size <= 100'000u; size *= 10) {
+      ENCRYPTO::BitVector<> bv0(size);
+      ENCRYPTO::BitVector<> bv1(size);
 
       std::vector<bool> v0(size, false), v1(size, false), result_and(size, false),
           result_xor(size, false), result_or(size, false);
@@ -124,9 +148,9 @@ TEST(BitVector, VectorVectorOperations) {
         result_or.at(i) = v0.at(i) | v1.at(i);
       }
 
-      ENCRYPTO::BitVector bv_and = bv0 & bv1;
-      ENCRYPTO::BitVector bv_xor = bv0 ^ bv1;
-      ENCRYPTO::BitVector bv_or = bv0 | bv1;
+      ENCRYPTO::BitVector<> bv_and = bv0 & bv1;
+      ENCRYPTO::BitVector<> bv_xor = bv0 ^ bv1;
+      ENCRYPTO::BitVector<> bv_or = bv0 | bv1;
 
       for (auto i = 0ull; i < size; ++i) {
         ASSERT_TRUE(result_and.at(i) == bv_and.Get(i));
@@ -138,7 +162,7 @@ TEST(BitVector, VectorVectorOperations) {
       bv_and &= bv_and;
 
       bv_xor ^= bv_xor;
-      ENCRYPTO::BitVector bv_zero(bv_xor.GetSize(), false);
+      ENCRYPTO::BitVector<> bv_zero(bv_xor.GetSize(), false);
 
       auto bv_or_old = bv_or;
       bv_or |= bv_or;
@@ -169,7 +193,7 @@ TEST(BitVector, Append) {
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
     }
-    for (auto i = 128ull; i < 10000; i *= 2) {
+    for (auto i = 128ull; i < 10'000; i *= 2) {
       sizes.push_back(i);
     }
     for (auto size : sizes) {
@@ -177,7 +201,7 @@ TEST(BitVector, Append) {
       std::uniform_int_distribution<uint64_t> dist_n_vectors(2, 20);
 
       std::vector<std::vector<bool>> stl_vectors(dist_n_vectors(rd));
-      std::vector<ENCRYPTO::BitVector> bit_vectors(stl_vectors.size());
+      std::vector<ENCRYPTO::BitVector<>> bit_vectors(stl_vectors.size());
 
       std::uniform_int_distribution<uint64_t> dist(0, 1);
 
@@ -190,7 +214,7 @@ TEST(BitVector, Append) {
       }
 
       std::vector<bool> stl_vector_result;
-      ENCRYPTO::BitVector bit_vector_result;
+      ENCRYPTO::BitVector<> bit_vector_result;
 
       for (auto i = 0ull; i < stl_vectors.size(); ++i) {
         stl_vector_result.insert(stl_vector_result.end(), stl_vectors.at(i).begin(),
@@ -214,12 +238,12 @@ TEST(BitVector, Subset) {
       sizes.push_back(i);
     }
 
-    for (auto i = 4ull; i < 100000; i *= 2) {
+    for (auto i = 4ull; i < 100'000; i *= 2) {
       sizes.push_back(i);
     }
     for (auto i : sizes) {
       std::vector<bool> stl_vector(i);
-      ENCRYPTO::BitVector bit_vector(i);
+      ENCRYPTO::BitVector<> bit_vector(i);
 
       std::random_device rd("/dev/urandom");
       std::uniform_int_distribution<uint64_t> dist_from(0, i / 2);
@@ -235,7 +259,7 @@ TEST(BitVector, Subset) {
       auto to = dist_to(rd);
 
       std::vector<bool> stl_vector_subset(stl_vector.begin() + from, stl_vector.begin() + to);
-      ENCRYPTO::BitVector bit_vector_subset = bit_vector.Subset(from, to);
+      ENCRYPTO::BitVector<> bit_vector_subset = bit_vector.Subset(from, to);
 
       for (auto j = 0ull; j < stl_vector_subset.size(); ++j) {
         ASSERT_EQ(stl_vector_subset.at(j), bit_vector_subset.Get(j));
@@ -252,15 +276,15 @@ TEST(BitVector, AppendSubset) {
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
     }
-    for (auto i = 128ull; i < 10000; i *= 2) {
+    for (auto i = 128ull; i < 10'000; i *= 2) {
       sizes.push_back(i);
     }
     for (auto size : sizes) {
       std::vector<bool> stl_vector_result;
-      ENCRYPTO::BitVector bit_vector_result;
+      ENCRYPTO::BitVector<> bit_vector_result;
       for (auto subset_i = 0ull; subset_i < 20u; ++subset_i) {
         std::vector<bool> stl_vector(size);
-        ENCRYPTO::BitVector bit_vector(size);
+        ENCRYPTO::BitVector<> bit_vector(size);
 
         std::random_device rd("/dev/urandom");
         std::uniform_int_distribution<uint64_t> dist_from(0, size / 2);
@@ -276,7 +300,7 @@ TEST(BitVector, AppendSubset) {
         auto to = dist_to(rd);
 
         std::vector<bool> stl_vector_subset(stl_vector.begin() + from, stl_vector.begin() + to);
-        ENCRYPTO::BitVector bit_vector_subset = bit_vector.Subset(from, to);
+        ENCRYPTO::BitVector<> bit_vector_subset = bit_vector.Subset(from, to);
 
         for (auto j = 0ull; j < stl_vector_subset.size(); ++j) {
           ASSERT_EQ(stl_vector_subset.at(j), bit_vector_subset.Get(j));
@@ -290,6 +314,47 @@ TEST(BitVector, AppendSubset) {
       for (auto j = 0ull; j < stl_vector_result.size(); ++j) {
         ASSERT_EQ(stl_vector_result.at(j), bit_vector_result.Get(j));
       }
+    }
+  }
+}
+
+TEST(BitVector, Copy) {
+  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+    const std::size_t size = 1'000'000;
+    std::vector<bool> stl_vector(size, false);
+    ENCRYPTO::BitVector<> bit_vector(size, false);
+    std::vector<std::size_t> sizes;
+    for (auto i = 1; i < 20; ++i) {
+      sizes.push_back(i);
+    }
+
+    for (auto i = 4ull; i < 100'000; i *= 2) {
+      sizes.push_back(i);
+    }
+
+    for (auto i : sizes) {
+      std::vector<bool> tmp_stl_vector(i);
+      ENCRYPTO::BitVector<> tmp_bit_vector(i);
+
+      std::random_device rd("/dev/urandom");
+      std::uniform_int_distribution<uint64_t> dist_from(0, size - i);
+      std::uniform_int_distribution<uint64_t> dist_to(0, i - 1);
+      std::uniform_int_distribution<uint64_t> dist_bool(0, 1);
+
+      for (auto j = 0ull; j < tmp_stl_vector.size(); ++j) {
+        tmp_stl_vector.at(j) = dist_bool(rd);
+        tmp_bit_vector.Set(tmp_stl_vector.at(j), j);
+      }
+
+      auto from = dist_from(rd);
+      auto to = from + dist_to(rd);
+
+      std::copy(tmp_stl_vector.begin(), tmp_stl_vector.begin() + to - from,
+                stl_vector.begin() + from);
+      bit_vector.Copy(from, to, tmp_bit_vector);
+    }
+    for (auto j = 0ull; j < stl_vector.size(); ++j) {
+      ASSERT_EQ(stl_vector.at(j), bit_vector.Get(j));
     }
   }
 }
