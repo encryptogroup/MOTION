@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "context.h"
 
 #include <flatbuffers/flatbuffers.h>
@@ -85,7 +109,7 @@ std::string Context::Connect() {
   is_connected_ = true;
 
   return std::move(fmt::format("Successfully connected to {}:{}\n", ip_, port_));
-};
+}
 
 void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
   auto message = GetMessage(raw_message.data());
@@ -149,7 +173,7 @@ void Context::InitializeSocketServer() {
     throw(std::runtime_error(error.message()));
   }
   is_connected_ = true;
-};
+}
 
 void Context::InitializeSocketClient() {
   boost::asio::ip::tcp::resolver resolver(*io_service_.get());
@@ -165,5 +189,5 @@ void Context::InitializeSocketClient() {
 
   } while (error);
   party_socket_ = boost_party_socket_->native_handle();
-};
+}
 }
