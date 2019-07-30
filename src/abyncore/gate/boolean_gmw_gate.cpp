@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include "boolean_gmw_gate.h"
 
 #include "fmt/format.h"
@@ -15,7 +39,7 @@
 
 namespace ABYN::Gates::GMW {
 
-GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::size_t party_id,
+GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id,
                            std::weak_ptr<Backend> backend)
     : input_(input) {
   input_owner_id_ = party_id;
@@ -24,7 +48,7 @@ GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector> &input, std::s
   InitializationHelper();
 }
 
-GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector> &&input, std::size_t party_id,
+GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id,
                            std::weak_ptr<Backend> backend)
     : input_(std::move(input)) {
   input_owner_id_ = party_id;
@@ -47,7 +71,7 @@ void GMWInputGate::InitializationHelper() {
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
-  assert(ABYN::Helpers::Compare::Dimensions(input_));
+  assert(ENCRYPTO::BitVector<>::Dimensions(input_));
 
   boolean_sharing_id_ = ptr_backend->GetRegister()->NextBooleanGMWSharingId(input_.size() * bits_);
 
@@ -102,7 +126,7 @@ void GMWInputGate::EvaluateOnline() {
 
   auto my_id = ptr_backend->GetConfig()->GetMyId();
 
-  std::vector<ENCRYPTO::BitVector> result(input_.size());
+  std::vector<ENCRYPTO::BitVector<>> result(input_.size());
   auto sharing_id = boolean_sharing_id_;
   for (auto i = 0ull; i < result.size(); ++i) {
     if (static_cast<std::size_t>(input_owner_id_) == my_id) {
@@ -150,7 +174,7 @@ void GMWInputGate::EvaluateOnline() {
     }
   }
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
-    auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_wires_.at(i));
+    auto my_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(my_wire);
     auto buf = result.at(i);
     my_wire->GetMutableValuesOnWire() = buf;
@@ -161,7 +185,7 @@ void GMWInputGate::EvaluateOnline() {
         fmt::format("Evaluated Boolean GMWInputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-};  // namespace ABYN::Gates::GMW
+}  // namespace ABYN::Gates::GMW
 
 const Shares::GMWSharePtr GMWInputGate::GetOutputAsGMWShare() {
   auto result = std::make_shared<Shares::GMWShare>(output_wires_);
@@ -231,7 +255,6 @@ void GMWOutputGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
   std::vector<Wires::GMWWirePtr> wires;
-  {
     std::size_t i = 0;
     for (auto &wire : parent_) {
       auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wire);
@@ -240,7 +263,6 @@ void GMWOutputGate::EvaluateOnline() {
       output_.at(i) = wires.at(wires.size() - 1)->GetValuesOnWire();
       ++i;
     }
-  }
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
 
@@ -251,36 +273,27 @@ void GMWOutputGate::EvaluateOnline() {
         wire->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
       }
     }
-
     auto &config = ptr_backend->GetConfig();
     shared_outputs_.resize(ptr_backend->GetConfig()->GetNumOfParties());
-
     for (auto i = 0ull; i < config->GetNumOfParties(); ++i) {
       if (i == config->GetMyId()) {
         continue;
       }
-      bool success = false;
       auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
       shared_outputs_.at(i).resize(output_.size());
-      while (!success) {
-        auto message = data_storage->GetOutputMessage(gate_id_);
-        if (message != nullptr) {
-          for (auto j = 0ull; j < message->wires()->size(); ++j) {
-            auto payload = message->wires()->Get(j)->payload();
-            auto ptr = reinterpret_cast<const std::byte *>(payload->data());
-            std::vector<std::byte> byte_vector(ptr, ptr + payload->size());
-            shared_outputs_.at(i).at(j) =
-                ENCRYPTO::BitVector(byte_vector, parent_.at(0)->GetNumOfParallelValues());
-            assert(shared_outputs_.at(i).size() == output_.size());
-            success = true;
-          }
-        }
+      auto message = data_storage->GetOutputMessage(gate_id_);
+      assert(message);
+      for (auto j = 0ull; j < message->wires()->size(); ++j) {
+        auto payload = message->wires()->Get(j)->payload();
+        auto ptr = reinterpret_cast<const std::byte *>(payload->data());
+        std::vector<std::byte> byte_vector(ptr, ptr + payload->size());
+        shared_outputs_.at(i).at(j) =
+            ENCRYPTO::BitVector(byte_vector, parent_.at(0)->GetNumOfParallelValues());
+        assert(shared_outputs_.at(i).size() == output_.size());
       }
     }
-
     shared_outputs_.at(config->GetMyId()) = output_;
-    output_ = std::move(Helpers::XORBitVectors(shared_outputs_));
-
+    output_ = std::move(ENCRYPTO::BitVector<>::XORBitVectors(shared_outputs_));
     if constexpr (ABYN_VERBOSE_DEBUG) {
       std::string shares{""};
       for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
@@ -310,13 +323,12 @@ void GMWOutputGate::EvaluateOnline() {
     assert(gmw_output_wires.at(i));
     gmw_output_wires.at(i)->GetMutableValuesOnWire() = output_.at(i);
   }
-  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
-
   if constexpr (ABYN_DEBUG) {
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Evaluated Boolean GMWOutputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
+  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWOutputGate::GetOutputAsGMWShare() const {
