@@ -1,13 +1,33 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #pragma once
 
 #include "flatbuffers/flatbuffers.h"
 
-#include "bit_vector.h"
+#include "condition.h"
 #include "typedefs.h"
-
-namespace ENCRYPTO {
-class BitVector;  // forward declaration
-}
 
 namespace ABYN::Helpers {
 
@@ -17,7 +37,7 @@ inline std::vector<std::uint8_t> ToByteVector(const std::vector<T> &values) {
       reinterpret_cast<const std::uint8_t *>(values.data()),
       reinterpret_cast<const std::uint8_t *>(values.data()) + sizeof(T) * values.size());
   return std::move(result);
-};
+}
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 inline std::vector<T> FromByteVector(const std::vector<std::uint8_t> &buffer) {
@@ -26,7 +46,7 @@ inline std::vector<T> FromByteVector(const std::vector<std::uint8_t> &buffer) {
   std::copy(buffer.data(), buffer.data() + buffer.size(),
             reinterpret_cast<std::uint8_t *>(result.data()));
   return std::move(result);
-};
+}
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &buffer) {
@@ -35,9 +55,11 @@ inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &bu
   std::copy(buffer.data(), buffer.data() + buffer.size(),
             reinterpret_cast<std::uint8_t *>(result.data()));
   return std::move(result);
-};
+}
 
 void WaitFor(const bool &condition);
+
+void WaitFor(const ENCRYPTO::Condition &condition);
 
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
@@ -113,15 +135,10 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
   }
 }
 
-bool XORReduceBitVector(const ENCRYPTO::BitVector &vector);
-
-ENCRYPTO::BitVector XORBitVectors(const std::vector<ENCRYPTO::BitVector> &vectors);
-
-std::vector<ENCRYPTO::BitVector> XORBitVectors(const std::vector<ENCRYPTO::BitVector> &a,
-                                               const std::vector<ENCRYPTO::BitVector> &b);
-
-std::vector<ENCRYPTO::BitVector> XORBitVectors(
-    const std::vector<std::vector<ENCRYPTO::BitVector>> &vectors);
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+bool IsPowerOfTwo(T x) {
+  return x > 0 && (!(x & (x - 1)));
+}
 
 namespace Print {
 std::string Hex(const std::vector<std::uint8_t> &v);
@@ -168,8 +185,6 @@ inline bool Dimensions(const std::vector<std::vector<T>> &v) {
   }
   return true;
 }
-
-bool Dimensions(const std::vector<ENCRYPTO::BitVector> &v);
 }  // namespace Compare
 
 std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor);
