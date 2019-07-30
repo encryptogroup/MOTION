@@ -13,6 +13,8 @@ add_library(abyn
         gate/boolean_gmw_gate.cpp
         share/boolean_gmw_share.cpp
         share/share.cpp
+        share/share_wrapper.cpp
+        utility/bit_matrix.cpp
         utility/bit_vector.cpp
         utility/condition.cpp
         utility/data_storage.cpp
@@ -28,13 +30,40 @@ if (ABYN_AVX512)
     set(ABYN_AVX512_FLAG "-mavx512f")
 endif ()
 
-#set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)
+set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(abyn PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
 
+# there is a strange bug that Party::Clear() sometimes results in a segfault in the next Party::Run
+# this only happens in the Release mode and even not in RelWithDebInfo which makes it hard to find the bug
+# TODO: fix
+
+if ("${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
+    list(APPEND ABYN_EXTRA_FLAGS
+            -fgcse-after-reload
+            -finline-functions
+            -fipa-cp-clone
+            -floop-interchange
+            -floop-unroll-and-jam
+            -fpeel-loops
+            -fpredictive-commoning
+            -fsplit-paths
+            -ftree-loop-distribute-patterns
+            -ftree-loop-distribution
+            -ftree-loop-vectorize
+            -ftree-partial-pre
+            -ftree-slp-vectorize
+            -funswitch-loops
+            -fvect-cost-model
+            )
+endif ()
+
+
 target_compile_features(abyn PRIVATE cxx_std_17)
 target_compile_options(abyn PRIVATE
+        ${ABYN_EXTRA_FLAGS}
         -Wall -Wextra
+        -pedantic -ansi
         -maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2
         -ffunction-sections -march=native
         ${ABYN_AVX512_FLAG})
