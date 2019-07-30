@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2019 Oleksandr Tkachenko
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #include <algorithm>
 #include <functional>
 #include <future>
@@ -11,7 +35,6 @@
 #include "base/party.h"
 #include "gate/gate.h"
 #include "share/share_wrapper.h"
-#include "utility/bit_vector.h"
 #include "utility/typedefs.h"
 #include "wire/boolean_gmw_wire.h"
 
@@ -427,7 +450,7 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, InputOutput_SIMD_1_1K) {
       const std::size_t input_owner = std::rand() % num_parties,
                         output_owner = std::rand() % num_parties;
       const auto global_input_1 = (std::rand() % 2) == 1;
-      const auto global_input_1K = ENCRYPTO::BitVector::Random(1000);
+      const auto global_input_1K = ENCRYPTO::BitVector<>::Random(1000);
       try {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
@@ -440,7 +463,7 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, InputOutput_SIMD_1_1K) {
 #pragma omp taskloop num_tasks(abyn_parties.size())
         for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
           bool input_1 = false;
-          ENCRYPTO::BitVector input_1K(global_input_1K.GetSize(), false);
+          ENCRYPTO::BitVector<> input_1K(global_input_1K.GetSize(), false);
           if (party_id == input_owner) {
             input_1 = global_input_1;
             input_1K = global_input_1K;
@@ -487,13 +510,13 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K) {
       for (auto j = 0ull; j < global_input_1.size(); ++j) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
       }
-      std::vector<ENCRYPTO::BitVector> global_input_1K(num_parties);
+      std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties);
 
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
-        global_input_1K.at(j) = ENCRYPTO::BitVector::Random(1000);
+        global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(1000);
       }
       bool dummy_input_1 = false;
-      ENCRYPTO::BitVector dummy_input_1K(1000, false);
+      ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
       try {
         std::vector<PartyPtr> abyn_parties(
             std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
@@ -539,8 +562,9 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K) {
             assert(wire_1K);
 
             EXPECT_EQ(wire_1->GetValuesOnWire().Get(0),
-                      Helpers::XORReduceBitVector(global_input_1));
-            EXPECT_EQ(wire_1K->GetValuesOnWire(), Helpers::XORBitVectors(global_input_1K));
+                      ENCRYPTO::BitVector<>::XORReduceBitVector(global_input_1));
+            EXPECT_EQ(wire_1K->GetValuesOnWire(),
+                      ENCRYPTO::BitVector<>::XORBitVectors(global_input_1K));
           }
         };
 
@@ -548,8 +572,6 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_1_bit_SIMD_1_1K) {
 #pragma omp single
 #pragma omp taskloop num_tasks(abyn_parties.size())
         for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-          f(party_id);
-          abyn_parties.at(party_id)->Reset();
           f(party_id);
           abyn_parties.at(party_id)->Finish();
         }
@@ -566,14 +588,15 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200) {
     std::srand(std::time(nullptr));
     for (auto num_parties : num_parties_list) {
       const std::size_t output_owner = std::rand() % num_parties;
-      std::vector<std::vector<ENCRYPTO::BitVector>> global_input_200_64_bit(num_parties);
+      std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input_200_64_bit(num_parties);
       for (auto &bv_v : global_input_200_64_bit) {
         bv_v.resize(64);
         for (auto &bv : bv_v) {
-          bv = ENCRYPTO::BitVector::Random(200);
+          bv = ENCRYPTO::BitVector<>::Random(200);
         }
       }
-      std::vector<ENCRYPTO::BitVector> dummy_input_200_64_bit(64, ENCRYPTO::BitVector(200, false));
+      std::vector<ENCRYPTO::BitVector<>> dummy_input_200_64_bit(64,
+                                                                ENCRYPTO::BitVector<>(200, false));
 
       try {
         std::vector<PartyPtr> abyn_parties(
@@ -612,13 +635,13 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200) {
                   std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(s_out->GetWires().at(j));
               assert(wire_200_64_bit_single);
 
-              std::vector<ENCRYPTO::BitVector> global_input_200_64_bit_single;
+              std::vector<ENCRYPTO::BitVector<>> global_input_200_64_bit_single;
               for (auto k = 0ull; k < num_parties; ++k) {
                 global_input_200_64_bit_single.push_back(global_input_200_64_bit.at(k).at(j));
               }
 
               EXPECT_EQ(wire_200_64_bit_single->GetValuesOnWire(),
-                        Helpers::XORBitVectors(global_input_200_64_bit_single));
+                        ENCRYPTO::BitVector<>::XORBitVectors(global_input_200_64_bit_single));
             }
           }
 
@@ -631,6 +654,7 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200) {
   }
 }
 
+/*
 TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200_reset) {
   const auto BGMW = ABYN::MPCProtocol::BooleanGMW;
   std::srand(std::time(nullptr));
@@ -640,7 +664,7 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200_reset) {
     for (auto &bv_v : global_input_200_64_bit) {
       bv_v.resize(64);
       for (auto &bv : bv_v) {
-        bv = ENCRYPTO::BitVector::Random(200);
+        bv = ENCRYPTO::BitVector<>::Random(200);
       }
     }
     std::vector<ENCRYPTO::BitVector> dummy_input_200_64_bit(64, ENCRYPTO::BitVector(200, false));
@@ -689,7 +713,7 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200_reset) {
               }
 
               EXPECT_EQ(wire_200_64_bit_single->GetValuesOnWire(),
-                        Helpers::XORBitVectors(global_input_200_64_bit_single));
+                        Bitvector<>::XORBitVectors(global_input_200_64_bit_single));
             }
           }
           abyn_parties.at(party_id)->Reset();
@@ -700,5 +724,5 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200_reset) {
       std::cerr << e.what() << std::endl;
     }
   }
-}  // namespace
+}  */
 }  // namespace

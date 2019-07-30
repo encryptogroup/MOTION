@@ -1,6 +1,7 @@
 add_executable(abyntest
         test_abyn_main.cpp
         test_abyn.cpp
+        test_bitmatrix.cpp
         test_bitvector.cpp
         test_misc.cpp
         )
