@@ -34,7 +34,7 @@ flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
   flatbuffers::FlatBufferBuilder builder(allocation_size);
   auto root = CreateMessageDirect(builder, message_type, payload);
   FinishMessageBuffer(builder, root);
-  return std::move(builder);
+  return builder;
 }
 
 flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t *payload,

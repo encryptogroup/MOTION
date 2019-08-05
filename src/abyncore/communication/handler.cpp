@@ -44,7 +44,7 @@ std::vector<std::uint8_t> u32tou8(std::uint32_t v) {
   for (auto i = 0u; i < result.size(); ++i) {
     result[i] = (v >> i * 8) & 0xFF;
   }
-  return std::move(result);
+  return result;
 }
 
 // use explicit conversion function to prevent implementation-dependent
@@ -321,7 +321,7 @@ std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
   if (ec) {
     throw(std::runtime_error(fmt::format("Error while reading from socket: {}", ec.message())));
   }
-  return std::move(message_buffer);
+  return message_buffer;
 }
 
 bool Handler::VerifyHelloMessage() {

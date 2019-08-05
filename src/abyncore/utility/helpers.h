@@ -36,7 +36,7 @@ inline std::vector<std::uint8_t> ToByteVector(const std::vector<T> &values) {
   std::vector<std::uint8_t> result(
       reinterpret_cast<const std::uint8_t *>(values.data()),
       reinterpret_cast<const std::uint8_t *>(values.data()) + sizeof(T) * values.size());
-  return std::move(result);
+  return result;
 }
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -45,7 +45,7 @@ inline std::vector<T> FromByteVector(const std::vector<std::uint8_t> &buffer) {
   std::vector<T> result(sizeof(T) * buffer.size());
   std::copy(buffer.data(), buffer.data() + buffer.size(),
             reinterpret_cast<std::uint8_t *>(result.data()));
-  return std::move(result);
+  return result;
 }
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -54,7 +54,7 @@ inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &bu
   std::vector<T> result(buffer.size() / sizeof(T));
   std::copy(buffer.data(), buffer.data() + buffer.size(),
             reinterpret_cast<std::uint8_t *>(result.data()));
-  return std::move(result);
+  return result;
 }
 
 void WaitFor(const bool &condition);
