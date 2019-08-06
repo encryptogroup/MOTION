@@ -1,0 +1,8 @@
+namespace ABYN.Communication;
+
+table BaseROTMessage {
+  base_ot_id:uint64;
+  buffer:[ubyte]; //store payload for each OT separately
+}
+
+root_type BaseROTMessage;
