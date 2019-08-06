@@ -29,6 +29,7 @@
 #include <chrono>
 #include <cstdlib>
 
+#include "communication/fbs_headers/base_ot_generated.h"
 #include "crypto/aes_randomness_generator.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
@@ -104,7 +105,7 @@ std::string Context::Connect() {
     InitializeSocketClient();
   } else {
     InitializeSocketServer();
-  };
+  }
 
   is_connected_ = true;
 
@@ -113,6 +114,7 @@ std::string Context::Connect() {
 
 void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
   auto message = GetMessage(raw_message.data());
+
   flatbuffers::Verifier verifier(raw_message.data(), raw_message.size());
   if (VerifyMessageBuffer(verifier) != true) {
     throw(std::runtime_error(
@@ -129,9 +131,11 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
         auto seed_len = Crypto::AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH;
         std::vector<std::uint8_t> seed_v(seed, seed + seed_len);
         InitializeTheirRandomnessGenerator(seed_v);
-        logger_->LogTrace(
-            fmt::format("Initialized the randomness generator from Party#{} with Seed: {}", id_,
-                        Helpers::Print::Hex(their_randomness_generator_->GetSeed())));
+        if constexpr (ABYN_VERBOSE_DEBUG) {
+          logger_->LogTrace(
+              fmt::format("Initialized the randomness generator from Party#{} with Seed: {}", id_,
+                          Helpers::Print::Hex(their_randomness_generator_->GetSeed())));
+        }
         logger_->LogInfo(
             fmt::format("Received a randomness seed in hello message from Party#{}", id_));
       }
@@ -146,6 +150,20 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
     case MessageType_SynchronizationMessage: {
       data_storage_->SetSyncState(true);
     } break;
+    case MessageType_BaseROTMessageSender: {
+      auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
+      data_storage_->BaseOTsReceived(
+          GetBaseROTMessage(message->payload()->data())->buffer()->data(), BaseOTsDataType::HL17_S,
+          ot_id);
+      break;
+    }
+    case MessageType_BaseROTMessageReceiver: {
+      auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
+      data_storage_->BaseOTsReceived(
+          GetBaseROTMessage(message->payload()->data())->buffer()->data(), BaseOTsDataType::HL17_R,
+          ot_id);
+      break;
+    }
     default:
       throw(std::runtime_error("Didn't recognize the message type"));
   }
