@@ -265,6 +265,6 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
     abyn_parties.at(my_id)->Connect();
   }
 
-  return std::move(abyn_parties);
+  return abyn_parties;
 }
 }

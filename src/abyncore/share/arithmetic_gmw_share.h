@@ -103,7 +103,7 @@ class ArithmeticShare final : public Share {
 
   const std::vector<Wires::WirePtr> GetWires() const final {
     std::vector<Wires::WirePtr> result{std::static_pointer_cast<Wires::Wire>(wires_.at(0))};
-    return std::move(result);
+    return result;
   }
 
   const bool &Finished() { return wires_.at(0)->IsReady(); }

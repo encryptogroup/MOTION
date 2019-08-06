@@ -77,7 +77,7 @@ std::string Wire::PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wire
     result.append(fmt::format("{} ", w->GetWireId()));
   }
   result.erase(result.end() - 1);
-  return std::move(result);
+  return result;
 }
 
 void Wire::SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> backend) {
