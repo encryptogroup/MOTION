@@ -50,20 +50,16 @@ void hash_point(curve25519::ge_p3& output, const curve25519::ge_p3& input) {
   std::array<uint8_t, 32> hash_input;
   std::vector<uint8_t> hash_output(EVP_MAX_MD_SIZE);
 
-  //  auto hash(Botan::Blake2b(256));
-
   curve25519::ge_p3_tobytes(hash_input.data(), &input);
   Blake2b(hash_input.data(), hash_output.data(), hash_input.size());
   hash_output.resize(32);
-  // hash.update(hash_input.data(), hash_input.size());
-  // hash.final(hash_output.data());
-  curve25519::x25519_sc_reduce(hash_output.data());
 
+  curve25519::x25519_sc_reduce(hash_output.data());
   curve25519::x25519_ge_scalarmult_base(&output, hash_output.data());
 }
 
 void OT_HL17::send_0(Sender_State& state,
-                     std::array<uint8_t, curve25519_ge_byte_size>& message_out) {
+                     std::array<std::byte, curve25519_ge_byte_size>& message_out) {
   // sample y <- Zp
   curve25519::sc_random(state.y);
 
@@ -71,7 +67,7 @@ void OT_HL17::send_0(Sender_State& state,
   curve25519::x25519_ge_scalarmult_base(&state.S, state.y);
 
   std::vector<std::byte> S_bytes(curve25519_ge_byte_size);
-  curve25519::ge_p3_tobytes(message_out.data(), &state.S);
+  curve25519::ge_p3_tobytes(reinterpret_cast<std::uint8_t*>(message_out.data()), &state.S);
 }
 
 void OT_HL17::send_1(Sender_State& state) {
@@ -80,18 +76,14 @@ void OT_HL17::send_1(Sender_State& state) {
 }
 
 std::pair<std::vector<std::byte>, std::vector<std::byte>> OT_HL17::send_2(
-    Sender_State& state, const std::array<uint8_t, curve25519_ge_byte_size>& message_in) {
+    Sender_State& state, const std::array<std::byte, curve25519_ge_byte_size>& message_in) {
   // assert R in GG
-  if (!x25519_ge_frombytes_vartime(&state.R, message_in.data())) {
+  if (!x25519_ge_frombytes_vartime(&state.R,
+                                   reinterpret_cast<const std::uint8_t*>(message_in.data()))) {
     throw std::runtime_error("Base OT: R is not in G - abort");
   }
 
-  EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
-#if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
-  EVP_DigestInit_ex(mdctx, EVP_sha512(), NULL);
-#else
-  EVP_DigestInit_ex(mdctx, EVP_blake2b512(), NULL);
-#endif
+  auto mdctx = NewBlakeCtx();
 
   auto output = std::make_pair<>(std::vector<std::byte>(EVP_MAX_MD_SIZE),
                                  std::vector<std::byte>(EVP_MAX_MD_SIZE));
@@ -107,11 +99,10 @@ std::pair<std::vector<std::byte>, std::vector<std::byte>> OT_HL17::send_2(
   curve25519::ge_p2 y_times_R_p2;
   curve25519::x25519_ge_scalarmult(&y_times_R_p2, state.y, &state.R);
   curve25519::x25519_ge_tobytes(hash_input.data() + 64, &y_times_R_p2);
+
+  // H(S, R, y*R)
   Blake2b(hash_input.data(), reinterpret_cast<uint8_t*>(output.first.data()), hash_input.size(),
           mdctx);
-  // H(S, R, y*R)
-  // hash.update(hash_input.data(), hash_input.size());
-  // hash.final(reinterpret_cast<uint8_t*>(output.first.data()));
 
   // j = 1:
   // y*R + (-y)*T = y*(R - T)
@@ -131,13 +122,8 @@ std::pair<std::vector<std::byte>, std::vector<std::byte>> OT_HL17::send_2(
   }
 
   // H(S, R, y*R - y*T)
-  // hash.update(hash_input.data(), hash_input.size());
-  // hash.final(reinterpret_cast<uint8_t*>(output.second.data()));
   Blake2b(hash_input.data(), reinterpret_cast<uint8_t*>(output.second.data()), hash_input.size(),
           mdctx);
-  EVP_MD_CTX_free(mdctx);
-
-  // finished_ = true;
 
   output.first.resize(16);
   output.second.resize(16);
@@ -151,11 +137,14 @@ void OT_HL17::recv_0(Receiver_State& state, bool choice) {
   curve25519::sc_random(state.x);
 }
 
+#include "utility/helpers.h"
+
 void OT_HL17::recv_1(Receiver_State& state,
-                     std::array<uint8_t, curve25519_ge_byte_size>& message_out,
-                     const std::array<uint8_t, curve25519_ge_byte_size>& message_in) {
+                     std::array<std::byte, curve25519_ge_byte_size>& message_out,
+                     const std::array<std::byte, curve25519_ge_byte_size>& message_in) {
   // recv S
-  auto res = curve25519::x25519_ge_frombytes_vartime(&state.S, message_in.data());
+  auto res = curve25519::x25519_ge_frombytes_vartime(
+      &state.S, reinterpret_cast<const std::uint8_t*>(message_in.data()));
   // assert S in GG
   if (res == 0) {
     throw std::runtime_error("Base OT: S is not in G - abort");
@@ -170,7 +159,8 @@ void OT_HL17::recv_1(Receiver_State& state,
   curve25519::x25519_ge_scalarmult_base(&state.R, state.x);
 
   // FIXME: not constant time
-  if (state.choice == 1) {
+  // R = R * T
+  if (state.choice) {
     curve25519::ge_p1p1 R_p1p1;
     curve25519::ge_cached T_cached;
     curve25519::x25519_ge_p3_to_cached(&T_cached, &state.T);
@@ -179,7 +169,7 @@ void OT_HL17::recv_1(Receiver_State& state,
   }
 
   std::vector<std::byte> R_bytes(32);
-  curve25519::ge_p3_tobytes(message_out.data(), &state.R);
+  curve25519::ge_p3_tobytes(reinterpret_cast<std::uint8_t*>(message_out.data()), &state.R);
 }
 
 std::vector<std::byte> OT_HL17::recv_2(Receiver_State& state) {
@@ -198,97 +188,39 @@ std::vector<std::byte> OT_HL17::recv_2(Receiver_State& state) {
 
   assert(hash_output.size() == EVP_MAX_MD_SIZE);
   Blake2b(hash_input.data(), reinterpret_cast<uint8_t*>(hash_output.data()), hash_input.size());
-  // auto hash(Botan::Blake2b(128));
-  // hash.update(hash_input.data(), hash_input.size());
-  // hash.final(reinterpret_cast<uint8_t*>(hash_output.data()));
-
-  // finished_ = true;
 
   hash_output.resize(16);
   return hash_output;
 }
 
-/*std::pair<std::vector<std::byte>, std::vector<std::byte>> OT_HL17::send() {
-  Sender_State state;
-  std::array<uint8_t, curve25519_ge_byte_size> msg_s0;
-  std::array<uint8_t, curve25519_ge_byte_size> msg_r1;
-
-  send_0(state, msg_s0);
-  // backend_->Send(msg_s0.data(), msg_s0.size());
-  Send_(Communication::BuildBaseROTMessageSender0(msg_s0.data(), msg_s0.size()));
-  send_1(state);
-
-  auto& sender_data = data_storage_->GetBaseOTsSenderData();
-  auto& R_cond = sender_data->received_R_condition_;
-
-  while (!(*R_cond)()) {
-    R_cond->WaitFor(std::chrono::milliseconds(1));
-  }
-
-  std::copy(sender_data->R_.begin(), sender_data->R_.end(), msg_r1.begin());
-  // backend_.recv(msg_r1.data(), msg_r1.size());
-  return send_2(state, msg_r1);
-}
-
-std::vector<std::byte> OT_HL17::recv(bool choice) {
-  Receiver_State state;
-  std::array<uint8_t, curve25519_ge_byte_size> msg_s0;
-  std::array<uint8_t, curve25519_ge_byte_size> msg_r1;
-
-  recv_0(state, choice);
-  // backend_->recv(msg_s0.data(), msg_s0.size());
-  auto& receiver_data = data_storage_->GetBaseOTsReceiverData();
-  auto& S_cond = receiver_data->received_S_condition_;
-
-  while (!(*S_cond)()) {
-    S_cond->WaitFor(std::chrono::milliseconds(1));
-  }
-
-  std::copy(receiver_data->S_.begin(), receiver_data->S_.end(), msg_s0.begin());
-
-  recv_1(state, msg_r1, msg_s0);
-  Send_(Communication::BuildBaseROTMessageReceiver(msg_r1.data(), msg_r1.size()));
-  return recv_2(state);
-}*/
-#include "communication/fbs_headers/base_ot_generated.h"
-#include "communication/fbs_headers/message_generated.h"
 std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::send(
     size_t number_ots) {
   std::vector<Sender_State> states;
   for (std::size_t i = 0; i < number_ots; ++i) {
     states.emplace_back(i);
   }
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_s0(number_ots);
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_r1(number_ots);
+
+  auto& base_ots_snd = data_storage_->GetBaseOTsSenderData();
+
+  std::vector<std::array<std::byte, curve25519_ge_byte_size>> msgs_s0(number_ots);
   std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> output(number_ots);
 
   for (std::size_t i = 0; i < number_ots; ++i) {
-    send_0(states[i], msgs_s0[i]);
+    send_0(states.at(i), msgs_s0.at(i));
   }
-
-  // auto fut_send_msg_s0 = async_send(reinterpret_cast<uint8_t*>(msgs_s0.data()),
-  //                                  msgs_s0.size() * curve25519_ge_byte_size);
-  // auto fut_recv_msg_r1 = async_recv(reinterpret_cast<uint8_t*>(msgs_r1.data()),
-  //                                  msgs_r1.size() * curve25519_ge_byte_size);
 
   for (std::size_t i = 0; i < number_ots; ++i) {
     Send_(Communication::BuildBaseROTMessageSender(msgs_s0.at(i).data(), msgs_s0.at(i).size(), i));
-    send_1(states[i]);
+    send_1(states.at(i));
   }
 
-  // auto msg_r1_size = fut_recv_msg_r1.get();
-  // assert(msg_r1_size == msgs_r1.size() * curve25519_ge_byte_size);
-
   for (std::size_t i = 0; i < number_ots; ++i) {
-    auto& cond = data_storage_->GetBaseOTsSenderData()->received_R_condition_.at(i);
+    auto& cond = base_ots_snd->received_R_condition_.at(i);
     while (!(*cond)()) {
       cond->WaitFor(std::chrono::milliseconds(1));
     }
-    output[i] = send_2(states[i], msgs_r1[i]);
+    output.at(i) = send_2(states.at(i), base_ots_snd->R_.at(i));
   }
-
-  // auto msg_s0_size = fut_send_msg_s0.get();
-  // assert(msg_s0_size == msgs_s0.size() * curve25519_ge_byte_size);
 
   data_storage_->GetBaseOTsSenderData()->is_ready_ = true;
 
@@ -297,128 +229,35 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::
 
 std::vector<std::vector<std::byte>> OT_HL17::recv(const ENCRYPTO::BitVector<>& choices) {
   const auto number_ots = choices.GetSize();
+  auto& base_ots_rcv = data_storage_->GetBaseOTsReceiverData();
   std::vector<Receiver_State> states;
   for (std::size_t i = 0; i < number_ots; ++i) {
     states.emplace_back(i);
   }
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_s0(number_ots);
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_r1(number_ots);
+  std::vector<std::array<std::byte, curve25519_ge_byte_size>> msgs_r1(number_ots);
   std::vector<std::vector<std::byte>> output(number_ots);
 
-  // auto fut_recv_msg_s0 = backend_.async_recv(reinterpret_cast<uint8_t*>(msgs_s0.data()),
-  //                                           msgs_s0.size() * curve25519_ge_byte_size);
-
   for (std::size_t i = 0; i < number_ots; ++i) {
-    recv_0(states[i], choices.Get(i));
-    auto& cond = data_storage_->GetBaseOTsReceiverData()->received_S_condition_.at(i);
+    recv_0(states.at(i), choices.Get(i));
+    auto& cond = base_ots_rcv->received_S_condition_.at(i);
     while (!(*cond)()) {
       cond->WaitFor(std::chrono::milliseconds(1));
     }
   }
 
-  // auto msg_s0_size = fut_recv_msg_s0.get();
-  // assert(msg_s0_size == msgs_s0.size() * curve25519_ge_byte_size);
-
   for (std::size_t i = 0; i < number_ots; ++i) {
-    recv_1(states[i], msgs_r1[i], msgs_s0[i]);
+    recv_1(states.at(i), msgs_r1.at(i), base_ots_rcv->S_.at(i));
     Send_(
         Communication::BuildBaseROTMessageReceiver(msgs_r1.at(i).data(), msgs_r1.at(i).size(), i));
   }
 
-  // auto fut_send_msg_r1 = backend_.async_send(reinterpret_cast<uint8_t*>(msgs_r1.data()),
-  //                                           msgs_r1.size() * curve25519_ge_byte_size);
-
   for (std::size_t i = 0; i < number_ots; ++i) {
-    output[i] = recv_2(states[i]);
+    output.at(i) = recv_2(states.at(i));
   }
 
-  // auto msg_r1_size = fut_send_msg_r1.get();
-  // assert(msg_r1_size == msgs_s0.size() * curve25519_ge_byte_size);
-
   data_storage_->GetBaseOTsReceiverData()->is_ready_ = true;
-  return output;
-}
-/*
-std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::parallel_send(
-    size_t number_ots, size_t number_threads) {
-  boost::asio::thread_pool thread_pool(number_threads);
-  auto output = parallel_send(number_ots, number_threads, thread_pool);
-  thread_pool.join();
-  return output;
-}
-
-std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::parallel_send(
-    size_t number_ots, size_t number_threads, boost::asio::thread_pool& thread_pool) {
-  std::vector<Sender_State> states(number_ots);
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_s0(number_ots);
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_r1(number_ots);
-  std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> output(number_ots);
-
-  compute(thread_pool, number_ots, number_threads,
-          [this, &states, &msgs_s0](size_t index) { send_0(states[index], msgs_s0[index]); });
-
-  auto fut_send_msg_s0 = backend_.async_send(reinterpret_cast<uint8_t*>(msgs_s0.data()),
-                                             msgs_s0.size() * curve25519_ge_byte_size);
-  auto fut_recv_msg_r1 = backend_.async_recv(reinterpret_cast<uint8_t*>(msgs_r1.data()),
-                                             msgs_r1.size() * curve25519_ge_byte_size);
-
-  compute(thread_pool, number_ots, number_threads,
-          [this, &states](size_t index) { send_1(states[index]); });
-
-  auto msg_r1_size = fut_recv_msg_r1.get();
-  assert(msg_r1_size == msgs_r1.size() * curve25519_ge_byte_size);
-
-  compute(thread_pool, number_ots, number_threads,
-          [this, &states, &msgs_r1, &output](size_t index) {
-            output[index] = send_2(states[index], msgs_r1[index]);
-          });
-
-  auto msg_s0_size = fut_send_msg_s0.get();
-  assert(msg_s0_size == msgs_s0.size() * curve25519_ge_byte_size);
 
   return output;
 }
-
-std::vector<std::vector<std::byte>> OT_HL17::parallel_recv(const std::vector<bool>& choices,
-                                                           size_t number_threads) {
-  boost::asio::thread_pool thread_pool(number_threads);
-  auto output = parallel_recv(choices, number_threads, thread_pool);
-  thread_pool.join();
-  return output;
-}
-std::vector<std::vector<std::byte>> OT_HL17::parallel_recv(const std::vector<bool>& choices,
-                                                           size_t number_threads,
-                                                           boost::asio::thread_pool& thread_pool) {
-  auto number_ots = choices.size();
-  std::vector<Receiver_State> states(number_ots);
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_s0(number_ots);
-  std::vector<std::array<uint8_t, curve25519_ge_byte_size>> msgs_r1(number_ots);
-  std::vector<std::vector<std::byte>> output(number_ots);
-
-  auto fut_recv_msg_s0 = backend_.async_recv(reinterpret_cast<uint8_t*>(msgs_s0.data()),
-                                             msgs_s0.size() * curve25519_ge_byte_size);
-
-  compute(thread_pool, number_ots, number_threads,
-          [this, &states, &choices](size_t index) { recv_0(states[index], choices[index]); });
-
-  auto msg_s0_size = fut_recv_msg_s0.get();
-  assert(msg_s0_size == msgs_s0.size() * curve25519_ge_byte_size);
-
-  compute(thread_pool, number_ots, number_threads,
-          [this, &states, &msgs_r1, &msgs_s0](size_t index) {
-            recv_1(states[index], msgs_r1[index], msgs_s0[index]);
-          });
-
-  auto fut_send_msg_r1 = backend_.async_send(reinterpret_cast<uint8_t*>(msgs_r1.data()),
-                                             msgs_r1.size() * curve25519_ge_byte_size);
-
-  compute(thread_pool, number_ots, number_threads,
-          [this, &states, &output](size_t index) { output[index] = recv_2(states[index]); });
-
-  auto msg_r1_size = fut_send_msg_r1.get();
-  assert(msg_r1_size == msgs_s0.size() * curve25519_ge_byte_size);
-
-  return output;
-}*/
 
 }

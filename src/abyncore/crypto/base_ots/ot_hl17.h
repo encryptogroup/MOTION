@@ -106,17 +106,17 @@ class OT_HL17 final : public RandomOT {
   /**
    * Parts of the sender side.
    */
-  void send_0(Sender_State& state, std::array<uint8_t, curve25519_ge_byte_size>& message_out);
+  void send_0(Sender_State& state, std::array<std::byte, curve25519_ge_byte_size>& message_out);
   void send_1(Sender_State& state);
   std::pair<std::vector<std::byte>, std::vector<std::byte>> send_2(
-      Sender_State& state, const std::array<uint8_t, curve25519_ge_byte_size>& message_in);
+      Sender_State& state, const std::array<std::byte, curve25519_ge_byte_size>& message_in);
 
   /**
    * Parts of the receiver side.
    */
   void recv_0(Receiver_State& state, bool choice);
-  void recv_1(Receiver_State& state, std::array<uint8_t, curve25519_ge_byte_size>& message_out,
-              const std::array<uint8_t, curve25519_ge_byte_size>& message_in);
+  void recv_1(Receiver_State& state, std::array<std::byte, curve25519_ge_byte_size>& message_out,
+              const std::array<std::byte, curve25519_ge_byte_size>& message_in);
   std::vector<std::byte> recv_2(Receiver_State& state);
 };
 }
