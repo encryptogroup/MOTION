@@ -192,8 +192,8 @@ void Handler::ActAsSender() {
         if (ec) {
           throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
         }
-        tmp_queue.pop();
         bytes_sent_ += message.size() + sizeof(uint32_t);
+        tmp_queue.pop();
       }
     }
   }
