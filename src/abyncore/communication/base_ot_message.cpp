@@ -28,20 +28,22 @@
 #include "utility/typedefs.h"
 
 namespace ABYN::Communication {
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::uint8_t *buffer, std::size_t size,
+flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::byte *buffer, std::size_t size,
                                                            std::size_t ot_id) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(buffer, buffer + size);
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<std::uint8_t *>(buffer),
+                                     reinterpret_cast<std::uint8_t *>(buffer) + size);
   auto root = CreateBaseROTMessageDirect(builder, ot_id, &v_buffer);
   FinishBaseROTMessageBuffer(builder, root);
   return BuildMessage(MessageType_BaseROTMessageReceiver, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::uint8_t *buffer, std::size_t size,
+flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::byte *buffer, std::size_t size,
                                                          std::size_t ot_id) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(buffer, buffer + size);
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<std::uint8_t *>(buffer),
+                                     reinterpret_cast<std::uint8_t *>(buffer) + size);
   auto root = CreateBaseROTMessageDirect(builder, ot_id, &v_buffer);
   FinishBaseROTMessageBuffer(builder, root);
   return BuildMessage(MessageType_BaseROTMessageSender, builder.GetBufferPointer(),

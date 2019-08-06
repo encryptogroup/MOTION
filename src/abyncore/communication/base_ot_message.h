@@ -28,10 +28,10 @@
 #include "utility/constants.h"
 
 namespace ABYN::Communication {
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::uint8_t *buffer, std::size_t size,
+flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::byte *buffer, std::size_t size,
                                                            std::size_t ot_id);
 
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::uint8_t *buffer, std::size_t size,
+flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::byte *buffer, std::size_t size,
                                                          std::size_t ot_id);
 
 }  // namespace ABYN::Communication
