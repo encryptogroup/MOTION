@@ -57,7 +57,7 @@ class Configuration {
 
   void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
 
-  std::vector<Communication::ContextPtr> &GetParties() { return communication_contexts_; }
+  std::vector<Communication::ContextPtr> &GetContexts() { return communication_contexts_; }
 
   std::size_t GetNumOfParties() { return communication_contexts_.size(); }
 

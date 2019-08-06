@@ -30,8 +30,6 @@
 #include <mutex>
 #include <queue>
 
-//#include "crypto/oblivious_transfer/ot_provider.h"
-
 #include "flatbuffers/flatbuffers.h"
 
 namespace ABYN {
@@ -43,6 +41,9 @@ using LoggerPtr = std::shared_ptr<Logger>;
 
 class Configuration;
 using ConfigurationPtr = std::shared_ptr<Configuration>;
+
+class OT_HL17;
+using OT_HL17_Ptr = std::shared_ptr<OT_HL17>;
 
 namespace Gates {
 namespace Interfaces {
@@ -89,7 +90,7 @@ class Register {
   void RegisterCommunicationHandlers(
       std::vector<Communication::HandlerPtr> &communication_handlers);
 
-  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
+  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message);
 
   void RegisterNextGate(Gates::GatePtr gate);
 

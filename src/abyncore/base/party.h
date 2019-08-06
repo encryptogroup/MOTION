@@ -249,6 +249,8 @@ class Party {
   /// It is allowed to call Party::Finish() multiple times.
   void Finish();
 
+  auto &GetBackend() { return backend_; }
+
  private:
   ConfigurationPtr config_;
   BackendPtr backend_;

@@ -30,6 +30,7 @@
 
 #include "communication/handler.h"
 #include "configuration.h"
+#include "crypto/base_ots/ot_hl17.h"
 #include "gate/gate.h"
 #include "utility/condition.h"
 #include "utility/logger.h"
@@ -79,12 +80,12 @@ void Register::RegisterCommunicationHandlers(
   }
 }
 
-void Register::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
+void Register::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message) {
   if (party_id == config_->GetMyId()) {
     throw(std::runtime_error("Trying to send message to myself"));
   }
   if (auto shared_ptr_comm_handler = communication_handlers_.at(party_id).lock()) {
-    shared_ptr_comm_handler->SendMessage(message);
+    shared_ptr_comm_handler->SendMessage(std::move(message));
   } else {
     throw(std::runtime_error("Trying to use a destroyed communication handler"));
   }

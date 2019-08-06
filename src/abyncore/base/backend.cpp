@@ -25,6 +25,7 @@
 #include "backend.h"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 
 #include <fmt/format.h>
@@ -37,6 +38,7 @@
 #include "communication/hello_message.h"
 #include "communication/message.h"
 #include "crypto/aes_randomness_generator.h"
+#include "crypto/base_ots/ot_hl17.h"
 #include "gate/boolean_gmw_gate.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
@@ -113,12 +115,12 @@ void Backend::SendHelloToOthers() {
     auto hello_message = ABYN::Communication::BuildHelloMessage(
         config_->GetMyId(), destination_id, config_->GetNumOfParties(), seed_ptr,
         config_->GetOnlineAfterSetup(), ABYN::ABYN_VERSION);
-    Send(destination_id, hello_message);
+    Send(destination_id, std::move(hello_message));
   }
 }
 
-void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message) {
-  register_->Send(party_id, message);
+void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message) {
+  register_->Send(party_id, std::move(message));
 }
 
 void Backend::RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate) {
@@ -256,7 +258,8 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, bool input) {
   return BooleanGMWInput(party_id, ENCRYPTO::BitVector(1, input));
 }
 
-Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, const ENCRYPTO::BitVector<> &input) {
+Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
+                                          const ENCRYPTO::BitVector<> &input) {
   return BooleanGMWInput(party_id, std::vector<ENCRYPTO::BitVector<>>{input});
 }
 
@@ -315,6 +318,68 @@ void Backend::Sync() {
       continue;
     }
     communication_handlers_.at(i)->Sync();
+  }
+}
+
+void Backend::ComputeBaseOTs() {
+  for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
+    if (i == config_->GetMyId()) {
+      continue;
+    }
+
+    auto send_function = [this, i](flatbuffers::FlatBufferBuilder &&message) {
+      Send(i, std::move(message));
+    };
+    auto &data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
+    auto base_ots = std::make_unique<OT_HL17>(send_function, data_storage);
+    //#pragma omp parallel num_threads(3)
+    //#pragma omp single
+    //    {
+    //#pragma omp task
+    //      {
+    std::thread t0([this, &base_ots, &data_storage]() {
+      auto choices = ENCRYPTO::BitVector<>::Random(128);
+      auto chosen_messages = base_ots->recv(choices);  // sender base ots
+      auto &receiver_data = data_storage->GetBaseOTsReceiverData();
+      receiver_data->c_ = std::move(choices);
+      for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
+        auto b = receiver_data->messages_c_.at(i).begin();
+        std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
+      }
+    });
+    //      }
+    //#pragma omp task
+    //      {
+    std::thread t1([this, &base_ots, &data_storage]() {
+      auto both_messages = base_ots->send(128);  // receiver base ots
+      auto &sender_data = data_storage->GetBaseOTsSenderData();
+      for (std::size_t i = 0; i < both_messages.size(); ++i) {
+        auto b = sender_data->messages_0_.at(i).begin();
+        std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
+      }
+      for (std::size_t i = 0; i < both_messages.size(); ++i) {
+        auto b = sender_data->messages_1_.at(i).begin();
+        std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
+      }
+    });
+    //    }
+    //#pragma omp taskwait
+    //   }
+    t0.join();
+    t1.join();
+  }
+  base_ots_finished_ = true;
+}
+
+void BackendImportBaseOTs() {}
+
+void Backend::ExportBaseOTs() {
+  for (std::size_t i = 0; i < GetConfig()->GetNumOfParties(); ++i) {
+    if (i == GetConfig()->GetMyId()) {
+      continue;
+    }
+    GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
+    GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
   }
 }
 }

@@ -82,7 +82,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void VerifyHelloMessages();
 
-  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &message);
+  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message);
 
   void RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate);
 
@@ -113,7 +113,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
   Shares::SharePtr BooleanGMWInput(std::size_t party_id,
                                    const std::vector<ENCRYPTO::BitVector<>> &input);
 
-  Shares::SharePtr BooleanGMWInput(std::size_t party_id, std::vector<ENCRYPTO::BitVector<>> &&input);
+  Shares::SharePtr BooleanGMWInput(std::size_t party_id,
+                                   std::vector<ENCRYPTO::BitVector<>> &&input);
 
   Shares::SharePtr BooleanGMWXOR(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
 
@@ -189,9 +190,14 @@ class Backend : public std::enable_shared_from_this<Backend> {
     return ArithmeticGMWAddition(casted_parent_a_ptr, casted_parent_b_ptr);
   }
 
-
   /// \brief Blocking wait for synchronizing between parties. Called in Clear() and Reset()
   void Sync();
+
+  void ComputeBaseOTs();
+
+  void ImportBaseOTs();
+
+  void ExportBaseOTs();
 
  private:
   ConfigurationPtr config_;
@@ -200,6 +206,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::vector<Communication::HandlerPtr> communication_handlers_;
 
   bool share_inputs_ = true;
+  bool require_base_ots = true;
+  bool base_ots_finished_ = false;
 };
 
 using BackendPtr = std::shared_ptr<Backend>;
