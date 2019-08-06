@@ -42,7 +42,7 @@ TEST(BitVector, OutOfBoundsException) {
         bv.Set(true, size + dist(rd));
       };
 
-      auto should_throw_get = [&](auto size) {
+      auto should_throw_get = [&](std::size_t size) {
         ENCRYPTO::BitVector<> bv(size);
         bv.Set(true, size + dist(rd));
       };
@@ -70,7 +70,7 @@ TEST(BitVector, SingleBitOperations) {
     std::uniform_int_distribution<std::uint64_t> dist(0ul, 1'000'000ul);
     std::size_t size = dist(rd);
 
-    bv.Resize(size);
+    bv.Resize(size, true);
 
     for (auto i = 0ull; i < 1000u; ++i) {
       std::size_t pos0 = dist(rd) % size;

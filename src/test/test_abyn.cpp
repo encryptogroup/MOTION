@@ -30,10 +30,8 @@
 
 #include <fmt/format.h>
 #include <gtest/gtest.h>
-#include <omp.h>
 
 #include "base/party.h"
-#include "gate/gate.h"
 #include "share/share_wrapper.h"
 #include "utility/typedefs.h"
 #include "wire/boolean_gmw_wire.h"
@@ -42,7 +40,6 @@
 
 constexpr auto num_parties_list = {2u, 3u, 4u, 5u, 10u};
 constexpr auto PORT_OFFSET = 7777u;
-constexpr auto DETAILED_LOGGING_ENABLED = false;
 
 namespace {
 using namespace ABYN;
@@ -160,7 +157,7 @@ TEST(ABYNParty, NetworkConnection_OpenMP) {
 
       all_connected = true;
       for (auto &abynparty : abyn_parties) {
-        for (auto &party : abynparty->GetConfiguration()->GetParties()) {
+        for (auto &party : abynparty->GetConfiguration()->GetContexts()) {
           if (party.get()) {
             all_connected &= party->IsConnected();
           }
@@ -248,7 +245,7 @@ TEST(ABYNParty, NetworkConnection_ManualThreads) {
 
       all_connected = true;
       for (auto &abynparty : abyn_parties) {
-        for (auto &party : abynparty->GetConfiguration()->GetParties()) {
+        for (auto &party : abynparty->GetConfiguration()->GetContexts()) {
           if (party.get()) {
             all_connected &= party->IsConnected();
           }
@@ -280,7 +277,7 @@ TEST(ABYNParty, NetworkConnection_LocalPartiesFromStaticFunction_2_3_4_5_10_part
         }
         all_connected = true;
         for (auto &abynparty : abyn_parties) {
-          for (auto &party : abynparty->GetConfiguration()->GetParties()) {
+          for (auto &party : abynparty->GetConfiguration()->GetContexts()) {
             if (party.get()) {
               all_connected &= party->IsConnected();
             }
