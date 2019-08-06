@@ -34,16 +34,52 @@
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/fbs_headers/output_message_generated.h"
 
+#include "utility/bit_vector.h"
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
 class Condition;
-}
+using ConditionPtr = std::shared_ptr<Condition>;
+
+class BitMatrix;
+}  // namespace ENCRYPTO
 
 namespace ABYN {
 
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
+
+struct BaseOTsReceiverData {
+  BaseOTsReceiverData();
+  ~BaseOTsReceiverData() = default;
+
+  ENCRYPTO::BitVector<> c_;  /// choice bits
+  std::array<std::array<std::byte, 16>, 128> messages_c_;
+
+  std::vector<std::array<std::byte, 32>> S_;
+  ENCRYPTO::BitVector<> received_S_;
+  std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_S_condition_;
+
+  bool is_ready_ = false;
+  std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
+};
+
+struct BaseOTsSenderData {
+  BaseOTsSenderData();
+  ~BaseOTsSenderData() = default;
+
+  std::array<std::array<std::byte, 16>, 128> messages_0_;
+  std::array<std::array<std::byte, 16>, 128> messages_1_;
+
+  std::vector<std::array<std::byte, 32>> R_;
+  ENCRYPTO::BitVector<> received_R_;
+  std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_R_condition_;
+
+  bool is_ready_ = false;
+  std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
+};
+
+enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 3 };
 
 class DataStorage {
  public:
@@ -61,9 +97,7 @@ class DataStorage {
 
   const Communication::HelloMessage *GetReceivedHelloMessage();
 
-  std::shared_ptr<ENCRYPTO::Condition> &GetReceivedHelloMessageCondition() {
-    return rcv_hello_msg_cond;
-  }
+  ENCRYPTO::ConditionPtr &GetReceivedHelloMessageCondition() { return rcv_hello_msg_cond; }
 
   void SetSentHelloMessage(std::vector<std::uint8_t> &&hello_message) {
     sent_hello_message_ = std::move(hello_message);
@@ -73,9 +107,7 @@ class DataStorage {
 
   const Communication::HelloMessage *GetSentHelloMessage();
 
-  std::shared_ptr<ENCRYPTO::Condition> &GetSentHelloMessageCondition() {
-    return snt_hello_msg_cond;
-  }
+  ENCRYPTO::ConditionPtr &GetSentHelloMessageCondition() { return snt_hello_msg_cond; }
 
   void Reset();
 
@@ -83,18 +115,26 @@ class DataStorage {
 
   bool SetSyncState(bool state);
 
-  std::shared_ptr<ENCRYPTO::Condition> &GetSyncCondition();
+  ENCRYPTO::ConditionPtr &GetSyncCondition();
+
+  void BaseOTsReceived(const std::uint8_t *message, BaseOTsDataType type, std::size_t ot_id = 0);
+
+  auto &GetBaseOTsReceiverData() { return base_ots_receiver_data_; }
+  auto &GetBaseOTsSenderData() { return base_ots_sender_data_; }
 
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;
-  std::shared_ptr<ENCRYPTO::Condition> rcv_hello_msg_cond, snt_hello_msg_cond, sync_condition_;
+  ENCRYPTO::ConditionPtr rcv_hello_msg_cond, snt_hello_msg_cond, sync_condition_;
 
   bool sync_message_received_ = false;
 
   // id, buffer
   std::unordered_map<std::size_t, std::vector<std::uint8_t>> received_output_messages_;
   // id, condition
-  std::unordered_map<std::size_t, std::shared_ptr<ENCRYPTO::Condition>> output_message_conditions_;
+  std::unordered_map<std::size_t, ENCRYPTO::ConditionPtr> output_message_conditions_;
+
+  std::unique_ptr<BaseOTsReceiverData> base_ots_receiver_data_;
+  std::unique_ptr<BaseOTsSenderData> base_ots_sender_data_;
 
   LoggerPtr logger_;
   std::int64_t id_ = -1;

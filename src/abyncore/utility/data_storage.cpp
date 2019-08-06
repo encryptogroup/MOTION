@@ -32,11 +32,36 @@
 
 namespace ABYN {
 
+BaseOTsReceiverData::BaseOTsReceiverData() {
+  received_S_.Resize(128, true);
+  for (auto i = 0; i < 128; ++i) {
+    received_S_condition_.emplace_back(
+        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_S_.Get(i); }));
+  }
+  S_.resize(128);
+
+  is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_; });
+}
+
+BaseOTsSenderData::BaseOTsSenderData() {
+  received_R_.Resize(128, true);
+  for (auto i = 0; i < 128; ++i) {
+    received_R_condition_.emplace_back(
+        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_R_.Get(i); }));
+  }
+  R_.resize(128);
+
+  is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_; });
+}
+
 DataStorage::DataStorage(std::size_t id) : id_(id) {
   rcv_hello_msg_cond =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !received_hello_message_.empty(); });
   snt_hello_msg_cond =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !sent_hello_message_.empty(); });
+
+  base_ots_receiver_data_ = std::make_unique<BaseOTsReceiverData>();
+  base_ots_sender_data_ = std::make_unique<BaseOTsSenderData>();
 }
 
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
@@ -99,8 +124,7 @@ const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::siz
   std::scoped_lock lock(output_message_mutex_);
   auto iter = received_output_messages_.find(gate_id);
   assert(iter != received_output_messages_.end());
-  auto output_message =
-      Communication::GetMessage(iter->second.data());
+  auto output_message = Communication::GetMessage(iter->second.data());
   assert(output_message != nullptr);
   return Communication::GetOutputMessage(output_message->payload()->data());
 }
@@ -145,9 +169,7 @@ void DataStorage::Reset() {
   output_message_conditions_.clear();
 }
 
-void DataStorage::Clear() {
-  received_output_messages_.clear();
-}
+void DataStorage::Clear() { received_output_messages_.clear(); }
 
 bool DataStorage::SetSyncState(bool state) {
   if (!sync_condition_) {
@@ -168,5 +190,36 @@ std::shared_ptr<ENCRYPTO::Condition> &DataStorage::GetSyncCondition() {
         std::make_shared<ENCRYPTO::Condition>([this]() { return sync_message_received_; });
   }
   return sync_condition_;
+}
+
+void DataStorage::BaseOTsReceived(const std::uint8_t *message, BaseOTsDataType type,
+                                  std::size_t ot_id) {
+  switch (type) {
+    case BaseOTsDataType::HL17_R: {
+      {
+        std::scoped_lock lock(base_ots_sender_data_->received_R_condition_.at(ot_id)->GetMutex());
+        std::copy(message, message + base_ots_sender_data_->R_.at(ot_id).size(),
+                  reinterpret_cast<std::uint8_t *>(base_ots_sender_data_->R_.at(ot_id).data()));
+        base_ots_sender_data_->received_R_.Set(true, ot_id);
+      }
+      base_ots_sender_data_->received_R_condition_.at(ot_id)->NotifyOne();
+      break;
+    }
+    case BaseOTsDataType::HL17_S: {
+      {
+        std::scoped_lock lock(base_ots_receiver_data_->received_S_condition_.at(ot_id)->GetMutex());
+        std::copy(message, message + base_ots_receiver_data_->S_.at(ot_id).size(),
+                  reinterpret_cast<std::uint8_t *>(base_ots_receiver_data_->S_.at(ot_id).begin()));
+        base_ots_receiver_data_->received_S_.Set(true, ot_id);
+      }
+      base_ots_receiver_data_->received_S_condition_.at(ot_id)->NotifyOne();
+      break;
+    }
+    default: {
+      throw std::runtime_error(
+          fmt::format("DataStorage::BaseOTsReceived: unknown data type {}; data_type must be <{}",
+                      type, BaseOTsDataType::BaseOTs_invalid_data_type));
+    }
+  }
 }
 }
