@@ -8,7 +8,7 @@ table HelloMessage {
   online_after_setup:bool = false;
   ABYN_version:float;
 }
-//MT/OT generation parameters?
-//other parameters?
+// MT/OT generation parameters?
+// other parameters?
 
 root_type HelloMessage;
