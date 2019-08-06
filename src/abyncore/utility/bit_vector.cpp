@@ -22,9 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "bit_vector.h"
-
-
+//#include "bit_vector.h"
 
 namespace ENCRYPTO {
 

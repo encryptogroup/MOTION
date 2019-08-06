@@ -53,6 +53,8 @@ class BitVector {
  public:
   BitVector() noexcept : bit_size_(0){};
 
+  explicit BitVector(bool value) noexcept : bit_size_(1), data_vector_({std::byte(value)}) {}
+
   BitVector(BitVector&& bv) noexcept
       : data_vector_(std::move(bv.data_vector_)), bit_size_(bv.bit_size_) {}
 
@@ -60,6 +62,21 @@ class BitVector {
       : data_vector_(bv.data_vector_.begin(), bv.data_vector_.end()), bit_size_(bv.bit_size_) {}
 
   BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {}
+
+  explicit BitVector(uint n_bits, bool value = false)
+      : BitVector(static_cast<std::size_t>(n_bits), value) {}
+
+  explicit BitVector(int n_bits, bool value = false)
+      : BitVector(static_cast<std::size_t>(n_bits), value) {}
+
+  explicit BitVector(long n_bits, bool value = false)
+      : BitVector(static_cast<std::size_t>(n_bits), value) {}
+
+  explicit BitVector(long long n_bits, bool value = false)
+      : BitVector(static_cast<std::size_t>(n_bits), value) {}
+
+  explicit BitVector(long long unsigned int n_bits, bool value = false)
+      : BitVector(static_cast<std::size_t>(n_bits), value) {}
 
   BitVector(std::size_t n_bits, bool value = false) noexcept : bit_size_(n_bits) {
     if (n_bits > 0u) {
@@ -78,13 +95,16 @@ class BitVector {
   }
 
   BitVector(unsigned char* buf, std::size_t bits)
-      : BitVector(std::vector<std::byte>(reinterpret_cast<std::byte*>(buf),
-                                         reinterpret_cast<std::byte*>(buf) +
-                                             ABYN::Helpers::Convert::BitsToBytes(bits)),
-                  bits) {}
+      : BitVector(reinterpret_cast<std::byte*>(buf), bits) {}
+
+  BitVector(std::byte* buf, std::size_t bits) : bit_size_(bits) {
+    data_vector_.insert(data_vector_.begin(), buf, buf + ABYN::Helpers::Convert::BitsToBytes(bits));
+
+    TruncateToFit();
+  }
 
   BitVector(const std::vector<std::byte>& data, std::size_t n_bits) : bit_size_(n_bits) {
-    std::size_t byte_size = ABYN::Helpers::Convert::BitsToBytes(n_bits);
+    const std::size_t byte_size = ABYN::Helpers::Convert::BitsToBytes(n_bits);
     if (byte_size > data.size()) {
       throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
     }
@@ -94,7 +114,7 @@ class BitVector {
   }
 
   BitVector(std::vector<std::byte>&& data, std::size_t n_bits) : bit_size_(n_bits) {
-    std::size_t byte_size = ABYN::Helpers::Convert::BitsToBytes(n_bits);
+    const std::size_t byte_size = ABYN::Helpers::Convert::BitsToBytes(n_bits);
     if (byte_size > data.size()) {
       throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
     }
@@ -108,7 +128,7 @@ class BitVector {
       throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", n_bits, data.size()));
     }
 
-    std::size_t byte_size = ABYN::Helpers::Convert::BitsToBytes(n_bits);
+    const std::size_t byte_size = ABYN::Helpers::Convert::BitsToBytes(n_bits);
     constexpr std::byte zero_byte = std::byte();
     data_vector_.reserve(byte_size);
     while (data_vector_.size() < byte_size) {
@@ -226,7 +246,7 @@ class BitVector {
     const auto max_bit_size = std::max(bit_size_, other.bit_size_);
     const auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
 
-    Resize(max_bit_size);
+    Resize(max_bit_size, true);
 
 #pragma omp simd
     for (auto i = 0ull; i < min_byte_size; ++i) {
@@ -238,7 +258,7 @@ class BitVector {
     const auto max_bit_size = std::max(bit_size_, other.bit_size_);
     const auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
 
-    Resize(max_bit_size);
+    Resize(max_bit_size, true);
 
 #pragma omp simd
     for (auto i = 0ull; i < min_byte_size; ++i) {
@@ -257,7 +277,7 @@ class BitVector {
     const auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
     const auto max_byte_size = ABYN::Helpers::Convert::BitsToBytes(max_bit_size);
 
-    Resize(max_bit_size);
+    Resize(max_bit_size, true);
 
 #pragma omp simd
     for (auto i = 0ull; i < min_byte_size; ++i) {
@@ -272,16 +292,20 @@ class BitVector {
     }
   }
 
-  void Resize(std::size_t n_bits) noexcept {
+  void Resize(std::size_t n_bits, bool zero_fill = false) noexcept {
     if (bit_size_ == n_bits) {
       return;
     }
     bit_size_ = n_bits;
     const auto byte_size = ABYN::Helpers::Convert::BitsToBytes(bit_size_);
-    constexpr std::byte zero_byte = std::byte();
-    data_vector_.reserve(byte_size);
-    while (data_vector_.size() < byte_size) {
-      data_vector_.push_back(zero_byte);
+    if (zero_fill) {
+      constexpr std::byte zero_byte = std::byte();
+      data_vector_.reserve(byte_size);
+      while (data_vector_.size() < byte_size) {
+        data_vector_.push_back(zero_byte);
+      }
+    } else {
+      data_vector_.resize(byte_size);
     }
     TruncateToFit();
   }
