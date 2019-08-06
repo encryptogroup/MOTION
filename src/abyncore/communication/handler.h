@@ -54,7 +54,7 @@ class Handler {
 
   virtual ~Handler();
 
-  void SendMessage(flatbuffers::FlatBufferBuilder &message);
+  void SendMessage(flatbuffers::FlatBufferBuilder &&message);
 
   const BoostSocketPtr GetSocket();
 

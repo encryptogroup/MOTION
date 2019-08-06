@@ -87,7 +87,7 @@ Handler::~Handler() {
       fmt::format("{}: {}B sent {}B received", handler_info_, bytes_sent_, bytes_received_));
 }
 
-void Handler::SendMessage(flatbuffers::FlatBufferBuilder &message) {
+void Handler::SendMessage(flatbuffers::FlatBufferBuilder &&message) {
   auto message_detached = message.Release();
   auto message_raw_pointer = message_detached.data();
   if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
@@ -135,6 +135,7 @@ void Handler::TerminateCommunication() {
 
 void Handler::WaitForConnectionEnd() {
   while (continue_communication_) {
+    auto context_ptr = context_.lock();
     if (queue_send_.empty() && queue_receive_.empty() && received_termination_message_ &&
         sent_termination_message_) {
       continue_communication_ = false;
