@@ -22,21 +22,44 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <functional>
-#include <memory>
-
-#include <openssl/evp.h>
+#include "blake2b.h"
 
 namespace ABYN {
-using Blake2bCtx = std::unique_ptr<EVP_MD_CTX, std::function<void(EVP_MD_CTX *)>>;
-
-Blake2bCtx NewBlakeCtx();
-
-void Blake2b(std::uint8_t *msg, std::uint8_t digest[EVP_MAX_MD_SIZE], std::size_t len,
-             EVP_MD_CTX *ctx = nullptr);
+Blake2bCtx NewBlakeCtx() {
+  return Blake2bCtx(EVP_MD_CTX_new(), [](EVP_MD_CTX *ctx) { EVP_MD_CTX_free(ctx); });
+}
 
 void Blake2b(std::uint8_t *msg, std::uint8_t digest[EVP_MAX_MD_SIZE], std::size_t len,
-             Blake2bCtx &b);
-}  // namespace ABYN
+             EVP_MD_CTX *ctx) {
+  const bool new_ctx = ctx == nullptr;
+
+  unsigned int md_len;
+
+  EVP_MD_CTX *mdctx;
+  if (new_ctx) {
+    mdctx = EVP_MD_CTX_new();
+  } else {
+    mdctx = ctx;
+  }
+
+#if (OPENSSL_VERSION_NUMBER < 0x1010000fL)
+  EVP_DigestInit_ex(mdctx, EVP_sha512(), nullptr);
+#else
+  EVP_DigestInit_ex(mdctx, EVP_blake2b512(), nullptr);
+#endif
+
+  EVP_DigestUpdate(mdctx, msg, len);
+  EVP_DigestFinal_ex(mdctx, digest, &md_len);
+
+  if (new_ctx) {
+    EVP_MD_CTX_free(mdctx);
+  } else {
+    EVP_MD_CTX_reset(mdctx);
+  }
+}
+
+void Blake2b(std::uint8_t *msg, std::uint8_t digest[EVP_MAX_MD_SIZE], std::size_t len,
+             Blake2bCtx &b) {
+  Blake2b(msg, digest, len, b.get());
+}
+}
