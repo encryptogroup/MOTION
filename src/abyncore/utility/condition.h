@@ -26,6 +26,7 @@
 // SOFTWARE.
 
 #include <functional>
+#include <mutex>
 
 namespace ENCRYPTO {
 
@@ -39,7 +40,10 @@ class Condition {
   Condition(Condition &) = delete;
 
   // checks if the condition was satisfied
-  bool operator()() const { return condition_function_(); }
+  bool operator()() {
+    std::scoped_lock lock(mutex_);
+    return condition_function_();
+  }
 
   bool Wait();
 
