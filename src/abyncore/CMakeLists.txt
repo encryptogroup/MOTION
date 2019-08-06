@@ -3,12 +3,15 @@ add_library(abyn
         base/configuration.cpp
         base/party.cpp
         base/register.cpp
+        communication/base_ot_message.cpp
         communication/context.cpp
         communication/handler.cpp
         communication/hello_message.cpp
         communication/message.cpp
         communication/output_message.cpp
         crypto/aes_randomness_generator.cpp
+        crypto/base_ots/ot_hl17.cpp
+        crypto/curve25519/mycurve25519.cpp
         gate/gate.cpp
         gate/boolean_gmw_gate.cpp
         share/boolean_gmw_share.cpp
@@ -34,29 +37,29 @@ set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(abyn PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
 
-# there is a strange bug that Party::Clear() sometimes results in a segfault in the next Party::Run
+# there is a strange bug that Party::Reset() sometimes results in a segfault in the next Party::Run
 # this only happens in the Release mode and even not in RelWithDebInfo which makes it hard to find the bug
 # TODO: fix
 
-if ("${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
-    list(APPEND ABYN_EXTRA_FLAGS
-            -fgcse-after-reload
-            -finline-functions
-            -fipa-cp-clone
-            -floop-interchange
-            -floop-unroll-and-jam
-            -fpeel-loops
-            -fpredictive-commoning
-            -fsplit-paths
-            -ftree-loop-distribute-patterns
-            -ftree-loop-distribution
-            -ftree-loop-vectorize
-            -ftree-partial-pre
-            -ftree-slp-vectorize
-            -funswitch-loops
-            -fvect-cost-model
-            )
-endif ()
+#if ("${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
+#    list(APPEND ABYN_EXTRA_FLAGS
+#            -fgcse-after-reload
+#            -finline-functions
+#            -fipa-cp-clone
+#            -floop-interchange
+#            -floop-unroll-and-jam
+#            -fpeel-loops
+#            -fpredictive-commoning
+#            -fsplit-paths
+#            -ftree-loop-distribute-patterns
+#            -ftree-loop-distribution
+#            -ftree-loop-vectorize
+#            -ftree-partial-pre
+#            -ftree-slp-vectorize
+#            -funswitch-loops
+#            -fvect-cost-model
+#            )
+#endif ()
 
 
 target_compile_features(abyn PRIVATE cxx_std_17)
@@ -66,6 +69,7 @@ target_compile_options(abyn PRIVATE
         -pedantic -ansi
         -maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2
         -ffunction-sections -march=native
+        -fvect-cost-model=unlimited
         ${ABYN_AVX512_FLAG})
 
 add_custom_target(
