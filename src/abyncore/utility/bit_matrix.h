@@ -27,7 +27,10 @@
 #include "bit_vector.h"
 
 #include <cassert>
+#include <emmintrin.h>
 #include <memory>
+#include <stdint.h>
+#include <stdlib.h>
 
 #include "boost/align/aligned_allocator.hpp"
 
@@ -75,11 +78,6 @@ class BitMatrix {
     num_columns_ = other.num_columns_;
   }
 
-  /// \brief Transposes the matrix inplace
-  void Transpose();
-
-  void Transpose128Rows();
-
   const AlignedBitVector& GetRow(std::size_t i) const { return data_.at(i); }
 
   /// \brief Returns a mutable BitVector corresponding to row #i of the matrix.
@@ -103,13 +101,33 @@ class BitMatrix {
 
   std::string AsString() const;
 
+  void ForceSetNumColumns(std::size_t n) { num_columns_ = n; }
+
+  /// \brief Transposes the matrix inplace
+  void Transpose();
+
+  void Transpose128Rows();
+
+  static void Transpose128RowsInplace(std::array<std::byte*, 128>& matrix, std::size_t num_columns);
+
+  static void TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, std::size_t num_columns);
+
+  bool operator==(const BitMatrix& other);
+
+  bool operator!=(const BitMatrix& other) { return !(*this == other); }
+
  private:
   std::vector<AlignedBitVector> data_;
 
   std::size_t num_columns_ = 0;
 
-  void TransposeInplace();
+  // blockwise inplace
+  void TransposeInternal();
 
-  void Transpose128RowsInplace();
+  // blockwise inplace
+  void Transpose128RowsInternal();
+
+  static void Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64,
+                                      std::array<std::uint32_t*, 128>& rows_32);
 };
 }

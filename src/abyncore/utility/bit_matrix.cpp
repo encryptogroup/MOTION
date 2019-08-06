@@ -27,6 +27,8 @@
 #include <cmath>
 #include <iostream>
 
+#include "immintrin.h"
+
 #include "omp.h"
 
 #include "utility/helpers.h"
@@ -40,7 +42,7 @@ void BitMatrix::Transpose() {
     for (auto i = 1ull; i < num_columns_; ++i) {
       data_.emplace_back(1, data_.at(0).Get(i));
     }
-    data_.at(0).Resize(1);
+    data_.at(0).Resize(1, true);
     return;
   } else if (num_columns_ == 1) {
     for (auto i = 1ull; i < num_rows; ++i) {
@@ -58,7 +60,7 @@ void BitMatrix::Transpose() {
   // pad to the block size
   if (num_columns_ % block_size > 0u) {
     for (auto& bv : data_) {
-      bv.Resize(num_columns_ + block_size - (num_columns_ % block_size));
+      bv.Resize(num_columns_ + block_size - (num_columns_ % block_size), true);
     }
   }
 
@@ -77,7 +79,7 @@ void BitMatrix::Transpose() {
     }
 #pragma omp for
     for (auto i = 0ull; i < block_size; ++i) {
-      data_.at(i).Resize(block_size);
+      data_.at(i).Resize(block_size, true);
     }
   } else if (num_columns_ < num_rows) {
     for (auto i = block_size; i < data_.size(); i += block_size) {
@@ -89,19 +91,19 @@ void BitMatrix::Transpose() {
     data_.resize(block_size);
   }
 
-  TransposeInplace();
+  TransposeInternal();
 
   // remove padding
   data_.resize(initial_num_columns);
 
   for (auto& bv : data_) {
-    bv.Resize(initial_num_rows);
+    bv.Resize(initial_num_rows, true);
   }
 
   num_columns_ = initial_num_rows;
 }
 
-void BitMatrix::TransposeInplace() {
+void BitMatrix::TransposeInternal() {
   for (auto block_size = std::min(data_.size(), data_.at(0).GetSize()); block_size > 1u;
        block_size /= 2) {
     const auto subblock_size = block_size / 2;
@@ -183,7 +185,7 @@ void BitMatrix::Transpose128Rows() {
     data_.resize(block_size);
   }
 
-  Transpose128RowsInplace();
+  Transpose128RowsInternal();
 
   // remove padding
   data_.resize(initial_num_columns);
@@ -195,646 +197,20 @@ void BitMatrix::Transpose128Rows() {
   num_columns_ = initial_num_rows;
 }
 
-void BitMatrix::Transpose128RowsInplace() {
-  for (auto block_offset = 0ull; block_offset < num_columns_; block_offset += 128) {
-    std::array<std::uint64_t*, 128> rows_64;
-    std::array<std::uint32_t*, 128> rows_32;
-    std::array<std::uint64_t, 256> tmp_64_0, tmp_64_1;
-    std::array<std::uint32_t, 128> tmp_32;
-    for (auto i = 0; i < 128; ++i) {
+void BitMatrix::Transpose128RowsInternal() {
+  constexpr std::size_t num_columns = 128;
+  for (auto block_offset = 0u; block_offset < num_columns_; block_offset += num_columns) {
+    std::array<std::uint64_t*, num_columns> rows_64;
+    std::array<std::uint32_t*, num_columns> rows_32;
+
+    for (auto i = 0u; i < num_columns; ++i) {
       rows_64.at(i) =
           reinterpret_cast<std::uint64_t*>(data_.at(block_offset + i).GetMutableData().data());
       rows_32.at(i) =
           reinterpret_cast<std::uint32_t*>(data_.at(block_offset + i).GetMutableData().data());
     }
 
-    {
-      // block size = 128
-      // swap the corresponding 64-bit blocks
-      constexpr std::size_t block_size = 128;
-      constexpr std::size_t subblock_size = block_size / 2;
-      for (auto i = 0u; i < subblock_size; i += 16) {
-        tmp_64_0.at(i + 0) = rows_64.at(0 + i + 0)[1];
-        rows_64.at(0 + i + 0)[1] = rows_64.at(subblock_size + i + 0)[0];
-        rows_64.at(subblock_size + i + 0)[0] = tmp_64_0.at(i + 0);
-        tmp_64_0.at(i + 1) = rows_64.at(0 + i + 1)[1];
-        rows_64.at(0 + i + 1)[1] = rows_64.at(subblock_size + i + 1)[0];
-        rows_64.at(subblock_size + i + 1)[0] = tmp_64_0.at(i + 1);
-        tmp_64_0.at(i + 2) = rows_64.at(0 + i + 2)[1];
-        rows_64.at(0 + i + 2)[1] = rows_64.at(subblock_size + i + 2)[0];
-        rows_64.at(subblock_size + i + 2)[0] = tmp_64_0.at(i + 2);
-        tmp_64_0.at(i + 3) = rows_64.at(0 + i + 3)[1];
-        rows_64.at(0 + i + 3)[1] = rows_64.at(subblock_size + i + 3)[0];
-        rows_64.at(subblock_size + i + 3)[0] = tmp_64_0.at(i + 3);
-        tmp_64_0.at(i + 4) = rows_64.at(0 + i + 4)[1];
-        rows_64.at(0 + i + 4)[1] = rows_64.at(subblock_size + i + 4)[0];
-        rows_64.at(subblock_size + i + 4)[0] = tmp_64_0.at(i + 4);
-        tmp_64_0.at(i + 5) = rows_64.at(0 + i + 5)[1];
-        rows_64.at(0 + i + 5)[1] = rows_64.at(subblock_size + i + 5)[0];
-        rows_64.at(subblock_size + i + 5)[0] = tmp_64_0.at(i + 5);
-        tmp_64_0.at(i + 6) = rows_64.at(0 + i + 6)[1];
-        rows_64.at(0 + i + 6)[1] = rows_64.at(subblock_size + i + 6)[0];
-        rows_64.at(subblock_size + i + 6)[0] = tmp_64_0.at(i + 6);
-        tmp_64_0.at(i + 7) = rows_64.at(0 + i + 7)[1];
-        rows_64.at(0 + i + 7)[1] = rows_64.at(subblock_size + i + 7)[0];
-        rows_64.at(subblock_size + i + 7)[0] = tmp_64_0.at(i + 7);
-        tmp_64_0.at(i + 8) = rows_64.at(0 + i + 8)[1];
-        rows_64.at(0 + i + 8)[1] = rows_64.at(subblock_size + i + 8)[0];
-        rows_64.at(subblock_size + i + 8)[0] = tmp_64_0.at(i + 8);
-        tmp_64_0.at(i + 9) = rows_64.at(0 + i + 9)[1];
-        rows_64.at(0 + i + 9)[1] = rows_64.at(subblock_size + i + 9)[0];
-        rows_64.at(subblock_size + i + 9)[0] = tmp_64_0.at(i + 9);
-        tmp_64_0.at(i + 10) = rows_64.at(0 + i + 10)[1];
-        rows_64.at(0 + i + 10)[1] = rows_64.at(subblock_size + i + 10)[0];
-        rows_64.at(subblock_size + i + 10)[0] = tmp_64_0.at(i + 10);
-        tmp_64_0.at(i + 11) = rows_64.at(0 + i + 11)[1];
-        rows_64.at(0 + i + 11)[1] = rows_64.at(subblock_size + i + 11)[0];
-        rows_64.at(subblock_size + i + 11)[0] = tmp_64_0.at(i + 11);
-        tmp_64_0.at(i + 12) = rows_64.at(0 + i + 12)[1];
-        rows_64.at(0 + i + 12)[1] = rows_64.at(subblock_size + i + 12)[0];
-        rows_64.at(subblock_size + i + 12)[0] = tmp_64_0.at(i + 12);
-        tmp_64_0.at(i + 13) = rows_64.at(0 + i + 13)[1];
-        rows_64.at(0 + i + 13)[1] = rows_64.at(subblock_size + i + 13)[0];
-        rows_64.at(subblock_size + i + 13)[0] = tmp_64_0.at(i + 13);
-        tmp_64_0.at(i + 14) = rows_64.at(0 + i + 14)[1];
-        rows_64.at(0 + i + 14)[1] = rows_64.at(subblock_size + i + 14)[0];
-        rows_64.at(subblock_size + i + 14)[0] = tmp_64_0.at(i + 14);
-        tmp_64_0.at(i + 15) = rows_64.at(0 + i + 15)[1];
-        rows_64.at(0 + i + 15)[1] = rows_64.at(subblock_size + i + 15)[0];
-        rows_64.at(subblock_size + i + 15)[0] = tmp_64_0.at(i + 15);
-      }
-    }
-
-    {
-      constexpr std::size_t block_size = 64;
-      constexpr std::size_t subblock_size = block_size / 2;
-      // swap the corresponding 32-bit blocks
-      for (auto i = 0; i < 128; i += block_size) {
-        for (auto j = 0u; j < subblock_size; j += 8) {
-          tmp_32.at(j + 0) = rows_32.at(0 + i + j + 0)[1];
-          rows_32.at(0 + i + j + 0)[1] = rows_32.at(subblock_size + i + j + 0)[0];
-          rows_32.at(subblock_size + i + j + 0)[0] = tmp_32.at(j + 0);
-          tmp_32.at(2 * j + 0) = rows_32.at(0 + i + j + 0)[3];
-          rows_32.at(0 + i + j + 0)[3] = rows_32.at(subblock_size + i + j + 0)[2];
-          rows_32.at(subblock_size + i + j + 0)[2] = tmp_32.at(2 * j + 0);
-
-          tmp_32.at(j + 1) = rows_32.at(0 + i + j + 1)[1];
-          rows_32.at(0 + i + j + 1)[1] = rows_32.at(subblock_size + i + j + 1)[0];
-          rows_32.at(subblock_size + i + j + 1)[0] = tmp_32.at(j + 1);
-          tmp_32.at(2 * j + 1) = rows_32.at(0 + i + j + 1)[3];
-          rows_32.at(0 + i + j + 1)[3] = rows_32.at(subblock_size + i + j + 1)[2];
-          rows_32.at(subblock_size + i + j + 1)[2] = tmp_32.at(2 * j + 1);
-
-          tmp_32.at(j + 2) = rows_32.at(0 + i + j + 2)[1];
-          rows_32.at(0 + i + j + 2)[1] = rows_32.at(subblock_size + i + j + 2)[0];
-          rows_32.at(subblock_size + i + j + 2)[0] = tmp_32.at(j + 2);
-          tmp_32.at(2 * j + 2) = rows_32.at(0 + i + j + 2)[3];
-          rows_32.at(0 + i + j + 2)[3] = rows_32.at(subblock_size + i + j + 2)[2];
-          rows_32.at(subblock_size + i + j + 2)[2] = tmp_32.at(2 * j + 2);
-
-          tmp_32.at(j + 3) = rows_32.at(0 + i + j + 3)[1];
-          rows_32.at(0 + i + j + 3)[1] = rows_32.at(subblock_size + i + j + 3)[0];
-          rows_32.at(subblock_size + i + j + 3)[0] = tmp_32.at(j + 3);
-          tmp_32.at(2 * j + 3) = rows_32.at(0 + i + j + 3)[3];
-          rows_32.at(0 + i + j + 3)[3] = rows_32.at(subblock_size + i + j + 3)[2];
-          rows_32.at(subblock_size + i + j + 3)[2] = tmp_32.at(2 * j + 3);
-
-          tmp_32.at(j + 4) = rows_32.at(0 + i + j + 4)[1];
-          rows_32.at(0 + i + j + 4)[1] = rows_32.at(subblock_size + i + j + 4)[0];
-          rows_32.at(subblock_size + i + j + 4)[0] = tmp_32.at(j + 4);
-          tmp_32.at(2 * j + 4) = rows_32.at(0 + i + j + 4)[3];
-          rows_32.at(0 + i + j + 4)[3] = rows_32.at(subblock_size + i + j + 4)[2];
-          rows_32.at(subblock_size + i + j + 4)[2] = tmp_32.at(2 * j + 4);
-
-          tmp_32.at(j + 5) = rows_32.at(0 + i + j + 5)[1];
-          rows_32.at(0 + i + j + 5)[1] = rows_32.at(subblock_size + i + j + 5)[0];
-          rows_32.at(subblock_size + i + j + 5)[0] = tmp_32.at(j + 5);
-          tmp_32.at(2 * j + 5) = rows_32.at(0 + i + j + 5)[3];
-          rows_32.at(0 + i + j + 5)[3] = rows_32.at(subblock_size + i + j + 5)[2];
-          rows_32.at(subblock_size + i + j + 5)[2] = tmp_32.at(2 * j + 5);
-
-          tmp_32.at(j + 6) = rows_32.at(0 + i + j + 6)[1];
-          rows_32.at(0 + i + j + 6)[1] = rows_32.at(subblock_size + i + j + 6)[0];
-          rows_32.at(subblock_size + i + j + 6)[0] = tmp_32.at(j + 6);
-          tmp_32.at(2 * j + 6) = rows_32.at(0 + i + j + 6)[3];
-          rows_32.at(0 + i + j + 6)[3] = rows_32.at(subblock_size + i + j + 6)[2];
-          rows_32.at(subblock_size + i + j + 6)[2] = tmp_32.at(2 * j + 6);
-
-          tmp_32.at(j + 7) = rows_32.at(0 + i + j + 7)[1];
-          rows_32.at(0 + i + j + 7)[1] = rows_32.at(subblock_size + i + j + 7)[0];
-          rows_32.at(subblock_size + i + j + 7)[0] = tmp_32.at(j + 7);
-          tmp_32.at(2 * j + 7) = rows_32.at(0 + i + j + 7)[3];
-          rows_32.at(0 + i + j + 7)[3] = rows_32.at(subblock_size + i + j + 7)[2];
-          rows_32.at(subblock_size + i + j + 7)[2] = tmp_32.at(2 * j + 7);
-        }
-      }
-    }
-
-    {
-      // block size = {32, 16}
-      constexpr std::array<std::uint64_t, 2> mask0{0xFFFF0000FFFF0000ull, 0xFF00FF00FF00FF00ull};
-      constexpr std::array<std::uint64_t, 2> mask1{~mask0.at(0), ~mask0.at(1)};
-      for (auto block_size = 32, block_id = 0; block_size > 8; block_size >>= 1, ++block_id) {
-        const std::size_t subblock_size = block_size >> 1;
-        for (auto i = 0; i < 128; i += block_size) {
-          for (auto j = 0u; j < subblock_size; j += 8) {
-            tmp_64_0.at(2 * i + 0) =
-                (rows_64.at(0 + i + j + 0)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 1) =
-                (rows_64.at(0 + i + j + 0)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 2) =
-                (rows_64.at(0 + i + j + 1)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 3) =
-                (rows_64.at(0 + i + j + 1)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 4) =
-                (rows_64.at(0 + i + j + 2)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 5) =
-                (rows_64.at(0 + i + j + 2)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 6) =
-                (rows_64.at(0 + i + j + 3)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 7) =
-                (rows_64.at(0 + i + j + 3)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 8) =
-                (rows_64.at(0 + i + j + 4)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 9) =
-                (rows_64.at(0 + i + j + 4)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 10) =
-                (rows_64.at(0 + i + j + 5)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 11) =
-                (rows_64.at(0 + i + j + 5)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 12) =
-                (rows_64.at(0 + i + j + 6)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 13) =
-                (rows_64.at(0 + i + j + 6)[1] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 14) =
-                (rows_64.at(0 + i + j + 7)[0] & mask0.at(block_id)) >> subblock_size;
-            tmp_64_0.at(2 * i + 15) =
-                (rows_64.at(0 + i + j + 7)[1] & mask0.at(block_id)) >> subblock_size;
-
-            tmp_64_1.at(2 * i + 0) = (rows_64.at(subblock_size + i + j + 0)[0] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 1) = (rows_64.at(subblock_size + i + j + 0)[1] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 2) = (rows_64.at(subblock_size + i + j + 1)[0] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 3) = (rows_64.at(subblock_size + i + j + 1)[1] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 4) = (rows_64.at(subblock_size + i + j + 2)[0] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 5) = (rows_64.at(subblock_size + i + j + 2)[1] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 6) = (rows_64.at(subblock_size + i + j + 3)[0] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 7) = (rows_64.at(subblock_size + i + j + 3)[1] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 8) = (rows_64.at(subblock_size + i + j + 4)[0] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 9) = (rows_64.at(subblock_size + i + j + 4)[1] & mask1.at(block_id))
-                                     << subblock_size;
-            tmp_64_1.at(2 * i + 10) =
-                (rows_64.at(subblock_size + i + j + 5)[0] & mask1.at(block_id)) << subblock_size;
-            tmp_64_1.at(2 * i + 11) =
-                (rows_64.at(subblock_size + i + j + 5)[1] & mask1.at(block_id)) << subblock_size;
-            tmp_64_1.at(2 * i + 12) =
-                (rows_64.at(subblock_size + i + j + 6)[0] & mask1.at(block_id)) << subblock_size;
-            tmp_64_1.at(2 * i + 13) =
-                (rows_64.at(subblock_size + i + j + 6)[1] & mask1.at(block_id)) << subblock_size;
-            tmp_64_1.at(2 * i + 14) =
-                (rows_64.at(subblock_size + i + j + 7)[0] & mask1.at(block_id)) << subblock_size;
-            tmp_64_1.at(2 * i + 15) =
-                (rows_64.at(subblock_size + i + j + 7)[1] & mask1.at(block_id)) << subblock_size;
-
-            rows_64.at(0 + i + j + 0)[0] =
-                (rows_64.at(0 + i + j + 0)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 0);
-            rows_64.at(0 + i + j + 0)[1] =
-                (rows_64.at(0 + i + j + 0)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 1);
-            rows_64.at(0 + i + j + 1)[0] =
-                (rows_64.at(0 + i + j + 1)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 2);
-            rows_64.at(0 + i + j + 1)[1] =
-                (rows_64.at(0 + i + j + 1)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 3);
-            rows_64.at(0 + i + j + 2)[0] =
-                (rows_64.at(0 + i + j + 2)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 4);
-            rows_64.at(0 + i + j + 2)[1] =
-                (rows_64.at(0 + i + j + 2)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 5);
-            rows_64.at(0 + i + j + 3)[0] =
-                (rows_64.at(0 + i + j + 3)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 6);
-            rows_64.at(0 + i + j + 3)[1] =
-                (rows_64.at(0 + i + j + 3)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 7);
-            rows_64.at(0 + i + j + 4)[0] =
-                (rows_64.at(0 + i + j + 4)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 8);
-            rows_64.at(0 + i + j + 4)[1] =
-                (rows_64.at(0 + i + j + 4)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 9);
-            rows_64.at(0 + i + j + 5)[0] =
-                (rows_64.at(0 + i + j + 5)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 10);
-            rows_64.at(0 + i + j + 5)[1] =
-                (rows_64.at(0 + i + j + 5)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 11);
-            rows_64.at(0 + i + j + 6)[0] =
-                (rows_64.at(0 + i + j + 6)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 12);
-            rows_64.at(0 + i + j + 6)[1] =
-                (rows_64.at(0 + i + j + 6)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 13);
-            rows_64.at(0 + i + j + 7)[0] =
-                (rows_64.at(0 + i + j + 7)[0] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 14);
-            rows_64.at(0 + i + j + 7)[1] =
-                (rows_64.at(0 + i + j + 7)[1] & mask1.at(block_id)) | tmp_64_1.at(2 * i + 15);
-
-            rows_64.at(subblock_size + i + j + 0)[0] =
-                (rows_64.at(subblock_size + i + j + 0)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 0);
-            rows_64.at(subblock_size + i + j + 0)[1] =
-                (rows_64.at(subblock_size + i + j + 0)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 1);
-            rows_64.at(subblock_size + i + j + 1)[0] =
-                (rows_64.at(subblock_size + i + j + 1)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 2);
-            rows_64.at(subblock_size + i + j + 1)[1] =
-                (rows_64.at(subblock_size + i + j + 1)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 3);
-            rows_64.at(subblock_size + i + j + 2)[0] =
-                (rows_64.at(subblock_size + i + j + 2)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 4);
-            rows_64.at(subblock_size + i + j + 2)[1] =
-                (rows_64.at(subblock_size + i + j + 2)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 5);
-            rows_64.at(subblock_size + i + j + 3)[0] =
-                (rows_64.at(subblock_size + i + j + 3)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 6);
-            rows_64.at(subblock_size + i + j + 3)[1] =
-                (rows_64.at(subblock_size + i + j + 3)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 7);
-            rows_64.at(subblock_size + i + j + 4)[0] =
-                (rows_64.at(subblock_size + i + j + 4)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 8);
-            rows_64.at(subblock_size + i + j + 4)[1] =
-                (rows_64.at(subblock_size + i + j + 4)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 9);
-            rows_64.at(subblock_size + i + j + 5)[0] =
-                (rows_64.at(subblock_size + i + j + 5)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 10);
-            rows_64.at(subblock_size + i + j + 5)[1] =
-                (rows_64.at(subblock_size + i + j + 5)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 11);
-            rows_64.at(subblock_size + i + j + 6)[0] =
-                (rows_64.at(subblock_size + i + j + 6)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 12);
-            rows_64.at(subblock_size + i + j + 6)[1] =
-                (rows_64.at(subblock_size + i + j + 6)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 13);
-            rows_64.at(subblock_size + i + j + 7)[0] =
-                (rows_64.at(subblock_size + i + j + 7)[0] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 14);
-            rows_64.at(subblock_size + i + j + 7)[1] =
-                (rows_64.at(subblock_size + i + j + 7)[1] & mask0.at(block_id)) |
-                tmp_64_0.at(2 * i + 15);
-          }
-        }
-      }
-    }
-
-    // block size = 8
-    // endianness madness
-    // although we have little endianness here, integers are interpreted in a reversed order, i.e.,
-    // std::byte[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07} is interpreted as
-    // uint64_t 0x07060504030201
-    // if we want to swap last 4 bits from 0x0F and the first 4 bits from 0xAC, we need to
-    // perform left shift for the first and right shift to the latter, not as for the 16 and 32
-    // block size, and the mask should be in the correct order from here on
-    {
-      constexpr std::size_t block_size = 8;
-      constexpr std::uint64_t mask0{0x0F0F0F0F0F0F0F0Full};
-      constexpr std::uint64_t mask1 = ~mask0;
-      constexpr std::size_t subblock_size = block_size / 2;
-      for (auto i = 0; i < 128; i += 2 * block_size) {
-        tmp_64_0.at(2 * i + 0) = (rows_64.at(0 + i + 0)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 1) = (rows_64.at(0 + i + 0)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 2) = (rows_64.at(0 + i + 1)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 3) = (rows_64.at(0 + i + 1)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 4) = (rows_64.at(0 + i + 2)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 5) = (rows_64.at(0 + i + 2)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 6) = (rows_64.at(0 + i + 3)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 7) = (rows_64.at(0 + i + 3)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 8) = (rows_64.at(block_size + i + 0)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 9) = (rows_64.at(block_size + i + 0)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 10) = (rows_64.at(block_size + i + 1)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 11) = (rows_64.at(block_size + i + 1)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 12) = (rows_64.at(block_size + i + 2)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 13) = (rows_64.at(block_size + i + 2)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 14) = (rows_64.at(block_size + i + 3)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 15) = (rows_64.at(block_size + i + 3)[1] & mask0) << subblock_size;
-
-        tmp_64_1.at(2 * i + 0) = (rows_64.at(subblock_size + i + 0)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 1) = (rows_64.at(subblock_size + i + 0)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 2) = (rows_64.at(subblock_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 3) = (rows_64.at(subblock_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 4) = (rows_64.at(subblock_size + i + 2)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 5) = (rows_64.at(subblock_size + i + 2)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 6) = (rows_64.at(subblock_size + i + 3)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 7) = (rows_64.at(subblock_size + i + 3)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 8) =
-            (rows_64.at(block_size + subblock_size + i + 0)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 9) =
-            (rows_64.at(block_size + subblock_size + i + 0)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 10) =
-            (rows_64.at(block_size + subblock_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 11) =
-            (rows_64.at(block_size + subblock_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 12) =
-            (rows_64.at(block_size + subblock_size + i + 2)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 13) =
-            (rows_64.at(block_size + subblock_size + i + 2)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 14) =
-            (rows_64.at(block_size + subblock_size + i + 3)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 15) =
-            (rows_64.at(block_size + subblock_size + i + 3)[1] & mask1) >> subblock_size;
-
-        rows_64.at(0 + i + 0)[0] = (rows_64.at(0 + i + 0)[0] & mask1) | tmp_64_1.at(2 * i + 0);
-        rows_64.at(0 + i + 0)[1] = (rows_64.at(0 + i + 0)[1] & mask1) | tmp_64_1.at(2 * i + 1);
-        rows_64.at(0 + i + 1)[0] = (rows_64.at(0 + i + 1)[0] & mask1) | tmp_64_1.at(2 * i + 2);
-        rows_64.at(0 + i + 1)[1] = (rows_64.at(0 + i + 1)[1] & mask1) | tmp_64_1.at(2 * i + 3);
-        rows_64.at(0 + i + 2)[0] = (rows_64.at(0 + i + 2)[0] & mask1) | tmp_64_1.at(2 * i + 4);
-        rows_64.at(0 + i + 2)[1] = (rows_64.at(0 + i + 2)[1] & mask1) | tmp_64_1.at(2 * i + 5);
-        rows_64.at(0 + i + 3)[0] = (rows_64.at(0 + i + 3)[0] & mask1) | tmp_64_1.at(2 * i + 6);
-        rows_64.at(0 + i + 3)[1] = (rows_64.at(0 + i + 3)[1] & mask1) | tmp_64_1.at(2 * i + 7);
-        rows_64.at(block_size + i + 0)[0] =
-            (rows_64.at(block_size + i + 0)[0] & mask1) | tmp_64_1.at(2 * i + 8);
-        rows_64.at(block_size + i + 0)[1] =
-            (rows_64.at(block_size + i + 0)[1] & mask1) | tmp_64_1.at(2 * i + 9);
-        rows_64.at(block_size + i + 1)[0] =
-            (rows_64.at(block_size + i + 1)[0] & mask1) | tmp_64_1.at(2 * i + 10);
-        rows_64.at(block_size + i + 1)[1] =
-            (rows_64.at(block_size + i + 1)[1] & mask1) | tmp_64_1.at(2 * i + 11);
-        rows_64.at(block_size + i + 2)[0] =
-            (rows_64.at(block_size + i + 2)[0] & mask1) | tmp_64_1.at(2 * i + 12);
-        rows_64.at(block_size + i + 2)[1] =
-            (rows_64.at(block_size + i + 2)[1] & mask1) | tmp_64_1.at(2 * i + 13);
-        rows_64.at(block_size + i + 3)[0] =
-            (rows_64.at(block_size + i + 3)[0] & mask1) | tmp_64_1.at(2 * i + 14);
-        rows_64.at(block_size + i + 3)[1] =
-            (rows_64.at(block_size + i + 3)[1] & mask1) | tmp_64_1.at(2 * i + 15);
-
-        rows_64.at(subblock_size + i + 0)[0] =
-            (rows_64.at(subblock_size + i + 0)[0] & mask0) | tmp_64_0.at(2 * i + 0);
-        rows_64.at(subblock_size + i + 0)[1] =
-            (rows_64.at(subblock_size + i + 0)[1] & mask0) | tmp_64_0.at(2 * i + 1);
-        rows_64.at(subblock_size + i + 1)[0] =
-            (rows_64.at(subblock_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 2);
-        rows_64.at(subblock_size + i + 1)[1] =
-            (rows_64.at(subblock_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 3);
-        rows_64.at(subblock_size + i + 2)[0] =
-            (rows_64.at(subblock_size + i + 2)[0] & mask0) | tmp_64_0.at(2 * i + 4);
-        rows_64.at(subblock_size + i + 2)[1] =
-            (rows_64.at(subblock_size + i + 2)[1] & mask0) | tmp_64_0.at(2 * i + 5);
-        rows_64.at(subblock_size + i + 3)[0] =
-            (rows_64.at(subblock_size + i + 3)[0] & mask0) | tmp_64_0.at(2 * i + 6);
-        rows_64.at(subblock_size + i + 3)[1] =
-            (rows_64.at(subblock_size + i + 3)[1] & mask0) | tmp_64_0.at(2 * i + 7);
-        rows_64.at(block_size + subblock_size + i + 0)[0] =
-            (rows_64.at(block_size + subblock_size + i + 0)[0] & mask0) | tmp_64_0.at(2 * i + 8);
-        rows_64.at(block_size + subblock_size + i + 0)[1] =
-            (rows_64.at(block_size + subblock_size + i + 0)[1] & mask0) | tmp_64_0.at(2 * i + 9);
-        rows_64.at(block_size + subblock_size + i + 1)[0] =
-            (rows_64.at(block_size + subblock_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 10);
-        rows_64.at(block_size + subblock_size + i + 1)[1] =
-            (rows_64.at(block_size + subblock_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 11);
-        rows_64.at(block_size + subblock_size + i + 2)[0] =
-            (rows_64.at(block_size + subblock_size + i + 2)[0] & mask0) | tmp_64_0.at(2 * i + 12);
-        rows_64.at(block_size + subblock_size + i + 2)[1] =
-            (rows_64.at(block_size + subblock_size + i + 2)[1] & mask0) | tmp_64_0.at(2 * i + 13);
-        rows_64.at(block_size + subblock_size + i + 3)[0] =
-            (rows_64.at(block_size + subblock_size + i + 3)[0] & mask0) | tmp_64_0.at(2 * i + 14);
-        rows_64.at(block_size + subblock_size + i + 3)[1] =
-            (rows_64.at(block_size + subblock_size + i + 3)[1] & mask0) | tmp_64_0.at(2 * i + 15);
-      }
-    }
-
-    // block size = 4
-    {
-      constexpr std::size_t block_size = 4;
-      constexpr std::uint64_t mask0{0x3333333333333333ull};
-      constexpr std::uint64_t mask1 = ~mask0;
-      constexpr std::size_t subblock_size = block_size / 2;
-      for (auto i = 0; i < 128; i += 4 * block_size) {
-        tmp_64_0.at(2 * i + 0) = (rows_64.at(0 + i + 0)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 1) = (rows_64.at(0 + i + 0)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 2) = (rows_64.at(0 + i + 1)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 3) = (rows_64.at(0 + i + 1)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 4) = (rows_64.at(block_size + 0 + i + 0)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 5) = (rows_64.at(block_size + 0 + i + 0)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 6) = (rows_64.at(block_size + 0 + i + 1)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 7) = (rows_64.at(block_size + 0 + i + 1)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 8) = (rows_64.at(2 * block_size + i + 0)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 9) = (rows_64.at(2 * block_size + i + 0)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 10) = (rows_64.at(2 * block_size + i + 1)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 11) = (rows_64.at(2 * block_size + i + 1)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 12) = (rows_64.at(3 * block_size + i + 0)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 13) = (rows_64.at(3 * block_size + i + 0)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 14) = (rows_64.at(3 * block_size + i + 1)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 15) = (rows_64.at(3 * block_size + i + 1)[1] & mask0) << subblock_size;
-
-        tmp_64_1.at(2 * i + 0) = (rows_64.at(subblock_size + i + 0)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 1) = (rows_64.at(subblock_size + i + 0)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 2) = (rows_64.at(subblock_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 3) = (rows_64.at(subblock_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 4) =
-            (rows_64.at(block_size + subblock_size + i + 0)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 5) =
-            (rows_64.at(block_size + subblock_size + i + 0)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 6) =
-            (rows_64.at(block_size + subblock_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 7) =
-            (rows_64.at(block_size + subblock_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 8) =
-            (rows_64.at(2 * block_size + subblock_size + i + 0)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 9) =
-            (rows_64.at(2 * block_size + subblock_size + i + 0)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 10) =
-            (rows_64.at(2 * block_size + subblock_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 11) =
-            (rows_64.at(2 * block_size + subblock_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 12) =
-            (rows_64.at(3 * block_size + subblock_size + i + 0)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 13) =
-            (rows_64.at(3 * block_size + subblock_size + i + 0)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 14) =
-            (rows_64.at(3 * block_size + subblock_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 15) =
-            (rows_64.at(3 * block_size + subblock_size + i + 1)[1] & mask1) >> subblock_size;
-
-        rows_64.at(0 + i + 0)[0] = (rows_64.at(0 + i + 0)[0] & mask1) | tmp_64_1.at(2 * i + 0);
-        rows_64.at(0 + i + 0)[1] = (rows_64.at(0 + i + 0)[1] & mask1) | tmp_64_1.at(2 * i + 1);
-        rows_64.at(0 + i + 1)[0] = (rows_64.at(0 + i + 1)[0] & mask1) | tmp_64_1.at(2 * i + 2);
-        rows_64.at(0 + i + 1)[1] = (rows_64.at(0 + i + 1)[1] & mask1) | tmp_64_1.at(2 * i + 3);
-        rows_64.at(block_size + i + 0)[0] =
-            (rows_64.at(block_size + i + 0)[0] & mask1) | tmp_64_1.at(2 * i + 4);
-        rows_64.at(block_size + i + 0)[1] =
-            (rows_64.at(block_size + i + 0)[1] & mask1) | tmp_64_1.at(2 * i + 5);
-        rows_64.at(block_size + i + 1)[0] =
-            (rows_64.at(block_size + i + 1)[0] & mask1) | tmp_64_1.at(2 * i + 6);
-        rows_64.at(block_size + i + 1)[1] =
-            (rows_64.at(block_size + i + 1)[1] & mask1) | tmp_64_1.at(2 * i + 7);
-        rows_64.at(2 * block_size + i + 0)[0] =
-            (rows_64.at(2 * block_size + i + 0)[0] & mask1) | tmp_64_1.at(2 * i + 8);
-        rows_64.at(2 * block_size + i + 0)[1] =
-            (rows_64.at(2 * block_size + i + 0)[1] & mask1) | tmp_64_1.at(2 * i + 9);
-        rows_64.at(2 * block_size + i + 1)[0] =
-            (rows_64.at(2 * block_size + i + 1)[0] & mask1) | tmp_64_1.at(2 * i + 10);
-        rows_64.at(2 * block_size + i + 1)[1] =
-            (rows_64.at(2 * block_size + i + 1)[1] & mask1) | tmp_64_1.at(2 * i + 11);
-        rows_64.at(3 * block_size + i + 0)[0] =
-            (rows_64.at(3 * block_size + i + 0)[0] & mask1) | tmp_64_1.at(2 * i + 12);
-        rows_64.at(3 * block_size + i + 0)[1] =
-            (rows_64.at(3 * block_size + i + 0)[1] & mask1) | tmp_64_1.at(2 * i + 13);
-        rows_64.at(3 * block_size + i + 1)[0] =
-            (rows_64.at(3 * block_size + i + 1)[0] & mask1) | tmp_64_1.at(2 * i + 14);
-        rows_64.at(3 * block_size + i + 1)[1] =
-            (rows_64.at(3 * block_size + i + 1)[1] & mask1) | tmp_64_1.at(2 * i + 15);
-
-        rows_64.at(subblock_size + i + 0)[0] =
-            (rows_64.at(subblock_size + i + 0)[0] & mask0) | tmp_64_0.at(2 * i + 0);
-        rows_64.at(subblock_size + i + 0)[1] =
-            (rows_64.at(subblock_size + i + 0)[1] & mask0) | tmp_64_0.at(2 * i + 1);
-        rows_64.at(subblock_size + i + 1)[0] =
-            (rows_64.at(subblock_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 2);
-        rows_64.at(subblock_size + i + 1)[1] =
-            (rows_64.at(subblock_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 3);
-        rows_64.at(block_size + subblock_size + i + 0)[0] =
-            (rows_64.at(block_size + subblock_size + i + 0)[0] & mask0) | tmp_64_0.at(2 * i + 4);
-        rows_64.at(block_size + subblock_size + i + 0)[1] =
-            (rows_64.at(block_size + subblock_size + i + 0)[1] & mask0) | tmp_64_0.at(2 * i + 5);
-        rows_64.at(block_size + subblock_size + i + 1)[0] =
-            (rows_64.at(block_size + subblock_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 6);
-        rows_64.at(block_size + subblock_size + i + 1)[1] =
-            (rows_64.at(block_size + subblock_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 7);
-        rows_64.at(2 * block_size + subblock_size + i + 0)[0] =
-            (rows_64.at(2 * block_size + subblock_size + i + 0)[0] & mask0) |
-            tmp_64_0.at(2 * i + 8);
-        rows_64.at(2 * block_size + subblock_size + i + 0)[1] =
-            (rows_64.at(2 * block_size + subblock_size + i + 0)[1] & mask0) |
-            tmp_64_0.at(2 * i + 9);
-        rows_64.at(2 * block_size + subblock_size + i + 1)[0] =
-            (rows_64.at(2 * block_size + subblock_size + i + 1)[0] & mask0) |
-            tmp_64_0.at(2 * i + 10);
-        rows_64.at(2 * block_size + subblock_size + i + 1)[1] =
-            (rows_64.at(2 * block_size + subblock_size + i + 1)[1] & mask0) |
-            tmp_64_0.at(2 * i + 11);
-        rows_64.at(3 * block_size + subblock_size + i + 0)[0] =
-            (rows_64.at(3 * block_size + subblock_size + i + 0)[0] & mask0) |
-            tmp_64_0.at(2 * i + 12);
-        rows_64.at(3 * block_size + subblock_size + i + 0)[1] =
-            (rows_64.at(3 * block_size + subblock_size + i + 0)[1] & mask0) |
-            tmp_64_0.at(2 * i + 13);
-        rows_64.at(3 * block_size + subblock_size + i + 1)[0] =
-            (rows_64.at(3 * block_size + subblock_size + i + 1)[0] & mask0) |
-            tmp_64_0.at(2 * i + 14);
-        rows_64.at(3 * block_size + subblock_size + i + 1)[1] =
-            (rows_64.at(3 * block_size + subblock_size + i + 1)[1] & mask0) |
-            tmp_64_0.at(2 * i + 15);
-      }
-    }
-
-    // block size = 2
-    {
-      constexpr std::size_t block_size = 2;
-      constexpr std::uint64_t mask0{0x5555555555555555ull};
-      constexpr std::uint64_t mask1 = ~mask0;
-      const std::size_t subblock_size = block_size >> 1;
-      for (auto i = 0; i < 128; i += block_size * 8) {
-        tmp_64_0.at(2 * i + 0) = (rows_64.at(i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 1) = (rows_64.at(i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 2) = (rows_64.at(block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 3) = (rows_64.at(block_size + i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 4) = (rows_64.at(2 * block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 5) = (rows_64.at(2 * block_size + i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 6) = (rows_64.at(3 * block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 7) = (rows_64.at(3 * block_size + i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 8) = (rows_64.at(4 * block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 9) = (rows_64.at(4 * block_size + i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 10) = (rows_64.at(5 * block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 11) = (rows_64.at(5 * block_size + i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 12) = (rows_64.at(6 * block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 13) = (rows_64.at(6 * block_size + i)[1] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 14) = (rows_64.at(7 * block_size + i)[0] & mask0) << subblock_size;
-        tmp_64_0.at(2 * i + 15) = (rows_64.at(7 * block_size + i)[1] & mask0) << subblock_size;
-
-        tmp_64_1.at(2 * i + 0) = (rows_64.at(i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 1) = (rows_64.at(i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 2) = (rows_64.at(block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 3) = (rows_64.at(block_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 4) = (rows_64.at(2 * block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 5) = (rows_64.at(2 * block_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 6) = (rows_64.at(3 * block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 7) = (rows_64.at(3 * block_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 8) = (rows_64.at(4 * block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 9) = (rows_64.at(4 * block_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 10) = (rows_64.at(5 * block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 11) = (rows_64.at(5 * block_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 12) = (rows_64.at(6 * block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 13) = (rows_64.at(6 * block_size + i + 1)[1] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 14) = (rows_64.at(7 * block_size + i + 1)[0] & mask1) >> subblock_size;
-        tmp_64_1.at(2 * i + 15) = (rows_64.at(7 * block_size + i + 1)[1] & mask1) >> subblock_size;
-
-        rows_64.at(0 + i + 0)[0] = (rows_64.at(i)[0] & mask1) | tmp_64_1.at(2 * i + 0);
-        rows_64.at(0 + i + 0)[1] = (rows_64.at(i)[1] & mask1) | tmp_64_1.at(2 * i + 1);
-        rows_64.at(block_size + i)[0] =
-            (rows_64.at(block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 2);
-        rows_64.at(block_size + i)[1] =
-            (rows_64.at(block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 3);
-        rows_64.at(2 * block_size + i)[0] =
-            (rows_64.at(2 * block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 4);
-        rows_64.at(2 * block_size + i)[1] =
-            (rows_64.at(2 * block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 5);
-        rows_64.at(3 * block_size + i)[0] =
-            (rows_64.at(3 * block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 6);
-        rows_64.at(3 * block_size + i)[1] =
-            (rows_64.at(3 * block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 7);
-        rows_64.at(4 * block_size + i)[0] =
-            (rows_64.at(4 * block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 8);
-        rows_64.at(4 * block_size + i)[1] =
-            (rows_64.at(4 * block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 9);
-        rows_64.at(5 * block_size + i)[0] =
-            (rows_64.at(5 * block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 10);
-        rows_64.at(5 * block_size + i)[1] =
-            (rows_64.at(5 * block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 11);
-        rows_64.at(6 * block_size + i)[0] =
-            (rows_64.at(6 * block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 12);
-        rows_64.at(6 * block_size + i)[1] =
-            (rows_64.at(6 * block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 13);
-        rows_64.at(7 * block_size + i)[0] =
-            (rows_64.at(7 * block_size + i)[0] & mask1) | tmp_64_1.at(2 * i + 14);
-        rows_64.at(7 * block_size + i)[1] =
-            (rows_64.at(7 * block_size + i)[1] & mask1) | tmp_64_1.at(2 * i + 15);
-
-        rows_64.at(i + 1)[0] = (rows_64.at(i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 0);
-        rows_64.at(i + 1)[1] = (rows_64.at(i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 1);
-        rows_64.at(block_size + i + 1)[0] =
-            (rows_64.at(block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 2);
-        rows_64.at(block_size + i + 1)[1] =
-            (rows_64.at(block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 3);
-        rows_64.at(2 * block_size + i + 1)[0] =
-            (rows_64.at(2 * block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 4);
-        rows_64.at(2 * block_size + i + 1)[1] =
-            (rows_64.at(2 * block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 5);
-        rows_64.at(3 * block_size + i + 1)[0] =
-            (rows_64.at(3 * block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 6);
-        rows_64.at(3 * block_size + i + 1)[1] =
-            (rows_64.at(3 * block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 7);
-        rows_64.at(4 * block_size + i + 1)[0] =
-            (rows_64.at(4 * block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 8);
-        rows_64.at(4 * block_size + i + 1)[1] =
-            (rows_64.at(4 * block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 9);
-        rows_64.at(5 * block_size + i + 1)[0] =
-            (rows_64.at(5 * block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 10);
-        rows_64.at(5 * block_size + i + 1)[1] =
-            (rows_64.at(5 * block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 11);
-        rows_64.at(6 * block_size + i + 1)[0] =
-            (rows_64.at(6 * block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 12);
-        rows_64.at(6 * block_size + i + 1)[1] =
-            (rows_64.at(6 * block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 13);
-        rows_64.at(7 * block_size + i + 1)[0] =
-            (rows_64.at(7 * block_size + i + 1)[0] & mask0) | tmp_64_0.at(2 * i + 14);
-        rows_64.at(7 * block_size + i + 1)[1] =
-            (rows_64.at(7 * block_size + i + 1)[1] & mask0) | tmp_64_0.at(2 * i + 15);
-      }
-    }
+    Transpose128x128InPlace(rows_64, rows_32);
   }
 }
 
@@ -868,6 +244,253 @@ std::string BitMatrix::AsString() const {
     s.append(data_.at(i).AsString() + "\n");
   }
   return s;
+}
+
+void BitMatrix::Transpose128RowsInplace(std::array<std::byte*, 128>& matrix,
+                                        std::size_t num_columns) {
+  constexpr std::size_t blk_size = 128;
+  for (auto blk_offset = 0u; blk_offset < num_columns; blk_offset += blk_size) {
+    std::array<std::uint64_t*, blk_size> rows_64;
+    std::array<std::uint32_t*, blk_size> rows_32;
+
+    for (auto i = 0u; i < blk_size; ++i) {
+      rows_64.at(i) = reinterpret_cast<std::uint64_t*>(matrix.at(i) + (blk_offset >> 3));
+      rows_32.at(i) = reinterpret_cast<std::uint32_t*>(matrix.at(i) + (blk_offset >> 3));
+    }
+
+    Transpose128x128InPlace(rows_64, rows_32);
+  }
+}
+
+void BitMatrix::Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64,
+                                        std::array<std::uint32_t*, 128>& rows_32) {
+  constexpr std::size_t blk_size = 128;
+
+  std::array<std::uint64_t, blk_size> tmp_64_0, tmp_64_1;
+
+  {
+    constexpr std::size_t this_blk_size = 128;
+    // swap the corresponding 64-bit blocks
+    constexpr std::size_t this_subblk_size = this_blk_size / 2;
+    for (auto i = 0u; i < this_subblk_size; ++i) {
+      std::swap(rows_64.at(i)[1], rows_64.at(this_subblk_size + i)[0]);
+    }
+  }
+
+  {
+    constexpr std::size_t this_blk_size = 64;
+    constexpr std::size_t this_subblk_size = this_blk_size / 2;
+    // swap the corresponding 32-bit blocks
+    for (auto i = 0u; i < blk_size; i += this_blk_size) {
+      for (auto j = 0u; j < this_subblk_size; ++j) {
+        std::swap(rows_32.at(i + j)[1], rows_32.at(this_subblk_size + i + j)[0]);
+        std::swap(rows_32.at(i + j)[3], rows_32.at(this_subblk_size + i + j)[2]);
+      }
+    }
+  }
+
+  {
+    // block size = {32, 16}
+    constexpr std::array<std::uint64_t, 2> mask0{0xFFFF0000FFFF0000ull, 0xFF00FF00FF00FF00ull};
+    constexpr std::array<std::uint64_t, 2> mask1{~mask0.at(0), ~mask0.at(1)};
+    for (auto this_blk_size = 32, block_id = 0; this_blk_size > 8;
+         this_blk_size >>= 1, ++block_id) {
+      const std::size_t this_subblk_size = this_blk_size >> 1;
+      for (auto i = 0u; i < blk_size; i += this_blk_size) {
+        for (auto j = 0u; j < this_subblk_size; ++j) {
+          tmp_64_0.at(i + j) = (rows_64.at(i + j)[0] & mask0.at(block_id)) >> this_subblk_size;
+          tmp_64_0.at(i + this_subblk_size + j) =
+              (rows_64.at(i + j)[1] & mask0.at(block_id)) >> this_subblk_size;
+
+          tmp_64_1.at(i + j) = (rows_64.at(this_subblk_size + i + j)[0] & mask1.at(block_id))
+                               << this_subblk_size;
+          tmp_64_1.at(i + this_subblk_size + j) =
+              (rows_64.at(this_subblk_size + i + j)[1] & mask1.at(block_id)) << this_subblk_size;
+
+          rows_64.at(i + j)[0] = (rows_64.at(i + j)[0] & mask1.at(block_id)) | tmp_64_1.at(i + j);
+          rows_64.at(i + j)[1] =
+              (rows_64.at(i + j)[1] & mask1.at(block_id)) | tmp_64_1.at(i + this_subblk_size + j);
+
+          rows_64.at(this_subblk_size + i + j)[0] =
+              (rows_64.at(this_subblk_size + i + j)[0] & mask0.at(block_id)) | tmp_64_0.at(i + j);
+          rows_64.at(this_subblk_size + i + j)[1] =
+              (rows_64.at(this_subblk_size + i + j)[1] & mask0.at(block_id)) |
+              tmp_64_0.at(i + this_subblk_size + j);
+        }
+      }
+    }
+  }
+
+  // block size in {8, 4, 2}
+  // endianness madness
+  // although we have little endianness here, integers are interpreted in a reversed order, i.e.,
+  // std::byte[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07} is interpreted as
+  // 0x07060504030201ull
+  // if we want to swap last 4 bits from 0x0F and the first 4 bits from 0xAC, we need to
+  // perform left shift for the first and right shift to the latter, not as for the 16 and 32
+  // block size, and the mask should be in the correct order from here on
+
+  {
+    // block size = {8, 4, 2}
+    constexpr std::array<std::uint64_t, 3> mask0{0x0F0F0F0F0F0F0F0Full, 0x3333333333333333ull,
+                                                 0x5555555555555555ull};
+    constexpr std::array<std::uint64_t, 3> mask1{~mask0.at(0), ~mask0.at(1), ~mask0.at(2)};
+    for (auto this_blk_size = 8, block_id = 0; this_blk_size > 1; this_blk_size >>= 1, ++block_id) {
+      const std::size_t this_subblk_size = this_blk_size >> 1;
+      for (auto i = 0u; i < blk_size; i += this_blk_size) {
+        for (auto j = 0u; j < this_subblk_size; ++j) {
+          tmp_64_0.at(i + j) = (rows_64.at(i + j)[0] & mask0.at(block_id)) << this_subblk_size;
+          tmp_64_0.at(i + this_subblk_size + j) = (rows_64.at(i + j)[1] & mask0.at(block_id))
+                                                  << this_subblk_size;
+
+          tmp_64_1.at(i + j) =
+              (rows_64.at(this_subblk_size + i + j)[0] & mask1.at(block_id)) >> this_subblk_size;
+          tmp_64_1.at(i + this_subblk_size + j) =
+              (rows_64.at(this_subblk_size + i + j)[1] & mask1.at(block_id)) >> this_subblk_size;
+
+          rows_64.at(i + j)[0] = (rows_64.at(i + j)[0] & mask1.at(block_id)) | tmp_64_1.at(i + j);
+          rows_64.at(i + j)[1] =
+              (rows_64.at(i + j)[1] & mask1.at(block_id)) | tmp_64_1.at(i + this_subblk_size + j);
+
+          rows_64.at(this_subblk_size + i + j)[0] =
+              (rows_64.at(this_subblk_size + i + j)[0] & mask0.at(block_id)) | tmp_64_0.at(i + j);
+          rows_64.at(this_subblk_size + i + j)[1] =
+              (rows_64.at(this_subblk_size + i + j)[1] & mask0.at(block_id)) |
+              tmp_64_0.at(i + this_subblk_size + j);
+        }
+      }
+    }
+  }
+}
+
+// BitMatrix::TransposeUsingBitSlicing(...)
+//
+// MIT License
+//
+// Copyright (c) 2018 Xiao Wang (wangxiao@gmail.com)
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+//
+// Enquiries about further applications and development opportunities are
+// welcome.
+
+void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, std::size_t ncols) {
+#define INP(r, c) reinterpret_cast<std::uint8_t*>(matrix.at(r))[c / 8]
+#define OUT(r, c) out[(r)*nrows / 8 + (c) / 8]
+
+  constexpr std::uint64_t nrows = 128;
+  std::vector<std::uint8_t> out(((nrows * ncols) + 7) / 8, 0);
+
+  uint64_t rr, cc;
+  int i;
+
+
+  assert(nrows % 8 == 0 && ncols % 8 == 0);
+
+  // constexpr auto block_size = nrows * nrows;
+  // const auto num_blocks = nrows * ncols / block_size;
+
+//#define ABYN_AVX2
+#if defined(ABYN_AVX512)
+  // TODO: not tested yet
+  __m512i vec;
+  for (rr = 0; rr <= nrows - 32; rr += 8) {
+    for (cc = 0; cc < ncols; cc += 64) {
+      vec = _mm512_set_epi8(
+          INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
+          INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
+          INP(rr + 50, cc), INP(rr + 51, cc), INP(rr + 52, cc), INP(rr + 53, cc), INP(rr + 54, cc),
+          INP(rr + 55, cc), INP(rr + 39, cc), INP(rr + 40, cc), INP(rr + 41, cc), INP(rr + 42, cc),
+          INP(rr + 43, cc), INP(rr + 44, cc), INP(rr + 45, cc), INP(rr + 46, cc), INP(rr + 32, cc),
+          INP(rr + 33, cc), INP(rr + 34, cc), INP(rr + 35, cc), INP(rr + 36, cc), INP(rr + 37, cc),
+          INP(rr + 38, cc), INP(rr + 39, cc), INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc),
+          INP(rr + 27, cc), INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
+          INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc), INP(rr + 20, cc),
+          INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc), INP(rr + 8, cc), INP(rr + 9, cc),
+          INP(rr + 10, cc), INP(rr + 11, cc), INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc),
+          INP(rr + 15, cc), INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
+          INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
+        OUT(cc + i, rr) = _mm512_movepi64_mask(vec);
+      }
+    }
+  }
+#elif defined(ABYN_AVX2)
+  __m256i vec;
+  for (rr = 0; rr <= nrows - 32; rr += 32) {
+    for (cc = 0; cc < ncols; cc += 8) {
+      vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
+                            INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
+                            INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
+                            INP(rr + 20, cc), INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc),
+                            INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
+                            INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
+                            INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
+                            INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
+        *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
+        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
+        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+      }
+    }
+  }
+#else
+  __m128i vec;
+  // Do the main body in 16x8 blocks:
+  for (rr = 0; rr <= nrows - 16; rr += 16) {
+    for (cc = 0; cc < ncols; cc += 8) {
+      vec = _mm_set_epi8(INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
+                         INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
+                         INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
+                         INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
+        *(uint16_t*)&OUT(cc + i, rr) = _mm_movemask_epi8(vec);
+        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
+        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+      }
+    }
+  }
+#endif
+
+  for (auto j = 0ull; j < ncols; ++j) {
+    std::copy(out.data() + j * 16, out.data() + (j + 1) * 16,
+              reinterpret_cast<std::uint8_t*>(matrix.at(j % nrows)) + (j / nrows) * 16);
+  }
+
+  // for (auto j = 0ull; j < nrows; ++j) {
+  // std::copy(out.data() + j * 16 * num_blocks, out.data() + (j + 1) * 16 * num_blocks,
+  //          reinterpret_cast<std::uint8_t*>(matrix.at(j)));
+  // }
+}  // namespace ENCRYPTO
+
+bool BitMatrix::operator==(const BitMatrix& other) {
+  if (other.data_.size() != data_.size()) {
+    return false;
+  }
+
+  for (auto i = 0ull; i < data_.size(); ++i) {
+    if (data_.at(i) != other.data_.at(i)) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace ENCRYPTO
