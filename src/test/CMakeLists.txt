@@ -4,6 +4,7 @@ add_executable(abyntest
         test_bitmatrix.cpp
         test_bitvector.cpp
         test_misc.cpp
+        test_ot.cpp
         )
 
 target_compile_features(abyntest PRIVATE cxx_std_17)
