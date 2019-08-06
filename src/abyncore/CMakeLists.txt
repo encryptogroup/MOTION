@@ -10,6 +10,7 @@ add_library(abyn
         communication/message.cpp
         communication/output_message.cpp
         crypto/aes_randomness_generator.cpp
+        crypto/blake2b.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
         gate/gate.cpp
