@@ -51,7 +51,7 @@ namespace ABYN::Gates::Arithmetic {
 //
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticInputGate : public Interfaces::InputGate {
+class ArithmeticInputGate final : public Interfaces::InputGate {
  public:
   ArithmeticInputGate(const std::vector<T> &input, std::size_t input_owner,
                       std::weak_ptr<Backend> backend)
@@ -192,7 +192,7 @@ class ArithmeticInputGate : public Interfaces::InputGate {
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticOutputGate : public Gates::Interfaces::OutputGate {
+class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
  public:
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -319,7 +319,7 @@ class ArithmeticOutputGate : public Gates::Interfaces::OutputGate {
     } else {
       auto payload = Helpers::ToByteVector(output_);
       auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payload);
-      GetRegister()->Send(output_owner_, output_message);
+      GetRegister()->Send(output_owner_, std::move(output_message));
     }
     SetOnlineIsReady();
     GetRegister()->IncrementEvaluatedGatesCounter();
@@ -334,7 +334,7 @@ class ArithmeticOutputGate : public Gates::Interfaces::OutputGate {
 };
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticAdditionGate : public ABYN::Gates::Interfaces::TwoGate {
+class ArithmeticAdditionGate final : public ABYN::Gates::Interfaces::TwoGate {
  public:
   ArithmeticAdditionGate(const ABYN::Wires::ArithmeticWirePtr<T> &a,
                          const ABYN::Wires::ArithmeticWirePtr<T> &b) {

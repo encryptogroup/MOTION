@@ -31,7 +31,7 @@
 
 namespace ABYN::Gates::GMW {
 
-class GMWInputGate : public Gates::Interfaces::InputGate {
+class GMWInputGate final : public Gates::Interfaces::InputGate {
  public:
   GMWInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id,
                std::weak_ptr<Backend> reg);
@@ -58,7 +58,7 @@ class GMWInputGate : public Gates::Interfaces::InputGate {
   ///< correlated randomness using AES CTR
 };
 
-class GMWOutputGate : public Interfaces::OutputGate {
+class GMWOutputGate final : public Interfaces::OutputGate {
  public:
   GMWOutputGate(const std::vector<Wires::WirePtr> &parent, std::size_t output_owner);
 
@@ -82,7 +82,7 @@ class GMWOutputGate : public Interfaces::OutputGate {
   std::mutex m;
 };
 
-class GMWXORGate : public Gates::Interfaces::TwoGate {
+class GMWXORGate final : public Gates::Interfaces::TwoGate {
  public:
   GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
 

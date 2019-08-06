@@ -314,7 +314,7 @@ void GMWOutputGate::EvaluateOnline() {
       payloads.emplace_back(data_ptr, data_ptr + size);
     }
     auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payloads);
-    ptr_backend->Send(output_owner_, output_message);
+    ptr_backend->Send(output_owner_, std::move(output_message));
   }
   std::vector<Wires::GMWWirePtr> gmw_output_wires;
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
