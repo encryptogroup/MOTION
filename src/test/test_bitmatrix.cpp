@@ -30,6 +30,10 @@
 
 #include "test_constants.h"
 
+#include <emmintrin.h>
+#include <stdint.h>
+#include <stdlib.h>
+
 namespace {
 TEST(BitMatrix, Transpose) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
@@ -61,7 +65,7 @@ TEST(BitMatrix, Transpose) {
 
 TEST(BitMatrix, Transpose128) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    for (auto i = 7ull; i < 12u; ++i) {
+    for (auto i = 7ull; i < 15u; ++i) {
       std::random_device rd;
       std::uniform_int_distribution<std::uint64_t> dist(1, 1ull << i);
       const std::size_t m = 128, n = dist(rd);
@@ -72,7 +76,7 @@ TEST(BitMatrix, Transpose128) {
         vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
       }
 
-      ENCRYPTO::BitMatrix bm(vectors);
+      const ENCRYPTO::BitMatrix bm(vectors);
       auto bm_transposed = bm;
       bm_transposed.Transpose128Rows();
 
@@ -84,4 +88,82 @@ TEST(BitMatrix, Transpose128) {
     }
   }
 }
+
+TEST(BitMatrix, Transpose128InPlaceOnRawPointers) {
+  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+    for (auto i = 7ull; i < 15u; ++i) {
+      const std::size_t m = 128, n = 1ull << i;
+      // const std::size_t m = 128, n = 16'777'216ull; // 2^24
+      std::vector<ENCRYPTO::AlignedBitVector> vectors(m);
+
+      for (auto j = 0ull; j < m; ++j) {
+        vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
+      }
+
+      ENCRYPTO::BitMatrix bm(vectors);
+      bm.Transpose128Rows();
+
+      std::array<std::byte *, 128> ptrs;
+      for (auto j = 0u; j < ptrs.size(); ++j) {
+        ptrs.at(j) = vectors.at(j).GetMutableData().data();
+      }
+      ENCRYPTO::BitMatrix::Transpose128RowsInplace(ptrs, n);
+
+      std::vector<ENCRYPTO::AlignedBitVector> vectors_tr;
+      constexpr auto bits_in_blk = m * m;
+      for (auto j = 0ull; j < n * m; j += m) {
+        const auto residue = j % bits_in_blk;
+        const auto row_i = residue / m;
+        const auto blk_offset = (16 * (j / bits_in_blk));
+        auto ptr = ptrs.at(row_i) + blk_offset;
+        vectors_tr.emplace_back(ptr, m);
+      }
+
+      assert(vectors_tr.size() == n);
+
+      ENCRYPTO::BitMatrix bm_tr(vectors_tr);
+
+      ASSERT_TRUE(bm == bm_tr);
+    }
+  }
+}
+
+TEST(BitMatrix, Transpose128InPlaceOnRawPointersBitSlicing) {
+  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+    for (auto i = 7ull; i < 15u; ++i) {
+      const std::size_t m = 128, n = 1ull << i;
+      // const std::size_t m = 128, n = 16'777'216ull; // 2^24
+      std::vector<ENCRYPTO::AlignedBitVector> vectors(m);
+
+      for (auto j = 0ull; j < m; ++j) {
+        vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
+      }
+
+      ENCRYPTO::BitMatrix bm(vectors);
+      bm.Transpose128Rows();
+
+      std::array<std::byte *, 128> ptrs;
+      for (auto j = 0u; j < ptrs.size(); ++j) {
+        ptrs.at(j) = vectors.at(j).GetMutableData().data();
+      }
+      ENCRYPTO::BitMatrix::TransposeUsingBitSlicing(ptrs, n);
+
+      std::vector<ENCRYPTO::AlignedBitVector> vectors_tr;
+      constexpr auto bits_in_blk = m * m;
+      for (auto j = 0ull; j < n * m; j += m) {
+        const auto residue = j % bits_in_blk;
+        const auto row_i = residue / m;
+        const auto blk_offset = (16 * (j / bits_in_blk));
+        auto ptr = ptrs.at(row_i) + blk_offset;
+        vectors_tr.emplace_back(ptr, m);
+      }
+
+      assert(vectors_tr.size() == n);
+
+      ENCRYPTO::BitMatrix bm_tr(vectors_tr);
+
+      ASSERT_TRUE(bm == bm_tr);
+    }
+  }
+}  // namespace
 }  // namespace
