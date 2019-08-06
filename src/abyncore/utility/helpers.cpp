@@ -52,7 +52,7 @@ std::string Hex(const std::vector<std::uint8_t> &v) {
     buffer.append(fmt::format("{0:#x} ", v.at(i)));
   }
   buffer.erase(buffer.end() - 1);  // remove the last whitespace
-  return std::move(buffer);
+  return buffer;
 }
 
 std::string ToString(MPCProtocol p) {
@@ -71,7 +71,7 @@ std::string ToString(MPCProtocol p) {
       result.append(fmt::format("InvalidProtocol with value {}", static_cast<int>(p)));
       break;
   }
-  return std::move(result);
+  return result;
 }
 
 }  // namespace Print

@@ -490,7 +490,7 @@ class BitVector {
     for (auto i = 0ull; i < bit_size_; ++i) {
       result.append(std::to_string(Get(i)));
     }
-    return std::move(result);
+    return result;
   }
 
   void Clear() noexcept {

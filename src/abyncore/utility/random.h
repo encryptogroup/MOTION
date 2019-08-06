@@ -56,6 +56,6 @@ static inline std::vector<std::uint8_t> RandomVector(std::size_t size_in_bytes) 
       // could not get enough randomness from random device, try again
     }
   }
-  return std::move(buffer);
+  return buffer;
 }
 }  // namespace ABYN
