@@ -33,7 +33,7 @@ namespace ABYN::Shares {
  * Allow only unsigned integers for Arithmetic shares.
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticShare : public Share {
+class ArithmeticShare final : public Share {
  public:
   ArithmeticShare(const Wires::WirePtr &wire) {
     wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wire)};

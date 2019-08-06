@@ -75,15 +75,19 @@ class ShareWrapper {
   template <typename T>
   ShareWrapper Add(SharePtr share, SharePtr other) {
     auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
-    auto wire_a = this_a->GetArithmeticWire();
+    assert(this_a);
+    auto this_wire_a = this_a->GetArithmeticWire();
+
     auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
     assert(other_a);
-    auto wire_b = other_a->GetArithmeticWire();
+    auto other_wire_a = other_a->GetArithmeticWire();
+
     auto addition_gate =
-        std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(wire_a, wire_b);
+        std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(this_wire_a, other_wire_a);
     auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
     share_->GetRegister()->RegisterNextGate(addition_gate_cast);
     auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
+
     return ShareWrapper(res);
   }
 };

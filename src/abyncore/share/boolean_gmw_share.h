@@ -28,7 +28,7 @@
 
 namespace ABYN::Shares {
 
-class GMWShare : public BooleanShare {
+class GMWShare final : public BooleanShare {
  public:
   GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires);
 
