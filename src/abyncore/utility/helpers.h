@@ -25,6 +25,7 @@
 #pragma once
 
 #include "flatbuffers/flatbuffers.h"
+#include "fmt/format.h"
 
 #include "condition.h"
 #include "typedefs.h"
@@ -102,7 +103,7 @@ inline T SumReduction(const std::vector<T> &v) {
     return v.at(0);
   } else {
     T sum = 0;
-#pragma omp parallel for reduction(+ : sum)
+#pragma omp parallel for reduction(+ : sum) default(none) shared(v)
     for (auto i = 0ull; i < v.size(); ++i) {
       sum += v.at(i);
     }
@@ -125,7 +126,7 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
     for (auto i = 1ull; i < v.size(); ++i) {
       assert(v.at(0).size() == v.at(i).size());
     }
-#pragma omp parallel for
+#pragma omp parallel for default(none) shared(sum, v)
     for (auto i = 0ull; i < sum.size(); ++i) {
       for (auto j = 0ull; j < v.size(); ++j) {
         sum.at(i) += v.at(j).at(i);
@@ -141,15 +142,40 @@ bool IsPowerOfTwo(T x) {
 }
 
 namespace Print {
-std::string Hex(const std::vector<std::uint8_t> &v);
+inline std::string Hex(const std::uint8_t *v, std::size_t N) {
+  std::string buffer;
+  for (auto i = 0ull; i < N; ++i) {
+    buffer.append(fmt::format("{0:#x} ", v[i]));
+  }
+  buffer.erase(buffer.end() - 1);  // remove the last whitespace
+  return buffer;
+}
 
-inline std::string Hex(const std::vector<std::uint8_t> &&v) { return std::move(Hex(v)); }
+inline std::string Hex(const std::byte *v, std::size_t N) {
+  return Hex(reinterpret_cast<const std::uint8_t *>(v), N);
+}
+
+template <std::size_t N>
+inline std::string Hex(const std::array<std::byte, N> &v) {
+  return Hex(reinterpret_cast<const std::uint8_t *>(v.data()), v.size());
+}
+
+template <std::size_t N>
+inline std::string Hex(const std::array<std::uint8_t, N> &v) {
+  return Hex(v.data(), v.size());
+}
+
+inline std::string Hex(const std::vector<std::uint8_t> &v) { return Hex(v.data(), v.size()); }
+
+inline std::string Hex(const std::vector<std::byte> &v) { return Hex(v.data(), v.size()); }
+
+inline std::string Hex(const std::vector<std::uint8_t> &&v) { return Hex(v); }
 
 std::string ToString(MPCProtocol p);
 
 template <typename T>
 inline std::string ToString(std::vector<T> vector) {
-  std::string result{""};
+  std::string result;
   for (auto &v : vector) {
     result.append(std::to_string(v) + " ");
   }

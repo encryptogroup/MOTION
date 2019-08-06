@@ -28,8 +28,6 @@
 #include <thread>
 
 #include "condition.h"
-#include "fmt/format.h"
-#include "utility/bit_vector.h"
 
 namespace ABYN::Helpers {
 
@@ -46,17 +44,8 @@ void WaitFor(ENCRYPTO::Condition &condition) {
 }
 
 namespace Print {
-std::string Hex(const std::vector<std::uint8_t> &v) {
-  std::string buffer("");
-  for (auto i = 0ull; i < v.size(); ++i) {
-    buffer.append(fmt::format("{0:#x} ", v.at(i)));
-  }
-  buffer.erase(buffer.end() - 1);  // remove the last whitespace
-  return buffer;
-}
-
 std::string ToString(MPCProtocol p) {
-  std::string result{""};
+  std::string result;
   switch (p) {
     case MPCProtocol::ArithmeticGMW:
       result.append("ArithmeticGMW");
@@ -90,9 +79,9 @@ std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
 namespace Convert {
 std::size_t BitsToBytes(std::size_t bits) {
   if ((bits & 0x07u) > 0x00u) {
-    return (bits >> 3) + 1;
+    return (bits >> 3u) + 1;
   } else {
-    return bits >> 3;
+    return bits >> 3u;
   }
 }
 }  // namespace Convert
