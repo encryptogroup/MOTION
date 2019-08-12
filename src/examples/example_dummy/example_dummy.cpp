@@ -88,10 +88,10 @@ void test() {
       for (auto j = 0ull; j < global_input_1.size(); ++j) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
       }
-      std::vector<ENCRYPTO::BitVector> global_input_1K(num_parties), global_input_100K(num_parties);
+      std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties), global_input_100K(num_parties);
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
-        global_input_1K.at(j) = ENCRYPTO::BitVector::Random(1000);
-        global_input_100K.at(j) = ENCRYPTO::BitVector::Random(100000);
+        global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(1000);
+        global_input_100K.at(j) = ENCRYPTO::BitVector<>::Random(100000);
       }
       bool dummy_input_1 = false;
       ENCRYPTO::BitVector dummy_input_1K(1000, false);
