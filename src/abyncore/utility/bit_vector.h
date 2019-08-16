@@ -164,7 +164,7 @@ class BitVector {
 
   bool operator[](std::size_t pos) { return Get(pos); }
 
-  const auto GetSize() const noexcept { return bit_size_; }
+  auto GetSize() const noexcept { return bit_size_; }
 
   const auto& GetData() const noexcept { return data_vector_; }
 

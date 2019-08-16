@@ -116,8 +116,8 @@ ENCRYPTO::BitVector<> AESRandomnessGenerator::GetBits(std::size_t gate_id, std::
   }
 
   assert(gate_id >= random_bits_offset_);
-  return std::move(random_bits_.Subset(gate_id - random_bits_offset_,
-                                       gate_id + num_of_bits - random_bits_offset_));
+  return random_bits_.Subset(gate_id - random_bits_offset_,
+                             gate_id + num_of_bits - random_bits_offset_);
 }
 
 int AESRandomnessGenerator::Encrypt(evp_cipher_ctx_st *ctx, std::uint8_t *key, std::uint8_t *input,

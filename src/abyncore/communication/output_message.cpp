@@ -41,9 +41,8 @@ flatbuffers::FlatBufferBuilder BuildOutputMessage(std::size_t gate_id,
       CreateOutputMessageDirect(builder_output_message, static_cast<uint64_t>(gate_id), &wires);
   FinishOutputMessageBuffer(builder_output_message, output_message_root);
 
-  return std::move(BuildMessage(MessageType_OutputMessage,
-                                builder_output_message.GetBufferPointer(),
-                                builder_output_message.GetSize()));
+  return BuildMessage(MessageType_OutputMessage, builder_output_message.GetBufferPointer(),
+                      builder_output_message.GetSize());
 }
 
 flatbuffers::FlatBufferBuilder BuildOutputMessage(
@@ -57,8 +56,7 @@ flatbuffers::FlatBufferBuilder BuildOutputMessage(
       CreateOutputMessageDirect(builder_output_message, static_cast<uint64_t>(gate_id), &wires);
   FinishOutputMessageBuffer(builder_output_message, output_message_root);
 
-  return std::move(BuildMessage(MessageType_OutputMessage,
-                                builder_output_message.GetBufferPointer(),
-                                builder_output_message.GetSize()));
+  return BuildMessage(MessageType_OutputMessage, builder_output_message.GetBufferPointer(),
+                      builder_output_message.GetSize());
 }
 }  // namespace ABYN::Communication

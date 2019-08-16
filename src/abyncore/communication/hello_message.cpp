@@ -39,7 +39,7 @@ flatbuffers::FlatBufferBuilder BuildHelloMessage(uint16_t source_id, uint16_t de
                                input_sharing_seed, online_after_setup, ABYN_version);
   FinishHelloMessageBuffer(builder_hello_message, hello_message_root);
 
-  return std::move(BuildMessage(MessageType_HelloMessage, builder_hello_message.GetBufferPointer(),
-                                builder_hello_message.GetSize()));
+  return BuildMessage(MessageType_HelloMessage, builder_hello_message.GetBufferPointer(),
+                      builder_hello_message.GetSize());
 }
 }

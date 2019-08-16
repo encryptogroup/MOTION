@@ -138,7 +138,7 @@ void GMWInputGate::EvaluateOnline() {
         }
         auto &rand_generator =
             ptr_backend->GetConfig()->GetCommunicationContext(j)->GetMyRandomnessGenerator();
-        auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
+        auto randomness = rand_generator->GetBits(sharing_id, bits_);
 
         if constexpr (ABYN_VERBOSE_DEBUG) {
           log_string.append(fmt::format("id#{}:{} ", j, randomness.AsString()));
@@ -160,7 +160,7 @@ void GMWInputGate::EvaluateOnline() {
       auto &rand_generator = ptr_backend->GetConfig()
                                  ->GetCommunicationContext(input_owner_id_)
                                  ->GetTheirRandomnessGenerator();
-      auto randomness = std::move(rand_generator->GetBits(sharing_id, bits_));
+      auto randomness = rand_generator->GetBits(sharing_id, bits_);
       result.at(i) = randomness;
 
       if constexpr (ABYN_VERBOSE_DEBUG) {
@@ -293,7 +293,7 @@ void GMWOutputGate::EvaluateOnline() {
       }
     }
     shared_outputs_.at(config->GetMyId()) = output_;
-    output_ = std::move(ENCRYPTO::BitVector<>::XORBitVectors(shared_outputs_));
+    output_ = ENCRYPTO::BitVector<>::XORBitVectors(shared_outputs_);
     if constexpr (ABYN_VERBOSE_DEBUG) {
       std::string shares{""};
       for (auto i = 0u; i < config->GetNumOfParties(); ++i) {
@@ -373,8 +373,7 @@ GMWXORGate::GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &
   output_wires_.resize(parent_a_.size());
   const ENCRYPTO::BitVector tmp_bv(a->GetNumOfParallelValues());
   for (auto &w : output_wires_) {
-    w = std::move(
-        std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_)));
+    w = std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_));
   }
 
   for (auto &w : output_wires_) {

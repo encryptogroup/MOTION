@@ -41,6 +41,6 @@ flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint
                                                    std::size_t size) {
   assert(payload);
   std::vector<std::uint8_t> buffer(payload, payload + size);
-  return std::move(BuildMessage(message_type, &buffer));
+  return BuildMessage(message_type, &buffer);
 }
 }  // namespace ABYN::Communication
