@@ -539,7 +539,7 @@ class BitVector {
       bv.Set(dist_bool(rd) == true, offset + i);
     }
 
-    return std::move(bv);
+    return bv;
   }
 
   static bool XORReduceBitVector(const BitVector& vector) {

@@ -169,9 +169,9 @@ void test() {
             assert(wire_1K);
             assert(wire_100K);
 
-            assert(wire_1->GetValuesOnWire().Get(0) == Helpers::XORReduceBitVector(global_input_1));
-            assert(wire_1K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_1K));
-            assert(wire_100K->GetValuesOnWire() == Helpers::XORBitVectors(global_input_100K));
+            assert(wire_1->GetValuesOnWire().Get(0) == ENCRYPTO::BitVector<>::XORReduceBitVector(global_input_1));
+            assert(wire_1K->GetValuesOnWire() == ENCRYPTO::BitVector<>::XORBitVectors(global_input_1K));
+            assert(wire_100K->GetValuesOnWire() == ENCRYPTO::BitVector<>::XORBitVectors(global_input_100K));
 
             for (auto &s : output_share_100K_vector) {
               auto wire_100K_v =
@@ -179,7 +179,7 @@ void test() {
 
               assert(wire_100K_v);
 
-              assert(wire_100K_v->GetValuesOnWire() == Helpers::XORBitVectors(global_input_100K));
+              assert(wire_100K_v->GetValuesOnWire() == ENCRYPTO::BitVector<>::XORBitVectors(global_input_100K));
             }
           }
 
