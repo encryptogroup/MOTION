@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 
+#include "boost/align/aligned_allocator.hpp"
 #include "fmt/format.h"
 
 #include "helpers.h"
@@ -53,7 +54,7 @@ class BitVector {
  public:
   BitVector() noexcept : bit_size_(0){};
 
-  explicit BitVector(bool value) noexcept : bit_size_(1), data_vector_({std::byte(value)}) {}
+  explicit BitVector(bool value) noexcept : data_vector_({std::byte(value)}), bit_size_(1) {}
 
   BitVector(BitVector&& bv) noexcept
       : data_vector_(std::move(bv.data_vector_)), bit_size_(bv.bit_size_) {}
@@ -94,10 +95,10 @@ class BitVector {
     }
   }
 
-  BitVector(unsigned char* buf, std::size_t bits)
-      : BitVector(reinterpret_cast<std::byte*>(buf), bits) {}
+  BitVector(const unsigned char* buf, std::size_t bits)
+      : BitVector(reinterpret_cast<const std::byte*>(buf), bits) {}
 
-  BitVector(std::byte* buf, std::size_t bits) : bit_size_(bits) {
+  BitVector(const std::byte* buf, std::size_t bits) : bit_size_(bits) {
     data_vector_.insert(data_vector_.begin(), buf, buf + ABYN::Helpers::Convert::BitsToBytes(bits));
 
     TruncateToFit();
@@ -142,27 +143,42 @@ class BitVector {
     }
   }
 
-  bool operator!=(const BitVector& other) const noexcept { return !(*this == other); };
+  bool Empty() { return bit_size_ == 0; }
 
-  BitVector operator&(const BitVector& other) const noexcept {
+  void Invert() {
+    for (auto i = 0ull; i < data_vector_.size(); ++i) {
+      data_vector_.at(i) = ~data_vector_.at(i);
+    }
+    TruncateToFit();
+  }
+
+  template <typename T2>
+  bool operator!=(const BitVector<T2>& other) const noexcept {
+    return !(*this == other);
+  }
+
+  template <typename T2>
+  BitVector operator&(const BitVector<T2>& other) const noexcept {
     auto result = *this;
     result &= other;
     return result;
   }
 
-  BitVector operator^(const BitVector& other) const noexcept {
+  template <typename T2>
+  BitVector operator^(const BitVector<T2>& other) const noexcept {
     auto result = *this;
     result ^= other;
     return result;
   }
 
-  BitVector operator|(const BitVector& other) const noexcept {
+  template <typename T2>
+  BitVector operator|(const BitVector<T2>& other) const noexcept {
     auto result = *this;
     result |= other;
     return result;
   }
 
-  bool operator[](std::size_t pos) { return Get(pos); }
+  bool operator[](std::size_t pos) const { return Get(pos); }
 
   const auto GetSize() const noexcept { return bit_size_; }
 
@@ -184,7 +200,8 @@ class BitVector {
     data_vector_ = std::move(other.data_vector_);
   }
 
-  bool operator==(const BitVector& other) const noexcept {
+  template <typename T2>
+  bool operator==(const BitVector<T2>& other) const noexcept {
     if (bit_size_ != other.bit_size_) {
       return false;
     }
@@ -242,7 +259,8 @@ class BitVector {
     return result == SET_BIT_MASK[bit_offset];
   }
 
-  void operator&=(const BitVector& other) noexcept {
+  template <typename T2>
+  void operator&=(const BitVector<T2>& other) noexcept {
     const auto max_bit_size = std::max(bit_size_, other.bit_size_);
     const auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
 
@@ -254,40 +272,42 @@ class BitVector {
     }
   }
 
-  void operator^=(const BitVector& other) noexcept {
-    const auto max_bit_size = std::max(bit_size_, other.bit_size_);
-    const auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
+  template <typename T2>
+  void operator^=(const BitVector<T2>& other) noexcept {
+    const auto max_bit_size = std::max(bit_size_, other.GetSize());
+    const auto min_byte_size = std::min(data_vector_.size(), other.GetData().size());
 
     Resize(max_bit_size, true);
 
 #pragma omp simd
     for (auto i = 0ull; i < min_byte_size; ++i) {
-      data_vector_.at(i) ^= other.data_vector_.at(i);
+      data_vector_.at(i) ^= other.GetData().at(i);
     }
 
-    if (data_vector_.size() < other.data_vector_.size()) {
-      for (auto i = min_byte_size; i < other.data_vector_.size(); ++i) {
-        data_vector_.at(i) ^= other.data_vector_.at(i);
+    if (data_vector_.size() < other.GetData().size()) {
+      for (auto i = min_byte_size; i < other.GetData().size(); ++i) {
+        data_vector_.at(i) ^= other.GetData().at(i);
       }
     }
   }
 
-  void operator|=(const BitVector& other) noexcept {
+  template <typename T2>
+  void operator|=(const BitVector<T2>& other) noexcept {
     const auto max_bit_size = std::max(bit_size_, other.bit_size_);
-    const auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
+    const auto min_byte_size = std::min(data_vector_.size(), other.GetData().size());
     const auto max_byte_size = ABYN::Helpers::Convert::BitsToBytes(max_bit_size);
 
     Resize(max_bit_size, true);
 
 #pragma omp simd
     for (auto i = 0ull; i < min_byte_size; ++i) {
-      data_vector_.at(i) |= other.data_vector_.at(i);
+      data_vector_.at(i) |= other.GetData().at(i);
     }
 
     if (min_byte_size == max_byte_size) {
 #pragma omp simd
       for (auto i = min_byte_size; i < max_byte_size; ++i) {
-        data_vector_.at(i) = other.data_vector_.at(i);
+        data_vector_.at(i) = other.GetData().at(i);
       }
     }
   }
@@ -422,7 +442,7 @@ class BitVector {
       if (dest_to_offset > 0) {
         const auto mask = std::byte(0xFF) >> dest_to_offset;
         data_vector_.at(from_bytes + num_bytes - 1) &= mask;
-        data_vector_.at(from_bytes + num_bytes - 1) |= (other.data_vector_.at(num_bytes) & ~mask);
+        data_vector_.at(from_bytes + num_bytes - 1) |= (other.data_vector_.at(num_bytes - 1) & ~mask);
       }
     } else {
       const auto num_bytes = ABYN::Helpers::Convert::BitsToBytes(dest_from_offset + num_bits);
@@ -518,7 +538,7 @@ class BitVector {
   }
 
   void Clear() noexcept {
-    data_vector_.clear();
+    data_vector_ = {};
     bit_size_ = 0;
   }
 
@@ -641,4 +661,6 @@ class BitVector {
     }
   }
 };
+
+using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, 16>>;
 }
