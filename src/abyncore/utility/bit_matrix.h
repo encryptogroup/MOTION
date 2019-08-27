@@ -26,17 +26,13 @@
 
 #include "bit_vector.h"
 
-#include <cassert>
 #include <emmintrin.h>
-#include <memory>
 #include <stdint.h>
 #include <stdlib.h>
-
-#include "boost/align/aligned_allocator.hpp"
+#include <cassert>
+#include <memory>
 
 namespace ENCRYPTO {
-
-using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, 16>>;
 
 class BitMatrix {
  public:
@@ -48,7 +44,17 @@ class BitMatrix {
     }
   }
 
-  BitMatrix(std::vector<AlignedBitVector> vectors) : data_(vectors) {
+  BitMatrix(std::vector<AlignedBitVector>&& vectors) : data_(std::move(vectors)) {
+    if (data_.size() > 0) {
+      auto num_columns = data_.at(0).GetSize();
+      for (auto i = 1ull; i < data_.size(); ++i) {
+        assert(data_.at(i).GetSize() == num_columns);
+      }
+      num_columns_ = num_columns;
+    }
+  }
+
+  BitMatrix(const std::vector<AlignedBitVector>& vectors) : data_(vectors) {
     if (data_.size() > 0) {
       auto num_columns = data_.at(0).GetSize();
       for (auto i = 1ull; i < data_.size(); ++i) {
@@ -80,7 +86,7 @@ class BitMatrix {
 
   const AlignedBitVector& GetRow(std::size_t i) const { return data_.at(i); }
 
-  /// \brief Returns a mutable BitVector corresponding to row #i of the matrix.
+  /// \brief Returns a mutable BitVector corresponding to row # i of the matrix.
   /// Changing the size of the underlying BitVector causes <b>Undefined Behaviour</b>.
   /// The underlying BitVector can be replaced completely by a BitVector of the same size.
   AlignedBitVector& GetMutableRow(std::size_t i) { return data_.at(i); }
@@ -110,11 +116,16 @@ class BitMatrix {
 
   static void Transpose128RowsInplace(std::array<std::byte*, 128>& matrix, std::size_t num_columns);
 
-  static void TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, std::size_t num_columns);
+  static void TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
+                                       std::size_t num_columns);
 
   bool operator==(const BitMatrix& other);
 
   bool operator!=(const BitMatrix& other) { return !(*this == other); }
+
+  auto GetNumRows() const noexcept { return data_.size(); }
+
+  auto GetNumColumns() const noexcept { return num_columns_; }
 
  private:
   std::vector<AlignedBitVector> data_;
