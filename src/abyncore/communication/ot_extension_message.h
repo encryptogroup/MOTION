@@ -28,9 +28,15 @@
 #include "utility/constants.h"
 
 namespace ABYN::Communication {
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::byte *buffer, std::size_t size,
-                                                           std::size_t ot_id);
+flatbuffers::FlatBufferBuilder BuildOTExtensionMessageSender(const std::byte *buffer,
+                                                             const std::size_t size,
+                                                             const std::size_t i);
 
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::byte *buffer, std::size_t size,
-                                                         std::size_t ot_id);
+flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverMasks(const std::byte *buffer,
+                                                                    const std::size_t size,
+                                                                    const std::size_t i);
+
+flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverCorrections(const std::byte *buffer,
+                                                                          const std::size_t size,
+                                                                          const std::size_t i);
 }  // namespace ABYN::Communication

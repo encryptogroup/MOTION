@@ -95,8 +95,7 @@ class Handler {
   bool continue_communication_ = true;
   bool received_termination_message_ = false, sent_termination_message_ = false;
   std::unique_ptr<ENCRYPTO::Condition> received_new_msg_, there_is_smth_to_send_;
-  std::size_t bytes_sent_ = 0;
-  std::size_t bytes_received_ = 0;
+  std::size_t bytes_sent_ = 0, bytes_received_ = 0;
 
   void ReceivedTerminationMessage() { received_termination_message_ = true; }
 

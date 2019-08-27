@@ -8,11 +8,11 @@ if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
 endif ()
 
-option(ABYN_BUILD_EXE "Build executables" OFF)
+option(ABYN_BUILD_EXE "Build executables" ON)
 option(ABYN_BUILD_TESTS "Build tests" OFF)
+option(ABYN_BUILD_DOC "Build documentation" ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
 find_package(GMP REQUIRED)
 find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
@@ -27,8 +27,12 @@ find_package(Boost 1.66.0
         REQUIRED)
 set(Boost_USE_STATIC_LIBS ON)
 
+set(ABYN_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(ABYN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(ABYN_EXTERN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
-if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
+
+if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
     # Set build type to `Release` if non was specified:
     if (NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -99,7 +103,6 @@ elseif (NOT flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
             ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build)
     add_subdirectory(fbs)
 endif ()
-
 add_subdirectory(src/abyncore)
 
 if (ABYN_BUILD_TESTS)
@@ -118,3 +121,7 @@ endif (ABYN_BUILD_TESTS)
 if (ABYN_BUILD_EXE)
     add_subdirectory(src/examples)
 endif (ABYN_BUILD_EXE)
+
+if (ABYN_BUILD_DOC)
+    add_subdirectory(docs)
+endif (ABYN_BUILD_DOC)

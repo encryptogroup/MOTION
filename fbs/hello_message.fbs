@@ -5,6 +5,7 @@ table HelloMessage {
   destination_id:uint16;
   num_of_parties:uint16;
   input_sharing_seed:[ubyte]; //32-byte seed
+  fixed_key_aes_seed:[ubyte]; //16-byte key
   online_after_setup:bool = false;
   ABYN_version:float;
 }

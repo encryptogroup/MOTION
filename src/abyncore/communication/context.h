@@ -38,7 +38,9 @@
 namespace ABYN {
 
 namespace Crypto {
-class AESRandomnessGenerator;
+
+class SharingRandomnessGenerator;
+
 }
 
 class DataStorage;
@@ -69,7 +71,7 @@ class Context {
 
   void InitializeMyRandomnessGenerator();
 
-  void InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &seed);
+  void InitializeTheirRandomnessGenerator(const std::vector<std::uint8_t> &seed);
 
   void SetLogger(const LoggerPtr &logger);
 
@@ -89,13 +91,15 @@ class Context {
 
   std::shared_ptr<DataStorage> &GetDataStorage() { return data_storage_; }
 
-  const std::unique_ptr<Crypto::AESRandomnessGenerator> &GetMyRandomnessGenerator() {
+  const std::unique_ptr<Crypto::SharingRandomnessGenerator> &GetMyRandomnessGenerator() {
     return my_randomness_generator_;
   }
 
-  const std::unique_ptr<Crypto::AESRandomnessGenerator> &GetTheirRandomnessGenerator() {
+  const std::unique_ptr<Crypto::SharingRandomnessGenerator> &GetTheirRandomnessGenerator() {
     return their_randomness_generator_;
   }
+
+  void WaitForBaseOTs();
 
  private:
   std::shared_ptr<DataStorage> data_storage_;
@@ -112,7 +116,7 @@ class Context {
 
   LoggerPtr logger_;
 
-  std::unique_ptr<Crypto::AESRandomnessGenerator> my_randomness_generator_,
+  std::unique_ptr<Crypto::SharingRandomnessGenerator> my_randomness_generator_,
       their_randomness_generator_;
 
   bool is_connected_ = false;

@@ -29,7 +29,7 @@
 #include "fmt/format.h"
 
 #include "context.h"
-#include "crypto/aes_randomness_generator.h"
+#include "crypto/sharing_randomness_generator.h"
 #include "message.h"
 #include "utility/condition.h"
 #include "utility/constants.h"
@@ -410,7 +410,7 @@ void Handler::Sync() {
 
   auto shared_ptr_context = context_.lock();
   assert(shared_ptr_context);
-  auto &sync_condition = shared_ptr_context->GetDataStorage()->GetSyncCondition();
+  auto sync_condition = shared_ptr_context->GetDataStorage()->GetSyncCondition();
   while (!(*sync_condition)()) {
     sync_condition->WaitFor(std::chrono::milliseconds(1));
   }

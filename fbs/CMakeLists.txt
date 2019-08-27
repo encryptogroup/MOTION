@@ -1,18 +1,21 @@
-set(FBS_NAMES output_message hello_message message base_ot) #add the names of the new fbs files here
+file(GLOB FBS_NAMES "${FBS_DIR_FULL_PREFIX}/*.fbs")
+#set(FBS_NAMES output_message hello_message message base_ot) #add the names of the new fbs files here
 set(FBS_INCLUDE_PREFIX "${CMAKE_SOURCE_DIR}/src/abyncore/communication/fbs_headers")
 set(FLATC_FULL_PATH "${FLATC_DIR}/flatc")
 
 set(GENERATED_FILES "")
 
 foreach (FILE ${FBS_NAMES})
-    set(THIS_FBS "${FBS_DIR_FULL_PREFIX}/${FILE}.fbs")
-    set(THIS_H "${FBS_INCLUDE_PREFIX}/${FILE}_generated.h")
-    if ((NOT ${THIS_H}) OR (${THIS_FBS} IS_NEWER_THAN ${THIS_H}))
-        add_custom_command(OUTPUT ${THIS_H}
+    set(THIS_FBS "${FILE}")
+    string(REGEX MATCH "[A-Za-z0-9_]+\\.fbs" THIS_H ${THIS_FBS})
+    string(REGEX MATCH "^[A-Za-z0-9_]+" THIS_H ${THIS_H})
+    set(THIS_H "${THIS_H}_generated.h")
+    if ((NOT ${FBS_INCLUDE_PREFIX}/${THIS_H}) OR (${THIS_FBS} IS_NEWER_THAN ${FBS_INCLUDE_PREFIX}/${THIS_H}))
+        add_custom_command(OUTPUT "${FBS_INCLUDE_PREFIX}/${THIS_H}"
                 COMMAND ${FLATC_DIR}/flatc --cpp -o ${FBS_INCLUDE_PREFIX} ${THIS_FBS}
                 DEPENDS ${THIS_FBS})
     endif ()
-    list(APPEND GENERATED_FILES ${THIS_H})
+    list(APPEND GENERATED_FILES "${FBS_INCLUDE_PREFIX}/${THIS_H}")
 endforeach ()
 
 add_custom_target(fbs-generation ALL DEPENDS flatc ${GENERATED_FILES})

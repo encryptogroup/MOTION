@@ -30,7 +30,8 @@
 #include <cstdlib>
 
 #include "communication/fbs_headers/base_ot_generated.h"
-#include "crypto/aes_randomness_generator.h"
+#include "communication/fbs_headers/ot_extension_generated.h"
+#include "crypto/sharing_randomness_generator.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
 #include "utility/helpers.h"
@@ -83,13 +84,13 @@ Context::~Context() {
 
 void Context::InitializeMyRandomnessGenerator() {
   std::vector<std::uint8_t> master_seed(
-      RandomVector(Crypto::AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH));
-  my_randomness_generator_ = std::make_unique<Crypto::AESRandomnessGenerator>(id_);
+      RandomVector(Crypto::SharingRandomnessGenerator::MASTER_SEED_BYTE_LENGTH));
+  my_randomness_generator_ = std::make_unique<Crypto::SharingRandomnessGenerator>(id_);
   my_randomness_generator_->Initialize(master_seed.data());
 }
 
-void Context::InitializeTheirRandomnessGenerator(std::vector<std::uint8_t> &seed) {
-  their_randomness_generator_ = std::make_unique<Crypto::AESRandomnessGenerator>(id_);
+void Context::InitializeTheirRandomnessGenerator(const std::vector<std::uint8_t> &seed) {
+  their_randomness_generator_ = std::make_unique<Crypto::SharingRandomnessGenerator>(id_);
   their_randomness_generator_->Initialize(seed.data());
 }
 
@@ -128,7 +129,7 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       auto seed_vector = GetHelloMessage(message->payload()->data())->input_sharing_seed();
       if (seed_vector != nullptr && seed_vector->size() > 0) {
         const std::uint8_t *seed = seed_vector->data();
-        auto seed_len = Crypto::AESRandomnessGenerator::MASTER_SEED_BYTE_LENGTH;
+        auto seed_len = Crypto::SharingRandomnessGenerator::MASTER_SEED_BYTE_LENGTH;
         std::vector<std::uint8_t> seed_v(seed, seed + seed_len);
         InitializeTheirRandomnessGenerator(seed_v);
         if constexpr (ABYN_VERBOSE_DEBUG) {
@@ -150,18 +151,34 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
     case MessageType_SynchronizationMessage: {
       data_storage_->SetSyncState(true);
     } break;
-    case MessageType_BaseROTMessageSender: {
-      auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
-      data_storage_->BaseOTsReceived(
-          GetBaseROTMessage(message->payload()->data())->buffer()->data(), BaseOTsDataType::HL17_S,
-          ot_id);
-      break;
-    }
     case MessageType_BaseROTMessageReceiver: {
       auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
-      data_storage_->BaseOTsReceived(
-          GetBaseROTMessage(message->payload()->data())->buffer()->data(), BaseOTsDataType::HL17_R,
-          ot_id);
+      auto ot_data = GetBaseROTMessage(message->payload()->data())->buffer()->data();
+      data_storage_->BaseOTsReceived(ot_data, BaseOTsDataType::HL17_R, ot_id);
+      break;
+    }
+    case MessageType_BaseROTMessageSender: {
+      auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
+      auto ot_data = GetBaseROTMessage(message->payload()->data())->buffer()->data();
+      data_storage_->BaseOTsReceived(ot_data, BaseOTsDataType::HL17_S, ot_id);
+      break;
+    }
+    case MessageType_OTExtensionReceiverMasks: {
+      auto i = GetOTExtensionMessage(message->payload()->data())->i();
+      auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
+      data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::rcv_masks, i);
+      break;
+    }
+    case MessageType_OTExtensionReceiverCorrections: {
+      auto i = GetOTExtensionMessage(message->payload()->data())->i();
+      auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
+      data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::rcv_corrections, i);
+      break;
+    }
+    case MessageType_OTExtensionSender: {
+      auto i = GetOTExtensionMessage(message->payload()->data())->i();
+      auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
+      data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::snd_messages, i);
       break;
     }
     default:
@@ -207,5 +224,17 @@ void Context::InitializeSocketClient() {
 
   } while (error);
   party_socket_ = boost_party_socket_->native_handle();
+}
+
+void Context::WaitForBaseOTs() {
+  auto &rc = *GetDataStorage()->GetBaseOTsReceiverData()->is_ready_condition_;
+  auto &sc = *GetDataStorage()->GetBaseOTsReceiverData()->is_ready_condition_;
+
+  while (!rc()) {
+    rc.WaitFor(std::chrono::milliseconds(1));
+  }
+  while (!sc()) {
+    sc.WaitFor(std::chrono::milliseconds(1));
+  }
 }
 }
