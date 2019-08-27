@@ -60,7 +60,7 @@ inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &bu
 
 void WaitFor(const bool &condition);
 
-void WaitFor(const ENCRYPTO::Condition &condition);
+void WaitFor(ENCRYPTO::Condition &condition);
 
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
