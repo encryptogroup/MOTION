@@ -76,10 +76,10 @@ system for these libraries. (**TODO**: is this still the case?)
 
 ###### Test Executables and Example Applications
 
-ABY-N executables and test cases are built by default.
-This can be disabled by with the `ABYN_BUILD_EXE` or `ABYN_BUILD_TESTS` option, respectively, e.g.:
+ABY-N executables and test cases are not built by default.
+This can be enabled with the `ABYN_BUILD_EXE` or `ABYN_BUILD_TESTS` option, respectively, e.g.:
 ```
-cmake .. -DABYN_BUILD_EXE=Off
+cmake .. -DABYN_BUILD_EXE=On
 ```
 
 ###### Build Options

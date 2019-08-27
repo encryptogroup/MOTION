@@ -75,8 +75,7 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
         std::make_shared<OTProviderFromOTExtension>(send_function, data_storage));
 
     if constexpr (ABYN_VERBOSE_DEBUG) {
-      auto seed =
-          std::move(config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed());
+      auto seed = config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed();
       logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
                                    i, Helpers::Print::Hex(seed)));
     }
@@ -123,8 +122,7 @@ void Backend::SendHelloToOthers() {
     }
     std::vector<std::uint8_t> seed;
     if (share_inputs_) {
-      seed = std::move(
-          config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed());
+      seed = config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed();
     }
 
     auto seed_ptr = share_inputs_ ? &seed : nullptr;

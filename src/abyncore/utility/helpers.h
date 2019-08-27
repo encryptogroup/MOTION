@@ -179,7 +179,7 @@ inline std::string ToString(std::vector<T> vector) {
   for (auto &v : vector) {
     result.append(std::to_string(v) + " ");
   }
-  return std::move(result);
+  return result;
 }
 }  // namespace Print
 

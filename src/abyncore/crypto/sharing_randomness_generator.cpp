@@ -113,8 +113,8 @@ ENCRYPTO::BitVector<> SharingRandomnessGenerator::GetBits(const std::size_t gate
   }
 
   assert(gate_id >= random_bits_offset_);
-  return std::move(random_bits_.Subset(gate_id - random_bits_offset_,
-                                       gate_id + num_of_bits - random_bits_offset_));
+  return random_bits_.Subset(gate_id - random_bits_offset_,
+                             gate_id + num_of_bits - random_bits_offset_);
 }
 
 std::vector<std::uint8_t> SharingRandomnessGenerator::HashKey(

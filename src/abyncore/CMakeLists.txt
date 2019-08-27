@@ -37,6 +37,11 @@ if (ABYN_AVX512)
     set(ABYN_AVX512_FLAG "-mavx512f")
 endif ()
 
+# -fvect-cost-model flag is not supported by clang(++)
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+	set(ABYN_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
+endif ()
+
 set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(abyn PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
@@ -77,7 +82,7 @@ target_compile_options(abyn PRIVATE
         -pedantic -ansi
         -maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2
         -ffunction-sections -march=native
-        -fvect-cost-model=unlimited
+        ${ABYN_VECT_COST_MODEL_GCC_FLAG}
         ${ABYN_AVX512_FLAG})
 
 add_custom_target(
@@ -108,6 +113,9 @@ target_link_libraries(abyn
         PRIVATE OpenSSL::Crypto
         PRIVATE OpenSSL::SSL
         )
+
+# target_compile_options(abyn PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
+# target_link_options(abyn PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
 
 if (${SANITIZE_ADDRESS_LINK_OPT})
     target_link_libraries(abyn PUBLIC ${SANITIZE_ADDRESS_LINK_OPT})
@@ -142,5 +150,3 @@ install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION "lib/cmake/${PROJECT_NAME}"
         )
-
-

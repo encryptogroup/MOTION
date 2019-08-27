@@ -101,7 +101,7 @@ void Context::SetLogger(const LoggerPtr &logger) {
 
 std::string Context::Connect() {
   if (is_connected_) {
-    return std::move(fmt::format("Already connected to {}:{}\n", ip_, port_));
+    return fmt::format("Already connected to {}:{}\n", ip_, port_);
   } else if (role_ == Role::Client) {
     InitializeSocketClient();
   } else {
@@ -110,7 +110,7 @@ std::string Context::Connect() {
 
   is_connected_ = true;
 
-  return std::move(fmt::format("Successfully connected to {}:{}\n", ip_, port_));
+  return fmt::format("Successfully connected to {}:{}\n", ip_, port_);
 }
 
 void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
