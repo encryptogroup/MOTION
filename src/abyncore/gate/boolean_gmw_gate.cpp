@@ -31,7 +31,7 @@
 #include "base/register.h"
 #include "communication/context.h"
 #include "communication/output_message.h"
-#include "crypto/aes_randomness_generator.h"
+#include "crypto/sharing_randomness_generator.h"
 #include "utility/data_storage.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
