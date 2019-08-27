@@ -119,9 +119,9 @@ if (ABYN_BUILD_TESTS)
 endif (ABYN_BUILD_TESTS)
 
 if (ABYN_BUILD_EXE)
-    add_subdirectory(src/examples)
+    add_subdirectory(src/examples EXCLUDE_FROM_ALL)
 endif (ABYN_BUILD_EXE)
 
 if (ABYN_BUILD_DOC)
-    add_subdirectory(docs)
+    add_subdirectory(docs EXCLUDE_FROM_ALL)
 endif (ABYN_BUILD_DOC)
