@@ -1,6 +1,3 @@
-#pragma once
-
-#include <condition_variable>
 // MIT License
 //
 // Copyright (c) 2019 Oleksandr Tkachenko
@@ -25,6 +22,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#pragma once
+
+#include <condition_variable>
 #include <functional>
 #include <mutex>
 
@@ -33,7 +33,7 @@ namespace ENCRYPTO {
 class Condition {
  public:
   // registers the condition function that encapsulates the condition checking
-  Condition(std::function<bool()> f) : condition_function_(f) {}
+  Condition(const std::function<bool()> f) : condition_function_(f) {}
 
   ~Condition() = default;
   Condition() = delete;
