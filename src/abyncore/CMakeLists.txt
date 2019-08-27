@@ -8,11 +8,14 @@ add_library(abyn
         communication/handler.cpp
         communication/hello_message.cpp
         communication/message.cpp
+        communication/ot_extension_message.cpp
         communication/output_message.cpp
-        crypto/aes_randomness_generator.cpp
+        crypto/sharing_randomness_generator.cpp
         crypto/blake2b.cpp
+        crypto/pseudo_random_generator.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
+        crypto/oblivious_transfer/ot_provider.cpp
         gate/gate.cpp
         gate/boolean_gmw_gate.cpp
         share/boolean_gmw_share.cpp
@@ -37,6 +40,10 @@ endif ()
 set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)
 
 target_compile_definitions(abyn PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
+#target_compile_options(abyn PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
+#target_link_options(abyn PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
+#target_compile_options(abyn PUBLIC "-fsanitize=thread")
+#target_link_options(abyn PUBLIC "-fsanitize=thread")
 
 # there is a strange bug that Party::Reset() sometimes results in a segfault in the next Party::Run
 # this only happens in the Release mode and even not in RelWithDebInfo which makes it hard to find the bug
