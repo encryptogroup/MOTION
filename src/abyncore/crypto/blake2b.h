@@ -30,6 +30,7 @@
 #include <openssl/evp.h>
 
 namespace ABYN {
+
 using Blake2bCtx = std::unique_ptr<EVP_MD_CTX, std::function<void(EVP_MD_CTX *)>>;
 
 Blake2bCtx NewBlakeCtx();
@@ -39,4 +40,5 @@ void Blake2b(std::uint8_t *msg, std::uint8_t digest[EVP_MAX_MD_SIZE], std::size_
 
 void Blake2b(std::uint8_t *msg, std::uint8_t digest[EVP_MAX_MD_SIZE], std::size_t len,
              Blake2bCtx &b);
+
 }  // namespace ABYN
