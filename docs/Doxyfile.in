@@ -1,0 +1,17 @@
+OUTPUT_DIRECTORY        = @CMAKE_CURRENT_BINARY_DIR@/
+INPUT                   = @ABYN_SOURCE_DIR@/
+INCLUDE_PATH            = @GXX_INCLUDES@ \
+                          @ABYN_SOURCE_DIR@/abyncore/ \
+                          @ABYN_EXTERN_DIR@/flatbuffers/include/ \
+                          @ABYN_EXTERN_DIR@/fmt/include/
+RECURSIVE               = YES
+MACRO_EXPANSION         = YES
+ENABLE_PREPROCESSING    = YES
+QUIET                   = YES
+WARN_IF_UNDOCUMENTED    = NO
+BUILTIN_STL_SUPPORT     = YES
+CALL_GRAPH              = YES
+CALLER_GRAPH            = YES
+EXTRACT_ALL             = YES
+EXTRACT_STATIC          = YES
+DOT_GRAPH_MAX_NODES     = 1000
