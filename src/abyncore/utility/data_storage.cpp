@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <mutex>
+#include <thread>
 
 #include "utility/condition.h"
 #include "utility/logger.h"
@@ -55,13 +56,32 @@ BaseOTsSenderData::BaseOTsSenderData() {
 }
 
 DataStorage::DataStorage(std::size_t id) : id_(id) {
+  // Initialize forward-declared structs and their conditions conditions
   rcv_hello_msg_cond =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !received_hello_message_.empty(); });
   snt_hello_msg_cond =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !sent_hello_message_.empty(); });
 
   base_ots_receiver_data_ = std::make_unique<BaseOTsReceiverData>();
+  base_ots_receiver_data_->is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>(
+      [this]() { return base_ots_receiver_data_->is_ready_; });
   base_ots_sender_data_ = std::make_unique<BaseOTsSenderData>();
+  base_ots_sender_data_->is_ready_condition_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() { return base_ots_sender_data_->is_ready_; });
+
+  ot_extension_sender_data_ = std::make_unique<OTExtensionSenderData>();
+  ot_extension_receiver_data_ = std::make_unique<OTExtensionReceiverData>();
+
+  ot_extension_sender_data_->received_u_condition_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() {
+        return ot_extension_sender_data_->num_u_received_ == ot_extension_sender_data_->u_.size();
+      });
+
+  ot_extension_sender_data_->setup_finished_condition_ = std::make_unique<ENCRYPTO::Condition>(
+      [this]() { return ot_extension_sender_data_->setup_finished_; });
+
+  ot_extension_receiver_data_->setup_finished_condition_ = std::make_unique<ENCRYPTO::Condition>(
+      [this]() { return ot_extension_receiver_data_->setup_finished_; });
 }
 
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
@@ -192,8 +212,8 @@ std::shared_ptr<ENCRYPTO::Condition> &DataStorage::GetSyncCondition() {
   return sync_condition_;
 }
 
-void DataStorage::BaseOTsReceived(const std::uint8_t *message, BaseOTsDataType type,
-                                  std::size_t ot_id) {
+void DataStorage::BaseOTsReceived(const std::uint8_t *message, const BaseOTsDataType type,
+                                  const std::size_t ot_id) {
   switch (type) {
     case BaseOTsDataType::HL17_R: {
       {
@@ -219,6 +239,103 @@ void DataStorage::BaseOTsReceived(const std::uint8_t *message, BaseOTsDataType t
       throw std::runtime_error(
           fmt::format("DataStorage::BaseOTsReceived: unknown data type {}; data_type must be <{}",
                       type, BaseOTsDataType::BaseOTs_invalid_data_type));
+    }
+  }
+}
+
+void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExtensionDataType type,
+                                      const std::size_t i) {
+  switch (type) {
+    case OTExtensionDataType::rcv_masks: {
+      {
+        while (ot_extension_sender_data_->bit_size_ == 0) {
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+        std::scoped_lock lock(ot_extension_sender_data_->received_u_condition_->GetMutex());
+        ot_extension_sender_data_->u_.at(i) =
+            ENCRYPTO::AlignedBitVector(message, ot_extension_sender_data_->bit_size_);
+        ot_extension_sender_data_->num_u_received_++;
+        ot_extension_sender_data_->received_u_ids_.push(i);
+      }
+
+      ot_extension_sender_data_->received_u_condition_->NotifyAll();
+      break;
+    }
+    case OTExtensionDataType::rcv_corrections: {
+      auto cond = ot_extension_sender_data_->received_correction_offsets_cond_.find(i);
+      if (cond == ot_extension_sender_data_->received_correction_offsets_cond_.end()) {
+        throw std::runtime_error(fmt::format(
+            "Could not find Condition for OT#{} OTExtensionDataType::rcv_corrections", i));
+      }
+      {
+        std::scoped_lock lock(cond->second->GetMutex(),
+                              ot_extension_sender_data_->corrections_mutex_);
+        auto num_ots = ot_extension_sender_data_->num_ots_in_batch_.find(i);
+        if (num_ots == ot_extension_sender_data_->num_ots_in_batch_.end()) {
+          throw std::runtime_error(fmt::format(
+              "Could not find num_ots for OT#{} OTExtensionDataType::rcv_corrections", i));
+        }
+        ENCRYPTO::BitVector<> local_corrections(message, num_ots->second);
+        ot_extension_sender_data_->corrections_.Copy(i, i + num_ots->second, local_corrections);
+        ot_extension_sender_data_->received_correction_offsets_.insert(i);
+      }
+      cond->second->NotifyAll();
+      break;
+    }
+    case OTExtensionDataType::snd_messages: {
+      {
+        auto it_c = ot_extension_receiver_data_->output_conditions_.find(i);
+        if (it_c == ot_extension_receiver_data_->output_conditions_.end()) {
+          throw std::runtime_error(fmt::format(
+              "Could not find Condition for OT#{} OTExtensionDataType::snd_messages", i));
+        }
+
+        const auto bitlen = ot_extension_receiver_data_->outputs_.at(i).GetSize();
+        const auto bs_it = ot_extension_receiver_data_->num_ots_in_batch_.find(i);
+        if (bs_it == ot_extension_receiver_data_->num_ots_in_batch_.end()) {
+          throw std::runtime_error(fmt::format(
+              "Could not find batch size for OT#{} OTExtensionDataType::snd_messages", i));
+        }
+
+        const auto batch_size = bs_it->second;
+        ENCRYPTO::BitVector<> message_bv(message, batch_size * bitlen * 2);
+        while (ot_extension_receiver_data_->num_messages_.find(i) ==
+               ot_extension_receiver_data_->num_messages_.end()) {
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+        const auto n = ot_extension_receiver_data_->num_messages_.at(i);
+
+        for (auto j = 0ull; j < batch_size; ++j) {
+          if (n == 2) {
+            if (ot_extension_receiver_data_->random_choices_->Get(i + j)) {
+              ot_extension_receiver_data_->outputs_.at(i + j) ^=
+                  message_bv.Subset((n * j + 1) * bitlen, (n * j + 2) * bitlen);
+            } else {
+              ot_extension_receiver_data_->outputs_.at(i + j) ^=
+                  message_bv.Subset(n * j * bitlen, (n * j + 1) * bitlen);
+            }
+          } else if (n == 1) {
+            if (ot_extension_receiver_data_->real_choices_->Get(i + j)) {
+              ot_extension_receiver_data_->outputs_.at(i + j) ^=
+                  message_bv.Subset(j * bitlen, (j + 1) * bitlen);
+            }
+          } else {
+            throw std::runtime_error("Not inmplemented yet");
+          }
+        }
+
+        {
+          std::scoped_lock lock(it_c->second->GetMutex());
+          ot_extension_receiver_data_->received_outputs_.emplace(i, true);
+        }
+      }
+      ot_extension_receiver_data_->output_conditions_.at(i)->NotifyAll();
+      break;
+    }
+    default: {
+      throw std::runtime_error(fmt::format(
+          "DataStorage::OTExtensionDataType: unknown data type {}; data_type must be <{}", type,
+          OTExtensionDataType::OTExtension_invalid_data_type));
     }
   }
 }

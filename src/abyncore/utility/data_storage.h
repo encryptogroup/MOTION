@@ -75,11 +75,67 @@ struct BaseOTsSenderData {
   ENCRYPTO::BitVector<> received_R_;
   std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_R_condition_;
 
-  bool is_ready_ = false;
   std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
+  bool is_ready_ = false;
 };
 
-enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 3 };
+struct OTExtensionSenderData {
+  std::size_t bit_size_ = 0;
+  /// receiver's mask that are needed to construct matrix @param V_
+  std::array<ENCRYPTO::AlignedBitVector, 128> u_;
+  std::queue<std::size_t> received_u_ids_;
+  std::size_t num_u_received_ = 0;
+  std::unique_ptr<ENCRYPTO::Condition> received_u_condition_;
+
+  std::shared_ptr<ENCRYPTO::BitMatrix> V_;
+
+  // offset, num_ots
+  std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
+
+  // corrections for GOTs, i.e., if random choice bit is not the real choice bit
+  // send 1 to flip the messages before encoding or 0 otherwise for each GOT
+  std::unordered_set<std::size_t> received_correction_offsets_;
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>>
+      received_correction_offsets_cond_;
+  ENCRYPTO::BitVector<> corrections_;
+  std::mutex corrections_mutex_;
+
+  // output buffer
+  std::vector<ENCRYPTO::BitVector<>> y0_, y1_;
+  std::vector<std::size_t> bitlengths_;
+
+  std::unique_ptr<ENCRYPTO::Condition> setup_finished_condition_;
+  bool setup_finished_ = false;
+};
+
+struct OTExtensionReceiverData {
+  std::shared_ptr<ENCRYPTO::BitMatrix> T_;
+
+  // if many OTs are received in batches, it is not necessary to store all of the flags
+  // for received messages but only for the first OT id in the batch. Thus, use a hash table.
+  std::unordered_map<std::size_t, bool> received_outputs_;
+  std::vector<ENCRYPTO::BitVector<>> outputs_;
+  std::unordered_map<std::size_t, std::size_t> num_messages_;
+  std::vector<std::size_t> bitlengths_;
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conditions_;
+
+  std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
+  std::unique_ptr<ENCRYPTO::AlignedBitVector> random_choices_;
+
+  std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
+
+  std::unique_ptr<ENCRYPTO::Condition> setup_finished_condition_;
+  bool setup_finished_ = false;
+};
+
+enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 2 };
+
+enum OTExtensionDataType : uint {
+  rcv_masks = 0,
+  rcv_corrections = 1,
+  snd_messages = 2,
+  OTExtension_invalid_data_type = 3
+};
 
 class DataStorage {
  public:
@@ -117,14 +173,25 @@ class DataStorage {
 
   ENCRYPTO::ConditionPtr &GetSyncCondition();
 
-  void BaseOTsReceived(const std::uint8_t *message, BaseOTsDataType type, std::size_t ot_id = 0);
+  void BaseOTsReceived(const std::uint8_t *message, const BaseOTsDataType type,
+                       const std::size_t ot_id = 0);
+  void OTExtensionReceived(const std::uint8_t *message, const OTExtensionDataType type,
+                           const std::size_t i);
 
   auto &GetBaseOTsReceiverData() { return base_ots_receiver_data_; }
   auto &GetBaseOTsSenderData() { return base_ots_sender_data_; }
 
+  auto &GetOTExtensionReceiverData() { return ot_extension_receiver_data_; }
+  auto &GetOTExtensionSenderData() { return ot_extension_sender_data_; }
+
+  void SetFixedKeyAESKey(const ENCRYPTO::AlignedBitVector &key) { fixed_key_aes_key_ = key; }
+  const auto &GetFixedKeyAESKey() { return fixed_key_aes_key_; }
+
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;
   ENCRYPTO::ConditionPtr rcv_hello_msg_cond, snt_hello_msg_cond, sync_condition_;
+
+  ENCRYPTO::AlignedBitVector fixed_key_aes_key_;
 
   bool sync_message_received_ = false;
 
@@ -135,6 +202,9 @@ class DataStorage {
 
   std::unique_ptr<BaseOTsReceiverData> base_ots_receiver_data_;
   std::unique_ptr<BaseOTsSenderData> base_ots_sender_data_;
+
+  std::unique_ptr<OTExtensionReceiverData> ot_extension_receiver_data_;
+  std::unique_ptr<OTExtensionSenderData> ot_extension_sender_data_;
 
   LoggerPtr logger_;
   std::int64_t id_ = -1;
