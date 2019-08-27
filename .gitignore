@@ -10,7 +10,6 @@
 .settings
 *.db
 README.html
-docs/*
 *.dump
 .idea*
 *_generated.h
@@ -38,3 +37,6 @@ CTestTestfile.cmake
 
 # VS Code Directory
 .vscode/
+
+# doxygen
+docs/Doxyfile
