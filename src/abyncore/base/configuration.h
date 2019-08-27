@@ -29,6 +29,8 @@
 #include <memory>
 #include <vector>
 
+#include "utility/bit_vector.h"
+
 namespace ABYN {
 
 namespace Communication {
@@ -53,38 +55,50 @@ class Configuration {
 
   ~Configuration() = default;
 
-  std::size_t GetNumOfThreads() { return num_threads_; }
+  std::size_t GetNumOfThreads() const noexcept { return num_threads_; }
 
   void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
 
-  std::vector<Communication::ContextPtr> &GetContexts() { return communication_contexts_; }
+  std::vector<Communication::ContextPtr> &GetContexts() noexcept { return communication_contexts_; }
 
-  std::size_t GetNumOfParties() { return communication_contexts_.size(); }
+  std::size_t GetNumOfParties() const noexcept { return communication_contexts_.size(); }
 
   Communication::ContextPtr &GetCommunicationContext(uint i) {
     return communication_contexts_.at(i);
   }
 
-  std::size_t GetMyId() { return my_id_; }
+  std::size_t GetMyId() const noexcept { return my_id_; }
 
   void SetLoggingSeverityLevel(boost::log::trivial::severity_level severity_level) {
     severity_level_ = severity_level;
   }
 
-  bool GetOnlineAfterSetup() { return online_after_setup_; }
+  bool GetOnlineAfterSetup() const noexcept { return online_after_setup_; }
 
   void SetOnlineAfterSetup(bool value);
 
   void SetLoggingEnabled(bool value = true) { logging_enabled_ = value; }
 
-  bool GetLoggingEnabled() { return logging_enabled_; }
+  bool GetLoggingEnabled() const noexcept { return logging_enabled_; }
 
-  boost::log::trivial::severity_level GetLoggingSeverityLevel() { return severity_level_; }
+  boost::log::trivial::severity_level GetLoggingSeverityLevel() const noexcept {
+    return severity_level_;
+  }
+
+  const auto &GetMyFixedAESKeyShare() const noexcept { return fixed_key_aes_key_my_part_; }
+  const auto &GetFixedAESKey() const noexcept { return fixed_key_aes_key_complete_; }
+  bool IsFixedKeyAESKeyReady() const noexcept { return fixed_key_aes_key_is_ready_; }
+
+  auto &GetMutableFixedKeyAESKey() { return fixed_key_aes_key_complete_; }
+  void SetFixedKeyAESKeyReady() { fixed_key_aes_key_is_ready_ = true; }
 
  private:
   std::int64_t my_id_ = -1;
   std::vector<Communication::ContextPtr> communication_contexts_;
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
+  ENCRYPTO::AlignedBitVector fixed_key_aes_key_my_part_;
+  ENCRYPTO::AlignedBitVector fixed_key_aes_key_complete_;
+  bool fixed_key_aes_key_is_ready_ = false;
 
   bool logging_enabled_ = true;
 

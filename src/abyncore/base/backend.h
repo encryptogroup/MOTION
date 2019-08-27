@@ -32,6 +32,10 @@
 
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
+namespace ENCRYPTO::ObliviousTransfer {
+class OTProvider;
+}
+
 namespace ABYN {
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
@@ -195,15 +199,24 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void ComputeBaseOTs();
 
+  void ImportBaseOTs(std::size_t i);
+
   void ImportBaseOTs();
 
   void ExportBaseOTs();
+
+  void GenerateFixedKeyAESKey();
+
+  void ComputeOTExtension();
+
+  auto &GetOTProvider(const std::size_t i) { return ot_provider_.at(i); };
 
  private:
   ConfigurationPtr config_;
   RegisterPtr register_;
 
   std::vector<Communication::HandlerPtr> communication_handlers_;
+  std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>> ot_provider_;
 
   bool share_inputs_ = true;
   bool require_base_ots = true;

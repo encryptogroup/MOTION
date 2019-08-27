@@ -37,8 +37,9 @@
 #include "communication/handler.h"
 #include "communication/hello_message.h"
 #include "communication/message.h"
-#include "crypto/aes_randomness_generator.h"
 #include "crypto/base_ots/ot_hl17.h"
+#include "crypto/oblivious_transfer/ot_provider.h"
+#include "crypto/sharing_randomness_generator.h"
 #include "gate/boolean_gmw_gate.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
@@ -50,6 +51,7 @@ namespace ABYN {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
   register_ = std::make_shared<Register>(config_);
+  ot_provider_.resize(config_->GetNumOfParties(), nullptr);
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (i != config_->GetMyId()) {
@@ -61,6 +63,16 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
     config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
     config_->GetCommunicationContext(i)->SetLogger(register_->GetLogger());
     auto &logger = register_->GetLogger();
+
+    auto &data_storage = config_->GetCommunicationContext(i)->GetDataStorage();
+
+    auto send_function = [this, i](flatbuffers::FlatBufferBuilder &&message) {
+      Send(i, std::move(message));
+    };
+
+    using namespace ENCRYPTO::ObliviousTransfer;
+    ot_provider_.at(i) = std::static_pointer_cast<OTProvider>(
+        std::make_shared<OTProviderFromOTExtension>(send_function, data_storage));
 
     if constexpr (ABYN_VERBOSE_DEBUG) {
       auto seed =
@@ -101,6 +113,10 @@ void Backend::InitializeCommunicationHandlers() {
 
 void Backend::SendHelloToOthers() {
   register_->GetLogger()->LogInfo("Send hello message to other parties");
+  auto fixed_key_aes_key = ENCRYPTO::BitVector<>::Random(128);
+  auto aes_ptr =
+      reinterpret_cast<const std::uint8_t *>(GetConfig()->GetMyFixedAESKeyShare().GetData().data());
+  std::vector<std::uint8_t> aes_fixed_key(aes_ptr, aes_ptr + 16);
   for (auto destination_id = 0u; destination_id < config_->GetNumOfParties(); ++destination_id) {
     if (destination_id == config_->GetMyId()) {
       continue;
@@ -113,7 +129,7 @@ void Backend::SendHelloToOthers() {
 
     auto seed_ptr = share_inputs_ ? &seed : nullptr;
     auto hello_message = ABYN::Communication::BuildHelloMessage(
-        config_->GetMyId(), destination_id, config_->GetNumOfParties(), seed_ptr,
+        config_->GetMyId(), destination_id, config_->GetNumOfParties(), seed_ptr, &aes_fixed_key,
         config_->GetOnlineAfterSetup(), ABYN::ABYN_VERSION);
     Send(destination_id, std::move(hello_message));
   }
@@ -332,54 +348,117 @@ void Backend::ComputeBaseOTs() {
     };
     auto &data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
     auto base_ots = std::make_unique<OT_HL17>(send_function, data_storage);
-    //#pragma omp parallel num_threads(3)
-    //#pragma omp single
-    //    {
-    //#pragma omp task
-    //      {
-    std::thread t0([this, &base_ots, &data_storage]() {
-      auto choices = ENCRYPTO::BitVector<>::Random(128);
-      auto chosen_messages = base_ots->recv(choices);  // sender base ots
-      auto &receiver_data = data_storage->GetBaseOTsReceiverData();
-      receiver_data->c_ = std::move(choices);
-      for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
-        auto b = receiver_data->messages_c_.at(i).begin();
-        std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
+#pragma omp parallel sections num_threads(3)
+    {
+#pragma omp section
+      {
+        auto choices = ENCRYPTO::BitVector<>::Random(128);
+        auto chosen_messages = base_ots->recv(choices);  // sender base ots
+        auto &receiver_data = data_storage->GetBaseOTsReceiverData();
+        receiver_data->c_ = std::move(choices);
+        for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
+          auto b = receiver_data->messages_c_.at(i).begin();
+          std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
+        }
+        std::scoped_lock lock(receiver_data->is_ready_condition_->GetMutex());
+        receiver_data->is_ready_ = true;
       }
-    });
-    //      }
-    //#pragma omp task
-    //      {
-    std::thread t1([this, &base_ots, &data_storage]() {
-      auto both_messages = base_ots->send(128);  // receiver base ots
-      auto &sender_data = data_storage->GetBaseOTsSenderData();
-      for (std::size_t i = 0; i < both_messages.size(); ++i) {
-        auto b = sender_data->messages_0_.at(i).begin();
-        std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
+#pragma omp section
+      {
+        auto both_messages = base_ots->send(128);  // receiver base ots
+        auto &sender_data = data_storage->GetBaseOTsSenderData();
+        for (std::size_t i = 0; i < both_messages.size(); ++i) {
+          auto b = sender_data->messages_0_.at(i).begin();
+          std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
+        }
+        for (std::size_t i = 0; i < both_messages.size(); ++i) {
+          auto b = sender_data->messages_1_.at(i).begin();
+          std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
+        }
+        std::scoped_lock lock(sender_data->is_ready_condition_->GetMutex());
+        sender_data->is_ready_ = true;
       }
-      for (std::size_t i = 0; i < both_messages.size(); ++i) {
-        auto b = sender_data->messages_1_.at(i).begin();
-        std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
-      }
-    });
-    //    }
-    //#pragma omp taskwait
-    //   }
-    t0.join();
-    t1.join();
+    }
   }
   base_ots_finished_ = true;
 }
 
-void BackendImportBaseOTs() {}
+void Backend::ImportBaseOTs(std::size_t i) {
+  GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
+  GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
+  // TODO
+}
+
+void Backend::ImportBaseOTs() {
+  // GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
+  // GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
+  // TODO
+}
 
 void Backend::ExportBaseOTs() {
+  // TODO
   for (std::size_t i = 0; i < GetConfig()->GetNumOfParties(); ++i) {
     if (i == GetConfig()->GetMyId()) {
       continue;
     }
     GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
     GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
+  }
+}
+
+void Backend::GenerateFixedKeyAESKey() {
+  if (GetConfig()->IsFixedKeyAESKeyReady()) {
+    return;
+  }
+
+  auto &key = GetConfig()->GetMutableFixedKeyAESKey();
+  key = GetConfig()->GetMyFixedAESKeyShare();
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+    if (i == GetConfig()->GetMyId()) {
+      continue;
+    }
+    auto &data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
+    auto &cond = data_storage->GetReceivedHelloMessageCondition();
+    while (!(*cond)()) {
+      cond->WaitFor(std::chrono::milliseconds(1));
+    }
+    auto other_key_ptr = data_storage->GetReceivedHelloMessage()->fixed_key_aes_seed()->data();
+    ENCRYPTO::AlignedBitVector other_key(other_key_ptr, 128);
+    key ^= other_key;
+  }
+  GetConfig()->SetFixedKeyAESKeyReady();
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+    if (i == GetConfig()->GetMyId()) {
+      continue;
+    }
+    auto data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
+    data_storage->SetFixedKeyAESKey(key);
+  }
+}
+
+void Backend::ComputeOTExtension() {
+  require_base_ots = true;
+
+  if (!GetConfig()->IsFixedKeyAESKeyReady()) {
+    GenerateFixedKeyAESKey();
+  }
+
+  if (!base_ots_finished_) {
+    ComputeBaseOTs();
+  }
+
+#pragma omp taskloop
+  for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
+    if (i == config_->GetMyId()) {
+      continue;
+    }
+#pragma omp parallel sections num_threads(3) default(none) shared(ot_provider_, i)
+    {
+#pragma omp section
+      { ot_provider_.at(i)->SendSetup(); }
+#pragma omp section
+      { ot_provider_.at(i)->ReceiveSetup(); }
+    }
   }
 }
 }

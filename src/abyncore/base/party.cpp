@@ -163,7 +163,12 @@ void Party::Run(std::size_t repeats) {
   if (!IsConnected()) {
     Connect();
   }
+
   backend_->VerifyHelloMessages();
+  if (!backend_->GetConfig()->IsFixedKeyAESKeyReady()) {
+    backend_->GenerateFixedKeyAESKey();
+  }
+
   for (auto i = 0ull; i < repeats && backend_->GetRegister()->GetTotalNumOfGates() > 0; ++i) {
     if (i > 0u) {
       Clear();

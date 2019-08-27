@@ -35,6 +35,7 @@ namespace ABYN {
 
 Configuration::Configuration(const std::vector<Communication::ContextPtr> &contexts, std::size_t id)
     : my_id_(id), num_threads_(std::thread::hardware_concurrency()) {
+  fixed_key_aes_key_my_part_ = ENCRYPTO::AlignedBitVector::Random(128);
   communication_contexts_.resize(contexts.size() + 1, nullptr);
   if constexpr (ABYN_VERBOSE_DEBUG) {
     severity_level_ = boost::log::trivial::trace;
