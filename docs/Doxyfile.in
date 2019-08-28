@@ -1,3 +1,8 @@
+PROJECT_NAME            = @PROJECT_NAME@
+PROJECT_NUMBER          = @ABYN_VERSION@
+PROJECT_BRIEF           = "Framework for mixed-protocol multi-party computation"
+OUTPUT_LANGUAGE         = English
+
 OUTPUT_DIRECTORY        = @CMAKE_CURRENT_BINARY_DIR@/
 INPUT                   = @ABYN_SOURCE_DIR@/
 INCLUDE_PATH            = @GXX_INCLUDES@ \

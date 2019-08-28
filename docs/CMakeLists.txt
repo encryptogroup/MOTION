@@ -1,4 +1,4 @@
-find_package(Doxygen)
+find_package(Doxygen REQUIRED dot)
 if (DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
     set(DOXYGEN_OUT ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
@@ -12,9 +12,10 @@ if (DOXYGEN_FOUND)
     message("Building docs")
 
     add_custom_target(abyn_doc
+            ALL
             COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             DEPENDS fbs-generation)
 else (DOXYGEN_FOUND)
-    message("Doxygen was not found")
+    message("Doxygen / Graphviz was not found")
 endif (DOXYGEN_FOUND)
