@@ -88,7 +88,8 @@ void test() {
       for (auto j = 0ull; j < global_input_1.size(); ++j) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
       }
-      std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties), global_input_100K(num_parties);
+      std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties),
+          global_input_100K(num_parties);
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
         global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(1000);
         global_input_100K.at(j) = ENCRYPTO::BitVector<>::Random(100000);
@@ -139,14 +140,15 @@ void test() {
           for (auto k = 0ull; k < input_share_100K_vector.size(); ++k) {
             for (auto j = 0ull; j < num_parties; ++j) {
               if (j == party->GetConfiguration()->GetMyId()) {
-                input_share_100K_vector.at(k).push_back(party->IN<BGMW>(global_input_100K.at(j), j));
+                input_share_100K_vector.at(k).push_back(
+                    party->IN<BGMW>(global_input_100K.at(j), j));
               } else {
                 input_share_100K_vector.at(k).push_back(party->IN<BGMW>(dummy_input_100K, j));
               }
             }
 
-            auto xor_100Kv =
-                party->XOR(input_share_100K_vector.at(k).at(0), input_share_100K_vector.at(k).at(1));
+            auto xor_100Kv = party->XOR(input_share_100K_vector.at(k).at(0),
+                                        input_share_100K_vector.at(k).at(1));
 
             for (auto j = 2ull; j < num_parties; ++j) {
               xor_100Kv = party->XOR(xor_100Kv, input_share_100K_vector.at(k).at(j));
@@ -162,16 +164,19 @@ void test() {
                 std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1->GetWires().at(0));
             auto wire_1K =
                 std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1K->GetWires().at(0));
-            auto wire_100K =
-                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_100K->GetWires().at(0));
+            auto wire_100K = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(
+                output_share_100K->GetWires().at(0));
 
             assert(wire_1);
             assert(wire_1K);
             assert(wire_100K);
 
-            assert(wire_1->GetValuesOnWire().Get(0) == ENCRYPTO::BitVector<>::XORReduceBitVector(global_input_1));
-            assert(wire_1K->GetValuesOnWire() == ENCRYPTO::BitVector<>::XORBitVectors(global_input_1K));
-            assert(wire_100K->GetValuesOnWire() == ENCRYPTO::BitVector<>::XORBitVectors(global_input_100K));
+            assert(wire_1->GetValuesOnWire().Get(0) ==
+                   ENCRYPTO::BitVector<>::XORReduceBitVector(global_input_1));
+            assert(wire_1K->GetValuesOnWire() ==
+                   ENCRYPTO::BitVector<>::XORBitVectors(global_input_1K));
+            assert(wire_100K->GetValuesOnWire() ==
+                   ENCRYPTO::BitVector<>::XORBitVectors(global_input_100K));
 
             for (auto &s : output_share_100K_vector) {
               auto wire_100K_v =
@@ -179,7 +184,8 @@ void test() {
 
               assert(wire_100K_v);
 
-              assert(wire_100K_v->GetValuesOnWire() == ENCRYPTO::BitVector<>::XORBitVectors(global_input_100K));
+              assert(wire_100K_v->GetValuesOnWire() ==
+                     ENCRYPTO::BitVector<>::XORBitVectors(global_input_100K));
             }
           }
 

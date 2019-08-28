@@ -115,11 +115,15 @@ struct OTExtensionReceiverData {
   // for received messages but only for the first OT id in the batch. Thus, use a hash table.
   std::unordered_map<std::size_t, bool> received_outputs_;
   std::vector<ENCRYPTO::BitVector<>> outputs_;
-  std::unordered_map<std::size_t, std::size_t> num_messages_;
-  std::vector<std::size_t> bitlengths_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conditions_;
 
+  std::unordered_map<std::size_t, std::size_t> num_messages_;
+  std::vector<std::size_t> bitlengths_;
+
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> real_choices_cond_;
+  std::unordered_set<std::size_t> set_real_choices_;
+
   std::unique_ptr<ENCRYPTO::AlignedBitVector> random_choices_;
 
   std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;

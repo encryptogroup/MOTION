@@ -409,12 +409,19 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
               for (auto j = 0u; j < abyn_parties.size(); ++j) {
                 if (i != j) {
                   for (auto k = 0ull; k < num_ots; ++k) {
-                    receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
-                    receiver_ot.at(i).at(j).at(k)->SendCorrections();
-                    sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
-                    sender_ot.at(i).at(j).at(k)->SendMessages();
-                    sender_out.at(i).at(j).at(k) = sender_ot.at(i).at(j).at(k)->GetOutputs();
-                    receiver_msgs.at(j).at(i).at(k) = receiver_ot.at(j).at(i).at(k)->GetOutputs();
+#pragma omp parallel sections
+                    {
+#pragma omp section
+                      {
+                        receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
+                        receiver_ot.at(i).at(j).at(k)->SendCorrections();
+                      }
+#pragma omp section
+                      {
+                        sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
+                        sender_ot.at(i).at(j).at(k)->SendMessages();
+                      }
+                    }
                   }
                 }
               }
@@ -424,6 +431,17 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
 
       for (auto &tt : t) {
         tt.join();
+      }
+
+      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+          if (i != j) {
+            for (auto k = 0ull; k < num_ots; ++k) {
+              receiver_msgs.at(i).at(j).at(k) = receiver_ot.at(i).at(j).at(k)->GetOutputs();
+              sender_out.at(i).at(j).at(k) = sender_ot.at(i).at(j).at(k)->GetOutputs();
+            }
+          }
+        }
       }
 
       for (auto i = 0u; i < abyn_parties.size(); ++i) {

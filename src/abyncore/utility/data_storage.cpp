@@ -284,13 +284,15 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
     }
     case OTExtensionDataType::snd_messages: {
       {
+        ABYN::Helpers::WaitFor(*ot_extension_receiver_data_->setup_finished_condition_);
+
         auto it_c = ot_extension_receiver_data_->output_conditions_.find(i);
         if (it_c == ot_extension_receiver_data_->output_conditions_.end()) {
           throw std::runtime_error(fmt::format(
               "Could not find Condition for OT#{} OTExtensionDataType::snd_messages", i));
         }
 
-        const auto bitlen = ot_extension_receiver_data_->outputs_.at(i).GetSize();
+        const auto bitlen = ot_extension_receiver_data_->bitlengths_.at(i);
         const auto bs_it = ot_extension_receiver_data_->num_ots_in_batch_.find(i);
         if (bs_it == ot_extension_receiver_data_->num_ots_in_batch_.end()) {
           throw std::runtime_error(fmt::format(
@@ -298,21 +300,28 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
         }
 
         const auto batch_size = bs_it->second;
-        ENCRYPTO::BitVector<> message_bv(message, batch_size * bitlen * 2);
         while (ot_extension_receiver_data_->num_messages_.find(i) ==
                ot_extension_receiver_data_->num_messages_.end()) {
           std::this_thread::sleep_for(std::chrono::microseconds(100));
         }
         const auto n = ot_extension_receiver_data_->num_messages_.at(i);
 
+        ENCRYPTO::BitVector<> message_bv(message, batch_size * bitlen * n);
+
+        while (ot_extension_receiver_data_->real_choices_cond_.find(i) ==
+               ot_extension_receiver_data_->real_choices_cond_.end()) {
+          std::this_thread::sleep_for(std::chrono::microseconds(100));
+        }
+        ABYN::Helpers::WaitFor(*ot_extension_receiver_data_->real_choices_cond_.at(i));
+
         for (auto j = 0ull; j < batch_size; ++j) {
           if (n == 2) {
             if (ot_extension_receiver_data_->random_choices_->Get(i + j)) {
               ot_extension_receiver_data_->outputs_.at(i + j) ^=
-                  message_bv.Subset((n * j + 1) * bitlen, (n * j + 2) * bitlen);
+                  message_bv.Subset((2 * j + 1) * bitlen, (2 * j + 2) * bitlen);
             } else {
               ot_extension_receiver_data_->outputs_.at(i + j) ^=
-                  message_bv.Subset(n * j * bitlen, (n * j + 1) * bitlen);
+                  message_bv.Subset(2 * j * bitlen, (2 * j + 1) * bitlen);
             }
           } else if (n == 1) {
             if (ot_extension_receiver_data_->real_choices_->Get(i + j)) {
@@ -328,8 +337,8 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
           std::scoped_lock lock(it_c->second->GetMutex());
           ot_extension_receiver_data_->received_outputs_.emplace(i, true);
         }
+        it_c->second->NotifyAll();
       }
-      ot_extension_receiver_data_->output_conditions_.at(i)->NotifyAll();
       break;
     }
     default: {
