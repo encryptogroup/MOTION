@@ -122,4 +122,6 @@ if (ABYN_BUILD_EXE)
     add_subdirectory(src/examples)
 endif (ABYN_BUILD_EXE)
 
-add_subdirectory(docs EXCLUDE_FROM_ALL)
+if (ABYN_BUILD_DOC)
+    add_subdirectory(docs)
+endif (ABYN_BUILD_DOC)
