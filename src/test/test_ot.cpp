@@ -336,7 +336,7 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
   for (auto num_parties : num_parties_list) {
     try {
       std::random_device rd("/dev/urandom");
-      std::uniform_int_distribution<std::size_t> dist_bitlen(1, 32);
+      std::uniform_int_distribution<std::size_t> dist_bitlen(1, 1000);
       std::uniform_int_distribution<std::size_t> dist_batch_size(1, 10);
       std::array<std::size_t, num_ots> bitlen, ots_in_batch;
       for (auto i = 0ull; i < bitlen.size(); ++i) {
