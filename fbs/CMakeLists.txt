@@ -1,7 +1,5 @@
 file(GLOB FBS_NAMES "${FBS_DIR_FULL_PREFIX}/*.fbs")
 #set(FBS_NAMES output_message hello_message message base_ot) #add the names of the new fbs files here
-set(FBS_INCLUDE_PREFIX "${CMAKE_SOURCE_DIR}/src/abyncore/communication/fbs_headers")
-set(FLATC_FULL_PATH "${FLATC_DIR}/flatc")
 
 set(GENERATED_FILES "")
 
@@ -12,10 +10,14 @@ foreach (FILE ${FBS_NAMES})
     set(THIS_H "${THIS_H}_generated.h")
     if ((NOT ${FBS_INCLUDE_PREFIX}/${THIS_H}) OR (${THIS_FBS} IS_NEWER_THAN ${FBS_INCLUDE_PREFIX}/${THIS_H}))
         add_custom_command(OUTPUT "${FBS_INCLUDE_PREFIX}/${THIS_H}"
-                COMMAND ${FLATC_DIR}/flatc --cpp -o ${FBS_INCLUDE_PREFIX} ${THIS_FBS}
+                COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp -o ${FBS_INCLUDE_PREFIX} ${THIS_FBS}
                 DEPENDS ${THIS_FBS})
     endif ()
     list(APPEND GENERATED_FILES "${FBS_INCLUDE_PREFIX}/${THIS_H}")
 endforeach ()
 
-add_custom_target(fbs-generation ALL DEPENDS flatc ${GENERATED_FILES})
+if(Flatbuffers_FOUND)
+    add_custom_target(fbs-generation ALL DEPENDS ${GENERATED_FILES}) #flatc is already there
+else()
+    add_custom_target(fbs-generation ALL DEPENDS flatc ${GENERATED_FILES})
+endif()
