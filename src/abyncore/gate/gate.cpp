@@ -37,7 +37,7 @@ void Gate::RegisterWaitingFor(std::size_t wire_id) {
 }
 
 void Gate::SignalDependencyIsReady() {
-  num_ready_dependencies++;
+  num_ready_dependencies_++;
   IfReadyAddToProcessingQueue();
 }
 
@@ -62,7 +62,7 @@ void Gate::Clear() {
   setup_is_ready_ = false;
   online_is_ready_ = false;
   added_to_active_queue = false;
-  num_ready_dependencies = 0;
+  num_ready_dependencies_ = 0;
 
   for (auto &wire : output_wires_) {
     wire->Clear();

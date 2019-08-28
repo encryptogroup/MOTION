@@ -32,17 +32,17 @@
 
 #include "utility/typedefs.h"
 
-namespace ABYN::Wires{
+namespace ABYN::Wires {
 class Wire;
 using WirePtr = std::shared_ptr<Wire>;
-}
+}  // namespace ABYN::Wires
 
-namespace ABYN{
+namespace ABYN {
 class Backend;
 class Register;
 class Configuration;
 class Logger;
-}
+}  // namespace ABYN
 
 namespace ABYN::Gates::Interfaces {
 
@@ -73,7 +73,7 @@ class Gate {
 
   void SignalDependencyIsReady();
 
-  bool AreDependenciesReady() { return wire_dependencies_.size() == num_ready_dependencies; }
+  bool AreDependenciesReady() { return wire_dependencies_.size() == num_ready_dependencies_; }
 
   void SetSetupIsReady() { setup_is_ready_ = true; }
 
@@ -98,7 +98,7 @@ class Gate {
 
   bool added_to_active_queue = false;
 
-  std::atomic<std::size_t> num_ready_dependencies = 0;
+  std::atomic<std::size_t> num_ready_dependencies_ = 0;
 
   Gate() = default;
 
