@@ -456,6 +456,161 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
                   ASSERT_EQ(
                       receiver_msgs.at(j).at(i).at(k).at(l),
                       sender_out.at(i).at(j).at(k).at(l).Subset(bitlen.at(k), 2 * bitlen.at(k)));
+                  ASSERT_EQ(receiver_msgs.at(j).at(i).at(k).at(l) ^
+                                sender_out.at(i).at(j).at(k).at(l).Subset(0, bitlen.at(k)),
+                            sender_msgs.at(i).at(j).at(k).at(l));
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (std::exception &e) {
+      std::cerr << e.what() << std::endl;
+    }
+  }
+}
+
+TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
+  constexpr std::size_t num_ots = 10;
+  constexpr std::array<std::size_t, 4> bitlens{8, 16, 32, 64};
+  for (auto num_parties : num_parties_list) {
+    try {
+      std::random_device rd("/dev/urandom");
+      std::uniform_int_distribution<std::size_t> dist_bitlen(0, bitlens.size() - 1);
+      std::uniform_int_distribution<std::size_t> dist_batch_size(1, 10);
+      std::array<std::size_t, num_ots> bitlen, ots_in_batch;
+      for (auto i = 0ull; i < bitlen.size(); ++i) {
+        bitlen.at(i) = bitlens.at(dist_bitlen(rd));
+        ots_in_batch.at(i) = dist_batch_size(rd);
+      }
+
+      std::vector<ABYN::PartyPtr> abyn_parties(
+          std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+      for (auto &p : abyn_parties) {
+        p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+      }
+      std::vector<std::thread> t(num_parties);
+
+      // my id, other id, data
+      vvv<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>> sender_ot(num_parties);
+      vvv<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>> receiver_ot(num_parties);
+      vvv<std::vector<ENCRYPTO::BitVector<>>> sender_msgs(num_parties), sender_out(num_parties),
+          receiver_msgs(num_parties);
+      vvv<ENCRYPTO::BitVector<>> choices(num_parties);
+
+      for (auto i = 0ull; i < num_parties; ++i) {
+        sender_ot.at(i).resize(num_parties);
+        receiver_ot.at(i).resize(num_parties);
+        sender_msgs.at(i).resize(num_parties);
+        sender_out.at(i).resize(num_parties);
+        receiver_msgs.at(i).resize(num_parties);
+        choices.at(i).resize(num_parties);
+      }
+
+      for (auto i = 0ull; i < num_parties; ++i) {
+        for (auto j = 0ull; j < num_parties; ++j) {
+          if (i != j) {
+            for (auto k = 0ull; k < num_ots; ++k) {
+              sender_msgs.at(i).at(j).resize(num_ots);
+              sender_out.at(i).at(j).resize(num_ots);
+              receiver_msgs.at(i).at(j).resize(num_ots);
+              choices.at(i).at(j).resize(num_ots);
+              for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {
+                sender_msgs.at(i).at(j).at(k).push_back(
+                    ENCRYPTO::BitVector<>::Random(bitlen.at(k)));
+              }
+              choices.at(i).at(j).at(k) = ENCRYPTO::BitVector<>::Random(ots_in_batch.at(k));
+            }
+          }
+        }
+      }
+
+      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+        t.at(i) =
+            std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch, &sender_ot,
+                         &sender_out, &receiver_ot, &abyn_parties, i, num_parties]() {
+              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+                if (i != j) {
+                  auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
+                  for (auto k = 0ull; k < num_ots; ++k) {
+                    sender_ot.at(i).at(j).push_back(
+                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k), 2,
+                                                  ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
+                    receiver_ot.at(i).at(j).push_back(ot_provider->RegisterReceive(
+                        bitlen.at(k), ots_in_batch.at(k), 2,
+                        ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
+                  }
+                }
+              }
+              abyn_parties.at(i)->GetBackend()->ComputeOTExtension();
+
+              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+                if (i != j) {
+                  for (auto k = 0ull; k < num_ots; ++k) {
+#pragma omp parallel sections
+                    {
+#pragma omp section
+                      {
+                        receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
+                        receiver_ot.at(i).at(j).at(k)->SendCorrections();
+                      }
+#pragma omp section
+                      {
+                        sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
+                        sender_ot.at(i).at(j).at(k)->SendMessages();
+                      }
+                    }
+                  }
+                }
+              }
+              abyn_parties.at(i)->Finish();
+            });
+      }
+
+      for (auto &tt : t) {
+        tt.join();
+      }
+
+      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+          if (i != j) {
+            for (auto k = 0ull; k < num_ots; ++k) {
+              receiver_msgs.at(i).at(j).at(k) = receiver_ot.at(i).at(j).at(k)->GetOutputs();
+              sender_out.at(i).at(j).at(k) = sender_ot.at(i).at(j).at(k)->GetOutputs();
+            }
+          }
+        }
+      }
+
+      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+          if (i != j) {
+            for (auto k = 0ull; k < num_ots; ++k) {
+              for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {
+                if (!choices.at(j).at(i).at(k)[l]) {
+                  ASSERT_EQ(receiver_msgs.at(j).at(i).at(k).at(l),
+                            sender_out.at(i).at(j).at(k).at(l).Subset(0, bitlen.at(k)));
+                } else {
+                  ASSERT_EQ(
+                      receiver_msgs.at(j).at(i).at(k).at(l),
+                      sender_out.at(i).at(j).at(k).at(l).Subset(bitlen.at(k), 2 * bitlen.at(k)));
+                  auto x = receiver_msgs.at(j).at(i).at(k).at(l);
+                  const auto mask = sender_out.at(i).at(j).at(k).at(l).Subset(0, bitlen.at(k));
+                  if (bitlen.at(k) == 8u) {
+                    *reinterpret_cast<std::uint8_t *>(x.GetMutableData().data()) -=
+                        *reinterpret_cast<const std::uint8_t *>(mask.GetData().data());
+                  } else if (bitlen.at(k) == 16u) {
+                    *reinterpret_cast<std::uint16_t *>(x.GetMutableData().data()) -=
+                        *reinterpret_cast<const std::uint16_t *>(mask.GetData().data());
+                  } else if (bitlen.at(k) == 32u) {
+                    *reinterpret_cast<std::uint32_t *>(x.GetMutableData().data()) -=
+                        *reinterpret_cast<const std::uint32_t *>(mask.GetData().data());
+                  } else if (bitlen.at(k) == 64u) {
+                    *reinterpret_cast<std::uint64_t *>(x.GetMutableData().data()) -=
+                        *reinterpret_cast<const std::uint64_t *>(mask.GetData().data());
+                  }
+                  ASSERT_EQ(x, sender_msgs.at(i).at(j).at(k).at(l));
                 }
               }
             }

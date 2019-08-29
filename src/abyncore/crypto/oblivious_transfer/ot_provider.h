@@ -232,51 +232,29 @@ class COTVectorSender final : public OTVectorSender {
         if (p_ == OTProtocol::ACOT) {
           if (corrections[i]) {
             bv.Append(ote->y1_.at(id_ + i));
-            switch (bitlen_) {
-              case (8u): {
-                *reinterpret_cast<uint8_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint8_t *>(ote->y1_.at(id_ + i).GetData().data());
-                break;
-              }
-              case (16u): {
-                *reinterpret_cast<uint16_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint16_t *>(ote->y1_.at(id_ + i).GetData().data());
-                break;
-              }
-              case (32u): {
-                *reinterpret_cast<uint32_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint32_t *>(ote->y1_.at(id_ + i).GetData().data());
-                break;
-              }
-              case (64u): {
-                *reinterpret_cast<uint64_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint64_t *>(ote->y1_.at(id_ + i).GetData().data());
-                break;
-              }
-            }
           } else {
             bv.Append(ote->y0_.at(id_ + i));
-            switch (bitlen_) {
-              case (8u): {
-                *reinterpret_cast<uint8_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint8_t *>(ote->y0_.at(id_ + i).GetData().data());
-                break;
-              }
-              case (16u): {
-                *reinterpret_cast<uint16_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint16_t *>(ote->y0_.at(id_ + i).GetData().data());
-                break;
-              }
-              case (32u): {
-                *reinterpret_cast<uint32_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint32_t *>(ote->y0_.at(id_ + i).GetData().data());
-                break;
-              }
-              case (64u): {
-                *reinterpret_cast<uint64_t *>(bv.GetMutableData().data()) +=
-                    *reinterpret_cast<const uint64_t *>(ote->y0_.at(id_ + i).GetData().data());
-                break;
-              }
+          }
+          switch (bitlen_) {
+            case (8u): {
+              *reinterpret_cast<uint8_t *>(bv.GetMutableData().data() + 1) +=
+                  *reinterpret_cast<const uint8_t *>(inputs_.at(i).GetData().data());
+              break;
+            }
+            case (16u): {
+              *reinterpret_cast<uint16_t *>(bv.GetMutableData().data() + 2) +=
+                  *reinterpret_cast<const uint16_t *>(inputs_.at(i).GetData().data());
+              break;
+            }
+            case (32u): {
+              *reinterpret_cast<uint32_t *>(bv.GetMutableData().data() + 4) +=
+                  *reinterpret_cast<const uint32_t *>(inputs_.at(i).GetData().data());
+              break;
+            }
+            case (64u): {
+              *reinterpret_cast<uint64_t *>(bv.GetMutableData().data() + 8) +=
+                  *reinterpret_cast<const uint64_t *>(inputs_.at(i).GetData().data());
+              break;
             }
           }
         } else {  // OTProtocol::XCOT
@@ -297,26 +275,39 @@ class COTVectorSender final : public OTVectorSender {
     BitVector<> buffer;
     for (auto i = 0ull; i < num_ots_; ++i) {
       if (p_ == OTProtocol::ACOT) {
-        BitVector bv = ote->y0_.at(id_ + i) ^ ote->y1_.at(id_ + i);
+        BitVector bv = ote->y0_.at(id_ + i);
         switch (bitlen_) {
           case 8u: {
-            *(reinterpret_cast<std::uint8_t *>(bv.GetMutableData().data() + 1)) +=
+            *(reinterpret_cast<std::uint8_t *>(bv.GetMutableData().data())) +=
                 *(reinterpret_cast<const std::uint8_t *>(inputs_.at(i).GetMutableData().data()));
+            *(reinterpret_cast<std::uint8_t *>(bv.GetMutableData().data())) +=
+                *(reinterpret_cast<const std::uint8_t *>(
+                    ote->y1_.at(id_ + i).GetMutableData().data()));
+
             break;
           }
           case 16u: {
-            *(reinterpret_cast<std::uint16_t *>(bv.GetMutableData().data() + 2)) +=
+            *(reinterpret_cast<std::uint16_t *>(bv.GetMutableData().data())) +=
                 *(reinterpret_cast<const std::uint16_t *>(inputs_.at(i).GetMutableData().data()));
+            *(reinterpret_cast<std::uint16_t *>(bv.GetMutableData().data())) +=
+                *(reinterpret_cast<const std::uint16_t *>(
+                    ote->y1_.at(id_ + i).GetMutableData().data()));
             break;
           }
           case 32u: {
-            *(reinterpret_cast<std::uint32_t *>(bv.GetMutableData().data() + 4)) +=
+            *(reinterpret_cast<std::uint32_t *>(bv.GetMutableData().data())) +=
                 *(reinterpret_cast<const std::uint32_t *>(inputs_.at(i).GetMutableData().data()));
+            *(reinterpret_cast<std::uint32_t *>(bv.GetMutableData().data())) +=
+                *(reinterpret_cast<const std::uint32_t *>(
+                    ote->y1_.at(id_ + i).GetMutableData().data()));
             break;
           }
           case 64u: {
-            *(reinterpret_cast<std::uint64_t *>(bv.GetMutableData().data() + 8)) +=
+            *(reinterpret_cast<std::uint64_t *>(bv.GetMutableData().data())) +=
                 *(reinterpret_cast<const std::uint64_t *>(inputs_.at(i).GetMutableData().data()));
+            *(reinterpret_cast<std::uint64_t *>(bv.GetMutableData().data())) +=
+                *(reinterpret_cast<const std::uint64_t *>(
+                    ote->y1_.at(id_ + i).GetMutableData().data()));
             break;
           }
           default: {
@@ -484,6 +475,9 @@ class COTVectorReceiver final : public OTVectorReceiver {
           "Invalid parameter bitlen={}, only 8, 16, 32, or 64 are allowed in ACOT", bitlen_));
     }
     data_storage_->GetOTExtensionReceiverData()->num_messages_.emplace(id_, 1);
+    if (p == OTProtocol::XCOT) {
+      data_storage_->GetOTExtensionReceiverData()->xor_correlation_.emplace(id_);
+    }
   }
 
   void SendCorrections() final {

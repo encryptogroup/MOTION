@@ -113,11 +113,12 @@ struct OTExtensionReceiverData {
 
   // if many OTs are received in batches, it is not necessary to store all of the flags
   // for received messages but only for the first OT id in the batch. Thus, use a hash table.
-  std::unordered_map<std::size_t, bool> received_outputs_;
+  std::unordered_set<std::size_t> received_outputs_;
   std::vector<ENCRYPTO::BitVector<>> outputs_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conditions_;
 
   std::unordered_map<std::size_t, std::size_t> num_messages_;
+  std::unordered_set<std::size_t> xor_correlation_;
   std::vector<std::size_t> bitlengths_;
 
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;

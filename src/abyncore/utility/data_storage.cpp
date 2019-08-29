@@ -269,7 +269,7 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
       }
       {
         std::scoped_lock lock(cond->second->GetMutex(),
-                              ot_extension_sender_data_->corrections_mutex_);
+                               ot_extension_sender_data_->corrections_mutex_);
         auto num_ots = ot_extension_sender_data_->num_ots_in_batch_.find(i);
         if (num_ots == ot_extension_sender_data_->num_ots_in_batch_.end()) {
           throw std::runtime_error(fmt::format(
@@ -277,6 +277,7 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
         }
         ENCRYPTO::BitVector<> local_corrections(message, num_ots->second);
         ot_extension_sender_data_->corrections_.Copy(i, i + num_ots->second, local_corrections);
+
         ot_extension_sender_data_->received_correction_offsets_.insert(i);
       }
       cond->second->NotifyAll();
@@ -325,8 +326,45 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
             }
           } else if (n == 1) {
             if (ot_extension_receiver_data_->real_choices_->Get(i + j)) {
-              ot_extension_receiver_data_->outputs_.at(i + j) ^=
-                  message_bv.Subset(j * bitlen, (j + 1) * bitlen);
+              if (ot_extension_receiver_data_->xor_correlation_.find(i) !=
+                  ot_extension_receiver_data_->xor_correlation_.end()) {
+                ot_extension_receiver_data_->outputs_.at(i + j) ^=
+                    message_bv.Subset(j * bitlen, (j + 1) * bitlen);
+              } else {
+                auto msg = message_bv.Subset(j * bitlen, (j + 1) * bitlen);
+                auto out = ot_extension_receiver_data_->outputs_.at(i + j).GetMutableData().data();
+                switch (bitlen) {
+                  case 8u: {
+                    *reinterpret_cast<uint8_t *>(out) =
+                        *reinterpret_cast<const uint8_t *>(msg.GetData().data()) -
+                        *reinterpret_cast<const uint8_t *>(out);
+                    break;
+                  }
+                  case 16u: {
+                    *reinterpret_cast<uint16_t *>(out) =
+                        *reinterpret_cast<const uint16_t *>(msg.GetData().data()) -
+                        *reinterpret_cast<const uint16_t *>(out);
+                    break;
+                  }
+                  case 32u: {
+                    *reinterpret_cast<uint32_t *>(out) =
+                        *reinterpret_cast<const uint32_t *>(msg.GetData().data()) -
+                        *reinterpret_cast<const uint32_t *>(out);
+                    break;
+                  }
+                  case 64u: {
+                    *reinterpret_cast<uint64_t *>(out) =
+                        *reinterpret_cast<const uint64_t *>(msg.GetData().data()) -
+                        *reinterpret_cast<const uint64_t *>(out);
+                    break;
+                  }
+                  default:
+                    throw std::runtime_error(
+                        fmt::format("Unsupported bitlen={} for additive correlation. Allowed are "
+                                    "bitlengths: 8, 16, 32, 64.",
+                                    bitlen));
+                }
+              }
             }
           } else {
             throw std::runtime_error("Not inmplemented yet");
@@ -335,7 +373,7 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
 
         {
           std::scoped_lock lock(it_c->second->GetMutex());
-          ot_extension_receiver_data_->received_outputs_.emplace(i, true);
+          ot_extension_receiver_data_->received_outputs_.emplace(i);
         }
         it_c->second->NotifyAll();
       }
