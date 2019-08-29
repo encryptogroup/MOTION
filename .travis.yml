@@ -15,15 +15,15 @@ before_install:
   # Install a recent CMake
   - mkdir $HOME/prefix
   - export PATH="$HOME/prefix/bin:$PATH"
-  - wget https://cmake.org/files/v3.15/cmake-3.15.1-Linux-x86_64.sh -O cmake_install.sh
+  - wget https://cmake.org/files/v3.15/cmake-3.15.2-Linux-x86_64.sh -O cmake_install.sh
   - chmod +x cmake_install.sh
   - ./cmake_install.sh --prefix=$HOME/prefix --exclude-subdir --skip-license
 
 script:
   - mkdir build_debug
   - cd build_debug
-  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake --target abyntest -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On -j 4 ..
-  - make
+  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On -j 2 ..
+  - make -j 2
   - ./bin/abyntest
 
 notifications:
