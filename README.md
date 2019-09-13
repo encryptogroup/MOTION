@@ -5,6 +5,7 @@
 This code is provided as a experimental implementation for testing purposes and should not be used in a productive environment. We cannot guarantee security and correctness.
 
 ### Requirements
+
 ---
 
 * A **Linux distribution** of your choice (ABY-N was developed and tested with recent versions of [Ubuntu](http://www.ubuntu.com/), [Manjaro](https://manjaro.org/) and [Arch Linux](https://www.archlinux.org/)).
@@ -46,14 +47,10 @@ This code is provided as a experimental implementation for testing purposes and 
 ###### External Dependencies
 
 ABY-N depends on the following libraries:
-
-* [OTExtension](https://github.com/encryptogroup/OTExtension)
-* [ENCRYPTO_utils](https://github.com/encryptogroup/ENCRYPTO_utils)
-* [fmt](https://github.com/fmtlib/fmt)
+* [boost](https://www.boost.org/)
 * [flatbuffers](https://github.com/google/flatbuffers)
-* [googletest](https://github.com/google/googletest)
-* [cryptoTools](https://github.com/ladnir/cryptoTools)
-* [libOTe](https://github.com/osu-crypto/libOTe)
+* [fmt](https://github.com/fmtlib/fmt)
+* [googletest](https://github.com/google/googletest) (optional)
 
 These are referenced using the Git submodules in the `extern/`
 directory.
@@ -149,6 +146,7 @@ make install
 
 
 ### ABY-N Applications
+
 ---
 
 
