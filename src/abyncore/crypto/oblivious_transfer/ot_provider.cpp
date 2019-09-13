@@ -282,6 +282,7 @@ GOTVectorSender::GOTVectorSender(const std::size_t id, const std::size_t num_ots
   auto &ote_data = data_storage_->GetOTExtensionSenderData();
   ote_data->received_correction_offsets_cond_.emplace(
       id_, std::make_unique<Condition>([this, &ote_data]() {
+        std::scoped_lock lock(ote_data->corrections_mutex_);
         return ote_data->received_correction_offsets_.find(id_) !=
                ote_data->received_correction_offsets_.end();
       }));
@@ -340,6 +341,7 @@ COTVectorSender::COTVectorSender(const std::size_t id, const std::size_t num_ots
   auto &ote_data = data_storage_->GetOTExtensionSenderData();
   ote_data->received_correction_offsets_cond_.emplace(
       id_, std::make_unique<Condition>([this, &ote_data]() {
+        std::scoped_lock lock(ote_data->corrections_mutex_);
         return ote_data->received_correction_offsets_.find(id_) !=
                ote_data->received_correction_offsets_.end();
       }));

@@ -38,12 +38,11 @@ constexpr auto PORT_OFFSET = 7777u;
 template <typename T>
 using vvv = std::vector<std::vector<std::vector<T>>>;
 
-TEST(MultiplicationTriples, Binary){
+TEST(MultiplicationTriples, Binary) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     constexpr auto BGMW = ABYN::MPCProtocol::BooleanGMW;
     std::srand(std::time(nullptr));
     for (auto num_parties : {2u, 3u}) {
-      const std::size_t output_owner = std::rand() % num_parties;
       std::vector<bool> global_input_1(num_parties);
       for (auto j = 0ull; j < global_input_1.size(); ++j) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
@@ -51,10 +50,10 @@ TEST(MultiplicationTriples, Binary){
       std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties);
 
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
-        global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(1000);
+        global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(20);
       }
       bool dummy_input_1 = false;
-      ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
+      ENCRYPTO::BitVector<> dummy_input_20(20, false);
       try {
         std::vector<ABYN::PartyPtr> abyn_parties(
             std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
@@ -73,7 +72,7 @@ TEST(MultiplicationTriples, Binary){
               s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(global_input_1K.at(j), j));
             } else {
               s_in_1.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
-              s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1K, j));
+              s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_20, j));
             }
           }
 

@@ -561,9 +561,7 @@ void GMWANDGate::EvaluateOnline() {
   e_out_->WaitOnline();
 
   const auto &d_clear = d_out_->GetOutputWires();
-  const auto &d_shared = d_->GetWires();
   const auto &e_clear = e_out_->GetOutputWires();
-  const auto &e_shared = e_->GetWires();
 
   for (auto &w : d_clear) {
     Helpers::WaitFor(*w->GetIsReadyCondition());
@@ -574,17 +572,13 @@ void GMWANDGate::EvaluateOnline() {
 
   for (auto i = 0ull; i < d_clear.size(); ++i) {
     const auto d_w = std::dynamic_pointer_cast<Wires::GMWWire>(d_clear.at(i));
-    const auto d_i_w = std::dynamic_pointer_cast<Wires::GMWWire>(d_shared.at(i));
     const auto x_i_w = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
     const auto e_w = std::dynamic_pointer_cast<Wires::GMWWire>(e_clear.at(i));
-    const auto e_i_w = std::dynamic_pointer_cast<Wires::GMWWire>(e_shared.at(i));
     const auto y_i_w = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
 
     assert(d_w);
-    assert(d_i_w);
     assert(x_i_w);
     assert(e_w);
-    assert(e_i_w);
     assert(y_i_w);
 
     auto out = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
@@ -594,10 +588,8 @@ void GMWANDGate::EvaluateOnline() {
                      mt_offset_ + (i + 1) * parent_a_.at(0)->GetNumOfParallelValues());
 
     const auto &d = d_w->GetValuesOnWire();
-    const auto &d_i = d_i_w->GetValuesOnWire();
     const auto &x_i = x_i_w->GetValuesOnWire();
     const auto &e = e_w->GetValuesOnWire();
-    const auto &e_i = e_i_w->GetValuesOnWire();
     const auto &y_i = y_i_w->GetValuesOnWire();
 
     if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
