@@ -149,7 +149,8 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       //
     } break;
     case MessageType_SynchronizationMessage: {
-      data_storage_->SetSyncState(true);
+      const std::size_t sync_state = *reinterpret_cast<const uint64_t*>(message->payload()->data());
+      data_storage_->SetReceivedSyncState(sync_state);
     } break;
     case MessageType_BaseROTMessageReceiver: {
       auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();

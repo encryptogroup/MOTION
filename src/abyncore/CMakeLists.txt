@@ -15,6 +15,7 @@ add_library(abyn
         crypto/pseudo_random_generator.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
+        crypto/multiplication_triple/mt_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
         gate/gate.cpp
         gate/boolean_gmw_gate.cpp
@@ -38,8 +39,8 @@ if (ABYN_AVX512)
 endif ()
 
 # -fvect-cost-model flag is not supported by clang(++)
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	set(ABYN_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
+if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set(ABYN_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
 endif ()
 
 set_property(TARGET abyn PROPERTY POSITION_INDEPENDENT_CODE ON)

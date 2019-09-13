@@ -216,9 +216,7 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::
 
   for (std::size_t i = 0; i < number_ots; ++i) {
     auto& cond = base_ots_snd->received_R_condition_.at(i);
-    while (!(*cond)()) {
-      cond->WaitFor(std::chrono::milliseconds(1));
-    }
+    ABYN::Helpers::WaitFor(*cond);
     output.at(i) = send_2(states.at(i), base_ots_snd->R_.at(i));
   }
 
@@ -240,9 +238,7 @@ std::vector<std::vector<std::byte>> OT_HL17::recv(const ENCRYPTO::BitVector<>& c
   for (std::size_t i = 0; i < number_ots; ++i) {
     recv_0(states.at(i), choices.Get(i));
     auto& cond = base_ots_rcv->received_S_condition_.at(i);
-    while (!(*cond)()) {
-      cond->WaitFor(std::chrono::milliseconds(1));
-    }
+    ABYN::Helpers::WaitFor(*cond);
   }
 
   for (std::size_t i = 0; i < number_ots; ++i) {

@@ -32,7 +32,7 @@
 namespace {
 
 constexpr auto num_parties_list = {2u, 3u};
-constexpr auto PORT_OFFSET = 7777u;
+constexpr auto PORT_OFFSET{7777u};
 
 template <typename T>
 using vvv = std::vector<std::vector<std::vector<T>>>;
@@ -129,7 +129,7 @@ TEST(ObliviousTransfer, BaseOT) {
 }
 
 TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
-  constexpr std::size_t num_ots = 10;
+  constexpr std::size_t num_ots{10};
   for (auto num_parties : num_parties_list) {
     try {
       std::random_device rd("/dev/urandom");
@@ -172,15 +172,15 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
                   auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k), 2,
+                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
                                                   ENCRYPTO::ObliviousTransfer::OTProtocol::ROT));
                     receiver_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterReceive(bitlen.at(k), ots_in_batch.at(k), 2,
+                        ot_provider->RegisterReceive(bitlen.at(k), ots_in_batch.at(k),
                                                      ENCRYPTO::ObliviousTransfer::OTProtocol::ROT));
                   }
                 }
               }
-              abyn_parties.at(i)->GetBackend()->ComputeOTExtension();
+              abyn_parties.at(i)->Run();
               abyn_parties.at(i)->Finish();
             });
       }
@@ -218,7 +218,7 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
 }
 
 TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
-  constexpr std::size_t num_ots = 10;
+  constexpr std::size_t num_ots{10};
   for (auto num_parties : num_parties_list) {
     try {
       std::random_device rd("/dev/urandom");
@@ -278,15 +278,13 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
               auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
               for (auto k = 0ull; k < num_ots; ++k) {
                 sender_ot.at(i).at(j).push_back(
-                    ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k), 2,
-                                              ENCRYPTO::ObliviousTransfer::OTProtocol::GOT));
+                    ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k)));
                 receiver_ot.at(i).at(j).push_back(
-                    ot_provider->RegisterReceive(bitlen.at(k), ots_in_batch.at(k), 2,
-                                                 ENCRYPTO::ObliviousTransfer::OTProtocol::GOT));
+                    ot_provider->RegisterReceive(bitlen.at(k), ots_in_batch.at(k)));
               }
             }
           }
-          abyn_parties.at(i)->GetBackend()->ComputeOTExtension();
+          abyn_parties.at(i)->Run();
 
           for (auto j = 0u; j < abyn_parties.size(); ++j) {
             if (i != j) {
@@ -332,7 +330,7 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
 }
 
 TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
-  constexpr std::size_t num_ots = 10;
+  constexpr std::size_t num_ots{10};
   for (auto num_parties : num_parties_list) {
     try {
       std::random_device rd("/dev/urandom");
@@ -352,7 +350,6 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
       std::vector<std::thread> t(num_parties);
-
       // my id, other id, data
       vvv<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>> sender_ot(num_parties);
       vvv<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>> receiver_ot(num_parties);
@@ -396,28 +393,29 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
                   auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k), 2,
+                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
                                                   ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT));
                     receiver_ot.at(i).at(j).push_back(ot_provider->RegisterReceive(
-                        bitlen.at(k), ots_in_batch.at(k), 2,
+                        bitlen.at(k), ots_in_batch.at(k),
                         ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT));
                   }
                 }
               }
-              abyn_parties.at(i)->GetBackend()->ComputeOTExtension();
-
+              abyn_parties.at(i)->Run();
               for (auto j = 0u; j < abyn_parties.size(); ++j) {
                 if (i != j) {
-                  for (auto k = 0ull; k < num_ots; ++k) {
 #pragma omp parallel sections
-                    {
+                  {
 #pragma omp section
-                      {
+                    {
+                      for (auto k = 0ull; k < num_ots; ++k) {
                         receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
                         receiver_ot.at(i).at(j).at(k)->SendCorrections();
                       }
+                    }
 #pragma omp section
-                      {
+                    {
+                      for (auto k = 0ull; k < num_ots; ++k) {
                         sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
                         sender_ot.at(i).at(j).at(k)->SendMessages();
                       }
@@ -430,16 +428,15 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
       }
 
       for (auto &tt : t) {
-        tt.join();
+        if (tt.joinable()) tt.join();
       }
 
       for (auto i = 0u; i < abyn_parties.size(); ++i) {
         for (auto j = 0u; j < abyn_parties.size(); ++j) {
-          if (i != j) {
-            for (auto k = 0ull; k < num_ots; ++k) {
-              receiver_msgs.at(i).at(j).at(k) = receiver_ot.at(i).at(j).at(k)->GetOutputs();
-              sender_out.at(i).at(j).at(k) = sender_ot.at(i).at(j).at(k)->GetOutputs();
-            }
+          if (i == j) continue;
+          for (auto k = 0ull; k < num_ots; ++k) {
+            receiver_msgs.at(i).at(j).at(k) = receiver_ot.at(i).at(j).at(k)->GetOutputs();
+            sender_out.at(i).at(j).at(k) = sender_ot.at(i).at(j).at(k)->GetOutputs();
           }
         }
       }
@@ -469,10 +466,10 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
       std::cerr << e.what() << std::endl;
     }
   }
-}
+}  // namespace
 
 TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
-  constexpr std::size_t num_ots = 10;
+  constexpr std::size_t num_ots{10};
   constexpr std::array<std::size_t, 4> bitlens{8, 16, 32, 64};
   for (auto num_parties : num_parties_list) {
     try {
@@ -499,7 +496,7 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
           receiver_msgs(num_parties);
       vvv<ENCRYPTO::BitVector<>> choices(num_parties);
 
-      for (auto i = 0ull; i < num_parties; ++i) {
+      for (auto i{0ull}; i < num_parties; ++i) {
         sender_ot.at(i).resize(num_parties);
         receiver_ot.at(i).resize(num_parties);
         sender_msgs.at(i).resize(num_parties);
@@ -535,28 +532,30 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
                   auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k), 2,
+                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
                                                   ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
                     receiver_ot.at(i).at(j).push_back(ot_provider->RegisterReceive(
-                        bitlen.at(k), ots_in_batch.at(k), 2,
+                        bitlen.at(k), ots_in_batch.at(k),
                         ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
                   }
                 }
               }
-              abyn_parties.at(i)->GetBackend()->ComputeOTExtension();
+              abyn_parties.at(i)->Run();
 
               for (auto j = 0u; j < abyn_parties.size(); ++j) {
                 if (i != j) {
-                  for (auto k = 0ull; k < num_ots; ++k) {
 #pragma omp parallel sections
-                    {
+                  {
 #pragma omp section
-                      {
+                    {
+                      for (auto k = 0ull; k < num_ots; ++k) {
                         receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
                         receiver_ot.at(i).at(j).at(k)->SendCorrections();
                       }
+                    }
 #pragma omp section
-                      {
+                    {
+                      for (auto k = 0ull; k < num_ots; ++k) {
                         sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
                         sender_ot.at(i).at(j).at(k)->SendMessages();
                       }
@@ -621,5 +620,5 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
       std::cerr << e.what() << std::endl;
     }
   }
-}
+}  // namespace
 }

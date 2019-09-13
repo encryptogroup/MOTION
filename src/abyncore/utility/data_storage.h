@@ -80,11 +80,11 @@ struct BaseOTsSenderData {
 };
 
 struct OTExtensionSenderData {
-  std::size_t bit_size_ = 0;
+  std::size_t bit_size_{0};
   /// receiver's mask that are needed to construct matrix @param V_
   std::array<ENCRYPTO::AlignedBitVector, 128> u_;
   std::queue<std::size_t> received_u_ids_;
-  std::size_t num_u_received_ = 0;
+  std::size_t num_u_received_{0};
   std::unique_ptr<ENCRYPTO::Condition> received_u_condition_;
 
   std::shared_ptr<ENCRYPTO::BitMatrix> V_;
@@ -124,6 +124,7 @@ struct OTExtensionReceiverData {
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> real_choices_cond_;
   std::unordered_set<std::size_t> set_real_choices_;
+  std::mutex real_choices_mutex_;
 
   std::unique_ptr<ENCRYPTO::AlignedBitVector> random_choices_;
 
@@ -174,7 +175,9 @@ class DataStorage {
 
   void Clear();
 
-  bool SetSyncState(bool state);
+  void SetReceivedSyncState(const size_t state);
+
+  std::size_t IncrementMySyncState();
 
   ENCRYPTO::ConditionPtr &GetSyncCondition();
 
@@ -198,7 +201,7 @@ class DataStorage {
 
   ENCRYPTO::AlignedBitVector fixed_key_aes_key_;
 
-  bool sync_message_received_ = false;
+  std::size_t sync_state_received_{0}, sync_state_actual_{0};
 
   // id, buffer
   std::unordered_map<std::size_t, std::vector<std::uint8_t>> received_output_messages_;
@@ -212,7 +215,7 @@ class DataStorage {
   std::unique_ptr<OTExtensionSenderData> ot_extension_sender_data_;
 
   LoggerPtr logger_;
-  std::int64_t id_ = -1;
+  std::int64_t id_{-1};
   std::mutex output_message_mutex_;
 };
 }  // namespace ABYN

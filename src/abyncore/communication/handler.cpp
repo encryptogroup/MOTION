@@ -398,7 +398,12 @@ void Handler::Clear() {
 }
 
 void Handler::Sync() {
-  auto message = BuildMessage(MessageType_SynchronizationMessage, nullptr);
+  auto context = context_.lock();
+  assert(context);
+  std::uint64_t new_state = context->GetDataStorage()->IncrementMySyncState();
+  std::vector<std::uint8_t> v(8);
+  *(reinterpret_cast<std::uint64_t *>(v.data())) = new_state;
+  auto message = BuildMessage(MessageType_SynchronizationMessage, &v);
   std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
                                    message.GetBufferPointer() + message.GetSize());
   {
@@ -408,15 +413,8 @@ void Handler::Sync() {
 
   there_is_smth_to_send_->NotifyOne();
 
-  auto shared_ptr_context = context_.lock();
-  assert(shared_ptr_context);
-  auto sync_condition = shared_ptr_context->GetDataStorage()->GetSyncCondition();
-  while (!(*sync_condition)()) {
-    sync_condition->WaitFor(std::chrono::milliseconds(1));
-  }
-
-  // assert old state was true
-  assert(shared_ptr_context->GetDataStorage()->SetSyncState(false));
+  auto sync_condition = context->GetDataStorage()->GetSyncCondition();
+  Helpers::WaitFor(*sync_condition);
 }
 
 }  // namespace ABYN::Communication

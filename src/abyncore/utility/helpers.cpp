@@ -37,12 +37,6 @@ void WaitFor(const bool &condition) {
   }
 }
 
-void WaitFor(ENCRYPTO::Condition &condition) {
-  while (!condition()) {
-    condition.WaitFor(std::chrono::milliseconds(1));
-  }
-}
-
 namespace Print {
 std::string ToString(MPCProtocol p) {
   std::string result;
