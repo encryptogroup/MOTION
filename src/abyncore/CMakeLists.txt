@@ -34,10 +34,6 @@ add_library(abyn
 add_library(ABYN::abyn ALIAS abyn)
 
 
-if (ABYN_AVX512)
-    set(ABYN_AVX512_FLAG "-mavx512f")
-endif ()
-
 # -fvect-cost-model flag is not supported by clang(++)
 if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(ABYN_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
@@ -81,10 +77,20 @@ target_compile_options(abyn PRIVATE
         ${ABYN_EXTRA_FLAGS}
         -Wall -Wextra
         -pedantic -ansi
-        -maes -msse2 -msse4.1 -msse4.2 -mpclmul -mavx -mavx2
+        -maes -msse2 -msse4.1 -msse4.2 -mpclmul
         -ffunction-sections -march=native
         ${ABYN_VECT_COST_MODEL_GCC_FLAG}
-        ${ABYN_AVX512_FLAG})
+        )
+
+if (ABYN_USE_AVX)
+    target_compile_options(abyn PRIVATE -mavx)
+    if (NOT ABYN_USE_AVX STREQUAL "AVX")
+        target_compile_options(abyn PRIVATE -mavx2)
+        if (NOT ABYN_USE_AVX STREQUAL "AVX2")
+            target_compile_options(abyn PRIVATE -mavx512f)
+        endif ()
+    endif ()
+endif ()
 
 add_custom_target(
         abyn_config ALL DEPENDS
