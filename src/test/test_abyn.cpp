@@ -756,9 +756,7 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
           }
         };
 
-#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(abyn_parties.size())
+#pragma omp parallel for num_threads(abyn_parties.size() + 1)
         for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
           f(party_id);
           // check multiplication triples
@@ -807,9 +805,7 @@ TEST(ABYNBooleanGMW, AND_64_bit_10_SIMD_2_3_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
         }
-#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(abyn_parties.size())
+#pragma omp parallel for num_threads(abyn_parties.size() + 1)
         for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
           std::vector<ABYN::Shares::ShareWrapper> s_in;
 

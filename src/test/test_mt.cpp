@@ -67,12 +67,12 @@ TEST(MultiplicationTriples, Binary) {
 
           for (auto j = 0ull; j < num_parties; ++j) {
             if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              s_in_1.push_back(
+              s_in_1.emplace_back(
                   abyn_parties.at(party_id)->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
-              s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(global_input_1K.at(j), j));
+              s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<BGMW>(global_input_1K.at(j), j));
             } else {
-              s_in_1.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
-              s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_20, j));
+              s_in_1.emplace_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
+              s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_20, j));
             }
           }
 
@@ -86,28 +86,30 @@ TEST(MultiplicationTriples, Binary) {
 
           abyn_parties.at(party_id)->Run();
         };
-
-#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(abyn_parties.size())
+        std::vector<std::thread> t;
+        //#pragma omp parallel for num_threads(abyn_parties.size() + 1)
         for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-          f(party_id);
-          // check multiplication triples
-          if (party_id == 0) {
-            ENCRYPTO::BitVector<> a, b, c;
-            a = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
-            b = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
-            c = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
+          t.emplace_back([party_id, &abyn_parties, &f]() {
+            f(party_id);
+            // check multiplication triples
+            if (party_id == 0) {
+              ENCRYPTO::BitVector<> a, b, c;
+              a = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
+              b = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
+              c = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
 
-            for (auto j = 1ull; j < abyn_parties.size(); ++j) {
-              a ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
-              b ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
-              c ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
+              for (auto j = 1ull; j < abyn_parties.size(); ++j) {
+                a ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
+                b ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
+                c ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
+              }
+              EXPECT_EQ(c, a & b);
             }
-            EXPECT_EQ(c, a & b);
-          }
-          abyn_parties.at(party_id)->Finish();
+            abyn_parties.at(party_id)->Finish();
+          });
         }
+        for (auto &&tt : t)
+          if (tt.joinable()) tt.join();
       } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
       }
