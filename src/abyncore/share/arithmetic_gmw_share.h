@@ -36,20 +36,22 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticShare final : public Share {
  public:
   ArithmeticShare(const Wires::WirePtr &wire) {
-    wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wire)};
+    wires_ = {wire};
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
     backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(Wires::ArithmeticWirePtr<T> &wire) : wires_({wire}) {
-    wires_ = {wire};
-    assert(wire);
+  ArithmeticShare(Wires::ArithmeticWirePtr<T> &wire) {
+    wires_ = {std::static_pointer_cast<Wires::Wire>(wire)};
     backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(std::vector<Wires::ArithmeticWirePtr<T>> &wires) : wires_(wires) {
+  ArithmeticShare(std::vector<Wires::ArithmeticWirePtr<T>> &wires) {
+    for (auto i = 0ull; i < wires.size(); ++i) {
+      wires_.emplace_back(wires.at(i));
+    }
     if (wires.size() == 0) {
       throw(std::runtime_error("Trying to create an arithmetic share without wires"));
     }
@@ -72,11 +74,11 @@ class ArithmeticShare final : public Share {
                                          "from more than 1 wire; got {} wires",
                                          wires.size())));
     }
-    wires_ = {std::dynamic_pointer_cast<ArithmeticShare<T>>(wires.at(0))};
+    wires_ = {wires.at(0)};
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    backend_ = wires_.at(0)->GetRegister();
+    backend_ = wires_.at(0)->GetBackend();
   }
 
   ArithmeticShare(std::vector<T> &input, const std::weak_ptr<Backend> &backend) {
@@ -99,16 +101,23 @@ class ArithmeticShare final : public Share {
 
   MPCProtocol GetSharingType() const noexcept final { return wires_.at(0)->GetProtocol(); }
 
-  const Wires::ArithmeticWirePtr<T> &GetArithmeticWire() { return wires_.at(0); }
-
-  const std::vector<Wires::WirePtr> GetWires() const final {
-    std::vector<Wires::WirePtr> result{std::static_pointer_cast<Wires::Wire>(wires_.at(0))};
-    return result;
+  const Wires::ArithmeticWirePtr<T> GetArithmeticWire() {
+    auto wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(wires_.at(0));
+    assert(wire);
+    return wire;
   }
+
+  const std::vector<Wires::WirePtr> &GetWires() const noexcept final { return wires_; }
+
+  std::vector<Wires::WirePtr> &GetMutableWires() noexcept final { return wires_; }
 
   const bool &Finished() { return wires_.at(0)->IsReady(); }
 
-  const std::vector<T> &GetValue() const { return wires_->GetRawSharedValues(); }
+  const std::vector<T> &GetValue() const {
+    auto wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(wires_.at(0));
+    assert(wire);
+    return wire->GetRawSharedValues();
+  }
 
   std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
 
@@ -122,9 +131,6 @@ class ArithmeticShare final : public Share {
   }
 
   ArithmeticShare(ArithmeticShare &) = delete;
-
- protected:
-  std::vector<Wires::ArithmeticWirePtr<T>> wires_;
 
  private:
   ArithmeticShare() = default;

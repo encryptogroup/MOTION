@@ -28,19 +28,20 @@
 
 #include "utility/bit_vector.h"
 
-namespace ABYN{
-  class Backend;
+namespace ABYN {
+class Backend;
 }
 
 namespace ABYN::Wires {
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> reg, bool is_constant = false);
+  GMWWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant = false);
 
-  GMWWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> reg, bool is_constant = false);
+  GMWWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
+          bool is_constant = false);
 
-  GMWWire(bool value, std::weak_ptr<Backend> reg, bool is_constant = false);
+  GMWWire(bool value, std::weak_ptr<Backend> backend, bool is_constant = false);
 
   ~GMWWire() final = default;
 

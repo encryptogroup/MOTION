@@ -10,7 +10,8 @@ enum MessageType : ubyte {
   BaseROTMessageReceiver = 5,
   OTExtensionReceiverMasks = 6,
   OTExtensionReceiverCorrections = 7,
-  OTExtensionSender = 8
+  OTExtensionSender = 8,                // 1-out-of-2 OTs
+  OTExtensionSenderN = 9                // 1-out-of-N OTs
   }
 
 // TODO: implement message splitting if the size of a single message goes over 2^32 - 1 bits

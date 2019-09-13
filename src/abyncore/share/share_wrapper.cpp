@@ -29,7 +29,7 @@
 namespace ABYN::Shares {
 using SharePtr = std::shared_ptr<Share>;
 
-ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) {
+ShareWrapper &ShareWrapper::operator^(const ShareWrapper &other) {
   if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Boolean primitive operations are only supported for Boolean GMW shares");
@@ -41,12 +41,33 @@ ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) {
 
   auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(this_b, other_b);
   share_->GetRegister()->RegisterNextGate(xor_gate);
-  return ShareWrapper(xor_gate->GetOutputAsShare());
+  *this = ShareWrapper(xor_gate->GetOutputAsShare());
+  return *this;
 }
 
-ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) {
+ShareWrapper &ShareWrapper::operator&(const ShareWrapper &other) {
   assert(*other);
-  assert(share_->GetSharingType() == MPCProtocol::ArithmeticGMW);
+  assert(share_);
+  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetBitLength() == other->GetBitLength());
+
+  if (share_->GetSharingType() != MPCProtocol::BooleanGMW) {
+    throw std::runtime_error(
+        "Boolean primitive operations are only supported for boolean GMW shares");
+  }
+
+  auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
+  auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
+
+  auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(this_b, other_b);
+  share_->GetRegister()->RegisterNextGate(and_gate);
+  *this = ShareWrapper(and_gate->GetOutputAsShare());
+  return *this;
+}
+
+ShareWrapper &ShareWrapper::operator+(const ShareWrapper &other) {
+  assert(*other);
+  assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
   assert(share_->GetBitLength() == other->GetBitLength());
   if (share_->GetSharingType() != MPCProtocol::ArithmeticGMW) {
@@ -55,16 +76,17 @@ ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) {
   }
 
   if (share_->GetBitLength() == 8u) {
-    return Add<std::uint8_t>(share_, *other);
+    *this = Add<std::uint8_t>(share_, *other);
   } else if (share_->GetBitLength() == 16u) {
-    return Add<std::uint16_t>(share_, *other);
+    *this = Add<std::uint16_t>(share_, *other);
   } else if (share_->GetBitLength() == 32u) {
-    return Add<std::uint32_t>(share_, *other);
+    *this = Add<std::uint32_t>(share_, *other);
   } else if (share_->GetBitLength() == 64u) {
-    return Add<std::uint64_t>(share_, *other);
+    *this = Add<std::uint64_t>(share_, *other);
   } else {
     throw std::bad_cast();
   }
+  return *this;
 }
 
 const SharePtr ShareWrapper::Out(std::size_t output_owner) {

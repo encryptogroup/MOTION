@@ -58,13 +58,15 @@ class GMWInputGate final : public Gates::Interfaces::InputGate {
   ///< correlated randomness using AES CTR
 };
 
+constexpr std::size_t ALL = std::numeric_limits<std::int64_t>::max();
+
 class GMWOutputGate final : public Interfaces::OutputGate {
  public:
-  GMWOutputGate(const std::vector<Wires::WirePtr> &parent, std::size_t output_owner);
+  GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_owner = ALL);
 
   ~GMWOutputGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final {}
 
   void EvaluateOnline() final;
 
@@ -84,7 +86,7 @@ class GMWOutputGate final : public Interfaces::OutputGate {
 
 class GMWXORGate final : public Gates::Interfaces::TwoGate {
  public:
-  GMWXORGate(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
+  GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
   ~GMWXORGate() final = default;
 
@@ -99,6 +101,32 @@ class GMWXORGate final : public Gates::Interfaces::TwoGate {
   GMWXORGate() = delete;
 
   GMWXORGate(const Gate &) = delete;
+};
+
+class GMWANDGate final : public Gates::Interfaces::TwoGate {
+ public:
+  GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
+
+  ~GMWANDGate() final = default;
+
+  void EvaluateSetup() final;
+
+  void EvaluateOnline() final;
+
+  const Shares::GMWSharePtr GetOutputAsGMWShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  GMWANDGate() = delete;
+
+  GMWANDGate(const Gate &) = delete;
+
+ private:
+  std::size_t mt_offset_;
+  std::size_t mt_bitlen_;
+
+  std::shared_ptr<Shares::Share> d_, e_;
+  std::shared_ptr<GMWOutputGate> d_out_, e_out_;
 };
 
 }  // namespace ABYN::Gates::GMW

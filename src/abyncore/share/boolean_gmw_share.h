@@ -32,7 +32,9 @@ class GMWShare final : public BooleanShare {
  public:
   GMWShare(const std::vector<ABYN::Wires::WirePtr> &wires);
 
-  const std::vector<Wires::WirePtr> GetWires() const noexcept final { return wires_; }
+  const std::vector<Wires::WirePtr> &GetWires() const noexcept final { return wires_; }
+
+  std::vector<Wires::WirePtr> &GetMutableWires() noexcept final { return wires_; }
 
   std::size_t GetNumOfParallelValues() const noexcept final;
 
@@ -45,7 +47,6 @@ class GMWShare final : public BooleanShare {
   }
 
  private:
-  std::vector<ABYN::Wires::WirePtr> wires_;
   bool finished_ = false;
 };
 

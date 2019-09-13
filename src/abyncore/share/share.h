@@ -43,17 +43,19 @@ enum MPCProtocol : uint;
 
 namespace ABYN::Shares {
 
- class Share : public std::enable_shared_from_this<Share> {
+class Share : public std::enable_shared_from_this<Share> {
  public:
   virtual ~Share() = default;
 
   virtual std::size_t GetNumOfParallelValues() const noexcept = 0;
 
-  virtual MPCProtocol GetSharingType() const noexcept= 0;
+  virtual MPCProtocol GetSharingType() const noexcept = 0;
 
   virtual std::size_t GetBitLength() const noexcept = 0;
 
-  virtual const std::vector<Wires::WirePtr> GetWires() const = 0;
+  virtual const std::vector<Wires::WirePtr> &GetWires() const noexcept = 0;
+
+  virtual std::vector<Wires::WirePtr> &GetMutableWires() noexcept = 0;
 
   virtual std::shared_ptr<Share> Clone() = 0;
 
@@ -69,6 +71,7 @@ namespace ABYN::Shares {
   Share() = default;
 
   std::weak_ptr<Backend> backend_;
+  std::vector<ABYN::Wires::WirePtr> wires_;
 };
 
 using SharePtr = std::shared_ptr<Share>;

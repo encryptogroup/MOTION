@@ -24,10 +24,10 @@
 
 #include "gate.h"
 
-#include "wire/wire.h"
-
 #include "base/backend.h"
 #include "base/register.h"
+#include "utility/condition.h"
+#include "wire/wire.h"
 
 namespace ABYN::Gates::Interfaces {
 
@@ -42,14 +42,23 @@ void Gate::SignalDependencyIsReady() {
 }
 
 void Gate::SetOnlineIsReady() {
-  online_is_ready_ = true;
   for (auto &wire : output_wires_) {
     assert(wire);
     wire->SetOnlineFinished();
   }
+  {
+    std::scoped_lock lock(online_is_ready_cond_->GetMutex());
+    online_is_ready_ = true;
+  }
+  online_is_ready_cond_->NotifyAll();
+}
+
+void Gate::WaitOnline() {
+  Helpers::WaitFor(*online_is_ready_cond_);
 }
 
 void Gate::IfReadyAddToProcessingQueue() {
+  std::scoped_lock lock(mutex_);
   if (AreDependenciesReady() && !added_to_active_queue) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
@@ -67,6 +76,11 @@ void Gate::Clear() {
   for (auto &wire : output_wires_) {
     wire->Clear();
   }
+}
+
+Gate::Gate() {
+  online_is_ready_cond_ =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return online_is_ready_; });
 }
 
 std::shared_ptr<Register> Gate::GetRegister() {

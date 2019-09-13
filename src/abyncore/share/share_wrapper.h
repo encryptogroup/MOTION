@@ -41,25 +41,35 @@ class ShareWrapper {
   void operator=(SharePtr share) { share_ = share; }
   void operator=(const ShareWrapper &sw) { share_ = sw.share_; }
 
-  ShareWrapper operator^(const ShareWrapper &other);
+  ShareWrapper &operator^(const ShareWrapper &other);
 
-  void operator^=(const ShareWrapper &other) { *this = *this ^ other; }
-
-  std::shared_ptr<Share> operator&([[maybe_unused]] const ShareWrapper &other) {
-    throw std::runtime_error("AND operation in GMW is not yet implemented");
+  ShareWrapper &operator^=(const ShareWrapper &other) {
+    *this = *this ^ other;
+    return *this;
   }
 
-  void operator&=(const ShareWrapper &other) { *this = *this & other; }
+  ShareWrapper &operator&(const ShareWrapper &other);
 
-  ShareWrapper operator+(const ShareWrapper &other);
+  ShareWrapper &operator&=(const ShareWrapper &other) {
+    *this = *this & other;
+    return *this;
+  }
 
-  void operator+=(const ShareWrapper &other) { *this = *this + other; }
+  ShareWrapper &operator+(const ShareWrapper &other);
 
-  std::shared_ptr<Share> operator*([[maybe_unused]] const ShareWrapper &other) {
+  ShareWrapper &operator+=(const ShareWrapper &other) {
+    *this = *this + other;
+    return *this;
+  }
+
+  ShareWrapper &operator*([[maybe_unused]] const ShareWrapper &other) {
     throw std::runtime_error("Arithmetic GMW multiplication is not implemented yet");
   }
 
-  void operator*=(const ShareWrapper &other) { *this = *this * other; }
+  ShareWrapper &operator*=(const ShareWrapper &other) {
+    *this = *this * other;
+    return *this;
+  }
 
   SharePtr &Get() { return share_; }
 
@@ -67,7 +77,7 @@ class ShareWrapper {
 
   const SharePtr &operator->() const { return share_; }
 
-  const SharePtr Out(std::size_t output_owner);
+  const SharePtr Out(std::size_t output_owner = std::numeric_limits<std::int64_t>::max());
 
  private:
   SharePtr share_;

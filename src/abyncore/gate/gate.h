@@ -32,6 +32,10 @@
 
 #include "utility/typedefs.h"
 
+namespace ENCRYPTO {
+class Condition;
+}
+
 namespace ABYN::Wires {
 class Wire;
 using WirePtr = std::shared_ptr<Wire>;
@@ -79,6 +83,8 @@ class Gate {
 
   void SetOnlineIsReady();
 
+  void WaitOnline();
+
   bool SetupIsReady() { return setup_is_ready_; }
 
   std::int64_t GetID() const { return gate_id_; }
@@ -98,9 +104,11 @@ class Gate {
 
   bool added_to_active_queue = false;
 
+  std::shared_ptr<ENCRYPTO::Condition> online_is_ready_cond_;
+
   std::atomic<std::size_t> num_ready_dependencies_ = 0;
 
-  Gate() = default;
+  Gate();
 
   std::shared_ptr<Register> GetRegister();
   std::shared_ptr<Configuration> GetConfig();
