@@ -11,6 +11,8 @@ endif ()
 option(ABYN_BUILD_EXE "Build executables" OFF)
 option(ABYN_BUILD_TESTS "Build tests" OFF)
 option(ABYN_BUILD_DOC "Build documentation" OFF)
+set(ABYN_USE_AVX OFF CACHE STRING "Use AVX/AVX2/AVX512 instructions")
+set_property(CACHE ABYN_USE_AVX PROPERTY STRINGS OFF AVX AVX2 AVX512)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(GMP REQUIRED)
