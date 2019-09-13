@@ -24,32 +24,26 @@
 
 #include "backend.h"
 
-#include <algorithm>
 #include <functional>
 #include <iterator>
 
 #include <fmt/format.h>
+#include <omp.h>
 
-#include "configuration.h"
-#include "register.h"
-
-#include "communication/context.h"
 #include "communication/handler.h"
 #include "communication/hello_message.h"
 #include "communication/message.h"
 #include "crypto/base_ots/ot_hl17.h"
+#include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
-#include "crypto/sharing_randomness_generator.h"
 #include "gate/boolean_gmw_gate.h"
+#include "register.h"
 #include "utility/constants.h"
-#include "utility/data_storage.h"
-#include "utility/logger.h"
-
-#define BOOST_FILESYSTEM_NO_DEPRECATED
 
 namespace ABYN {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
+  omp_set_nested(1);
   register_ = std::make_shared<Register>(config_);
   ot_provider_.resize(config_->GetNumOfParties(), nullptr);
 
@@ -80,6 +74,8 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
                                    i, Helpers::Print::Hex(seed)));
     }
   }
+
+  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId());
 }
 
 const LoggerPtr &Backend::GetLogger() const noexcept { return register_->GetLogger(); }
@@ -122,7 +118,8 @@ void Backend::SendHelloToOthers() {
     }
     std::vector<std::uint8_t> seed;
     if (share_inputs_) {
-      seed = config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed();
+      seed =
+          config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed();
     }
 
     auto seed_ptr = share_inputs_ ? &seed : nullptr;
@@ -146,49 +143,100 @@ void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
   register_->RegisterNextGate(gate);
 }
 
+bool Backend::NeedOTs() {
+  bool need_ots{false};
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+    if (i == GetConfig()->GetMyId()) {
+      continue;
+    }
+    need_ots |= GetOTProvider(i)->GetNumOTsReceiver() > 0;
+    need_ots |= GetOTProvider(i)->GetNumOTsSender() > 0;
+  }
+  return need_ots;
+}
+
 void Backend::EvaluateSequential() {
   register_->GetLogger()->LogInfo(
       "Start evaluating the circuit gates sequentially (online after all finished setup)");
 #pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
-  {
 #pragma omp single
+  {
+    const bool needs_mts = GetMTProvider()->GetMTsNeeded();
+
+    if (needs_mts) {
+      mt_provider_->PreSetup();
+    }
+
+    const bool need_ots = NeedOTs();
+
+    if (need_ots) {
+      OTExtensionSetup();
+      if (needs_mts) {
+        mt_provider_->Setup();
+      }
+    }
+
     {
-      {
-        auto &gates = register_->GetGates();
+      auto &gates = register_->GetGates();
 #pragma omp taskloop num_tasks(std::min(gates.size(), config_->GetNumOfThreads()))
-        for (auto i = 0ull; i < gates.size(); ++i) {
-          gates.at(i)->EvaluateSetup();
-        }
+      for (auto i = 0ull; i < gates.size(); ++i) {
+        gates.at(i)->EvaluateSetup();
+      }
 #pragma omp taskwait
+    }
+    for (auto &input_gate : register_->GetInputGates()) {
+      register_->AddToActiveQueue(input_gate->GetID());
+    }
+    // evaluate all other gates moved to the active queue
+    /*while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+      // get some active gates from the queue
+      std::vector<std::size_t> gates_ids;
+      {
+        std::int64_t gate_id;
+        do {
+          gate_id = register_->GetNextGateFromActiveQueue();
+          if (gate_id >= 0) {
+            gates_ids.push_back(static_cast<std::size_t>(gate_id));
+          }
+        } while (gate_id >= 0);
       }
-      for (auto &input_gate : register_->GetInputGates()) {
-        register_->AddToActiveQueue(input_gate->GetID());
-      }
-      // evaluate all other gates moved to the active queue
-      while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-        // get some active gates from the queue
-        std::vector<std::size_t> gates_ids;
-        {
-          std::int64_t gate_id;
-          do {
-            gate_id = register_->GetNextGateFromOnlineQueue();
-            if (gate_id >= 0) {
-              gates_ids.push_back(static_cast<std::size_t>(gate_id));
-            }
-          } while (gate_id >= 0);
-        }
-        // evaluate the gates in a batch
+      // evaluate the gates in a batch
 #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
-        for (auto i = 0ull; i < gates_ids.size(); ++i) {
-          register_->GetGate(gates_ids.at(i))->EvaluateOnline();
-        }
-#pragma omp taskwait
+      for (auto i = 0ull; i < gates_ids.size(); ++i) {
+        std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), i);
+        register_->GetGate(gates_ids.at(i))->EvaluateOnline();
       }
+    }*/
+
+    while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+      const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
+      const auto d = gate_id >= 0 ? std::chrono::milliseconds(0) : std::chrono::microseconds(100);
+      if (gate_id >= 0) {
+#pragma omp task
+        {
+          // std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), gate_id);
+          auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
+          gate->EvaluateOnline();
+        }
+      }
+      std::this_thread::sleep_for(d);
     }
   }
 }
 
 void Backend::EvaluateParallel() {
+  const bool needs_mts = GetMTProvider()->GetMTsNeeded();
+
+  if (needs_mts) {
+    mt_provider_->PreSetup();
+  }
+  const bool need_ots = NeedOTs();
+  if (need_ots) {
+    OTExtensionSetup();
+    if (needs_mts) {
+      mt_provider_->Setup();
+    }
+  }
   register_->GetLogger()->LogInfo(
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 #pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
@@ -199,26 +247,43 @@ void Backend::EvaluateParallel() {
         register_->AddToActiveQueue(input_gate->GetID());
       }
       // evaluate all other gates moved to the active queue
+      /* while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+         // get some active gates from the queue
+         std::vector<std::size_t> gates_ids;
+         {
+           std::int64_t gate_id;
+           do {
+             gate_id = register_->GetNextGateFromActiveQueue();
+             if (gate_id >= 0) {
+               gates_ids.push_back(static_cast<std::size_t>(gate_id));
+             }
+           } while (gate_id >= 0);
+         }
+         // evaluate the gates in a batch
+ #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
+         for (auto i = 0ull; i < gates_ids.size(); ++i) {
+           std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), i);
+           auto gate = register_->GetGate(gates_ids.at(i));
+           gate->EvaluateSetup();
+           gate->EvaluateOnline();
+         }
+       }
+     */
+#pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
+#pragma omp single
       while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-        // get some active gates from the queue
-        std::vector<std::size_t> gates_ids;
-        {
-          std::int64_t gate_id;
-          do {
-            gate_id = register_->GetNextGateFromOnlineQueue();
-            if (gate_id >= 0) {
-              gates_ids.push_back(static_cast<std::size_t>(gate_id));
-            }
-          } while (gate_id >= 0);
+        const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
+        const auto d = gate_id >= 0 ? std::chrono::milliseconds(0) : std::chrono::microseconds(100);
+        if (gate_id >= 0) {
+#pragma omp task
+          {
+            // std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), gate_id);
+            auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
+            gate->EvaluateSetup();
+            gate->EvaluateOnline();
+          }
         }
-        // evaluate the gates in a batch
-#pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
-        for (auto i = 0ull; i < gates_ids.size(); ++i) {
-          auto gate = register_->GetGate(gates_ids.at(i));
-          gate->EvaluateSetup();
-          gate->EvaluateOnline();
-        }
-#pragma omp taskwait
+        std::this_thread::sleep_for(d);
       }
     }
   }
@@ -235,9 +300,7 @@ void Backend::TerminateCommunication() {
 
 void Backend::WaitForConnectionEnd() {
   for (auto &handler : communication_handlers_) {
-    if (handler) {
-      handler->WaitForConnectionEnd();
-    }
+    if (handler) handler->WaitForConnectionEnd();
   }
 }
 
@@ -320,7 +383,7 @@ Shares::SharePtr Backend::BooleanGMWXOR(const Shares::SharePtr &a, const Shares:
 Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
                                            std::size_t output_owner) {
   assert(parent);
-  auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent->GetWires(), output_owner);
+  auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent, output_owner);
   auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
   RegisterGate(out_gate_cast);
   return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
@@ -434,8 +497,12 @@ void Backend::GenerateFixedKeyAESKey() {
   }
 }
 
-void Backend::ComputeOTExtension() {
-  require_base_ots = true;
+void Backend::OTExtensionSetup() {
+  require_base_ots_ = true;
+
+  if (ot_extension_finished_) {
+    return;
+  }
 
   if (!GetConfig()->IsFixedKeyAESKeyReady()) {
     GenerateFixedKeyAESKey();
@@ -445,7 +512,7 @@ void Backend::ComputeOTExtension() {
     ComputeBaseOTs();
   }
 
-#pragma omp taskloop
+#pragma omp parallel for num_threads(config_->GetNumOfParties())
   for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
     if (i == config_->GetMyId()) {
       continue;
@@ -458,5 +525,7 @@ void Backend::ComputeOTExtension() {
       { ot_provider_.at(i)->ReceiveSetup(); }
     }
   }
+
+  ot_extension_finished_ = true;
 }
 }

@@ -106,15 +106,17 @@ void Register::AddToActiveQueue(std::size_t gate_id) {
   std::scoped_lock lock(active_queue_mutex_);
   active_gates_.push(gate_id);
   logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
+  //std::cerr << fmt::format("Party#{} added gate #{} to the active queue\n", config_->GetMyId(),
+   //                        gate_id);
 }
 
-std::int64_t Register::GetNextGateFromOnlineQueue() {
-  if (active_gates_.size() == 0) {
+std::int64_t Register::GetNextGateFromActiveQueue() {
+  std::scoped_lock lock(active_queue_mutex_);
+  if (active_gates_.empty()) {
     return -1;
   } else {
-    auto gate_id = active_gates_.front();
-    assert(gate_id < std::numeric_limits<std::size_t>::max());
-    std::scoped_lock lock(active_queue_mutex_);
+    const auto gate_id = active_gates_.front();
+    assert(gate_id < static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max()));
     active_gates_.pop();
     return static_cast<std::int64_t>(gate_id);
   }
@@ -129,10 +131,9 @@ void Register::IncrementEvaluatedGatesCounter() {
 }
 
 void Register::Reset() {
-if(evaluated_gates_ != gates_.size()){
-  std::cerr << "Register::Reset evaluated_gates_ != gates_.size()\n";
-}
-
+  if (evaluated_gates_ != gates_.size()) {
+    throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
+  }
 
   assert(active_gates_.empty());
   assert(evaluated_gates_ == gates_.size());
@@ -164,8 +165,8 @@ if(evaluated_gates_ != gates_.size()){
 }
 
 void Register::Clear() {
-  if(evaluated_gates_ != gates_.size()){
-    std::cerr << "Register::Clear() evaluated_gates_ != gates_.size()\n";
+  if (evaluated_gates_ != gates_.size()) {
+    throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
   assert(active_gates_.empty());
   assert(evaluated_gates_ == gates_.size());

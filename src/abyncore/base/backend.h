@@ -37,6 +37,8 @@ class OTProvider;
 }
 
 namespace ABYN {
+class MTProvider;
+
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
@@ -207,9 +209,11 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void GenerateFixedKeyAESKey();
 
-  void ComputeOTExtension();
+  void OTExtensionSetup();
 
   auto &GetOTProvider(const std::size_t i) { return ot_provider_.at(i); };
+
+  auto &GetMTProvider() { return mt_provider_; };
 
  private:
   ConfigurationPtr config_;
@@ -217,10 +221,14 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   std::vector<Communication::HandlerPtr> communication_handlers_;
   std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>> ot_provider_;
+  std::shared_ptr<MTProvider> mt_provider_;
 
-  bool share_inputs_ = true;
-  bool require_base_ots = true;
-  bool base_ots_finished_ = false;
+  bool share_inputs_{true};
+  bool require_base_ots_{false};
+  bool base_ots_finished_{false};
+  bool ot_extension_finished_{false};
+
+  bool NeedOTs();
 };
 
 using BackendPtr = std::shared_ptr<Backend>;

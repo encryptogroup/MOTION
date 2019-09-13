@@ -29,6 +29,7 @@
 #include "base/backend.h"
 #include "base/register.h"
 #include "communication/context.h"
+#include "crypto/oblivious_transfer/ot_provider.h"
 #include "utility/logger.h"
 
 namespace ABYN {
@@ -159,9 +160,23 @@ void Party::Connect() {
 }
 
 void Party::Run(std::size_t repeats) {
+  omp_set_nested(1);
   backend_->GetLogger()->LogDebug("Party run");
   if (!IsConnected()) {
     Connect();
+  }
+
+  bool work_exists = backend_->GetRegister()->GetTotalNumOfGates() > 0;
+  for (auto i = 0ull; i < backend_->GetConfig()->GetNumOfParties(); ++i) {
+    if (i == backend_->GetConfig()->GetMyId()) {
+      continue;
+    }
+    work_exists |= backend_->GetOTProvider(i)->GetNumOTsReceiver() > 0;
+    work_exists |= backend_->GetOTProvider(i)->GetNumOTsSender() > 0;
+  }
+  if (!work_exists) {
+    backend_->GetLogger()->LogInfo("Party terminate: no work to do");
+    return;
   }
 
   backend_->VerifyHelloMessages();
@@ -169,7 +184,7 @@ void Party::Run(std::size_t repeats) {
     backend_->GenerateFixedKeyAESKey();
   }
 
-  for (auto i = 0ull; i < repeats && backend_->GetRegister()->GetTotalNumOfGates() > 0; ++i) {
+  for (auto i = 0ull; i < repeats; ++i) {
     if (i > 0u) {
       Clear();
     }
@@ -179,6 +194,7 @@ void Party::Run(std::size_t repeats) {
 }
 
 void Party::Reset() {
+  backend_->Sync();
   backend_->GetLogger()->LogDebug("Party reset");
   backend_->Reset();
   backend_->GetLogger()->LogDebug("Party sync");
@@ -186,6 +202,7 @@ void Party::Reset() {
 }
 
 void Party::Clear() {
+  backend_->Sync();
   backend_->GetLogger()->LogDebug("Party clear");
   backend_->Clear();
   backend_->GetLogger()->LogDebug("Party sync");
@@ -241,9 +258,8 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
   }
 
   // generate parties using separate threads
-#pragma omp parallel num_threads(num_parties + 1)
-#pragma omp single
-#pragma omp taskloop num_tasks(num_parties)
+#pragma omp parallel for default(none) shared(num_parties, portid, assigned_ports, logging, \
+                                              abyn_parties) num_threads(num_parties + 1)
   for (auto my_id = 0ul; my_id < num_parties; ++my_id) {
     std::vector<Communication::ContextPtr> parties;
     for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
@@ -254,12 +270,7 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
 
       std::uint16_t this_port;
       auto search = assigned_ports.find(port_id);
-      if (search != assigned_ports.end()) {
-        this_port = search->second;
-      } else {
-        throw(std::runtime_error(
-            fmt::format("Didn't find the port id in the lookup table: {}", port_id)));
-      };
+      this_port = search->second;
 
       parties.emplace_back(
           std::make_shared<Communication::Context>("127.0.0.1", this_port, role, other_id));
