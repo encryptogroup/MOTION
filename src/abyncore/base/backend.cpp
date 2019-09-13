@@ -145,15 +145,12 @@ void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
 }
 
 bool Backend::NeedOTs() {
-  bool need_ots{false};
   for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
-    if (i == GetConfig()->GetMyId()) {
-      continue;
-    }
-    need_ots |= GetOTProvider(i)->GetNumOTsReceiver() > 0;
-    need_ots |= GetOTProvider(i)->GetNumOTsSender() > 0;
+    if (i == GetConfig()->GetMyId()) continue;
+    if (GetOTProvider(i)->GetNumOTsReceiver() > 0 || GetOTProvider(i)->GetNumOTsSender() > 0)
+      return true;
   }
-  return need_ots;
+  return false;
 }
 
 void Backend::EvaluateSequential() {

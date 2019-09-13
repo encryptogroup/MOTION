@@ -77,24 +77,14 @@ void MTProviderFromOTs::Setup() {
   }
 #pragma omp parallel for
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
-    // switch roles in batches for load balancing between the OT sender and OT receiver role
     if (i == my_id_) {
       continue;
     }
-#pragma omp parallel sections
-    {
-#pragma omp section
-      {
-        for (auto& ot : bit_ots_snd_.at(i)) {
-          ot->SendMessages();
-        }
-      }
-#pragma omp section
-      {
-        for (auto& ot : bit_ots_rcv_.at(i)) {
-          ot->SendCorrections();
-        }
-      }
+    for (auto& ot : bit_ots_snd_.at(i)) {
+      ot->SendMessages();
+    }
+    for (auto& ot : bit_ots_rcv_.at(i)) {
+      ot->SendCorrections();
     }
   }
   ParseOutputs();
@@ -168,13 +158,14 @@ void MTProviderFromOTs::RegisterOTs() {
       for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
         const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
         auto ot_s = ot_providers_.at(i)->RegisterSend(1, batch_size, XCOT);
+        auto ot_r = ot_providers_.at(i)->RegisterReceive(1, batch_size, XCOT);
+
         std::vector<ENCRYPTO::BitVector<>> v_r;
         for (auto k = 0ull; k < batch_size; ++k) {
           v_r.emplace_back(ENCRYPTO::BitVector<>(1, bit_mts_.a[mt_id + k]));
         }
-        ot_s->SetInputs(std::move(v_r));
 
-        auto ot_r = ot_providers_.at(i)->RegisterReceive(1, batch_size, XCOT);
+        ot_s->SetInputs(std::move(v_r));
         ot_r->SetChoices(bit_mts_.b.Subset(mt_id, mt_id + batch_size));
 
         bit_ots_snd_.at(i).emplace_back(std::move(ot_s));
@@ -199,7 +190,6 @@ void MTProviderFromOTs::RegisterOTs() {
 }
 
 void MTProviderFromOTs::ParseOutputs() {
-#pragma omp parallel for num_threads(ot_providers_.size())
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
     if (i == my_id_) {
       continue;

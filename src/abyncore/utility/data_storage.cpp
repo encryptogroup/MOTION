@@ -375,7 +375,8 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
         }
 
         {
-          std::scoped_lock lock(it_c->second->GetMutex());
+          std::scoped_lock lock(it_c->second->GetMutex(),
+                                ot_extension_receiver_data_->received_outputs_mutex_);
           ot_extension_receiver_data_->received_outputs_.emplace(i);
         }
         it_c->second->NotifyAll();

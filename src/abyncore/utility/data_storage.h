@@ -116,6 +116,7 @@ struct OTExtensionReceiverData {
   std::unordered_set<std::size_t> received_outputs_;
   std::vector<ENCRYPTO::BitVector<>> outputs_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conditions_;
+  std::mutex received_outputs_mutex_;
 
   std::unordered_map<std::size_t, std::size_t> num_messages_;
   std::unordered_set<std::size_t> xor_correlation_;

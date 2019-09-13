@@ -528,29 +528,24 @@ void GOTVectorReceiver::SetChoices(BitVector<> &&v) {
   assert(v.GetSize() == num_ots_);
   choices_ = std::move(v);
   auto &ote = data_storage_->GetOTExtensionReceiverData();
-  ote->real_choices_->Copy(id_, choices_);
-
-  auto &cond = ote->real_choices_cond_.at(id_);
   {
-    std::scoped_lock lock(cond->GetMutex(), ote->real_choices_mutex_);
+    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
+    ote->real_choices_->Copy(id_, choices_);
     ote->set_real_choices_.emplace(id_);
   }
-  cond->NotifyOne();
+  ote->real_choices_cond_.at(id_)->NotifyOne();
 }
 
 void GOTVectorReceiver::SetChoices(const BitVector<> &v) {
   assert(v.GetSize() == num_ots_);
   choices_ = v;
-
   auto &ote = data_storage_->GetOTExtensionReceiverData();
-  ote->real_choices_->Copy(id_, choices_);
-
-  auto &cond = ote->real_choices_cond_.at(id_);
   {
-    std::scoped_lock lock(cond->GetMutex(), ote->real_choices_mutex_);
+    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
+    ote->real_choices_->Copy(id_, choices_);
     ote->set_real_choices_.emplace(id_);
   }
-  cond->NotifyOne();
+  ote->real_choices_cond_.at(id_)->NotifyOne();
 }
 
 void GOTVectorReceiver::SendCorrections() {
@@ -613,32 +608,22 @@ void COTVectorReceiver::SetChoices(BitVector<> &&v) {
   choices_ = std::move(v);
   auto &ote = data_storage_->GetOTExtensionReceiverData();
   {
-    std::scoped_lock lock(ote->real_choices_mutex_);
+    std::scoped_lock lock1(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
     ote->real_choices_->Copy(id_, choices_);
-  }
-
-  auto &cond = ote->real_choices_cond_.at(id_);
-  {
-    std::scoped_lock lock(cond->GetMutex(), ote->real_choices_mutex_);
     ote->set_real_choices_.emplace(id_);
   }
-  cond->NotifyOne();
+  ote->real_choices_cond_.at(id_)->NotifyOne();
 }
 
 void COTVectorReceiver::SetChoices(const BitVector<> &v) {
   choices_ = v;
   auto &ote = data_storage_->GetOTExtensionReceiverData();
   {
-    std::scoped_lock lock(ote->real_choices_mutex_);
+    std::scoped_lock lock1(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
     ote->real_choices_->Copy(id_, choices_);
-  }
-
-  auto &cond = ote->real_choices_cond_.at(id_);
-  {
-    std::scoped_lock lock(cond->GetMutex(), ote->real_choices_mutex_);
     ote->set_real_choices_.emplace(id_);
   }
-  cond->NotifyOne();
+  ote->real_choices_cond_.at(id_)->NotifyOne();
 }
 
 const std::vector<BitVector<>> &COTVectorReceiver::GetOutputs() {
@@ -757,6 +742,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
     {
       auto &&e =
           std::pair(i, std::make_unique<Condition>([i, &data]() {
+                      std::scoped_lock lock(data->received_outputs_mutex_);
                       return data->received_outputs_.find(i) != data->received_outputs_.end();
                     }));
       data->output_conditions_.insert(std::move(e));
