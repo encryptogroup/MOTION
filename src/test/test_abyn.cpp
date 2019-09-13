@@ -40,7 +40,6 @@
 #include "test_constants.h"
 
 constexpr auto num_parties_list = {2u, 3u, 4u, 5u, 10u};
-constexpr auto PORT_OFFSET = 7777u;
 
 namespace {
 using namespace ABYN;

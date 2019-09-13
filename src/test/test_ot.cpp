@@ -32,7 +32,6 @@
 namespace {
 
 constexpr auto num_parties_list = {2u, 3u};
-constexpr auto PORT_OFFSET{7777u};
 
 template <typename T>
 using vvv = std::vector<std::vector<std::vector<T>>>;
