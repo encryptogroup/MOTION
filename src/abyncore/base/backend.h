@@ -126,6 +126,10 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   Shares::SharePtr BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
+  Shares::SharePtr BooleanGMWAND(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b);
+
+  Shares::SharePtr BooleanGMWAND(const Shares::SharePtr &a, const Shares::SharePtr &b);
+
   Shares::SharePtr BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner);
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

@@ -29,6 +29,7 @@
 
 #include <fmt/format.h>
 #include <omp.h>
+#include <boost/asio/thread_pool.hpp>
 
 #include "communication/handler.h"
 #include "communication/hello_message.h"
@@ -158,132 +159,87 @@ bool Backend::NeedOTs() {
 void Backend::EvaluateSequential() {
   register_->GetLogger()->LogInfo(
       "Start evaluating the circuit gates sequentially (online after all finished setup)");
-#pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
-#pragma omp single
-  {
-    const bool needs_mts = GetMTProvider()->GetMTsNeeded();
-
-    if (needs_mts) {
-      mt_provider_->PreSetup();
-    }
-
-    const bool need_ots = NeedOTs();
-
-    if (need_ots) {
-      OTExtensionSetup();
-      if (needs_mts) {
-        mt_provider_->Setup();
-      }
-    }
-
-    {
-      auto &gates = register_->GetGates();
-#pragma omp taskloop num_tasks(std::min(gates.size(), config_->GetNumOfThreads()))
-      for (auto i = 0ull; i < gates.size(); ++i) {
-        gates.at(i)->EvaluateSetup();
-      }
-#pragma omp taskwait
-    }
-    for (auto &input_gate : register_->GetInputGates()) {
-      register_->AddToActiveQueue(input_gate->GetID());
-    }
-    // evaluate all other gates moved to the active queue
-    /*while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-      // get some active gates from the queue
-      std::vector<std::size_t> gates_ids;
-      {
-        std::int64_t gate_id;
-        do {
-          gate_id = register_->GetNextGateFromActiveQueue();
-          if (gate_id >= 0) {
-            gates_ids.push_back(static_cast<std::size_t>(gate_id));
-          }
-        } while (gate_id >= 0);
-      }
-      // evaluate the gates in a batch
-#pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
-      for (auto i = 0ull; i < gates_ids.size(); ++i) {
-        std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), i);
-        register_->GetGate(gates_ids.at(i))->EvaluateOnline();
-      }
-    }*/
-
-    while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-      const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-      const auto d = gate_id >= 0 ? std::chrono::milliseconds(0) : std::chrono::microseconds(100);
-      if (gate_id >= 0) {
-#pragma omp task
-        {
-          // std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), gate_id);
-          auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-          gate->EvaluateOnline();
-        }
-      }
-      std::this_thread::sleep_for(d);
-    }
-  }
-}
-
-void Backend::EvaluateParallel() {
-  const bool needs_mts = GetMTProvider()->GetMTsNeeded();
+  const bool needs_mts = GetMTProvider()->NeedMTs();
 
   if (needs_mts) {
     mt_provider_->PreSetup();
   }
+
   const bool need_ots = NeedOTs();
+
   if (need_ots) {
     OTExtensionSetup();
     if (needs_mts) {
       mt_provider_->Setup();
     }
   }
-  register_->GetLogger()->LogInfo(
-      "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
-#pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
+
+  auto &gates = register_->GetGates();
+#pragma omp parallel for num_threads(std::min(gates.size(), config_->GetNumOfThreads()))
+  for (auto i = 0ull; i < gates.size(); ++i) {
+    gates.at(i)->EvaluateSetup();
+  }
+
+  for (auto &input_gate : register_->GetInputGates()) {
+    register_->AddToActiveQueue(input_gate->GetID());
+  }
+
+  boost::asio::thread_pool pool(
+      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
+    if (gate_id < 0) {
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
+      continue;
+    }
+    boost::asio::post(pool, [this, gate_id]() {
+      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
+      gate->EvaluateOnline();
+    });
+  }
+  pool.join();
+}
+
+void Backend::EvaluateParallel() {
+  const bool needs_mts = GetMTProvider()->NeedMTs();
+#pragma omp parallel sections
   {
-#pragma omp single
+#pragma omp section
+    {
+      register_->GetLogger()->LogInfo(
+          "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
+      {
+        if (needs_mts) {
+          mt_provider_->PreSetup();
+        }
+        const bool need_ots = NeedOTs();
+        if (need_ots) {
+          OTExtensionSetup();
+          if (needs_mts) {
+            mt_provider_->Setup();
+          }
+        }
+      }
+    }
+#pragma omp section
     {
       for (auto &input_gate : register_->GetInputGates()) {
         register_->AddToActiveQueue(input_gate->GetID());
       }
-      // evaluate all other gates moved to the active queue
-      /* while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-         // get some active gates from the queue
-         std::vector<std::size_t> gates_ids;
-         {
-           std::int64_t gate_id;
-           do {
-             gate_id = register_->GetNextGateFromActiveQueue();
-             if (gate_id >= 0) {
-               gates_ids.push_back(static_cast<std::size_t>(gate_id));
-             }
-           } while (gate_id >= 0);
-         }
-         // evaluate the gates in a batch
- #pragma omp taskloop num_tasks(std::min(gates_ids.size(), config_->GetNumOfThreads()))
-         for (auto i = 0ull; i < gates_ids.size(); ++i) {
-           std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), i);
-           auto gate = register_->GetGate(gates_ids.at(i));
-           gate->EvaluateSetup();
-           gate->EvaluateOnline();
-         }
-       }
-     */
-#pragma omp parallel num_threads(config_->GetNumOfThreads()) default(shared)
-#pragma omp single
+      boost::asio::thread_pool pool(
+          std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
       while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
         const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
         const auto d = gate_id >= 0 ? std::chrono::milliseconds(0) : std::chrono::microseconds(100);
-        if (gate_id >= 0) {
-#pragma omp task
-          {
-            // std::cerr << fmt::format("Party{} gate{}\n", config_->GetMyId(), gate_id);
-            auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-            gate->EvaluateSetup();
-            gate->EvaluateOnline();
-          }
+        if (gate_id < 0) {
+          std::this_thread::sleep_for(d);
+          continue;
         }
-        std::this_thread::sleep_for(d);
+        boost::asio::post(pool, [this, gate_id]() {
+          auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
+          gate->EvaluateSetup();
+          gate->EvaluateOnline();
+        });
       }
     }
   }
@@ -373,11 +329,30 @@ Shares::SharePtr Backend::BooleanGMWXOR(const Shares::GMWSharePtr &a,
 Shares::SharePtr Backend::BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
-  auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(a);
-  auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::GMWShare>(b);
-  assert(casted_parent_a_ptr);
-  assert(casted_parent_b_ptr);
-  return BooleanGMWXOR(casted_parent_a_ptr, casted_parent_b_ptr);
+  auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  assert(casted_a);
+  assert(casted_b);
+  return BooleanGMWXOR(casted_a, casted_b);
+}
+
+Shares::SharePtr Backend::BooleanGMWAND(const Shares::GMWSharePtr &a,
+                                        const Shares::GMWSharePtr &b) {
+  assert(a);
+  assert(b);
+  auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(a, b);
+  RegisterGate(and_gate);
+  return and_gate->GetOutputAsShare();
+}
+
+Shares::SharePtr Backend::BooleanGMWAND(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+  assert(a);
+  assert(b);
+  auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  assert(casted_a);
+  assert(casted_b);
+  return BooleanGMWAND(casted_a, casted_b);
 }
 
 Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
