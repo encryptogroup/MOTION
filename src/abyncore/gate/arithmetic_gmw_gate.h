@@ -268,9 +268,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
     if (is_my_output_) {
       // wait until all conditions are fulfilled
-      while (!parent_.at(0)->IsReady()) {
-        parent_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
-      }
+      Helpers::WaitFor(*parent_.at(0)->GetIsReadyCondition());
 
       auto config = GetConfig();
 
@@ -377,12 +375,8 @@ class ArithmeticAdditionGate final : public ABYN::Gates::Interfaces::TwoGate {
   void EvaluateOnline() final {
     assert(setup_is_ready_);
 
-    while (!parent_a_.at(0)->IsReady()) {
-      parent_a_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
-    }
-    while (!parent_b_.at(0)->IsReady()) {
-      parent_a_.at(0)->GetIsReadyCondition()->WaitFor(std::chrono::milliseconds(1));
-    }
+    Helpers::WaitFor(*parent_a_.at(0)->GetIsReadyCondition());
+    Helpers::WaitFor(*parent_b_.at(0)->GetIsReadyCondition());
 
     auto wire_a = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_a_.at(0));
     auto wire_b = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(parent_b_.at(0));

@@ -26,7 +26,7 @@
 
 namespace ABYN {
 
-bool MTProvider::GetMTsNeeded() const noexcept {
+bool MTProvider::NeedMTs() const noexcept {
   return (GetNumMTs<bool>() + GetNumMTs<std::uint8_t>() + GetNumMTs<std::uint16_t>() +
           GetNumMTs<std::uint32_t>() + GetNumMTs<std::uint64_t>()) > 0;
 }
@@ -60,19 +60,19 @@ MTProviderFromOTs::MTProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
     const std::size_t my_id)
     : MTProvider(my_id), ot_providers_(ot_providers) {
-  ots_rcv_.resize(ot_providers_.size());
-  ots_snd_.resize(ot_providers_.size());
+  bit_ots_rcv_.resize(ot_providers_.size());
+  bit_ots_snd_.resize(ot_providers_.size());
 }
 
 void MTProviderFromOTs::PreSetup() {
-  if (num_bit_mts_ > 0u) {
+  if (NeedMTs()) {
     RegisterOTs();
   }
 }
 
 // needs completed OTExtension
 void MTProviderFromOTs::Setup() {
-  if (num_bit_mts_ == 0u) {
+  if (!NeedMTs()) {
     return;
   }
 #pragma omp parallel for
@@ -85,13 +85,13 @@ void MTProviderFromOTs::Setup() {
     {
 #pragma omp section
       {
-        for (auto& ot : ots_snd_.at(i)) {
+        for (auto& ot : bit_ots_snd_.at(i)) {
           ot->SendMessages();
         }
       }
 #pragma omp section
       {
-        for (auto& ot : ots_rcv_.at(i)) {
+        for (auto& ot : bit_ots_rcv_.at(i)) {
           ot->SendCorrections();
         }
       }
@@ -107,31 +107,93 @@ void MTProviderFromOTs::Setup() {
 
 void MTProviderFromOTs::RegisterOTs() {
   constexpr auto XCOT = ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT;
-  bit_mts_.a = ENCRYPTO::BitVector<>::Random(num_bit_mts_);
-  bit_mts_.b = ENCRYPTO::BitVector<>::Random(num_bit_mts_);
-  bit_mts_.c = bit_mts_.a & bit_mts_.b;
+  constexpr auto ACOT = ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT;
+
+  if (num_bit_mts_ > 0u) {
+    bit_mts_.a = ENCRYPTO::BitVector<>::Random(num_bit_mts_);
+    bit_mts_.b = ENCRYPTO::BitVector<>::Random(num_bit_mts_);
+    bit_mts_.c = bit_mts_.a & bit_mts_.b;
+  }
+  if (num_mts_8_ > 0u) {
+    const auto a_tmp = ENCRYPTO::BitVector<>::Random(num_mts_8_ * 8);
+    mts8_.a.assign(reinterpret_cast<const std::uint8_t*>(a_tmp.GetData().data()),
+                   reinterpret_cast<const std::uint8_t*>(a_tmp.GetData().data()) + num_mts_8_);
+    const auto b_tmp = ENCRYPTO::BitVector<>::Random(num_mts_8_ * 8);
+    mts8_.b.assign(reinterpret_cast<const std::uint8_t*>(b_tmp.GetData().data()),
+                   reinterpret_cast<const std::uint8_t*>(b_tmp.GetData().data()) + num_mts_8_);
+    for (auto i = 0ull; i < mts8_.a.size(); ++i) {
+      mts8_.c.emplace_back(mts8_.a.at(i) * mts8_.b.at(i));
+    }
+  }
+  if (num_mts_16_ > 0u) {
+    const auto a_tmp = ENCRYPTO::BitVector<>::Random(num_mts_16_ * 16);
+    mts16_.a.assign(reinterpret_cast<const std::uint16_t*>(a_tmp.GetData().data()),
+                    reinterpret_cast<const std::uint16_t*>(a_tmp.GetData().data()) + num_mts_16_);
+    const auto b_tmp = ENCRYPTO::BitVector<>::Random(num_mts_16_ * 16);
+    mts16_.b.assign(reinterpret_cast<const std::uint16_t*>(b_tmp.GetData().data()),
+                    reinterpret_cast<const std::uint16_t*>(b_tmp.GetData().data()) + num_mts_16_);
+    for (auto i = 0ull; i < mts16_.a.size(); ++i) {
+      mts16_.c.emplace_back(mts16_.a.at(i) * mts16_.b.at(i));
+    }
+  }
+  if (num_mts_32_ > 0u) {
+    const auto a_tmp = ENCRYPTO::BitVector<>::Random(num_mts_32_ * 32);
+    mts32_.a.assign(reinterpret_cast<const std::uint32_t*>(a_tmp.GetData().data()),
+                    reinterpret_cast<const std::uint32_t*>(a_tmp.GetData().data()) + num_mts_32_);
+    const auto b_tmp = ENCRYPTO::BitVector<>::Random(num_mts_32_ * 32);
+    mts32_.b.assign(reinterpret_cast<const std::uint32_t*>(b_tmp.GetData().data()),
+                    reinterpret_cast<const std::uint32_t*>(b_tmp.GetData().data()) + num_mts_32_);
+    for (auto i = 0ull; i < mts32_.a.size(); ++i) {
+      mts32_.c.emplace_back(mts32_.a.at(i) * mts32_.b.at(i));
+    }
+  }
+  if (num_mts_64_ > 0u) {
+    const auto a_tmp = ENCRYPTO::BitVector<>::Random(num_mts_64_ * 64);
+    mts64_.a.assign(reinterpret_cast<const std::uint64_t*>(a_tmp.GetData().data()),
+                    reinterpret_cast<const std::uint64_t*>(a_tmp.GetData().data()) + num_mts_64_);
+    const auto b_tmp = ENCRYPTO::BitVector<>::Random(num_mts_64_ * 64);
+    mts64_.b.assign(reinterpret_cast<const std::uint64_t*>(b_tmp.GetData().data()),
+                    reinterpret_cast<const std::uint64_t*>(b_tmp.GetData().data()) + num_mts_64_);
+    for (auto i = 0ull; i < mts64_.a.size(); ++i) {
+      mts64_.c.emplace_back(mts64_.a.at(i) * mts64_.b.at(i));
+    }
+  }
 
 #pragma omp parallel for num_threads(ot_providers_.size())
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
     if (i == my_id_) {
       continue;
     }
-    for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
-      const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
-      auto ot_s = ot_providers_.at(i)->RegisterSend(1, batch_size, XCOT);
-      std::vector<ENCRYPTO::BitVector<>> v_r;
-      for (auto k = 0ull; k < batch_size; ++k) {
-        v_r.emplace_back(ENCRYPTO::BitVector<>(1, bit_mts_.a[mt_id + k]));
+    if (num_bit_mts_ > 0u) {
+      for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
+        const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
+        auto ot_s = ot_providers_.at(i)->RegisterSend(1, batch_size, XCOT);
+        std::vector<ENCRYPTO::BitVector<>> v_r;
+        for (auto k = 0ull; k < batch_size; ++k) {
+          v_r.emplace_back(ENCRYPTO::BitVector<>(1, bit_mts_.a[mt_id + k]));
+        }
+        ot_s->SetInputs(std::move(v_r));
+
+        auto ot_r = ot_providers_.at(i)->RegisterReceive(1, batch_size, XCOT);
+        ot_r->SetChoices(bit_mts_.b.Subset(mt_id, mt_id + batch_size));
+
+        bit_ots_snd_.at(i).emplace_back(std::move(ot_s));
+        bit_ots_rcv_.at(i).emplace_back(std::move(ot_r));
+
+        mt_id += batch_size;
       }
-      ot_s->SetInputs(std::move(v_r));
-
-      auto ot_r = ot_providers_.at(i)->RegisterReceive(1, batch_size, XCOT);
-      ot_r->SetChoices(bit_mts_.b.Subset(mt_id, mt_id + batch_size));
-
-      ots_snd_.at(i).emplace_back(std::move(ot_s));
-      ots_rcv_.at(i).emplace_back(std::move(ot_r));
-
-      mt_id += batch_size;
+    }
+    if (num_mts_8_ > 0u) {
+      // TODO
+    }
+    if (num_mts_16_ > 0u) {
+      // TODO
+    }
+    if (num_mts_32_ > 0u) {
+      // TODO
+    }
+    if (num_mts_64_ > 0u) {
+      // TODO
     }
   }
 }
@@ -142,21 +204,35 @@ void MTProviderFromOTs::ParseOutputs() {
     if (i == my_id_) {
       continue;
     }
-    for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
-      const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
-      const auto& ot_s = ots_snd_.at(i).front();
-      const auto& ot_r = ots_rcv_.at(i).front();
-      const auto& out_s = ot_s->GetOutputs();
-      const auto& out_r = ot_r->GetOutputs();
-      for (auto j = 0ull; j < batch_size; ++j) {
-        bit_mts_.c.Set(out_r.at(j)[0] ^ out_s.at(j)[0] ^ bit_mts_.c[mt_id + j], mt_id + j);
+    if (num_bit_mts_ > 0u) {
+      for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
+        const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
+        const auto& ot_s = bit_ots_snd_.at(i).front();
+        const auto& ot_r = bit_ots_rcv_.at(i).front();
+        const auto& out_s = ot_s->GetOutputs();
+        const auto& out_r = ot_r->GetOutputs();
+        for (auto j = 0ull; j < batch_size; ++j) {
+          bit_mts_.c.Set(out_r.at(j)[0] ^ out_s.at(j)[0] ^ bit_mts_.c[mt_id + j], mt_id + j);
+        }
+        bit_ots_snd_.at(i).pop_front();
+        bit_ots_rcv_.at(i).pop_front();
+        mt_id += batch_size;
       }
-      ots_snd_.at(i).pop_front();
-      ots_rcv_.at(i).pop_front();
-      mt_id += batch_size;
+      assert(bit_ots_snd_.at(i).empty());
+      assert(bit_ots_rcv_.at(i).empty());
     }
-    assert(ots_snd_.at(i).empty());
-    assert(ots_rcv_.at(i).empty());
+    if (num_mts_8_ > 0u) {
+      // TODO
+    }
+    if (num_mts_16_ > 0u) {
+      // TODO
+    }
+    if (num_mts_32_ > 0u) {
+      // TODO
+    }
+    if (num_mts_64_ > 0u) {
+      // TODO
+    }
   }
 }
 }  // namespace ABYN

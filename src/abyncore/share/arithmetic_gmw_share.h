@@ -91,7 +91,7 @@ class ArithmeticShare final : public Share {
     wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
 
-  std::shared_ptr<ArithmeticShare> operator+(const std::shared_ptr<ArithmeticShare> &other) {}
+//  std::shared_ptr<ArithmeticShare> operator+(const std::shared_ptr<ArithmeticShare> &other) {}
 
   ~ArithmeticShare() override = default;
 
@@ -120,15 +120,6 @@ class ArithmeticShare final : public Share {
   }
 
   std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
-
-  std::shared_ptr<Share> Clone() final {
-    // TODO
-    return std::static_pointer_cast<Share>(std::make_shared<ArithmeticShare<T>>(wires_));
-  }
-
-  std::shared_ptr<ArithmeticShare> NonVirtualClone() {
-    return std::make_shared<ArithmeticShare>(wires_);
-  }
 
   ArithmeticShare(ArithmeticShare &) = delete;
 
@@ -166,12 +157,6 @@ class ArithmeticConstantShare : public Share {
   MPCProtocol GetSharingType() const noexcept final { return ArithmeticGMW; }
 
   const std::vector<T> &GetValue() const { return values_; }
-
-  std::shared_ptr<Share> Clone() final {
-    // TODO
-    return std::static_pointer_cast<Share>(
-        std::make_shared<ArithmeticConstantShare>(values_, backend_));
-  };
 
   ArithmeticConstantShare() = delete;
 

@@ -41,13 +41,6 @@ class GMWShare final : public BooleanShare {
   MPCProtocol GetSharingType() const noexcept final;
 
   std::size_t GetBitLength() const noexcept final { return wires_.size(); }
-
-  std::shared_ptr<Share> Clone() final {
-    return std::static_pointer_cast<Share>(std::make_shared<GMWShare>(wires_));
-  }
-
- private:
-  bool finished_ = false;
 };
 
 using GMWSharePtr = std::shared_ptr<GMWShare>;

@@ -756,14 +756,14 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
   if (p != OTProtocol::ROT) {
     {
       auto &&e =
-          std::pair(i, std::make_unique<Condition>([this, i, &data]() {
+          std::pair(i, std::make_unique<Condition>([i, &data]() {
                       return data->received_outputs_.find(i) != data->received_outputs_.end();
                     }));
       data->output_conditions_.insert(std::move(e));
     }
     {
       auto &&e =
-          std::pair(i, std::make_unique<Condition>([this, i, &data]() {
+          std::pair(i, std::make_unique<Condition>([i, &data]() {
                       std::scoped_lock lock(data->real_choices_mutex_);
                       return data->set_real_choices_.find(i) != data->set_real_choices_.end();
                     }));

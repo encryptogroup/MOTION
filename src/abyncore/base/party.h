@@ -183,28 +183,13 @@ class Party {
     }
   }
 
-  Shares::SharePtr XOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
-    assert(a);
-    assert(b);
-    assert(a->GetSharingType() != MPCProtocol::ArithmeticGMW);
-    assert(a->GetSharingType() == b->GetSharingType());
-    switch (a->GetSharingType()) {
-      case MPCProtocol::BooleanGMW: {
-        return backend_->BooleanGMWXOR(a, b);
-      }
-      case MPCProtocol::BMR: {
-        throw std::runtime_error("BMR protocol is not implemented yet");
-        // TODO
-      }
-      default: {
-        throw(std::runtime_error("Unknown protocol"));
-      }
-    }
-  }
+  Shares::SharePtr XOR(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
   Shares::SharePtr OUT(Shares::SharePtr parent, std::size_t output_owner);
 
   Shares::SharePtr ADD(const Shares::SharePtr &a, const Shares::SharePtr &b);
+
+  Shares::SharePtr AND(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
   std::size_t GetNumOfParties() { return config_->GetNumOfParties(); }
 

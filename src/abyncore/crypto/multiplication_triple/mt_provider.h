@@ -43,7 +43,7 @@ struct BinaryMTVector {
 
 class MTProvider {
  public:
-  bool GetMTsNeeded() const noexcept;
+  bool NeedMTs() const noexcept;
 
   template <typename T>
   std::size_t GetNumMTs() const noexcept {
@@ -96,11 +96,11 @@ class MTProvider {
     if constexpr (std::is_same_v<T, std::uint8_t>) {
       return GetInteger(mts8_, offset, n);
     } else if constexpr (std::is_same_v<T, std::uint16_t>) {
-      return GetInteger(mts16, offset, n);
+      return GetInteger(mts16_, offset, n);
     } else if constexpr (std::is_same_v<T, std::uint32_t>) {
-      return GetInteger(mts32, offset, n);
+      return GetInteger(mts32_, offset, n);
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
-      return GetInteger(mts64, offset, n);
+      return GetInteger(mts64_, offset, n);
     } else {
       throw std::runtime_error("Unknown type");
     }
@@ -112,11 +112,11 @@ class MTProvider {
     if constexpr (std::is_same_v<T, std::uint8_t>) {
       return mts8_;
     } else if constexpr (std::is_same_v<T, std::uint16_t>) {
-      return mts16;
+      return mts16_;
     } else if constexpr (std::is_same_v<T, std::uint32_t>) {
-      return mts32;
+      return mts32_;
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
-      return mts64;
+      return mts64_;
     } else {
       throw std::runtime_error("Unknown type");
     }
@@ -137,9 +137,9 @@ class MTProvider {
   BinaryMTVector bit_mts_;
 
   IntegerMTVector<std::uint8_t> mts8_;
-  IntegerMTVector<std::uint16_t> mts16;
-  IntegerMTVector<std::uint32_t> mts32;
-  IntegerMTVector<std::uint64_t> mts64;
+  IntegerMTVector<std::uint16_t> mts16_;
+  IntegerMTVector<std::uint32_t> mts32_;
+  IntegerMTVector<std::uint64_t> mts64_;
 
   const std::size_t my_id_;
 
@@ -179,8 +179,9 @@ class MTProviderFromOTs final : public MTProvider {
   std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers_;
 
   // use alternating party roles for load balancing
-  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> ots_snd_;
-  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> ots_rcv_;
+  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> bit_ots_snd_;
+  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>>
+      bit_ots_rcv_;
 
   const std::size_t max_batch_size_{10'000};
 };

@@ -108,9 +108,7 @@ void GMWInputGate::EvaluateSetup() {
                                ->GetCommunicationContext(input_owner_id_)
                                ->GetTheirRandomnessGenerator();
 
-    while (!rand_generator->IsInitialized()) {
-      rand_generator->GetInitializedCondition()->WaitFor(std::chrono::milliseconds(1));
-    }
+    Helpers::WaitFor(*rand_generator->GetInitializedCondition());
   }
   SetSetupIsReady();
 }
@@ -253,6 +251,7 @@ void GMWOutputGate::EvaluateOnline() {
   std::vector<Wires::GMWWirePtr> wires;
   std::size_t i = 0, j = 0;
   for (auto &wire : parent_) {
+    Helpers::WaitFor(*wire->GetIsReadyCondition());
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wire);
     assert(gmw_wire);
     wires.push_back(gmw_wire);

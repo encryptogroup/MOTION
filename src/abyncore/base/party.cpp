@@ -55,6 +55,25 @@ Party::~Party() {
   backend_->GetLogger()->LogInfo("ABYN::Party has been deallocated");
 }
 
+Shares::SharePtr Party::XOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+  assert(a);
+  assert(b);
+  assert(a->GetSharingType() != MPCProtocol::ArithmeticGMW);
+  assert(a->GetSharingType() == b->GetSharingType());
+  switch (a->GetSharingType()) {
+    case MPCProtocol::BooleanGMW: {
+      return backend_->BooleanGMWXOR(a, b);
+    }
+    case MPCProtocol::BMR: {
+      throw std::runtime_error("BMR protocol is not implemented yet");
+      // TODO
+    }
+    default: {
+      throw(std::runtime_error("Unknown protocol"));
+    }
+  }
+}
+
 Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
   assert(parent);
   switch (parent->GetSharingType()) {
@@ -130,6 +149,25 @@ Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b
     default: {
       throw(std::runtime_error(
           fmt::format("Unknown protocol with id {}", static_cast<uint>(a->GetSharingType()))));
+    }
+  }
+}
+
+Shares::SharePtr Party::AND(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+  assert(a);
+  assert(b);
+  assert(a->GetSharingType() != MPCProtocol::ArithmeticGMW);
+  assert(a->GetSharingType() == b->GetSharingType());
+  switch (a->GetSharingType()) {
+    case MPCProtocol::BooleanGMW: {
+      return backend_->BooleanGMWAND(a, b);
+    }
+    case MPCProtocol::BMR: {
+      throw std::runtime_error("BMR protocol is not implemented yet");
+      // TODO
+    }
+    default: {
+      throw(std::runtime_error("Unknown protocol"));
     }
   }
 }

@@ -57,8 +57,6 @@ class Share : public std::enable_shared_from_this<Share> {
 
   virtual std::vector<Wires::WirePtr> &GetMutableWires() noexcept = 0;
 
-  virtual std::shared_ptr<Share> Clone() = 0;
-
   std::weak_ptr<Backend> GetBackend() const { return backend_; }
 
   std::shared_ptr<Register> GetRegister();
