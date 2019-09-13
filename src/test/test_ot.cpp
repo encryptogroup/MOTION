@@ -47,83 +47,84 @@ TEST(ObliviousTransfer, BaseOT) {
         }
         std::vector<std::thread> t(num_parties);
 
-      struct base_ots_t {
-        std::array<std::array<std::byte, 16>, 128> messages_c_, messages0_, messages1_;
-        ENCRYPTO::BitVector<> c;
-      };
-      std::vector<std::vector<base_ots_t>> base_ots(num_parties);
-      for (auto &v : base_ots) {
-        v.resize(num_parties);
-      }
+        struct base_ots_t {
+          std::array<std::array<std::byte, 16>, 128> messages_c_, messages0_, messages1_;
+          ENCRYPTO::BitVector<> c;
+        };
+        std::vector<std::vector<base_ots_t>> base_ots(num_parties);
+        for (auto &v : base_ots) {
+          v.resize(num_parties);
+        }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        t.at(i) = std::thread([&abyn_parties, i, num_parties, &base_ots]() {
-          abyn_parties.at(i)->GetBackend()->ComputeBaseOTs();
-          abyn_parties.at(i)->Finish();
+        for (auto i = 0u; i < abyn_parties.size(); ++i) {
+          t.at(i) = std::thread([&abyn_parties, i, num_parties, &base_ots]() {
+            abyn_parties.at(i)->GetBackend()->ComputeBaseOTs();
+            abyn_parties.at(i)->Finish();
 
-          for (auto other_id = 0u; other_id < num_parties; ++other_id) {
-            if (i == other_id) {
+            for (auto other_id = 0u; other_id < num_parties; ++other_id) {
+              if (i == other_id) {
+                continue;
+              }
+              auto &ds = abyn_parties.at(i)
+                             ->GetConfiguration()
+                             ->GetContexts()
+                             .at(other_id)
+                             ->GetDataStorage();
+
+              auto &base_ots_recv = ds->GetBaseOTsReceiverData();
+              auto &bo = base_ots.at(i).at(other_id);
+              assert((*base_ots_recv->is_ready_condition_)());
+              for (auto j = 0ull; j < bo.messages_c_.size(); ++j) {
+                std::copy(base_ots_recv->messages_c_.at(j).begin(),
+                          base_ots_recv->messages_c_.at(j).end(), bo.messages_c_.at(j).begin());
+              }
+              base_ots.at(i).at(other_id).c = base_ots_recv->c_;
+
+              auto &base_ots_snd = ds->GetBaseOTsSenderData();
+              assert((*base_ots_snd->is_ready_condition_)());
+
+              for (auto k = 0ull; k < bo.messages0_.size(); ++k) {
+                std::copy(base_ots_snd->messages_0_.at(k).begin(),
+                          base_ots_snd->messages_0_.at(k).end(), bo.messages0_.at(k).begin());
+              }
+              for (auto k = 0ull; k < bo.messages1_.size(); ++k) {
+                std::copy(base_ots_snd->messages_1_.at(k).begin(),
+                          base_ots_snd->messages_1_.at(k).end(), bo.messages1_.at(k).begin());
+              }
+            }
+          });
+        }
+
+        for (auto &tt : t) {
+          tt.join();
+        }
+
+        for (auto i = 0u; i < num_parties; ++i) {
+          for (auto j = 0u; j < num_parties; ++j) {
+            if (i == j) {
               continue;
             }
-            auto &ds = abyn_parties.at(i)
-                           ->GetConfiguration()
-                           ->GetContexts()
-                           .at(other_id)
-                           ->GetDataStorage();
+            auto &base_ots_a = base_ots.at(i).at(j);
+            auto &base_ots_b = base_ots.at(j).at(i);
 
-            auto &base_ots_recv = ds->GetBaseOTsReceiverData();
-            auto &bo = base_ots.at(i).at(other_id);
-            assert((*base_ots_recv->is_ready_condition_)());
-            for (auto j = 0ull; j < bo.messages_c_.size(); ++j) {
-              std::copy(base_ots_recv->messages_c_.at(j).begin(),
-                        base_ots_recv->messages_c_.at(j).end(), bo.messages_c_.at(j).begin());
-            }
-            base_ots.at(i).at(other_id).c = base_ots_recv->c_;
+            for (auto k = 0u; k < base_ots_a.messages_c_.size(); ++k) {
+              if (base_ots_a.c.Get(k)) {
+                ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages1_.at(k));
+              } else {
+                ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages0_.at(k));
+              }
 
-            auto &base_ots_snd = ds->GetBaseOTsSenderData();
-            assert((*base_ots_snd->is_ready_condition_)());
-
-            for (auto k = 0ull; k < bo.messages0_.size(); ++k) {
-              std::copy(base_ots_snd->messages_0_.at(k).begin(),
-                        base_ots_snd->messages_0_.at(k).end(), bo.messages0_.at(k).begin());
-            }
-            for (auto k = 0ull; k < bo.messages1_.size(); ++k) {
-              std::copy(base_ots_snd->messages_1_.at(k).begin(),
-                        base_ots_snd->messages_1_.at(k).end(), bo.messages1_.at(k).begin());
-            }
-          }
-        });
-      }
-
-      for (auto &tt : t) {
-        tt.join();
-      }
-
-      for (auto i = 0u; i < num_parties; ++i) {
-        for (auto j = 0u; j < num_parties; ++j) {
-          if (i == j) {
-            continue;
-          }
-          auto &base_ots_a = base_ots.at(i).at(j);
-          auto &base_ots_b = base_ots.at(j).at(i);
-
-          for (auto k = 0u; k < base_ots_a.messages_c_.size(); ++k) {
-            if (base_ots_a.c.Get(k)) {
-              ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages1_.at(k));
-            } else {
-              ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages0_.at(k));
-            }
-
-            if (base_ots_b.c.Get(k)) {
-              ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages1_.at(k));
-            } else {
-              ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages0_.at(k));
+              if (base_ots_b.c.Get(k)) {
+                ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages1_.at(k));
+              } else {
+                ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages0_.at(k));
+              }
             }
           }
         }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
       }
-    } catch (std::exception &e) {
-      std::cerr << e.what() << std::endl;
     }
   }
 }
@@ -404,22 +405,13 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
               abyn_parties.at(i)->Run();
               for (auto j = 0u; j < abyn_parties.size(); ++j) {
                 if (i != j) {
-#pragma omp parallel sections
-                  {
-#pragma omp section
-                    {
-                      for (auto k = 0ull; k < num_ots; ++k) {
-                        receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
-                        receiver_ot.at(i).at(j).at(k)->SendCorrections();
-                      }
-                    }
-#pragma omp section
-                    {
-                      for (auto k = 0ull; k < num_ots; ++k) {
-                        sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
-                        sender_ot.at(i).at(j).at(k)->SendMessages();
-                      }
-                    }
+                  for (auto k = 0ull; k < num_ots; ++k) {
+                    receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
+                    receiver_ot.at(i).at(j).at(k)->SendCorrections();
+                  }
+                  for (auto k = 0ull; k < num_ots; ++k) {
+                    sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));
+                    sender_ot.at(i).at(j).at(k)->SendMessages();
                   }
                 }
               }
