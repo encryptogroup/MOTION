@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -33,7 +33,9 @@
 
 namespace ENCRYPTO {
 class Condition;
-}
+template <typename T>
+class LockedQueue;
+}  // namespace ENCRYPTO
 
 namespace ABYN {
 class Logger;
@@ -64,14 +66,6 @@ class Handler {
 
   void WaitForConnectionEnd();
 
-  std::queue<std::vector<std::uint8_t>> &GetSendQueue() { return queue_send_; }
-
-  std::queue<std::vector<std::uint8_t>> &GetReceiveQueue() { return queue_receive_; }
-
-  std::mutex &GetSendMutex() { return send_queue_mutex_; }
-
-  std::mutex &GetReceiveMutex() { return receive_queue_mutex_; }
-
   LoggerPtr &GetLogger() { return logger_; }
 
   const std::string &GetInfo() { return handler_info_; }
@@ -89,12 +83,11 @@ class Handler {
   std::weak_ptr<Context> context_;
   LoggerPtr logger_;
   std::string handler_info_;
-  std::mutex receive_queue_mutex_, send_queue_mutex_;
   std::thread sender_thread_, receiver_thread_;
-  std::queue<std::vector<std::uint8_t>> queue_send_, queue_receive_;
+  std::unique_ptr<ENCRYPTO::LockedQueue<std::vector<std::uint8_t>>> lqueue_receive_;
+  std::unique_ptr<ENCRYPTO::LockedQueue<std::vector<std::uint8_t>>> lqueue_send_;
   bool continue_communication_ = true;
   bool received_termination_message_ = false, sent_termination_message_ = false;
-  std::unique_ptr<ENCRYPTO::Condition> received_new_msg_, there_is_smth_to_send_;
   std::size_t bytes_sent_ = 0, bytes_received_ = 0;
 
   void ReceivedTerminationMessage() { received_termination_message_ = true; }
@@ -112,4 +105,4 @@ class Handler {
 
 using HandlerPtr = std::shared_ptr<Handler>;
 }  // namespace Communication
-}
+}  // namespace ABYN
