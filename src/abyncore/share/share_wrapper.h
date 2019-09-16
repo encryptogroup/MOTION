@@ -62,9 +62,7 @@ class ShareWrapper {
     return *this;
   }
 
-  ShareWrapper &operator*([[maybe_unused]] const ShareWrapper &other) {
-    throw std::runtime_error("Arithmetic GMW multiplication is not implemented yet");
-  }
+  ShareWrapper &operator*(const ShareWrapper &other);
 
   ShareWrapper &operator*=(const ShareWrapper &other) {
     *this = *this * other;
@@ -97,6 +95,27 @@ class ShareWrapper {
     auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
     share_->GetRegister()->RegisterNextGate(addition_gate_cast);
     auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
+
+    return ShareWrapper(res);
+  }
+
+  template <typename T>
+  ShareWrapper Mul(SharePtr share, SharePtr other) {
+    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
+    assert(this_a);
+    auto this_wire_a = this_a->GetArithmeticWire();
+
+    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
+    assert(other_a);
+    auto other_wire_a = other_a->GetArithmeticWire();
+
+    auto multiplication_gate = std::make_shared<Gates::Arithmetic::ArithmeticMultiplicationGate<T>>(
+        this_wire_a, other_wire_a);
+    auto multiplication_gate_cast =
+        std::static_pointer_cast<Gates::Interfaces::Gate>(multiplication_gate);
+    share_->GetRegister()->RegisterNextGate(multiplication_gate_cast);
+    auto res =
+        std::static_pointer_cast<Shares::Share>(multiplication_gate->GetOutputAsArithmeticShare());
 
     return ShareWrapper(res);
   }

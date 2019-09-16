@@ -41,7 +41,7 @@ TEST(ObliviousTransfer, BaseOT) {
     for (auto num_parties : num_parties_list) {
       try {
         std::vector<ABYN::PartyPtr> abyn_parties(
-            std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
         }
@@ -145,7 +145,7 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
       bitlen.at(bitlen.size() - 1) = 1;
 
       std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
       for (auto &p : abyn_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
@@ -234,7 +234,7 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
       bitlen.at(bitlen.size() - 1) = 1;
 
       std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
       for (auto &p : abyn_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
@@ -346,7 +346,7 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
       bitlen.at(bitlen.size() - 1) = 1;
 
       std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
       for (auto &p : abyn_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
@@ -475,7 +475,7 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
       }
 
       std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
       for (auto &p : abyn_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }

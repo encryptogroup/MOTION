@@ -140,6 +140,20 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
   }
 }
 
+template <typename T>
+inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+#pragma omp simd
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) *= b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 bool IsPowerOfTwo(T x) {
   return x > 0 && (!(x & (x - 1)));

@@ -89,6 +89,31 @@ ShareWrapper &ShareWrapper::operator+(const ShareWrapper &other) {
   return *this;
 }
 
+ShareWrapper &ShareWrapper::operator*(const ShareWrapper &other) {
+  assert(*other);
+  assert(share_);
+  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetBitLength() == other->GetBitLength());
+  assert(share_->GetNumOfParallelValues() == other->GetNumOfParallelValues());
+  if (share_->GetSharingType() != MPCProtocol::ArithmeticGMW) {
+    throw std::runtime_error(
+        "Arithmetic primitive operations are only supported for arithmetic GMW shares");
+  }
+
+  if (share_->GetBitLength() == 8u) {
+    *this = Mul<std::uint8_t>(share_, *other);
+  } else if (share_->GetBitLength() == 16u) {
+    *this = Mul<std::uint16_t>(share_, *other);
+  } else if (share_->GetBitLength() == 32u) {
+    *this = Mul<std::uint32_t>(share_, *other);
+  } else if (share_->GetBitLength() == 64u) {
+    *this = Mul<std::uint64_t>(share_, *other);
+  } else {
+    throw std::bad_cast();
+  }
+  return *this;
+}
+
 const SharePtr ShareWrapper::Out(std::size_t output_owner) {
   assert(share_);
   auto backend = share_->GetBackend().lock();

@@ -60,30 +60,27 @@ MTProviderFromOTs::MTProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
     const std::size_t my_id)
     : MTProvider(my_id), ot_providers_(ot_providers) {
-  bit_ots_rcv_.resize(ot_providers_.size());
-  bit_ots_snd_.resize(ot_providers_.size());
+  ots_rcv_.resize(ot_providers_.size());
+  ots_snd_.resize(ot_providers_.size());
 }
 
 void MTProviderFromOTs::PreSetup() {
-  if (NeedMTs()) {
-    RegisterOTs();
-  }
+  if (NeedMTs()) RegisterOTs();
 }
 
 // needs completed OTExtension
 void MTProviderFromOTs::Setup() {
-  if (!NeedMTs()) {
-    return;
-  }
+  if (!NeedMTs()) return;
+
 #pragma omp parallel for
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
     if (i == my_id_) {
       continue;
     }
-    for (auto& ot : bit_ots_snd_.at(i)) {
+    for (auto& ot : ots_snd_.at(i)) {
       ot->SendMessages();
     }
-    for (auto& ot : bit_ots_rcv_.at(i)) {
+    for (auto& ot : ots_rcv_.at(i)) {
       ot->SendCorrections();
     }
   }
@@ -154,37 +151,137 @@ void MTProviderFromOTs::RegisterOTs() {
     if (i == my_id_) {
       continue;
     }
-    if (num_bit_mts_ > 0u) {
-      for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
-        const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
-        auto ot_s = ot_providers_.at(i)->RegisterSend(1, batch_size, XCOT);
-        auto ot_r = ot_providers_.at(i)->RegisterReceive(1, batch_size, XCOT);
+    for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
+      const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
+      auto ot_s = ot_providers_.at(i)->RegisterSend(1, batch_size, XCOT);
+      auto ot_r = ot_providers_.at(i)->RegisterReceive(1, batch_size, XCOT);
 
-        std::vector<ENCRYPTO::BitVector<>> v_r;
-        for (auto k = 0ull; k < batch_size; ++k) {
-          v_r.emplace_back(ENCRYPTO::BitVector<>(1, bit_mts_.a[mt_id + k]));
-        }
-
-        ot_s->SetInputs(std::move(v_r));
-        ot_r->SetChoices(bit_mts_.b.Subset(mt_id, mt_id + batch_size));
-
-        bit_ots_snd_.at(i).emplace_back(std::move(ot_s));
-        bit_ots_rcv_.at(i).emplace_back(std::move(ot_r));
-
-        mt_id += batch_size;
+      std::vector<ENCRYPTO::BitVector<>> v_s;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        v_s.emplace_back(1, bit_mts_.a[mt_id + k]);
       }
+
+      ot_s->SetInputs(std::move(v_s));
+      ot_r->SetChoices(bit_mts_.b.Subset(mt_id, mt_id + batch_size));
+
+      ots_snd_.at(i).emplace_back(std::move(ot_s));
+      ots_rcv_.at(i).emplace_back(std::move(ot_r));
+
+      mt_id += batch_size;
     }
-    if (num_mts_8_ > 0u) {
-      // TODO
+
+    for (std::size_t mt_id = 0; mt_id < num_mts_8_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_8_ - mt_id);
+
+      auto ot_s = ot_providers_.at(i)->RegisterSend(8, batch_size * 8, ACOT);
+      std::vector<ENCRYPTO::BitVector<>> v_s;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 8; ++bit_i) {
+          const uint8_t input = mts8_.a.at(mt_id + k) << bit_i;
+          v_s.emplace_back(reinterpret_cast<const std::byte*>(&input), 8);
+        }
+      }
+      ot_s->SetInputs(std::move(v_s));
+
+      auto ot_r = ot_providers_.at(i)->RegisterReceive(8, batch_size * 8, ACOT);
+      ENCRYPTO::BitVector<> choices;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 8; ++bit_i) {
+          const bool choice = ((mts8_.b.at(mt_id + k) >> bit_i) & 1u) == 1;
+          choices.Append(choice);
+        }
+      }
+      ot_r->SetChoices(std::move(choices));
+
+      ots_snd_.at(i).emplace_back(std::move(ot_s));
+      ots_rcv_.at(i).emplace_back(std::move(ot_r));
+
+      mt_id += batch_size;
     }
-    if (num_mts_16_ > 0u) {
-      // TODO
+
+    for (std::size_t mt_id = 0; mt_id < num_mts_16_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_16_ - mt_id);
+
+      auto ot_s = ot_providers_.at(i)->RegisterSend(8, batch_size * 16, ACOT);
+      std::vector<ENCRYPTO::BitVector<>> v_s;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 16; ++bit_i) {
+          const uint16_t input = mts16_.a.at(mt_id + k) << bit_i;
+          v_s.emplace_back(reinterpret_cast<const std::byte*>(&input), 16);
+        }
+      }
+      ot_s->SetInputs(std::move(v_s));
+
+      auto ot_r = ot_providers_.at(i)->RegisterReceive(16, batch_size * 16, ACOT);
+      ENCRYPTO::BitVector<> choices;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 16; ++bit_i) {
+          const bool choice = ((mts16_.b.at(mt_id + k) >> bit_i) & 1u) == 1;
+          choices.Append(choice);
+        }
+      }
+      ot_r->SetChoices(std::move(choices));
+
+      ots_snd_.at(i).emplace_back(std::move(ot_s));
+      ots_rcv_.at(i).emplace_back(std::move(ot_r));
+
+      mt_id += batch_size;
     }
-    if (num_mts_32_ > 0u) {
-      // TODO
+    for (std::size_t mt_id = 0; mt_id < num_mts_32_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_32_ - mt_id);
+
+      auto ot_s = ot_providers_.at(i)->RegisterSend(32, batch_size * 32, ACOT);
+      std::vector<ENCRYPTO::BitVector<>> v_s;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 32; ++bit_i) {
+          const uint32_t input = mts32_.a.at(mt_id + k) << bit_i;
+          v_s.emplace_back(reinterpret_cast<const std::byte*>(&input), 32);
+        }
+      }
+      ot_s->SetInputs(std::move(v_s));
+
+      auto ot_r = ot_providers_.at(i)->RegisterReceive(32, batch_size * 32, ACOT);
+      ENCRYPTO::BitVector<> choices;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 32; ++bit_i) {
+          const bool choice = ((mts32_.b.at(mt_id + k) >> bit_i) & 1u) == 1;
+          choices.Append(choice);
+        }
+      }
+      ot_r->SetChoices(std::move(choices));
+
+      ots_snd_.at(i).emplace_back(std::move(ot_s));
+      ots_rcv_.at(i).emplace_back(std::move(ot_r));
+
+      mt_id += batch_size;
     }
-    if (num_mts_64_ > 0u) {
-      // TODO
+    for (std::size_t mt_id = 0; mt_id < num_mts_64_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_64_ - mt_id);
+
+      auto ot_s = ot_providers_.at(i)->RegisterSend(64, batch_size * 64, ACOT);
+      std::vector<ENCRYPTO::BitVector<>> v_s;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 64; ++bit_i) {
+          const uint64_t input = mts64_.a.at(mt_id + k) << bit_i;
+          v_s.emplace_back(reinterpret_cast<const std::byte*>(&input), 64);
+        }
+      }
+      ot_s->SetInputs(std::move(v_s));
+
+      auto ot_r = ot_providers_.at(i)->RegisterReceive(64, batch_size * 64, ACOT);
+      ENCRYPTO::BitVector<> choices;
+      for (auto k = 0ull; k < batch_size; ++k) {
+        for (auto bit_i = 0; bit_i < 64; ++bit_i) {
+          const bool choice = ((mts64_.b.at(mt_id + k) >> bit_i) & 1u) == 1;
+          choices.Append(choice);
+        }
+      }
+      ot_r->SetChoices(std::move(choices));
+
+      ots_snd_.at(i).emplace_back(std::move(ot_s));
+      ots_rcv_.at(i).emplace_back(std::move(ot_r));
+
+      mt_id += batch_size;
     }
   }
 }
@@ -194,35 +291,94 @@ void MTProviderFromOTs::ParseOutputs() {
     if (i == my_id_) {
       continue;
     }
-    if (num_bit_mts_ > 0u) {
-      for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
-        const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
-        const auto& ot_s = bit_ots_snd_.at(i).front();
-        const auto& ot_r = bit_ots_rcv_.at(i).front();
-        const auto& out_s = ot_s->GetOutputs();
-        const auto& out_r = ot_r->GetOutputs();
-        for (auto j = 0ull; j < batch_size; ++j) {
-          bit_mts_.c.Set(out_r.at(j)[0] ^ out_s.at(j)[0] ^ bit_mts_.c[mt_id + j], mt_id + j);
-        }
-        bit_ots_snd_.at(i).pop_front();
-        bit_ots_rcv_.at(i).pop_front();
-        mt_id += batch_size;
+    for (std::size_t mt_id = 0; mt_id < num_bit_mts_;) {
+      const auto batch_size = std::min(max_batch_size_, num_bit_mts_ - mt_id);
+      const auto& ot_s = ots_snd_.at(i).front();
+      const auto& ot_r = ots_rcv_.at(i).front();
+      const auto& out_s = ot_s->GetOutputs();
+      const auto& out_r = ot_r->GetOutputs();
+      for (auto j = 0ull; j < batch_size; ++j) {
+        bit_mts_.c.Set(out_r.at(j)[0] ^ out_s.at(j)[0] ^ bit_mts_.c[mt_id + j], mt_id + j);
       }
-      assert(bit_ots_snd_.at(i).empty());
-      assert(bit_ots_rcv_.at(i).empty());
+      ots_snd_.at(i).pop_front();
+      ots_rcv_.at(i).pop_front();
+      mt_id += batch_size;
     }
-    if (num_mts_8_ > 0u) {
-      // TODO
+
+    for (std::size_t mt_id = 0; mt_id < num_mts_8_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_8_ - mt_id);
+      const auto& ot_s = ots_snd_.at(i).front();
+      const auto& ot_r = ots_rcv_.at(i).front();
+      const auto& out_s = ot_s->GetOutputs();
+      const auto& out_r = ot_r->GetOutputs();
+      for (auto j = 0ull; j < batch_size; ++j) {
+        for (auto bit_i = 0; bit_i < 8; ++bit_i) {
+          mts8_.c.at(mt_id + j) +=
+              (*reinterpret_cast<const std::uint8_t*>(out_r.at(j).GetData().data()) +
+               *reinterpret_cast<const std::uint8_t*>(out_s.at(j).GetData().data()));
+        }
+      }
+      ots_snd_.at(i).pop_front();
+      ots_rcv_.at(i).pop_front();
+      mt_id += batch_size;
     }
-    if (num_mts_16_ > 0u) {
-      // TODO
+
+    for (std::size_t mt_id = 0; mt_id < num_mts_16_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_16_ - mt_id);
+      const auto& ot_s = ots_snd_.at(i).front();
+      const auto& ot_r = ots_rcv_.at(i).front();
+      const auto& out_s = ot_s->GetOutputs();
+      const auto& out_r = ot_r->GetOutputs();
+      for (auto j = 0ull; j < batch_size; ++j) {
+        for (auto bit_i = 0; bit_i < 16; ++bit_i) {
+          mts16_.c.at(mt_id + j) +=
+              (*reinterpret_cast<const std::uint16_t*>(out_r.at(j).GetData().data()) +
+               *reinterpret_cast<const std::uint16_t*>(out_s.at(j).GetData().data()));
+        }
+      }
+      ots_snd_.at(i).pop_front();
+      ots_rcv_.at(i).pop_front();
+      mt_id += batch_size;
     }
-    if (num_mts_32_ > 0u) {
-      // TODO
+
+    for (std::size_t mt_id = 0; mt_id < num_mts_32_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_32_ - mt_id);
+      const auto& ot_s = ots_snd_.at(i).front();
+      const auto& ot_r = ots_rcv_.at(i).front();
+      const auto& out_s = ot_s->GetOutputs();
+      const auto& out_r = ot_r->GetOutputs();
+      for (auto j = 0ull; j < batch_size; ++j) {
+        for (auto bit_i = 0; bit_i < 32; ++bit_i) {
+          mts32_.c.at(mt_id + j) +=
+              (*reinterpret_cast<const std::uint32_t*>(out_r.at(j).GetData().data()) +
+               *reinterpret_cast<const std::uint32_t*>(out_s.at(j).GetData().data()));
+        }
+      }
+      ots_snd_.at(i).pop_front();
+      ots_rcv_.at(i).pop_front();
+      mt_id += batch_size;
     }
-    if (num_mts_64_ > 0u) {
-      // TODO
+
+    for (std::size_t mt_id = 0; mt_id < num_mts_64_;) {
+      const auto batch_size = std::min(max_batch_size_, num_mts_64_ - mt_id);
+      const auto& ot_s = ots_snd_.at(i).front();
+      const auto& ot_r = ots_rcv_.at(i).front();
+      const auto& out_s = ot_s->GetOutputs();
+      const auto& out_r = ot_r->GetOutputs();
+      for (auto j = 0ull; j < batch_size; ++j) {
+        for (auto bit_i = 0; bit_i < 64; ++bit_i) {
+          mts64_.c.at(mt_id + j) +=
+              (*reinterpret_cast<const std::uint64_t*>(out_r.at(j).GetData().data()) +
+               *reinterpret_cast<const std::uint64_t*>(out_s.at(j).GetData().data()));
+        }
+      }
+      ots_snd_.at(i).pop_front();
+      ots_rcv_.at(i).pop_front();
+      mt_id += batch_size;
     }
+
+    assert(ots_snd_.at(i).empty());
+    assert(ots_rcv_.at(i).empty());
   }
 }
 }  // namespace ABYN

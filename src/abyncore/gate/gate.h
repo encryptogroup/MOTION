@@ -46,6 +46,7 @@ class Backend;
 class Register;
 class Configuration;
 class Logger;
+class MTProvider;
 }  // namespace ABYN
 
 namespace ABYN::Gates::Interfaces {
@@ -113,6 +114,7 @@ class Gate {
   std::shared_ptr<Register> GetRegister();
   std::shared_ptr<Configuration> GetConfig();
   std::shared_ptr<Logger> GetLogger();
+  std::shared_ptr<MTProvider> GetMTProvider();
 
  private:
   void IfReadyAddToProcessingQueue();

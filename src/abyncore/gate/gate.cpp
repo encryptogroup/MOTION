@@ -53,9 +53,7 @@ void Gate::SetOnlineIsReady() {
   online_is_ready_cond_->NotifyAll();
 }
 
-void Gate::WaitOnline() {
-  Helpers::WaitFor(*online_is_ready_cond_);
-}
+void Gate::WaitOnline() { Helpers::WaitFor(*online_is_ready_cond_); }
 
 void Gate::IfReadyAddToProcessingQueue() {
   std::scoped_lock lock(mutex_);
@@ -99,6 +97,12 @@ std::shared_ptr<Logger> Gate::GetLogger() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
   return ptr_backend->GetLogger();
+}
+
+std::shared_ptr<MTProvider> Gate::GetMTProvider() {
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+  return ptr_backend->GetMTProvider();
 }
 
 }

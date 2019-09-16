@@ -211,15 +211,6 @@ class Party {
   /// can be executed again.
   void Clear();
 
-  /// \brief Gets a std::vector of std::unique_ptrs to locally constructed ABYN parties connected
-  /// via TCP.
-  /// @param num_parties Number of ABYN parties.
-  /// @param port TCP port offset.
-  /// @param logging Enables/disables logging completely.
-  static std::vector<std::unique_ptr<Party>> GetNLocalParties(std::size_t num_parties,
-                                                              std::uint16_t port,
-                                                              bool logging = false);
-
   const auto &GetLogger() { return backend_->GetLogger(); }
 
   /// \brief Sends a termination message to all of the connected parties.
@@ -244,6 +235,15 @@ class Party {
 
   void EvaluateCircuit();
 };
+
+/// \brief Gets a std::vector of std::unique_ptrs to locally constructed ABYN parties connected
+/// via TCP.
+/// @param num_parties Number of ABYN parties.
+/// @param port TCP port offset.
+/// @param logging Enables/disables logging completely.
+std::vector<std::unique_ptr<Party>> GetNLocalParties(const std::size_t num_parties,
+                                                     std::uint16_t port,
+                                                     const bool logging = false);
 
 using PartyPtr = std::unique_ptr<Party>;
 }  // namespace ABYN

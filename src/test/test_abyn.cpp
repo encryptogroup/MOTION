@@ -271,7 +271,7 @@ TEST(ABYNParty, NetworkConnection_LocalPartiesFromStaticFunction_2_3_4_5_10_part
     for (auto num_parties : num_parties_list) {
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
         }
@@ -306,7 +306,7 @@ TEST(ABYNArithmeticGMW, InputOutput_1_1K_SIMD_2_3_4_5_10_parties) {
       std::vector<T> global_input_1K = RandomVector<T>(1000);
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -374,7 +374,7 @@ TEST(ABYNArithmeticGMW, Addition_1_1K_SIMD_2_3_4_5_10_parties) {
       }
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -450,7 +450,7 @@ TEST(ABYNBooleanGMW, InputOutput_1_1K_SIMD_2_3_4_5_10_parties) {
       const auto global_input_1K = ENCRYPTO::BitVector<>::Random(1000);
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -516,7 +516,7 @@ TEST(ABYNBooleanGMW, XOR_1_bit_1_1K_SIMD_2_3_4_5_10_parties) {
       ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -615,7 +615,7 @@ TEST(ABYNBooleanGMW, XOR_64_bit_200_SIMD_2_3_4_5_10_parties) {
 
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -688,7 +688,7 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
       ENCRYPTO::BitVector<> dummy_input_1K(20, false);
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -799,7 +799,7 @@ TEST(ABYNBooleanGMW, AND_64_bit_10_SIMD_2_3_parties) {
 
       try {
         std::vector<PartyPtr> abyn_parties(
-            std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -868,7 +868,7 @@ TEST(ABYNBooleanGMW_2_3_4_5_10_parties, XOR_64_bit_SIMD_200_reset) {
 
     try {
       std::vector<PartyPtr> abyn_parties(
-          std::move(Party::GetNLocalParties(num_parties, PORT_OFFSET)));
+          std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
       for (auto &p : abyn_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
         p->GetConfiguration()->SetOnlineAfterSetup(std::rand());

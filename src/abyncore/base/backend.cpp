@@ -238,6 +238,7 @@ void Backend::EvaluateParallel() {
           gate->EvaluateOnline();
         });
       }
+      pool.join();
     }
   }
 }

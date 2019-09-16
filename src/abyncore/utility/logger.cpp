@@ -57,18 +57,19 @@ Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_l
   // immediately write messages to the log file to see them also if the
   // execution stalls
   constexpr auto auto_flush = ABYN_DEBUG ? true : false;
-  auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   std::stringstream stream;
   stream << std::put_time(std::localtime(&time), "%Y.%m.%d--%H:%M:%S");
-  auto date = stream.str();
+  const auto date = stream.str();
+  const auto format = fmt::format("log/id{}_{}_%N.log", my_id_, date);
 
   g_file_sink = logging::add_file_log(
-      keywords::file_name = fmt::format("log/id{}_{}_%N.log", my_id_, date).c_str(),
+      keywords::file_name = format.c_str(),
       keywords::format =
           (expr::stream << expr::format_date_time<boost::posix_time::ptime>("TimeStamp",
                                                                             "%Y-%m-%d %H:%M:%S.%f")
                         << ": <" << logging::trivial::severity << "> " << expr::smessage),
-      keywords::filter = id_channel == my_id, keywords::auto_flush = auto_flush,
+      keywords::filter = id_channel == my_id_, keywords::auto_flush = auto_flush,
       keywords::open_mode = std::ios_base::app | std::ios_base::out,
       keywords::rotation_size = 100 * MB);
 

@@ -264,8 +264,8 @@ void Party::Finish() {
   }
 }
 
-std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_parties,
-                                                            std::uint16_t port, bool logging) {
+std::vector<std::unique_ptr<Party>> GetNLocalParties(const std::size_t num_parties,
+                                                     std::uint16_t port, const bool logging) {
   if (num_parties < 2) {
     throw(std::runtime_error(
         fmt::format("Can generate only >= 2 local parties, current input: {}", num_parties)));
@@ -295,28 +295,32 @@ std::vector<std::unique_ptr<Party>> Party::GetNLocalParties(std::size_t num_part
     }
   }
 
-  // generate parties using separate threads
-#pragma omp parallel for default(none) shared(num_parties, portid, assigned_ports, logging, \
-                                              abyn_parties) num_threads(num_parties + 1)
+  std::vector<std::thread> t;
   for (auto my_id = 0ul; my_id < num_parties; ++my_id) {
-    std::vector<Communication::ContextPtr> parties;
-    for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
-      if (my_id == other_id) continue;
-      auto role = other_id < my_id ? Role::Client : Role::Server;
+    t.emplace_back([my_id, num_parties, portid, &assigned_ports, &abyn_parties, logging]() {
+      std::vector<Communication::ContextPtr> contexts;
+      for (auto other_id = 0ul; other_id < num_parties; ++other_id) {
+        if (my_id == other_id) continue;
+        auto role = other_id < my_id ? Role::Client : Role::Server;
 
-      std::uint32_t port_id = portid(my_id, other_id);
+        std::uint32_t port_id = portid(my_id, other_id);
 
-      std::uint16_t this_port;
-      auto search = assigned_ports.find(port_id);
-      this_port = search->second;
+        std::uint16_t this_port;
+        auto search = assigned_ports.find(port_id);
+        this_port = search->second;
 
-      parties.emplace_back(
-          std::make_shared<Communication::Context>("127.0.0.1", this_port, role, other_id));
-    }
-    auto config = std::make_shared<Configuration>(std::move(parties), my_id);
-    config->SetLoggingEnabled(logging);
-    abyn_parties.at(my_id) = std::make_unique<Party>(config);
-    abyn_parties.at(my_id)->Connect();
+        contexts.emplace_back(
+            std::make_shared<Communication::Context>("127.0.0.1", this_port, role, other_id));
+      }
+      auto config = std::make_shared<Configuration>(std::move(contexts), my_id);
+      config->SetLoggingEnabled(logging);
+      abyn_parties.at(my_id) = std::make_unique<Party>(config);
+      abyn_parties.at(my_id)->Connect();
+    });
+  }
+
+  for (auto &tt : t) {
+    if (tt.joinable()) tt.join();
   }
 
   return abyn_parties;

@@ -179,9 +179,8 @@ class MTProviderFromOTs final : public MTProvider {
   std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers_;
 
   // use alternating party roles for load balancing
-  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> bit_ots_snd_;
-  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>>
-      bit_ots_rcv_;
+  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> ots_snd_;
+  std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> ots_rcv_;
 
   const std::size_t max_batch_size_{10'000};
 };

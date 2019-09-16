@@ -73,7 +73,7 @@ class Logger {
   boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>>
       g_file_sink;
   logger_type logger_;
-  std::size_t my_id_;
+  const std::size_t my_id_;
   bool logging_enabled_ = true;
   std::mutex write_mutex_;
 
