@@ -50,7 +50,7 @@ class Condition {
   template <typename Tick, typename Period>
   bool WaitFor(std::chrono::duration<Tick, Period> duration) {
     std::unique_lock<std::mutex> lock(mutex_);
-    condition_variable_.wait_for(lock, duration, [this] { return condition_function_(); });
+    condition_variable_.wait_for(lock, duration, condition_function_);
     return condition_function_();
   }
 
@@ -68,4 +68,4 @@ class Condition {
   const std::function<bool()> condition_function_;
 };
 
-}
+}  // namespace ENCRYPTO
