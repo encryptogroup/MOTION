@@ -86,8 +86,8 @@ class Handler {
   std::thread sender_thread_, receiver_thread_;
   std::unique_ptr<ENCRYPTO::LockedQueue<std::vector<std::uint8_t>>> lqueue_receive_;
   std::unique_ptr<ENCRYPTO::LockedQueue<std::vector<std::uint8_t>>> lqueue_send_;
-  bool continue_communication_ = true;
-  bool received_termination_message_ = false, sent_termination_message_ = false;
+  std::atomic<bool> continue_communication_ = true;
+  std::atomic<bool> received_termination_message_ = false, sent_termination_message_ = false;
   std::size_t bytes_sent_ = 0, bytes_received_ = 0;
 
   void ReceivedTerminationMessage() { received_termination_message_ = true; }
