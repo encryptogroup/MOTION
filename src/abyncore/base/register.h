@@ -136,7 +136,7 @@ class Register {
 
   std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
-  std::size_t evaluated_gates_ = 0;
+  std::atomic<std::size_t> evaluated_gates_ = 0;
   std::shared_ptr<ENCRYPTO::Condition> evaluated_gates_condition_;
 
   ConfigurationPtr config_;
