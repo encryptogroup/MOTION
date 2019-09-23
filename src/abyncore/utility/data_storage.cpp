@@ -32,22 +32,20 @@
 
 namespace ABYN {
 
-BaseOTsReceiverData::BaseOTsReceiverData() {
-  received_S_.Resize(128, true);
+BaseOTsReceiverData::BaseOTsReceiverData() : received_S_(128, false) {
   for (auto i = 0; i < 128; ++i) {
     received_S_condition_.emplace_back(
-        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_S_.Get(i); }));
+        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_S_.at(i); }));
   }
   S_.resize(128);
 
   is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_; });
 }
 
-BaseOTsSenderData::BaseOTsSenderData() {
-  received_R_.Resize(128, true);
+BaseOTsSenderData::BaseOTsSenderData() : received_R_(128, false) {
   for (auto i = 0; i < 128; ++i) {
     received_R_condition_.emplace_back(
-        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_R_.Get(i); }));
+        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_R_.at(i); }));
   }
   R_.resize(128);
 
@@ -223,7 +221,7 @@ void DataStorage::BaseOTsReceived(const std::uint8_t *message, const BaseOTsData
         std::scoped_lock lock(base_ots_sender_data_->received_R_condition_.at(ot_id)->GetMutex());
         std::copy(message, message + base_ots_sender_data_->R_.at(ot_id).size(),
                   reinterpret_cast<std::uint8_t *>(base_ots_sender_data_->R_.at(ot_id).data()));
-        base_ots_sender_data_->received_R_.Set(true, ot_id);
+        base_ots_sender_data_->received_R_.at(ot_id) = true;
       }
       base_ots_sender_data_->received_R_condition_.at(ot_id)->NotifyOne();
       break;
@@ -233,7 +231,7 @@ void DataStorage::BaseOTsReceived(const std::uint8_t *message, const BaseOTsData
         std::scoped_lock lock(base_ots_receiver_data_->received_S_condition_.at(ot_id)->GetMutex());
         std::copy(message, message + base_ots_receiver_data_->S_.at(ot_id).size(),
                   reinterpret_cast<std::uint8_t *>(base_ots_receiver_data_->S_.at(ot_id).begin()));
-        base_ots_receiver_data_->received_S_.Set(true, ot_id);
+        base_ots_receiver_data_->received_S_.at(ot_id) = true;
       }
       base_ots_receiver_data_->received_S_condition_.at(ot_id)->NotifyOne();
       break;
@@ -390,4 +388,4 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
     }
   }
 }
-}
+}  // namespace ABYN
