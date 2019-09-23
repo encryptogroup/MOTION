@@ -227,7 +227,6 @@ void Handler::ActAsReceiver() {
         }
 
         lqueue_receive_->enqueue(std::move(message_buffer));
-        GetSocket()->non_blocking(false);
       }
     });
     // separate thread for parsing received messages
@@ -279,7 +278,6 @@ std::uint32_t Handler::ParseHeader() {
 
 std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
   boost::system::error_code ec;
-  GetSocket()->non_blocking(false);
   std::vector<std::uint8_t> message_buffer(size);
   // get the message
   boost::asio::read(*GetSocket().get(), boost::asio::buffer(message_buffer),
