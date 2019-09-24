@@ -172,6 +172,7 @@ class MTProviderFromOTs final : public MTProvider {
   void Setup() final;
 
  private:
+
   void RegisterOTs();
 
   void ParseOutputs();

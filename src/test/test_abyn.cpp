@@ -270,8 +270,7 @@ TEST(ABYNParty, NetworkConnection_LocalPartiesFromStaticFunction_2_3_4_5_10_part
     bool all_connected = false;
     for (auto num_parties : num_parties_list) {
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
         }
@@ -305,8 +304,7 @@ TEST(ABYNArithmeticGMW, InputOutput_1_1K_SIMD_2_3_4_5_10_parties) {
       T global_input_1 = Rand<T>();
       std::vector<T> global_input_1K = RandomVector<T>(1000);
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -373,8 +371,7 @@ TEST(ABYNArithmeticGMW, Addition_1_1K_SIMD_2_3_4_5_10_parties) {
         v = RandomVector<T>(1000);
       }
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -405,6 +402,9 @@ TEST(ABYNArithmeticGMW, Addition_1_1K_SIMD_2_3_4_5_10_parties) {
           auto s_out_1 = s_add_1.Out(output_owner);
           auto s_out_1K = s_add_1K.Out(output_owner);
 
+          auto s_out_1_all = s_add_1.Out();
+          auto s_out_1K_all = s_add_1K.Out();
+
           abyn_parties.at(party_id)->Run(2);
 
           if (party_id == output_owner) {
@@ -421,6 +421,105 @@ TEST(ABYNArithmeticGMW, Addition_1_1K_SIMD_2_3_4_5_10_parties) {
             const std::vector<T> expected_result_1K = std::move(Helpers::RowSumReduction(in_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
+            }
+          }
+
+          {
+            auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                s_out_1_all->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                s_out_1K_all->GetWires().at(0));
+
+            T circuit_result_1 = wire_1->GetValuesOnWire().at(0);
+            T expected_result_1 = Helpers::SumReduction(in_1);
+            EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> &circuit_result_1K = wire_1K->GetValuesOnWire();
+            const std::vector<T> expected_result_1K = std::move(Helpers::RowSumReduction(in_1K));
+            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
+              EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
+            }
+          }
+          abyn_parties.at(party_id)->Finish();
+        }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
+  };
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
+    // lambdas don't support templates, but only auto types. So, let's try to trick them.
+    template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint16_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
+  }
+}
+
+TEST(ABYNArithmeticGMW, Multiplication_1_100_SIMD_2_3_parties) {
+  constexpr auto AGMW = ABYN::MPCProtocol::ArithmeticGMW;
+  std::srand(std::time(nullptr));
+  auto template_test = [](auto template_var) {
+    using T = decltype(template_var);
+    const std::vector<T> _zero_v_100(100, 0);
+    for (auto num_parties : {2u, 3u}) {
+      std::size_t output_owner = std::rand() % num_parties;
+      std::vector<T> in_1 = RandomVector<T>(num_parties);
+      std::vector<std::vector<T>> in_100(num_parties);
+      for (auto &v : in_100) {
+        v = RandomVector<T>(100);
+      }
+      try {
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : abyn_parties) {
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+        }
+#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(abyn_parties.size())
+        for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+          std::vector<ABYN::Shares::ShareWrapper> s_in_1, s_in_100;
+          for (auto j = 0u; j < num_parties; ++j) {
+            // If my input - real input, otherwise a dummy 0 (-vector).
+            // Should not make any difference, just for consistency...
+            const T my_in_1 = party_id == j ? in_1.at(j) : 0;
+            const std::vector<T> &my_in_100 = party_id == j ? in_100.at(j) : _zero_v_100;
+
+            s_in_1.push_back(abyn_parties.at(party_id)->IN<AGMW>(my_in_1, j));
+            s_in_100.push_back(abyn_parties.at(party_id)->IN<AGMW>(my_in_100, j));
+          }
+
+          auto s_mul_1 = s_in_1.at(0) * s_in_1.at(1);
+          auto s_mul_100 = s_in_100.at(0) * s_in_100.at(1);
+
+          for (auto j = 2u; j < num_parties; ++j) {
+            s_mul_1 *= s_in_1.at(j);
+            s_mul_100 *= s_in_100.at(j);
+          }
+
+          auto s_out_1 = s_mul_1.Out(output_owner);
+          auto s_out_1K = s_mul_100.Out(output_owner);
+
+          auto s_out_1_all = s_mul_1.Out();
+          auto s_out_100_all = s_mul_100.Out();
+
+          abyn_parties.at(party_id)->Run();
+
+          if (party_id == output_owner) {
+            auto wire_1 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                s_out_1->GetWires().at(0));
+            auto wire_100 = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(
+                s_out_1K->GetWires().at(0));
+
+            T circuit_result_1 = wire_1->GetValuesOnWire().at(0);
+            T expected_result_1 = Helpers::RowMulReduction(in_1);
+            EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> &circuit_result_100 = wire_100->GetValuesOnWire();
+            const std::vector<T> expected_result_100 = std::move(Helpers::RowMulReduction(in_100));
+            for (auto i = 0u; i < circuit_result_100.size(); ++i) {
+              EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
             }
           }
           abyn_parties.at(party_id)->Finish();
@@ -449,8 +548,7 @@ TEST(ABYNBooleanGMW, InputOutput_1_1K_SIMD_2_3_4_5_10_parties) {
       const auto global_input_1 = (std::rand() % 2) == 1;
       const auto global_input_1K = ENCRYPTO::BitVector<>::Random(1000);
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -515,8 +613,7 @@ TEST(ABYNBooleanGMW, XOR_1_bit_1_1K_SIMD_2_3_4_5_10_parties) {
       bool dummy_input_1 = false;
       ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -614,8 +711,7 @@ TEST(ABYNBooleanGMW, XOR_64_bit_200_SIMD_2_3_4_5_10_parties) {
                                                                 ENCRYPTO::BitVector<>(200, false));
 
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -687,8 +783,7 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
       bool dummy_input_1 = false;
       ENCRYPTO::BitVector<> dummy_input_1K(20, false);
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -798,8 +893,7 @@ TEST(ABYNBooleanGMW, AND_64_bit_10_SIMD_2_3_parties) {
                                                                ENCRYPTO::BitVector<>(10, false));
 
       try {
-        std::vector<PartyPtr> abyn_parties(
-            std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);

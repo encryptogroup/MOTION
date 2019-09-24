@@ -154,6 +154,38 @@ inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
   return result;
 }
 
+template <typename T>
+inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>> &v) {
+  if (v.size() == 0) {
+    return {};
+  } else {
+    std::vector<T> product(v.at(0).size(), 1);
+    for (auto i = 1ull; i < v.size(); ++i) {
+      assert(v.at(0).size() == v.at(i).size());
+    }
+#pragma omp parallel for default(none) shared(product, v)
+    for (auto i = 0ull; i < product.size(); ++i) {
+      for (auto j = 0ull; j < v.size(); ++j) {
+        product.at(i) *= v.at(j).at(i);
+      }
+    }
+    return std::move(product);
+  }
+}
+
+template <typename T>
+inline T RowMulReduction(const std::vector<T> &v) {
+  if (v.size() == 0) {
+    return 0;
+  } else {
+    T product = v.at(0);
+    for (auto i = 1ull; i < v.size(); ++i) {
+      product *= v.at(i);
+    }
+    return product;
+  }
+}
+
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 bool IsPowerOfTwo(T x) {
   return x > 0 && (!(x & (x - 1)));

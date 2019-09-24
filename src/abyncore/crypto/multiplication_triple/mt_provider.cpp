@@ -172,7 +172,6 @@ void MTProviderFromOTs::RegisterOTs() {
 
     for (std::size_t mt_id = 0; mt_id < num_mts_8_;) {
       const auto batch_size = std::min(max_batch_size_, num_mts_8_ - mt_id);
-
       auto ot_s = ot_providers_.at(i)->RegisterSend(8, batch_size * 8, ACOT);
       std::vector<ENCRYPTO::BitVector<>> v_s;
       for (auto k = 0ull; k < batch_size; ++k) {
@@ -202,7 +201,7 @@ void MTProviderFromOTs::RegisterOTs() {
     for (std::size_t mt_id = 0; mt_id < num_mts_16_;) {
       const auto batch_size = std::min(max_batch_size_, num_mts_16_ - mt_id);
 
-      auto ot_s = ot_providers_.at(i)->RegisterSend(8, batch_size * 16, ACOT);
+      auto ot_s = ot_providers_.at(i)->RegisterSend(16, batch_size * 16, ACOT);
       std::vector<ENCRYPTO::BitVector<>> v_s;
       for (auto k = 0ull; k < batch_size; ++k) {
         for (auto bit_i = 0; bit_i < 16; ++bit_i) {
@@ -314,8 +313,8 @@ void MTProviderFromOTs::ParseOutputs() {
       for (auto j = 0ull; j < batch_size; ++j) {
         for (auto bit_i = 0; bit_i < 8; ++bit_i) {
           mts8_.c.at(mt_id + j) +=
-              (*reinterpret_cast<const std::uint8_t*>(out_r.at(j).GetData().data()) +
-               *reinterpret_cast<const std::uint8_t*>(out_s.at(j).GetData().data()));
+              *reinterpret_cast<const std::uint8_t*>(out_r.at(j * 8 + bit_i).GetData().data()) -
+              *reinterpret_cast<const std::uint8_t*>(out_s.at(j * 8 + bit_i).GetData().data());
         }
       }
       ots_snd_.at(i).pop_front();
@@ -332,8 +331,8 @@ void MTProviderFromOTs::ParseOutputs() {
       for (auto j = 0ull; j < batch_size; ++j) {
         for (auto bit_i = 0; bit_i < 16; ++bit_i) {
           mts16_.c.at(mt_id + j) +=
-              (*reinterpret_cast<const std::uint16_t*>(out_r.at(j).GetData().data()) +
-               *reinterpret_cast<const std::uint16_t*>(out_s.at(j).GetData().data()));
+              *reinterpret_cast<const std::uint16_t*>(out_r.at(j * 16 + bit_i).GetData().data()) -
+              *reinterpret_cast<const std::uint16_t*>(out_s.at(j * 16 + bit_i).GetData().data());
         }
       }
       ots_snd_.at(i).pop_front();
@@ -350,8 +349,8 @@ void MTProviderFromOTs::ParseOutputs() {
       for (auto j = 0ull; j < batch_size; ++j) {
         for (auto bit_i = 0; bit_i < 32; ++bit_i) {
           mts32_.c.at(mt_id + j) +=
-              (*reinterpret_cast<const std::uint32_t*>(out_r.at(j).GetData().data()) +
-               *reinterpret_cast<const std::uint32_t*>(out_s.at(j).GetData().data()));
+              *reinterpret_cast<const std::uint32_t*>(out_r.at(j * 32 + bit_i).GetData().data()) -
+              *reinterpret_cast<const std::uint32_t*>(out_s.at(j * 32 + bit_i).GetData().data());
         }
       }
       ots_snd_.at(i).pop_front();
@@ -368,8 +367,8 @@ void MTProviderFromOTs::ParseOutputs() {
       for (auto j = 0ull; j < batch_size; ++j) {
         for (auto bit_i = 0; bit_i < 64; ++bit_i) {
           mts64_.c.at(mt_id + j) +=
-              (*reinterpret_cast<const std::uint64_t*>(out_r.at(j).GetData().data()) +
-               *reinterpret_cast<const std::uint64_t*>(out_s.at(j).GetData().data()));
+              *reinterpret_cast<const std::uint64_t*>(out_r.at(j * 64 + bit_i).GetData().data()) -
+              *reinterpret_cast<const std::uint64_t*>(out_s.at(j * 64 + bit_i).GetData().data());
         }
       }
       ots_snd_.at(i).pop_front();

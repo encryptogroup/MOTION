@@ -278,6 +278,19 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
     std::vector<T> output_ = arithmetic_wire->GetValuesOnWire();
 
+    if (!is_my_output_) {
+      auto payload = Helpers::ToByteVector(output_);
+      auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payload);
+      GetRegister()->Send(output_owner_, std::move(output_message));
+    } else if (output_owner_ == ALL) {
+      auto payload = Helpers::ToByteVector(output_);
+      for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+        if (i == GetConfig()->GetMyId()) continue;
+        auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payload);
+        GetRegister()->Send(i, std::move(output_message));
+      }
+    }
+
     if (is_my_output_) {
       // wait until all conditions are fulfilled
       Helpers::WaitFor(*parent_.at(0)->GetIsReadyCondition());
@@ -326,11 +339,8 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
           std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
       assert(arithmetic_output_wire);
       arithmetic_output_wire->GetMutableValuesOnWire() = output_;
-    } else {
-      auto payload = Helpers::ToByteVector(output_);
-      auto output_message = ABYN::Communication::BuildOutputMessage(gate_id_, payload);
-      GetRegister()->Send(output_owner_, std::move(output_message));
     }
+
     SetOnlineIsReady();
     GetRegister()->IncrementEvaluatedGatesCounter();
     GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
@@ -488,7 +498,6 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     auto mt_provider = GetMTProvider();
     mt_provider->WaitFinished();
     const auto &mts = mt_provider->template GetIntegerAll<T>();
-
     {
       const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_a_.at(0));
       assert(x);
@@ -535,8 +544,8 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     auto out = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(out);
     out->GetMutableValuesOnWire() =
-        std::vector<T>(mts.b.begin() + mt_offset_,
-                       mts.b.begin() + mt_offset_ + parent_a_.at(0)->GetNumOfParallelValues());
+        std::vector<T>(mts.c.begin() + mt_offset_,
+                       mts.c.begin() + mt_offset_ + parent_a_.at(0)->GetNumOfParallelValues());
 
     const auto &d = d_w->GetValuesOnWire();
     const auto &s_x = x_i_w->GetValuesOnWire();
@@ -546,7 +555,7 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfParallelValues(); ++i) {
         out->GetMutableValuesOnWire().at(i) +=
-            (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i)) + (e.at(i) * d.at(i));
+            (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i)) - (e.at(i) * d.at(i));
       }
     } else {
       for (auto i = 0ull; i < out->GetNumOfParallelValues(); ++i) {

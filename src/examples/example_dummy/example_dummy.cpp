@@ -98,7 +98,7 @@ void test() {
       ENCRYPTO::BitVector dummy_input_1K(1000, false);
       ENCRYPTO::BitVector dummy_input_100K(100000, false);
 
-      // std::vector<PartyPtr> abyn_parties(std::move(Party::GetNLocalParties(num_parties, 7777)));
+      // std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, 7777)));
       std::vector<std::thread> threads;
       //#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
       //#pragma omp single

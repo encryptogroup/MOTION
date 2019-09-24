@@ -115,90 +115,100 @@ TEST(MultiplicationTriples, Binary) {
     }
   }
 }
-/*
+
 TEST(MultiplicationTriples, Integer) {
-  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
-    constexpr auto AGMW = ABYN::MPCProtocol::ArithmeticGMW;
-    std::srand(std::time(nullptr));
-    for (auto num_parties : {2u, 3u}) {
-      std::vector<std::uint8_t> global_input_1(num_parties);
-      for (auto j = 0ull; j < global_input_1.size(); ++j) {
-        global_input_1.at(j) = (std::rand() % 2) == 1;
-      }
-      std::vector<std::vector<std::uint8_t>> global_input_20(num_parties);
-      std::random_device r;
-      std::uniform_int_distribution<std::uint8_t> d(0, std::numeric_limits<std::uint8_t>::max());
-      for (auto j = 0ull; j < global_input_20.size(); ++j) {
-        for (auto k = 0; k < 20; ++k) {
-          global_input_20.at(j).emplace_back(d(r));
+  auto template_test = [](auto t) {
+    using T = decltype(t);
+    for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
+      constexpr auto AGMW = ABYN::MPCProtocol::ArithmeticGMW;
+      std::srand(std::time(nullptr));
+      for (auto num_parties : {2u, 3u}) {
+        std::vector<T> global_input_1(num_parties);
+        for (auto j = 0ull; j < global_input_1.size(); ++j) {
+          global_input_1.at(j) = (std::rand() % 2) == 1;
         }
-      }
-      std::uint8_t dummy_input_1 = 0;
-      std::vector<std::uint8_t> dummy_input_20(20);
-      try {
-        std::vector<ABYN::PartyPtr> abyn_parties(
-            std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-        for (auto &p : abyn_parties) {
-          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-          p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
+        std::vector<std::vector<T>> global_input_100(num_parties);
+        std::random_device r;
+        std::uniform_int_distribution<T> d(0, std::numeric_limits<T>::max());
+        for (auto j = 0ull; j < global_input_100.size(); ++j) {
+          for (auto k = 0; k < 100; ++k) {
+            global_input_100.at(j).emplace_back(d(r));
+          }
         }
+        T dummy_input_1 = 0;
+        std::vector<T> dummy_input_100(100);
+        try {
+          std::vector<ABYN::PartyPtr> abyn_parties(
+              std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
+          for (auto &p : abyn_parties) {
+            p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+            p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
+          }
 
-        auto f = [&](std::size_t party_id) {
-          std::vector<ABYN::Shares::ShareWrapper> s_in_1, s_in_1K;
+          auto f = [&](std::size_t party_id) {
+            std::vector<ABYN::Shares::ShareWrapper> s_in_1, s_in_1K;
 
-          for (auto j = 0ull; j < num_parties; ++j) {
-            if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              s_in_1.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(global_input_1.at(j), j));
-              s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(global_input_20.at(j), j));
-            } else {
-              s_in_1.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(dummy_input_1, j));
-              s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(dummy_input_20, j));
+            for (auto j = 0ull; j < num_parties; ++j) {
+              if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+                s_in_1.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(global_input_1.at(j), j));
+                s_in_1K.emplace_back(
+                    abyn_parties.at(party_id)->IN<AGMW>(global_input_100.at(j), j));
+              } else {
+                s_in_1.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(dummy_input_1, j));
+                s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(dummy_input_100, j));
+              }
             }
-          }
 
-          auto s_and_1 = s_in_1.at(0) * s_in_1.at(1);
-          auto s_and_1K = s_in_1K.at(0) * s_in_1K.at(1);
+            auto s_and_1 = s_in_1.at(0) * s_in_1.at(1);
+            auto s_and_1K = s_in_1K.at(0) * s_in_1K.at(1);
 
-          for (auto j = 2ull; j < num_parties; ++j) {
-            s_and_1 = s_and_1 * s_in_1.at(j);
-            s_and_1K = s_and_1K * s_in_1K.at(j);
-          }
+            for (auto j = 2ull; j < num_parties; ++j) {
+              s_and_1 = s_and_1 * s_in_1.at(j);
+              s_and_1K = s_and_1K * s_in_1K.at(j);
+            }
 
-          abyn_parties.at(party_id)->Run();
-        };
-        std::vector<std::thread> t;
-        //#pragma omp parallel for num_threads(abyn_parties.size() + 1)
-        for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-          t.emplace_back([party_id, &abyn_parties, &f]() {
-            f(party_id);
-            // check multiplication triples
-            if (party_id == 0) {
-              std::vector<uint8_t> a, b, c;
-              const auto &mtp = abyn_parties.at(0)->GetBackend()->GetMTProvider();
-              a = mtp->template GetIntegerAll<std::uint8_t>().a;
-              b = mtp->template GetIntegerAll<std::uint8_t>().c;
-              c = mtp->template GetIntegerAll<std::uint8_t>().c;
+            abyn_parties.at(party_id)->Run();
+          };
+          std::vector<std::thread> t;
+          //#pragma omp parallel for num_threads(abyn_parties.size() + 1)
+          for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+            t.emplace_back([party_id, &abyn_parties, &f]() {
+              f(party_id);
+              // check multiplication triples
+              if (party_id == 0) {
+                std::vector<T> a, b, c;
+                const auto &mtp = abyn_parties.at(0)->GetBackend()->GetMTProvider();
+                a = mtp->template GetIntegerAll<T>().a;
+                b = mtp->template GetIntegerAll<T>().b;
+                c = mtp->template GetIntegerAll<T>().c;
 
-              for (auto j = 1ull; j < abyn_parties.size(); ++j) {
+                for (auto j = 1ull; j < abyn_parties.size(); ++j) {
+                  const auto &mtp_j = abyn_parties.at(j)->GetBackend()->GetMTProvider();
+                  for (auto k = 0ull; k < a.size(); ++k) {
+                    a.at(k) += mtp_j->template GetIntegerAll<T>().a.at(k);
+                    b.at(k) += mtp_j->template GetIntegerAll<T>().b.at(k);
+                    c.at(k) += mtp_j->template GetIntegerAll<T>().c.at(k);
+                  }
+                }
                 for (auto k = 0ull; k < a.size(); ++k) {
-                  a.at(k) += mtp->template GetIntegerAll<std::uint8_t>().a.at(k);
-                  b.at(k) += mtp->template GetIntegerAll<std::uint8_t>().b.at(k);
-                  c.at(k) += mtp->template GetIntegerAll<std::uint8_t>().c.at(k);
+                  EXPECT_EQ(c.at(k), static_cast<T>(a.at(k) * b.at(k)));
                 }
               }
-              for (auto k = 0ull; k < a.size(); ++k) {
-                EXPECT_EQ(c.at(k), a.at(k) * b.at(k));
-              }
-            }
-            abyn_parties.at(party_id)->Finish();
-          });
+              abyn_parties.at(party_id)->Finish();
+            });
+          }
+          for (auto &&tt : t)
+            if (tt.joinable()) tt.join();
+        } catch (std::exception &e) {
+          std::cerr << e.what() << std::endl;
         }
-        for (auto &&tt : t)
-          if (tt.joinable()) tt.join();
-      } catch (std::exception &e) {
-        std::cerr << e.what() << std::endl;
       }
     }
-  }
-}*/
+  };
+
+  template_test(static_cast<std::uint8_t>(0));
+  template_test(static_cast<std::uint16_t>(0));
+  template_test(static_cast<std::uint32_t>(0));
+  template_test(static_cast<std::uint64_t>(0));
+}
 }  // namespace
