@@ -199,49 +199,45 @@ void Backend::EvaluateSequential() {
 }
 
 void Backend::EvaluateParallel() {
-  const bool needs_mts = GetMTProvider()->NeedMTs();
-#pragma omp parallel sections
-  {
-#pragma omp section
-    {
-      register_->GetLogger()->LogInfo(
-          "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
-      {
-        if (needs_mts) {
-          mt_provider_->PreSetup();
-        }
-        const bool need_ots = NeedOTs();
-        if (need_ots) {
-          OTExtensionSetup();
-          if (needs_mts) {
-            mt_provider_->Setup();
-          }
-        }
+  register_->GetLogger()->LogInfo(
+      "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
+
+  // Run preprocessing setup in a separate thread
+  auto f_setup = std::async(std::launch::async, [this] {
+    const bool needs_mts = mt_provider_->NeedMTs();
+    if (needs_mts) {
+      mt_provider_->PreSetup();
+    }
+    const bool need_ots = NeedOTs();
+    if (need_ots) {
+      OTExtensionSetup();
+      if (needs_mts) {
+        mt_provider_->Setup();
       }
     }
-#pragma omp section
-    {
-      for (auto &input_gate : register_->GetInputGates()) {
-        register_->AddToActiveQueue(input_gate->GetID());
-      }
-      boost::asio::thread_pool pool(
-          std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
-      while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-        const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-        const auto d = gate_id >= 0 ? std::chrono::milliseconds(0) : std::chrono::microseconds(100);
-        if (gate_id < 0) {
-          std::this_thread::sleep_for(d);
-          continue;
-        }
-        boost::asio::post(pool, [this, gate_id]() {
-          auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-          gate->EvaluateSetup();
-          gate->EvaluateOnline();
-        });
-      }
-      pool.join();
-    }
+  });
+
+  // Run setup and online phase of circuit evaluation
+  for (auto &input_gate : register_->GetInputGates()) {
+    register_->AddToActiveQueue(input_gate->GetID());
   }
+  boost::asio::thread_pool pool(
+      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
+    if (gate_id < 0) {
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
+      continue;
+    }
+    boost::asio::post(pool, [this, gate_id]() {
+      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
+      gate->EvaluateSetup();
+      gate->EvaluateOnline();
+    });
+  }
+  pool.join();
+
+  f_setup.get();
 }
 
 void Backend::TerminateCommunication() {
