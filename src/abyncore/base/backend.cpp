@@ -499,20 +499,28 @@ void Backend::OTExtensionSetup() {
     ComputeBaseOTs();
   }
 
-#pragma omp parallel for num_threads(config_->GetNumOfParties())
+  if constexpr (ABYN_DEBUG) {
+    register_->GetLogger()->LogDebug("Start computing setup for OTExtensions");
+  }
+
+  std::vector<std::future<void>> task_futures;
+  task_futures.reserve(2 * (config_->GetNumOfParties() - 1));
+
   for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
     if (i == config_->GetMyId()) {
       continue;
     }
-#pragma omp parallel sections num_threads(3) default(none) shared(ot_provider_, i)
-    {
-#pragma omp section
-      { ot_provider_.at(i)->SendSetup(); }
-#pragma omp section
-      { ot_provider_.at(i)->ReceiveSetup(); }
-    }
+    task_futures.emplace_back(
+        std::async(std::launch::async, [this, i] { ot_provider_.at(i)->SendSetup(); }));
+    task_futures.emplace_back(
+        std::async(std::launch::async, [this, i] { ot_provider_.at(i)->ReceiveSetup(); }));
   }
 
+  std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
   ot_extension_finished_ = true;
+
+  if constexpr (ABYN_DEBUG) {
+    register_->GetLogger()->LogDebug("Finished setup for OTExtensions");
+  }
 }
 }  // namespace ABYN
