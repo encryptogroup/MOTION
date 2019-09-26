@@ -52,17 +52,18 @@ class OTVector {
  public:
   OTVector() = delete;
 
-  std::size_t GetId() const noexcept { return id_; }
-  std::size_t GetNumOts() const noexcept { return num_ots_; }
+  std::size_t GetOtId() const noexcept { return ot_id_; }
+  std::size_t GetNumOTs() const noexcept { return num_ots_; }
   std::size_t GetBitlen() const noexcept { return bitlen_; }
   OTProtocol GetProtocol() const noexcept { return p_; }
 
  protected:
-  OTVector(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-           const OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  OTVector(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+           const std::size_t bitlen, const OTProtocol p,
+           const std::shared_ptr<ABYN::DataStorage> &data_storage,
            const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
-  const std::size_t id_, num_ots_, bitlen_;
+  const std::size_t ot_id_, vector_id_, num_ots_, bitlen_;
   const OTProtocol p_;
 
   std::shared_ptr<ABYN::DataStorage> data_storage_;
@@ -82,8 +83,9 @@ class OTVectorSender : public OTVector {
   void WaitSetup();
 
  protected:
-  OTVectorSender(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                 const OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  OTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                 const std::size_t bitlen, const OTProtocol p,
+                 const std::shared_ptr<ABYN::DataStorage> &data_storage,
                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
@@ -93,8 +95,8 @@ class OTVectorSender : public OTVector {
 
 class GOTVectorSender final : public OTVectorSender {
  public:
-  GOTVectorSender(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                  const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  GOTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                  const std::size_t bitlen, const std::shared_ptr<ABYN::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -107,8 +109,9 @@ class GOTVectorSender final : public OTVectorSender {
 
 class COTVectorSender final : public OTVectorSender {
  public:
-  COTVectorSender(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                  OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  COTVectorSender(const std::size_t id, const std::size_t vector_id, const std::size_t num_ots,
+                  const std::size_t bitlen, OTProtocol p,
+                  const std::shared_ptr<ABYN::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -122,8 +125,8 @@ class COTVectorSender final : public OTVectorSender {
 
 class ROTVectorSender final : public OTVectorSender {
  public:
-  ROTVectorSender(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                  const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  ROTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                  const std::size_t bitlen, const std::shared_ptr<ABYN::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -148,8 +151,9 @@ class OTVectorReceiver : public OTVector {
   void WaitSetup();
 
  protected:
-  OTVectorReceiver(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                   const OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  OTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                   const std::size_t bitlen, const OTProtocol p,
+                   const std::shared_ptr<ABYN::DataStorage> &data_storage,
                    std::function<void(flatbuffers::FlatBufferBuilder &&)> Send);
 
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
@@ -160,7 +164,8 @@ class OTVectorReceiver : public OTVector {
 
 class GOTVectorReceiver final : public OTVectorReceiver {
  public:
-  GOTVectorReceiver(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
+  GOTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                    const std::size_t bitlen,
                     const std::shared_ptr<ABYN::DataStorage> &data_storage,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -180,8 +185,9 @@ class GOTVectorReceiver final : public OTVectorReceiver {
 
 class COTVectorReceiver final : public OTVectorReceiver {
  public:
-  COTVectorReceiver(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                    OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
+  COTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                    const std::size_t bitlen, OTProtocol p,
+                    const std::shared_ptr<ABYN::DataStorage> &data_storage,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SendCorrections() final;
@@ -200,7 +206,8 @@ class COTVectorReceiver final : public OTVectorReceiver {
 
 class ROTVectorReceiver final : public OTVectorReceiver {
  public:
-  ROTVectorReceiver(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
+  ROTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                    const std::size_t bitlen,
                     const std::shared_ptr<ABYN::DataStorage> &data_storage,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -234,10 +241,14 @@ class OTProviderSender {
 
   auto GetNumOTs() const { return total_ots_count_; }
 
+  void Clear();
+
+  void Reset();
+
  private:
   std::unordered_map<std::size_t, std::shared_ptr<OTVectorSender>> sender_data_;
 
-  std::size_t total_ots_count_ = 0;
+  std::size_t total_ots_count_{0}, next_vector_id_{0};
 
   std::shared_ptr<ABYN::DataStorage> data_storage_;
 };
@@ -261,10 +272,13 @@ class OTProviderReceiver {
 
   std::size_t GetNumOTs() const { return total_ots_count_; }
 
+  void Clear();
+  void Reset();
+
  private:
   std::unordered_map<std::size_t, std::shared_ptr<OTVectorReceiver>> receiver_data_;
 
-  std::size_t total_ots_count_ = 0;
+  std::size_t total_ots_count_{0}, next_vector_id_{0};
 
   std::shared_ptr<ABYN::DataStorage> data_storage_;
 };
@@ -308,6 +322,16 @@ class OTProvider {
 
   virtual void SendSetup() = 0;
   virtual void ReceiveSetup() = 0;
+
+  void Clear() {
+    receiver_provider_.Clear();
+    sender_provider_.Clear();
+  }
+
+  void Reset() {
+    receiver_provider_.Reset();
+    sender_provider_.Reset();
+  }
 
  protected:
   OTProvider(const std::shared_ptr<ABYN::DataStorage> &data_storage,

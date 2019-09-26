@@ -24,48 +24,10 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
+#include "wire.h"
 
-#include "openssl/aes.h"
-#include "openssl/evp.h"
+#include "utility/bit_vector.h"
 
-#include "utility/helpers.h"
+namespace ABYN{
 
-namespace ENCRYPTO {
-
-class PRG {
- public:
-  PRG() = default;
-
-  void SetKey(const std::uint8_t *key);
-
-  void SetKey(const std::byte *key);
-
-  std::size_t SetOffset(std::size_t new_offset) {
-    std::swap(offset_, new_offset);
-    return new_offset;
-  }
-
-  std::vector<std::byte> Encrypt(const std::size_t bytes);
-
-  std::vector<std::byte> Encrypt(const std::byte *input, const std::size_t bytes);
-
-  std::vector<std::byte> FixedKeyAES(const std::byte *x, const std::uint64_t i,
-                                     const std::size_t num = 1);
-
-  ~PRG() = default;
-
- private:
-  using EVP_CIPHER_CTX_PTR = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
-  static constexpr auto MakeCipherCtx = []() {
-    return EVP_CIPHER_CTX_PTR(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);
-  };
-
-  EVP_CIPHER_CTX_PTR ctx_ = MakeCipherCtx();
-
-  std::array<std::uint8_t *, AES_BLOCK_SIZE> key_;
-
-  std::size_t offset_{0};
-};
 }

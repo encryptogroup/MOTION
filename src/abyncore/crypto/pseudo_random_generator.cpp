@@ -27,12 +27,14 @@
 namespace ENCRYPTO {
 
 void PRG::SetKey(const std::uint8_t *key) {
+  offset_ = 0;
   std::copy(key, key + AES_BLOCK_SIZE, reinterpret_cast<std::uint8_t *>(key_.data()));
-  if (1 != EVP_EncryptInit_ex(ctx.get(), EVP_aes_128_ecb(), NULL,
+  if (1 != EVP_EncryptInit_ex(ctx_.get(), EVP_aes_128_ecb(), NULL,
                               reinterpret_cast<const unsigned char *>(key_.data()), nullptr)) {
     throw(std::runtime_error(fmt::format("Could not re-initialize EVP context")));
   }
 }
+
 void PRG::SetKey(const std::byte *key) { SetKey(reinterpret_cast<const std::uint8_t *>(key)); }
 
 std::vector<std::byte> PRG::Encrypt(const std::size_t bytes) {
@@ -43,11 +45,11 @@ std::vector<std::byte> PRG::Encrypt(const std::size_t bytes) {
 
   std::vector<std::byte> output(bytelen, std::byte(0)), input(bytelen, std::byte(0));
 
-  for (auto i = 1ull; i < input.size() / AES_BLOCK_SIZE; ++i) {
-    *reinterpret_cast<uint64_t *>(input.data() + i * AES_BLOCK_SIZE) = i;
+  for (auto i = 0ull; i < input.size() / AES_BLOCK_SIZE; ++i) {
+    *reinterpret_cast<uint64_t *>(input.data() + i * AES_BLOCK_SIZE) = i + offset_;
   }
 
-  if (1 != EVP_EncryptUpdate(ctx.get(), reinterpret_cast<std::uint8_t *>(output.data()), &len,
+  if (1 != EVP_EncryptUpdate(ctx_.get(), reinterpret_cast<std::uint8_t *>(output.data()), &len,
                              reinterpret_cast<std::uint8_t *>(input.data()),
                              num_blocks * AES_BLOCK_SIZE)) {
     throw(std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
@@ -61,10 +63,9 @@ std::vector<std::byte> PRG::Encrypt(const std::byte *input, const std::size_t by
   const std::size_t num_blocks = (bytes / 16) + remainder;
   int len = bytes;
   const std::size_t bytelen = num_blocks * AES_BLOCK_SIZE;
-  // const std::size_t padded_bytelen = (num_blocks + 1) * AES_BLOCK_SIZE;
   std::vector<std::byte> output(bytelen, std::byte(0));
 
-  if (1 != EVP_EncryptUpdate(ctx.get(), reinterpret_cast<std::uint8_t *>(output.data()), &len,
+  if (1 != EVP_EncryptUpdate(ctx_.get(), reinterpret_cast<std::uint8_t *>(output.data()), &len,
                              reinterpret_cast<const std::uint8_t *>(input),
                              num_blocks * AES_BLOCK_SIZE)) {
     throw(std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));

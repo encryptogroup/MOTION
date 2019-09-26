@@ -24,8 +24,6 @@
 
 #include "ot_provider.h"
 
-#include "omp.h"
-
 #include "communication/ot_extension_message.h"
 #include "crypto/pseudo_random_generator.h"
 #include "utility/bit_matrix.h"
@@ -34,7 +32,7 @@
 
 namespace ENCRYPTO::ObliviousTransfer {
 void OTProviderFromOTExtension::SendSetup() {
-  constexpr std::size_t kappa = 128, n_threads = 4;
+  constexpr std::size_t kappa = 128;
   const std::size_t bit_size = sender_provider_.GetNumOTs();
   if (bit_size == 0) return;
 
@@ -45,19 +43,16 @@ void OTProviderFromOTExtension::SendSetup() {
   const auto bit_size_padded = bit_size + kappa - (bit_size % kappa);
   auto &base_ots = data_storage_->GetBaseOTsReceiverData();
 
-  std::array<PRG, n_threads> prgs_fixed_key, prgs_var_key;
+  PRG prgs_fixed_key, prgs_var_key;
   const auto key = data_storage_->GetFixedKeyAESKey().GetData().data();
-  for (auto &prg : prgs_fixed_key) {
-    prg.SetKey(key);
-  }
+  prgs_fixed_key.SetKey(key);
 
   std::vector<AlignedBitVector> v(kappa);
-  //#pragma omp parallel for num_threads(n_threads) schedule(dynamic, 1)
+
   for (i = 0; i < kappa; ++i) {
-    const std::size_t thread_id = static_cast<std::size_t>(omp_get_thread_num());
-    assert(thread_id < prgs_var_key.size());
-    prgs_var_key.at(thread_id).SetKey(base_ots->messages_c_.at(i).data());
-    auto row(prgs_var_key.at(thread_id).Encrypt(byte_size));
+    prgs_var_key.SetKey(base_ots->messages_c_.at(i).data());
+    prgs_var_key.SetOffset(base_ots->consumed_offset_);
+    auto row(prgs_var_key.Encrypt(byte_size));
     v.at(i) = AlignedBitVector(std::move(row), bit_size);
   }
 
@@ -94,10 +89,7 @@ void OTProviderFromOTExtension::SendSetup() {
   }
   BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
 
-  //#pragma omp parallel for num_threads(n_threads) schedule(dynamic, 1024)
   for (i = 0; i < ot_ext->bitlengths_.size(); ++i) {
-    const std::size_t thread_id = static_cast<std::size_t>(omp_get_thread_num());
-    assert(thread_id < prgs_fixed_key.size());
     auto &out0 = ot_ext->y0_.at(i);
     auto &out1 = ot_ext->y1_.at(i);
     const auto bitlen = ot_ext->bitlengths_.at(i);
@@ -107,35 +99,32 @@ void OTProviderFromOTExtension::SendSetup() {
     const auto V_row = ptrs.at(row_i) + blk_offset;
 
     if (bitlen <= kappa) {
-      out0 = BitVector<>(prgs_fixed_key.at(thread_id).FixedKeyAES(V_row, i), bitlen);
+      out0 = BitVector<>(prgs_fixed_key.FixedKeyAES(V_row, i), bitlen);
 
       auto out1_in = data_storage_->GetBaseOTsReceiverData()->c_ ^ BitVector<>(V_row, kappa);
-      out1 = BitVector<>(prgs_fixed_key.at(thread_id).FixedKeyAES(out1_in.GetData().data(), i),
-                         bitlen);
+      out1 = BitVector<>(prgs_fixed_key.FixedKeyAES(out1_in.GetData().data(), i), bitlen);
     } else {
-      auto seed0 = prgs_fixed_key.at(thread_id).FixedKeyAES(V_row, i);
-      prgs_var_key.at(thread_id).SetKey(seed0.data());
-      out0 = BitVector<>(
-          prgs_var_key.at(thread_id).Encrypt(ABYN::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+      auto seed0 = prgs_fixed_key.FixedKeyAES(V_row, i);
+      prgs_var_key.SetKey(seed0.data());
+      out0 = BitVector<>(prgs_var_key.Encrypt(ABYN::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
 
       auto out1_in = data_storage_->GetBaseOTsReceiverData()->c_ ^ BitVector<>(V_row, kappa);
-      auto seed1 = prgs_fixed_key.at(thread_id).FixedKeyAES(out1_in.GetData().data(), i);
-      prgs_var_key.at(thread_id).SetKey(seed1.data());
-      out1 = BitVector<>(
-          prgs_var_key.at(thread_id).Encrypt(ABYN::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+      auto seed1 = prgs_fixed_key.FixedKeyAES(out1_in.GetData().data(), i);
+      prgs_var_key.SetKey(seed1.data());
+      out1 = BitVector<>(prgs_var_key.Encrypt(ABYN::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
     }
   }
 
   {
-    std::scoped_lock(ot_ext->setup_finished_condition_->GetMutex());
+    std::scoped_lock(ot_ext->setup_finished_cond_->GetMutex());
     ot_ext->setup_finished_ = true;
   }
-  ot_ext->setup_finished_condition_->NotifyAll();
+  ot_ext->setup_finished_cond_->NotifyAll();
 }
 
 void OTProviderFromOTExtension::ReceiveSetup() {
   std::size_t i = 0, j = 0;
-  constexpr std::size_t kappa = 128, n_threads = 4;
+  constexpr std::size_t kappa = 128;
   const std::size_t bit_size = receiver_provider_.GetNumOTs();
   if (bit_size == 0) return;
 
@@ -151,27 +140,24 @@ void OTProviderFromOTExtension::ReceiveSetup() {
       std::make_unique<AlignedBitVector>(AlignedBitVector::Random(bit_size_padded));
 
   std::vector<AlignedBitVector> v(kappa);
-  std::array<PRG, n_threads> prgs_fixed_key, prgs_var_key;
+  PRG prgs_fixed_key, prgs_var_key;
   const auto key = data_storage_->GetFixedKeyAESKey().GetData().data();
-  for (auto &prg : prgs_fixed_key) {
-    prg.SetKey(key);
-  }
+  prgs_fixed_key.SetKey(key);
 
-  //#pragma omp parallel for num_threads(n_threads) schedule(dynamic, 1)
   for (i = 0; i < kappa; ++i) {
-    const std::size_t thread_id = static_cast<std::size_t>(omp_get_thread_num());
-    assert(thread_id < prgs_var_key.size());
     // T[j] = PRG(s_{j,0})
-    prgs_var_key.at(thread_id).SetKey(base_ots->messages_0_.at(i).data());
-    auto row(prgs_var_key.at(thread_id).Encrypt(byte_size));
+    prgs_var_key.SetKey(base_ots->messages_0_.at(i).data());
+    prgs_var_key.SetOffset(base_ots->consumed_offset_);
+    auto row(prgs_var_key.Encrypt(byte_size));
     v.at(i) = AlignedBitVector(std::move(row), bit_size);
     auto u = v.at(i);
     // u_j = T[j] XOR r
     u ^= *ot_ext->random_choices_;
 
     // u_j = u_j XOR PRG(s_{j,1})
-    prgs_var_key.at(thread_id).SetKey(base_ots->messages_1_.at(i).data());
-    u ^= AlignedBitVector(prgs_var_key.at(thread_id).Encrypt(byte_size), bit_size);
+    prgs_var_key.SetKey(base_ots->messages_1_.at(i).data());
+    prgs_var_key.SetOffset(base_ots->consumed_offset_);
+    u ^= AlignedBitVector(prgs_var_key.Encrypt(byte_size), bit_size);
 
     Send_(ABYN::Communication::BuildOTExtensionMessageReceiverMasks(u.GetData().data(),
                                                                     u.GetData().size(), i));
@@ -190,29 +176,25 @@ void OTProviderFromOTExtension::ReceiveSetup() {
   }
   BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
 
-  //#pragma omp parallel for num_threads(n_threads) schedule(dynamic, 1024)
   for (i = 0; i < ot_ext->outputs_.size(); ++i) {
     const auto row_i = i % kappa;
     const auto blk_offset = ((kappa / 8) * (i / kappa));
     const auto T_row = ptrs.at(row_i) + blk_offset;
-    const std::size_t thread_id = static_cast<std::size_t>(omp_get_thread_num());
-    assert(thread_id < prgs_fixed_key.size());
     auto &out = ot_ext->outputs_.at(i);
     const auto bitlen = ot_ext->bitlengths_.at(i);
     if (bitlen <= kappa) {
-      out = BitVector<>(prgs_fixed_key.at(thread_id).FixedKeyAES(T_row, i), bitlen);
+      out = BitVector<>(prgs_fixed_key.FixedKeyAES(T_row, i), bitlen);
     } else {
-      auto seed = prgs_fixed_key.at(thread_id).FixedKeyAES(T_row, i);
-      prgs_var_key.at(thread_id).SetKey(seed.data());
-      out = BitVector<>(
-          prgs_var_key.at(thread_id).Encrypt(ABYN::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+      auto seed = prgs_fixed_key.FixedKeyAES(T_row, i);
+      prgs_var_key.SetKey(seed.data());
+      out = BitVector<>(prgs_var_key.Encrypt(ABYN::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
     }
   }
   {
-    std::scoped_lock(ot_ext->setup_finished_condition_->GetMutex());
+    std::scoped_lock(ot_ext->setup_finished_cond_->GetMutex());
     ot_ext->setup_finished_ = true;
   }
-  ot_ext->setup_finished_condition_->NotifyAll();
+  ot_ext->setup_finished_cond_->NotifyAll();
 }
 
 OTProviderFromOTExtension::OTProviderFromOTExtension(
@@ -223,10 +205,12 @@ OTProviderFromOTExtension::OTProviderFromOTExtension(
   ot_ext->real_choices_ = std::make_unique<BitVector<>>();
 }
 
-OTVector::OTVector(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                   const OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
+OTVector::OTVector(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+                   const std::size_t bitlen, const OTProtocol p,
+                   const std::shared_ptr<ABYN::DataStorage> &data_storage,
                    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : id_(id),
+    : ot_id_(ot_id),
+      vector_id_(vector_id),
       num_ots_(num_ots),
       bitlen_(bitlen),
       p_(p),
@@ -238,8 +222,8 @@ const std::vector<BitVector<>> &OTVectorSender::GetOutputs() {
   auto &ote = data_storage_->GetOTExtensionSenderData();
   if (outputs_.empty()) {
     for (auto i = 0ull; i < num_ots_; ++i) {
-      auto bv = ote->y0_.at(id_ + i);
-      bv.Append(ote->y1_.at(id_ + i));
+      auto bv = ote->y0_.at(ot_id_ + i);
+      bv.Append(ote->y1_.at(ot_id_ + i));
       outputs_.push_back(std::move(bv));
     }
   }
@@ -247,43 +231,44 @@ const std::vector<BitVector<>> &OTVectorSender::GetOutputs() {
 }
 
 void OTVectorSender::WaitSetup() {
-  auto &cond = data_storage_->GetOTExtensionSenderData()->setup_finished_condition_;
+  auto &cond = data_storage_->GetOTExtensionSenderData()->setup_finished_cond_;
   while (!(*cond)()) {
     cond->WaitFor(std::chrono::milliseconds(1));
   }
 }
 
-OTVectorSender::OTVectorSender(const std::size_t id, const std::size_t num_ots,
-                               const std::size_t bitlen, const OTProtocol p,
+OTVectorSender::OTVectorSender(const std::size_t ot_id, const std::size_t vector_id,
+                               const std::size_t num_ots, const std::size_t bitlen,
+                               const OTProtocol p,
                                const std::shared_ptr<ABYN::DataStorage> &data_storage,
                                const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVector(id, num_ots, bitlen, p, data_storage, Send) {
-  Reserve(id, num_ots, bitlen);
+    : OTVector(ot_id, vector_id, num_ots, bitlen, p, data_storage, Send) {
+  Reserve(ot_id, num_ots, bitlen);
 }
 
 void OTVectorSender::Reserve(const std::size_t id, const std::size_t num_ots,
                              const std::size_t bitlen) {
   auto &data = data_storage_->GetOTExtensionSenderData();
-  data->y0_.resize(id + num_ots);
-  data->y1_.resize(id + num_ots);
-  data->bitlengths_.resize(id + num_ots);
-  data->corrections_.Resize(id + num_ots);
+  data->y0_.resize(data->y0_.size() + num_ots);
+  data->y1_.resize(data->y1_.size() + num_ots);
+  data->bitlengths_.resize(data->bitlengths_.size() + num_ots);
+  data->corrections_.Resize(data->corrections_.GetSize() + num_ots);
   for (auto i = 0ull; i < num_ots; ++i) {
-    data->bitlengths_.at(id + i) = bitlen;
+    data->bitlengths_.at(data->bitlengths_.size() - 1 - i) = bitlen;
   }
   data->num_ots_in_batch_.emplace(id, num_ots);
 }
 
-GOTVectorSender::GOTVectorSender(const std::size_t id, const std::size_t num_ots,
-                                 const std::size_t bitlen,
+GOTVectorSender::GOTVectorSender(const std::size_t ot_id, const std::size_t vector_id,
+                                 const std::size_t num_ots, const std::size_t bitlen,
                                  const std::shared_ptr<ABYN::DataStorage> &data_storage,
                                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVectorSender(id, num_ots, bitlen, OTProtocol::GOT, data_storage, Send) {
+    : OTVectorSender(ot_id, vector_id, num_ots, bitlen, OTProtocol::GOT, data_storage, Send) {
   auto &ote_data = data_storage_->GetOTExtensionSenderData();
   ote_data->received_correction_offsets_cond_.emplace(
-      id_, std::make_unique<Condition>([this, &ote_data]() {
+      ot_id_, std::make_unique<Condition>([this, &ote_data]() {
         std::scoped_lock lock(ote_data->corrections_mutex_);
-        return ote_data->received_correction_offsets_.find(id_) !=
+        return ote_data->received_correction_offsets_.find(ot_id_) !=
                ote_data->received_correction_offsets_.end();
       }));
 }
@@ -309,8 +294,10 @@ void GOTVectorSender::SendMessages() {
   assert(!inputs_.empty());
   WaitSetup();
   auto &ote = data_storage_->GetOTExtensionSenderData();
-  ABYN::Helpers::WaitFor(*ote->received_correction_offsets_cond_.at(id_));
-  auto corrections = ote->corrections_.Subset(id_, id_ + num_ots_);
+  ABYN::Helpers::WaitFor(*ote->received_correction_offsets_cond_.at(ot_id_));
+  std::unique_lock lock(ote->corrections_mutex_);
+  auto corrections = ote->corrections_.Subset(ot_id_, ot_id_ + num_ots_);
+  lock.unlock();
   assert(inputs_.size() == corrections.GetSize());
 
   BitVector<> buffer;
@@ -318,31 +305,31 @@ void GOTVectorSender::SendMessages() {
     const auto bv_0 = inputs_.at(i).Subset(0, bitlen_);
     const auto bv_1 = inputs_.at(i).Subset(bitlen_, bitlen_ * 2);
     if (corrections[i]) {
-      buffer.Append(bv_1 ^ ote->y0_.at(id_ + i));
-      buffer.Append(bv_0 ^ ote->y1_.at(id_ + i));
+      buffer.Append(bv_1 ^ ote->y0_.at(ot_id_ + i));
+      buffer.Append(bv_0 ^ ote->y1_.at(ot_id_ + i));
     } else {
-      buffer.Append(bv_0 ^ ote->y0_.at(id_ + i));
-      buffer.Append(bv_1 ^ ote->y1_.at(id_ + i));
+      buffer.Append(bv_0 ^ ote->y0_.at(ot_id_ + i));
+      buffer.Append(bv_1 ^ ote->y1_.at(ot_id_ + i));
     }
   }
   Send_(ABYN::Communication::BuildOTExtensionMessageSender(buffer.GetData().data(),
-                                                           buffer.GetData().size(), id_));
+                                                           buffer.GetData().size(), ot_id_));
 }
 
-COTVectorSender::COTVectorSender(const std::size_t id, const std::size_t num_ots,
-                                 const std::size_t bitlen, OTProtocol p,
+COTVectorSender::COTVectorSender(const std::size_t id, const std::size_t vector_id,
+                                 const std::size_t num_ots, const std::size_t bitlen, OTProtocol p,
                                  const std::shared_ptr<ABYN::DataStorage> &data_storage,
                                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVectorSender(id, num_ots, bitlen, p, data_storage, Send) {
+    : OTVectorSender(id, vector_id, num_ots, bitlen, p, data_storage, Send) {
   if (p == OTProtocol::ACOT && (bitlen != 8u && bitlen != 16u && bitlen != 32u && bitlen != 64u)) {
     throw std::runtime_error(fmt::format(
         "Invalid parameter bitlen={}, only 8, 16, 32, or 64 are allowed in ACOT", bitlen_));
   }
   auto &ote_data = data_storage_->GetOTExtensionSenderData();
   ote_data->received_correction_offsets_cond_.emplace(
-      id_, std::make_unique<Condition>([this, &ote_data]() {
+      ot_id_, std::make_unique<Condition>([this, &ote_data]() {
         std::scoped_lock lock(ote_data->corrections_mutex_);
-        return ote_data->received_correction_offsets_.find(id_) !=
+        return ote_data->received_correction_offsets_.find(ot_id_) !=
                ote_data->received_correction_offsets_.end();
       }));
 }
@@ -367,21 +354,23 @@ const std::vector<BitVector<>> &COTVectorSender::GetOutputs() {
   }
   WaitSetup();
   auto &ote = data_storage_->GetOTExtensionSenderData();
-  ABYN::Helpers::WaitFor(*ote->received_correction_offsets_cond_.at(id_));
+  ABYN::Helpers::WaitFor(*ote->received_correction_offsets_cond_.at(ot_id_));
   if (outputs_.empty()) {
-    const auto corrections = ote->corrections_.Subset(id_, id_ + num_ots_);
+    std::unique_lock lock(ote->corrections_mutex_);
+    const auto corrections = ote->corrections_.Subset(ot_id_, ot_id_ + num_ots_);
+    lock.unlock();
     for (auto i = 0ull; i < num_ots_; ++i) {
       BitVector<> bv;
       if (corrections[i]) {
-        bv = ote->y1_.at(id_ + i);
+        bv = ote->y1_.at(ot_id_ + i);
       } else {
-        bv = ote->y0_.at(id_ + i);
+        bv = ote->y0_.at(ot_id_ + i);
       }
       if (p_ == OTProtocol::ACOT) {
         if (corrections[i]) {
-          bv.Append(ote->y1_.at(id_ + i));
+          bv.Append(ote->y1_.at(ot_id_ + i));
         } else {
-          bv.Append(ote->y0_.at(id_ + i));
+          bv.Append(ote->y0_.at(ot_id_ + i));
         }
         switch (bitlen_) {
           case (8u): {
@@ -423,13 +412,14 @@ void COTVectorSender::SendMessages() {
   BitVector<> buffer;
   for (auto i = 0ull; i < num_ots_; ++i) {
     if (p_ == OTProtocol::ACOT) {
-      BitVector bv = ote->y0_.at(id_ + i);
+      BitVector bv = ote->y0_.at(ot_id_ + i);
       switch (bitlen_) {
         case 8u: {
           *(reinterpret_cast<std::uint8_t *>(bv.GetMutableData().data())) +=
               *(reinterpret_cast<const std::uint8_t *>(inputs_.at(i).GetMutableData().data()));
-          *(reinterpret_cast<std::uint8_t *>(bv.GetMutableData().data())) += *(
-              reinterpret_cast<const std::uint8_t *>(ote->y1_.at(id_ + i).GetMutableData().data()));
+          *(reinterpret_cast<std::uint8_t *>(bv.GetMutableData().data())) +=
+              *(reinterpret_cast<const std::uint8_t *>(
+                  ote->y1_.at(ot_id_ + i).GetMutableData().data()));
 
           break;
         }
@@ -438,7 +428,7 @@ void COTVectorSender::SendMessages() {
               *(reinterpret_cast<const std::uint16_t *>(inputs_.at(i).GetMutableData().data()));
           *(reinterpret_cast<std::uint16_t *>(bv.GetMutableData().data())) +=
               *(reinterpret_cast<const std::uint16_t *>(
-                  ote->y1_.at(id_ + i).GetMutableData().data()));
+                  ote->y1_.at(ot_id_ + i).GetMutableData().data()));
           break;
         }
         case 32u: {
@@ -446,7 +436,7 @@ void COTVectorSender::SendMessages() {
               *(reinterpret_cast<const std::uint32_t *>(inputs_.at(i).GetMutableData().data()));
           *(reinterpret_cast<std::uint32_t *>(bv.GetMutableData().data())) +=
               *(reinterpret_cast<const std::uint32_t *>(
-                  ote->y1_.at(id_ + i).GetMutableData().data()));
+                  ote->y1_.at(ot_id_ + i).GetMutableData().data()));
           break;
         }
         case 64u: {
@@ -454,7 +444,7 @@ void COTVectorSender::SendMessages() {
               *(reinterpret_cast<const std::uint64_t *>(inputs_.at(i).GetMutableData().data()));
           *(reinterpret_cast<std::uint64_t *>(bv.GetMutableData().data())) +=
               *(reinterpret_cast<const std::uint64_t *>(
-                  ote->y1_.at(id_ + i).GetMutableData().data()));
+                  ote->y1_.at(ot_id_ + i).GetMutableData().data()));
           break;
         }
         default: {
@@ -463,20 +453,20 @@ void COTVectorSender::SendMessages() {
       }
       buffer.Append(bv);
     } else if (p_ == OTProtocol::XCOT) {
-      buffer.Append(inputs_.at(i) ^ ote->y0_.at(id_ + i) ^ ote->y1_.at(id_ + i));
+      buffer.Append(inputs_.at(i) ^ ote->y0_.at(ot_id_ + i) ^ ote->y1_.at(ot_id_ + i));
     } else {
       throw std::runtime_error("Unknown OT protocol");
     }
   }
   Send_(ABYN::Communication::BuildOTExtensionMessageSender(buffer.GetData().data(),
-                                                           buffer.GetData().size(), id_));
+                                                           buffer.GetData().size(), ot_id_));
 }
 
-ROTVectorSender::ROTVectorSender(const std::size_t id, const std::size_t num_ots,
-                                 const std::size_t bitlen,
+ROTVectorSender::ROTVectorSender(const std::size_t ot_id, const std::size_t vector_id,
+                                 const std::size_t num_ots, const std::size_t bitlen,
                                  const std::shared_ptr<ABYN::DataStorage> &data_storage,
                                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVectorSender(id, num_ots, bitlen, OTProtocol::ROT, data_storage, Send) {}
+    : OTVectorSender(ot_id, vector_id, num_ots, bitlen, OTProtocol::ROT, data_storage, Send) {}
 
 void ROTVectorSender::SetInputs([[maybe_unused]] std::vector<BitVector<>> &&v) {
   throw std::runtime_error("Inputs are random in ROT and thus cannot be set");
@@ -491,18 +481,19 @@ void ROTVectorSender::SendMessages() {
 }
 
 void OTVectorReceiver::WaitSetup() {
-  auto &cond = data_storage_->GetOTExtensionReceiverData()->setup_finished_condition_;
+  auto &cond = data_storage_->GetOTExtensionReceiverData()->setup_finished_cond_;
   while (!(*cond)()) {
     cond->WaitFor(std::chrono::milliseconds(1));
   }
 }
 
-OTVectorReceiver::OTVectorReceiver(const std::size_t id, const std::size_t num_ots,
-                                   const std::size_t bitlen, const OTProtocol p,
+OTVectorReceiver::OTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id,
+                                   const std::size_t num_ots, const std::size_t bitlen,
+                                   const OTProtocol p,
                                    const std::shared_ptr<ABYN::DataStorage> &data_storage,
                                    std::function<void(flatbuffers::FlatBufferBuilder &&)> Send)
-    : OTVector(id, num_ots, bitlen, p, data_storage, Send) {
-  Reserve(id, num_ots, bitlen);
+    : OTVector(ot_id, vector_id, num_ots, bitlen, p, data_storage, Send) {
+  Reserve(ot_id, num_ots, bitlen);
 }
 
 void OTVectorReceiver::Reserve(const std::size_t id, const std::size_t num_ots,
@@ -517,11 +508,11 @@ void OTVectorReceiver::Reserve(const std::size_t id, const std::size_t num_ots,
 }
 
 GOTVectorReceiver::GOTVectorReceiver(
-    const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-    const std::shared_ptr<ABYN::DataStorage> &data_storage,
+    const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+    const std::size_t bitlen, const std::shared_ptr<ABYN::DataStorage> &data_storage,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVectorReceiver(id, num_ots, bitlen, OTProtocol::GOT, data_storage, Send) {
-  data_storage_->GetOTExtensionReceiverData()->num_messages_.emplace(id_, 2);
+    : OTVectorReceiver(ot_id, vector_id, num_ots, bitlen, OTProtocol::GOT, data_storage, Send) {
+  data_storage_->GetOTExtensionReceiverData()->num_messages_.emplace(ot_id_, 2);
 }
 
 void GOTVectorReceiver::SetChoices(BitVector<> &&v) {
@@ -529,11 +520,11 @@ void GOTVectorReceiver::SetChoices(BitVector<> &&v) {
   choices_ = std::move(v);
   auto &ote = data_storage_->GetOTExtensionReceiverData();
   {
-    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
-    ote->real_choices_->Copy(id_, choices_);
-    ote->set_real_choices_.emplace(id_);
+    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(ot_id_)->GetMutex());
+    ote->real_choices_->Copy(ot_id_, choices_);
+    ote->set_real_choices_.emplace(ot_id_);
   }
-  ote->real_choices_cond_.at(id_)->NotifyOne();
+  ote->real_choices_cond_.at(ot_id_)->NotifyOne();
 }
 
 void GOTVectorReceiver::SetChoices(const BitVector<> &v) {
@@ -541,11 +532,11 @@ void GOTVectorReceiver::SetChoices(const BitVector<> &v) {
   choices_ = v;
   auto &ote = data_storage_->GetOTExtensionReceiverData();
   {
-    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
-    ote->real_choices_->Copy(id_, choices_);
-    ote->set_real_choices_.emplace(id_);
+    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(ot_id_)->GetMutex());
+    ote->real_choices_->Copy(ot_id_, choices_);
+    ote->set_real_choices_.emplace(ot_id_);
   }
-  ote->real_choices_cond_.at(id_)->NotifyOne();
+  ote->real_choices_cond_.at(ot_id_)->NotifyOne();
 }
 
 void GOTVectorReceiver::SendCorrections() {
@@ -554,9 +545,9 @@ void GOTVectorReceiver::SendCorrections() {
   }
 
   const auto &ote = data_storage_->GetOTExtensionReceiverData();
-  auto corrections = choices_ ^ ote->random_choices_->Subset(id_, id_ + num_ots_);
+  auto corrections = choices_ ^ ote->random_choices_->Subset(ot_id_, ot_id_ + num_ots_);
   Send_(ABYN::Communication::BuildOTExtensionMessageReceiverCorrections(
-      corrections.GetData().data(), corrections.GetData().size(), id_));
+      corrections.GetData().data(), corrections.GetData().size(), ot_id_));
   corrections_sent_ = true;
 }
 
@@ -566,12 +557,12 @@ const std::vector<BitVector<>> &GOTVectorReceiver::GetOutputs() {
   }
   WaitSetup();
   auto &ote = data_storage_->GetOTExtensionReceiverData();
-  auto &cond = ote->output_conditions_.at(id_);
+  auto &cond = ote->output_conds_.at(ot_id_);
   ABYN::Helpers::WaitFor(*cond);
   if (messages_.empty()) {
     for (auto i = 0ull; i < num_ots_; ++i) {
-      if (ote->outputs_.at(id_ + i).GetSize() > 0) {
-        messages_.emplace_back(std::move(ote->outputs_.at(id_ + i)));
+      if (ote->outputs_.at(ot_id_ + i).GetSize() > 0) {
+        messages_.emplace_back(std::move(ote->outputs_.at(ot_id_ + i)));
       }
     }
   }
@@ -579,17 +570,17 @@ const std::vector<BitVector<>> &GOTVectorReceiver::GetOutputs() {
 }
 
 COTVectorReceiver::COTVectorReceiver(
-    const std::size_t id, const std::size_t num_ots, const std::size_t bitlen, OTProtocol p,
-    const std::shared_ptr<ABYN::DataStorage> &data_storage,
+    const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+    const std::size_t bitlen, OTProtocol p, const std::shared_ptr<ABYN::DataStorage> &data_storage,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVectorReceiver(id, num_ots, bitlen, p, data_storage, Send) {
+    : OTVectorReceiver(ot_id, vector_id, num_ots, bitlen, p, data_storage, Send) {
   if (p == OTProtocol::ACOT && (bitlen != 8u && bitlen != 16u && bitlen != 32u && bitlen != 64u)) {
     throw std::runtime_error(fmt::format(
         "Invalid parameter bitlen={}, only 8, 16, 32, or 64 are allowed in ACOT", bitlen_));
   }
-  data_storage_->GetOTExtensionReceiverData()->num_messages_.emplace(id_, 1);
+  data_storage_->GetOTExtensionReceiverData()->num_messages_.emplace(ot_id_, 1);
   if (p == OTProtocol::XCOT) {
-    data_storage_->GetOTExtensionReceiverData()->xor_correlation_.emplace(id_);
+    data_storage_->GetOTExtensionReceiverData()->xor_correlation_.emplace(ot_id_);
   }
 }
 
@@ -598,9 +589,9 @@ void COTVectorReceiver::SendCorrections() {
     throw std::runtime_error("Choices in COT must be set before calling SendCorrections()");
   }
   const auto &ote = data_storage_->GetOTExtensionReceiverData();
-  auto corrections = choices_ ^ ote->random_choices_->Subset(id_, id_ + num_ots_);
+  auto corrections = choices_ ^ ote->random_choices_->Subset(ot_id_, ot_id_ + num_ots_);
   Send_(ABYN::Communication::BuildOTExtensionMessageReceiverCorrections(
-      corrections.GetData().data(), corrections.GetData().size(), id_));
+      corrections.GetData().data(), corrections.GetData().size(), ot_id_));
   corrections_sent_ = true;
 }
 
@@ -608,22 +599,22 @@ void COTVectorReceiver::SetChoices(BitVector<> &&v) {
   choices_ = std::move(v);
   auto &ote = data_storage_->GetOTExtensionReceiverData();
   {
-    std::scoped_lock lock1(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
-    ote->real_choices_->Copy(id_, choices_);
-    ote->set_real_choices_.emplace(id_);
+    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(ot_id_)->GetMutex());
+    ote->real_choices_->Copy(ot_id_, choices_);
+    ote->set_real_choices_.emplace(ot_id_);
   }
-  ote->real_choices_cond_.at(id_)->NotifyOne();
+  ote->real_choices_cond_.at(ot_id_)->NotifyOne();
 }
 
 void COTVectorReceiver::SetChoices(const BitVector<> &v) {
   choices_ = v;
   auto &ote = data_storage_->GetOTExtensionReceiverData();
   {
-    std::scoped_lock lock1(ote->real_choices_mutex_, ote->real_choices_cond_.at(id_)->GetMutex());
-    ote->real_choices_->Copy(id_, choices_);
-    ote->set_real_choices_.emplace(id_);
+    std::scoped_lock lock(ote->real_choices_mutex_, ote->real_choices_cond_.at(ot_id_)->GetMutex());
+    ote->real_choices_->Copy(ot_id_, choices_);
+    ote->set_real_choices_.emplace(ot_id_);
   }
-  ote->real_choices_cond_.at(id_)->NotifyOne();
+  ote->real_choices_cond_.at(ot_id_)->NotifyOne();
 }
 
 const std::vector<BitVector<>> &COTVectorReceiver::GetOutputs() {
@@ -632,12 +623,12 @@ const std::vector<BitVector<>> &COTVectorReceiver::GetOutputs() {
   }
   WaitSetup();
   auto &ote = data_storage_->GetOTExtensionReceiverData();
-  ABYN::Helpers::WaitFor(*ote->output_conditions_.at(id_));
+  ABYN::Helpers::WaitFor(*ote->output_conds_.at(ot_id_));
 
   if (messages_.empty()) {
     for (auto i = 0ull; i < num_ots_; ++i) {
-      if (ote->outputs_.at(id_ + i).GetSize() > 0) {
-        messages_.emplace_back(std::move(ote->outputs_.at(id_ + i)));
+      if (ote->outputs_.at(ot_id_ + i).GetSize() > 0) {
+        messages_.emplace_back(std::move(ote->outputs_.at(ot_id_ + i)));
       }
     }
   }
@@ -645,11 +636,11 @@ const std::vector<BitVector<>> &COTVectorReceiver::GetOutputs() {
 }
 
 ROTVectorReceiver::ROTVectorReceiver(
-    const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-    const std::shared_ptr<ABYN::DataStorage> &data_storage,
+    const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
+    const std::size_t bitlen, const std::shared_ptr<ABYN::DataStorage> &data_storage,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : OTVectorReceiver(id, num_ots, bitlen, OTProtocol::ROT, data_storage, Send) {
-  Reserve(id, num_ots, bitlen);
+    : OTVectorReceiver(ot_id, vector_id, num_ots, bitlen, OTProtocol::ROT, data_storage, Send) {
+  Reserve(ot_id, num_ots, bitlen);
 }
 
 void ROTVectorReceiver::SetChoices([[maybe_unused]] const BitVector<> &v) {
@@ -669,7 +660,7 @@ const BitVector<> &ROTVectorReceiver::GetChoices() {
   WaitSetup();
   if (choices_.GetSize() == 0) {
     auto &ote = data_storage_->GetOTExtensionReceiverData();
-    auto a_bv = ote->random_choices_->Subset(id_, id_ + num_ots_);
+    auto a_bv = ote->random_choices_->Subset(ot_id_, ot_id_ + num_ots_);
     choices_ = BitVector<>(a_bv.GetData().data(), a_bv.GetSize());
   }
   return choices_;
@@ -680,7 +671,7 @@ const std::vector<BitVector<>> &ROTVectorReceiver::GetOutputs() {
   if (messages_.size() == 0) {
     auto &ote = data_storage_->GetOTExtensionReceiverData();
     auto data = ote->outputs_.begin();
-    messages_.insert(messages_.end(), data + id_, data + id_ + num_ots_);
+    messages_.insert(messages_.end(), data + ot_id_, data + ot_id_ + num_ots_);
   }
   return messages_;
 }
@@ -701,25 +692,52 @@ std::shared_ptr<OTVectorSender> &OTProviderSender::RegisterOTs(
   std::shared_ptr<OTVectorSender> ot;
   switch (p) {
     case OTProtocol::GOT: {
-      ot = std::make_shared<GOTVectorSender>(i, num_ots, bitlen, data_storage_, Send);
+      ot = std::make_shared<GOTVectorSender>(i, next_vector_id_, num_ots, bitlen, data_storage_,
+                                             Send);
       break;
     }
     case OTProtocol::ACOT: {
-      ot = std::make_shared<COTVectorSender>(i, num_ots, bitlen, p, data_storage_, Send);
+      ot = std::make_shared<COTVectorSender>(i, next_vector_id_, num_ots, bitlen, p, data_storage_,
+                                             Send);
       break;
     }
     case OTProtocol::XCOT: {
-      ot = std::make_shared<COTVectorSender>(i, num_ots, bitlen, p, data_storage_, Send);
+      ot = std::make_shared<COTVectorSender>(i, next_vector_id_, num_ots, bitlen, p, data_storage_,
+                                             Send);
       break;
     }
     case OTProtocol::ROT: {
-      ot = std::make_shared<ROTVectorSender>(i, num_ots, bitlen, data_storage_, Send);
+      ot = std::make_shared<ROTVectorSender>(i, next_vector_id_, num_ots, bitlen, data_storage_,
+                                             Send);
       break;
     }
     default:
       throw std::runtime_error("Unknown OT protocol");
   }
+  ++next_vector_id_;
   return sender_data_.insert(std::pair(i, ot)).first->second;
+}
+
+void OTProviderSender::Clear() {
+  data_storage_->GetBaseOTsSenderData()->consumed_offset_ += total_ots_count_;
+  total_ots_count_ = 0;
+
+  auto &ote = data_storage_->GetOTExtensionSenderData();
+  {
+    std::scoped_lock lock(ote->setup_finished_cond_->GetMutex());
+    ote->setup_finished_ = false;
+  }
+  {
+    std::scoped_lock lock(ote->corrections_mutex_);
+    ote->received_correction_offsets_.clear();
+  }
+
+  ote->num_u_received_ = 0;
+}
+
+void OTProviderSender::Reset() {
+  Clear();
+  // TODO
 }
 
 std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::GetOTs(std::size_t offset) {
@@ -745,7 +763,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
                       std::scoped_lock lock(data->received_outputs_mutex_);
                       return data->received_outputs_.find(i) != data->received_outputs_.end();
                     }));
-      data->output_conditions_.insert(std::move(e));
+      data->output_conds_.insert(std::move(e));
     }
     {
       auto &&e =
@@ -761,28 +779,56 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
 
   switch (p) {
     case OTProtocol::GOT: {
-      ot = std::make_shared<GOTVectorReceiver>(i, num_ots, bitlen, data_storage_, Send);
+      ot = std::make_shared<GOTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, data_storage_,
+                                               Send);
       break;
     }
     case OTProtocol::XCOT: {
-      ot = std::make_shared<COTVectorReceiver>(i, num_ots, bitlen, p, data_storage_, Send);
+      ot = std::make_shared<COTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, p,
+                                               data_storage_, Send);
       break;
     }
     case OTProtocol::ACOT: {
-      ot = std::make_shared<COTVectorReceiver>(i, num_ots, bitlen, p, data_storage_, Send);
+      ot = std::make_shared<COTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, p,
+                                               data_storage_, Send);
       break;
     }
     case OTProtocol::ROT: {
-      ot = std::make_shared<ROTVectorReceiver>(i, num_ots, bitlen, data_storage_, Send);
+      ot = std::make_shared<ROTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, data_storage_,
+                                               Send);
       break;
     }
     default:
       throw std::runtime_error("Unknown OT protocol");
   }
 
+  ++next_vector_id_;
   auto &&e = std::pair(i, ot);
   data_storage_->GetOTExtensionReceiverData()->real_choices_->Resize(total_ots_count_, false);
   return receiver_data_.insert(std::move(e)).first->second;
 }
+
+void OTProviderReceiver::Clear() {
+  data_storage_->GetBaseOTsReceiverData()->consumed_offset_ += total_ots_count_;
+  total_ots_count_ = 0;
+
+  auto &ote = data_storage_->GetOTExtensionReceiverData();
+
+  {
+    std::scoped_lock lock(ote->setup_finished_cond_->GetMutex());
+    ote->setup_finished_ = false;
+  }
+
+  {
+    std::scoped_lock lock(ote->real_choices_mutex_);
+    ote->set_real_choices_.clear();
+  }
+
+  {
+    std::scoped_lock lock(ote->received_outputs_mutex_);
+    ote->received_outputs_.clear();
+  }
+}
+void OTProviderReceiver::Reset() { Clear(); }
 
 }

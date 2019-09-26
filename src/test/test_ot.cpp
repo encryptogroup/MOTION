@@ -181,7 +181,7 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Run();
+              abyn_parties.at(i)->Run(2);
               abyn_parties.at(i)->Finish();
             });
       }
@@ -285,7 +285,7 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
               }
             }
           }
-          abyn_parties.at(i)->Run();
+          abyn_parties.at(i)->Run(2);
 
           for (auto j = 0u; j < abyn_parties.size(); ++j) {
             if (i != j) {
@@ -402,7 +402,7 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Run();
+              abyn_parties.at(i)->Run(2);
               for (auto j = 0u; j < abyn_parties.size(); ++j) {
                 if (i != j) {
                   for (auto k = 0ull; k < num_ots; ++k) {
@@ -532,7 +532,7 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Run();
+              abyn_parties.at(i)->Run(2);
 
               for (auto j = 0u; j < abyn_parties.size(); ++j) {
                 if (i != j) {

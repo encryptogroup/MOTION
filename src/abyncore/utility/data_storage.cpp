@@ -56,9 +56,9 @@ BaseOTsSenderData::BaseOTsSenderData() {
 
 DataStorage::DataStorage(std::size_t id) : id_(id) {
   // Initialize forward-declared structs and their conditions conditions
-  rcv_hello_msg_cond =
+  rcv_hello_msg_cond_ =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !received_hello_message_.empty(); });
-  snt_hello_msg_cond =
+  snt_hello_msg_cond_ =
       std::make_shared<ENCRYPTO::Condition>([this]() { return !sent_hello_message_.empty(); });
 
   base_ots_receiver_data_ = std::make_unique<BaseOTsReceiverData>();
@@ -76,13 +76,13 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
         return ot_extension_sender_data_->num_u_received_ == ot_extension_sender_data_->u_.size();
       });
 
-  ot_extension_sender_data_->setup_finished_condition_ = std::make_unique<ENCRYPTO::Condition>(
+  ot_extension_sender_data_->setup_finished_cond_ = std::make_unique<ENCRYPTO::Condition>(
       [this]() { return ot_extension_sender_data_->setup_finished_; });
 
-  ot_extension_receiver_data_->setup_finished_condition_ = std::make_unique<ENCRYPTO::Condition>(
+  ot_extension_receiver_data_->setup_finished_cond_ = std::make_unique<ENCRYPTO::Condition>(
       [this]() { return ot_extension_receiver_data_->setup_finished_; });
 
-  sync_condition_ = std::make_shared<ENCRYPTO::Condition>(
+  sync_cond_ = std::make_shared<ENCRYPTO::Condition>(
       [this]() { return sync_state_received_ >= sync_state_actual_; });
 }
 
@@ -96,15 +96,15 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
   {
     // prevents inserting new elements while searching while GetOutputMessage() is called
     std::scoped_lock lock(output_message_mutex_);
-    if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
+    if (output_message_conds_.find(gate_id) == output_message_conds_.end()) {
       cond = std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
         std::scoped_lock lock(output_message_mutex_);
         return received_output_messages_.find(gate_id) != received_output_messages_.end();
       });
       // don't need to check anything
-      output_message_conditions_.emplace(gate_id, cond);
+      output_message_conds_.emplace(gate_id, cond);
     } else {
-      cond = output_message_conditions_.find(gate_id)->second;
+      cond = output_message_conds_.find(gate_id)->second;
     }
 
     {
@@ -129,14 +129,14 @@ const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::siz
   {
     std::scoped_lock lock(output_message_mutex_);
     // create condition if there is no
-    if (output_message_conditions_.find(gate_id) == output_message_conditions_.end()) {
-      output_message_conditions_.emplace(
+    if (output_message_conds_.find(gate_id) == output_message_conds_.end()) {
+      output_message_conds_.emplace(
           gate_id, std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
             std::scoped_lock lock(output_message_mutex_);
             return received_output_messages_.find(gate_id) != received_output_messages_.end();
           }));
     }
-    cond = output_message_conditions_.find(gate_id)->second;
+    cond = output_message_conds_.find(gate_id)->second;
   }
 
   Helpers::WaitFor(*cond);
@@ -151,10 +151,10 @@ const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::siz
 
 void DataStorage::SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message) {
   {
-    std::scoped_lock<std::mutex> lock(rcv_hello_msg_cond->GetMutex());
+    std::scoped_lock<std::mutex> lock(rcv_hello_msg_cond_->GetMutex());
     received_hello_message_ = std::move(hello_message);
   }
-  rcv_hello_msg_cond->NotifyAll();
+  rcv_hello_msg_cond_->NotifyAll();
 }
 
 const Communication::HelloMessage *DataStorage::GetReceivedHelloMessage() {
@@ -168,11 +168,11 @@ const Communication::HelloMessage *DataStorage::GetReceivedHelloMessage() {
 
 void DataStorage::SetSentHelloMessage(const std::uint8_t *message, std::size_t size) {
   {
-    std::scoped_lock<std::mutex> lock(snt_hello_msg_cond->GetMutex());
+    std::scoped_lock<std::mutex> lock(snt_hello_msg_cond_->GetMutex());
     std::vector<std::uint8_t> buf(message, message + size);
     SetSentHelloMessage(std::move(buf));
   }
-  snt_hello_msg_cond->NotifyAll();
+  snt_hello_msg_cond_->NotifyAll();
 }
 
 const Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
@@ -186,7 +186,7 @@ const Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
 
 void DataStorage::Reset() {
   Clear();
-  output_message_conditions_.clear();
+  output_message_conds_.clear();
 }
 
 void DataStorage::Clear() {
@@ -196,24 +196,24 @@ void DataStorage::Clear() {
 
 void DataStorage::SetReceivedSyncState(const std::size_t state) {
   {
-    std::scoped_lock lock(sync_condition_->GetMutex());
+    std::scoped_lock lock(sync_cond_->GetMutex());
     if (state > sync_state_received_) {
       sync_state_received_ = state;
     }
   }
-  sync_condition_->NotifyAll();
+  sync_cond_->NotifyAll();
 }
 
 std::size_t DataStorage::IncrementMySyncState() {
   {
-    std::scoped_lock lock(sync_condition_->GetMutex());
+    std::scoped_lock lock(sync_cond_->GetMutex());
     ++sync_state_actual_;
   }
-  sync_condition_->NotifyAll();
+  sync_cond_->NotifyAll();
   return sync_state_actual_;
 }
 
-std::shared_ptr<ENCRYPTO::Condition> &DataStorage::GetSyncCondition() { return sync_condition_; }
+std::shared_ptr<ENCRYPTO::Condition> &DataStorage::GetSyncCondition() { return sync_cond_; }
 
 void DataStorage::BaseOTsReceived(const std::uint8_t *message, const BaseOTsDataType type,
                                   const std::size_t ot_id) {
@@ -280,7 +280,6 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
         }
         ENCRYPTO::BitVector<> local_corrections(message, num_ots->second);
         ot_extension_sender_data_->corrections_.Copy(i, i + num_ots->second, local_corrections);
-
         ot_extension_sender_data_->received_correction_offsets_.emplace(i);
       }
       cond->second->NotifyAll();
@@ -288,10 +287,10 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
     }
     case OTExtensionDataType::snd_messages: {
       {
-        ABYN::Helpers::WaitFor(*ot_extension_receiver_data_->setup_finished_condition_);
+        ABYN::Helpers::WaitFor(*ot_extension_receiver_data_->setup_finished_cond_);
 
-        auto it_c = ot_extension_receiver_data_->output_conditions_.find(i);
-        if (it_c == ot_extension_receiver_data_->output_conditions_.end()) {
+        auto it_c = ot_extension_receiver_data_->output_conds_.find(i);
+        if (it_c == ot_extension_receiver_data_->output_conds_.end()) {
           throw std::runtime_error(fmt::format(
               "Could not find Condition for OT#{} OTExtensionDataType::snd_messages", i));
         }

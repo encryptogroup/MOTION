@@ -765,7 +765,7 @@ TEST(ABYNBooleanGMW, XOR_64_bit_200_SIMD_2_3_4_5_10_parties) {
   }
 }
 
-TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
+TEST(ABYNBooleanGMW, AND_1_bit_1_1K_SIMD_2_3_parties) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     constexpr auto BGMW = ABYN::MPCProtocol::BooleanGMW;
     std::srand(std::time(nullptr));
@@ -775,13 +775,13 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
       for (auto j = 0ull; j < global_input_1.size(); ++j) {
         global_input_1.at(j) = (std::rand() % 2) == 1;
       }
-      std::vector<ENCRYPTO::BitVector<>> global_input_20(num_parties);
+      std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties);
 
-      for (auto j = 0ull; j < global_input_20.size(); ++j) {
-        global_input_20.at(j) = ENCRYPTO::BitVector<>::Random(20);
+      for (auto j = 0ull; j < global_input_1K.size(); ++j) {
+        global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(1000);
       }
       bool dummy_input_1 = false;
-      ENCRYPTO::BitVector<> dummy_input_1K(20, false);
+      ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
       try {
         std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : abyn_parties) {
@@ -796,7 +796,7 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
             if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
               s_in_1.push_back(
                   abyn_parties.at(party_id)->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
-              s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(global_input_20.at(j), j));
+              s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(global_input_1K.at(j), j));
             } else {
               s_in_1.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
               s_in_1K.push_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1K, j));
@@ -831,7 +831,7 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
             EXPECT_EQ(wire_1->GetValuesOnWire().Get(0),
                       ENCRYPTO::BitVector<>::ANDReduceBitVector(global_input_1));
             EXPECT_EQ(wire_1K->GetValuesOnWire(),
-                      ENCRYPTO::BitVector<>::ANDBitVectors(global_input_20));
+                      ENCRYPTO::BitVector<>::ANDBitVectors(global_input_1K));
           }
 
           {
@@ -846,7 +846,7 @@ TEST(ABYNBooleanGMW, AND_1_bit_1_20_SIMD_2_3_parties) {
             EXPECT_EQ(wire_1->GetValuesOnWire().Get(0),
                       ENCRYPTO::BitVector<>::ANDReduceBitVector(global_input_1));
             EXPECT_EQ(wire_1K->GetValuesOnWire(),
-                      ENCRYPTO::BitVector<>::ANDBitVectors(global_input_20));
+                      ENCRYPTO::BitVector<>::ANDBitVectors(global_input_1K));
           }
         };
 

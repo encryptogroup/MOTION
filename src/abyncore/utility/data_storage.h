@@ -60,6 +60,9 @@ struct BaseOTsReceiverData {
   ENCRYPTO::BitVector<> received_S_;
   std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_S_condition_;
 
+  // number of used rows;
+  std::size_t consumed_offset_{0};
+
   bool is_ready_ = false;
   std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
 };
@@ -74,6 +77,9 @@ struct BaseOTsSenderData {
   std::vector<std::array<std::byte, 32>> R_;
   ENCRYPTO::BitVector<> received_R_;
   std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_R_condition_;
+
+  // number of used rows;
+  std::size_t consumed_offset_{0};
 
   std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
   bool is_ready_ = false;
@@ -104,7 +110,7 @@ struct OTExtensionSenderData {
   std::vector<ENCRYPTO::BitVector<>> y0_, y1_;
   std::vector<std::size_t> bitlengths_;
 
-  std::unique_ptr<ENCRYPTO::Condition> setup_finished_condition_;
+  std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
   bool setup_finished_ = false;
 };
 
@@ -115,7 +121,7 @@ struct OTExtensionReceiverData {
   // for received messages but only for the first OT id in the batch. Thus, use a hash table.
   std::unordered_set<std::size_t> received_outputs_;
   std::vector<ENCRYPTO::BitVector<>> outputs_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conditions_;
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conds_;
   std::mutex received_outputs_mutex_;
 
   std::unordered_map<std::size_t, std::size_t> num_messages_;
@@ -131,7 +137,7 @@ struct OTExtensionReceiverData {
 
   std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
 
-  std::unique_ptr<ENCRYPTO::Condition> setup_finished_condition_;
+  std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
   bool setup_finished_ = false;
 };
 
@@ -160,7 +166,7 @@ class DataStorage {
 
   const Communication::HelloMessage *GetReceivedHelloMessage();
 
-  ENCRYPTO::ConditionPtr &GetReceivedHelloMessageCondition() { return rcv_hello_msg_cond; }
+  ENCRYPTO::ConditionPtr &GetReceivedHelloMessageCondition() { return rcv_hello_msg_cond_; }
 
   void SetSentHelloMessage(std::vector<std::uint8_t> &&hello_message) {
     sent_hello_message_ = std::move(hello_message);
@@ -170,7 +176,7 @@ class DataStorage {
 
   const Communication::HelloMessage *GetSentHelloMessage();
 
-  ENCRYPTO::ConditionPtr &GetSentHelloMessageCondition() { return snt_hello_msg_cond; }
+  ENCRYPTO::ConditionPtr &GetSentHelloMessageCondition() { return snt_hello_msg_cond_; }
 
   void Reset();
 
@@ -198,7 +204,7 @@ class DataStorage {
 
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;
-  ENCRYPTO::ConditionPtr rcv_hello_msg_cond, snt_hello_msg_cond, sync_condition_;
+  ENCRYPTO::ConditionPtr rcv_hello_msg_cond_, snt_hello_msg_cond_, sync_cond_;
 
   ENCRYPTO::AlignedBitVector fixed_key_aes_key_;
 
@@ -207,7 +213,7 @@ class DataStorage {
   // id, buffer
   std::unordered_map<std::size_t, std::vector<std::uint8_t>> received_output_messages_;
   // id, condition
-  std::unordered_map<std::size_t, ENCRYPTO::ConditionPtr> output_message_conditions_;
+  std::unordered_map<std::size_t, ENCRYPTO::ConditionPtr> output_message_conds_;
 
   std::unique_ptr<BaseOTsReceiverData> base_ots_receiver_data_;
   std::unique_ptr<BaseOTsSenderData> base_ots_sender_data_;
