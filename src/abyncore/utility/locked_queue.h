@@ -50,14 +50,18 @@ class LockedQueue {
    * Adds a new element to the queue.
    */
   void enqueue(const T& item) {
-    std::unique_lock<std::timed_mutex> lock(mutex_);
-    queue_.push(item);
+    {
+      std::scoped_lock<std::timed_mutex> lock(mutex_);
+      queue_.push(item);
+    }
     cv_.notify_one();
   }
 
   void enqueue(T&& item) {
-    std::unique_lock<std::timed_mutex> lock(mutex_);
-    queue_.push(item);
+    {
+      std::scoped_lock<std::timed_mutex> lock(mutex_);
+      queue_.push(item);
+    }
     cv_.notify_one();
   }
 
