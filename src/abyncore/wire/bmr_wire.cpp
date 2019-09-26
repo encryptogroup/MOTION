@@ -23,3 +23,44 @@
 // SOFTWARE.
 
 #include "bmr_wire.h"
+
+#include "base/backend.h"
+
+namespace ABYN::Wires {
+BMRWire::BMRWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant) {
+  public_values_ = std::move(values);
+  backend_ = backend;
+  is_constant_ = is_constant;
+  num_of_parallel_values_ = public_values_.GetSize();
+  InitializationHelper();
+  InitializationHelperBMR();
+}
+
+BMRWire::BMRWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
+                 bool is_constant) {
+  public_values_ = values;
+  backend_ = backend;
+  is_constant_ = is_constant;
+  num_of_parallel_values_ = public_values_.GetSize();
+  InitializationHelper();
+  InitializationHelperBMR();
+}
+
+BMRWire::BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
+  public_values_.Append(value);
+  backend_ = backend;
+  is_constant_ = is_constant;
+  num_of_parallel_values_ = 1;
+  InitializationHelper();
+  InitializationHelperBMR();
+}
+
+void BMRWire::InitializationHelperBMR() {
+  const auto backend = GetBackend().lock();
+  assert(backend);
+  const auto num_parties = backend->GetConfig()->GetNumOfParties();
+  keys_a_.resize(num_parties);
+  keys_b_.resize(num_parties);
+  shared_permutation_bits_ = ENCRYPTO::BitVector<>::Random(num_of_parallel_values_);
+}
+}

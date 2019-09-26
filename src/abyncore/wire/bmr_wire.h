@@ -28,6 +28,47 @@
 
 #include "utility/bit_vector.h"
 
-namespace ABYN{
+namespace ABYN::Wires {
 
-}
+class BMRWire : BooleanWire {
+ public:
+  BMRWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant = false);
+
+  BMRWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
+          bool is_constant = false);
+
+  BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant = false);
+
+  ~BMRWire() final = default;
+
+  MPCProtocol GetProtocol() const final { return MPCProtocol::BMR; }
+
+  BMRWire() = delete;
+
+  BMRWire(BMRWire &) = delete;
+
+  std::size_t GetBitLength() const final { return 1; }
+
+  const ENCRYPTO::BitVector<> &GetPublicValuesOnWire() const { return public_values_; }
+
+  ENCRYPTO::BitVector<> &GetPublicMutableValuesOnWire() { return public_values_; }
+
+  const ENCRYPTO::BitVector<> &GetPermutationBitsOnWire() const { return shared_permutation_bits_; }
+
+  ENCRYPTO::BitVector<> &GetMutablePermutationBitsOnWire() { return shared_permutation_bits_; }
+
+  const auto GetKeysOnWire() const {
+    return std::make_pair(std::cref(keys_a_), std::cref(keys_b_));
+  }
+
+  auto GetMutableKeysOnWire() { return std::make_pair(std::ref(keys_a_), std::ref(keys_b_)); }
+
+ private:
+  void InitializationHelperBMR();
+
+  ENCRYPTO::BitVector<> public_values_, shared_permutation_bits_;
+  std::vector<ENCRYPTO::BitVector<>> keys_a_, keys_b_;
+};
+
+using BMRWirePtr = std::shared_ptr<BMRWire>;
+}  // namespace ABYN::Wires

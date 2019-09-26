@@ -132,17 +132,4 @@ class BooleanWire : public Wire {
 
 using BooleanWirePtr = std::shared_ptr<BooleanWire>;
 
-class BMRWire : BooleanWire {
- public:
-  ~BMRWire() final = default;
-
-  MPCProtocol GetProtocol() const final { return MPCProtocol::BMR; }
-
-  BMRWire() = delete;
-
-  BMRWire(BMRWire &) = delete;
-};
-
-using BMRWirePtr = std::shared_ptr<BMRWire>;
-
 }  // namespace ABYN::Wires
