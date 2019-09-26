@@ -72,10 +72,13 @@ class Logger {
  private:
   boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>>
       g_file_sink;
-  logger_type logger_;
+  std::unique_ptr<logger_type> logger_;
   const std::size_t my_id_;
-  bool logging_enabled_ = true;
+  std::atomic<bool> logging_enabled_ = true;
   std::mutex write_mutex_;
+
+  // aquire this on calls to boost::log::core
+  static std::mutex boost_log_core_mutex_;
 
   Logger() = delete;
 };

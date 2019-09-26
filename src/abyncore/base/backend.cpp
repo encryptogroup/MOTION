@@ -25,6 +25,7 @@
 #include "backend.h"
 
 #include <functional>
+#include <future>
 #include <iterator>
 
 #include <fmt/format.h>
@@ -198,49 +199,45 @@ void Backend::EvaluateSequential() {
 }
 
 void Backend::EvaluateParallel() {
-  const bool needs_mts = GetMTProvider()->NeedMTs();
-#pragma omp parallel sections
-  {
-#pragma omp section
-    {
-      register_->GetLogger()->LogInfo(
-          "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
-      {
-        if (needs_mts) {
-          mt_provider_->PreSetup();
-        }
-        const bool need_ots = NeedOTs();
-        if (need_ots) {
-          OTExtensionSetup();
-          if (needs_mts) {
-            mt_provider_->Setup();
-          }
-        }
+  register_->GetLogger()->LogInfo(
+      "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
+
+  // Run preprocessing setup in a separate thread
+  auto f_setup = std::async(std::launch::async, [this] {
+    const bool needs_mts = mt_provider_->NeedMTs();
+    if (needs_mts) {
+      mt_provider_->PreSetup();
+    }
+    const bool need_ots = NeedOTs();
+    if (need_ots) {
+      OTExtensionSetup();
+      if (needs_mts) {
+        mt_provider_->Setup();
       }
     }
-#pragma omp section
-    {
-      for (auto &input_gate : register_->GetInputGates()) {
-        register_->AddToActiveQueue(input_gate->GetID());
-      }
-      boost::asio::thread_pool pool(
-          std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
-      while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-        const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-        const auto d = gate_id >= 0 ? std::chrono::milliseconds(0) : std::chrono::microseconds(100);
-        if (gate_id < 0) {
-          std::this_thread::sleep_for(d);
-          continue;
-        }
-        boost::asio::post(pool, [this, gate_id]() {
-          auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-          gate->EvaluateSetup();
-          gate->EvaluateOnline();
-        });
-      }
-      pool.join();
-    }
+  });
+
+  // Run setup and online phase of circuit evaluation
+  for (auto &input_gate : register_->GetInputGates()) {
+    register_->AddToActiveQueue(input_gate->GetID());
   }
+  boost::asio::thread_pool pool(
+      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
+    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
+    if (gate_id < 0) {
+      std::this_thread::sleep_for(std::chrono::microseconds(100));
+      continue;
+    }
+    boost::asio::post(pool, [this, gate_id]() {
+      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
+      gate->EvaluateSetup();
+      gate->EvaluateOnline();
+    });
+  }
+  pool.join();
+
+  f_setup.get();
 }
 
 void Backend::TerminateCommunication() {
@@ -372,49 +369,66 @@ void Backend::Sync() {
 }
 
 void Backend::ComputeBaseOTs() {
+  if constexpr (ABYN_DEBUG) {
+    register_->GetLogger()->LogDebug("Start computing base OTs");
+  }
+
+  std::vector<std::future<void>> task_futures;
+  std::vector<std::unique_ptr<OT_HL17>> base_ots;
+  std::vector<std::shared_ptr<DataStorage>> data_storages;
+
+  task_futures.reserve(2 * (config_->GetNumOfParties() - 1));
+  base_ots.reserve(config_->GetNumOfParties());
+  data_storages.reserve(config_->GetNumOfParties());
+
   for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
     if (i == config_->GetMyId()) {
+      data_storages.push_back(nullptr);
+      base_ots.emplace_back(nullptr);
       continue;
     }
 
     auto send_function = [this, i](flatbuffers::FlatBufferBuilder &&message) {
       Send(i, std::move(message));
     };
-    auto &data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
-    auto base_ots = std::make_unique<OT_HL17>(send_function, data_storage);
-#pragma omp parallel sections num_threads(3)
-    {
-#pragma omp section
-      {
-        auto choices = ENCRYPTO::BitVector<>::Random(128);
-        auto chosen_messages = base_ots->recv(choices);  // sender base ots
-        auto &receiver_data = data_storage->GetBaseOTsReceiverData();
-        receiver_data->c_ = std::move(choices);
-        for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
-          auto b = receiver_data->messages_c_.at(i).begin();
-          std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
-        }
-        std::scoped_lock lock(receiver_data->is_ready_condition_->GetMutex());
-        receiver_data->is_ready_ = true;
+    auto data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
+    data_storages.push_back(data_storage);
+    base_ots.emplace_back(std::make_unique<OT_HL17>(send_function, data_storage));
+
+    task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
+      auto choices = ENCRYPTO::BitVector<>::Random(128);
+      auto chosen_messages = base_ots[i]->recv(choices);  // sender base ots
+      auto &receiver_data = data_storages[i]->GetBaseOTsReceiverData();
+      receiver_data->c_ = std::move(choices);
+      for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
+        auto b = receiver_data->messages_c_.at(i).begin();
+        std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
       }
-#pragma omp section
-      {
-        auto both_messages = base_ots->send(128);  // receiver base ots
-        auto &sender_data = data_storage->GetBaseOTsSenderData();
-        for (std::size_t i = 0; i < both_messages.size(); ++i) {
-          auto b = sender_data->messages_0_.at(i).begin();
-          std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
-        }
-        for (std::size_t i = 0; i < both_messages.size(); ++i) {
-          auto b = sender_data->messages_1_.at(i).begin();
-          std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
-        }
-        std::scoped_lock lock(sender_data->is_ready_condition_->GetMutex());
-        sender_data->is_ready_ = true;
+      std::scoped_lock lock(receiver_data->is_ready_condition_->GetMutex());
+      receiver_data->is_ready_ = true;
+    }));
+
+    task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
+      auto both_messages = base_ots[i]->send(128);  // receiver base ots
+      auto &sender_data = data_storages[i]->GetBaseOTsSenderData();
+      for (std::size_t i = 0; i < both_messages.size(); ++i) {
+        auto b = sender_data->messages_0_.at(i).begin();
+        std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
       }
-    }
+      for (std::size_t i = 0; i < both_messages.size(); ++i) {
+        auto b = sender_data->messages_1_.at(i).begin();
+        std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
+      }
+      std::scoped_lock lock(sender_data->is_ready_condition_->GetMutex());
+      sender_data->is_ready_ = true;
+    }));
   }
+  std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
   base_ots_finished_ = true;
+
+  if constexpr (ABYN_DEBUG) {
+    register_->GetLogger()->LogDebug("Finished computing base OTs");
+  }
 }
 
 void Backend::ImportBaseOTs(std::size_t i) {
@@ -485,20 +499,28 @@ void Backend::OTExtensionSetup() {
     ComputeBaseOTs();
   }
 
-#pragma omp parallel for num_threads(config_->GetNumOfParties())
+  if constexpr (ABYN_DEBUG) {
+    register_->GetLogger()->LogDebug("Start computing setup for OTExtensions");
+  }
+
+  std::vector<std::future<void>> task_futures;
+  task_futures.reserve(2 * (config_->GetNumOfParties() - 1));
+
   for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
     if (i == config_->GetMyId()) {
       continue;
     }
-#pragma omp parallel sections num_threads(3) default(none) shared(ot_provider_, i)
-    {
-#pragma omp section
-      { ot_provider_.at(i)->SendSetup(); }
-#pragma omp section
-      { ot_provider_.at(i)->ReceiveSetup(); }
-    }
+    task_futures.emplace_back(
+        std::async(std::launch::async, [this, i] { ot_provider_.at(i)->SendSetup(); }));
+    task_futures.emplace_back(
+        std::async(std::launch::async, [this, i] { ot_provider_.at(i)->ReceiveSetup(); }));
   }
 
+  std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
   ot_extension_finished_ = true;
+
+  if constexpr (ABYN_DEBUG) {
+    register_->GetLogger()->LogDebug("Finished setup for OTExtensions");
+  }
 }
-}
+}  // namespace ABYN

@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -34,6 +34,7 @@
 #include "utility/condition.h"
 #include "utility/constants.h"
 #include "utility/data_storage.h"
+#include "utility/locked_queue.h"
 #include "utility/logger.h"
 
 namespace ABYN::Communication {
@@ -58,17 +59,14 @@ std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
 }
 
 Handler::Handler(ContextPtr &context, const LoggerPtr &logger)
-    : context_(context), logger_(logger) {
+    : context_(context),
+      logger_(logger),
+      lqueue_receive_(std::make_unique<ENCRYPTO::LockedQueue<std::vector<std::uint8_t>>>()),
+      lqueue_send_(std::make_unique<ENCRYPTO::LockedQueue<std::vector<std::uint8_t>>>()) {
   handler_info_ =
       fmt::format("Party#{} handler with end ip {}, local port {}, remote port {}",
                   context->GetId(), context->GetIp(), context->GetSocket()->local_endpoint().port(),
                   context->GetSocket()->remote_endpoint().port());
-
-  received_new_msg_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return !queue_receive_.empty(); });
-
-  there_is_smth_to_send_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return !queue_send_.empty(); });
 
   sender_thread_ = std::thread([&]() { ActAsSender(); });
 
@@ -98,14 +96,10 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &&message) {
   }
   std::vector<std::uint8_t> buffer(message_raw_pointer,
                                    message_raw_pointer + message_detached.size());
-  {
-    std::scoped_lock lock(send_queue_mutex_, there_is_smth_to_send_->GetMutex());
-    queue_send_.push(std::move(buffer));
-  }
-  there_is_smth_to_send_->NotifyAll();
 
   logger_->LogTrace(fmt::format("{}: Have put a {}-byte message to send queue", handler_info_,
                                 message_detached.size()));
+  lqueue_send_->enqueue(std::move(buffer));
 }
 
 const BoostSocketPtr Handler::GetSocket() {
@@ -120,12 +114,7 @@ void Handler::TerminateCommunication() {
   auto message = BuildMessage(MessageType_TerminationMessage, nullptr);
   std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
                                    message.GetBufferPointer() + message.GetSize());
-  {
-    std::scoped_lock lock(send_queue_mutex_, there_is_smth_to_send_->GetMutex());
-    queue_send_.push(std::move(buffer));
-  }
-
-  there_is_smth_to_send_->NotifyAll();
+  lqueue_send_->enqueue(std::move(buffer));
 
   logger_->LogTrace(
       fmt::format("{}: Put a termination message message to send queue", handler_info_));
@@ -135,8 +124,7 @@ void Handler::TerminateCommunication() {
 
 void Handler::WaitForConnectionEnd() {
   while (continue_communication_) {
-    auto context_ptr = context_.lock();
-    if (queue_send_.empty() && queue_receive_.empty() && received_termination_message_ &&
+    if (lqueue_send_->empty() && lqueue_receive_->empty() && received_termination_message_ &&
         sent_termination_message_) {
       continue_communication_ = false;
       logger_->LogInfo(fmt::format("{}: terminated.", handler_info_));
@@ -148,53 +136,43 @@ void Handler::WaitForConnectionEnd() {
 
 void Handler::ActAsSender() {
   while (ContinueCommunication()) {
-    if (GetSendQueue().empty()) {
-      there_is_smth_to_send_->WaitFor(std::chrono::milliseconds(1));
-    }
+    auto tmp_queue = lqueue_send_->batch_dequeue(std::chrono::milliseconds(1));
 
-    if (!GetSendQueue().empty()) {
-      std::queue<std::vector<std::uint8_t>> tmp_queue;
-      {
-        std::scoped_lock<std::mutex, std::mutex> lock(GetSendMutex(),
-                                                      there_is_smth_to_send_->GetMutex());
-        tmp_queue = std::move(GetSendQueue());
+    while (!tmp_queue.empty()) {
+      auto &message = tmp_queue.front();
+
+      if constexpr (ABYN_VERBOSE_DEBUG) {
+        std::string s;
+        for (auto i = 0u; i < message.size(); ++i) {
+          s.append(fmt::format("{0:#x} ", message.at(i)));
+        }
+        logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}", GetInfo(),
+                                      message.size(), s));
       }
-      while (!tmp_queue.empty()) {
-        std::vector<std::uint8_t> &message = tmp_queue.front();
 
-        if constexpr (ABYN_VERBOSE_DEBUG) {
-          std::string s;
-          for (auto i = 0u; i < message.size(); ++i) {
-            s.append(fmt::format("{0:#x} ", message.at(i)));
-          }
-          logger_->LogTrace(fmt::format("{}: Written to the socket, size {}, message: {}",
-                                        GetInfo(), message.size(), s));
-        }
-
-        if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
-          throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
-                                               std::numeric_limits<std::uint32_t>::max(),
-                                               message.size())));
-        }
-
-        auto message_size = u32tou8(message.size());
-        message.insert(message.begin(), message_size.begin(), message_size.end());
-        boost::system::error_code ec;
-        auto boost_socket = GetSocket();
-        assert(boost_socket);
-        assert(boost_socket->is_open());
-        boost_socket->wait(boost::asio::ip::tcp::socket::wait_write, ec);
-        if (ec) {
-          throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
-        }
-        boost::asio::write(*boost_socket.get(), boost::asio::buffer(message),
-                           boost::asio::transfer_exactly(message.size()), ec);
-        if (ec) {
-          throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
-        }
-        bytes_sent_ += message.size() + sizeof(uint32_t);
-        tmp_queue.pop();
+      if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
+        throw(std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
+                                             std::numeric_limits<std::uint32_t>::max(),
+                                             message.size())));
       }
+
+      auto message_size = u32tou8(message.size());
+      message.insert(message.begin(), message_size.begin(), message_size.end());
+      boost::system::error_code ec;
+      auto boost_socket = GetSocket();
+      assert(boost_socket);
+      assert(boost_socket->is_open());
+      boost_socket->wait(boost::asio::ip::tcp::socket::wait_write, ec);
+      if (ec) {
+        throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
+      }
+      boost::asio::write(*boost_socket.get(), boost::asio::buffer(message),
+                         boost::asio::transfer_exactly(message.size()), ec);
+      if (ec) {
+        throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
+      }
+      bytes_sent_ += message.size() + sizeof(uint32_t);
+      tmp_queue.pop();
     }
   }
 }
@@ -239,13 +217,6 @@ void Handler::ActAsReceiver() {
           break;
         }
 
-        {
-          std::scoped_lock lock(GetReceiveMutex(), received_new_msg_->GetMutex());
-          GetReceiveQueue().push(std::move(message_buffer));
-        }
-        received_new_msg_->NotifyAll();
-        GetSocket()->non_blocking(false);
-
         if constexpr (ABYN_VERBOSE_DEBUG) {
           std::string s;
           for (auto i = 0u; i < message_buffer.size(); ++i) {
@@ -254,29 +225,22 @@ void Handler::ActAsReceiver() {
           GetLogger()->LogTrace(
               fmt::format("{}: Read message body of size {}, message: {}", GetInfo(), size, s));
         }
+
+        lqueue_receive_->enqueue(std::move(message_buffer));
       }
     });
     // separate thread for parsing received messages
     // TODO: consider >= 4GB messages.
     //#pragma omp task
     std::thread thread_parse([this]() {
-      while (ContinueCommunication() || !GetReceiveQueue().empty()) {
-        if (GetReceiveQueue().empty()) {
-          received_new_msg_->WaitFor(std::chrono::milliseconds(1));
-        }
-        if (!GetReceiveQueue().empty()) {
-          std::queue<std::vector<std::uint8_t>> tmp_queue;
-          {
-            std::scoped_lock lock(GetReceiveMutex(), received_new_msg_->GetMutex());
-            tmp_queue = std::move(GetReceiveQueue());
-          }
-          while (!tmp_queue.empty()) {
-            auto &message_buffer = tmp_queue.front();
-            auto shared_ptr_context = context_.lock();
-            assert(shared_ptr_context);
-            shared_ptr_context->ParseMessage(std::move(message_buffer));
-            tmp_queue.pop();
-          }
+      while (ContinueCommunication() || !lqueue_receive_->empty()) {
+        auto items = lqueue_receive_->batch_dequeue(std::chrono::milliseconds(1));
+        while (!items.empty()) {
+          auto &item = items.front();
+          auto shared_ptr_context = context_.lock();
+          assert(shared_ptr_context);
+          shared_ptr_context->ParseMessage(std::move(item));
+          items.pop();
         }
       }
     });
@@ -314,7 +278,6 @@ std::uint32_t Handler::ParseHeader() {
 
 std::vector<std::uint8_t> Handler::ParseBody(std::uint32_t size) {
   boost::system::error_code ec;
-  GetSocket()->non_blocking(false);
   std::vector<std::uint8_t> message_buffer(size);
   // get the message
   boost::asio::read(*GetSocket().get(), boost::asio::buffer(message_buffer),
@@ -406,12 +369,7 @@ void Handler::Sync() {
   auto message = BuildMessage(MessageType_SynchronizationMessage, &v);
   std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
                                    message.GetBufferPointer() + message.GetSize());
-  {
-    std::scoped_lock lock(send_queue_mutex_, there_is_smth_to_send_->GetMutex());
-    queue_send_.push(std::move(buffer));
-  }
-
-  there_is_smth_to_send_->NotifyOne();
+  lqueue_send_->enqueue(std::move(buffer));
 
   auto sync_condition = context->GetDataStorage()->GetSyncCondition();
   Helpers::WaitFor(*sync_condition);

@@ -29,6 +29,7 @@
 #include <unordered_set>
 
 #include <fmt/format.h>
+#include <boost/container/vector.hpp>
 
 #include "communication/fbs_headers/hello_message_generated.h"
 #include "communication/fbs_headers/message_generated.h"
@@ -57,7 +58,7 @@ struct BaseOTsReceiverData {
   std::array<std::array<std::byte, 16>, 128> messages_c_;
 
   std::vector<std::array<std::byte, 32>> S_;
-  ENCRYPTO::BitVector<> received_S_;
+  boost::container::vector<bool> received_S_;
   std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_S_condition_;
 
   // number of used rows;
@@ -75,7 +76,7 @@ struct BaseOTsSenderData {
   std::array<std::array<std::byte, 16>, 128> messages_1_;
 
   std::vector<std::array<std::byte, 32>> R_;
-  ENCRYPTO::BitVector<> received_R_;
+  boost::container::vector<bool> received_R_;
   std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_R_condition_;
 
   // number of used rows;
