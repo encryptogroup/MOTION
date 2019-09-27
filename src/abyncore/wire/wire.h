@@ -90,11 +90,11 @@ class Wire {
 
   // flagging variables as constants is useful, since this allows for tricks,
   // such as non-interactive multiplication by a constant in (arithmetic) GMW
-  bool is_constant_ = false;
+  std::atomic<bool> is_constant_ = false;
 
   // is ready flag is needed for callbacks, i.e.,
   // gates will wait for wires to be evaluated to proceed with their evaluation
-  bool is_done_ = false;
+  std::atomic<bool> is_done_ = false;
 
   std::shared_ptr<ENCRYPTO::Condition> is_done_condition_;
 
@@ -106,7 +106,7 @@ class Wire {
 
   Wire();
 
-  static void SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> reg);
+  static void SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> backend);
 
   void InitializationHelper();
 
