@@ -37,7 +37,7 @@ class ArithmeticWire : public Wire {
     is_constant_ = is_constant;
     backend_ = backend;
     values_ = std::move(values);
-    num_of_parallel_values_ = values_.size();
+    n_simd_ = values_.size();
     InitializationHelper();
   }
 
@@ -46,7 +46,7 @@ class ArithmeticWire : public Wire {
     is_constant_ = is_constant;
     backend_ = backend;
     values_ = values;
-    num_of_parallel_values_ = values_.size();
+    n_simd_ = values_.size();
     InitializationHelper();
   }
 
@@ -54,7 +54,7 @@ class ArithmeticWire : public Wire {
     is_constant_ = is_constant;
     backend_ = backend;
     values_.push_back(t);
-    num_of_parallel_values_ = 1;
+    n_simd_ = 1;
     InitializationHelper();
   }
 

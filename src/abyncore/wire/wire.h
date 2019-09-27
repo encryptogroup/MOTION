@@ -86,7 +86,7 @@ class Wire {
  protected:
 
   /// Number of values that are _logically_ processed in parallel
-  std::size_t num_of_parallel_values_ = 0;
+  std::size_t n_simd_ = 0;
 
   // flagging variables as constants is useful, since this allows for tricks,
   // such as non-interactive multiplication by a constant in (arithmetic) GMW

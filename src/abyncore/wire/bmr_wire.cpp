@@ -27,11 +27,21 @@
 #include "base/backend.h"
 
 namespace ABYN::Wires {
+BMRWire::BMRWire(const std::size_t bitlen, const std::size_t n_simd, std::weak_ptr<Backend> backend,
+                 bool is_constant) {
+  public_values_ = decltype(public_values_)(bitlen, n_simd);
+  backend_ = backend;
+  is_constant_ = is_constant;
+  n_simd_ = n_simd;
+  InitializationHelper();
+  InitializationHelperBMR();
+}
+
 BMRWire::BMRWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant) {
   public_values_ = std::move(values);
   backend_ = backend;
   is_constant_ = is_constant;
-  num_of_parallel_values_ = public_values_.GetSize();
+  n_simd_ = public_values_.GetSize();
   InitializationHelper();
   InitializationHelperBMR();
 }
@@ -41,7 +51,7 @@ BMRWire::BMRWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> bac
   public_values_ = values;
   backend_ = backend;
   is_constant_ = is_constant;
-  num_of_parallel_values_ = public_values_.GetSize();
+  n_simd_ = public_values_.GetSize();
   InitializationHelper();
   InitializationHelperBMR();
 }
@@ -50,7 +60,7 @@ BMRWire::BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
   public_values_.Append(value);
   backend_ = backend;
   is_constant_ = is_constant;
-  num_of_parallel_values_ = 1;
+  n_simd_ = 1;
   InitializationHelper();
   InitializationHelperBMR();
 }
@@ -58,9 +68,7 @@ BMRWire::BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
 void BMRWire::InitializationHelperBMR() {
   const auto backend = GetBackend().lock();
   assert(backend);
-  const auto num_parties = backend->GetConfig()->GetNumOfParties();
-  keys_a_.resize(num_parties);
-  keys_b_.resize(num_parties);
-  shared_permutation_bits_ = ENCRYPTO::BitVector<>::Random(num_of_parallel_values_);
+  keys_.resize(backend->GetConfig()->GetNumOfParties());
+  shared_permutation_bits_ = ENCRYPTO::BitVector<>::Random(n_simd_);
 }
 }

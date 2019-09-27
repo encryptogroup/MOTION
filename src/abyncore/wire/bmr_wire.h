@@ -32,6 +32,9 @@ namespace ABYN::Wires {
 
 class BMRWire : BooleanWire {
  public:
+  BMRWire(const std::size_t bitlen, const std::size_t n_simd, std::weak_ptr<Backend> backend,
+          bool is_constant = false);
+
   BMRWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant = false);
 
   BMRWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
@@ -57,17 +60,15 @@ class BMRWire : BooleanWire {
 
   ENCRYPTO::BitVector<> &GetMutablePermutationBitsOnWire() { return shared_permutation_bits_; }
 
-  const auto GetKeysOnWire() const {
-    return std::make_pair(std::cref(keys_a_), std::cref(keys_b_));
-  }
+  const auto &GetKeysOnWire() const { return keys_; }
 
-  auto GetMutableKeysOnWire() { return std::make_pair(std::ref(keys_a_), std::ref(keys_b_)); }
+  auto &GetMutableKeysOnWire() { return keys_; }
 
  private:
   void InitializationHelperBMR();
 
   ENCRYPTO::BitVector<> public_values_, shared_permutation_bits_;
-  std::vector<ENCRYPTO::BitVector<>> keys_a_, keys_b_;
+  std::vector<ENCRYPTO::BitVector<>> keys_;
 };
 
 using BMRWirePtr = std::shared_ptr<BMRWire>;

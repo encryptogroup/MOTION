@@ -33,7 +33,7 @@
 
 namespace ABYN::Wires {
 
-std::size_t Wire::GetNumOfParallelValues() const { return num_of_parallel_values_; }
+std::size_t Wire::GetNumOfParallelValues() const { return n_simd_; }
 
 Wire::Wire() {
   is_done_condition_ = std::make_shared<ENCRYPTO::Condition>([this]() { return IsReady(); });

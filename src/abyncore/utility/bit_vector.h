@@ -556,13 +556,14 @@ class BitVector {
     BitVector bv(size);
     auto ptr = reinterpret_cast<std::uint64_t*>(bv.data_vector_.data());
 
-    for (auto i = 0ull; i + 64 <= size; i += 64) {
+    std::size_t i;
+
+    for (i = 0ull; i + 64 <= size; i += 64) {
       *(ptr + (i / 64)) = dist(rd);
     }
 
-    const auto offset = size - (size % 64);
-    for (auto i = 0ull; offset + i < size; ++i) {
-      bv.Set(dist_bool(rd) == true, offset + i);
+    for (; i < size; ++i) {
+      bv.Set(dist_bool(rd) == true, i);
     }
 
     return bv;

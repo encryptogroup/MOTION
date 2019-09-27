@@ -30,7 +30,7 @@ GMWWire::GMWWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend,
   values_ = std::move(values);
   backend_ = backend;
   is_constant_ = is_constant;
-  num_of_parallel_values_ = values_.GetSize();
+  n_simd_ = values_.GetSize();
   InitializationHelper();
 }
 
@@ -38,7 +38,7 @@ GMWWire::GMWWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> bac
   values_ = values;
   backend_ = backend;
   is_constant_ = is_constant;
-  num_of_parallel_values_ = values_.GetSize();
+  n_simd_ = values_.GetSize();
   InitializationHelper();
 }
 
@@ -46,7 +46,7 @@ GMWWire::GMWWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
   values_.Append(value);
   backend_ = backend;
   is_constant_ = is_constant;
-  num_of_parallel_values_ = 1;
+  n_simd_ = 1;
   InitializationHelper();
 }
 
