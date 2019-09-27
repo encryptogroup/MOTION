@@ -36,7 +36,7 @@ namespace ABYN::Wires {
 std::size_t Wire::GetNumOfParallelValues() const { return n_simd_; }
 
 Wire::Wire() {
-  is_done_condition_ = std::make_shared<ENCRYPTO::Condition>([this]() { return IsReady(); });
+  is_done_condition_ = std::make_shared<ENCRYPTO::Condition>([this]() { return IsReady().load(); });
 }
 
 Wire::~Wire() { assert(wire_id_ >= 0); }
@@ -63,7 +63,7 @@ void Wire::SetOnlineFinished() {
   }
 }
 
-const bool &Wire::IsReady() const noexcept {
+const std::atomic<bool> &Wire::IsReady() const noexcept {
   if (is_constant_) {
     return is_constant_;
   } else {

@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -63,7 +64,7 @@ class Wire {
 
   const auto &GetWaitingGatesIds() const noexcept { return waiting_gate_ids_; }
 
-  const bool &IsReady() const noexcept;
+  const std::atomic<bool> &IsReady() const noexcept;
 
   std::shared_ptr<ENCRYPTO::Condition> GetIsReadyCondition() const noexcept {
     return is_done_condition_;
