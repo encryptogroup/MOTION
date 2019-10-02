@@ -24,6 +24,8 @@
 
 #pragma once
 
+#include <atomic>
+#include <future>
 #include <mutex>
 #include <queue>
 #include <unordered_set>
@@ -64,7 +66,7 @@ struct BaseOTsReceiverData {
   // number of used rows;
   std::size_t consumed_offset_{0};
 
-  bool is_ready_ = false;
+  std::atomic<bool> is_ready_{false};
   std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
 };
 
@@ -83,7 +85,7 @@ struct BaseOTsSenderData {
   std::size_t consumed_offset_{0};
 
   std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
-  bool is_ready_ = false;
+  std::atomic<bool> is_ready_{false};
 };
 
 struct OTExtensionSenderData {
@@ -112,7 +114,7 @@ struct OTExtensionSenderData {
   std::vector<std::size_t> bitlengths_;
 
   std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
-  bool setup_finished_ = false;
+  std::atomic<bool> setup_finished_{false};
 };
 
 struct OTExtensionReceiverData {
@@ -139,7 +141,16 @@ struct OTExtensionReceiverData {
   std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
 
   std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
-  bool setup_finished_ = false;
+  std::atomic<bool> setup_finished_{false};
+};
+
+struct BMRData {
+  // bitlen and promise with the return buffer
+  using in_pub_val_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  std::unordered_map<std::size_t, in_pub_val_t> input_public_values_;
+
+  using keys_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  std::unordered_map<std::size_t, keys_t> input_public_keys_;
 };
 
 enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 2 };
@@ -149,6 +160,11 @@ enum OTExtensionDataType : uint {
   rcv_corrections = 1,
   snd_messages = 2,
   OTExtension_invalid_data_type = 3
+};
+
+enum BMRDataType : uint {
+  input_step_0 = 0,
+  input_step_1 = 1,
 };
 
 class DataStorage {
@@ -194,11 +210,15 @@ class DataStorage {
   void OTExtensionReceived(const std::uint8_t *message, const OTExtensionDataType type,
                            const std::size_t i);
 
+  void BMRMessageReceived(const std::uint8_t *message, const BMRDataType type, const std::size_t i);
+
   auto &GetBaseOTsReceiverData() { return base_ots_receiver_data_; }
   auto &GetBaseOTsSenderData() { return base_ots_sender_data_; }
 
   auto &GetOTExtensionReceiverData() { return ot_extension_receiver_data_; }
   auto &GetOTExtensionSenderData() { return ot_extension_sender_data_; }
+
+  auto &GetBMRData() { return bmr_data_; }
 
   void SetFixedKeyAESKey(const ENCRYPTO::AlignedBitVector &key) { fixed_key_aes_key_ = key; }
   const auto &GetFixedKeyAESKey() { return fixed_key_aes_key_; }
@@ -221,6 +241,8 @@ class DataStorage {
 
   std::unique_ptr<OTExtensionReceiverData> ot_extension_receiver_data_;
   std::unique_ptr<OTExtensionSenderData> ot_extension_sender_data_;
+
+  std::unique_ptr<BMRData> bmr_data_;
 
   LoggerPtr logger_;
   std::int64_t id_{-1};

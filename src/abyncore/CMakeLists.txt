@@ -4,6 +4,7 @@ add_library(abyn
         base/party.cpp
         base/register.cpp
         communication/base_ot_message.cpp
+        communication/bmr_message.cpp
         communication/context.cpp
         communication/handler.cpp
         communication/hello_message.cpp
@@ -17,8 +18,10 @@ add_library(abyn
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
-        gate/gate.cpp
+        gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp
+        gate/gate.cpp
+        share/bmr_share.cpp
         share/boolean_gmw_share.cpp
         share/share.cpp
         share/share_wrapper.cpp
@@ -121,9 +124,6 @@ target_link_libraries(abyn
         PRIVATE OpenSSL::Crypto
         PRIVATE OpenSSL::SSL
         )
-
-# target_compile_options(abyn PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
-# target_link_options(abyn PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
 
 if (${SANITIZE_ADDRESS_LINK_OPT})
     target_link_libraries(abyn PUBLIC ${SANITIZE_ADDRESS_LINK_OPT})

@@ -38,6 +38,7 @@
 #include "crypto/base_ots/ot_hl17.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
+#include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
 #include "register.h"
 #include "utility/constants.h"
@@ -85,26 +86,28 @@ const LoggerPtr &Backend::GetLogger() const noexcept { return register_->GetLogg
 std::size_t Backend::NextGateId() const { return register_->NextGateId(); }
 
 void Backend::InitializeCommunicationHandlers() {
+  std::vector<std::future<void>> threads;
   communication_handlers_.resize(config_->GetNumOfParties(), nullptr);
-#pragma omp parallel for
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (i == config_->GetMyId()) {
       continue;
     }
+    threads.emplace_back(std::async(std::launch::async, [i, this]() {
+      if constexpr (ABYN_DEBUG) {
+        auto message = fmt::format(
+            "Party #{} created CommHandler for Party #{} with end ip {}, local "
+            "port {} and remote port {}",
+            config_->GetMyId(), i, config_->GetCommunicationContext(i)->GetIp(),
+            config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
+            config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
+        register_->GetLogger()->LogDebug(message);
+      }
 
-    if constexpr (ABYN_DEBUG) {
-      auto message = fmt::format(
-          "Party #{} created CommHandler for Party #{} with end ip {}, local "
-          "port {} and remote port {}",
-          config_->GetMyId(), i, config_->GetCommunicationContext(i)->GetIp(),
-          config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
-          config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
-      register_->GetLogger()->LogDebug(message);
-    }
-
-    communication_handlers_.at(i) = std::make_shared<Communication::Handler>(
-        config_->GetCommunicationContext(i), register_->GetLogger());
+      communication_handlers_.at(i) = std::make_shared<Communication::Handler>(
+          config_->GetCommunicationContext(i), register_->GetLogger());
+    }));
   }
+  for (auto &t : threads) t.get();
   register_->RegisterCommunicationHandlers(communication_handlers_);
 }
 
@@ -172,11 +175,13 @@ void Backend::EvaluateSequential() {
     }
   }
 
-  auto &gates = register_->GetGates();
-#pragma omp parallel for num_threads(std::min(gates.size(), config_->GetNumOfThreads()))
-  for (auto i = 0ull; i < gates.size(); ++i) {
-    gates.at(i)->EvaluateSetup();
+  boost::asio::thread_pool pool_setup(
+      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+
+  for (auto i = 0ull; i < register_->GetTotalNumOfGates(); ++i) {
+    boost::asio::post(pool_setup, [this, i]() { register_->GetGate(i)->EvaluateSetup(); });
   }
+  pool_setup.join();
 
   for (auto &input_gate : register_->GetInputGates()) {
     register_->AddToActiveQueue(input_gate->GetID());
@@ -354,6 +359,43 @@ Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
                                            std::size_t output_owner) {
   assert(parent);
   auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent, output_owner);
+  auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+  RegisterGate(out_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
+}
+
+Shares::SharePtr Backend::BMRInput(std::size_t party_id, bool input) {
+  return BMRInput(party_id, ENCRYPTO::BitVector(1, input));
+}
+
+Shares::SharePtr Backend::BMRInput(std::size_t party_id, const ENCRYPTO::BitVector<> &input) {
+  return BMRInput(party_id, std::vector<ENCRYPTO::BitVector<>>{input});
+}
+
+Shares::SharePtr Backend::BMRInput(std::size_t party_id, ENCRYPTO::BitVector<> &&input) {
+  return BMRInput(party_id, std::vector<ENCRYPTO::BitVector<>>{std::move(input)});
+}
+
+Shares::SharePtr Backend::BMRInput(std::size_t party_id,
+                                   const std::vector<ENCRYPTO::BitVector<>> &input) {
+  auto in_gate = std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, weak_from_this());
+  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  RegisterInputGate(in_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());
+}
+
+Shares::SharePtr Backend::BMRInput(std::size_t party_id,
+                                   std::vector<ENCRYPTO::BitVector<>> &&input) {
+  auto in_gate =
+      std::make_shared<Gates::BMR::BMRInputGate>(std::move(input), party_id, weak_from_this());
+  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  RegisterInputGate(in_gate_cast);
+  return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());
+}
+
+Shares::SharePtr Backend::BMROutput(const Shares::SharePtr &parent, std::size_t output_owner) {
+  assert(parent);
+  auto out_gate = std::make_shared<Gates::BMR::BMROutputGate>(parent, output_owner);
   auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
   RegisterGate(out_gate_cast);
   return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());

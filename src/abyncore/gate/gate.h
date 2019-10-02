@@ -80,9 +80,11 @@ class Gate {
 
   bool AreDependenciesReady() { return wire_dependencies_.size() == num_ready_dependencies_; }
 
-  void SetSetupIsReady() { setup_is_ready_ = true; }
+  void SetSetupIsReady();
 
   void SetOnlineIsReady();
+
+  void WaitSetup();
 
   void WaitOnline();
 
@@ -99,13 +101,13 @@ class Gate {
   std::unordered_set<std::size_t> wire_dependencies_;
 
   GateType gate_type_ = InvalidGate;
-  bool setup_is_ready_ = false;
-  bool online_is_ready_ = false;
-  bool requires_online_interaction_ = false;
+  std::atomic<bool> setup_is_ready_ = false;
+  std::atomic<bool> online_is_ready_ = false;
+  std::atomic<bool> requires_online_interaction_ = false;
 
-  bool added_to_active_queue = false;
+  std::atomic<bool> added_to_active_queue = false;
 
-  std::shared_ptr<ENCRYPTO::Condition> online_is_ready_cond_;
+  std::shared_ptr<ENCRYPTO::Condition> setup_is_ready_cond_, online_is_ready_cond_;
 
   std::atomic<std::size_t> num_ready_dependencies_ = 0;
 

@@ -1,0 +1,8 @@
+namespace ABYN.Communication;
+
+table BMRMessage {
+  gate_id:uint64;            // gate id
+  payload:[ubyte];      // store payload for each wire separately
+}
+
+root_type BMRMessage;

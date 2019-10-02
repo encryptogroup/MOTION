@@ -68,7 +68,7 @@ void GMWInputGate::InitializationHelper() {
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
-  assert(ENCRYPTO::BitVector<>::Dimensions(input_));
+  assert(ENCRYPTO::BitVector<>::EqualSizeDimensions(input_));
 
   boolean_sharing_id_ = ptr_backend->GetRegister()->NextBooleanGMWSharingId(input_.size() * bits_);
 
@@ -79,7 +79,7 @@ void GMWInputGate::InitializationHelper() {
 
   output_wires_.reserve(input_.size());
   for (auto &v : input_) {
-    auto wire = std::make_shared<Wires::GMWWire>(v, backend_, bits_);
+    auto wire = std::make_shared<Wires::GMWWire>(v, backend_);
     output_wires_.push_back(std::static_pointer_cast<ABYN::Wires::Wire>(wire));
   }
 
@@ -172,7 +172,7 @@ void GMWInputGate::EvaluateOnline() {
     auto my_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(my_wire);
     auto buf = result.at(i);
-    my_wire->GetMutableValuesOnWire() = buf;
+    my_wire->GetMutableValues() = buf;
   }
   ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (ABYN_VERBOSE_DEBUG) {
@@ -255,7 +255,7 @@ void GMWOutputGate::EvaluateOnline() {
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wire);
     assert(gmw_wire);
     wires.push_back(gmw_wire);
-    output_.at(i) = wires.at(wires.size() - 1)->GetValuesOnWire();
+    output_.at(i) = wires.at(i)->GetValues();
     ++i;
   }
   auto ptr_backend = backend_.lock();
@@ -327,7 +327,7 @@ void GMWOutputGate::EvaluateOnline() {
   for (i = 0ull; i < output_wires_.size(); ++i) {
     auto wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(wire);
-    wire->GetMutableValuesOnWire() = output_.at(i);
+    wire->GetMutableValues() = output_.at(i);
   }
   if constexpr (ABYN_DEBUG) {
     ptr_backend->GetLogger()->LogDebug(
@@ -413,11 +413,11 @@ void GMWXORGate::EvaluateOnline() {
     assert(wire_a);
     assert(wire_b);
 
-    auto output = wire_a->GetValuesOnWire() ^ wire_b->GetValuesOnWire();
+    auto output = wire_a->GetValues() ^ wire_b->GetValues();
 
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(gmw_wire);
-    gmw_wire->GetMutableValuesOnWire() = std::move(output);
+    gmw_wire->GetMutableValues() = std::move(output);
   }
 
   SetOnlineIsReady();
@@ -538,9 +538,9 @@ void GMWANDGate::EvaluateOnline() {
     const auto x = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
     assert(d);
     assert(x);
-    d->GetMutableValuesOnWire() = mts.a.Subset(mt_offset_ + i * x->GetNumOfParallelValues(),
+    d->GetMutableValues() = mts.a.Subset(mt_offset_ + i * x->GetNumOfParallelValues(),
                                                mt_offset_ + (i + 1) * x->GetNumOfParallelValues());
-    d->GetMutableValuesOnWire() ^= x->GetValuesOnWire();
+    d->GetMutableValues() ^= x->GetValues();
     d->SetOnlineFinished();
   }
 
@@ -550,9 +550,9 @@ void GMWANDGate::EvaluateOnline() {
     const auto y = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
     assert(e);
     assert(y);
-    e->GetMutableValuesOnWire() = mts.b.Subset(mt_offset_ + i * y->GetNumOfParallelValues(),
+    e->GetMutableValues() = mts.b.Subset(mt_offset_ + i * y->GetNumOfParallelValues(),
                                                mt_offset_ + (i + 1) * y->GetNumOfParallelValues());
-    e->GetMutableValuesOnWire() ^= y->GetValuesOnWire();
+    e->GetMutableValues() ^= y->GetValues();
     e->SetOnlineFinished();
   }
 
@@ -582,19 +582,19 @@ void GMWANDGate::EvaluateOnline() {
 
     auto out = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(out);
-    out->GetMutableValuesOnWire() =
+    out->GetMutableValues() =
         mts.c.Subset(mt_offset_ + i * parent_a_.at(0)->GetNumOfParallelValues(),
                      mt_offset_ + (i + 1) * parent_a_.at(0)->GetNumOfParallelValues());
 
-    const auto &d = d_w->GetValuesOnWire();
-    const auto &x_i = x_i_w->GetValuesOnWire();
-    const auto &e = e_w->GetValuesOnWire();
-    const auto &y_i = y_i_w->GetValuesOnWire();
+    const auto &d = d_w->GetValues();
+    const auto &x_i = x_i_w->GetValues();
+    const auto &e = e_w->GetValues();
+    const auto &y_i = y_i_w->GetValues();
 
     if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
-      out->GetMutableValuesOnWire() ^= (d & y_i) ^ (e & x_i) ^ (e & d);
+      out->GetMutableValues() ^= (d & y_i) ^ (e & x_i) ^ (e & d);
     } else {
-      out->GetMutableValuesOnWire() ^= (d & y_i) ^ (e & x_i);
+      out->GetMutableValues() ^= (d & y_i) ^ (e & x_i);
     }
   }
 

@@ -41,6 +41,14 @@ void Gate::SignalDependencyIsReady() {
   IfReadyAddToProcessingQueue();
 }
 
+void Gate::SetSetupIsReady() {
+  {
+    std::scoped_lock lock(setup_is_ready_cond_->GetMutex());
+    setup_is_ready_ = true;
+  }
+  setup_is_ready_cond_->NotifyAll();
+}
+
 void Gate::SetOnlineIsReady() {
   for (auto &wire : output_wires_) {
     assert(wire);
@@ -52,6 +60,8 @@ void Gate::SetOnlineIsReady() {
   }
   online_is_ready_cond_->NotifyAll();
 }
+
+void Gate::WaitSetup() { Helpers::WaitFor(*setup_is_ready_cond_); }
 
 void Gate::WaitOnline() { Helpers::WaitFor(*online_is_ready_cond_); }
 
@@ -70,15 +80,13 @@ void Gate::Clear() {
   online_is_ready_ = false;
   added_to_active_queue = false;
   num_ready_dependencies_ = 0;
-
-  for (auto &wire : output_wires_) {
-    wire->Clear();
-  }
 }
 
 Gate::Gate() {
   online_is_ready_cond_ =
-      std::make_shared<ENCRYPTO::Condition>([this]() { return online_is_ready_; });
+      std::make_shared<ENCRYPTO::Condition>([this]() { return online_is_ready_.load(); });
+  setup_is_ready_cond_ =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return setup_is_ready_.load(); });
 }
 
 std::shared_ptr<Register> Gate::GetRegister() {

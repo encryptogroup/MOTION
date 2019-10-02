@@ -80,12 +80,14 @@ class Wire {
 
   virtual std::size_t GetBitLength() const = 0;
 
-  void Clear() { is_done_ = false; }
+  void Clear() {
+    is_done_ = false;
+    DynamicClear();
+  }
 
   Wire(const Wire &) = delete;
 
  protected:
-
   /// Number of values that are _logically_ processed in parallel
   std::size_t n_simd_ = 0;
 
@@ -110,6 +112,8 @@ class Wire {
   static void SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> backend);
 
   void InitializationHelper();
+
+  virtual void DynamicClear(){};
 
  private:
   std::mutex mutex_;

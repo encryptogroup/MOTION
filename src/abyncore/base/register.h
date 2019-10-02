@@ -133,7 +133,6 @@ class Register {
   // don't need atomic here, since only the master thread has access to these
   std::size_t global_gate_id_ = 0, global_wire_id_ = 0;
   std::size_t global_arithmetic_gmw_sharing_id_ = 0, global_boolean_gmw_sharing_id_ = 0;
-
   std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
   std::atomic<std::size_t> evaluated_gates_ = 0;
@@ -151,6 +150,7 @@ class Register {
   std::vector<Wires::WirePtr> wires_;
 
   std::vector<std::weak_ptr<Communication::Handler>> communication_handlers_;
+  std::mutex comm_handler_mutex_;
 };
 
 using RegisterPtr = std::shared_ptr<Register>;

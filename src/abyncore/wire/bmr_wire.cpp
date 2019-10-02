@@ -25,11 +25,10 @@
 #include "bmr_wire.h"
 
 #include "base/backend.h"
+#include "utility/condition.h"
 
 namespace ABYN::Wires {
-BMRWire::BMRWire(const std::size_t bitlen, const std::size_t n_simd, std::weak_ptr<Backend> backend,
-                 bool is_constant) {
-  public_values_ = decltype(public_values_)(bitlen, n_simd);
+BMRWire::BMRWire(const std::size_t n_simd, std::weak_ptr<Backend> backend, bool is_constant) {
   backend_ = backend;
   is_constant_ = is_constant;
   n_simd_ = n_simd;
@@ -68,7 +67,26 @@ BMRWire::BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
 void BMRWire::InitializationHelperBMR() {
   const auto backend = GetBackend().lock();
   assert(backend);
-  keys_.resize(backend->GetConfig()->GetNumOfParties());
+  const auto num_parties = backend->GetConfig()->GetNumOfParties();
+  std::get<0>(secret_keys_).resize(n_simd_);
+  std::get<1>(secret_keys_).resize(n_simd_);
+  public_keys_.resize(num_parties);
+  for (auto i = 0ull; i < public_keys_.size(); ++i) public_keys_.at(i).resize(n_simd_);
+
+  setup_ready_cond_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() { return setup_ready_.load(); });
+}
+
+void BMRWire::GenerateRandomPrivateKeys() {
+  for (auto &key : std::get<0>(secret_keys_)) {
+    key = ENCRYPTO::BitVector<>::Random(kappa);
+  }
+  for (auto &key : std::get<1>(secret_keys_)) {
+    key = ENCRYPTO::BitVector<>::Random(kappa);
+  }
+}
+
+void BMRWire::GenerateRandomPermutationBits() {
   shared_permutation_bits_ = ENCRYPTO::BitVector<>::Random(n_simd_);
 }
 }

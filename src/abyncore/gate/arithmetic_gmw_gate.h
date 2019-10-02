@@ -167,7 +167,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
     }
     auto my_wire = std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(my_wire);
-    my_wire->GetMutableValuesOnWire() = std::move(result);
+    my_wire->GetMutableValues() = std::move(result);
     SetOnlineIsReady();
     GetRegister()->IncrementEvaluatedGatesCounter();
     GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
@@ -276,7 +276,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
     assert(arithmetic_wire);
 
-    std::vector<T> output_ = arithmetic_wire->GetValuesOnWire();
+    std::vector<T> output_ = arithmetic_wire->GetValues();
 
     if (!is_my_output_) {
       auto payload = Helpers::ToByteVector(output_);
@@ -338,7 +338,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
       auto arithmetic_output_wire =
           std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
       assert(arithmetic_output_wire);
-      arithmetic_output_wire->GetMutableValuesOnWire() = output_;
+      arithmetic_output_wire->GetMutableValues() = output_;
     }
 
     SetOnlineIsReady();
@@ -407,11 +407,11 @@ class ArithmeticAdditionGate final : public ABYN::Gates::Interfaces::TwoGate {
     assert(wire_b);
 
     std::vector<T> output;
-    output = Helpers::AddVectors(wire_a->GetValuesOnWire(), wire_b->GetValuesOnWire());
+    output = Helpers::AddVectors(wire_a->GetValues(), wire_b->GetValues());
 
     auto arithmetic_wire =
         std::dynamic_pointer_cast<ABYN::Wires::ArithmeticWire<T>>(output_wires_.at(0));
-    arithmetic_wire->GetMutableValuesOnWire() = std::move(output);
+    arithmetic_wire->GetMutableValues() = std::move(output);
 
     SetOnlineIsReady();
 
@@ -501,10 +501,10 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     {
       const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_a_.at(0));
       assert(x);
-      d_->GetMutableValuesOnWire() = std::vector<T>(
+      d_->GetMutableValues() = std::vector<T>(
           mts.a.begin() + mt_offset_, mts.a.begin() + mt_offset_ + x->GetNumOfParallelValues());
-      auto &d_v = d_->GetMutableValuesOnWire();
-      const auto &x_v = x->GetValuesOnWire();
+      auto &d_v = d_->GetMutableValues();
+      const auto &x_v = x->GetValues();
       for (auto i = 0ull; i < d_v.size(); ++i) {
         d_v.at(i) += x_v.at(i);
       }
@@ -512,10 +512,10 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
 
       const auto y = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_b_.at(0));
       assert(y);
-      e_->GetMutableValuesOnWire() = std::vector<T>(
+      e_->GetMutableValues() = std::vector<T>(
           mts.b.begin() + mt_offset_, mts.b.begin() + mt_offset_ + x->GetNumOfParallelValues());
-      auto &e_v = e_->GetMutableValuesOnWire();
-      const auto &y_v = y->GetValuesOnWire();
+      auto &e_v = e_->GetMutableValues();
+      const auto &y_v = y->GetValues();
       for (auto i = 0ull; i < e_v.size(); ++i) {
         e_v.at(i) += y_v.at(i);
       }
@@ -543,23 +543,23 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
 
     auto out = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(out);
-    out->GetMutableValuesOnWire() =
+    out->GetMutableValues() =
         std::vector<T>(mts.c.begin() + mt_offset_,
                        mts.c.begin() + mt_offset_ + parent_a_.at(0)->GetNumOfParallelValues());
 
-    const auto &d = d_w->GetValuesOnWire();
-    const auto &s_x = x_i_w->GetValuesOnWire();
-    const auto &e = e_w->GetValuesOnWire();
-    const auto &s_y = y_i_w->GetValuesOnWire();
+    const auto &d = d_w->GetValues();
+    const auto &s_x = x_i_w->GetValues();
+    const auto &e = e_w->GetValues();
+    const auto &s_y = y_i_w->GetValues();
 
     if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfParallelValues(); ++i) {
-        out->GetMutableValuesOnWire().at(i) +=
+        out->GetMutableValues().at(i) +=
             (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i)) - (e.at(i) * d.at(i));
       }
     } else {
       for (auto i = 0ull; i < out->GetNumOfParallelValues(); ++i) {
-        out->GetMutableValuesOnWire().at(i) += (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i));
+        out->GetMutableValues().at(i) += (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i));
       }
     }
 

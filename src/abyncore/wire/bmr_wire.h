@@ -28,12 +28,15 @@
 
 #include "utility/bit_vector.h"
 
+namespace ENCRYPTO {
+class Condition;
+}
+
 namespace ABYN::Wires {
 
-class BMRWire : BooleanWire {
+class BMRWire : public BooleanWire {
  public:
-  BMRWire(const std::size_t bitlen, const std::size_t n_simd, std::weak_ptr<Backend> backend,
-          bool is_constant = false);
+  BMRWire(const std::size_t n_simd, std::weak_ptr<Backend> backend, bool is_constant = false);
 
   BMRWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant = false);
 
@@ -52,23 +55,44 @@ class BMRWire : BooleanWire {
 
   std::size_t GetBitLength() const final { return 1; }
 
-  const ENCRYPTO::BitVector<> &GetPublicValuesOnWire() const { return public_values_; }
+  const ENCRYPTO::BitVector<> &GetPublicValues() const { return public_values_; }
 
-  ENCRYPTO::BitVector<> &GetPublicMutableValuesOnWire() { return public_values_; }
+  ENCRYPTO::BitVector<> &GetMutablePublicValues() { return public_values_; }
 
-  const ENCRYPTO::BitVector<> &GetPermutationBitsOnWire() const { return shared_permutation_bits_; }
+  const ENCRYPTO::BitVector<> &GetPermutationBits() const { return shared_permutation_bits_; }
 
-  ENCRYPTO::BitVector<> &GetMutablePermutationBitsOnWire() { return shared_permutation_bits_; }
+  ENCRYPTO::BitVector<> &GetMutablePermutationBits() { return shared_permutation_bits_; }
 
-  const auto &GetKeysOnWire() const { return keys_; }
+  const auto &GetSecretKeys() const { return secret_keys_; }
 
-  auto &GetMutableKeysOnWire() { return keys_; }
+  auto &GetMutableSecretKeys() { return secret_keys_; }
+
+  const auto &GetPublicKeys() const { return public_keys_; }
+
+  auto &GetMutablePublicKeys() { return public_keys_; }
+
+  void GenerateRandomPrivateKeys();
+
+  void GenerateRandomPermutationBits();
+
+  void SetSetupIsReady() { setup_ready_ = true; }
+
+  auto &GetSetupReadyCondition() { return setup_ready_cond_; }
+
+ protected:
+  void DynamicClear() final { setup_ready_ = false; }
 
  private:
   void InitializationHelperBMR();
 
+  // also store the cleartext values in public_values_ if the wire is the outp
   ENCRYPTO::BitVector<> public_values_, shared_permutation_bits_;
-  std::vector<ENCRYPTO::BitVector<>> keys_;
+  std::pair<std::vector<ENCRYPTO::BitVector<>>, std::vector<ENCRYPTO::BitVector<>>> secret_keys_;
+  // for each party for each bit
+  std::vector<std::vector<ENCRYPTO::BitVector<>>> public_keys_;
+
+  std::atomic<bool> setup_ready_{false};
+  std::unique_ptr<ENCRYPTO::Condition> setup_ready_cond_;
 };
 
 using BMRWirePtr = std::shared_ptr<BMRWire>;

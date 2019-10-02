@@ -87,10 +87,4 @@ class BooleanShare : public Share {
 };
 
 using BooleanSharePtr = std::shared_ptr<BooleanShare>;
-
-class BMRShare : public BooleanShare {
-  // TODO
-};
-
-using BMRSharePtr = std::shared_ptr<BMRShare>;
 }  // namespace ABYN::Shares

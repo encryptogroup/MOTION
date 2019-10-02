@@ -68,11 +68,11 @@ class Party {
         return backend_->BooleanGMWInput(party_id, input);
       }
       case MPCProtocol::BMR: {
-        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
-        // TODO
+        return backend_->BMRInput(party_id, input);
       }
       default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
       }
     }
   }
@@ -85,11 +85,11 @@ class Party {
         return backend_->BooleanGMWInput(party_id, std::move(input));
       }
       case MPCProtocol::BMR: {
-        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
-        // TODO
+        return backend_->BMRInput(party_id, input);
       }
       default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
       }
     }
   }
@@ -102,11 +102,11 @@ class Party {
         return backend_->BooleanGMWInput(party_id, input);
       }
       case MPCProtocol::BMR: {
-        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
-        // TODO
+        return backend_->BMRInput(party_id, input);
       }
       default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
       }
     }
   }
@@ -119,11 +119,11 @@ class Party {
         return backend_->BooleanGMWInput(party_id, std::move(input));
       }
       case MPCProtocol::BMR: {
-        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
-        // TODO
+        return backend_->BMRInput(party_id, input);
       }
       default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
       }
     }
   }
@@ -137,7 +137,7 @@ class Party {
       }
       case MPCProtocol::BooleanGMW: {
         throw(std::runtime_error(
-            fmt::format("Non-binary types have to be converted to BitVectors in BooleanGMW, "
+            fmt::format("Non-binary types have to be converted to BitVectors in BMR, "
                         "consider using TODO function for the input")));
       }
       case MPCProtocol::BMR: {
@@ -145,7 +145,8 @@ class Party {
         // TODO
       }
       default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
       }
     }
   }
@@ -163,11 +164,13 @@ class Party {
                         "consider using TODO function for the input")));
       }
       case MPCProtocol::BMR: {
-        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
-        // TODO
+        throw(std::runtime_error(
+            fmt::format("Non-binary types have to be converted to BitVectors in BMR, "
+                        "consider using TODO function for the input")));
       }
       default: {
-        throw(std::runtime_error(fmt::format("Unknown protocol with id {}", static_cast<uint>(P))));
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
       }
     }
   }
@@ -177,7 +180,10 @@ class Party {
   Shares::SharePtr IN(T input, std::size_t party_id) {
     if constexpr (std::is_same_v<T, bool>) {
       static_assert(P != MPCProtocol::ArithmeticGMW, "Invalid input");
-      return backend_->BooleanGMWInput(party_id, input);
+      if constexpr (P == MPCProtocol::BooleanGMW)
+        return backend_->BooleanGMWInput(party_id, input);
+      else
+        return backend_->BMRInput(party_id, input);
     } else {
       return IN<P, T>(std::vector<T>{input}, party_id);
     }
@@ -196,7 +202,7 @@ class Party {
   /// \brief Establishes connections between the parties.
   void Connect();
 
-  bool IsConnected() { return connected_; }
+  bool IsConnected() { return connected_.load(); }
 
   /// \brief Evaluates the constructed gates a predefined number of times.
   /// This is realized via repeatedly calling Party::Clear() after each evaluation.
@@ -230,8 +236,8 @@ class Party {
  private:
   ConfigurationPtr config_;
   BackendPtr backend_;
-  bool finished_ = false;
-  bool connected_ = false;
+  std::atomic<bool> finished_ = false;
+  std::atomic<bool> connected_ = false;
 
   void EvaluateCircuit();
 };

@@ -64,9 +64,9 @@ class ArithmeticWire : public Wire {
 
   CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
 
-  const std::vector<T> &GetValuesOnWire() const { return values_; }
+  const std::vector<T> &GetValues() const { return values_; }
 
-  std::vector<T> &GetMutableValuesOnWire() { return values_; }
+  std::vector<T> &GetMutableValues() { return values_; }
 
   std::size_t GetBitLength() const final { return sizeof(T) * 8; }
 

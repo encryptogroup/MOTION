@@ -105,8 +105,8 @@ Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
       // TODO
     }
     default: {
-      throw(std::runtime_error(
-          fmt::format("Unknown protocol with id {}", static_cast<uint>(parent->GetSharingType()))));
+      throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
+                                           static_cast<uint>(parent->GetSharingType()))));
     }
   }
 }
@@ -148,7 +148,7 @@ Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b
     }
     default: {
       throw(std::runtime_error(
-          fmt::format("Unknown protocol with id {}", static_cast<uint>(a->GetSharingType()))));
+          fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(a->GetSharingType()))));
     }
   }
 }
@@ -175,14 +175,12 @@ Shares::SharePtr Party::AND(const Shares::SharePtr &a, const Shares::SharePtr &b
 void Party::Connect() {
   // assign 1 thread for each connection
   auto n = config_->GetNumOfParties();
-#pragma omp parallel num_threads(n + 1)
-#pragma omp single
-  {
-#pragma omp taskloop num_tasks(n) default(shared)
-    for (auto destination_id = 0u; destination_id < n; ++destination_id) {
-      if (destination_id == config_->GetMyId()) {
-        continue;
-      }
+  std::vector<std::future<void>> futures;
+  for (auto destination_id = 0u; destination_id < n; ++destination_id) {
+    if (destination_id == config_->GetMyId()) {
+      continue;
+    }
+    futures.emplace_back(std::async(std::launch::async, [destination_id, this]() {
       if constexpr (ABYN_DEBUG) {
         auto &p = config_->GetCommunicationContext(destination_id);
         backend_->GetLogger()->LogDebug(
@@ -190,12 +188,13 @@ void Party::Connect() {
       }
       auto result = config_->GetCommunicationContext(destination_id)->Connect();
       backend_->GetLogger()->LogInfo(result);
-    }
-    backend_->InitializeCommunicationHandlers();
+    }));
   }
+  for (auto &f : futures) f.get();
+  backend_->InitializeCommunicationHandlers();
   backend_->SendHelloToOthers();
   connected_ = true;
-}
+}  // namespace ABYN
 
 void Party::Run(std::size_t repeats) {
   omp_set_nested(1);
@@ -222,6 +221,7 @@ void Party::Run(std::size_t repeats) {
     backend_->GenerateFixedKeyAESKey();
   }
 
+  backend_->Sync();
   for (auto i = 0ull; i < repeats; ++i) {
     if (i > 0u) {
       Clear();

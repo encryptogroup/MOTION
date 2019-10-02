@@ -24,43 +24,22 @@
 
 #pragma once
 
-#include "wire.h"
+#include "flatbuffers/flatbuffers.h"
 
-#include "utility/bit_vector.h"
+namespace ABYN::Communication {
+// publish input owner's masked inputs
+flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
+                                                     const std::vector<std::uint8_t>& payload);
 
-namespace ABYN {
-class Backend;
-}
+// publish input owner's masked inputs
+flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
+                                                     std::vector<std::uint8_t>&& payload);
 
-namespace ABYN::Wires {
+// publish the keys corresponding to the masked inputs
+flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
+                                                     const std::vector<std::uint8_t>& payload);
 
-class GMWWire : public BooleanWire {
- public:
-  GMWWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant = false);
-
-  GMWWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
-          bool is_constant = false);
-
-  GMWWire(bool value, std::weak_ptr<Backend> backend, bool is_constant = false);
-
-  ~GMWWire() final = default;
-
-  MPCProtocol GetProtocol() const final { return MPCProtocol::BooleanGMW; }
-
-  GMWWire() = delete;
-
-  GMWWire(GMWWire &) = delete;
-
-  std::size_t GetBitLength() const final { return 1; }
-
-  const ENCRYPTO::BitVector<> &GetValues() const { return values_; }
-
-  ENCRYPTO::BitVector<> &GetMutableValues() { return values_; }
-
- private:
-  ENCRYPTO::BitVector<> values_;
-};
-
-using GMWWirePtr = std::shared_ptr<GMWWire>;
-
-}
+// publish the keys corresponding to the masked inputs
+flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
+                                                     std::vector<std::uint8_t>&& payload);
+}  // namespace ABYN::Communication

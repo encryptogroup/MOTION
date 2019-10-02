@@ -39,7 +39,8 @@ BaseOTsReceiverData::BaseOTsReceiverData() : received_S_(128, false) {
   }
   S_.resize(128);
 
-  is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_; });
+  is_ready_condition_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_.load(); });
 }
 
 BaseOTsSenderData::BaseOTsSenderData() : received_R_(128, false) {
@@ -49,7 +50,8 @@ BaseOTsSenderData::BaseOTsSenderData() : received_R_(128, false) {
   }
   R_.resize(128);
 
-  is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_; });
+  is_ready_condition_ =
+      std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_.load(); });
 }
 
 DataStorage::DataStorage(std::size_t id) : id_(id) {
@@ -61,10 +63,10 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
 
   base_ots_receiver_data_ = std::make_unique<BaseOTsReceiverData>();
   base_ots_receiver_data_->is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>(
-      [this]() { return base_ots_receiver_data_->is_ready_; });
+      [this]() { return base_ots_receiver_data_->is_ready_.load(); });
   base_ots_sender_data_ = std::make_unique<BaseOTsSenderData>();
-  base_ots_sender_data_->is_ready_condition_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return base_ots_sender_data_->is_ready_; });
+  base_ots_sender_data_->is_ready_condition_ = std::make_unique<ENCRYPTO::Condition>(
+      [this]() { return base_ots_sender_data_->is_ready_.load(); });
 
   ot_extension_sender_data_ = std::make_unique<OTExtensionSenderData>();
   ot_extension_receiver_data_ = std::make_unique<OTExtensionReceiverData>();
@@ -75,10 +77,12 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
       });
 
   ot_extension_sender_data_->setup_finished_cond_ = std::make_unique<ENCRYPTO::Condition>(
-      [this]() { return ot_extension_sender_data_->setup_finished_; });
+      [this]() { return ot_extension_sender_data_->setup_finished_.load(); });
 
   ot_extension_receiver_data_->setup_finished_cond_ = std::make_unique<ENCRYPTO::Condition>(
-      [this]() { return ot_extension_receiver_data_->setup_finished_; });
+      [this]() { return ot_extension_receiver_data_->setup_finished_.load(); });
+
+  bmr_data_ = std::make_unique<BMRData>();
 
   sync_cond_ = std::make_shared<ENCRYPTO::Condition>(
       [this]() { return sync_state_received_ >= sync_state_actual_; });
@@ -188,8 +192,16 @@ void DataStorage::Reset() {
 }
 
 void DataStorage::Clear() {
-  std::scoped_lock lock(output_message_mutex_);
-  received_output_messages_.clear();
+  for (auto &e : bmr_data_->input_public_values_) {
+    e.second.second = decltype(e.second.second)();
+  }
+  for (auto &e : bmr_data_->input_public_keys_) {
+    e.second.second = decltype(e.second.second)();
+  }
+  {
+    std::scoped_lock lock(output_message_mutex_);
+    received_output_messages_.clear();
+  }
 }
 
 void DataStorage::SetReceivedSyncState(const std::size_t state) {
@@ -385,6 +397,29 @@ void DataStorage::OTExtensionReceived(const std::uint8_t *message, const OTExten
           "DataStorage::OTExtensionDataType: unknown data type {}; data_type must be <{}", type,
           OTExtensionDataType::OTExtension_invalid_data_type));
     }
+  }
+}
+
+void DataStorage::BMRMessageReceived(const std::uint8_t *message, const BMRDataType type,
+                                     const std::size_t i) {
+  switch (type) {
+    case BMRDataType::input_step_0: {
+      assert(bmr_data_->input_public_values_.find(i) != bmr_data_->input_public_values_.end());
+      std::size_t bitlen = bmr_data_->input_public_values_.at(i).first;
+      bmr_data_->input_public_values_.at(i).second.set_value(
+          std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
+      break;
+    }
+    case BMRDataType::input_step_1: {
+      assert(bmr_data_->input_public_keys_.find(i) != bmr_data_->input_public_keys_.end());
+      std::size_t bitlen = bmr_data_->input_public_keys_.at(i).first;
+      assert(bitlen % 128 == 0);
+      bmr_data_->input_public_keys_.at(i).second.set_value(
+          std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
+      break;
+    }
+    default:
+      throw std::runtime_error("Unknown BMR message type");
   }
 }
 }  // namespace ABYN

@@ -132,6 +132,18 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   Shares::SharePtr BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner);
 
+  Shares::SharePtr BMRInput(std::size_t party_id, bool input = false);
+
+  Shares::SharePtr BMRInput(std::size_t party_id, const ENCRYPTO::BitVector<> &input);
+
+  Shares::SharePtr BMRInput(std::size_t party_id, ENCRYPTO::BitVector<> &&input);
+
+  Shares::SharePtr BMRInput(std::size_t party_id, const std::vector<ENCRYPTO::BitVector<>> &input);
+
+  Shares::SharePtr BMRInput(std::size_t party_id, std::vector<ENCRYPTO::BitVector<>> &&input);
+
+  Shares::SharePtr BMROutput(const Shares::SharePtr &parent, std::size_t output_owner);
+
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, T input = 0) {
     std::vector<T> input_vector{input};

@@ -30,6 +30,7 @@
 #include <cstdlib>
 
 #include "communication/fbs_headers/base_ot_generated.h"
+#include "communication/fbs_headers/bmr_message_generated.h"
 #include "communication/fbs_headers/ot_extension_generated.h"
 #include "crypto/sharing_randomness_generator.h"
 #include "utility/constants.h"
@@ -149,7 +150,8 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       //
     } break;
     case MessageType_SynchronizationMessage: {
-      const std::size_t sync_state = *reinterpret_cast<const uint64_t*>(message->payload()->data());
+      const std::size_t sync_state =
+          *reinterpret_cast<const uint64_t *>(message->payload()->data());
       data_storage_->SetReceivedSyncState(sync_state);
     } break;
     case MessageType_BaseROTMessageReceiver: {
@@ -180,6 +182,18 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
       data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::snd_messages, i);
+      break;
+    }
+    case MessageType_BMRInputGate0: {
+      auto id = GetBMRMessage(message->payload()->data())->gate_id();
+      auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
+      data_storage_->BMRMessageReceived(bmr_data, BMRDataType::input_step_0, id);
+      break;
+    }
+    case MessageType_BMRInputGate1: {
+      auto id = GetBMRMessage(message->payload()->data())->gate_id();
+      auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
+      data_storage_->BMRMessageReceived(bmr_data, BMRDataType::input_step_1, id);
       break;
     }
     default:

@@ -92,12 +92,15 @@ class Configuration {
   auto &GetMutableFixedKeyAESKey() { return fixed_key_aes_key_complete_; }
   void SetFixedKeyAESKeyReady() { fixed_key_aes_key_is_ready_ = true; }
 
+  const auto &GetBMRRandomOffset() { return BMR_random_offset_; }
+
  private:
   std::int64_t my_id_ = -1;
   std::vector<Communication::ContextPtr> communication_contexts_;
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
-  ENCRYPTO::AlignedBitVector fixed_key_aes_key_my_part_;
+  const ENCRYPTO::AlignedBitVector fixed_key_aes_key_my_part_;
   ENCRYPTO::AlignedBitVector fixed_key_aes_key_complete_;
+  const ENCRYPTO::AlignedBitVector BMR_random_offset_;
   bool fixed_key_aes_key_is_ready_ = false;
 
   bool logging_enabled_ = true;

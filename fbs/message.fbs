@@ -1,6 +1,5 @@
 namespace ABYN.Communication;
 
-//add new message types here
 enum MessageType : ubyte {
   HelloMessage = 0,
   OutputMessage = 1,
@@ -10,8 +9,10 @@ enum MessageType : ubyte {
   BaseROTMessageReceiver = 5,
   OTExtensionReceiverMasks = 6,
   OTExtensionReceiverCorrections = 7,
-  OTExtensionSender = 8,                // 1-out-of-2 OTs
-  OTExtensionSenderN = 9                // 1-out-of-N OTs
+  OTExtensionSender = 8,
+  BMRInputGate0 = 9,                    // publishes the public value held by the input owner (lambda ^ input)
+  BMRInputGate1 = 10,                   // publishes the keys on wire under the public value to all parties
+  // add new message types here
   }
 
 // TODO: implement message splitting if the size of a single message goes over 2^32 - 1 bits

@@ -715,7 +715,7 @@ class BitVector {
     }
   }
 
-  static bool Dimensions(const std::vector<BitVector>& v) {
+  static bool EqualSizeDimensions(const std::vector<BitVector>& v) {
     if (v.size() <= 1) {
       return true;
     } else {

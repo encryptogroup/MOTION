@@ -25,24 +25,43 @@
 #include "share_wrapper.h"
 
 #include "base/backend.h"
+#include "bmr_share.h"
+#include "gate/bmr_gate.h"
 
 namespace ABYN::Shares {
 using SharePtr = std::shared_ptr<Share>;
 
 ShareWrapper &ShareWrapper::operator^(const ShareWrapper &other) {
-  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
-    throw std::runtime_error(
-        "Boolean primitive operations are only supported for Boolean GMW shares");
-  }
   assert(share_);
   assert(*other);
-  auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
-  auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
+  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetBitLength() == other->GetBitLength());
 
-  auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(this_b, other_b);
-  share_->GetRegister()->RegisterNextGate(xor_gate);
-  *this = ShareWrapper(xor_gate->GetOutputAsShare());
-  return *this;
+  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+    throw std::runtime_error(
+        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+  }
+
+  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+    auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
+    auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
+
+    assert(this_b);
+    assert(other_b);
+
+    auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(this_b, other_b);
+    share_->GetRegister()->RegisterNextGate(xor_gate);
+    *this = ShareWrapper(xor_gate->GetOutputAsShare());
+    return *this;
+  } else {
+    auto this_b = std::dynamic_pointer_cast<BMRShare>(share_);
+    auto other_b = std::dynamic_pointer_cast<BMRShare>(*other);
+
+    auto xor_gate = std::make_shared<Gates::BMR::BMRXORGate>(this_b, other_b);
+    share_->GetRegister()->RegisterNextGate(xor_gate);
+    *this = ShareWrapper(xor_gate->GetOutputAsShare());
+    return *this;
+  }
 }
 
 ShareWrapper &ShareWrapper::operator&(const ShareWrapper &other) {
@@ -51,18 +70,28 @@ ShareWrapper &ShareWrapper::operator&(const ShareWrapper &other) {
   assert(share_->GetSharingType() == other->GetSharingType());
   assert(share_->GetBitLength() == other->GetBitLength());
 
-  if (share_->GetSharingType() != MPCProtocol::BooleanGMW) {
+  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
-        "Boolean primitive operations are only supported for boolean GMW shares");
+        "Boolean primitive operations are not supported for Arithmetic GMW shares");
   }
 
-  auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
-  auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
+  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+    auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
+    auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
 
-  auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(this_b, other_b);
-  share_->GetRegister()->RegisterNextGate(and_gate);
-  *this = ShareWrapper(and_gate->GetOutputAsShare());
-  return *this;
+    auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(this_b, other_b);
+    share_->GetRegister()->RegisterNextGate(and_gate);
+    *this = ShareWrapper(and_gate->GetOutputAsShare());
+    return *this;
+  } else {
+    auto this_b = std::dynamic_pointer_cast<BMRShare>(share_);
+    auto other_b = std::dynamic_pointer_cast<BMRShare>(*other);
+
+    auto and_gate = std::make_shared<Gates::BMR::BMRANDGate>(this_b, other_b);
+    share_->GetRegister()->RegisterNextGate(and_gate);
+    *this = ShareWrapper(and_gate->GetOutputAsShare());
+    return *this;
+  }
 }
 
 ShareWrapper &ShareWrapper::operator+(const ShareWrapper &other) {
@@ -143,12 +172,11 @@ const SharePtr ShareWrapper::Out(std::size_t output_owner) {
       return backend->BooleanGMWOutput(share_, output_owner);
     }
     case MPCProtocol::BMR: {
-      throw(std::runtime_error("BMR output gate is not implemented yet"));
-      // TODO
+      return backend->BMROutput(share_, output_owner);
     }
     default: {
-      throw(std::runtime_error(
-          fmt::format("Unknown protocol with id {}", static_cast<uint>(share_->GetSharingType()))));
+      throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
+                                           static_cast<uint>(share_->GetSharingType()))));
     }
   }
 }

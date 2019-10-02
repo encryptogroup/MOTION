@@ -24,57 +24,62 @@
 
 #pragma once
 
+#include <future>
+
 #include "gate.h"
 
-#include "share/boolean_gmw_share.h"
+#include "boolean_gmw_gate.h"
+#include "share/bmr_share.h"
 #include "utility/bit_vector.h"
 
-namespace ABYN::Gates::GMW {
+namespace ABYN::Gates::BMR {
 
-class GMWInputGate final : public Gates::Interfaces::InputGate {
+class BMRInputGate final : public Gates::Interfaces::InputGate {
  public:
-  GMWInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id,
+  BMRInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t input_owner_id,
                std::weak_ptr<Backend> backend);
 
-  GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id,
+  BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t input_owner_id,
                std::weak_ptr<Backend> backend);
 
   void InitializationHelper();
 
-  ~GMWInputGate() final = default;
+  ~BMRInputGate() final = default;
 
   void EvaluateSetup() final;
 
   void EvaluateOnline() final;
 
-  const Shares::GMWSharePtr GetOutputAsGMWShare();
+  const Shares::BMRSharePtr GetOutputAsBMRShare();
 
  protected:
   /// two-dimensional vector for storing the raw inputs
   std::vector<ENCRYPTO::BitVector<>> input_;
-
-  std::size_t bits_;                ///< Number of parallel values on wires
-  std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
-  ///< correlated randomness using AES CTR
+  std::size_t bits_;  ///< Number of parallel values on wires
+  std::future<std::unique_ptr<ENCRYPTO::BitVector<>>> received_public_values_;
+  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_keys_;
 };
 
 constexpr std::size_t ALL = std::numeric_limits<std::int64_t>::max();
 
-class GMWOutputGate final : public Interfaces::OutputGate {
+class BMROutputGate final : public Interfaces::OutputGate {
  public:
-  GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_owner = ALL);
+  BMROutputGate(const Shares::SharePtr &parent, std::size_t output_owner = ALL);
 
-  ~GMWOutputGate() final = default;
+  ~BMROutputGate() final = default;
 
-  void EvaluateSetup() final {}
+  void EvaluateSetup() final;
 
   void EvaluateOnline() final;
 
-  const Shares::GMWSharePtr GetOutputAsGMWShare() const;
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
 
   const Shares::SharePtr GetOutputAsShare() const;
 
  protected:
+  ABYN::Shares::GMWSharePtr gmw_out_share_;
+  std::shared_ptr<ABYN::Gates::GMW::GMWOutputGate> out_;
+
   std::vector<ENCRYPTO::BitVector<>> output_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> shared_outputs_;
 
@@ -84,49 +89,49 @@ class GMWOutputGate final : public Interfaces::OutputGate {
   std::mutex m;
 };
 
-class GMWXORGate final : public Gates::Interfaces::TwoGate {
+class BMRXORGate final : public Gates::Interfaces::TwoGate {
  public:
-  GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
+  BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
-  ~GMWXORGate() final = default;
-
-  void EvaluateSetup() final { SetSetupIsReady(); }
-
-  void EvaluateOnline() final;
-
-  const Shares::GMWSharePtr GetOutputAsGMWShare() const;
-
-  const Shares::SharePtr GetOutputAsShare() const;
-
-  GMWXORGate() = delete;
-
-  GMWXORGate(const Gate &) = delete;
-};
-
-class GMWANDGate final : public Gates::Interfaces::TwoGate {
- public:
-  GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
-
-  ~GMWANDGate() final = default;
+  ~BMRXORGate() final = default;
 
   void EvaluateSetup() final;
 
   void EvaluateOnline() final;
 
-  const Shares::GMWSharePtr GetOutputAsGMWShare() const;
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
 
   const Shares::SharePtr GetOutputAsShare() const;
 
-  GMWANDGate() = delete;
+  BMRXORGate() = delete;
 
-  GMWANDGate(const Gate &) = delete;
+  BMRXORGate(const Gate &) = delete;
+};
+
+class BMRANDGate final : public Gates::Interfaces::TwoGate {
+ public:
+  BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
+
+  ~BMRANDGate() final = default;
+
+  void EvaluateSetup() final;
+
+  void EvaluateOnline() final;
+
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  BMRANDGate() = delete;
+
+  BMRANDGate(const Gate &) = delete;
 
  private:
   std::size_t mt_offset_;
   std::size_t mt_bitlen_;
 
   std::shared_ptr<Shares::Share> d_, e_;
-  std::shared_ptr<GMWOutputGate> d_out_, e_out_;
+  // std::shared_ptr<GMWOutputGate> d_out_, e_out_;
 };
 
-}  // namespace ABYN::Gates::GMW
+}

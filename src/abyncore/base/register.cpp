@@ -30,10 +30,10 @@
 
 #include "communication/handler.h"
 #include "configuration.h"
-#include "crypto/base_ots/ot_hl17.h"
 #include "gate/gate.h"
 #include "utility/condition.h"
 #include "utility/logger.h"
+#include "wire/wire.h"
 
 namespace ABYN {
 
@@ -84,6 +84,7 @@ void Register::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&messa
   if (party_id == config_->GetMyId()) {
     throw(std::runtime_error("Trying to send message to myself"));
   }
+  std::scoped_lock lock(comm_handler_mutex_);
   if (auto shared_ptr_comm_handler = communication_handlers_.at(party_id).lock()) {
     shared_ptr_comm_handler->SendMessage(std::move(message));
   } else {
@@ -106,8 +107,8 @@ void Register::AddToActiveQueue(std::size_t gate_id) {
   std::scoped_lock lock(active_queue_mutex_);
   active_gates_.push(gate_id);
   logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
-  //std::cerr << fmt::format("Party#{} added gate #{} to the active queue\n", config_->GetMyId(),
-   //                        gate_id);
+  // std::cerr << fmt::format("Party#{} added gate #{} to the active queue\n", config_->GetMyId(),
+  //                        gate_id);
 }
 
 std::int64_t Register::GetNextGateFromActiveQueue() {
@@ -173,6 +174,11 @@ void Register::Clear() {
   for (auto &gate : gates_) {
     gate->Clear();
   }
+
+  for (auto &wire : wires_) {
+    wire->Clear();
+  }
+
   {
     std::scoped_lock(evaluated_gates_condition_->GetMutex());
     evaluated_gates_ = 0;
