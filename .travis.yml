@@ -22,9 +22,9 @@ before_install:
 script:
   - mkdir build_debug
   - cd build_debug
-  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake -DCMAKE_BUILD_TYPE=Debug -DABYN_BUILD_TESTS=On -j 2 ..
+  - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake -DCMAKE_BUILD_TYPE=Debug -DMOTION_BUILD_TESTS=On -j 2 ..
   - make -j 2
-  - ./bin/abyntest
+  - ./bin/motiontest
 
 notifications:
   - email: false

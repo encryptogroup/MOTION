@@ -1,6 +1,6 @@
-add_executable(abyntest
-        test_abyn_main.cpp
-        test_abyn.cpp
+add_executable(motiontest
+        test_motion_main.cpp
+        test_motion.cpp
         test_bitmatrix.cpp
         test_bitvector.cpp
         test_bmr.cpp
@@ -9,12 +9,12 @@ add_executable(abyntest
         test_ot.cpp
         )
 
-target_compile_features(abyntest PRIVATE cxx_std_17)
+target_compile_features(motiontest PRIVATE cxx_std_17)
 
-target_include_directories(abyntest PRIVATE
+target_include_directories(motiontest PRIVATE
         ${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
 
-target_link_libraries(abyntest PRIVATE
-        ABYN::abyn
+target_link_libraries(motiontest PRIVATE
+        MOTION::motion
         gtest
         )

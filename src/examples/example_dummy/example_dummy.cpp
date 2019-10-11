@@ -7,7 +7,7 @@
 #include "base/party.h"
 #include "wire/boolean_gmw_wire.h"
 
-using namespace ABYN;
+using namespace MOTION;
 
 constexpr std::uint16_t PORT_OFFSET = 7777;
 
@@ -19,21 +19,21 @@ void test() {
     std::size_t input_owner = std::rand() % num_parties, output_owner = std::rand() % num_parties;
     std::cout << fmt::format("Input owner: {}, output owner: {}\n", input_owner, output_owner);
     try {
-      std::vector<PartyPtr> abyn_parties(0);
+      std::vector<PartyPtr> motion_parties(0);
       std::vector<std::future<PartyPtr>> futures(0);
 
       // Party #0
       futures.push_back(std::async(std::launch::async, []() {
         std::vector<Communication::ContextPtr> parties;
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET,
-                                                                      ABYN::Role::Server, 1));
+                                                                      MOTION::Role::Server, 1));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 1,
-                                                                      ABYN::Role::Server, 2));
+                                                                      MOTION::Role::Server, 2));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 2,
-                                                                      ABYN::Role::Server, 3));
-        auto abyn = std::move(PartyPtr(new Party{parties, 0}));
-        abyn->Connect();
-        return std::move(abyn);
+                                                                      MOTION::Role::Server, 3));
+        auto motion = std::move(PartyPtr(new Party{parties, 0}));
+        motion->Connect();
+        return std::move(motion);
       }));
 
       // Party #1
@@ -41,45 +41,45 @@ void test() {
         std::string ip = "127.0.0.1";
         std::vector<Communication::ContextPtr> parties;
         parties.emplace_back(
-            std::make_shared<Communication::Context>(ip, PORT_OFFSET, ABYN::Role::Client, 0));
+            std::make_shared<Communication::Context>(ip, PORT_OFFSET, MOTION::Role::Client, 0));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 3,
-                                                                      ABYN::Role::Server, 2));
+                                                                      MOTION::Role::Server, 2));
         parties.emplace_back(std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 4,
-                                                                      ABYN::Role::Server, 3));
-        auto abyn = std::move(std::make_unique<Party>(parties, 1));
-        abyn->Connect();
-        return std::move(abyn);
+                                                                      MOTION::Role::Server, 3));
+        auto motion = std::move(std::make_unique<Party>(parties, 1));
+        motion->Connect();
+        return std::move(motion);
       }));
 
       // Party #2
       futures.push_back(std::async(std::launch::async, []() {
         std::string ip = "127.0.0.1";
         std::uint16_t port = PORT_OFFSET + 1;
-        auto abyn = std::move(PartyPtr(new Party{
-            {std::make_shared<Communication::Context>(ip, port, ABYN::Role::Client, 0),
-             std::make_shared<Communication::Context>(ip, PORT_OFFSET + 3, ABYN::Role::Client, 1),
+        auto motion = std::move(PartyPtr(new Party{
+            {std::make_shared<Communication::Context>(ip, port, MOTION::Role::Client, 0),
+             std::make_shared<Communication::Context>(ip, PORT_OFFSET + 3, MOTION::Role::Client, 1),
              std::make_shared<Communication::Context>("127.0.0.1", PORT_OFFSET + 5,
-                                                      ABYN::Role::Server, 3)},
+                                                      MOTION::Role::Server, 3)},
             2}));
-        abyn->Connect();
-        return std::move(abyn);
+        motion->Connect();
+        return std::move(motion);
       }));
 
       // Party #3
       futures.push_back(std::async(std::launch::async, []() {
-        auto abyn =
+        auto motion =
             std::move(PartyPtr(new Party{{std::make_shared<Communication::Context>(
-                                              "127.0.0.1", PORT_OFFSET + 2, ABYN::Role::Client, 0),
+                                              "127.0.0.1", PORT_OFFSET + 2, MOTION::Role::Client, 0),
                                           std::make_shared<Communication::Context>(
-                                              "127.0.0.1", PORT_OFFSET + 4, ABYN::Role::Client, 1),
+                                              "127.0.0.1", PORT_OFFSET + 4, MOTION::Role::Client, 1),
                                           std::make_shared<Communication::Context>(
-                                              "127.0.0.1", PORT_OFFSET + 5, ABYN::Role::Client, 2)},
+                                              "127.0.0.1", PORT_OFFSET + 5, MOTION::Role::Client, 2)},
                                          3}));
-        abyn->Connect();
-        return std::move(abyn);
+        motion->Connect();
+        return std::move(motion);
       }));
 
-      for (auto &f : futures) abyn_parties.push_back(f.get());
+      for (auto &f : futures) motion_parties.push_back(f.get());
 
       std::uniform_int_distribution<std::uint64_t> dist(0, 1);
 
@@ -98,12 +98,12 @@ void test() {
       ENCRYPTO::BitVector dummy_input_1K(1000, false);
       ENCRYPTO::BitVector dummy_input_100K(100000, false);
 
-      // std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(num_parties, 7777)));
+      // std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, 7777)));
       std::vector<std::thread> threads;
-      //#pragma omp parallel num_threads(abyn_parties.size() + 1) default(shared)
+      //#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
       //#pragma omp single
-      //#pragma omp taskloop num_tasks(abyn_parties.size())
-      for (auto &party : abyn_parties) {
+      //#pragma omp taskloop num_tasks(motion_parties.size())
+      for (auto &party : motion_parties) {
         threads.emplace_back([&]() {
           const auto BGMW = MPCProtocol::BooleanGMW;
           std::vector<Shares::SharePtr> input_share_1, input_share_1K, input_share_100K;
@@ -161,10 +161,10 @@ void test() {
 
           if (party->GetConfiguration()->GetMyId() == output_owner) {
             auto wire_1 =
-                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1->GetWires().at(0));
+                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(output_share_1->GetWires().at(0));
             auto wire_1K =
-                std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(output_share_1K->GetWires().at(0));
-            auto wire_100K = std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(
+                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(output_share_1K->GetWires().at(0));
+            auto wire_100K = std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(
                 output_share_100K->GetWires().at(0));
 
             assert(wire_1);
@@ -180,7 +180,7 @@ void test() {
 
             for (auto &s : output_share_100K_vector) {
               auto wire_100K_v =
-                  std::dynamic_pointer_cast<ABYN::Wires::GMWWire>(s->GetWires().at(0));
+                  std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s->GetWires().at(0));
 
               assert(wire_100K_v);
 

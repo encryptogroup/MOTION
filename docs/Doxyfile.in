@@ -1,14 +1,14 @@
 PROJECT_NAME            = @PROJECT_NAME@
-PROJECT_NUMBER          = @ABYN_VERSION@
+PROJECT_NUMBER          = @MOTION_VERSION@
 PROJECT_BRIEF           = "Framework for mixed-protocol multi-party computation"
 OUTPUT_LANGUAGE         = English
 
 OUTPUT_DIRECTORY        = @CMAKE_CURRENT_BINARY_DIR@/
-INPUT                   = @ABYN_SOURCE_DIR@/
+INPUT                   = @MOTION_SOURCE_DIR@/
 INCLUDE_PATH            = @GXX_INCLUDES@ \
-                          @ABYN_SOURCE_DIR@/abyncore/ \
-                          @ABYN_EXTERN_DIR@/flatbuffers/include/ \
-                          @ABYN_EXTERN_DIR@/fmt/include/
+                          @MOTION_SOURCE_DIR@/motioncore/ \
+                          @MOTION_EXTERN_DIR@/flatbuffers/include/ \
+                          @MOTION_EXTERN_DIR@/fmt/include/
 RECURSIVE               = YES
 MACRO_EXPANSION         = YES
 ENABLE_PREPROCESSING    = YES

@@ -11,7 +11,7 @@ if (DOXYGEN_FOUND)
 
     message("Building docs")
 
-    add_custom_target(abyn_doc
+    add_custom_target(motion_doc
             ALL
             COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}

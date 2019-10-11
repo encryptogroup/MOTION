@@ -1,18 +1,18 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(SET CMP0075 NEW)
-project(ABYN LANGUAGES CXX)
-set(ABYN_VERSION 0.01)
+project(MOTION LANGUAGES CXX)
+set(MOTION_VERSION 0.01)
 
 
 if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
 endif ()
 
-option(ABYN_BUILD_EXE "Build executables" OFF)
-option(ABYN_BUILD_TESTS "Build tests" OFF)
-option(ABYN_BUILD_DOC "Build documentation" OFF)
-set(ABYN_USE_AVX OFF CACHE STRING "Use AVX/AVX2/AVX512 instructions")
-set_property(CACHE ABYN_USE_AVX PROPERTY STRINGS OFF AVX AVX2 AVX512)
+option(MOTION_BUILD_EXE "Build executables" OFF)
+option(MOTION_BUILD_TESTS "Build tests" OFF)
+option(MOTION_BUILD_DOC "Build documentation" OFF)
+set(MOTION_USE_AVX OFF CACHE STRING "Use AVX/AVX2/AVX512 instructions")
+set_property(CACHE MOTION_USE_AVX PROPERTY STRINGS OFF AVX AVX2 AVX512)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(GMP REQUIRED)
@@ -29,9 +29,9 @@ find_package(Boost 1.66.0
         REQUIRED)
 set(Boost_USE_STATIC_LIBS ON)
 
-set(ABYN_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(ABYN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-set(ABYN_EXTERN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern")
+set(MOTION_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+set(MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(MOTION_EXTERN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
 
 if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
@@ -46,14 +46,14 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
 endif ()
 
 if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
-    set(ABYN_DEBUG "true")
+    set(MOTION_DEBUG "true")
 else ()
-    set(ABYN_DEBUG "false")
+    set(MOTION_DEBUG "false")
 endif ()
 
 configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/abyncore/utility/config.h.in
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/abyncore/utility/config.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/motioncore/utility/config.h.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/motioncore/utility/config.h
         ESCAPE_QUOTES
 )
 
@@ -100,16 +100,16 @@ elseif (NOT Flatbuffers_FOUND AND NOT TARGET flatbuffers::flatbuffers)
     set(FLATBUFFERS_BUILD_FLATHASH OFF CACHE BOOL "Disable building flathash" FORCE)
     set(FLATBUFFERS_BUILD_TESTS OFF CACHE BOOL "Disable building flatbuffers tests" FORCE)
     set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
-    set(FBS_INCLUDE_PREFIX "${CMAKE_SOURCE_DIR}/src/abyncore/communication/fbs_headers")
+    set(FBS_INCLUDE_PREFIX "${CMAKE_SOURCE_DIR}/src/motioncore/communication/fbs_headers")
     add_subdirectory(${PROJECT_SOURCE_DIR}/extern/flatbuffers
             ${CMAKE_CURRENT_BINARY_DIR}/flatbuffers-build)
     set(FLATBUFFERS_FLATC_EXECUTABLE "${PROJECT_BINARY_DIR}/bin/flatc")
 endif ()
 add_subdirectory(fbs)
 
-add_subdirectory(src/abyncore)
+add_subdirectory(src/motioncore)
 
-if (ABYN_BUILD_TESTS)
+if (MOTION_BUILD_TESTS)
     if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
         find_package(Git REQUIRED)
         message("initialize Git submodule: extern/googletest")
@@ -120,12 +120,12 @@ if (ABYN_BUILD_TESTS)
     set(BUILD_GMOCK OFF CACHE BOOL "Disable building gmock" FORCE)
     add_subdirectory(extern/googletest)
     add_subdirectory(src/test)
-endif (ABYN_BUILD_TESTS)
+endif (MOTION_BUILD_TESTS)
 
-if (ABYN_BUILD_EXE)
+if (MOTION_BUILD_EXE)
     add_subdirectory(src/examples)
-endif (ABYN_BUILD_EXE)
+endif (MOTION_BUILD_EXE)
 
-if (ABYN_BUILD_DOC)
+if (MOTION_BUILD_DOC)
     add_subdirectory(docs)
-endif (ABYN_BUILD_DOC)
+endif (MOTION_BUILD_DOC)

@@ -1,4 +1,4 @@
-namespace ABYN.Communication;
+namespace MOTION.Communication;
 
 table HelloMessage {
   source_id:uint16;
@@ -7,7 +7,7 @@ table HelloMessage {
   input_sharing_seed:[ubyte]; //32-byte seed
   fixed_key_aes_seed:[ubyte]; //16-byte key
   online_after_setup:bool = false;
-  ABYN_version:float;
+  MOTION_version:float;
 }
 // MT/OT generation parameters?
 // other parameters?

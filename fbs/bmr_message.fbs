@@ -1,4 +1,4 @@
-namespace ABYN.Communication;
+namespace MOTION.Communication;
 
 table BMRMessage {
   gate_id:uint64;       // gate id

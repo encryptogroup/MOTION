@@ -1,4 +1,4 @@
-namespace ABYN.Communication;
+namespace MOTION.Communication;
 
 table OutputWire {
   payload:[ubyte];      // uint8 output buffer

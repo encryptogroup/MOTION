@@ -1,4 +1,4 @@
-namespace ABYN.Communication;
+namespace MOTION.Communication;
 
 table BaseROTMessage {
   base_ot_id:uint64;

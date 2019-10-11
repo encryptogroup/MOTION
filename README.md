@@ -1,4 +1,4 @@
-# ABY-N [![Build Status](https://travis-ci.com/Oleksandr-Tkachenko/ABYN.svg?token=vWcBQYzxXnAWavBdMFeK&branch=master)](https://travis-ci.com/Oleksandr-Tkachenko/ABYN)
+# MOTION [![Build Status](https://travis-ci.com/Oleksandr-Tkachenko/MOTION.svg?token=vWcBQYzxXnAWavBdMFeK&branch=master)](https://travis-ci.com/Oleksandr-Tkachenko/MOTION)
 
 ### A Framework for Efficient Mixed-Protocol Secure Multi-Party Computation and Trustworthy Outsourcing
 
@@ -8,8 +8,8 @@ This code is provided as a experimental implementation for testing purposes and 
 
 ---
 
-* A **Linux distribution** of your choice (ABY-N was developed and tested with recent versions of [Ubuntu](http://www.ubuntu.com/), [Manjaro](https://manjaro.org/) and [Arch Linux](https://www.archlinux.org/)).
-* **Required packages for ABY-N:**
+* A **Linux distribution** of your choice (MOTION was developed and tested with recent versions of [Ubuntu](http://www.ubuntu.com/), [Manjaro](https://manjaro.org/) and [Arch Linux](https://www.archlinux.org/)).
+* **Required packages for MOTION:**
   * `g++` (version >=8)
     or another compiler and standard library implementing C++17 including the filesystem library
   * `make`
@@ -18,16 +18,16 @@ This code is provided as a experimental implementation for testing purposes and 
   * **TODO** complete this list
 
 
-#### Building ABY-N
+#### Building MOTION
 
 ##### Short Version
 
-1. Clone the ABY-N git repository by running:
+1. Clone the MOTION git repository by running:
     ```
     git clone https://github.com/encryptogroup/ABY.git
     ```
 
-2. Enter the Framework directory: `cd ABYN/`
+2. Enter the Framework directory: `cd MOTION/`
 
 3. Create and enter the build directory: `mkdir build && cd build`
 
@@ -46,7 +46,7 @@ This code is provided as a experimental implementation for testing purposes and 
 
 ###### External Dependencies
 
-ABY-N depends on the following libraries:
+MOTION depends on the following libraries:
 * [boost](https://www.boost.org/)
 * [flatbuffers](https://github.com/google/flatbuffers)
 * [fmt](https://github.com/fmtlib/fmt)
@@ -67,16 +67,16 @@ system for these libraries. (**TODO**: is this still the case?)
     cmake .. -DCMAKE_PREFIX_PATH=~/some/path/
     ```
 * Otherwise, CMake updates and initializes the Git submodules in `extern/` (if
-  not already done), and the missing dependencies are built together with ABY-N.
+  not already done), and the missing dependencies are built together with MOTION.
   If you want to do this without a network connection, consider to clone the
   repository recursively.
 
 ###### Test Executables and Example Applications
 
-ABY-N executables and test cases are not built by default.
-This can be enabled with the `ABYN_BUILD_EXE` or `ABYN_BUILD_TESTS` option, respectively, e.g.:
+MOTION executables and test cases are not built by default.
+This can be enabled with the `MOTION_BUILD_EXE` or `MOTION_BUILD_TESTS` option, respectively, e.g.:
 ```
-cmake .. -DABYN_BUILD_EXE=On
+cmake .. -DMOTION_BUILD_EXE=On
 ```
 
 ###### Build Options
@@ -103,7 +103,7 @@ To clean only parts of the build, either invoke `make clean` in the specific
 subdirectory or use `make -C`:
 
 * `make clean` - clean everything
-* `make -C src/abycore clean` - clean only the ABY-N library
+* `make -C src/abycore clean` - clean only the MOTION library
 * `make -C src/examples clean` - clean only the examples
 * `make -C src/test clean` - clean only the test application
 * `make -C extern clean` - clean only the built dependencies
@@ -111,8 +111,8 @@ subdirectory or use `make -C`:
 
 ###### Installation
 
-In case you plan to use ABY-N for your own application, you might want to install
-the ABY-N library to some place, for example system-wide (e.g. at `/usr/local`)
+In case you plan to use MOTION for your own application, you might want to install
+the MOTION library to some place, for example system-wide (e.g. at `/usr/local`)
 or somewhere in your workspace (e.g. `/path/to/aby`).
 There are two relevant options:
 
@@ -125,7 +125,7 @@ There are two relevant options:
   is used by the Makefile to install to a nonstandard location.
 
 Example:
-If you want to install ABY-N to `~/path/to/aby/prefix/{include,lib}` you can use:
+If you want to install MOTION to `~/path/to/aby/prefix/{include,lib}` you can use:
 ```
 cmake .. -DCMAKE_INSTALL_PREFIX=""
 make
@@ -140,12 +140,12 @@ make install
 
 
 #### Developer Guide and Documentation
-**TODO:** We provide an extensive developer guide with many examples and explanations of how to use ABY-N.
+**TODO:** We provide an extensive developer guide with many examples and explanations of how to use MOTION.
 
-**TODO:** Also, see the online doxygen documentation of ABY-N for further information and comments on the code.
+**TODO:** Also, see the online doxygen documentation of MOTION for further information and comments on the code.
 
 
-### ABY-N Applications
+### MOTION Applications
 
 ---
 

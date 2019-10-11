@@ -1,4 +1,4 @@
-namespace ABYN.Communication;
+namespace MOTION.Communication;
 
 enum MessageType : ubyte {
   HelloMessage = 0,

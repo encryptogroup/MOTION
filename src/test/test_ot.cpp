@@ -40,9 +40,9 @@ TEST(ObliviousTransfer, BaseOT) {
   for (auto iteration = 0ull; iteration < TEST_ITERATIONS; ++iteration) {
     for (auto num_parties : num_parties_list) {
       try {
-        std::vector<ABYN::PartyPtr> abyn_parties(
-            std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-        for (auto &p : abyn_parties) {
+        std::vector<MOTION::PartyPtr> motion_parties(
+            std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : motion_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
         }
         std::vector<std::thread> t(num_parties);
@@ -56,16 +56,16 @@ TEST(ObliviousTransfer, BaseOT) {
           v.resize(num_parties);
         }
 
-        for (auto i = 0u; i < abyn_parties.size(); ++i) {
-          t.at(i) = std::thread([&abyn_parties, i, num_parties, &base_ots]() {
-            abyn_parties.at(i)->GetBackend()->ComputeBaseOTs();
-            abyn_parties.at(i)->Finish();
+        for (auto i = 0u; i < motion_parties.size(); ++i) {
+          t.at(i) = std::thread([&motion_parties, i, num_parties, &base_ots]() {
+            motion_parties.at(i)->GetBackend()->ComputeBaseOTs();
+            motion_parties.at(i)->Finish();
 
             for (auto other_id = 0u; other_id < num_parties; ++other_id) {
               if (i == other_id) {
                 continue;
               }
-              auto &ds = abyn_parties.at(i)
+              auto &ds = motion_parties.at(i)
                              ->GetConfiguration()
                              ->GetContexts()
                              .at(other_id)
@@ -144,9 +144,9 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
 
       bitlen.at(bitlen.size() - 1) = 1;
 
-      std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-      for (auto &p : abyn_parties) {
+      std::vector<MOTION::PartyPtr> motion_parties(
+          std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+      for (auto &p : motion_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
       std::vector<std::thread> t(num_parties);
@@ -165,12 +165,12 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
         choices.at(i).resize(num_parties);
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
         t.at(i) = std::thread(
-            [&bitlen, &ots_in_batch, &sender_ot, &receiver_ot, &abyn_parties, i, num_parties]() {
-              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+            [&bitlen, &ots_in_batch, &sender_ot, &receiver_ot, &motion_parties, i, num_parties]() {
+              for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
-                  auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
+                  auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
                         ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
@@ -181,8 +181,8 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Run(2);
-              abyn_parties.at(i)->Finish();
+              motion_parties.at(i)->Run(2);
+              motion_parties.at(i)->Finish();
             });
       }
 
@@ -190,8 +190,8 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
         tt.join();
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
+        for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i != j) {
             for (auto k = 0ull; k < num_ots; ++k) {
               sender_msgs.at(i).at(j).push_back(sender_ot.at(i).at(j).at(k)->GetOutputs());
@@ -233,9 +233,9 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
 
       bitlen.at(bitlen.size() - 1) = 1;
 
-      std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-      for (auto &p : abyn_parties) {
+      std::vector<MOTION::PartyPtr> motion_parties(
+          std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+      for (auto &p : motion_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
       std::vector<std::thread> t(num_parties);
@@ -271,12 +271,12 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
         }
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
         t.at(i) = std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch,
-                               &sender_ot, &receiver_ot, &abyn_parties, i, num_parties]() {
-          for (auto j = 0u; j < abyn_parties.size(); ++j) {
+                               &sender_ot, &receiver_ot, &motion_parties, i, num_parties]() {
+          for (auto j = 0u; j < motion_parties.size(); ++j) {
             if (i != j) {
-              auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
+              auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
               for (auto k = 0ull; k < num_ots; ++k) {
                 sender_ot.at(i).at(j).push_back(
                     ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k)));
@@ -285,9 +285,9 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
               }
             }
           }
-          abyn_parties.at(i)->Run(2);
+          motion_parties.at(i)->Run(2);
 
-          for (auto j = 0u; j < abyn_parties.size(); ++j) {
+          for (auto j = 0u; j < motion_parties.size(); ++j) {
             if (i != j) {
               for (auto k = 0ull; k < num_ots; ++k) {
                 receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
@@ -297,7 +297,7 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
               }
             }
           }
-          abyn_parties.at(i)->Finish();
+          motion_parties.at(i)->Finish();
         });
       }
 
@@ -305,8 +305,8 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
         tt.join();
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
+        for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i != j) {
             for (auto k = 0ull; k < num_ots; ++k) {
               receiver_msgs.at(j).at(i).at(k) = receiver_ot.at(j).at(i).at(k)->GetOutputs();
@@ -345,9 +345,9 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
 
       bitlen.at(bitlen.size() - 1) = 1;
 
-      std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-      for (auto &p : abyn_parties) {
+      std::vector<MOTION::PartyPtr> motion_parties(
+          std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+      for (auto &p : motion_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
       std::vector<std::thread> t(num_parties);
@@ -385,13 +385,13 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
         }
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
         t.at(i) =
             std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch, &sender_ot,
-                         &sender_out, &receiver_ot, &abyn_parties, i, num_parties]() {
-              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+                         &sender_out, &receiver_ot, &motion_parties, i, num_parties]() {
+              for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
-                  auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
+                  auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
                         ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
@@ -402,8 +402,8 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Run(2);
-              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+              motion_parties.at(i)->Run(2);
+              for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
                   for (auto k = 0ull; k < num_ots; ++k) {
                     receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
@@ -415,7 +415,7 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Finish();
+              motion_parties.at(i)->Finish();
             });
       }
 
@@ -423,8 +423,8 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
         if (tt.joinable()) tt.join();
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
+        for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i == j) continue;
           for (auto k = 0ull; k < num_ots; ++k) {
             receiver_msgs.at(i).at(j).at(k) = receiver_ot.at(i).at(j).at(k)->GetOutputs();
@@ -433,8 +433,8 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
         }
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
+        for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i != j) {
             for (auto k = 0ull; k < num_ots; ++k) {
               for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {
@@ -474,9 +474,9 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
         ots_in_batch.at(i) = dist_batch_size(rd);
       }
 
-      std::vector<ABYN::PartyPtr> abyn_parties(
-          std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-      for (auto &p : abyn_parties) {
+      std::vector<MOTION::PartyPtr> motion_parties(
+          std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+      for (auto &p : motion_parties) {
         p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       }
       std::vector<std::thread> t(num_parties);
@@ -515,13 +515,13 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
         }
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
         t.at(i) =
             std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch, &sender_ot,
-                         &sender_out, &receiver_ot, &abyn_parties, i, num_parties]() {
-              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+                         &sender_out, &receiver_ot, &motion_parties, i, num_parties]() {
+              for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
-                  auto &ot_provider = abyn_parties.at(i)->GetBackend()->GetOTProvider(j);
+                  auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
                         ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
@@ -532,9 +532,9 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Run(2);
+              motion_parties.at(i)->Run(2);
 
-              for (auto j = 0u; j < abyn_parties.size(); ++j) {
+              for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
 #pragma omp parallel sections
                   {
@@ -555,7 +555,7 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              abyn_parties.at(i)->Finish();
+              motion_parties.at(i)->Finish();
             });
       }
 
@@ -563,8 +563,8 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
         tt.join();
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
+        for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i != j) {
             for (auto k = 0ull; k < num_ots; ++k) {
               receiver_msgs.at(i).at(j).at(k) = receiver_ot.at(i).at(j).at(k)->GetOutputs();
@@ -574,8 +574,8 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
         }
       }
 
-      for (auto i = 0u; i < abyn_parties.size(); ++i) {
-        for (auto j = 0u; j < abyn_parties.size(); ++j) {
+      for (auto i = 0u; i < motion_parties.size(); ++i) {
+        for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i != j) {
             for (auto k = 0ull; k < num_ots; ++k) {
               for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {

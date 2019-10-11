@@ -14,8 +14,8 @@ README.html
 .idea*
 *_generated.h
 
-src/abyncore/communication/fbs_headers/*
-src/abyncore/utility/config.h
+src/motioncore/communication/fbs_headers/*
+src/motioncore/utility/config.h
 
 # build directory
 build*/

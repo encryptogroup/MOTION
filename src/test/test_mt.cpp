@@ -39,7 +39,7 @@ using vvv = std::vector<std::vector<std::vector<T>>>;
 
 TEST(MultiplicationTriples, Binary) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
-    constexpr auto BGMW = ABYN::MPCProtocol::BooleanGMW;
+    constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
     std::srand(std::time(nullptr));
     for (auto num_parties : {2u, 3u}) {
       std::vector<bool> global_input_1(num_parties);
@@ -54,24 +54,24 @@ TEST(MultiplicationTriples, Binary) {
       bool dummy_input_1 = false;
       ENCRYPTO::BitVector<> dummy_input_20(20, false);
       try {
-        std::vector<ABYN::PartyPtr> abyn_parties(
-            std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-        for (auto &p : abyn_parties) {
+        std::vector<MOTION::PartyPtr> motion_parties(
+            std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : motion_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
         }
 
         auto f = [&](std::size_t party_id) {
-          std::vector<ABYN::Shares::ShareWrapper> s_in_1, s_in_1K;
+          std::vector<MOTION::Shares::ShareWrapper> s_in_1, s_in_1K;
 
           for (auto j = 0ull; j < num_parties; ++j) {
-            if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+            if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
               s_in_1.emplace_back(
-                  abyn_parties.at(party_id)->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
-              s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<BGMW>(global_input_20.at(j), j));
+                  motion_parties.at(party_id)->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
+              s_in_1K.emplace_back(motion_parties.at(party_id)->IN<BGMW>(global_input_20.at(j), j));
             } else {
-              s_in_1.emplace_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
-              s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<BGMW>(dummy_input_20, j));
+              s_in_1.emplace_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
+              s_in_1K.emplace_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_20, j));
             }
           }
 
@@ -83,28 +83,28 @@ TEST(MultiplicationTriples, Binary) {
             s_and_1K = s_and_1K & s_in_1K.at(j);
           }
 
-          abyn_parties.at(party_id)->Run();
+          motion_parties.at(party_id)->Run();
         };
         std::vector<std::thread> t;
-        //#pragma omp parallel for num_threads(abyn_parties.size() + 1)
-        for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-          t.emplace_back([party_id, &abyn_parties, &f]() {
+        //#pragma omp parallel for num_threads(motion_parties.size() + 1)
+        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+          t.emplace_back([party_id, &motion_parties, &f]() {
             f(party_id);
             // check multiplication triples
             if (party_id == 0) {
               ENCRYPTO::BitVector<> a, b, c;
-              a = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
-              b = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
-              c = abyn_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
+              a = motion_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
+              b = motion_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
+              c = motion_parties.at(0)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
 
-              for (auto j = 1ull; j < abyn_parties.size(); ++j) {
-                a ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
-                b ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
-                c ^= abyn_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
+              for (auto j = 1ull; j < motion_parties.size(); ++j) {
+                a ^= motion_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().a;
+                b ^= motion_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().b;
+                c ^= motion_parties.at(j)->GetBackend()->GetMTProvider()->GetBinaryAll().c;
               }
               EXPECT_EQ(c, a & b);
             }
-            abyn_parties.at(party_id)->Finish();
+            motion_parties.at(party_id)->Finish();
           });
         }
         for (auto &&tt : t)
@@ -120,7 +120,7 @@ TEST(MultiplicationTriples, Integer) {
   auto template_test = [](auto t) {
     using T = decltype(t);
     for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
-      constexpr auto AGMW = ABYN::MPCProtocol::ArithmeticGMW;
+      constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
       std::srand(std::time(nullptr));
       for (auto num_parties : {2u, 3u}) {
         std::vector<T> global_input_1(num_parties);
@@ -138,24 +138,24 @@ TEST(MultiplicationTriples, Integer) {
         T dummy_input_1 = 0;
         std::vector<T> dummy_input_100(100);
         try {
-          std::vector<ABYN::PartyPtr> abyn_parties(
-              std::move(ABYN::GetNLocalParties(num_parties, PORT_OFFSET)));
-          for (auto &p : abyn_parties) {
+          std::vector<MOTION::PartyPtr> motion_parties(
+              std::move(MOTION::GetNLocalParties(num_parties, PORT_OFFSET)));
+          for (auto &p : motion_parties) {
             p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
             p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
           }
 
           auto f = [&](std::size_t party_id) {
-            std::vector<ABYN::Shares::ShareWrapper> s_in_1, s_in_1K;
+            std::vector<MOTION::Shares::ShareWrapper> s_in_1, s_in_1K;
 
             for (auto j = 0ull; j < num_parties; ++j) {
-              if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-                s_in_1.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(global_input_1.at(j), j));
+              if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+                s_in_1.emplace_back(motion_parties.at(party_id)->IN<AGMW>(global_input_1.at(j), j));
                 s_in_1K.emplace_back(
-                    abyn_parties.at(party_id)->IN<AGMW>(global_input_100.at(j), j));
+                    motion_parties.at(party_id)->IN<AGMW>(global_input_100.at(j), j));
               } else {
-                s_in_1.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(dummy_input_1, j));
-                s_in_1K.emplace_back(abyn_parties.at(party_id)->IN<AGMW>(dummy_input_100, j));
+                s_in_1.emplace_back(motion_parties.at(party_id)->IN<AGMW>(dummy_input_1, j));
+                s_in_1K.emplace_back(motion_parties.at(party_id)->IN<AGMW>(dummy_input_100, j));
               }
             }
 
@@ -167,23 +167,23 @@ TEST(MultiplicationTriples, Integer) {
               s_and_1K = s_and_1K * s_in_1K.at(j);
             }
 
-            abyn_parties.at(party_id)->Run();
+            motion_parties.at(party_id)->Run();
           };
           std::vector<std::thread> t;
-          //#pragma omp parallel for num_threads(abyn_parties.size() + 1)
-          for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-            t.emplace_back([party_id, &abyn_parties, &f]() {
+          //#pragma omp parallel for num_threads(motion_parties.size() + 1)
+          for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+            t.emplace_back([party_id, &motion_parties, &f]() {
               f(party_id);
               // check multiplication triples
               if (party_id == 0) {
                 std::vector<T> a, b, c;
-                const auto &mtp = abyn_parties.at(0)->GetBackend()->GetMTProvider();
+                const auto &mtp = motion_parties.at(0)->GetBackend()->GetMTProvider();
                 a = mtp->template GetIntegerAll<T>().a;
                 b = mtp->template GetIntegerAll<T>().b;
                 c = mtp->template GetIntegerAll<T>().c;
 
-                for (auto j = 1ull; j < abyn_parties.size(); ++j) {
-                  const auto &mtp_j = abyn_parties.at(j)->GetBackend()->GetMTProvider();
+                for (auto j = 1ull; j < motion_parties.size(); ++j) {
+                  const auto &mtp_j = motion_parties.at(j)->GetBackend()->GetMTProvider();
                   for (auto k = 0ull; k < a.size(); ++k) {
                     a.at(k) += mtp_j->template GetIntegerAll<T>().a.at(k);
                     b.at(k) += mtp_j->template GetIntegerAll<T>().b.at(k);
@@ -194,7 +194,7 @@ TEST(MultiplicationTriples, Integer) {
                   EXPECT_EQ(c.at(k), static_cast<T>(a.at(k) * b.at(k)));
                 }
               }
-              abyn_parties.at(party_id)->Finish();
+              motion_parties.at(party_id)->Finish();
             });
           }
           for (auto &&tt : t)

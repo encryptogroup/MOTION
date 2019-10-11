@@ -41,7 +41,7 @@
 #include "test_constants.h"
 
 namespace {
-using namespace ABYN;
+using namespace MOTION;
 
 // number of parties, wires, SIMD values, online-after-setup flag
 using parameters_t = std::tuple<std::size_t, std::size_t, std::size_t, bool>;
@@ -60,7 +60,7 @@ class BMRTest : public testing::TestWithParam<parameters_t> {
 };
 
 TEST_P(BMRTest, InputOutput) {
-  constexpr auto BMR = ABYN::MPCProtocol::BMR;
+  constexpr auto BMR = MOTION::MPCProtocol::BMR;
   std::srand(std::time(nullptr));
   const std::size_t input_owner = std::rand() % this->n_parties_,
                     output_owner = std::rand() % this->n_parties_;
@@ -75,37 +75,37 @@ TEST_P(BMRTest, InputOutput) {
                                                  ENCRYPTO::BitVector<>(this->n_simd_, false));
 
   try {
-    std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
-    for (auto &p : abyn_parties) {
+    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
       p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
     }
     std::vector<std::thread> t;
-    for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &abyn_parties, this, input_owner, output_owner, &global_input,
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &motion_parties, this, input_owner, output_owner, &global_input,
                       &dummy_input]() {
         Shares::SharePtr tmp_share;
-        if (input_owner == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-          tmp_share = abyn_parties.at(party_id)->IN<BMR>(global_input.at(input_owner), input_owner);
+        if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+          tmp_share = motion_parties.at(party_id)->IN<BMR>(global_input.at(input_owner), input_owner);
         } else {
-          tmp_share = abyn_parties.at(party_id)->IN<BMR>(dummy_input, input_owner);
+          tmp_share = motion_parties.at(party_id)->IN<BMR>(dummy_input, input_owner);
         }
 
-        ABYN::Shares::ShareWrapper s_in(tmp_share);
+        MOTION::Shares::ShareWrapper s_in(tmp_share);
 
         auto s_out = s_in.Out(output_owner);
 
-        abyn_parties.at(party_id)->Run(2);
+        motion_parties.at(party_id)->Run(2);
 
         if (party_id == output_owner) {
           for (auto i = 0ull; i < n_wires_; ++i) {
             auto wire_single =
-                std::dynamic_pointer_cast<ABYN::Wires::BMRWire>(s_out->GetWires().at(i));
+                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(i));
             assert(wire_single);
             EXPECT_EQ(wire_single->GetPublicValues(), global_input.at(input_owner).at(i));
           }
         }
-        abyn_parties.at(party_id)->Finish();
+        motion_parties.at(party_id)->Finish();
       });
     }
     for (auto &tt : t)
@@ -116,7 +116,7 @@ TEST_P(BMRTest, InputOutput) {
 }
 
 TEST_P(BMRTest, XOR) {
-  constexpr auto BMR = ABYN::MPCProtocol::BMR;
+  constexpr auto BMR = MOTION::MPCProtocol::BMR;
   std::srand(std::time(nullptr));
   const std::size_t output_owner = std::rand() % this->n_parties_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->n_parties_);
@@ -129,21 +129,21 @@ TEST_P(BMRTest, XOR) {
   std::vector<ENCRYPTO::BitVector<>> dummy_input(this->n_wires_,
                                                  ENCRYPTO::BitVector<>(this->n_simd_, false));
   try {
-    std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
-    for (auto &p : abyn_parties) {
+    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
       p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
     }
     std::vector<std::thread> t;
-    for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &abyn_parties, this, output_owner, &global_input, &dummy_input]() {
-        std::vector<ABYN::Shares::ShareWrapper> s_in;
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &motion_parties, this, output_owner, &global_input, &dummy_input]() {
+        std::vector<MOTION::Shares::ShareWrapper> s_in;
 
         for (auto j = 0ull; j < this->n_parties_; ++j) {
-          if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-            s_in.push_back(abyn_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
+          if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
           } else {
-            s_in.push_back(abyn_parties.at(party_id)->IN<BMR>(dummy_input, j));
+            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(dummy_input, j));
           }
         }
 
@@ -155,12 +155,12 @@ TEST_P(BMRTest, XOR) {
 
         auto s_out = s_xor.Out(output_owner);
 
-        abyn_parties.at(party_id)->Run(2);
+        motion_parties.at(party_id)->Run(2);
 
         if (party_id == output_owner) {
           for (auto j = 0ull; j < this->n_wires_; ++j) {
             auto wire_single =
-                std::dynamic_pointer_cast<ABYN::Wires::BMRWire>(s_out->GetWires().at(j));
+                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(j));
             assert(wire_single);
 
             std::vector<ENCRYPTO::BitVector<>> global_input_single;
@@ -172,7 +172,7 @@ TEST_P(BMRTest, XOR) {
                       ENCRYPTO::BitVector<>::XORBitVectors(global_input_single));
           }
         }
-        abyn_parties.at(party_id)->Finish();
+        motion_parties.at(party_id)->Finish();
       });
     }
     for (auto &tt : t)
@@ -220,7 +220,7 @@ TEST_P(BMRANDTest, AND) {
   EXPECT_NE(n_wires_, 0);
   EXPECT_NE(n_simd_, 0);
 
-  constexpr auto BMR = ABYN::MPCProtocol::BMR;
+  constexpr auto BMR = MOTION::MPCProtocol::BMR;
   std::srand(std::time(nullptr));
   const std::size_t output_owner = std::rand() % n_parties_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(n_parties_);
@@ -233,21 +233,21 @@ TEST_P(BMRANDTest, AND) {
   std::vector<ENCRYPTO::BitVector<>> dummy_input(n_wires_, ENCRYPTO::BitVector<>(n_simd_, false));
 
   try {
-    std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(n_parties_, PORT_OFFSET)));
-    for (auto &p : abyn_parties) {
+    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(n_parties_, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
       p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
     }
     std::vector<std::thread> t;
-    for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &abyn_parties, this, output_owner, &global_input, &dummy_input]() {
-        std::vector<ABYN::Shares::ShareWrapper> s_in;
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &motion_parties, this, output_owner, &global_input, &dummy_input]() {
+        std::vector<MOTION::Shares::ShareWrapper> s_in;
 
         for (auto j = 0ull; j < this->n_parties_; ++j) {
-          if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-            s_in.push_back(abyn_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
+          if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
           } else {
-            s_in.push_back(abyn_parties.at(party_id)->IN<BMR>(dummy_input, j));
+            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(dummy_input, j));
           }
         }
 
@@ -259,12 +259,12 @@ TEST_P(BMRANDTest, AND) {
 
         auto s_out = s_and.Out(output_owner);
 
-        abyn_parties.at(party_id)->Run();
+        motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
           for (auto j = 0ull; j < s_out->GetWires().size(); ++j) {
             auto wire_single =
-                std::dynamic_pointer_cast<ABYN::Wires::BMRWire>(s_out->GetWires().at(j));
+                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(j));
             assert(wire_single);
 
             std::vector<ENCRYPTO::BitVector<>> global_input_single;
@@ -276,7 +276,7 @@ TEST_P(BMRANDTest, AND) {
                       ENCRYPTO::BitVector<>::ANDBitVectors(global_input_single));
           }
         }
-        abyn_parties.at(party_id)->Finish();
+        motion_parties.at(party_id)->Finish();
       });
     }
     for (auto &tt : t)

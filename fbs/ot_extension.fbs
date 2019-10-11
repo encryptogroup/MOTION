@@ -1,4 +1,4 @@
-namespace ABYN.Communication;
+namespace MOTION.Communication;
 
 table OTExtensionMessage {
   i:uint64;       // u_i with i \in {0, ..., \kappa - 1} or y_i with i \in {0, ..., m - 1}
