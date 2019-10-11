@@ -39,7 +39,7 @@ Configuration::Configuration(const std::vector<Communication::ContextPtr> &conte
     : my_id_(id),
       fixed_key_aes_key_my_part_(ENCRYPTO::AlignedBitVector::Random(kappa)),
       BMR_random_offset_(ENCRYPTO::AlignedBitVector::Random(kappa)),
-      num_threads_(std::thread::hardware_concurrency()) {
+      num_threads_(std::max(std::thread::hardware_concurrency(), 8u)) {
   communication_contexts_.resize(contexts.size() + 1, nullptr);
   if constexpr (ABYN_VERBOSE_DEBUG) {
     severity_level_ = boost::log::trivial::trace;
