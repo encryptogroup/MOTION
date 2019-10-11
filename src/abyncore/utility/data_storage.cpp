@@ -418,6 +418,14 @@ void DataStorage::BMRMessageReceived(const std::uint8_t *message, const BMRDataT
           std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
       break;
     }
+    case BMRDataType::and_gate: {
+      assert(bmr_data_->garbled_rows_.find(i) != bmr_data_->garbled_rows_.end());
+      std::size_t bitlen = bmr_data_->garbled_rows_.at(i).first;
+      assert(bitlen % 128 == 0);
+      bmr_data_->garbled_rows_.at(i).second.set_value(
+          std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
+      break;
+    }
     default:
       throw std::runtime_error("Unknown BMR message type");
   }

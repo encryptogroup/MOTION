@@ -42,4 +42,12 @@ flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
 // publish the keys corresponding to the masked inputs
 flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload);
+
+// publish the garbled rows
+flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
+                                                     const std::vector<std::uint8_t>& payload);
+
+// publish the garbled rows
+flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
+                                                     std::vector<std::uint8_t>&& payload);
 }  // namespace ABYN::Communication

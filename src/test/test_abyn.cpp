@@ -1247,4 +1247,106 @@ TEST(BMR, XOR_64_bit_200_SIMD_2_3_parties) {
   }
 }
 
+// number of parties, wires, SIMD values, online-after-setup flag
+using parameters_t = std::tuple<std::size_t, std::size_t, std::size_t, bool>;
+class BMRANDTest : public testing::TestWithParam<parameters_t> {
+ public:
+  void SetUp() override {
+    auto parameters = GetParam();
+    std::tie(n_parties_, n_wires_, n_simd_, online_after_setup_) = parameters;
+  }
+  void TearDown() override { n_parties_ = n_wires_ = n_simd_ = 0; }
+
+ protected:
+  std::size_t n_parties_ = 0, n_wires_ = 0, n_simd_ = 0;
+  bool online_after_setup_ = false;
+};
+
+TEST_P(BMRANDTest, Parametrized) {
+  EXPECT_NE(n_parties_, 0);
+  EXPECT_NE(n_wires_, 0);
+  EXPECT_NE(n_simd_, 0);
+
+  constexpr auto BMR = ABYN::MPCProtocol::BMR;
+  std::srand(std::time(nullptr));
+  const std::size_t output_owner = std::rand() % n_parties_;
+  std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(n_parties_);
+  for (auto &bv_v : global_input) {
+    bv_v.resize(n_wires_);
+    for (auto &bv : bv_v) {
+      bv = ENCRYPTO::BitVector<>::Random(n_simd_);
+    }
+  }
+  std::vector<ENCRYPTO::BitVector<>> dummy_input(n_wires_, ENCRYPTO::BitVector<>(n_simd_, false));
+
+  try {
+    std::vector<PartyPtr> abyn_parties(std::move(GetNLocalParties(n_parties_, PORT_OFFSET)));
+    for (auto &p : abyn_parties) {
+      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+      p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
+    }
+    std::vector<std::thread> t;
+    for (auto party_id = 0u; party_id < abyn_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &abyn_parties, this, output_owner, &global_input, &dummy_input]() {
+        std::vector<ABYN::Shares::ShareWrapper> s_in;
+
+        for (auto j = 0ull; j < this->n_parties_; ++j) {
+          if (j == abyn_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+            s_in.push_back(abyn_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
+          } else {
+            s_in.push_back(abyn_parties.at(party_id)->IN<BMR>(dummy_input, j));
+          }
+        }
+
+        auto s_and = s_in.at(0) & s_in.at(1);
+
+        for (auto j = 2ull; j < this->n_parties_; ++j) {
+          s_and = s_and & s_in.at(j);
+        }
+
+        auto s_out = s_and.Out(output_owner);
+
+        abyn_parties.at(party_id)->Run();
+
+        if (party_id == output_owner) {
+          for (auto j = 0ull; j < s_out->GetWires().size(); ++j) {
+            auto wire_single =
+                std::dynamic_pointer_cast<ABYN::Wires::BMRWire>(s_out->GetWires().at(j));
+            assert(wire_single);
+
+            std::vector<ENCRYPTO::BitVector<>> global_input_single;
+            for (auto k = 0ull; k < this->n_parties_; ++k) {
+              global_input_single.push_back(global_input.at(k).at(j));
+            }
+
+            EXPECT_EQ(wire_single->GetPublicValues(),
+                      ENCRYPTO::BitVector<>::ANDBitVectors(global_input_single));
+          }
+        }
+        abyn_parties.at(party_id)->Finish();
+      });
+    }
+    for (auto &tt : t)
+      if (tt.joinable()) tt.join();
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+  }
+}
+
+constexpr std::array<std::size_t, 2> n_parties{2, 3};
+constexpr std::array<std::size_t, 5> n_wires{1, 2, 4, 10, 64};
+constexpr std::array<std::size_t, 5> n_simd{1, 2, 4, 10, 64};
+constexpr std::array<bool, 2> online_after_setup{false, true};
+
+INSTANTIATE_TEST_SUITE_P(Parties_Wires_SIMD_Sequential, BMRANDTest,
+                         testing::Combine(testing::ValuesIn(n_parties), testing::ValuesIn(n_wires),
+                                          testing::ValuesIn(n_simd),
+                                          testing::ValuesIn(online_after_setup)),
+                         [](const testing::TestParamInfo<BMRANDTest::ParamType> &info) {
+                           std::string name = fmt::format(
+                               "{}_{}_{}_{}", std::get<0>(info.param), std::get<1>(info.param),
+                               std::get<2>(info.param), std::to_string(std::get<3>(info.param)));
+                           return name;
+                         });
+
 }  // namespace

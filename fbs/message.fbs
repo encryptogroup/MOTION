@@ -12,6 +12,7 @@ enum MessageType : ubyte {
   OTExtensionSender = 8,
   BMRInputGate0 = 9,                    // publishes the public value held by the input owner (lambda ^ input)
   BMRInputGate1 = 10,                   // publishes the keys on wire under the public value to all parties
+  BMRANDGate = 11,                      // publishes garbled tables corresponding to a gate (n_wires * n_simd * 3 rows)
   // add new message types here
   }
 

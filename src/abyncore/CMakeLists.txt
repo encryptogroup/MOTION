@@ -82,7 +82,7 @@ target_compile_options(abyn PRIVATE
         -Wall -Wextra
         -pedantic -ansi
         -maes -msse2 -msse4.1 -msse4.2 -mpclmul
-        -ffunction-sections -march=native
+        -ffunction-sections -march=native -ffast-math
         ${ABYN_VECT_COST_MODEL_GCC_FLAG}
         )
 

@@ -196,6 +196,12 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       data_storage_->BMRMessageReceived(bmr_data, BMRDataType::input_step_1, id);
       break;
     }
+    case MessageType_BMRANDGate: {
+      auto id = GetBMRMessage(message->payload()->data())->gate_id();
+      auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
+      data_storage_->BMRMessageReceived(bmr_data, BMRDataType::and_gate, id);
+      break;
+    }
     default:
       throw(std::runtime_error("Didn't recognize the message type"));
   }

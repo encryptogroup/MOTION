@@ -54,7 +54,7 @@ class BitVector {
  public:
   BitVector() noexcept : bit_size_(0){};
 
-  explicit BitVector(bool value) noexcept : data_vector_({std::byte(value)}), bit_size_(1) {}
+  explicit BitVector(bool value) noexcept : bit_size_(0) { Append(value); }
 
   BitVector(BitVector&& bv) noexcept
       : data_vector_(std::move(bv.data_vector_)), bit_size_(bv.bit_size_) {}

@@ -32,6 +32,11 @@
 #include "share/bmr_share.h"
 #include "utility/bit_vector.h"
 
+namespace ENCRYPTO::ObliviousTransfer {
+class OTVectorSender;
+class OTVectorReceiver;
+}  // namespace ENCRYPTO::ObliviousTransfer
+
 namespace ABYN::Gates::BMR {
 
 class BMRInputGate final : public Gates::Interfaces::InputGate {
@@ -83,7 +88,6 @@ class BMROutputGate final : public Interfaces::OutputGate {
   std::vector<ENCRYPTO::BitVector<>> output_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> shared_outputs_;
 
-  // indicates whether this party obtains the output
   bool is_my_output_ = false;
 
   std::mutex m;
@@ -127,11 +131,15 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   BMRANDGate(const Gate &) = delete;
 
  private:
-  std::size_t mt_offset_;
-  std::size_t mt_bitlen_;
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> s_ots_1_,
+      s_ots_kappa_;
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> r_ots_1_,
+      r_ots_kappa_;
 
-  std::shared_ptr<Shares::Share> d_, e_;
-  // std::shared_ptr<GMWOutputGate> d_out_, e_out_;
+  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_garbled_rows_;
+  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> garbled_rows_;
+
+  void GenerateRandomness();
 };
 
 }

@@ -63,4 +63,14 @@ flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
   return BuildBMRMessage(id, std::move(payload), MessageType_BMRInputGate1);
 }
 
+flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
+                                                     const std::vector<std::uint8_t>& payload) {
+  return BuildBMRMessage(id, payload, MessageType_BMRANDGate);
+}
+
+flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
+                                                     std::vector<std::uint8_t>&& payload) {
+  return BuildBMRMessage(id, std::move(payload), MessageType_BMRANDGate);
+}
+
 }  // namespace ABYN::Communication

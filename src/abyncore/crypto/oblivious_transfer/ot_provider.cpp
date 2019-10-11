@@ -28,7 +28,9 @@
 #include "crypto/pseudo_random_generator.h"
 #include "utility/bit_matrix.h"
 #include "utility/condition.h"
+#include "utility/config.h"
 #include "utility/data_storage.h"
+#include "utility/logger.h"
 
 namespace ENCRYPTO::ObliviousTransfer {
 void OTProviderFromOTExtension::SendSetup() {
@@ -694,21 +696,46 @@ std::shared_ptr<OTVectorSender> &OTProviderSender::RegisterOTs(
     case OTProtocol::GOT: {
       ot = std::make_shared<GOTVectorSender>(i, next_vector_id_, num_ots, bitlen, data_storage_,
                                              Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(
+            fmt::format("Party#{}: registered {} parallel {}-bit sender GOTs", party_id, party_id,
+                        num_ots, bitlen));
+      }
       break;
     }
     case OTProtocol::ACOT: {
       ot = std::make_shared<COTVectorSender>(i, next_vector_id_, num_ots, bitlen, p, data_storage_,
                                              Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit sender ACOTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     case OTProtocol::XCOT: {
       ot = std::make_shared<COTVectorSender>(i, next_vector_id_, num_ots, bitlen, p, data_storage_,
                                              Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit sender XCOTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     case OTProtocol::ROT: {
       ot = std::make_shared<ROTVectorSender>(i, next_vector_id_, num_ots, bitlen, data_storage_,
                                              Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit sender ROTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     default:
@@ -781,21 +808,45 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
     case OTProtocol::GOT: {
       ot = std::make_shared<GOTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, data_storage_,
                                                Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit receiver GOTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     case OTProtocol::XCOT: {
       ot = std::make_shared<COTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, p,
                                                data_storage_, Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit receiver XCOTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     case OTProtocol::ACOT: {
       ot = std::make_shared<COTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, p,
                                                data_storage_, Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit receiver ACOTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     case OTProtocol::ROT: {
       ot = std::make_shared<ROTVectorReceiver>(i, next_vector_id_, num_ots, bitlen, data_storage_,
                                                Send);
+      if constexpr (ABYN::ABYN_DEBUG) {
+        assert(data_storage_->GetID() >= 0);
+        const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+        data_storage_->GetLogger()->LogDebug(fmt::format(
+            "Party#{}: registered {} parallel {}-bit receiver ROTs", party_id, num_ots, bitlen));
+      }
       break;
     }
     default:

@@ -54,12 +54,12 @@ BMRShare::BMRShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
     assert(bmr_wire);
 
     // maybe_unused due to assert which is optimized away in Release
-    [[maybe_unused]] const auto size = bmr_wire->GetNumOfParallelValues();
+    [[maybe_unused]] const auto size = bmr_wire->GetNumOfSIMDValues();
 
     for (auto i = 1ull; i < wires_.size(); ++i) {
       const auto bmr_wire_next = std::dynamic_pointer_cast<Wires::BMRWire>(wires_.at(0));
       assert(bmr_wire_next);
-      assert(size == bmr_wire_next->GetNumOfParallelValues());
+      assert(size == bmr_wire_next->GetNumOfSIMDValues());
     }
   }
   backend_ = wires.at(0)->GetBackend();
@@ -68,7 +68,7 @@ BMRShare::BMRShare(const std::vector<ABYN::Wires::WirePtr> &wires) {
 
 std::size_t BMRShare::GetNumOfParallelValues() const noexcept {
   assert(!wires_.empty());
-  return wires_.at(0)->GetNumOfParallelValues();
+  return wires_.at(0)->GetNumOfSIMDValues();
 }
 
 }

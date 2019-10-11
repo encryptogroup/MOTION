@@ -151,6 +151,9 @@ struct BMRData {
 
   using keys_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
   std::unordered_map<std::size_t, keys_t> input_public_keys_;
+
+  using g_rows_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  std::unordered_map<std::size_t, g_rows_t> garbled_rows_;
 };
 
 enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 2 };
@@ -162,10 +165,7 @@ enum OTExtensionDataType : uint {
   OTExtension_invalid_data_type = 3
 };
 
-enum BMRDataType : uint {
-  input_step_0 = 0,
-  input_step_1 = 1,
-};
+enum BMRDataType : uint { input_step_0 = 0, input_step_1 = 1, and_gate = 2 };
 
 class DataStorage {
  public:
@@ -174,6 +174,8 @@ class DataStorage {
   ~DataStorage() = default;
 
   void SetLogger(const LoggerPtr &logger) { logger_ = logger; }
+
+  const auto &GetLogger() { return logger_; }
 
   void SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message);
 
@@ -222,6 +224,8 @@ class DataStorage {
 
   void SetFixedKeyAESKey(const ENCRYPTO::AlignedBitVector &key) { fixed_key_aes_key_ = key; }
   const auto &GetFixedKeyAESKey() { return fixed_key_aes_key_; }
+
+  auto GetID() { return id_; }
 
  private:
   std::vector<std::uint8_t> received_hello_message_, sent_hello_message_;

@@ -26,6 +26,7 @@
 
 #include "base/backend.h"
 #include "base/register.h"
+#include "crypto/oblivious_transfer/ot_provider.h"
 #include "utility/condition.h"
 #include "wire/wire.h"
 
@@ -111,6 +112,12 @@ std::shared_ptr<MTProvider> Gate::GetMTProvider() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
   return ptr_backend->GetMTProvider();
+}
+
+std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider> Gate::GetOTProvider(const std::size_t i) {
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+  return ptr_backend->GetOTProvider(i);
 }
 
 }

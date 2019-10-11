@@ -50,7 +50,7 @@ using GatePtr = std::shared_ptr<Gate>;
 namespace ABYN::Wires {
 class Wire {
  public:
-  std::size_t GetNumOfParallelValues() const;
+  std::size_t GetNumOfSIMDValues() const;
 
   virtual enum CircuitType GetCircuitType() const = 0;
 

@@ -234,7 +234,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     is_my_output_ = GetConfig()->GetMyId() == static_cast<std::size_t>(output_owner_) ||
                     static_cast<std::size_t>(output_owner_) == ALL;
 
-    std::vector<T> placeholder_vector(parent->GetNumOfParallelValues());
+    std::vector<T> placeholder_vector(parent->GetNumOfSIMDValues());
     output_wires_ = {std::static_pointer_cast<ABYN::Wires::Wire>(
         std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, backend_))};
     for (auto &w : output_wires_) {
@@ -362,7 +362,7 @@ class ArithmeticAdditionGate final : public ABYN::Gates::Interfaces::TwoGate {
     parent_b_ = {std::static_pointer_cast<ABYN::Wires::Wire>(b)};
     backend_ = parent_a_.at(0)->GetBackend();
 
-    assert(parent_a_.at(0)->GetNumOfParallelValues() == parent_b_.at(0)->GetNumOfParallelValues());
+    assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
     requires_online_interaction_ = false;
     gate_type_ = GateType::NonInteractiveGate;
@@ -376,7 +376,7 @@ class ArithmeticAdditionGate final : public ABYN::Gates::Interfaces::TwoGate {
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
     std::vector<T> placeholder_vector;
-    placeholder_vector.resize(parent_a_.at(0)->GetNumOfParallelValues());
+    placeholder_vector.resize(parent_a_.at(0)->GetNumOfSIMDValues());
     output_wires_ = {std::move(std::static_pointer_cast<ABYN::Wires::Wire>(
         std::make_shared<ABYN::Wires::ArithmeticWire<T>>(placeholder_vector, backend_)))};
     for (auto &w : output_wires_) {
@@ -443,12 +443,12 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     parent_b_ = {std::static_pointer_cast<ABYN::Wires::Wire>(b)};
     backend_ = parent_a_.at(0)->GetBackend();
 
-    assert(parent_a_.at(0)->GetNumOfParallelValues() == parent_b_.at(0)->GetNumOfParallelValues());
+    assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;
 
-    const std::vector<T> tmp_v(parent_a_.at(0)->GetNumOfParallelValues());
+    const std::vector<T> tmp_v(parent_a_.at(0)->GetNumOfSIMDValues());
 
     d_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
     GetRegister()->RegisterNextWire(d_);
@@ -478,7 +478,7 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     auto backend = backend_.lock();
     assert(backend);
 
-    num_mts_ = parent_a_.at(0)->GetNumOfParallelValues();
+    num_mts_ = parent_a_.at(0)->GetNumOfSIMDValues();
     mt_offset_ = GetMTProvider()->template RequestArithmeticMTs<T>(num_mts_);
 
     auto gate_info =
@@ -502,7 +502,7 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
       const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_a_.at(0));
       assert(x);
       d_->GetMutableValues() = std::vector<T>(
-          mts.a.begin() + mt_offset_, mts.a.begin() + mt_offset_ + x->GetNumOfParallelValues());
+          mts.a.begin() + mt_offset_, mts.a.begin() + mt_offset_ + x->GetNumOfSIMDValues());
       auto &d_v = d_->GetMutableValues();
       const auto &x_v = x->GetValues();
       for (auto i = 0ull; i < d_v.size(); ++i) {
@@ -513,7 +513,7 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
       const auto y = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_b_.at(0));
       assert(y);
       e_->GetMutableValues() = std::vector<T>(
-          mts.b.begin() + mt_offset_, mts.b.begin() + mt_offset_ + x->GetNumOfParallelValues());
+          mts.b.begin() + mt_offset_, mts.b.begin() + mt_offset_ + x->GetNumOfSIMDValues());
       auto &e_v = e_->GetMutableValues();
       const auto &y_v = y->GetValues();
       for (auto i = 0ull; i < e_v.size(); ++i) {
@@ -545,7 +545,7 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     assert(out);
     out->GetMutableValues() =
         std::vector<T>(mts.c.begin() + mt_offset_,
-                       mts.c.begin() + mt_offset_ + parent_a_.at(0)->GetNumOfParallelValues());
+                       mts.c.begin() + mt_offset_ + parent_a_.at(0)->GetNumOfSIMDValues());
 
     const auto &d = d_w->GetValues();
     const auto &s_x = x_i_w->GetValues();
@@ -553,12 +553,12 @@ class ArithmeticMultiplicationGate final : public ABYN::Gates::Interfaces::TwoGa
     const auto &s_y = y_i_w->GetValues();
 
     if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
-      for (auto i = 0ull; i < out->GetNumOfParallelValues(); ++i) {
+      for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
         out->GetMutableValues().at(i) +=
             (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i)) - (e.at(i) * d.at(i));
       }
     } else {
-      for (auto i = 0ull; i < out->GetNumOfParallelValues(); ++i) {
+      for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
         out->GetMutableValues().at(i) += (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i));
       }
     }

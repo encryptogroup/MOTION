@@ -32,6 +32,8 @@
 
 #include "utility/helpers.h"
 
+using uint128_t = __uint128_t;
+
 namespace ENCRYPTO {
 
 class PRG {
@@ -53,6 +55,8 @@ class PRG {
 
   std::vector<std::byte> FixedKeyAES(const std::byte *x, const std::uint64_t i,
                                      const std::size_t num = 1);
+
+  std::vector<std::byte> FixedKeyAES(const std::byte *x, const uint128_t i);
 
   ~PRG() = default;
 

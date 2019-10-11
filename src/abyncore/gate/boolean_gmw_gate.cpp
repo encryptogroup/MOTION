@@ -305,7 +305,7 @@ void GMWOutputGate::EvaluateOnline() {
         auto ptr = reinterpret_cast<const std::byte *>(payload->data());
         std::vector<std::byte> byte_vector(ptr, ptr + payload->size());
         shared_outputs_.at(i).at(j) =
-            ENCRYPTO::BitVector(byte_vector, parent_.at(0)->GetNumOfParallelValues());
+            ENCRYPTO::BitVector(byte_vector, parent_.at(0)->GetNumOfSIMDValues());
         assert(shared_outputs_.at(i).size() == output_.size());
       }
     }
@@ -504,7 +504,7 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(backend);
 
   auto &mt_provider = backend->GetMTProvider();
-  mt_bitlen_ = parent_a_.size() * parent_a_.at(0)->GetNumOfParallelValues();
+  mt_bitlen_ = parent_a_.size() * parent_a_.at(0)->GetNumOfSIMDValues();
   mt_offset_ = mt_provider->RequestBinaryMTs(mt_bitlen_);
 
   if constexpr (ABYN_DEBUG) {
@@ -538,8 +538,8 @@ void GMWANDGate::EvaluateOnline() {
     const auto x = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
     assert(d);
     assert(x);
-    d->GetMutableValues() = mts.a.Subset(mt_offset_ + i * x->GetNumOfParallelValues(),
-                                               mt_offset_ + (i + 1) * x->GetNumOfParallelValues());
+    d->GetMutableValues() = mts.a.Subset(mt_offset_ + i * x->GetNumOfSIMDValues(),
+                                               mt_offset_ + (i + 1) * x->GetNumOfSIMDValues());
     d->GetMutableValues() ^= x->GetValues();
     d->SetOnlineFinished();
   }
@@ -550,8 +550,8 @@ void GMWANDGate::EvaluateOnline() {
     const auto y = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
     assert(e);
     assert(y);
-    e->GetMutableValues() = mts.b.Subset(mt_offset_ + i * y->GetNumOfParallelValues(),
-                                               mt_offset_ + (i + 1) * y->GetNumOfParallelValues());
+    e->GetMutableValues() = mts.b.Subset(mt_offset_ + i * y->GetNumOfSIMDValues(),
+                                               mt_offset_ + (i + 1) * y->GetNumOfSIMDValues());
     e->GetMutableValues() ^= y->GetValues();
     e->SetOnlineFinished();
   }
@@ -583,8 +583,8 @@ void GMWANDGate::EvaluateOnline() {
     auto out = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(out);
     out->GetMutableValues() =
-        mts.c.Subset(mt_offset_ + i * parent_a_.at(0)->GetNumOfParallelValues(),
-                     mt_offset_ + (i + 1) * parent_a_.at(0)->GetNumOfParallelValues());
+        mts.c.Subset(mt_offset_ + i * parent_a_.at(0)->GetNumOfSIMDValues(),
+                     mt_offset_ + (i + 1) * parent_a_.at(0)->GetNumOfSIMDValues());
 
     const auto &d = d_w->GetValues();
     const auto &x_i = x_i_w->GetValues();
