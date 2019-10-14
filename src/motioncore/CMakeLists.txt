@@ -27,6 +27,7 @@ add_library(motion
         share/share_wrapper.cpp
         utility/bit_matrix.cpp
         utility/bit_vector.cpp
+        utility/bristol_parser.cpp
         utility/condition.cpp
         utility/data_storage.cpp
         utility/helpers.cpp

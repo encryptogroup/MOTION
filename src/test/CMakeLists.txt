@@ -1,10 +1,11 @@
 add_executable(motiontest
-        test_motion_main.cpp
-        test_motion.cpp
         test_bitmatrix.cpp
         test_bitvector.cpp
         test_bmr.cpp
+        test_integer_operations.cpp
         test_misc.cpp
+        test_motion.cpp
+        test_motion_main.cpp
         test_mt.cpp
         test_ot.cpp
         )
