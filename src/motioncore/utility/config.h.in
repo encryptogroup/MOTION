@@ -26,7 +26,8 @@
 
 namespace MOTION {
 
-constexpr bool MOTION_DEBUG = @MOTION_DEBUG@;
-constexpr float MOTION_VERSION = @MOTION_VERSION@;
+constexpr bool MOTION_DEBUG{@MOTION_DEBUG@};
+constexpr float MOTION_VERSION{@MOTION_VERSION@};
+constexpr std::string_view MOTION_ROOT_DIR{"@MOTION_ROOT_DIR@"};
 
 }  // namespace MOTION

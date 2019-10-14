@@ -28,12 +28,13 @@
 #include <gtest/gtest.h>
 
 #include "utility/bristol_parser.h"
+#include "utility/config.h"
 
 #include "test_constants.h"
 
 namespace {
 TEST(AlgorithmDescription, FromBristolFormat) {
-  std::string path("../../circuits/int/int_add8_size.bristol");
+  std::string path{std::string(MOTION::MOTION_ROOT_DIR) + "/circuits/int/int_add8_size.bristol"};
   std::ifstream fs(path);
   auto int_add32 = ENCRYPTO::AlgorithmDescription::FromBristol(fs);
 }
