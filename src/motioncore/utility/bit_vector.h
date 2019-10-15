@@ -99,7 +99,8 @@ class BitVector {
       : BitVector(reinterpret_cast<const std::byte*>(buf), bits) {}
 
   BitVector(const std::byte* buf, std::size_t bits) : bit_size_(bits) {
-    data_vector_.insert(data_vector_.begin(), buf, buf + MOTION::Helpers::Convert::BitsToBytes(bits));
+    data_vector_.insert(data_vector_.begin(), buf,
+                        buf + MOTION::Helpers::Convert::BitsToBytes(bits));
 
     TruncateToFit();
   }
@@ -150,6 +151,12 @@ class BitVector {
       data_vector_.at(i) = ~data_vector_.at(i);
     }
     TruncateToFit();
+  }
+
+  BitVector operator~() const {
+    BitVector bv = *this;
+    bv.Invert();
+    return bv;
   }
 
   template <typename T2>
