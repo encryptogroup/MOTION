@@ -75,7 +75,8 @@ TEST_P(BMRTest, InputOutput) {
                                                  ENCRYPTO::BitVector<>(this->n_simd_, false));
 
   try {
-    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
+    std::vector<PartyPtr> motion_parties(
+        std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
     for (auto &p : motion_parties) {
       p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
@@ -86,7 +87,8 @@ TEST_P(BMRTest, InputOutput) {
                       &dummy_input]() {
         Shares::SharePtr tmp_share;
         if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-          tmp_share = motion_parties.at(party_id)->IN<BMR>(global_input.at(input_owner), input_owner);
+          tmp_share =
+              motion_parties.at(party_id)->IN<BMR>(global_input.at(input_owner), input_owner);
         } else {
           tmp_share = motion_parties.at(party_id)->IN<BMR>(dummy_input, input_owner);
         }
@@ -115,6 +117,64 @@ TEST_P(BMRTest, InputOutput) {
   }
 }
 
+TEST_P(BMRTest, INV) {
+  constexpr auto BMR = MOTION::MPCProtocol::BMR;
+  std::srand(std::time(nullptr));
+  const std::size_t input_owner = std::rand() % this->n_parties_,
+                    output_owner = std::rand() % this->n_parties_;
+  std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->n_parties_);
+  for (auto &bv_v : global_input) {
+    bv_v.resize(this->n_wires_);
+    for (auto &bv : bv_v) {
+      bv = ENCRYPTO::BitVector<>::Random(this->n_simd_);
+    }
+  }
+  std::vector<ENCRYPTO::BitVector<>> dummy_input(this->n_wires_,
+                                                 ENCRYPTO::BitVector<>(this->n_simd_, false));
+
+  try {
+    std::vector<PartyPtr> motion_parties(
+        std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
+      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+      p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
+    }
+    std::vector<std::thread> t;
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &motion_parties, this, input_owner, output_owner, &global_input,
+                      &dummy_input]() {
+        Shares::SharePtr tmp_share;
+        if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+          tmp_share =
+              motion_parties.at(party_id)->IN<BMR>(global_input.at(input_owner), input_owner);
+        } else {
+          tmp_share = motion_parties.at(party_id)->IN<BMR>(dummy_input, input_owner);
+        }
+
+        MOTION::Shares::ShareWrapper s_in(tmp_share);
+        s_in = ~s_in;
+        auto s_out = s_in.Out(output_owner);
+
+        motion_parties.at(party_id)->Run(2);
+
+        if (party_id == output_owner) {
+          for (auto i = 0ull; i < n_wires_; ++i) {
+            auto wire_single =
+                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(i));
+            assert(wire_single);
+            EXPECT_EQ(wire_single->GetPublicValues(), ~global_input.at(input_owner).at(i));
+          }
+        }
+        motion_parties.at(party_id)->Finish();
+      });
+    }
+    for (auto &tt : t)
+      if (tt.joinable()) tt.join();
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+  }
+}
+
 TEST_P(BMRTest, XOR) {
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
   std::srand(std::time(nullptr));
@@ -129,51 +189,53 @@ TEST_P(BMRTest, XOR) {
   std::vector<ENCRYPTO::BitVector<>> dummy_input(this->n_wires_,
                                                  ENCRYPTO::BitVector<>(this->n_simd_, false));
   try {
-    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
+    std::vector<PartyPtr> motion_parties(
+        std::move(GetNLocalParties(this->n_parties_, PORT_OFFSET)));
     for (auto &p : motion_parties) {
       p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
       p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
     }
     std::vector<std::thread> t;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &motion_parties, this, output_owner, &global_input, &dummy_input]() {
-        std::vector<MOTION::Shares::ShareWrapper> s_in;
+      t.emplace_back(
+          [party_id, &motion_parties, this, output_owner, &global_input, &dummy_input]() {
+            std::vector<MOTION::Shares::ShareWrapper> s_in;
 
-        for (auto j = 0ull; j < this->n_parties_; ++j) {
-          if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
-          } else {
-            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(dummy_input, j));
-          }
-        }
-
-        auto s_xor = s_in.at(0) ^ s_in.at(1);
-
-        for (auto j = 2ull; j < this->n_parties_; ++j) {
-          s_xor = s_xor ^ s_in.at(j);
-        }
-
-        auto s_out = s_xor.Out(output_owner);
-
-        motion_parties.at(party_id)->Run(2);
-
-        if (party_id == output_owner) {
-          for (auto j = 0ull; j < this->n_wires_; ++j) {
-            auto wire_single =
-                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(j));
-            assert(wire_single);
-
-            std::vector<ENCRYPTO::BitVector<>> global_input_single;
-            for (auto k = 0ull; k < this->n_parties_; ++k) {
-              global_input_single.push_back(global_input.at(k).at(j));
+            for (auto j = 0ull; j < this->n_parties_; ++j) {
+              if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+                s_in.push_back(motion_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
+              } else {
+                s_in.push_back(motion_parties.at(party_id)->IN<BMR>(dummy_input, j));
+              }
             }
 
-            EXPECT_EQ(wire_single->GetPublicValues(),
-                      ENCRYPTO::BitVector<>::XORBitVectors(global_input_single));
-          }
-        }
-        motion_parties.at(party_id)->Finish();
-      });
+            auto s_xor = s_in.at(0) ^ s_in.at(1);
+
+            for (auto j = 2ull; j < this->n_parties_; ++j) {
+              s_xor = s_xor ^ s_in.at(j);
+            }
+
+            auto s_out = s_xor.Out(output_owner);
+
+            motion_parties.at(party_id)->Run(2);
+
+            if (party_id == output_owner) {
+              for (auto j = 0ull; j < this->n_wires_; ++j) {
+                auto wire_single =
+                    std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(j));
+                assert(wire_single);
+
+                std::vector<ENCRYPTO::BitVector<>> global_input_single;
+                for (auto k = 0ull; k < this->n_parties_; ++k) {
+                  global_input_single.push_back(global_input.at(k).at(j));
+                }
+
+                EXPECT_EQ(wire_single->GetPublicValues(),
+                          ENCRYPTO::BitVector<>::XORBitVectors(global_input_single));
+              }
+            }
+            motion_parties.at(party_id)->Finish();
+          });
     }
     for (auto &tt : t)
       if (tt.joinable()) tt.join();
@@ -187,19 +249,16 @@ constexpr std::array<std::size_t, 2> bmr_n_wires{1, 64};
 constexpr std::array<std::size_t, 2> bmr_n_simd{1, 64};
 constexpr std::array<bool, 2> bmr_online_after_setup{false, true};
 
-INSTANTIATE_TEST_SUITE_P(BMRXORTestSuite, BMRTest,
-                         testing::Combine(testing::ValuesIn(bmr_n_parties),
-                                          testing::ValuesIn(bmr_n_wires),
-                                          testing::ValuesIn(bmr_n_simd),
-                                          testing::ValuesIn(bmr_online_after_setup)),
-                         [](const testing::TestParamInfo<BMRTest::ParamType> &info) {
-                           const auto mode =
-                               static_cast<bool>(std::get<3>(info.param)) ? "Seq" : "Par";
-                           std::string name = fmt::format(
-                               "{}_Parties_{}_Wires_{}_SIMD__{}", std::get<0>(info.param),
-                               std::get<1>(info.param), std::get<2>(info.param), mode);
-                           return name;
-                         });
+INSTANTIATE_TEST_SUITE_P(
+    BMRTestSuite, BMRTest,
+    testing::Combine(testing::ValuesIn(bmr_n_parties), testing::ValuesIn(bmr_n_wires),
+                     testing::ValuesIn(bmr_n_simd), testing::ValuesIn(bmr_online_after_setup)),
+    [](const testing::TestParamInfo<BMRTest::ParamType> &info) {
+      const auto mode = static_cast<bool>(std::get<3>(info.param)) ? "Seq" : "Par";
+      std::string name = fmt::format("{}_Parties_{}_Wires_{}_SIMD__{}", std::get<0>(info.param),
+                                     std::get<1>(info.param), std::get<2>(info.param), mode);
+      return name;
+    });
 
 class BMRANDTest : public testing::TestWithParam<parameters_t> {
  public:
@@ -213,7 +272,6 @@ class BMRANDTest : public testing::TestWithParam<parameters_t> {
   std::size_t n_parties_ = 0, n_wires_ = 0, n_simd_ = 0;
   bool online_after_setup_ = false;
 };
-
 
 TEST_P(BMRANDTest, AND) {
   EXPECT_NE(n_parties_, 0);
@@ -240,44 +298,45 @@ TEST_P(BMRANDTest, AND) {
     }
     std::vector<std::thread> t;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &motion_parties, this, output_owner, &global_input, &dummy_input]() {
-        std::vector<MOTION::Shares::ShareWrapper> s_in;
+      t.emplace_back(
+          [party_id, &motion_parties, this, output_owner, &global_input, &dummy_input]() {
+            std::vector<MOTION::Shares::ShareWrapper> s_in;
 
-        for (auto j = 0ull; j < this->n_parties_; ++j) {
-          if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
-          } else {
-            s_in.push_back(motion_parties.at(party_id)->IN<BMR>(dummy_input, j));
-          }
-        }
-
-        auto s_and = s_in.at(0) & s_in.at(1);
-
-        for (auto j = 2ull; j < this->n_parties_; ++j) {
-          s_and = s_and & s_in.at(j);
-        }
-
-        auto s_out = s_and.Out(output_owner);
-
-        motion_parties.at(party_id)->Run();
-
-        if (party_id == output_owner) {
-          for (auto j = 0ull; j < s_out->GetWires().size(); ++j) {
-            auto wire_single =
-                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(j));
-            assert(wire_single);
-
-            std::vector<ENCRYPTO::BitVector<>> global_input_single;
-            for (auto k = 0ull; k < this->n_parties_; ++k) {
-              global_input_single.push_back(global_input.at(k).at(j));
+            for (auto j = 0ull; j < this->n_parties_; ++j) {
+              if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+                s_in.push_back(motion_parties.at(party_id)->IN<BMR>(global_input.at(j), j));
+              } else {
+                s_in.push_back(motion_parties.at(party_id)->IN<BMR>(dummy_input, j));
+              }
             }
 
-            EXPECT_EQ(wire_single->GetPublicValues(),
-                      ENCRYPTO::BitVector<>::ANDBitVectors(global_input_single));
-          }
-        }
-        motion_parties.at(party_id)->Finish();
-      });
+            auto s_and = s_in.at(0) & s_in.at(1);
+
+            for (auto j = 2ull; j < this->n_parties_; ++j) {
+              s_and = s_and & s_in.at(j);
+            }
+
+            auto s_out = s_and.Out(output_owner);
+
+            motion_parties.at(party_id)->Run();
+
+            if (party_id == output_owner) {
+              for (auto j = 0ull; j < s_out->GetWires().size(); ++j) {
+                auto wire_single =
+                    std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(j));
+                assert(wire_single);
+
+                std::vector<ENCRYPTO::BitVector<>> global_input_single;
+                for (auto k = 0ull; k < this->n_parties_; ++k) {
+                  global_input_single.push_back(global_input.at(k).at(j));
+                }
+
+                EXPECT_EQ(wire_single->GetPublicValues(),
+                          ENCRYPTO::BitVector<>::ANDBitVectors(global_input_single));
+              }
+            }
+            motion_parties.at(party_id)->Finish();
+          });
     }
     for (auto &tt : t)
       if (tt.joinable()) tt.join();

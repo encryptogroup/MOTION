@@ -230,14 +230,14 @@ TEST(Party, NetworkConnection_ManualThreads) {
 
       // Party #3
       futures.push_back(std::async(std::launch::async, []() {
-        auto motion =
-            std::move(PartyPtr(new Party{{std::make_shared<Communication::Context>(
-                                              "127.0.0.1", PORT_OFFSET + 2, MOTION::Role::Client, 0),
-                                          std::make_shared<Communication::Context>(
-                                              "127.0.0.1", PORT_OFFSET + 4, MOTION::Role::Client, 1),
-                                          std::make_shared<Communication::Context>(
-                                              "127.0.0.1", PORT_OFFSET + 5, MOTION::Role::Client, 2)},
-                                         3}));
+        auto motion = std::move(
+            PartyPtr(new Party{{std::make_shared<Communication::Context>(
+                                    "127.0.0.1", PORT_OFFSET + 2, MOTION::Role::Client, 0),
+                                std::make_shared<Communication::Context>(
+                                    "127.0.0.1", PORT_OFFSET + 4, MOTION::Role::Client, 1),
+                                std::make_shared<Communication::Context>(
+                                    "127.0.0.1", PORT_OFFSET + 5, MOTION::Role::Client, 2)},
+                               3}));
         motion->Connect();
         return std::move(motion);
       }));
@@ -596,95 +596,47 @@ TEST(BooleanGMW, InputOutput_1_1K_SIMD_2_3_4_5_10_parties) {
   }
 }
 
-TEST(BooleanGMW, XOR_1_bit_1_1K_SIMD_2_3_4_5_10_parties) {
+TEST(BooleanGMW, INV_1K_SIMD_2_3_4_5_10_parties) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
     std::srand(std::time(nullptr));
     for (auto num_parties : num_parties_list) {
-      const std::size_t output_owner = std::rand() % num_parties;
-      std::vector<bool> global_input_1(num_parties);
-      for (auto j = 0ull; j < global_input_1.size(); ++j) {
-        global_input_1.at(j) = (std::rand() % 2) == 1;
-      }
-      std::vector<ENCRYPTO::BitVector<>> global_input_1K(num_parties);
-
-      for (auto j = 0ull; j < global_input_1K.size(); ++j) {
-        global_input_1K.at(j) = ENCRYPTO::BitVector<>::Random(1000);
-      }
-      bool dummy_input_1 = false;
-      ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
+      const std::size_t input_owner = std::rand() % num_parties,
+                        output_owner = std::rand() % num_parties;
+      const auto global_input_1K = ENCRYPTO::BitVector<>::Random(1000);
       try {
         std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
         for (auto &p : motion_parties) {
           p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
           p->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
         }
-
-        auto f = [&](std::size_t party_id) {
-          std::vector<MOTION::Shares::ShareWrapper> s_in_1, s_in_1K;
-
-          for (auto j = 0ull; j < num_parties; ++j) {
-            if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              s_in_1.push_back(
-                  motion_parties.at(party_id)->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
-              s_in_1K.push_back(motion_parties.at(party_id)->IN<BGMW>(global_input_1K.at(j), j));
-            } else {
-              s_in_1.push_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
-              s_in_1K.push_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_1K, j));
-            }
-          }
-
-          auto s_xor_1 = s_in_1.at(0) ^ s_in_1.at(1);
-          auto s_xor_1K = s_in_1K.at(0) ^ s_in_1K.at(1);
-
-          for (auto j = 2ull; j < num_parties; ++j) {
-            s_xor_1 = s_xor_1 ^ s_in_1.at(j);
-            s_xor_1K = s_xor_1K ^ s_in_1K.at(j);
-          }
-
-          auto s_out_1 = s_xor_1.Out(output_owner);
-          auto s_out_1K = s_xor_1K.Out(output_owner);
-
-          auto s_out_1_all = s_xor_1.Out();
-          auto s_out_1K_all = s_xor_1K.Out();
-
-          motion_parties.at(party_id)->Run(2);
-
-          if (party_id == output_owner) {
-            auto wire_1 =
-                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out_1->GetWires().at(0));
-            auto wire_1K =
-                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out_1K->GetWires().at(0));
-
-            assert(wire_1);
-            assert(wire_1K);
-
-            EXPECT_EQ(wire_1->GetValues().Get(0),
-                      ENCRYPTO::BitVector<>::XORReduceBitVector(global_input_1));
-            EXPECT_EQ(wire_1K->GetValues(), ENCRYPTO::BitVector<>::XORBitVectors(global_input_1K));
-          }
-
-          {
-            auto wire_1 =
-                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out_1_all->GetWires().at(0));
-            auto wire_1K =
-                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out_1K_all->GetWires().at(0));
-
-            assert(wire_1);
-            assert(wire_1K);
-
-            EXPECT_EQ(wire_1->GetValues().Get(0),
-                      ENCRYPTO::BitVector<>::XORReduceBitVector(global_input_1));
-            EXPECT_EQ(wire_1K->GetValues(), ENCRYPTO::BitVector<>::XORBitVectors(global_input_1K));
-          }
-        };
-
 #pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          f(party_id);
-          motion_parties.at(party_id)->Finish();
+          ENCRYPTO::BitVector<> input_1K(global_input_1K.GetSize(), false);
+          if (party_id == input_owner) {
+            input_1K = global_input_1K;
+          }
+
+          MOTION::Shares::ShareWrapper s_in_1K =
+              motion_parties.at(party_id)->IN<BGMW>(input_1K, input_owner);
+
+          s_in_1K = ~s_in_1K;
+
+          auto s_out_1K = s_in_1K.Out(output_owner);
+
+          motion_parties.at(party_id)->Run();
+
+          if (party_id == output_owner) {
+            auto wire_1K =
+                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out_1K->GetWires().at(0));
+
+            assert(wire_1K);
+
+            EXPECT_EQ(wire_1K->GetValues(), ~global_input_1K);
+          }
+          motion_parties.at(party_id).reset();
         }
       } catch (std::exception &e) {
         std::cerr << e.what() << std::endl;
@@ -723,7 +675,8 @@ TEST(BooleanGMW, XOR_64_bit_200_SIMD_2_3_4_5_10_parties) {
 
           for (auto j = 0ull; j < num_parties; ++j) {
             if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              s_in.push_back(motion_parties.at(party_id)->IN<BGMW>(global_input_200_64_bit.at(j), j));
+              s_in.push_back(
+                  motion_parties.at(party_id)->IN<BGMW>(global_input_200_64_bit.at(j), j));
             } else {
               s_in.push_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_200_64_bit, j));
             }
@@ -793,8 +746,8 @@ TEST(BooleanGMW, AND_1_bit_1_1K_SIMD_2_3_parties) {
 
           for (auto j = 0ull; j < num_parties; ++j) {
             if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              s_in_1.push_back(
-                  motion_parties.at(party_id)->IN<BGMW>(static_cast<bool>(global_input_1.at(j)), j));
+              s_in_1.push_back(motion_parties.at(party_id)->IN<BGMW>(
+                  static_cast<bool>(global_input_1.at(j)), j));
               s_in_1K.push_back(motion_parties.at(party_id)->IN<BGMW>(global_input_1K.at(j), j));
             } else {
               s_in_1.push_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_1, j));
@@ -901,7 +854,8 @@ TEST(BooleanGMW, AND_64_bit_10_SIMD_2_3_parties) {
 
           for (auto j = 0ull; j < num_parties; ++j) {
             if (j == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              s_in.push_back(motion_parties.at(party_id)->IN<BGMW>(global_input_10_64_bit.at(j), j));
+              s_in.push_back(
+                  motion_parties.at(party_id)->IN<BGMW>(global_input_10_64_bit.at(j), j));
             } else {
               s_in.push_back(motion_parties.at(party_id)->IN<BGMW>(dummy_input_10_64_bit, j));
             }
