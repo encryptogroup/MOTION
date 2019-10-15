@@ -567,6 +567,143 @@ const Shares::SharePtr BMRXORGate::GetOutputAsShare() const {
   return result;
 }
 
+BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) {
+  parent_ = parent->GetWires();
+
+  assert(parent_.size() > 0);
+  assert(parent_.at(0)->GetBitLength() > 0);
+  for (const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
+
+  backend_ = parent_.at(0)->GetBackend();
+
+  requires_online_interaction_ = false;
+  gate_type_ = GateType::NonInteractiveGate;
+
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+
+  gate_id_ = ptr_backend->GetRegister()->NextGateId();
+
+  for (auto &wire : parent_) {
+    RegisterWaitingFor(wire->GetWireId());
+    wire->RegisterWaitingGate(gate_id_);
+  }
+
+  output_wires_.resize(parent_.size());
+  const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfParallelValues());
+  for (auto &w : output_wires_) {
+    w = std::make_shared<Wires::BMRWire>(tmp_bv, backend_);
+    ptr_backend->GetRegister()->RegisterNextWire(w);
+  }
+
+  if constexpr (MOTION_DEBUG) {
+    auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
+    for (const auto &wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
+    gate_info.append(" output wires: ");
+    for (const auto &wire : output_wires_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
+    ptr_backend->GetLogger()->LogDebug(
+        fmt::format("Created a BMR INV gate with following properties: {}", gate_info));
+  }
+}
+
+void BMRINVGate::EvaluateSetup() {
+  if constexpr (MOTION_DEBUG) {
+    auto ptr_backend = backend_.lock();
+    assert(ptr_backend);
+    ptr_backend->GetLogger()->LogDebug(
+        fmt::format("Start evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
+  }
+
+  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+    auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
+    auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
+    assert(bmr_out);
+    assert(bmr_in);
+    MOTION::Helpers::WaitFor(*bmr_in->GetSetupReadyCondition());
+
+    bmr_out->GetMutablePermutationBits() = bmr_in->GetPermutationBits();
+
+    if (bmr_in->GetWireId() % GetConfig()->GetNumOfParties() == GetConfig()->GetMyId())
+      bmr_out->GetMutablePermutationBits().Invert();
+
+    const auto &in0 = std::get<0>(bmr_in->GetSecretKeys());
+    const auto &in1 = std::get<1>(bmr_in->GetSecretKeys());
+
+    auto &out0 = std::get<0>(bmr_out->GetMutableSecretKeys());
+    auto &out1 = std::get<1>(bmr_out->GetMutableSecretKeys());
+
+    for (auto j = 0ull; j < bmr_out->GetNumOfSIMDValues(); ++j) {
+      out0.at(j) = in1.at(j);
+      out1.at(j) = in0.at(j);
+    }
+
+    bmr_out->SetSetupIsReady();
+  }
+  SetSetupIsReady();
+  if constexpr (MOTION_DEBUG) {
+    auto ptr_backend = backend_.lock();
+    assert(ptr_backend);
+    ptr_backend->GetLogger()->LogDebug(
+        fmt::format("Finished evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
+  }
+}
+
+void BMRINVGate::EvaluateOnline() {
+  WaitSetup();
+  assert(setup_is_ready_);
+  assert(!online_is_ready_);
+  if constexpr (MOTION_DEBUG) {
+    auto ptr_backend = backend_.lock();
+    assert(ptr_backend);
+    ptr_backend->GetLogger()->LogDebug(
+        fmt::format("Start evaluating online phase of BMR INV Gate with id#{}", gate_id_));
+  }
+
+  for (auto i = 0ull; i < parent_.size(); ++i) {
+    auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
+
+    assert(bmr_in);
+
+    auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
+    assert(bmr_out);
+
+    Helpers::WaitFor(*bmr_in->GetIsReadyCondition());
+
+    for (auto j = 0ull; j < bmr_out->GetNumOfSIMDValues(); ++j) {
+      for (auto k = 0ull; k < GetConfig()->GetNumOfParties(); ++k) {
+        bmr_out->GetMutablePublicKeys().at(k).at(j) = (bmr_in->GetPublicKeys().at(k).at(j));
+      }
+      bmr_out->GetMutablePublicValues() = bmr_in->GetPublicValues();
+    }
+  }
+
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+
+  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
+
+  SetOnlineIsReady();
+
+  if constexpr (MOTION_DEBUG) {
+    auto ptr_backend = backend_.lock();
+    assert(ptr_backend);
+    ptr_backend->GetLogger()->LogDebug(
+        fmt::format("Finished evaluating online phase of BMR INV Gate with id#{}", gate_id_));
+  }
+}
+
+const Shares::BMRSharePtr BMRINVGate::GetOutputAsBMRShare() const {
+  auto result = std::make_shared<Shares::BMRShare>(output_wires_);
+  assert(result);
+  return result;
+}
+
+const Shares::SharePtr BMRINVGate::GetOutputAsShare() const {
+  auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsBMRShare());
+  assert(result);
+  return result;
+}
+
 BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   parent_a_ = a->GetWires();
   parent_b_ = b->GetWires();

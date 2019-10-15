@@ -41,28 +41,30 @@ class ShareWrapper {
   void operator=(SharePtr share) { share_ = share; }
   void operator=(const ShareWrapper &sw) { share_ = sw.share_; }
 
-  ShareWrapper &operator^(const ShareWrapper &other);
+  ShareWrapper operator~();
+
+  ShareWrapper operator^(const ShareWrapper &other);
 
   ShareWrapper &operator^=(const ShareWrapper &other) {
     *this = *this ^ other;
     return *this;
   }
 
-  ShareWrapper &operator&(const ShareWrapper &other);
+  ShareWrapper operator&(const ShareWrapper &other);
 
   ShareWrapper &operator&=(const ShareWrapper &other) {
     *this = *this & other;
     return *this;
   }
 
-  ShareWrapper &operator+(const ShareWrapper &other);
+  ShareWrapper operator+(const ShareWrapper &other);
 
   ShareWrapper &operator+=(const ShareWrapper &other) {
     *this = *this + other;
     return *this;
   }
 
-  ShareWrapper &operator*(const ShareWrapper &other);
+  ShareWrapper operator*(const ShareWrapper &other);
 
   ShareWrapper &operator*=(const ShareWrapper &other) {
     *this = *this * other;

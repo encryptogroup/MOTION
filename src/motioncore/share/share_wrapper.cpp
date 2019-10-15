@@ -31,7 +31,29 @@
 namespace MOTION::Shares {
 using SharePtr = std::shared_ptr<Share>;
 
-ShareWrapper &ShareWrapper::operator^(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator~() {
+  assert(share_);
+  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+    throw std::runtime_error(
+        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+  }
+
+  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+    auto gmw_share = std::dynamic_pointer_cast<GMWShare>(share_);
+    assert(gmw_share);
+    auto inv_gate = std::make_shared<Gates::GMW::GMWINVGate>(gmw_share);
+    share_->GetRegister()->RegisterNextGate(inv_gate);
+    return ShareWrapper(inv_gate->GetOutputAsShare());
+  } else {
+    auto bmr_share = std::dynamic_pointer_cast<BMRShare>(share_);
+    assert(bmr_share);
+    auto inv_gate = std::make_shared<Gates::BMR::BMRINVGate>(bmr_share);
+    share_->GetRegister()->RegisterNextGate(inv_gate);
+    return ShareWrapper(inv_gate->GetOutputAsShare());
+  }
+}
+
+ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) {
   assert(share_);
   assert(*other);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -51,20 +73,18 @@ ShareWrapper &ShareWrapper::operator^(const ShareWrapper &other) {
 
     auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(this_b, other_b);
     share_->GetRegister()->RegisterNextGate(xor_gate);
-    *this = ShareWrapper(xor_gate->GetOutputAsShare());
-    return *this;
+    return ShareWrapper(xor_gate->GetOutputAsShare());
   } else {
     auto this_b = std::dynamic_pointer_cast<BMRShare>(share_);
     auto other_b = std::dynamic_pointer_cast<BMRShare>(*other);
 
     auto xor_gate = std::make_shared<Gates::BMR::BMRXORGate>(this_b, other_b);
     share_->GetRegister()->RegisterNextGate(xor_gate);
-    *this = ShareWrapper(xor_gate->GetOutputAsShare());
-    return *this;
+    return ShareWrapper(xor_gate->GetOutputAsShare());
   }
 }
 
-ShareWrapper &ShareWrapper::operator&(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) {
   assert(*other);
   assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -81,20 +101,18 @@ ShareWrapper &ShareWrapper::operator&(const ShareWrapper &other) {
 
     auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(this_b, other_b);
     share_->GetRegister()->RegisterNextGate(and_gate);
-    *this = ShareWrapper(and_gate->GetOutputAsShare());
-    return *this;
+    return ShareWrapper(and_gate->GetOutputAsShare());
   } else {
     auto this_b = std::dynamic_pointer_cast<BMRShare>(share_);
     auto other_b = std::dynamic_pointer_cast<BMRShare>(*other);
 
     auto and_gate = std::make_shared<Gates::BMR::BMRANDGate>(this_b, other_b);
     share_->GetRegister()->RegisterNextGate(and_gate);
-    *this = ShareWrapper(and_gate->GetOutputAsShare());
-    return *this;
+    return ShareWrapper(and_gate->GetOutputAsShare());
   }
 }
 
-ShareWrapper &ShareWrapper::operator+(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) {
   assert(*other);
   assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -105,20 +123,19 @@ ShareWrapper &ShareWrapper::operator+(const ShareWrapper &other) {
   }
 
   if (share_->GetBitLength() == 8u) {
-    *this = Add<std::uint8_t>(share_, *other);
+    return Add<std::uint8_t>(share_, *other);
   } else if (share_->GetBitLength() == 16u) {
-    *this = Add<std::uint16_t>(share_, *other);
+    return Add<std::uint16_t>(share_, *other);
   } else if (share_->GetBitLength() == 32u) {
-    *this = Add<std::uint32_t>(share_, *other);
+    return Add<std::uint32_t>(share_, *other);
   } else if (share_->GetBitLength() == 64u) {
-    *this = Add<std::uint64_t>(share_, *other);
+    return Add<std::uint64_t>(share_, *other);
   } else {
     throw std::bad_cast();
   }
-  return *this;
 }
 
-ShareWrapper &ShareWrapper::operator*(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) {
   assert(*other);
   assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -130,17 +147,16 @@ ShareWrapper &ShareWrapper::operator*(const ShareWrapper &other) {
   }
 
   if (share_->GetBitLength() == 8u) {
-    *this = Mul<std::uint8_t>(share_, *other);
+    return Mul<std::uint8_t>(share_, *other);
   } else if (share_->GetBitLength() == 16u) {
-    *this = Mul<std::uint16_t>(share_, *other);
+    return Mul<std::uint16_t>(share_, *other);
   } else if (share_->GetBitLength() == 32u) {
-    *this = Mul<std::uint32_t>(share_, *other);
+    return Mul<std::uint32_t>(share_, *other);
   } else if (share_->GetBitLength() == 64u) {
-    *this = Mul<std::uint64_t>(share_, *other);
+    return Mul<std::uint64_t>(share_, *other);
   } else {
     throw std::bad_cast();
   }
-  return *this;
 }
 
 const SharePtr ShareWrapper::Out(std::size_t output_owner) {

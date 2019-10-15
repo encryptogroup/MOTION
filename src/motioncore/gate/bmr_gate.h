@@ -112,6 +112,26 @@ class BMRXORGate final : public Gates::Interfaces::TwoGate {
   BMRXORGate(const Gate &) = delete;
 };
 
+
+class BMRINVGate final : public Gates::Interfaces::OneGate {
+ public:
+  BMRINVGate(const Shares::SharePtr &parent);
+
+  ~BMRINVGate() final = default;
+
+  void EvaluateSetup() final;
+
+  void EvaluateOnline() final;
+
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  BMRINVGate() = delete;
+
+  BMRINVGate(const Gate &) = delete;
+};
+
 class BMRANDGate final : public Gates::Interfaces::TwoGate {
  public:
   BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b);

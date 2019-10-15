@@ -103,6 +103,25 @@ class GMWXORGate final : public Gates::Interfaces::TwoGate {
   GMWXORGate(const Gate &) = delete;
 };
 
+class GMWINVGate final : public Gates::Interfaces::OneGate {
+ public:
+  GMWINVGate(const Shares::SharePtr &parent);
+
+  ~GMWINVGate() final = default;
+
+  void EvaluateSetup() final { SetSetupIsReady(); }
+
+  void EvaluateOnline() final;
+
+  const Shares::GMWSharePtr GetOutputAsGMWShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  GMWINVGate() = delete;
+
+  GMWINVGate(const Gate &) = delete;
+};
+
 class GMWANDGate final : public Gates::Interfaces::TwoGate {
  public:
   GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b);

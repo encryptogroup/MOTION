@@ -146,6 +146,7 @@ class BitVector {
 
   bool Empty() { return bit_size_ == 0; }
 
+  /// \brief In-place bit-wise invert
   void Invert() {
     for (auto i = 0ull; i < data_vector_.size(); ++i) {
       data_vector_.at(i) = ~data_vector_.at(i);
