@@ -717,6 +717,71 @@ TEST(BooleanGMW, XOR_64_bit_200_SIMD_2_3_4_5_10_parties) {
   }
 }
 
+TEST(BooleanGMW, MUX_1K_SIMD_2_3_parties) {
+  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
+  std::srand(std::time(nullptr));
+  for (auto num_parties : {2u, 3u}) {
+    const std::size_t in1_owner = std::rand() % num_parties, in2_owner = std::rand() % num_parties,
+                      sel_bit_owner = std::rand() % num_parties,
+                      output_owner = std::rand() % num_parties;
+
+    ENCRYPTO::BitVector<> global_input_1K_a{ENCRYPTO::BitVector<>::Random(1000)},
+        global_input_1K_b{ENCRYPTO::BitVector<>::Random(1000)},
+        global_input_1K_sel{ENCRYPTO::BitVector<>::Random(1000)};
+
+    ENCRYPTO::BitVector<> dummy_input_1K(1000, false);
+    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
+      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+      p->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+
+    auto f = [&](std::size_t party_id) {
+      MOTION::Shares::ShareWrapper s_in_1K_a =
+          party_id == in1_owner
+              ? motion_parties.at(party_id)->IN<BGMW>(global_input_1K_a, in1_owner)
+              : motion_parties.at(party_id)->IN<BGMW>(dummy_input_1K, in1_owner);
+      MOTION::Shares::ShareWrapper s_in_1K_b =
+          party_id == in2_owner
+              ? motion_parties.at(party_id)->IN<BGMW>(global_input_1K_b, in2_owner)
+              : motion_parties.at(party_id)->IN<BGMW>(dummy_input_1K, in2_owner);
+      MOTION::Shares::ShareWrapper s_in_1K_sel =
+          party_id == sel_bit_owner
+              ? motion_parties.at(party_id)->IN<BGMW>(global_input_1K_sel, sel_bit_owner)
+              : motion_parties.at(party_id)->IN<BGMW>(dummy_input_1K, sel_bit_owner);
+
+      auto s_selected = s_in_1K_sel.MUX(s_in_1K_a, s_in_1K_b);
+
+      auto s_out_1K_all = s_selected.Out();
+
+      motion_parties.at(party_id)->Run();
+
+      {
+        auto wire_1K =
+            std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out_1K_all->GetWires().at(0));
+
+        assert(wire_1K);
+
+        for (auto simd_i = 0ull; simd_i < global_input_1K_sel.GetSize(); ++simd_i) {
+          if (global_input_1K_sel[simd_i])
+            EXPECT_EQ(wire_1K->GetValues()[simd_i], global_input_1K_a[simd_i]);
+          else
+            EXPECT_EQ(wire_1K->GetValues()[simd_i], global_input_1K_b[simd_i]);
+        }
+      }
+
+      motion_parties.at(party_id)->Finish();
+    };
+    std::vector<std::thread> t;
+    for (auto &p : motion_parties) {
+      const auto party_id = p->GetBackend()->GetConfig()->GetMyId();
+      t.emplace_back(std::bind(f, party_id));
+    }
+    for (auto &tt : t)
+      if (tt.joinable()) tt.join();
+  }
+}
+
 TEST(BooleanGMW, AND_1_bit_1_1K_SIMD_2_3_parties) {
   for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
     constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;

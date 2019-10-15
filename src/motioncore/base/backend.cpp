@@ -302,17 +302,17 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVec
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           const std::vector<ENCRYPTO::BitVector<>> &input) {
-  auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
-  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  const auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
+  const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
 }
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           std::vector<ENCRYPTO::BitVector<>> &&input) {
-  auto in_gate =
+  const auto in_gate =
       std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
-  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  const  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
 }
@@ -321,7 +321,7 @@ Shares::SharePtr Backend::BooleanGMWXOR(const Shares::GMWSharePtr &a,
                                         const Shares::GMWSharePtr &b) {
   assert(a);
   assert(b);
-  auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(a, b);
+  const auto xor_gate = std::make_shared<Gates::GMW::GMWXORGate>(a, b);
   RegisterGate(xor_gate);
   return xor_gate->GetOutputAsShare();
 }
@@ -329,8 +329,8 @@ Shares::SharePtr Backend::BooleanGMWXOR(const Shares::GMWSharePtr &a,
 Shares::SharePtr Backend::BooleanGMWXOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
-  auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
-  auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  const auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  const auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
   assert(casted_a);
   assert(casted_b);
   return BooleanGMWXOR(casted_a, casted_b);
@@ -340,7 +340,7 @@ Shares::SharePtr Backend::BooleanGMWAND(const Shares::GMWSharePtr &a,
                                         const Shares::GMWSharePtr &b) {
   assert(a);
   assert(b);
-  auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(a, b);
+  const auto and_gate = std::make_shared<Gates::GMW::GMWANDGate>(a, b);
   RegisterGate(and_gate);
   return and_gate->GetOutputAsShare();
 }
@@ -348,18 +348,42 @@ Shares::SharePtr Backend::BooleanGMWAND(const Shares::GMWSharePtr &a,
 Shares::SharePtr Backend::BooleanGMWAND(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
-  auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
-  auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  const auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  const auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
   assert(casted_a);
   assert(casted_b);
   return BooleanGMWAND(casted_a, casted_b);
 }
 
+Shares::SharePtr Backend::BooleanGMWMUX(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b,
+                                        const Shares::GMWSharePtr &sel) {
+  assert(a);
+  assert(b);
+  assert(sel);
+  const auto mux_gate = std::make_shared<Gates::GMW::GMWMUXGate>(a, b, sel);
+  RegisterGate(mux_gate);
+  return mux_gate->GetOutputAsShare();
+}
+
+Shares::SharePtr Backend::BooleanGMWMUX(const Shares::SharePtr &a, const Shares::SharePtr &b,
+                                        const Shares::SharePtr &sel) {
+  assert(a);
+  assert(b);
+  assert(sel);
+  const auto casted_a = std::dynamic_pointer_cast<Shares::GMWShare>(a);
+  const auto casted_b = std::dynamic_pointer_cast<Shares::GMWShare>(b);
+  const auto casted_sel = std::dynamic_pointer_cast<Shares::GMWShare>(sel);
+  assert(casted_a);
+  assert(casted_b);
+  assert(casted_sel);
+  return BooleanGMWMUX(casted_a, casted_b, casted_sel);
+}
+
 Shares::SharePtr Backend::BooleanGMWOutput(const Shares::SharePtr &parent,
                                            std::size_t output_owner) {
   assert(parent);
-  auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent, output_owner);
-  auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+  const auto out_gate = std::make_shared<Gates::GMW::GMWOutputGate>(parent, output_owner);
+  const auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
   RegisterGate(out_gate_cast);
   return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
 }
@@ -378,25 +402,25 @@ Shares::SharePtr Backend::BMRInput(std::size_t party_id, ENCRYPTO::BitVector<> &
 
 Shares::SharePtr Backend::BMRInput(std::size_t party_id,
                                    const std::vector<ENCRYPTO::BitVector<>> &input) {
-  auto in_gate = std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, weak_from_this());
-  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  const auto in_gate = std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, weak_from_this());
+  const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());
 }
 
 Shares::SharePtr Backend::BMRInput(std::size_t party_id,
                                    std::vector<ENCRYPTO::BitVector<>> &&input) {
-  auto in_gate =
+  const auto in_gate =
       std::make_shared<Gates::BMR::BMRInputGate>(std::move(input), party_id, weak_from_this());
-  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());
 }
 
 Shares::SharePtr Backend::BMROutput(const Shares::SharePtr &parent, std::size_t output_owner) {
   assert(parent);
-  auto out_gate = std::make_shared<Gates::BMR::BMROutputGate>(parent, output_owner);
-  auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
+  const auto out_gate = std::make_shared<Gates::BMR::BMROutputGate>(parent, output_owner);
+  const auto out_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(out_gate);
   RegisterGate(out_gate_cast);
   return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
 }

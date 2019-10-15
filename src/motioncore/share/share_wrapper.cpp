@@ -31,7 +31,7 @@
 namespace MOTION::Shares {
 using SharePtr = std::shared_ptr<Share>;
 
-ShareWrapper ShareWrapper::operator~() {
+ShareWrapper ShareWrapper::operator~() const {
   assert(share_);
   if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
@@ -53,7 +53,7 @@ ShareWrapper ShareWrapper::operator~() {
   }
 }
 
-ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) const {
   assert(share_);
   assert(*other);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -84,7 +84,7 @@ ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) {
   }
 }
 
-ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -112,7 +112,7 @@ ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) {
   }
 }
 
-ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
@@ -135,12 +135,12 @@ ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) {
   }
 }
 
-ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) {
+ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
   assert(share_->GetSharingType() == other->GetSharingType());
   assert(share_->GetBitLength() == other->GetBitLength());
-  assert(share_->GetNumOfParallelValues() == other->GetNumOfParallelValues());
+  assert(share_->GetNumOfSIMDValues() == other->GetNumOfSIMDValues());
   if (share_->GetSharingType() != MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
@@ -156,6 +156,39 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) {
     return Mul<std::uint64_t>(share_, *other);
   } else {
     throw std::bad_cast();
+  }
+}
+
+ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) const {
+  assert(*a);
+  assert(*b);
+  assert(share_);
+  assert(share_->GetSharingType() == a->GetSharingType());
+  assert(share_->GetSharingType() == b->GetSharingType());
+  assert(a->GetBitLength() == b->GetBitLength());
+  assert(share_->GetBitLength() == 1);
+
+  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+    // TODO implement
+    throw std::runtime_error("C-OT-based MUX for Arithmetic GMW shares is not implemented yet");
+  }
+
+  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+    auto this_gmw = std::dynamic_pointer_cast<GMWShare>(share_);
+    auto a_gmw = std::dynamic_pointer_cast<GMWShare>(*a);
+    auto b_gmw = std::dynamic_pointer_cast<GMWShare>(*b);
+
+    assert(this_gmw);
+    assert(a_gmw);
+    assert(b_gmw);
+
+    auto mux_gate = std::make_shared<Gates::GMW::GMWMUXGate>(a_gmw, b_gmw, this_gmw);
+    share_->GetRegister()->RegisterNextGate(mux_gate);
+    return ShareWrapper(mux_gate->GetOutputAsShare());
+  } else {
+    auto a_xor_b = a ^ b;
+
+    return a_xor_b;
   }
 }
 

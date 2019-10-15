@@ -454,7 +454,7 @@ BMRXORGate::BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 
   output_wires_.resize(parent_a_.size());
-  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfParallelValues());
+  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfSIMDValues());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::BMRWire>(tmp_bv, backend_);
     ptr_backend->GetRegister()->RegisterNextWire(w);
@@ -590,7 +590,7 @@ BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) {
   }
 
   output_wires_.resize(parent_.size());
-  const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfParallelValues());
+  const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfSIMDValues());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::BMRWire>(tmp_bv, backend_);
     ptr_backend->GetRegister()->RegisterNextWire(w);
@@ -734,7 +734,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 
   output_wires_.resize(parent_a_.size());
-  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfParallelValues());
+  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfSIMDValues());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::BMRWire>(tmp_bv, backend_);
     ptr_backend->GetRegister()->RegisterNextWire(w);

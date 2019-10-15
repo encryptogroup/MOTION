@@ -67,7 +67,7 @@ GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
   bits_ = wires.at(0)->GetBitLength();
 }
 
-std::size_t GMWShare::GetNumOfParallelValues() const noexcept {
+std::size_t GMWShare::GetNumOfSIMDValues() const noexcept {
   const auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
   assert(gmw_wire);
   return gmw_wire->GetValues().GetSize();

@@ -36,7 +36,7 @@ class BMRShare final : public BooleanShare {
 
   std::vector<Wires::WirePtr> &GetMutableWires() noexcept final { return wires_; }
 
-  std::size_t GetNumOfParallelValues() const noexcept final;
+  std::size_t GetNumOfSIMDValues() const noexcept final;
 
   MPCProtocol GetSharingType() const noexcept final;
 

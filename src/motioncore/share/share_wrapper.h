@@ -41,35 +41,39 @@ class ShareWrapper {
   void operator=(SharePtr share) { share_ = share; }
   void operator=(const ShareWrapper &sw) { share_ = sw.share_; }
 
-  ShareWrapper operator~();
+  ShareWrapper operator~() const;
 
-  ShareWrapper operator^(const ShareWrapper &other);
+  ShareWrapper operator^(const ShareWrapper &other) const;
 
   ShareWrapper &operator^=(const ShareWrapper &other) {
     *this = *this ^ other;
     return *this;
   }
 
-  ShareWrapper operator&(const ShareWrapper &other);
+  ShareWrapper operator&(const ShareWrapper &other) const;
 
   ShareWrapper &operator&=(const ShareWrapper &other) {
     *this = *this & other;
     return *this;
   }
 
-  ShareWrapper operator+(const ShareWrapper &other);
+  ShareWrapper operator+(const ShareWrapper &other) const;
 
   ShareWrapper &operator+=(const ShareWrapper &other) {
     *this = *this + other;
     return *this;
   }
 
-  ShareWrapper operator*(const ShareWrapper &other);
+  ShareWrapper operator*(const ShareWrapper &other) const;
 
   ShareWrapper &operator*=(const ShareWrapper &other) {
     *this = *this * other;
     return *this;
   }
+
+  // use this as the selection bit
+  // returns this ? a : b
+  ShareWrapper MUX(const ShareWrapper &a, const ShareWrapper &b) const;
 
   SharePtr &Get() { return share_; }
 
@@ -83,7 +87,7 @@ class ShareWrapper {
   SharePtr share_;
 
   template <typename T>
-  ShareWrapper Add(SharePtr share, SharePtr other) {
+  ShareWrapper Add(SharePtr share, SharePtr other) const {
     auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
     assert(this_a);
     auto this_wire_a = this_a->GetArithmeticWire();
@@ -102,7 +106,7 @@ class ShareWrapper {
   }
 
   template <typename T>
-  ShareWrapper Mul(SharePtr share, SharePtr other) {
+  ShareWrapper Mul(SharePtr share, SharePtr other) const {
     auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
     assert(this_a);
     auto this_wire_a = this_a->GetArithmeticWire();

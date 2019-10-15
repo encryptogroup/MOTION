@@ -66,7 +66,7 @@ BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
   bits_ = wires.at(0)->GetBitLength();
 }
 
-std::size_t BMRShare::GetNumOfParallelValues() const noexcept {
+std::size_t BMRShare::GetNumOfSIMDValues() const noexcept {
   assert(!wires_.empty());
   return wires_.at(0)->GetNumOfSIMDValues();
 }

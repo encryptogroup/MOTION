@@ -130,6 +130,12 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   Shares::SharePtr BooleanGMWAND(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
+  Shares::SharePtr BooleanGMWMUX(const Shares::GMWSharePtr &a, const Shares::GMWSharePtr &b,
+                                 const Shares::GMWSharePtr &sel);
+
+  Shares::SharePtr BooleanGMWMUX(const Shares::SharePtr &a, const Shares::SharePtr &b,
+                                 const Shares::SharePtr &sel);
+
   Shares::SharePtr BooleanGMWOutput(const Shares::SharePtr &parent, std::size_t output_owner);
 
   Shares::SharePtr BMRInput(std::size_t party_id, bool input = false);

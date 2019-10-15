@@ -221,6 +221,29 @@ class TwoGate : public Gate {
   ~TwoGate() override = default;
 };
 
+
+//
+//  |  |  | <- three SharePtrs input
+//  --------
+//  |      |
+//  | Gate |
+//  |      |
+//  --------
+//     | <- SharePointer output
+//
+
+class ThreeGate : public Gate {
+ protected:
+  std::vector<Wires::WirePtr> parent_a_;
+  std::vector<Wires::WirePtr> parent_b_;
+  std::vector<Wires::WirePtr> parent_c_;
+
+  ThreeGate() = default;
+
+ public:
+  ~ThreeGate() override = default;
+};
+
 //
 //  | |... |  <- n SharePointers input
 //  --------

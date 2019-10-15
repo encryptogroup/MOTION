@@ -95,7 +95,7 @@ class ArithmeticShare final : public Share {
 
   ~ArithmeticShare() override = default;
 
-  std::size_t GetNumOfParallelValues() const noexcept final {
+  std::size_t GetNumOfSIMDValues() const noexcept final {
     return wires_.at(0)->GetNumOfSIMDValues();
   };
 
@@ -152,7 +152,7 @@ class ArithmeticConstantShare : public Share {
 
   ~ArithmeticConstantShare() override = default;
 
-  std::size_t GetNumOfParallelValues() const noexcept final { return values_.size(); };
+  std::size_t GetNumOfSIMDValues() const noexcept final { return values_.size(); };
 
   MPCProtocol GetSharingType() const noexcept final { return ArithmeticGMW; }
 

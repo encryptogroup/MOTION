@@ -47,7 +47,7 @@ class Share : public std::enable_shared_from_this<Share> {
  public:
   virtual ~Share() = default;
 
-  virtual std::size_t GetNumOfParallelValues() const noexcept = 0;
+  virtual std::size_t GetNumOfSIMDValues() const noexcept = 0;
 
   virtual MPCProtocol GetSharingType() const noexcept = 0;
 

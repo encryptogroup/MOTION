@@ -29,6 +29,11 @@
 #include "share/boolean_gmw_share.h"
 #include "utility/bit_vector.h"
 
+namespace ENCRYPTO::ObliviousTransfer {
+class OTVectorSender;
+class OTVectorReceiver;
+}  // namespace ENCRYPTO::ObliviousTransfer
+
 namespace MOTION::Gates::GMW {
 
 class GMWInputGate final : public Gates::Interfaces::InputGate {
@@ -146,6 +151,33 @@ class GMWANDGate final : public Gates::Interfaces::TwoGate {
 
   std::shared_ptr<Shares::Share> d_, e_;
   std::shared_ptr<GMWOutputGate> d_out_, e_out_;
+};
+
+class GMWMUXGate final : public Gates::Interfaces::ThreeGate {
+ public:
+  /// \brief Provides the functionality of ternary expression "s ? a : b";
+  /// \param a first input share
+  /// \param b second input share
+  /// \param s selection bit share
+  GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b, const Shares::SharePtr &s);
+
+  ~GMWMUXGate() final = default;
+
+  void EvaluateSetup() final;
+
+  void EvaluateOnline() final;
+
+  const Shares::GMWSharePtr GetOutputAsGMWShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  GMWMUXGate() = delete;
+
+  GMWMUXGate(const Gate &) = delete;
+
+ private:
+  std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>> ot_receiver_;
+  std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>> ot_sender_;
 };
 
 }  // namespace MOTION::Gates::GMW

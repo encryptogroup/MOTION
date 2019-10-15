@@ -30,6 +30,7 @@
 #include "base/register.h"
 #include "communication/output_message.h"
 #include "crypto/multiplication_triple/mt_provider.h"
+#include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/sharing_randomness_generator.h"
 #include "utility/helpers.h"
 #include "wire/boolean_gmw_wire.h"
@@ -378,7 +379,7 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 
   output_wires_.resize(parent_a_.size());
-  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfParallelValues());
+  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfSIMDValues());
   for (auto &w : output_wires_) {
     w = std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_));
   }
@@ -467,7 +468,7 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
   }
 
   output_wires_.resize(parent_.size());
-  const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfParallelValues());
+  const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfSIMDValues());
   for (auto &w : output_wires_) {
     w = std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_));
   }
@@ -539,7 +540,7 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
 
-  const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfParallelValues());
+  const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfSIMDValues());
   std::vector<Wires::WirePtr> dummy_wires_e(parent_a_.size()), dummy_wires_d(parent_a_.size());
 
   for (auto &w : dummy_wires_d) {
@@ -693,6 +694,175 @@ const Shares::GMWSharePtr GMWANDGate::GetOutputAsGMWShare() const {
 }
 
 const Shares::SharePtr GMWANDGate::GetOutputAsShare() const {
+  auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsGMWShare());
+  assert(result);
+  return result;
+}
+
+GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
+                       const Shares::SharePtr &c) {
+  parent_a_ = a->GetWires();
+  parent_b_ = b->GetWires();
+  parent_c_ = c->GetWires();
+
+  assert(parent_a_.size() > 0);
+  assert(parent_a_.size() == parent_b_.size());
+  assert(parent_c_.size() == 1);
+  assert(parent_a_.at(0)->GetBitLength() > 0);
+
+  backend_ = parent_a_.at(0)->GetBackend();
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+
+  requires_online_interaction_ = true;
+  gate_type_ = GateType::InteractiveGate;
+
+  const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfSIMDValues());
+
+  gate_id_ = ptr_backend->GetRegister()->NextGateId();
+
+  for (auto &wire : parent_a_) {
+    RegisterWaitingFor(wire->GetWireId());
+    wire->RegisterWaitingGate(gate_id_);
+  }
+
+  for (auto &wire : parent_b_) {
+    RegisterWaitingFor(wire->GetWireId());
+    wire->RegisterWaitingGate(gate_id_);
+  }
+
+  for (auto &wire : parent_c_) {
+    RegisterWaitingFor(wire->GetWireId());
+    wire->RegisterWaitingGate(gate_id_);
+  }
+
+  output_wires_.resize(parent_a_.size());
+  for (auto &w : output_wires_) {
+    w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
+    ptr_backend->GetRegister()->RegisterNextWire(w);
+  }
+
+  auto backend = backend_.lock();
+  assert(backend);
+
+  const auto n_parties = GetConfig()->GetNumOfParties();
+  const auto n_simd = parent_a_.at(0)->GetNumOfSIMDValues();
+  const auto n_bits = parent_a_.size();
+  constexpr auto XCOT = ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT;
+
+  ot_sender_.resize(n_parties);
+  ot_receiver_.resize(n_parties);
+
+  for (auto i = 0ull; i < n_parties; ++i) {
+    if (i == GetConfig()->GetMyId()) continue;
+    ot_sender_.at(i) = backend->GetOTProvider(i)->RegisterSend(n_bits, n_simd, XCOT);
+    ot_receiver_.at(i) = backend->GetOTProvider(i)->RegisterReceive(n_bits, n_simd, XCOT);
+  }
+
+  if constexpr (MOTION_DEBUG) {
+    auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
+                                 parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+    ptr_backend->GetLogger()->LogDebug(
+        fmt::format("Created a BooleanGMW AND gate with following properties: {}", gate_info));
+  }
+}
+
+void GMWMUXGate::EvaluateSetup() {}
+
+void GMWMUXGate::EvaluateOnline() {
+  for (auto &wire : parent_a_) {
+    Helpers::WaitFor(*wire->GetIsReadyCondition());
+  }
+
+  for (auto &wire : parent_b_) {
+    Helpers::WaitFor(*wire->GetIsReadyCondition());
+  }
+
+  for (auto &wire : parent_c_) {
+    Helpers::WaitFor(*wire->GetIsReadyCondition());
+  }
+
+  auto backend = backend_.lock();
+  assert(backend);
+
+  const auto n_bits = parent_a_.size();
+  const auto n_simd = parent_a_.at(0)->GetNumOfSIMDValues();
+  const auto n_parties = GetConfig()->GetNumOfParties();
+  const auto my_id = GetConfig()->GetMyId();
+
+  std::vector<ENCRYPTO::BitVector<>> xored_v;
+  for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+    ENCRYPTO::BitVector<> a, b;
+    for (auto bit_i = 0ull; bit_i < n_bits; ++bit_i) {
+      auto wire_a = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(bit_i));
+      auto wire_b = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(bit_i));
+      assert(wire_a);
+      assert(wire_b);
+      a.Append(wire_a->GetValues()[simd_i]);
+      b.Append(wire_b->GetValues()[simd_i]);
+    }
+    xored_v.emplace_back(a ^ b);
+  }
+  auto gmw_wire_selection_bits = std::dynamic_pointer_cast<Wires::GMWWire>(parent_c_.at(0));
+  assert(gmw_wire_selection_bits);
+  const auto &selection_bits = gmw_wire_selection_bits->GetValues();
+  for (auto other_pid = 0ull; other_pid < n_parties; ++other_pid) {
+    if (other_pid == my_id) continue;
+
+    ot_receiver_.at(other_pid)->SetChoices(selection_bits);
+    ot_receiver_.at(other_pid)->SendCorrections();
+
+    ot_sender_.at(other_pid)->SetInputs(xored_v);
+    ot_sender_.at(other_pid)->SendMessages();
+  }
+
+  for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i)
+    if (!selection_bits[simd_i]) xored_v.at(simd_i).Set(false);
+
+  for (auto other_pid = 0ull; other_pid < n_parties; ++other_pid) {
+    if (other_pid == my_id) continue;
+    const auto &ot_r = ot_receiver_.at(other_pid)->GetOutputs();
+    const auto &ot_s = ot_sender_.at(other_pid)->GetOutputs();
+    for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+      xored_v.at(simd_i) ^= ot_r.at(simd_i);
+      xored_v.at(simd_i) ^= ot_s.at(simd_i).Subset(0, n_bits);
+    }
+  }
+
+  for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+    for (auto bit_i = 0ull; bit_i < n_bits; ++bit_i) {
+      auto wire_out = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(bit_i));
+      assert(wire_out);
+      wire_out->GetMutableValues().Set(xored_v.at(simd_i)[bit_i], simd_i);
+    }
+  }
+
+  for (auto bit_i = 0ull; bit_i < n_bits; ++bit_i) {
+    auto wire_out = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(bit_i));
+    assert(wire_out);
+    auto &out = wire_out->GetMutableValues();
+
+    auto wire_b = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(bit_i));
+    assert(wire_b);
+    out ^= wire_b->GetValues();
+  }
+
+  SetOnlineIsReady();
+  backend->GetRegister()->IncrementEvaluatedGatesCounter();
+
+  if constexpr (MOTION_VERBOSE_DEBUG) {
+    backend->GetLogger()->LogTrace(
+        fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
+  }
+}
+
+const Shares::GMWSharePtr GMWMUXGate::GetOutputAsGMWShare() const {
+  auto result = std::make_shared<Shares::GMWShare>(output_wires_);
+  assert(result);
+  return result;
+}
+
+const Shares::SharePtr GMWMUXGate::GetOutputAsShare() const {
   auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsGMWShare());
   assert(result);
   return result;
