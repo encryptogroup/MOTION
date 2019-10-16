@@ -75,7 +75,13 @@ class BMRWire : public BooleanWire {
 
   void GenerateRandomPermutationBits();
 
-  void SetSetupIsReady() { setup_ready_ = true; }
+  void SetSetupIsReady() {
+    {
+      std::scoped_lock lock(setup_ready_cond_->GetMutex());
+      setup_ready_ = true;
+    }
+    setup_ready_cond_->NotifyAll();
+  }
 
   auto &GetSetupReadyCondition() { return setup_ready_cond_; }
 

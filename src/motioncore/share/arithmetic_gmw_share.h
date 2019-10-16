@@ -33,7 +33,7 @@ namespace MOTION::Shares {
  * Allow only unsigned integers for Arithmetic shares.
  */
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticShare final : public Share {
+class ArithmeticShare final : public Shares::Share {
  public:
   ArithmeticShare(const Wires::WirePtr &wire) {
     wires_ = {wire};
@@ -43,12 +43,12 @@ class ArithmeticShare final : public Share {
     backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(Wires::ArithmeticWirePtr<T> &wire) {
+  ArithmeticShare(const Wires::ArithmeticWirePtr<T> &wire) {
     wires_ = {std::static_pointer_cast<Wires::Wire>(wire)};
     backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(std::vector<Wires::ArithmeticWirePtr<T>> &wires) {
+  ArithmeticShare(const std::vector<Wires::ArithmeticWirePtr<T>> &wires) {
     for (auto i = 0ull; i < wires.size(); ++i) {
       wires_.emplace_back(wires.at(i));
     }
@@ -64,7 +64,7 @@ class ArithmeticShare final : public Share {
     backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(std::vector<Wires::WirePtr> &wires) {
+  ArithmeticShare(const std::vector<Wires::WirePtr> &wires) {
     if (wires.size() == 0) {
       throw(std::runtime_error("Trying to create an arithmetic share without wires"));
     }
@@ -81,17 +81,17 @@ class ArithmeticShare final : public Share {
     backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(std::vector<T> &input, const std::weak_ptr<Backend> &backend) {
+  ArithmeticShare(const std::vector<T> &input, const std::weak_ptr<Backend> &backend) {
     backend_ = backend;
     wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
 
-  ArithmeticShare(T input, const std::weak_ptr<Backend> &backend) {
+  ArithmeticShare(const T input, const std::weak_ptr<Backend> &backend) {
     backend_ = backend;
     wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
 
-//  std::shared_ptr<ArithmeticShare> operator+(const std::shared_ptr<ArithmeticShare> &other) {}
+  //  std::shared_ptr<ArithmeticShare> operator+(const std::shared_ptr<ArithmeticShare> &other) {}
 
   ~ArithmeticShare() override = default;
 
@@ -120,6 +120,16 @@ class ArithmeticShare final : public Share {
   }
 
   std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
+
+  std::vector<std::shared_ptr<Shares::Share>> Split() const noexcept final {
+    std::vector<std::shared_ptr<Shares::Share>> v;
+    v.reserve(wires_.size());
+    for (const auto &w : wires_) {
+      const std::vector<Wires::WirePtr> w_v = {std::static_pointer_cast<MOTION::Wires::Wire>(w)};
+      v.emplace_back(std::make_shared<ArithmeticShare<T>>(w_v));
+    }
+    return v;
+  }
 
   ArithmeticShare(ArithmeticShare &) = delete;
 

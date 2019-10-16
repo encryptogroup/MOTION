@@ -71,4 +71,14 @@ std::size_t BMRShare::GetNumOfSIMDValues() const noexcept {
   return wires_.at(0)->GetNumOfSIMDValues();
 }
 
+std::vector<std::shared_ptr<Share>> BMRShare::Split() const noexcept {
+  std::vector<SharePtr> v;
+  v.reserve(wires_.size());
+  for (const auto &w : wires_) {
+    const std::vector<Wires::WirePtr> w_v = {std::static_pointer_cast<MOTION::Wires::Wire>(w)};
+    v.emplace_back(std::make_shared<BMRShare>(w_v));
+  }
+  return v;
+}
+
 }

@@ -521,23 +521,25 @@ void BMRXORGate::EvaluateOnline() {
   for (auto i = 0ull; i < parent_a_.size(); ++i) {
     auto wire_a = std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(i));
     auto wire_b = std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(i));
-
     assert(wire_a);
     assert(wire_b);
 
-    auto bmr_wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
-    assert(bmr_wire);
+    auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
+    assert(bmr_out);
 
     Helpers::WaitFor(*wire_a->GetIsReadyCondition());
     Helpers::WaitFor(*wire_b->GetIsReadyCondition());
 
-    for (auto j = 0ull; j < bmr_wire->GetNumOfSIMDValues(); ++j) {
-      for (auto k = 0ull; k < GetConfig()->GetNumOfParties(); ++k) {
-        bmr_wire->GetMutablePublicKeys().at(k).at(j) =
-            (wire_a->GetPublicKeys().at(k).at(j) ^ wire_b->GetPublicKeys().at(k).at(j));
+    auto &out = bmr_out->GetMutablePublicKeys();
+    const auto &a = wire_a->GetPublicKeys();
+    const auto &b = wire_b->GetPublicKeys();
+
+    for (auto k = 0ull; k < out.size(); ++k) {
+      for (auto j = 0ull; j < out.at(k).size(); ++j) {
+        out.at(k).at(j) = a.at(k).at(j) ^ b.at(k).at(j);
       }
-      bmr_wire->GetMutablePublicValues() = wire_a->GetPublicValues() ^ wire_b->GetPublicValues();
     }
+    bmr_out->GetMutablePublicValues() = wire_a->GetPublicValues() ^ wire_b->GetPublicValues();
   }
 
   auto ptr_backend = backend_.lock();
@@ -572,7 +574,7 @@ BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) {
 
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
-  for (const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
+  for ([[maybe_unused]] const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
 
   backend_ = parent_.at(0)->GetBackend();
 
@@ -623,9 +625,6 @@ void BMRINVGate::EvaluateSetup() {
 
     bmr_out->GetMutablePermutationBits() = bmr_in->GetPermutationBits();
 
-    if (bmr_in->GetWireId() % GetConfig()->GetNumOfParties() == GetConfig()->GetMyId())
-      bmr_out->GetMutablePermutationBits().Invert();
-
     const auto &in0 = std::get<0>(bmr_in->GetSecretKeys());
     const auto &in1 = std::get<1>(bmr_in->GetSecretKeys());
 
@@ -633,10 +632,9 @@ void BMRINVGate::EvaluateSetup() {
     auto &out1 = std::get<1>(bmr_out->GetMutableSecretKeys());
 
     for (auto j = 0ull; j < bmr_out->GetNumOfSIMDValues(); ++j) {
-      out0.at(j) = in1.at(j);
-      out1.at(j) = in0.at(j);
+      out0.at(j) = in0.at(j);
+      out1.at(j) = in1.at(j);
     }
-
     bmr_out->SetSetupIsReady();
   }
   SetSetupIsReady();
@@ -661,7 +659,6 @@ void BMRINVGate::EvaluateOnline() {
 
   for (auto i = 0ull; i < parent_.size(); ++i) {
     auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
-
     assert(bmr_in);
 
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
@@ -673,7 +670,7 @@ void BMRINVGate::EvaluateOnline() {
       for (auto k = 0ull; k < GetConfig()->GetNumOfParties(); ++k) {
         bmr_out->GetMutablePublicKeys().at(k).at(j) = (bmr_in->GetPublicKeys().at(k).at(j));
       }
-      bmr_out->GetMutablePublicValues() = bmr_in->GetPublicValues();
+      bmr_out->GetMutablePublicValues() = ~bmr_in->GetPublicValues();
     }
   }
 
@@ -1221,8 +1218,10 @@ void BMRANDGate::EvaluateSetup() {
     }
   }
 
+  assert(!setup_is_ready_);
   // mark this gate as setup-ready to proceed with the online phase
   SetSetupIsReady();
+  assert(setup_is_ready_);
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend{backend_.lock()};
     assert(ptr_backend);
@@ -1232,6 +1231,10 @@ void BMRANDGate::EvaluateSetup() {
 }  // namespace MOTION::Gates::BMR
 
 void BMRANDGate::EvaluateOnline() {
+  WaitSetup();
+  assert(setup_is_ready_);
+  assert(!online_is_ready_);
+
   auto backend = backend_.lock();
   assert(backend);
 

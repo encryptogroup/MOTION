@@ -73,4 +73,13 @@ std::size_t GMWShare::GetNumOfSIMDValues() const noexcept {
   return gmw_wire->GetValues().GetSize();
 }
 
+std::vector<std::shared_ptr<Share>> GMWShare::Split() const noexcept {
+  std::vector<SharePtr> v;
+  v.reserve(wires_.size());
+  for (const auto &w : wires_) {
+    const std::vector<Wires::WirePtr> w_v = {std::static_pointer_cast<MOTION::Wires::Wire>(w)};
+    v.emplace_back(std::make_shared<GMWShare>(w_v));
+  }
+  return v;
+}
 }

@@ -24,8 +24,10 @@
 
 #include "share_wrapper.h"
 
+#include "arithmetic_gmw_share.h"
 #include "base/backend.h"
 #include "bmr_share.h"
+#include "boolean_gmw_share.h"
 #include "gate/bmr_gate.h"
 
 namespace MOTION::Shares {
@@ -186,9 +188,18 @@ ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) con
     share_->GetRegister()->RegisterNextGate(mux_gate);
     return ShareWrapper(mux_gate->GetOutputAsShare());
   } else {
+    // s ? a : b
+    // result <- b ^ (s * (a ^ b))
+
     auto a_xor_b = a ^ b;
 
-    return a_xor_b;
+    auto v = a_xor_b.Split();
+    for (auto &s : v) {
+      s &= *this;
+    }
+
+    const auto mask = ShareWrapper::Join(v);
+    return b ^ mask;
   }
 }
 
@@ -226,6 +237,58 @@ const SharePtr ShareWrapper::Out(std::size_t output_owner) {
     default: {
       throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
                                            static_cast<uint>(share_->GetSharingType()))));
+    }
+  }
+}
+
+std::vector<ShareWrapper> ShareWrapper::Split() {
+  std::vector<ShareWrapper> result;
+  result.reserve(share_->GetWires().size());
+  const auto split = share_->Split();
+  for (const auto &s : split) result.emplace_back(s);
+  return result;
+}
+
+ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
+  if (v.empty()) throw std::runtime_error("ShareWrapper cannot be empty");
+
+  std::vector<Shares::SharePtr> raw_v;
+  raw_v.reserve(v.size());
+  for (const auto &s : v) raw_v.emplace_back(*s);
+
+  std::vector<Wires::WirePtr> wires;
+  wires.reserve(v.size());
+  for (const auto &s : v)
+    for (const auto &w : s->GetWires()) wires.emplace_back(w);
+  switch (v.at(0)->GetSharingType()) {
+    case MPCProtocol::ArithmeticGMW: {
+      switch (wires.at(0)->GetBitLength()) {
+        case 8: {
+          return ShareWrapper(std::make_shared<Shares::ArithmeticShare<std::uint8_t>>(wires));
+        }
+        case 16: {
+          return ShareWrapper(std::make_shared<Shares::ArithmeticShare<std::uint16_t>>(wires));
+        }
+        case 32: {
+          return ShareWrapper(std::make_shared<Shares::ArithmeticShare<std::uint32_t>>(wires));
+        }
+        case 64: {
+          return ShareWrapper(std::make_shared<Shares::ArithmeticShare<std::uint64_t>>(wires));
+        }
+        default:
+          throw std::runtime_error(fmt::format(
+              "Incorrect bit length of arithmetic shares: {}, allowed are 8, 16, 32, 64",
+              wires.at(0)->GetBitLength()));
+      }
+    }
+    case MPCProtocol::BooleanGMW: {
+      return ShareWrapper(std::make_shared<Shares::GMWShare>(wires));
+    }
+    case MPCProtocol::BMR: {
+      return ShareWrapper(std::make_shared<Shares::BMRShare>(wires));
+    }
+    default: {
+      throw std::runtime_error("Unknown MPC protocol");
     }
   }
 }

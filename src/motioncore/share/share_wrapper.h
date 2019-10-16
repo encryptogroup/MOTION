@@ -83,6 +83,10 @@ class ShareWrapper {
 
   const SharePtr Out(std::size_t output_owner = std::numeric_limits<std::int64_t>::max());
 
+  std::vector<ShareWrapper> Split();
+
+  static ShareWrapper Join(const std::vector<ShareWrapper> &v);
+
  private:
   SharePtr share_;
 

@@ -24,12 +24,14 @@
 
 #include "share.h"
 
+#include "fmt/format.h"
+
 #include "base/backend.h"
 
-namespace MOTION::Shares{
-  std::shared_ptr<Register> Share::GetRegister(){
-    auto backend_ptr = backend_.lock();
-    assert(backend_ptr);
-    return backend_ptr->GetRegister();
-  }
+namespace MOTION::Shares {
+std::shared_ptr<Register> Share::GetRegister() {
+  auto backend_ptr = backend_.lock();
+  assert(backend_ptr);
+  return backend_ptr->GetRegister();
 }
+}  // namespace MOTION::Shares
