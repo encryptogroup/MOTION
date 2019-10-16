@@ -38,7 +38,7 @@ constexpr std::string_view FRAMEWORK_NAME{"MOTION"};
 
 constexpr auto MB{1024 * 1024};
 
-constexpr bool MOTION_VERBOSE_DEBUG_WISH{true};
+constexpr bool MOTION_VERBOSE_DEBUG_WISH{false};
 
 // Don't compile unnecessary code if verbose debugging is not needed
 constexpr bool MOTION_VERBOSE_DEBUG{MOTION_DEBUG && MOTION_VERBOSE_DEBUG_WISH};
