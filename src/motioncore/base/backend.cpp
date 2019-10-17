@@ -220,13 +220,19 @@ void Backend::EvaluateParallel() {
         mt_provider_->Setup();
       }
     }
+    boost::asio::thread_pool pool_setup(
+        std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+    for (auto &gate : register_->GetGates()) {
+      boost::asio::post([gate]() { gate->EvaluateSetup(); });
+    }
+    pool_setup.join();
   });
 
   // Run setup and online phase of circuit evaluation
   for (auto &input_gate : register_->GetInputGates()) {
     register_->AddToActiveQueue(input_gate->GetID());
   }
-  boost::asio::thread_pool pool(
+  boost::asio::thread_pool pool_online(
       std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
   while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
     const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
@@ -234,16 +240,15 @@ void Backend::EvaluateParallel() {
       std::this_thread::sleep_for(std::chrono::microseconds(100));
       continue;
     }
-    boost::asio::post(pool, [this, gate_id]() {
+    boost::asio::post(pool_online, [this, gate_id]() {
       auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-      gate->EvaluateSetup();
       gate->EvaluateOnline();
     });
   }
-  pool.join();
+  pool_online.join();
 
   f_setup.get();
-}
+}  // namespace MOTION
 
 void Backend::TerminateCommunication() {
   for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
@@ -302,7 +307,8 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVec
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           const std::vector<ENCRYPTO::BitVector<>> &input) {
-  const auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
+  const auto in_gate =
+      std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
   const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -312,7 +318,7 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           std::vector<ENCRYPTO::BitVector<>> &&input) {
   const auto in_gate =
       std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
-  const  auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
+  const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
 }
@@ -402,7 +408,8 @@ Shares::SharePtr Backend::BMRInput(std::size_t party_id, ENCRYPTO::BitVector<> &
 
 Shares::SharePtr Backend::BMRInput(std::size_t party_id,
                                    const std::vector<ENCRYPTO::BitVector<>> &input) {
-  const auto in_gate = std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, weak_from_this());
+  const auto in_gate =
+      std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, weak_from_this());
   const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());

@@ -113,6 +113,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
   // non-interactive input sharing based on distributed in advance randomness
   // seeds
   void EvaluateOnline() final {
+    WaitSetup();
     assert(setup_is_ready_);
 
     auto my_id = GetConfig()->GetMyId();
@@ -271,6 +272,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
   void EvaluateSetup() final { SetSetupIsReady(); }
 
   void EvaluateOnline() final {
+    WaitSetup();
     assert(setup_is_ready_);
 
     auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
@@ -395,6 +397,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
   void EvaluateSetup() final { SetSetupIsReady(); }
 
   void EvaluateOnline() final {
+    WaitSetup();
     assert(setup_is_ready_);
 
     Helpers::WaitFor(*parent_a_.at(0)->GetIsReadyCondition());
@@ -493,6 +496,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
   void EvaluateSetup() final { SetSetupIsReady(); }
 
   void EvaluateOnline() final {
+    WaitSetup();
     assert(setup_is_ready_);
 
     auto mt_provider = GetMTProvider();

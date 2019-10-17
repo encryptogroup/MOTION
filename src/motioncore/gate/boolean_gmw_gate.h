@@ -71,7 +71,7 @@ class GMWOutputGate final : public Interfaces::OutputGate {
 
   ~GMWOutputGate() final = default;
 
-  void EvaluateSetup() final {}
+  void EvaluateSetup() final;
 
   void EvaluateOnline() final;
 
@@ -95,7 +95,7 @@ class GMWXORGate final : public Gates::Interfaces::TwoGate {
 
   ~GMWXORGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final;
 
   void EvaluateOnline() final;
 
@@ -114,7 +114,7 @@ class GMWINVGate final : public Gates::Interfaces::OneGate {
 
   ~GMWINVGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final;
 
   void EvaluateOnline() final;
 

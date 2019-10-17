@@ -115,6 +115,7 @@ void GMWInputGate::EvaluateSetup() {
 }
 
 void GMWInputGate::EvaluateOnline() {
+  WaitSetup();
   assert(setup_is_ready_);
 
   auto ptr_backend = backend_.lock();
@@ -245,10 +246,12 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Created a BooleanGMW OutputGate with following properties: {}", gate_info));
   }
-  setup_is_ready_ = true;
 }
 
+void GMWOutputGate::EvaluateSetup() { SetSetupIsReady(); }
+
 void GMWOutputGate::EvaluateOnline() {
+  WaitSetup();
   std::vector<Wires::GMWWirePtr> wires;
   std::size_t i = 0, j = 0;
   for (auto &wire : parent_) {
@@ -396,7 +399,10 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 }
 
+void GMWXORGate::EvaluateSetup() { SetSetupIsReady(); }
+
 void GMWXORGate::EvaluateOnline() {
+  WaitSetup();
   assert(setup_is_ready_);
 
   for (auto &wire : parent_a_) {
@@ -487,7 +493,10 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
   }
 }
 
+void GMWINVGate::EvaluateSetup() { SetSetupIsReady(); }
+
 void GMWINVGate::EvaluateOnline() {
+  WaitSetup();
   assert(setup_is_ready_);
 
   for (auto i = 0ull; i < parent_.size(); ++i) {
@@ -595,9 +604,10 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 }
 
-void GMWANDGate::EvaluateSetup() {}
+void GMWANDGate::EvaluateSetup() { SetSetupIsReady(); }
 
 void GMWANDGate::EvaluateOnline() {
+  WaitSetup();
   for (auto &wire : parent_a_) {
     Helpers::WaitFor(*wire->GetIsReadyCondition());
   }
@@ -767,9 +777,10 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   }
 }
 
-void GMWMUXGate::EvaluateSetup() {}
+void GMWMUXGate::EvaluateSetup() { SetSetupIsReady(); }
 
 void GMWMUXGate::EvaluateOnline() {
+  WaitSetup();
   for (auto &wire : parent_a_) {
     Helpers::WaitFor(*wire->GetIsReadyCondition());
   }
