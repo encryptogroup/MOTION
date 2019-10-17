@@ -242,7 +242,7 @@ TEST_P(BMRTest, XOR) {
   }
 }
 
-constexpr std::array<std::size_t, 3> bmr_n_parties{2, 5, 10};
+constexpr std::array<std::size_t, 2> bmr_n_parties{2, 5};
 constexpr std::array<std::size_t, 2> bmr_n_wires{1, 64};
 constexpr std::array<std::size_t, 2> bmr_n_simd{1, 64};
 constexpr std::array<bool, 2> bmr_online_after_setup{false, true};
