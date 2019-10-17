@@ -181,7 +181,7 @@ void BMRInputGate::EvaluateSetup() {
 }
 
 void BMRInputGate::EvaluateOnline() {
-  assert(setup_is_ready_);
+  WaitSetup();
 
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
@@ -292,8 +292,6 @@ const Shares::BMRSharePtr BMRInputGate::GetOutputAsBMRShare() {
 }
 
 BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_owner) {
-  assert(!setup_is_ready_);
-  assert(!online_is_ready_);
   if (parent->GetWires().at(0)->GetProtocol() != MPCProtocol::BMR) {
     auto sharing_type = Helpers::Print::ToString(parent->GetWires().at(0)->GetProtocol());
     throw std::runtime_error(
@@ -365,7 +363,6 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
 void BMROutputGate::EvaluateSetup() { SetSetupIsReady(); }
 
 void BMROutputGate::EvaluateOnline() {
-  assert(!online_is_ready_);
   WaitSetup();
   assert(setup_is_ready_);
   auto ptr_backend = backend_.lock();
@@ -509,8 +506,6 @@ void BMRXORGate::EvaluateSetup() {
 
 void BMRXORGate::EvaluateOnline() {
   WaitSetup();
-  assert(setup_is_ready_);
-  assert(!online_is_ready_);
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
@@ -648,8 +643,6 @@ void BMRINVGate::EvaluateSetup() {
 
 void BMRINVGate::EvaluateOnline() {
   WaitSetup();
-  assert(setup_is_ready_);
-  assert(!online_is_ready_);
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
@@ -1218,10 +1211,8 @@ void BMRANDGate::EvaluateSetup() {
     }
   }
 
-  assert(!setup_is_ready_);
   // mark this gate as setup-ready to proceed with the online phase
   SetSetupIsReady();
-  assert(setup_is_ready_);
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend{backend_.lock()};
     assert(ptr_backend);
@@ -1232,8 +1223,6 @@ void BMRANDGate::EvaluateSetup() {
 
 void BMRANDGate::EvaluateOnline() {
   WaitSetup();
-  assert(setup_is_ready_);
-  assert(!online_is_ready_);
 
   auto backend = backend_.lock();
   assert(backend);
