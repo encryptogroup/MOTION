@@ -193,12 +193,8 @@ ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) con
 
     auto a_xor_b = a ^ b;
 
-    auto v = a_xor_b.Split();
-    for (auto &s : v) {
-      s &= *this;
-    }
-
-    const auto mask = ShareWrapper::Join(v);
+    auto mask = ShareWrapper::Join(std::vector<ShareWrapper>(a_xor_b->GetBitLength(), *this));
+    mask &= a_xor_b;
     return b ^ mask;
   }
 }
@@ -251,7 +247,14 @@ std::vector<ShareWrapper> ShareWrapper::Split() {
 
 ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
   if (v.empty()) throw std::runtime_error("ShareWrapper cannot be empty");
-
+  {
+    const auto type = v.at(0)->GetSharingType();
+    for (auto i = 1ull; i < v.size(); ++i) {
+      if (v.at(i)->GetSharingType() != type) {
+        throw std::runtime_error("Trying to join shares of different types");
+      }
+    }
+  }
   std::vector<Shares::SharePtr> raw_v;
   raw_v.reserve(v.size());
   for (const auto &s : v) raw_v.emplace_back(*s);
