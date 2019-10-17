@@ -175,8 +175,7 @@ void Backend::EvaluateSequential() {
     }
   }
 
-  boost::asio::thread_pool pool_setup(
-      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+  boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
 
   for (auto i = 0ull; i < register_->GetTotalNumOfGates(); ++i) {
     boost::asio::post(pool_setup, [this, i]() { register_->GetGate(i)->EvaluateSetup(); });
@@ -187,20 +186,19 @@ void Backend::EvaluateSequential() {
     register_->AddToActiveQueue(input_gate->GetID());
   }
 
-  boost::asio::thread_pool pool(
-      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+  boost::asio::thread_pool pool_online(register_->GetTotalNumOfGates());
   while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
     const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
     if (gate_id < 0) {
       std::this_thread::sleep_for(std::chrono::microseconds(100));
       continue;
     }
-    boost::asio::post(pool, [this, gate_id]() {
+    boost::asio::post(pool_online, [this, gate_id]() {
       auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
       gate->EvaluateOnline();
     });
   }
-  pool.join();
+  pool_online.join();
 }
 
 void Backend::EvaluateParallel() {
@@ -220,8 +218,7 @@ void Backend::EvaluateParallel() {
         mt_provider_->Setup();
       }
     }
-    boost::asio::thread_pool pool_setup(
-        std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+    boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
     for (auto &gate : register_->GetGates()) {
       boost::asio::post([gate]() { gate->EvaluateSetup(); });
     }
@@ -232,8 +229,7 @@ void Backend::EvaluateParallel() {
   for (auto &input_gate : register_->GetInputGates()) {
     register_->AddToActiveQueue(input_gate->GetID());
   }
-  boost::asio::thread_pool pool_online(
-      std::min(register_->GetTotalNumOfGates(), GetConfig()->GetNumOfThreads()));
+  boost::asio::thread_pool pool_online(register_->GetTotalNumOfGates());
   while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
     const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
     if (gate_id < 0) {
