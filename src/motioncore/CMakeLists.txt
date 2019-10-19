@@ -124,6 +124,7 @@ target_link_libraries(motion
         PRIVATE Threads::Threads
         PRIVATE OpenSSL::Crypto
         PRIVATE OpenSSL::SSL
+        PRIVATE fmt::fmt
         )
 
 if (${SANITIZE_ADDRESS_LINK_OPT})
