@@ -79,7 +79,9 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
         execute_process(COMMAND git submodule update --init extern/fmt
                 WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
     endif ()
-    add_definitions(-DFMT_HEADER_ONLY=TRUE)
+    # we use the header-only version of fmt
+    # -> add `target_compile_definitions($TARGET PUBLIC FMT_HEADER_ONLY)` for
+    # targets using fmt
     #set(FMT_TEST OFF CACHE BOOL "Enable building fmt tests" FORCE)
     #add_subdirectory(extern/fmt)
 endif ()

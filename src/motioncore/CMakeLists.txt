@@ -118,13 +118,15 @@ target_include_directories(motion PUBLIC
         ${Boost_INCLUDE_DIRS}
         )
 
+target_compile_definitions(motion PUBLIC FMT_HEADER_ONLY)
+
 target_link_libraries(motion
         PUBLIC ${Boost_LIBRARIES}
         PUBLIC OpenMP::OpenMP_CXX
         PRIVATE Threads::Threads
         PRIVATE OpenSSL::Crypto
         PRIVATE OpenSSL::SSL
-        PRIVATE fmt::fmt
+        # PRIVATE fmt::fmt  # we use the header-only version of fmt
         )
 
 if (${SANITIZE_ADDRESS_LINK_OPT})
