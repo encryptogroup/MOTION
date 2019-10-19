@@ -852,10 +852,6 @@ void BMRANDGate::EvaluateSetup() {
   const std::vector<ENCRYPTO::BitVector<>> R_for_OTs(
       batch_size_3, ENCRYPTO::BitVector<>(R.GetData().data(), kappa));
 
-  boost::asio::thread_pool pool(
-      std::min(num_parties * output_wires_.size(),
-               static_cast<std::size_t>(std::thread::hardware_concurrency())));
-
   if constexpr (MOTION_VERBOSE_DEBUG) {
     auto ptr_backend{backend_.lock()};
     assert(ptr_backend);
@@ -921,53 +917,62 @@ void BMRANDGate::EvaluateSetup() {
 
       s_ot_1->SendMessages();
       r_ot_1->SendCorrections();
-
-      // non-blocking wait for the outputs of bit*bit multiplication, parse these, and proceed
-      // with bit*bit-string multiplication
-      boost::asio::post(pool, [this, my_id, party_id, wire_i, r_ot_1, s_ot_1, &r_out, &s_out,
-                               &choices, bmr_out, &R_for_OTs]() {
-        const auto &r = r_ot_1->GetOutputs();
-        const auto &s = s_ot_1->GetOutputs();
-
-        ENCRYPTO::BitVector<> r_bv, s_bv;
-        for (auto i = 0ull; i < r.size(); ++i) {
-          r_bv.Append(r.at(i)[0]);
-          s_bv.Append(s.at(i).Subset(0, 1)[0]);
-        }
-        choices.at(party_id).at(wire_i) = r_bv ^ s_bv;
-
-        if constexpr (MOTION_VERBOSE_DEBUG) {
-          const auto &r_bv_check = r_ot_1->GetChoices();
-          const auto &s_v_check = s_ot_1->GetInputs();
-          ENCRYPTO::BitVector<> s_bv_check;
-          for (auto i = 0ull; i < s_v_check.size(); ++i) s_bv_check.Append(s_v_check.at(i));
-          auto ptr_backend{backend_.lock()};
-          assert(ptr_backend);
-          ptr_backend->GetLogger()->LogTrace(fmt::format(
-              "Gate#{} (BMR AND gate) Party#{}-#{} bit-C-OTs wire_i {} bits from C-OTs r {} s {} "
-              "result {} (r {} s {})\n",
-              gate_id_, GetConfig()->GetMyId(), party_id, wire_i, r_bv.AsString(), s_bv.AsString(),
-              choices.at(party_id).at(wire_i).AsString(), r_bv_check.AsString(),
-              s_bv_check.AsString()));
-        }
-      });
     }
   }
 
-  pool.join();
+  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+    auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
+    auto bmr_a{std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i))};
+    auto bmr_b{std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i))};
+    assert(bmr_out);
+    assert(bmr_a);
+    assert(bmr_b);
+    for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
+      if (party_id == my_id) continue;
+      auto &r_ot_1{r_ots_1_.at(party_id).at(wire_i)};
+      auto &s_ot_1{s_ots_1_.at(party_id).at(wire_i)};
+
+      const auto &r = r_ot_1->GetOutputs();
+      const auto &s = s_ot_1->GetOutputs();
+
+      ENCRYPTO::BitVector<> r_bv, s_bv;
+      for (auto i = 0ull; i < r.size(); ++i) {
+        r_bv.Append(r.at(i)[0]);
+        s_bv.Append(s.at(i).Subset(0, 1)[0]);
+      }
+      choices.at(party_id).at(wire_i) = r_bv ^ s_bv;
+
+      if constexpr (MOTION_VERBOSE_DEBUG) {
+        const auto &r_bv_check = r_ot_1->GetChoices();
+        const auto &s_v_check = s_ot_1->GetInputs();
+        ENCRYPTO::BitVector<> s_bv_check;
+        for (auto i = 0ull; i < s_v_check.size(); ++i) s_bv_check.Append(s_v_check.at(i));
+        auto ptr_backend{backend_.lock()};
+        assert(ptr_backend);
+        ptr_backend->GetLogger()->LogTrace(fmt::format(
+            "Gate#{} (BMR AND gate) Party#{}-#{} bit-C-OTs wire_i {} bits from C-OTs r {} s {} "
+            "result {} (r {} s {})\n",
+            gate_id_, GetConfig()->GetMyId(), party_id, wire_i, r_bv.AsString(), s_bv.AsString(),
+            choices.at(party_id).at(wire_i).AsString(), r_bv_check.AsString(),
+            s_bv_check.AsString()));
+      }
+    }
+  }
 
   ENCRYPTO::PRG prg;
   prg.SetKey(GetConfig()->GetFixedAESKey().GetData().data());
+
+  std::vector<ENCRYPTO::BitVector<>> aggregated_choices(output_wires_.size());
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
 
     assert(choices.at(0).at(wire_i).GetSize() == batch_size_3);
-    ENCRYPTO::BitVector<> aggregated_choices = choices.at(0).at(wire_i);
+    aggregated_choices.at(wire_i) = choices.at(0).at(wire_i);
     for (auto party_id = 1ull; party_id < num_parties; ++party_id) {
       assert(choices.at(party_id).at(wire_i).GetSize() == batch_size_3);
-      aggregated_choices ^= choices.at(party_id).at(wire_i);
+      aggregated_choices.at(wire_i) ^= choices.at(party_id).at(wire_i);
     }
     {
       ENCRYPTO::BitVector<> perm_bits_out;
@@ -976,7 +981,7 @@ void BMRANDGate::EvaluateSetup() {
         perm_bits_out.Append(bmr_out->GetPermutationBits()[bit_i]);
         perm_bits_out.Append(bmr_out->GetPermutationBits()[bit_i]);
       }
-      aggregated_choices ^= perm_bits_out;
+      aggregated_choices.at(wire_i) ^= perm_bits_out;
     }
 
     for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
@@ -985,10 +990,14 @@ void BMRANDGate::EvaluateSetup() {
       // the permutation bit of the output wire, ie, R * (b ^ lambda_w)
       s_ots_kappa_.at(party_id).at(wire_i)->SetInputs(R_for_OTs);
       s_ots_kappa_.at(party_id).at(wire_i)->SendMessages();
-      r_ots_kappa_.at(party_id).at(wire_i)->SetChoices(aggregated_choices);
+      r_ots_kappa_.at(party_id).at(wire_i)->SetChoices(aggregated_choices.at(wire_i));
       r_ots_kappa_.at(party_id).at(wire_i)->SendCorrections();
     }
+  }
 
+  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+    auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
+    assert(bmr_out);
     const auto bmr_a{std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i))};
     const auto bmr_b{std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i))};
     assert(bmr_a);
@@ -1088,9 +1097,9 @@ void BMRANDGate::EvaluateSetup() {
         const ENCRYPTO::AlignedBitVector zero_bv(kappa);
 
         if (p_id_i == my_id) {
-          shared_R.at(0) = aggregated_choices[simd_i * 3] ? R : zero_bv;
-          shared_R.at(1) = aggregated_choices[simd_i * 3 + 1] ? R : zero_bv;
-          shared_R.at(2) = aggregated_choices[simd_i * 3 + 2] ? R : zero_bv;
+          shared_R.at(0) = aggregated_choices.at(wire_i)[simd_i * 3] ? R : zero_bv;
+          shared_R.at(1) = aggregated_choices.at(wire_i)[simd_i * 3 + 1] ? R : zero_bv;
+          shared_R.at(2) = aggregated_choices.at(wire_i)[simd_i * 3 + 2] ? R : zero_bv;
         } else {
           shared_R.at(0) = shared_R.at(1) = shared_R.at(2) = zero_bv;
         }
