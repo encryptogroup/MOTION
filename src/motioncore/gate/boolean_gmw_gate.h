@@ -26,6 +26,8 @@
 
 #include "gate.h"
 
+#include <boost/fiber/future.hpp>
+
 #include "share/boolean_gmw_share.h"
 #include "utility/bit_vector.h"
 
@@ -80,11 +82,10 @@ class GMWOutputGate final : public Interfaces::OutputGate {
   const Shares::SharePtr GetOutputAsShare() const;
 
  protected:
-  std::vector<ENCRYPTO::BitVector<>> output_;
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> shared_outputs_;
-
   // indicates whether this party obtains the output
   bool is_my_output_ = false;
+
+  std::vector<boost::fibers::future<std::vector<std::uint8_t>>> output_message_futures_;
 
   std::mutex m;
 };
