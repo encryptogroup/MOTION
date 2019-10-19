@@ -929,19 +929,18 @@ void BMRANDGate::EvaluateSetup() {
         const auto &r = r_ot_1->GetOutputs();
         const auto &s = s_ot_1->GetOutputs();
 
-        const auto &r_bv_check = r_ot_1->GetChoices();
-        const auto &s_v_check = s_ot_1->GetInputs();
-        ENCRYPTO::BitVector<> s_bv_check;
-        for (auto i = 0ull; i < s_v_check.size(); ++i) s_bv_check.Append(s_v_check.at(i));
-
         ENCRYPTO::BitVector<> r_bv, s_bv;
-
         for (auto i = 0ull; i < r.size(); ++i) {
           r_bv.Append(r.at(i)[0]);
           s_bv.Append(s.at(i).Subset(0, 1)[0]);
         }
         choices.at(party_id).at(wire_i) = r_bv ^ s_bv;
+
         if constexpr (MOTION_VERBOSE_DEBUG) {
+          const auto &r_bv_check = r_ot_1->GetChoices();
+          const auto &s_v_check = s_ot_1->GetInputs();
+          ENCRYPTO::BitVector<> s_bv_check;
+          for (auto i = 0ull; i < s_v_check.size(); ++i) s_bv_check.Append(s_v_check.at(i));
           auto ptr_backend{backend_.lock()};
           assert(ptr_backend);
           ptr_backend->GetLogger()->LogTrace(fmt::format(
