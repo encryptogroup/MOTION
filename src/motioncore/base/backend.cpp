@@ -220,7 +220,7 @@ void Backend::EvaluateParallel() {
     }
     boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
     for (auto &gate : register_->GetGates()) {
-      boost::asio::post([gate]() { gate->EvaluateSetup(); });
+      boost::asio::post(pool_setup, [gate]() { gate->EvaluateSetup(); });
     }
     pool_setup.join();
   });
