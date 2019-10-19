@@ -5,7 +5,7 @@ set(MOTION_VERSION 0.01)
 
 
 if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
-    message(FATAL_ERROR "ENCRYPTO_utils require at least g++-8")
+    message(FATAL_ERROR "MOTION requires at least g++-8")
 endif ()
 
 option(MOTION_BUILD_EXE "Build executables" OFF)
