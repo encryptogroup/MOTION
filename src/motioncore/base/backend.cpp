@@ -207,18 +207,21 @@ void Backend::EvaluateParallel() {
 
   // Run preprocessing setup in a separate thread
   auto f_setup = std::async(std::launch::async, [this] {
+    boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
     const bool needs_mts = mt_provider_->NeedMTs();
     if (needs_mts) {
       mt_provider_->PreSetup();
     }
     const bool need_ots = NeedOTs();
     if (need_ots) {
-      OTExtensionSetup();
-      if (needs_mts) {
-        mt_provider_->Setup();
-      }
+      boost::asio::post(pool_setup, [needs_mts, this]() {
+        OTExtensionSetup();
+        if (needs_mts) {
+          mt_provider_->Setup();
+        }
+      });
     }
-    boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
+
     for (auto &gate : register_->GetGates()) {
       boost::asio::post(pool_setup, [gate]() { gate->EvaluateSetup(); });
     }
