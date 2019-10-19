@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -28,6 +28,7 @@
 #include <thread>
 
 #include "utility/condition.h"
+#include "utility/constants.h"
 #include "utility/logger.h"
 
 namespace MOTION {
@@ -88,67 +89,55 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
       [this]() { return sync_state_received_ >= sync_state_actual_; });
 }
 
+boost::fibers::future<std::vector<std::uint8_t>> DataStorage::RegisterForOutputMessage(std::size_t gate_id) {
+  boost::fibers::promise<std::vector<std::uint8_t>> promise;
+  auto future = promise.get_future();
+  std::unique_lock<std::mutex> lock(output_message_promises_mutex_);
+  auto [_, success] = output_message_promises_.insert({gate_id, std::move(promise)});
+  lock.unlock();
+  if (!success) {
+    logger_->LogError(
+        fmt::format("Tried to register twice for OutputMessage with gate#{}", gate_id));
+    return boost::fibers::future<std::vector<std::uint8_t>>();  // XXX: maybe throw an exception here
+  }
+  if constexpr (MOTION_VERBOSE_DEBUG) {
+    logger_->LogDebug(
+        fmt::format("Registered for OutputMessage from Party#{} for gate#{}", gate_id, id_));
+  }
+  return future;
+}
+
 void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message) {
   assert(!output_message.empty());
   auto message = Communication::GetMessage(output_message.data());
   auto output_message_ptr = Communication::GetOutputMessage(message->payload()->data());
-  std::shared_ptr<ENCRYPTO::Condition> cond;
-
   auto gate_id = output_message_ptr->gate_id();
-  {
-    // prevents inserting new elements while searching while GetOutputMessage() is called
-    std::scoped_lock lock(output_message_mutex_);
-    if (output_message_conds_.find(gate_id) == output_message_conds_.end()) {
-      cond = std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
-        std::scoped_lock lock(output_message_mutex_);
-        return received_output_messages_.find(gate_id) != received_output_messages_.end();
-      });
-      // don't need to check anything
-      output_message_conds_.emplace(gate_id, cond);
-    } else {
-      cond = output_message_conds_.find(gate_id)->second;
-    }
 
-    {
-      auto ret = received_output_messages_.emplace(gate_id, std::move(output_message));
-      if (!ret.second) {
-        logger_->LogError(
-            fmt::format("Failed to insert new output message from Party#{} for "
-                        "gate#{}, found another buffer on its place",
-                        id_, gate_id));
-      }
-      logger_->LogDebug(
-          fmt::format("Received an output message from Party#{} for gate#{}", id_, gate_id));
-    }
+  // find promise
+  std::unique_lock<std::mutex> lock(output_message_promises_mutex_);
+  auto it = output_message_promises_.find(gate_id);
+  if (it == output_message_promises_.end()) {
+    // no promise found -> drop message
+    logger_->LogError(fmt::format(
+        "Received unexpected OutputMessage from Party#{} for gate#{}, dropping", id_, gate_id));
+    return;
   }
-  cond->NotifyAll();
-}  // namespace MOTION
-
-const Communication::OutputMessage *DataStorage::GetOutputMessage(const std::size_t gate_id) {
-  std::unordered_map<std::size_t, std::vector<std::uint8_t>>::iterator iterator, end;
-  std::shared_ptr<ENCRYPTO::Condition> cond;
-  // prevent SetReceivedOutputMessage() to insert new elements while searching
-  {
-    std::scoped_lock lock(output_message_mutex_);
-    // create condition if there is no
-    if (output_message_conds_.find(gate_id) == output_message_conds_.end()) {
-      output_message_conds_.emplace(
-          gate_id, std::make_shared<ENCRYPTO::Condition>([this, gate_id]() {
-            std::scoped_lock lock(output_message_mutex_);
-            return received_output_messages_.find(gate_id) != received_output_messages_.end();
-          }));
-    }
-    cond = output_message_conds_.find(gate_id)->second;
+  auto promise = std::move(it->second);
+  output_message_promises_.erase(it);
+  lock.unlock();
+  // put the received message into the promise
+  try {
+    promise.set_value(std::move(output_message));
+  } catch (std::future_error &e) {
+    // there might be already a value in the promise
+    logger_->LogError(
+        fmt::format("Error while processing OutputMessage from Party#{} for gate#{}, dropping: {}",
+                    id_, gate_id, e.what()));
+    return;
   }
 
-  Helpers::WaitFor(*cond);
-
-  std::scoped_lock lock(output_message_mutex_);
-  auto iter = received_output_messages_.find(gate_id);
-  assert(iter != received_output_messages_.end());
-  auto output_message = Communication::GetMessage(iter->second.data());
-  assert(output_message != nullptr);
-  return Communication::GetOutputMessage(output_message->payload()->data());
+  logger_->LogDebug(
+      fmt::format("Received an OutputMessage from Party#{} for gate#{}", id_, gate_id));
 }
 
 void DataStorage::SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message) {
@@ -188,7 +177,7 @@ const Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
 
 void DataStorage::Reset() {
   Clear();
-  output_message_conds_.clear();
+  output_message_promises_.clear();
 }
 
 void DataStorage::Clear() {
@@ -197,10 +186,6 @@ void DataStorage::Clear() {
   }
   for (auto &e : bmr_data_->input_public_keys_) {
     e.second.second = decltype(e.second.second)();
-  }
-  {
-    std::scoped_lock lock(output_message_mutex_);
-    received_output_messages_.clear();
   }
 }
 

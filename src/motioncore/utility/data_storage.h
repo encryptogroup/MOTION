@@ -32,6 +32,7 @@
 
 #include <fmt/format.h>
 #include <boost/container/vector.hpp>
+#include <boost/fiber/future.hpp>
 
 #include "communication/fbs_headers/hello_message_generated.h"
 #include "communication/fbs_headers/message_generated.h"
@@ -177,9 +178,9 @@ class DataStorage {
 
   const auto &GetLogger() { return logger_; }
 
-  void SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message);
+  boost::fibers::future<std::vector<std::uint8_t>> RegisterForOutputMessage(std::size_t gate_id);
 
-  const Communication::OutputMessage *GetOutputMessage(const std::size_t gate_id);
+  void SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message);
 
   void SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message);
 
@@ -235,10 +236,10 @@ class DataStorage {
 
   std::size_t sync_state_received_{0}, sync_state_actual_{0};
 
-  // id, buffer
-  std::unordered_map<std::size_t, std::vector<std::uint8_t>> received_output_messages_;
-  // id, condition
-  std::unordered_map<std::size_t, ENCRYPTO::ConditionPtr> output_message_conds_;
+  // gate_id -> promise<buffer>
+  std::unordered_map<std::size_t, boost::fibers::promise<std::vector<std::uint8_t>>>
+      output_message_promises_;
+  std::mutex output_message_promises_mutex_;
 
   std::unique_ptr<BaseOTsReceiverData> base_ots_receiver_data_;
   std::unique_ptr<BaseOTsSenderData> base_ots_sender_data_;
