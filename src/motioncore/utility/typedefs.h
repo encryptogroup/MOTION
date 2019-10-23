@@ -24,6 +24,31 @@
 
 #pragma once
 
+#include <tuple>
+
+namespace ENCRYPTO {
+enum PrimitiveOperationType : std::uint8_t {
+  XOR = 0,  // for Boolean circuit only
+  AND = 1,  // for Boolean circuit only
+  MUX = 2,  // for Boolean circuit only
+  INV = 3,  // for Boolean circuit only
+  ADD = 4,  // for arithmetic circuit only
+  MUL = 5,  // for arithmetic circuit only
+  INVALID = 6
+};
+
+enum IntegerOperationType : unsigned int {
+  INT_ADD = 0,
+  INT_DIV = 1,
+  INT_GT = 2,
+  INT_EQ = 3,
+  INT_MUL = 4,
+  INT_SUB = 5
+};
+}  // namespace ENCRYPTO
+
+// TODO: put MOTION namespace into ENCRYPTO namespace
+
 namespace MOTION {
 
 namespace Gates::Interfaces {}
@@ -37,35 +62,36 @@ namespace Arithmetic = Gates::Arithmetic;
 namespace Boolean = Gates::Boolean;
 namespace Conversion = Gates::Conversion;
 
-enum MPCProtocol : uint {
+enum MPCProtocol : unsigned int {
   ArithmeticGMW = 0,
   BooleanGMW = 1,
   BMR = 2,
   InvalidProtocol = 3  // for checking whether the value is valid
 };
 
-enum CircuitType : uint {
-  ArithmeticType = 0,
-  BooleanType = 1,
-  InvalidType = 2  // for checking whether the value is valid
+enum CircuitType : unsigned int {
+  ArithmeticCircuitType = 0,
+  BooleanCircuitType = 1,
+  InvalidCircuitType = 2  // for checking whether the value is valid
 };
 
-enum Role : uint {
+enum Role : unsigned int {
   Server = 0,
   Client = 1,
   InvalidRole = 2  // for checking whether the value is valid
 };
 
-enum GateType : uint {
+enum GateType : unsigned int {
   InputGate = 0,
   InteractiveGate = 1,
   NonInteractiveGate = 2,
   InvalidGate = 3
 };
 
+}  // namespace MOTION
+
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 using MultiplicationTriple = std::tuple<T, T, T>;
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 using MT = MultiplicationTriple<T>;
-}  // namespace MOTION
