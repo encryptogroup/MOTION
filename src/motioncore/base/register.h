@@ -32,6 +32,10 @@
 
 #include "flatbuffers/flatbuffers.h"
 
+namespace ENCRYPTO {
+class AlgorithmDescription;
+}
+
 namespace MOTION {
 
 // >> forward declarations
@@ -99,6 +103,7 @@ class Register {
   const Gates::GatePtr &GetGate(std::size_t gate_id) const {
     return gates_.at(gate_id - gate_id_offset_);
   }
+
   const auto &GetInputGates() const { return input_gates_; }
 
   auto &GetGates() const { return gates_; }
@@ -129,6 +134,30 @@ class Register {
     return evaluated_gates_condition_;
   };
 
+  /// \brief Tries to insert an AlgorithmDescription object read from a file into cached_algos_
+  /// \param path absolute path to the corresponding file
+  /// \param algo_description AlgorithmDescription object corresponding to the parsed file
+  /// \returns true if the insertion was successful and false if the object is already in the cache
+  bool AddCachedAlgorithmDescription(
+      std::string path, const std::shared_ptr<ENCRYPTO::AlgorithmDescription> &algo_description) {
+    std::scoped_lock lock(cached_algos_mutex_);
+    const auto [it, success] = cached_algos_.try_emplace(path, algo_description);
+    return success;
+  };
+
+  /// \brief Gets cached AlgorithmDescription object read from a file and placed into cached_algos_
+  /// \return shared_ptr to the algorithm description or to nullptr if not in the hash table
+  std::shared_ptr<ENCRYPTO::AlgorithmDescription> GetCachedAlgorithmDescription(
+      const std::string &path) {
+    std::scoped_lock lock(cached_algos_mutex_);
+    const auto it = cached_algos_.find(path);
+    if (it == cached_algos_.end()) {
+      return nullptr;
+    } else {
+      return it->second;
+    }
+  };
+
  private:
   // don't need atomic here, since only the master thread has access to these
   std::size_t global_gate_id_ = 0, global_wire_id_ = 0;
@@ -151,6 +180,9 @@ class Register {
 
   std::vector<std::weak_ptr<Communication::Handler>> communication_handlers_;
   std::mutex comm_handler_mutex_;
+
+  std::unordered_map<std::string, std::shared_ptr<ENCRYPTO::AlgorithmDescription>> cached_algos_;
+  std::mutex cached_algos_mutex_;
 };
 
 using RegisterPtr = std::shared_ptr<Register>;

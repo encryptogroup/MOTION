@@ -58,9 +58,9 @@ Party::~Party() {
 Shares::SharePtr Party::XOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
-  assert(a->GetSharingType() != MPCProtocol::ArithmeticGMW);
-  assert(a->GetSharingType() == b->GetSharingType());
-  switch (a->GetSharingType()) {
+  assert(a->GetProtocol() != MPCProtocol::ArithmeticGMW);
+  assert(a->GetProtocol() == b->GetProtocol());
+  switch (a->GetProtocol()) {
     case MPCProtocol::BooleanGMW: {
       return backend_->BooleanGMWXOR(a, b);
     }
@@ -76,7 +76,7 @@ Shares::SharePtr Party::XOR(const Shares::SharePtr &a, const Shares::SharePtr &b
 
 Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
   assert(parent);
-  switch (parent->GetSharingType()) {
+  switch (parent->GetProtocol()) {
     case MPCProtocol::ArithmeticGMW: {
       switch (parent->GetBitLength()) {
         case 8u: {
@@ -106,7 +106,7 @@ Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
     }
     default: {
       throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
-                                           static_cast<uint>(parent->GetSharingType()))));
+                                           static_cast<uint>(parent->GetProtocol()))));
     }
   }
 }
@@ -114,9 +114,9 @@ Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
 Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
-  assert(a->GetSharingType() == b->GetSharingType());
+  assert(a->GetProtocol() == b->GetProtocol());
 
-  switch (a->GetSharingType()) {
+  switch (a->GetProtocol()) {
     case MPCProtocol::ArithmeticGMW: {
       assert(a->GetBitLength() == b->GetBitLength());
       switch (a->GetBitLength()) {
@@ -148,7 +148,7 @@ Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b
     }
     default: {
       throw(std::runtime_error(
-          fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(a->GetSharingType()))));
+          fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(a->GetProtocol()))));
     }
   }
 }
@@ -156,9 +156,9 @@ Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b
 Shares::SharePtr Party::AND(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(a);
   assert(b);
-  assert(a->GetSharingType() != MPCProtocol::ArithmeticGMW);
-  assert(a->GetSharingType() == b->GetSharingType());
-  switch (a->GetSharingType()) {
+  assert(a->GetProtocol() != MPCProtocol::ArithmeticGMW);
+  assert(a->GetProtocol() == b->GetProtocol());
+  switch (a->GetProtocol()) {
     case MPCProtocol::BooleanGMW: {
       return backend_->BooleanGMWAND(a, b);
     }
