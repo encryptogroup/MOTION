@@ -34,14 +34,27 @@
 
 namespace MOTION::Shares {
 
-MPCProtocol GMWShare::GetSharingType() const noexcept { return BooleanGMW; }
+MPCProtocol GMWShare::GetProtocol() const noexcept {
+  if constexpr (MOTION_DEBUG) {
+    for ([[maybe_unused]] const auto &wire : wires_) assert(wire->GetProtocol() == BooleanGMW);
+  }
+  return BooleanGMW;
+}
+
+CircuitType GMWShare::GetCircuitType() const noexcept {
+  if constexpr (MOTION_DEBUG) {
+    for ([[maybe_unused]] const auto &wire : wires_)
+      assert(wire->GetCircuitType() == BooleanCircuitType);
+  }
+  return BooleanCircuitType;
+}
 
 GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
   if (wires.size() == 0) {
     throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
   }
   for (auto &wire : wires) {
-    if (wire->GetProtocol() != MOTION::MPCProtocol::BooleanGMW) {
+    if (wire->GetProtocol() != MPCProtocol::BooleanGMW) {
       throw(
           std::runtime_error("Trying to create a Boolean GMW share from wires "
                              "of different sharing type"));

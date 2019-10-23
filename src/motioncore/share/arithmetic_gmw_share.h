@@ -99,7 +99,15 @@ class ArithmeticShare final : public Shares::Share {
     return wires_.at(0)->GetNumOfSIMDValues();
   };
 
-  MPCProtocol GetSharingType() const noexcept final { return wires_.at(0)->GetProtocol(); }
+  MPCProtocol GetProtocol() const noexcept final {
+    assert(wires_.at(0)->GetProtocol() == ArithmeticGMW);
+    return wires_.at(0)->GetProtocol();
+  }
+
+  CircuitType GetCircuitType() const noexcept final {
+    assert(wires_.at(0)->GetCircuitType() == BooleanCircuitType);
+    return wires_.at(0)->GetCircuitType();
+  }
 
   const Wires::ArithmeticWirePtr<T> GetArithmeticWire() {
     auto wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(wires_.at(0));
@@ -164,7 +172,7 @@ class ArithmeticConstantShare : public Share {
 
   std::size_t GetNumOfSIMDValues() const noexcept final { return values_.size(); };
 
-  MPCProtocol GetSharingType() const noexcept final { return ArithmeticGMW; }
+  MPCProtocol GetProtocol() const noexcept final { return ArithmeticGMW; }
 
   const std::vector<T> &GetValue() const { return values_; }
 

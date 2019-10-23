@@ -33,14 +33,27 @@
 
 namespace MOTION::Shares {
 
-MPCProtocol BMRShare::GetSharingType() const noexcept { return BMR; }
+MPCProtocol BMRShare::GetProtocol() const noexcept {
+  if constexpr (MOTION_DEBUG) {
+    for ([[maybe_unused]] const auto &wire : wires_) assert(wire->GetProtocol() == BMR);
+  }
+  return BMR;
+}
+
+CircuitType BMRShare::GetCircuitType() const noexcept {
+  if constexpr (MOTION_DEBUG) {
+    for ([[maybe_unused]] const auto &wire : wires_)
+      assert(wire->GetCircuitType() == BooleanCircuitType);
+  }
+  return BooleanCircuitType;
+}
 
 BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
   if (wires.size() == 0) {
     throw(std::runtime_error("Trying to create a Boolean BMR share without wires"));
   }
   for (auto &wire : wires) {
-    if (wire->GetProtocol() != MOTION::MPCProtocol::BMR) {
+    if (wire->GetProtocol() != MPCProtocol::BMR) {
       throw(
           std::runtime_error("Trying to create a BMR share from wires "
                              "of different sharing type"));

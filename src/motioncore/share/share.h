@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <utility/typedefs.h>
 #include <memory>
 #include <vector>
 
@@ -38,7 +39,8 @@ using BackendPtr = std::shared_ptr<Backend>;
 
 class Register;
 
-enum MPCProtocol : uint;
+enum MPCProtocol : unsigned int;
+enum CircuitType : unsigned int;
 }  // namespace MOTION
 
 namespace MOTION::Shares {
@@ -49,7 +51,9 @@ class Share : public std::enable_shared_from_this<Share> {
 
   virtual std::size_t GetNumOfSIMDValues() const noexcept = 0;
 
-  virtual MPCProtocol GetSharingType() const noexcept = 0;
+  virtual MPCProtocol GetProtocol() const noexcept = 0;
+
+  virtual CircuitType GetCircuitType() const noexcept = 0;
 
   virtual std::size_t GetBitLength() const noexcept = 0;
 

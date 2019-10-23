@@ -38,7 +38,9 @@ class BMRShare final : public BooleanShare {
 
   std::size_t GetNumOfSIMDValues() const noexcept final;
 
-  MPCProtocol GetSharingType() const noexcept final;
+  MPCProtocol GetProtocol() const noexcept final;
+
+  CircuitType GetCircuitType() const noexcept final;
 
   std::size_t GetBitLength() const noexcept final { return wires_.size(); }
 
