@@ -30,6 +30,10 @@
 #include "share/arithmetic_gmw_share.h"
 #include "share/boolean_gmw_share.h"
 
+namespace ENCRYPTO {
+class AlgorithmDescription;
+}
+
 namespace MOTION::Shares {
 class ShareWrapper {
  public:
@@ -77,15 +81,19 @@ class ShareWrapper {
 
   SharePtr &Get() { return share_; }
 
+  const SharePtr &Get() const { return share_; }
+
   const SharePtr &operator*() const { return share_; }
 
   const SharePtr &operator->() const { return share_; }
 
   const SharePtr Out(std::size_t output_owner = std::numeric_limits<std::int64_t>::max());
 
-  std::vector<ShareWrapper> Split();
+  std::vector<ShareWrapper> Split() const;
 
   static ShareWrapper Join(const std::vector<ShareWrapper> &v);
+
+  ShareWrapper Evaluate(const std::shared_ptr<const ENCRYPTO::AlgorithmDescription> &algo) const;
 
  private:
   SharePtr share_;

@@ -24,6 +24,7 @@
 
 #include "share_wrapper.h"
 
+#include "algorithm/algorithm_description.h"
 #include "arithmetic_gmw_share.h"
 #include "base/backend.h"
 #include "bmr_share.h"
@@ -35,12 +36,12 @@ using SharePtr = std::shared_ptr<Share>;
 
 ShareWrapper ShareWrapper::operator~() const {
   assert(share_);
-  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Boolean primitive operations are not supported for Arithmetic GMW shares");
   }
 
-  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+  if (share_->GetProtocol() == MPCProtocol::BooleanGMW) {
     auto gmw_share = std::dynamic_pointer_cast<GMWShare>(share_);
     assert(gmw_share);
     auto inv_gate = std::make_shared<Gates::GMW::GMWINVGate>(gmw_share);
@@ -58,15 +59,15 @@ ShareWrapper ShareWrapper::operator~() const {
 ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) const {
   assert(share_);
   assert(*other);
-  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
 
-  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Boolean primitive operations are not supported for Arithmetic GMW shares");
   }
 
-  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+  if (share_->GetProtocol() == MPCProtocol::BooleanGMW) {
     auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
     auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
 
@@ -89,15 +90,15 @@ ShareWrapper ShareWrapper::operator^(const ShareWrapper &other) const {
 ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
-  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
 
-  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() == MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Boolean primitive operations are not supported for Arithmetic GMW shares");
   }
 
-  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+  if (share_->GetProtocol() == MPCProtocol::BooleanGMW) {
     auto this_b = std::dynamic_pointer_cast<GMWShare>(share_);
     auto other_b = std::dynamic_pointer_cast<GMWShare>(*other);
 
@@ -117,9 +118,9 @@ ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) const {
 ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
-  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
-  if (share_->GetSharingType() != MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
   }
@@ -140,10 +141,10 @@ ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
 ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
-  assert(share_->GetSharingType() == other->GetSharingType());
+  assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
   assert(share_->GetNumOfSIMDValues() == other->GetNumOfSIMDValues());
-  if (share_->GetSharingType() != MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
   }
@@ -165,17 +166,17 @@ ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) con
   assert(*a);
   assert(*b);
   assert(share_);
-  assert(share_->GetSharingType() == a->GetSharingType());
-  assert(share_->GetSharingType() == b->GetSharingType());
+  assert(share_->GetProtocol() == a->GetProtocol());
+  assert(share_->GetProtocol() == b->GetProtocol());
   assert(a->GetBitLength() == b->GetBitLength());
   assert(share_->GetBitLength() == 1);
 
-  if (share_->GetSharingType() == MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() == MPCProtocol::ArithmeticGMW) {
     // TODO implement
     throw std::runtime_error("C-OT-based MUX for Arithmetic GMW shares is not implemented yet");
   }
 
-  if (share_->GetSharingType() == MPCProtocol::BooleanGMW) {
+  if (share_->GetProtocol() == MPCProtocol::BooleanGMW) {
     auto this_gmw = std::dynamic_pointer_cast<GMWShare>(share_);
     auto a_gmw = std::dynamic_pointer_cast<GMWShare>(*a);
     auto b_gmw = std::dynamic_pointer_cast<GMWShare>(*b);
@@ -203,7 +204,7 @@ const SharePtr ShareWrapper::Out(std::size_t output_owner) {
   assert(share_);
   auto backend = share_->GetBackend().lock();
   assert(backend);
-  switch (share_->GetSharingType()) {
+  switch (share_->GetProtocol()) {
     case MPCProtocol::ArithmeticGMW: {
       switch (share_->GetBitLength()) {
         case 8u: {
@@ -232,12 +233,12 @@ const SharePtr ShareWrapper::Out(std::size_t output_owner) {
     }
     default: {
       throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
-                                           static_cast<uint>(share_->GetSharingType()))));
+                                           static_cast<uint>(share_->GetProtocol()))));
     }
   }
 }
 
-std::vector<ShareWrapper> ShareWrapper::Split() {
+std::vector<ShareWrapper> ShareWrapper::Split() const {
   std::vector<ShareWrapper> result;
   result.reserve(share_->GetWires().size());
   const auto split = share_->Split();
@@ -248,9 +249,9 @@ std::vector<ShareWrapper> ShareWrapper::Split() {
 ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
   if (v.empty()) throw std::runtime_error("ShareWrapper cannot be empty");
   {
-    const auto type = v.at(0)->GetSharingType();
+    const auto p = v.at(0)->GetProtocol();
     for (auto i = 1ull; i < v.size(); ++i) {
-      if (v.at(i)->GetSharingType() != type) {
+      if (v.at(i)->GetProtocol() != p) {
         throw std::runtime_error("Trying to join shares of different types");
       }
     }
@@ -263,7 +264,7 @@ ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
   wires.reserve(v.size());
   for (const auto &s : v)
     for (const auto &w : s->GetWires()) wires.emplace_back(w);
-  switch (v.at(0)->GetSharingType()) {
+  switch (v.at(0)->GetProtocol()) {
     case MPCProtocol::ArithmeticGMW: {
       switch (wires.at(0)->GetBitLength()) {
         case 8: {
@@ -294,5 +295,55 @@ ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
       throw std::runtime_error("Unknown MPC protocol");
     }
   }
+}
+
+ShareWrapper ShareWrapper::Evaluate(
+    const std::shared_ptr<const ENCRYPTO::AlgorithmDescription> &algo) const {
+  std::size_t n_input_wires = algo->n_input_wires_parent_a_;
+  if (algo->n_input_wires_parent_b_) n_input_wires += *algo->n_input_wires_parent_b_;
+
+  if (n_input_wires != share_->GetBitLength()) {
+    share_->GetRegister()->GetLogger()->LogError(fmt::format(
+        "ShareWrapper::Evaluate: expected a share of bit length {}, got a share of bit length {}",
+        n_input_wires, share_->GetBitLength()));
+  }
+
+  auto wires_tmp{Split()};
+  std::vector<std::shared_ptr<ShareWrapper>> wires;
+  for (const auto &w : wires_tmp) wires.emplace_back(std::make_shared<ShareWrapper>(w.Get()));
+
+  wires.resize(algo->n_wires_, nullptr);
+
+  assert((algo->n_gates_ + algo->n_output_wires_ + n_input_wires) == wires.size());
+
+  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo->n_wires_; ++wire_i) {
+    const auto &gate = algo->gates_.at(gate_i);
+    const auto type = gate.type_;
+    switch (type) {
+      case ENCRYPTO::PrimitiveOperationType::XOR: {
+        assert(gate.parent_b_);
+        *wires.at(gate.output_wire_) = *wires.at(gate.parent_a_) ^ *wires.at(*gate.parent_b_);
+        break;
+      }
+      case ENCRYPTO::PrimitiveOperationType::AND: {
+        assert(gate.parent_b_);
+        *wires.at(gate.output_wire_) = *wires.at(gate.parent_a_) & *wires.at(*gate.parent_b_);
+        break;
+      }
+      case ENCRYPTO::PrimitiveOperationType::INV: {
+        *wires.at(gate.output_wire_) = ~*wires.at(gate.parent_a_);
+        break;
+      }
+      default:
+        throw std::runtime_error("Invalid PrimitiveOperationType");
+    }
+  }
+
+  std::vector<ShareWrapper> out;
+  for (auto i = n_input_wires + algo->n_gates_; i < wires.size(); i++) {
+    out.emplace_back(*wires.at(i));
+  }
+
+  return ShareWrapper::Join(out);
 }
 }
