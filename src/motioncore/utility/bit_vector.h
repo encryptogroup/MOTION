@@ -750,5 +750,107 @@ class BitVector {
   }
 };
 
+// Input functions that convert inputs of integer and floating point types to vectors of
+// BitVectors, which are a suitable input to MOTION
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> ToInput(T t) {
+  constexpr auto bitlen{sizeof(T) * 8};
+  std::vector<BitVector<Allocator>> v;
+  for (auto i = 0ull; i < bitlen; ++i) v.emplace_back(((t >> i) & 1) == 1);
+  return v;
+}
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& in_v) {
+  constexpr auto bitlen{sizeof(T) * 8};
+  std::vector<BitVector<Allocator>> v(bitlen);
+  for (auto i = 0ull; i < in_v.size(); ++i) {
+    for (auto j = 0ull; j < bitlen; ++j) {
+      v.at(j).Append(((in_v.at(i) >> j) & 1) == 1);
+    }
+  }
+  return v;
+}
+
+template <typename T, std::enable_if_t<std::is_floating_point_v<T>>,
+          typename Allocator = std::allocator<std::byte>>
+BitVector<Allocator> ToInput(T t) {
+  if constexpr (sizeof(T) == 8) {
+    static_assert(std::is_same_v<T, double>());
+    return ToInput(*reinterpret_cast<std::uint64_t*>(&t));
+  } else if constexpr (sizeof(T) == 4) {
+    static_assert(std::is_same_v<T, float>());
+    return ToInput(*reinterpret_cast<std::uint32_t*>(&t));
+  } else {
+    throw std::runtime_error(
+        fmt::format("Converting to BitVector a type of invalid byte length {}", sizeof(T)));
+  }
+}
+
+template <typename T, std::enable_if_t<std::is_floating_point_v<T>>,
+          typename Allocator = std::allocator<std::byte>>
+BitVector<Allocator> ToInput(const std::vector<T>& t) {
+  if constexpr (sizeof(T) == 8) {
+    static_assert(std::is_same_v<T, double>());
+    return ToInput(*reinterpret_cast<std::uint64_t*>(&t));
+  } else if constexpr (sizeof(T) == 4) {
+    static_assert(std::is_same_v<T, float>());
+    return ToInput(*reinterpret_cast<std::uint32_t*>(&t));
+  } else {
+    throw std::runtime_error(
+        fmt::format("Converting to BitVector a type of invalid byte length {}", sizeof(T)));
+  }
+}
+
+// Output functions for converting vectors of BitVectors to vectors of floating point or
+// integer numbers
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>,
+          typename Allocator = std::allocator<std::byte>>
+T ToOutput(std::vector<BitVector<Allocator>> v) {
+  assert(!v.empty());
+  if ((sizeof(T) * 8) != v.size()) {
+    fmt::format("Trying to convert to different bitlength: is {}, expected {}", v.size(),
+                (sizeof(T) * 8));
+  }
+  const auto n_simd{v.at(0).GetSize()};
+  assert(n_simd > 0u);
+  for ([[maybe_unused]] auto i = 0ull; i < v.size(); ++i) assert(v.at(i).GetSize() == n_simd);
+  constexpr auto bitlen{sizeof(T) * 8};
+  T t{0};
+  for (auto i = 0ull; i < bitlen; ++i) {
+    assert(v.at(i).GetSize() == 1);
+    t += static_cast<T>(v.at(i)[0]) << i;
+  }
+  return t;
+}
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<T> ToVectorOutput(std::vector<BitVector<Allocator>> v) {
+  assert(!v.empty());
+  if ((sizeof(T) * 8) != v.size()) {
+    fmt::format("Trying to convert to different bitlength: is {}, expected {}", v.size(),
+                (sizeof(T) * 8));
+  }
+  const auto n_simd{v.at(0).GetSize()};
+  assert(n_simd > 0u);
+  for ([[maybe_unused]] auto i = 0ull; i < v.size(); ++i) assert(v.at(i).GetSize() == n_simd);
+
+  constexpr auto bitlen{sizeof(T) * 8};
+  std::vector<T> v_t;
+  for (auto i = 0ull; i < n_simd; ++i) {
+    T t{0};
+    for (auto j = 0ull; j < bitlen; ++j) {
+      t += static_cast<T>(v.at(j)[i]) << j;
+    }
+    v_t.emplace_back(t);
+  }
+  return v_t;
+}
+
 using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, 16>>;
 }
