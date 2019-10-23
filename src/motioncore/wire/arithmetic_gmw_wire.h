@@ -62,7 +62,7 @@ class ArithmeticWire : public Wire {
 
   MPCProtocol GetProtocol() const final { return MPCProtocol::ArithmeticGMW; }
 
-  CircuitType GetCircuitType() const final { return CircuitType::ArithmeticType; }
+  CircuitType GetCircuitType() const final { return CircuitType::ArithmeticCircuitType; }
 
   const std::vector<T> &GetValues() const { return values_; }
 

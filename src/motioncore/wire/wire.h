@@ -125,7 +125,7 @@ class BooleanWire : public Wire {
  public:
   ~BooleanWire() override = default;
 
-  CircuitType GetCircuitType() const final { return CircuitType::BooleanType; }
+  CircuitType GetCircuitType() const final { return CircuitType::BooleanCircuitType; }
 
   MPCProtocol GetProtocol() const override = 0;
 
