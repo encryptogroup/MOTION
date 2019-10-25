@@ -185,7 +185,7 @@ Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedIntege
       }
     }
     const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-    return s_in.Evaluate(gt_algo);
+    return s_in.Evaluate(gt_algo).Split().at(0);
   }
 }
 

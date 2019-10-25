@@ -846,7 +846,7 @@ TYPED_TEST(SecureUintTest, GreaterThanInGMW) {
       EXPECT_EQ(s_1.Get()->GetBitLength(), n_wires);
 
       const auto s_gt = s_0 > s_1;
-      auto s_out = s_gt.Split().at(0).Out();
+      auto s_out = s_gt.Out();
       assert(s_out->GetBitLength() == 1);
 
       motion_parties.at(party_id)->Run();
@@ -901,7 +901,7 @@ TYPED_TEST(SecureUintTest, GreaterThanInBMR) {
       EXPECT_EQ(s_1.Get()->GetBitLength(), n_wires);
 
       const auto s_gt = s_0 > s_1;
-      auto s_out = s_gt.Split().at(0).Out();
+      auto s_out = s_gt.Out();
 
       motion_parties.at(party_id)->Run();
 
