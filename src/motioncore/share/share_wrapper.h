@@ -37,8 +37,8 @@ class AlgorithmDescription;
 namespace MOTION::Shares {
 class ShareWrapper {
  public:
-  ShareWrapper(const SharePtr &share) : share_(share) {}
-  ShareWrapper(const ShareWrapper &sw) : share_(sw.share_) {}
+  ShareWrapper(const SharePtr &share) : share_(share) { assert(share_); }
+  ShareWrapper(const ShareWrapper &sw) : share_(sw.share_) { assert(sw.share_); }
 
   ShareWrapper() = delete;
 
@@ -61,10 +61,24 @@ class ShareWrapper {
     return *this;
   }
 
+  ShareWrapper operator|(const ShareWrapper &other) const;
+
+  ShareWrapper &operator|=(const ShareWrapper &other) {
+    *this = *this | other;
+    return *this;
+  }
+
   ShareWrapper operator+(const ShareWrapper &other) const;
 
   ShareWrapper &operator+=(const ShareWrapper &other) {
     *this = *this + other;
+    return *this;
+  }
+
+  ShareWrapper operator-(const ShareWrapper &other) const;
+
+  ShareWrapper &operator-=(const ShareWrapper &other) {
+    *this = *this - other;
     return *this;
   }
 
@@ -74,6 +88,8 @@ class ShareWrapper {
     *this = *this * other;
     return *this;
   }
+
+  ShareWrapper operator==(const ShareWrapper &other) const;
 
   // use this as the selection bit
   // returns this ? a : b
@@ -87,9 +103,15 @@ class ShareWrapper {
 
   const SharePtr &operator->() const { return share_; }
 
-  const SharePtr Out(std::size_t output_owner = std::numeric_limits<std::int64_t>::max());
+  const SharePtr Out(std::size_t output_owner = std::numeric_limits<std::int64_t>::max()) const;
 
   std::vector<ShareWrapper> Split() const;
+
+  static ShareWrapper Join(const std::vector<ShareWrapper>::const_iterator _begin,
+                           const std::vector<ShareWrapper>::const_iterator _end) {
+    const auto v{std::vector<ShareWrapper>(_begin, _end)};
+    return Join(v);
+  }
 
   static ShareWrapper Join(const std::vector<ShareWrapper> &v);
 
@@ -113,6 +135,26 @@ class ShareWrapper {
     auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
     share_->GetRegister()->RegisterNextGate(addition_gate_cast);
     auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
+
+    return ShareWrapper(res);
+  }
+
+  template <typename T>
+  ShareWrapper Sub(SharePtr share, SharePtr other) const {
+    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
+    assert(this_a);
+    auto this_wire_a = this_a->GetArithmeticWire();
+
+    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
+    assert(other_a);
+    auto other_wire_a = other_a->GetArithmeticWire();
+
+    auto subtraction_gate = std::make_shared<Gates::Arithmetic::ArithmeticSubtractionGate<T>>(
+        this_wire_a, other_wire_a);
+    auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(subtraction_gate);
+    share_->GetRegister()->RegisterNextGate(addition_gate_cast);
+    auto res =
+        std::static_pointer_cast<Shares::Share>(subtraction_gate->GetOutputAsArithmeticShare());
 
     return ShareWrapper(res);
   }

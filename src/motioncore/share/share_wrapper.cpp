@@ -25,6 +25,7 @@
 #include "share_wrapper.h"
 
 #include "algorithm/algorithm_description.h"
+#include "algorithm/tree.h"
 #include "arithmetic_gmw_share.h"
 #include "base/backend.h"
 #include "bmr_share.h"
@@ -115,6 +116,21 @@ ShareWrapper ShareWrapper::operator&(const ShareWrapper &other) const {
   }
 }
 
+ShareWrapper ShareWrapper::operator|(const ShareWrapper &other) const {
+  assert(*other);
+  assert(share_);
+  assert(share_->GetProtocol() == other->GetProtocol());
+  assert(share_->GetBitLength() == other->GetBitLength());
+
+  if (share_->GetProtocol() == MPCProtocol::ArithmeticGMW) {
+    throw std::runtime_error(
+        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+  }
+
+  // OR operatinos is equal to NOT ( ( NOT a ) AND ( NOT b ) )
+  return ~((~*this) & ~other);
+}
+
 ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
@@ -133,6 +149,29 @@ ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
     return Add<std::uint32_t>(share_, *other);
   } else if (share_->GetBitLength() == 64u) {
     return Add<std::uint64_t>(share_, *other);
+  } else {
+    throw std::bad_cast();
+  }
+}
+
+ShareWrapper ShareWrapper::operator-(const ShareWrapper &other) const {
+  assert(*other);
+  assert(share_);
+  assert(share_->GetProtocol() == other->GetProtocol());
+  assert(share_->GetBitLength() == other->GetBitLength());
+  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW) {
+    throw std::runtime_error(
+        "Arithmetic primitive operations are only supported for arithmetic GMW shares");
+  }
+
+  if (share_->GetBitLength() == 8u) {
+    return Sub<std::uint8_t>(share_, *other);
+  } else if (share_->GetBitLength() == 16u) {
+    return Sub<std::uint16_t>(share_, *other);
+  } else if (share_->GetBitLength() == 32u) {
+    return Sub<std::uint32_t>(share_, *other);
+  } else if (share_->GetBitLength() == 64u) {
+    return Sub<std::uint64_t>(share_, *other);
   } else {
     throw std::bad_cast();
   }
@@ -159,6 +198,52 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) const {
     return Mul<std::uint64_t>(share_, *other);
   } else {
     throw std::bad_cast();
+  }
+}
+
+ShareWrapper ShareWrapper::operator==(const ShareWrapper &other) const {
+  if (other->GetBitLength() != share_->GetBitLength()) {
+    const auto backend = share_->GetBackend().lock();
+    assert(backend);
+    backend->GetLogger()->LogError(
+        fmt::format("Comparing shared bit strings of different bit lengths: this {} bits vs other "
+                    "share's {} bits",
+                    share_->GetBitLength(), other->GetBitLength()));
+  } else if (other->GetBitLength() == 0) {
+    const auto backend = share_->GetBackend().lock();
+    assert(backend);
+    backend->GetLogger()->LogError("Comparing shared bit strings of bit length 0 is not allowed");
+  }
+
+  auto result = ~(*this ^ other);  // XNOR
+  const auto bitlen = result->GetBitLength();
+
+  if (bitlen == 1) {
+    return result;
+  } else if (Helpers::IsPowerOfTwo(bitlen)) {
+    return ENCRYPTO::Algorithm::FullANDTree(result);
+  } else {  // bitlen is not a power of 2
+    while (result->GetBitLength() != 1) {
+      std::queue<Shares::ShareWrapper> q;
+      std::vector<Shares::ShareWrapper> out;
+      std::size_t offset{0};
+      const auto inner_bitlen{result->GetBitLength()};
+      const auto split = result.Split();
+      for (auto i = 1ull; i <= inner_bitlen; i *= 2) {
+        if ((inner_bitlen & i) == i) {
+          const auto _begin = split.begin() + offset;
+          const auto _end = split.begin() + offset + i;
+          q.push(Shares::ShareWrapper::Join(_begin, _end));
+          offset += i;
+        }
+      }
+      while (!q.empty()) {
+        out.emplace_back(ENCRYPTO::Algorithm::FullANDTree(q.front()));
+        q.pop();
+      }
+      result = Shares::ShareWrapper::Join(out);
+    }
+    return result;
   }
 }
 
@@ -200,7 +285,7 @@ ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) con
   }
 }
 
-const SharePtr ShareWrapper::Out(std::size_t output_owner) {
+const SharePtr ShareWrapper::Out(std::size_t output_owner) const {
   assert(share_);
   auto backend = share_->GetBackend().lock();
   assert(backend);
@@ -314,24 +399,34 @@ ShareWrapper ShareWrapper::Evaluate(
 
   wires.resize(algo->n_wires_, nullptr);
 
-  assert((algo->n_gates_ + algo->n_output_wires_ + n_input_wires) == wires.size());
+  assert((algo->n_gates_ + n_input_wires) == wires.size());
 
-  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo->n_wires_; ++wire_i) {
+  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo->n_wires_;
+       ++wire_i, ++gate_i) {
     const auto &gate = algo->gates_.at(gate_i);
     const auto type = gate.type_;
     switch (type) {
       case ENCRYPTO::PrimitiveOperationType::XOR: {
         assert(gate.parent_b_);
-        *wires.at(gate.output_wire_) = *wires.at(gate.parent_a_) ^ *wires.at(*gate.parent_b_);
+        wires.at(gate.output_wire_) = std::make_shared<Shares::ShareWrapper>(
+            *wires.at(gate.parent_a_) ^ *wires.at(*gate.parent_b_));
         break;
       }
       case ENCRYPTO::PrimitiveOperationType::AND: {
         assert(gate.parent_b_);
-        *wires.at(gate.output_wire_) = *wires.at(gate.parent_a_) & *wires.at(*gate.parent_b_);
+        wires.at(gate.output_wire_) = std::make_shared<Shares::ShareWrapper>(
+            *wires.at(gate.parent_a_) & *wires.at(*gate.parent_b_));
+        break;
+      }
+      case ENCRYPTO::PrimitiveOperationType::OR: {
+        assert(gate.parent_b_);
+        wires.at(gate.output_wire_) = std::make_shared<Shares::ShareWrapper>(
+            *wires.at(gate.parent_a_) | *wires.at(*gate.parent_b_));
         break;
       }
       case ENCRYPTO::PrimitiveOperationType::INV: {
-        *wires.at(gate.output_wire_) = ~*wires.at(gate.parent_a_);
+        wires.at(gate.output_wire_) =
+            std::make_shared<Shares::ShareWrapper>(~*wires.at(gate.parent_a_));
         break;
       }
       default:
@@ -340,7 +435,7 @@ ShareWrapper ShareWrapper::Evaluate(
   }
 
   std::vector<ShareWrapper> out;
-  for (auto i = n_input_wires + algo->n_gates_; i < wires.size(); i++) {
+  for (auto i = wires.size() - algo->n_output_wires_; i < wires.size(); i++) {
     out.emplace_back(*wires.at(i));
   }
 
