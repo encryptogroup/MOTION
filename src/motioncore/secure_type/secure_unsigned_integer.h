@@ -24,11 +24,11 @@
 
 #pragma once
 
-#include "algorithm/algorithm_description.h"
 #include "share/share_wrapper.h"
-#include "utility/logger.h"
 
 namespace MOTION {
+
+class Logger;
 
 class SecureUnsignedInteger {
  public:
@@ -56,78 +56,31 @@ class SecureUnsignedInteger {
       : share_(std::make_unique<Shares::ShareWrapper>(std::move(other))),
         logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
-  using IntegerOperationType = ENCRYPTO::IntegerOperationType;
+  Shares::ShareWrapper& Get() { return *share_; }
 
-  SecureUnsignedInteger operator+(SecureUnsignedInteger& other) {
-    if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
-      // use primitive operation in arithmetic GMW
-      return *share_ + *other.share_;
-    } else {  // BooleanCircuitType
-      const auto bitlen = share_->Get()->GetBitLength();
-      std::shared_ptr<ENCRYPTO::AlgorithmDescription> add_algo;
-      std::string path;
+  const Shares::ShareWrapper& Get() const { return *share_; }
 
-      if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
-        path = ConstructPath(IntegerOperationType::INT_ADD, bitlen, "_size");
-      else  // GMW, use depth-optimized circuit
-        path = ConstructPath(IntegerOperationType::INT_ADD, bitlen, "_depth");
+  Shares::ShareWrapper& operator->() { return *share_; }
 
-      if (add_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
-        if constexpr (MOTION_DEBUG) {
-          logger_->LogDebug(fmt::format(
-              "Found in cache Boolean integer addition circuit with file path {}", path));
-        }
-      } else {
-        add_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
-            ENCRYPTO::AlgorithmDescription::FromBristol(path));
-        assert(add_algo);
-        if constexpr (MOTION_DEBUG) {
-          logger_->LogDebug(
-              fmt::format("Read Boolean integer addition circuit from file {}", path));
-        }
-      }
-      const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-      share_ = std::make_unique<Shares::ShareWrapper>(s_in.Evaluate(add_algo));
-    }
-  }
+  const Shares::ShareWrapper& operator->() const { return *share_; }
+
+  SecureUnsignedInteger operator+(const SecureUnsignedInteger& other) const;
+
+  SecureUnsignedInteger operator-(const SecureUnsignedInteger& other) const;
+
+  SecureUnsignedInteger operator*(const SecureUnsignedInteger& other) const;
+
+  SecureUnsignedInteger operator/(const SecureUnsignedInteger& other) const;
+
+  Shares::ShareWrapper operator>(const SecureUnsignedInteger& other) const;
+
+  Shares::ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
  private:
   std::unique_ptr<Shares::ShareWrapper> share_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};
 
-  std::string ConstructPath(const IntegerOperationType type, const std::size_t bitlen,
-                            std::string suffix = "") {
-    std::string type_str;
-    switch (type) {
-      case IntegerOperationType::INT_ADD: {
-        type_str = "add";
-        break;
-      }
-      case IntegerOperationType::INT_DIV: {
-        type_str = "div";
-        break;
-      }
-      case IntegerOperationType::INT_GT: {
-        type_str = "gt";
-        break;
-      }
-      case IntegerOperationType::INT_EQ: {
-        type_str = "eq";
-        break;
-      }
-      case IntegerOperationType::INT_MUL: {
-        type_str = "mul";
-        break;
-      }
-      case IntegerOperationType::INT_SUB: {
-        type_str = "sub";
-        break;
-      }
-      default:
-        throw std::runtime_error(fmt::format("Invalid integer operation required: {}", type));
-    }
-    return fmt::format("{}/circuits/int/int_{}{}{}.bristol", MOTION_ROOT_DIR, type_str, bitlen,
-                       suffix);
-  }
+  std::string ConstructPath(const ENCRYPTO::IntegerOperationType type, const std::size_t bitlen,
+                            std::string suffix = "") const;
 };  // namespace MOTION
 }

@@ -24,6 +24,221 @@
 
 #include "secure_unsigned_integer.h"
 
-namespace MOTION{
+#include "algorithm/algorithm_description.h"
+#include "utility/logger.h"
+
+namespace MOTION {
+
+SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+    // use primitive operation in arithmetic GMW
+    return *share_ + *other.share_;
+  } else {  // BooleanCircuitType
+    const auto bitlen = share_->Get()->GetBitLength();
+    std::shared_ptr<ENCRYPTO::AlgorithmDescription> add_algo;
+    std::string path;
+
+    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_ADD, bitlen, "_size");
+    else  // GMW, use depth-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_ADD, bitlen, "_depth");
+
+    if (add_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(
+            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+      }
+    } else {
+      add_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
+          ENCRYPTO::AlgorithmDescription::FromBristol(path));
+      assert(add_algo);
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+      }
+    }
+    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(s_in.Evaluate(add_algo));
+  }
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+    // use primitive operation in arithmetic GMW
+    return *share_ - *other.share_;
+  } else {  // BooleanCircuitType
+    const auto bitlen = share_->Get()->GetBitLength();
+    std::shared_ptr<ENCRYPTO::AlgorithmDescription> sub_algo;
+    std::string path;
+
+    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_SUB, bitlen, "_size");
+    else  // GMW, use depth-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_SUB, bitlen, "_depth");
+
+    if (sub_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(
+            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+      }
+    } else {
+      sub_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
+          ENCRYPTO::AlgorithmDescription::FromBristol(path));
+      assert(sub_algo);
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+      }
+    }
+    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(s_in.Evaluate(sub_algo));
+  }
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+    // use primitive operation in arithmetic GMW
+    return *share_ * *other.share_;
+  } else {  // BooleanCircuitType
+    const auto bitlen = share_->Get()->GetBitLength();
+    std::shared_ptr<ENCRYPTO::AlgorithmDescription> mul_algo;
+    std::string path;
+
+    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_MUL, bitlen, "_size");
+    else  // GMW, use depth-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_MUL, bitlen, "_depth");
+
+    if (mul_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(
+            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+      }
+    } else {
+      mul_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
+          ENCRYPTO::AlgorithmDescription::FromBristol(path));
+      assert(mul_algo);
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+      }
+    }
+    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(s_in.Evaluate(mul_algo));
+  }
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+    // use primitive operation in arithmetic GMW
+    throw std::runtime_error("Integer division is not implemented for arithmetic GMW");
+  } else {  // BooleanCircuitType
+    const auto bitlen = share_->Get()->GetBitLength();
+    std::shared_ptr<ENCRYPTO::AlgorithmDescription> div_algo;
+    std::string path;
+
+    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_DIV, bitlen, "_size");
+    else  // GMW, use depth-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_DIV, bitlen, "_depth");
+
+    if (div_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(
+            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+      }
+    } else {
+      div_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
+          ENCRYPTO::AlgorithmDescription::FromBristol(path));
+      assert(div_algo);
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+      }
+    }
+    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(s_in.Evaluate(div_algo));
+  }
+}
+
+Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+    // use primitive operation in arithmetic GMW
+    throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
+  } else {  // BooleanCircuitType
+    const auto bitlen = share_->Get()->GetBitLength();
+    std::shared_ptr<ENCRYPTO::AlgorithmDescription> gt_algo;
+    std::string path;
+
+    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_GT, bitlen, "_size");
+    else  // GMW, use depth-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_GT, bitlen, "_depth");
+
+    if (gt_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(
+            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+      }
+    } else {
+      gt_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
+          ENCRYPTO::AlgorithmDescription::FromBristol(path));
+      assert(gt_algo);
+      if constexpr (MOTION_DEBUG) {
+        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+      }
+    }
+    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
+    return s_in.Evaluate(gt_algo);
+  }
+}
+
+Shares::ShareWrapper SecureUnsignedInteger::operator==(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+    // use primitive operation in arithmetic GMW
+    throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
+  } else {  // BooleanCircuitType
+    if constexpr (MOTION_DEBUG) {
+      if (other->GetProtocol() == MPCProtocol::BMR) {
+        logger_->LogDebug("Creating a Boolean equality circuit in BMR");
+      } else {
+        logger_->LogDebug("Creating a Boolean equality circuit in GMW");
+      }
+    }
+    return this->Get() == other.Get();
+  }
+}
+
+std::string SecureUnsignedInteger::ConstructPath(const ENCRYPTO::IntegerOperationType type,
+                                                 const std::size_t bitlen,
+                                                 std::string suffix) const {
+  std::string type_str;
+  switch (type) {
+    case ENCRYPTO::IntegerOperationType::INT_ADD: {
+      type_str = "add";
+      break;
+    }
+    case ENCRYPTO::IntegerOperationType::INT_DIV: {
+      type_str = "div";
+      break;
+    }
+    case ENCRYPTO::IntegerOperationType::INT_GT: {
+      type_str = "gt";
+      break;
+    }
+    case ENCRYPTO::IntegerOperationType::INT_EQ: {
+      type_str = "eq";
+      break;
+    }
+    case ENCRYPTO::IntegerOperationType::INT_MUL: {
+      type_str = "mul";
+      break;
+    }
+    case ENCRYPTO::IntegerOperationType::INT_SUB: {
+      type_str = "sub";
+      break;
+    }
+    default:
+      throw std::runtime_error(fmt::format("Invalid integer operation required: {}", type));
+  }
+  return fmt::format("{}/circuits/int/int_{}{}{}.bristol", MOTION_ROOT_DIR, type_str, bitlen,
+                     suffix);
+}
 
 }
