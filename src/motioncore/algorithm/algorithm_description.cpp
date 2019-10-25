@@ -103,7 +103,7 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
     const auto& type = line_v.at(line_v.size() - 1);
     PrimitiveOperation op;
     if (type == std::string("XOR") || type == std::string("AND") || type == std::string("ADD") ||
-        type == std::string("MUL")) {
+        type == std::string("MUL") || type == std::string("OR")) {
       assert(line_v.size() == 6);
       if (type == std::string("XOR"))
         op.type_ = PrimitiveOperationType::XOR;
@@ -113,6 +113,8 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
         op.type_ = PrimitiveOperationType::ADD;
       else if (type == std::string("MUL"))
         op.type_ = PrimitiveOperationType::MUL;
+      else if (type == std::string("OR"))
+        op.type_ = PrimitiveOperationType::OR;
       op.parent_a_ = std::stoull(line_v.at(2));
       op.parent_b_ = std::stoull(line_v.at(3));
       op.output_wire_ = std::stoull(line_v.at(4));
