@@ -100,6 +100,20 @@ inline std::vector<T> AddVectors(std::vector<T> a, std::vector<T> b) {
 }
 
 template <typename T>
+inline std::vector<T> SubVectors(std::vector<T> a, std::vector<T> b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+#pragma omp simd
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) -= b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+template <typename T>
 inline T SumReduction(const std::vector<T> &v) {
   if (v.size() == 0) {
     return 0;
@@ -112,6 +126,19 @@ inline T SumReduction(const std::vector<T> &v) {
       sum += v.at(i);
     }
     return sum;
+  }
+}
+
+template <typename T>
+inline T SubReduction(const std::vector<T> &v) {
+  if (v.size() == 0) {
+    return 0;
+  } else {
+    T result = v.at(0);
+    for (auto i = 1ull; i < v.size(); ++i) {
+      result -= v.at(i);
+    }
+    return result;
   }
 }
 
@@ -137,6 +164,25 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
       }
     }
     return std::move(sum);
+  }
+}
+
+template <typename T>
+inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>> &v) {
+  if (v.size() == 0) {
+    return {};
+  } else {
+    std::vector<T> result = v.at(0);
+    for (auto i = 1ull; i < v.size(); ++i) {
+      assert(v.at(0).size() == v.at(i).size());
+    }
+#pragma omp parallel for default(none) shared(result, v)
+    for (auto i = 0ull; i < result.size(); ++i) {
+      for (auto j = 1ull; j < v.size(); ++j) {
+        result.at(i) -= v.at(j).at(i);
+      }
+    }
+    return std::move(result);
   }
 }
 
