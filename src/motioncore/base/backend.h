@@ -218,6 +218,31 @@ class Backend : public std::enable_shared_from_this<Backend> {
     return ArithmeticGMWAddition(casted_parent_a_ptr, casted_parent_b_ptr);
   }
 
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWSubtraction(const Shares::ArithmeticSharePtr<T> &a,
+                                            const Shares::ArithmeticSharePtr<T> &b) {
+    assert(a);
+    assert(b);
+    auto wire_a = a->GetArithmeticWire();
+    auto wire_b = b->GetArithmeticWire();
+    auto sub_gate =
+        std::make_shared<Gates::Arithmetic::ArithmeticSubtractionGate<T>>(wire_a, wire_b);
+    auto sub_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(sub_gate);
+    RegisterGate(sub_gate_cast);
+    return std::static_pointer_cast<Shares::Share>(sub_gate->GetOutputAsArithmeticShare());
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ArithmeticGMWSubtraction(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+    assert(a);
+    assert(b);
+    auto casted_parent_a_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(a);
+    auto casted_parent_b_ptr = std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(b);
+    assert(casted_parent_a_ptr);
+    assert(casted_parent_b_ptr);
+    return ArithmeticGMWSubtraction(casted_parent_a_ptr, casted_parent_b_ptr);
+  }
+
   /// \brief Blocking wait for synchronizing between parties. Called in Clear() and Reset()
   void Sync();
 
