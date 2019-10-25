@@ -32,6 +32,7 @@ enum PrimitiveOperationType : std::uint8_t {
   AND = 1,  // for Boolean circuit only
   MUX = 2,  // for Boolean circuit only
   INV = 3,  // for Boolean circuit only
+  OR = 4,   // for Boolean circuit only
   ADD = 4,  // for arithmetic circuit only
   MUL = 5,  // for arithmetic circuit only
   INVALID = 6
