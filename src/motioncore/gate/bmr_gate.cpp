@@ -611,6 +611,9 @@ void BMRINVGate::EvaluateSetup() {
         fmt::format("Start evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
 
+  const auto my_id{GetConfig()->GetMyId()};
+  const auto num_parties{GetConfig()->GetNumOfParties()};
+
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
     auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
@@ -619,6 +622,8 @@ void BMRINVGate::EvaluateSetup() {
     MOTION::Helpers::WaitFor(*bmr_in->GetSetupReadyCondition());
 
     bmr_out->GetMutablePermutationBits() = bmr_in->GetPermutationBits();
+
+    if (bmr_out->GetWireId() % num_parties == my_id) bmr_out->GetMutablePermutationBits().Invert();
 
     const auto &in0 = std::get<0>(bmr_in->GetSecretKeys());
     const auto &in1 = std::get<1>(bmr_in->GetSecretKeys());
@@ -663,7 +668,7 @@ void BMRINVGate::EvaluateOnline() {
       for (auto k = 0ull; k < GetConfig()->GetNumOfParties(); ++k) {
         bmr_out->GetMutablePublicKeys().at(k).at(j) = (bmr_in->GetPublicKeys().at(k).at(j));
       }
-      bmr_out->GetMutablePublicValues() = ~bmr_in->GetPublicValues();
+      bmr_out->GetMutablePublicValues() = bmr_in->GetPublicValues();
     }
   }
 
