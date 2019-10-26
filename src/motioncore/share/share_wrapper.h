@@ -95,6 +95,9 @@ class ShareWrapper {
   // returns this ? a : b
   ShareWrapper MUX(const ShareWrapper &a, const ShareWrapper &b) const;
 
+  template <typename MOTION::MPCProtocol p>
+  ShareWrapper Convert() const;
+
   SharePtr &Get() { return share_; }
 
   const SharePtr &Get() const { return share_; }

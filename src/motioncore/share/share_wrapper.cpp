@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include "share_wrapper.h"
+#include <gate/conversion_gate.h>
 
 #include "algorithm/algorithm_description.h"
 #include "algorithm/tree.h"
@@ -284,6 +285,55 @@ ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) con
     return b ^ mask;
   }
 }
+
+template <typename MOTION::MPCProtocol p>
+ShareWrapper ShareWrapper::Convert() const {
+  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
+  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
+  constexpr auto BMR = MOTION::MPCProtocol::BMR;
+  if (share_->GetProtocol() == p) {
+    throw std::runtime_error("Trying to convert share to MPCProtocol it is already in");
+  }
+
+  assert(share_->GetProtocol() < MOTION::MPCProtocol::InvalidProtocol);
+
+  if constexpr (p == AGMW) {
+    if (share_->GetProtocol() == BGMW) {  // BGMW -> AGMW
+
+      throw std::runtime_error("Not implemented yet");
+    } else  // BMR -> AGMW
+    {
+      throw std::runtime_error("Not implemented yet");
+    }
+  } else if constexpr (p == BGMW) {
+    if (share_->GetProtocol() == AGMW) {  // AGMW -> BGMW
+
+      throw std::runtime_error("Not implemented yet");
+    } else  // BMR -> BGMW
+    {
+      auto bmr_share = std::dynamic_pointer_cast<Shares::BMRShare>(share_);
+      assert(bmr_share);
+      auto bmr_to_gmw_gate = std::make_shared<Gates::Conversion::BMRToGMWGate>(bmr_share);
+      share_->GetRegister()->RegisterNextGate(bmr_to_gmw_gate);
+      return ShareWrapper(bmr_to_gmw_gate->GetOutputAsShare());
+    }
+  } else if constexpr (p == BMR) {
+    if (share_->GetProtocol() == AGMW) {  // AGMW -> BMR
+
+      throw std::runtime_error("Not implemented yet");
+    } else  // BGMW -> BMR
+    {
+      throw std::runtime_error("Not implemented yet");
+    }
+  } else {
+    throw std::runtime_error("Unkown MPCProtocol");
+  }
+}
+
+// explicit specialization of function templates
+template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::ArithmeticGMW>() const;
+template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BooleanGMW>() const;
+template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BMR>() const;
 
 const SharePtr ShareWrapper::Out(std::size_t output_owner) const {
   assert(share_);
