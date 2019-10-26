@@ -2,6 +2,7 @@ add_executable(motiontest
         test_bitmatrix.cpp
         test_bitvector.cpp
         test_bmr.cpp
+        test_conversions.cpp
         test_integer_operations.cpp
         test_misc.cpp
         test_motion.cpp
