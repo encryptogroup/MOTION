@@ -21,6 +21,7 @@ add_library(motion
         crypto/oblivious_transfer/ot_provider.cpp
         gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp
+        gate/conversion_gate.cpp
         gate/gate.cpp
         secure_type/secure_unsigned_integer.cpp
         share/bmr_share.cpp
