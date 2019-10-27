@@ -54,15 +54,12 @@ BMRInputGate::BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size
 }
 
 void BMRInputGate::InitializationHelper() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-
-  if (static_cast<std::size_t>(input_owner_id_) >= ptr_backend->GetConfig()->GetNumOfParties()) {
+  if (static_cast<std::size_t>(input_owner_id_) >= GetConfig()->GetNumOfParties()) {
     throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
-                                         ptr_backend->GetConfig()->GetNumOfParties()));
+                                         GetConfig()->GetNumOfParties()));
   }
 
-  gate_id_ = ptr_backend->GetRegister()->NextGateId();
+  gate_id_ = GetRegister()->NextGateId();
 
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
@@ -70,23 +67,19 @@ void BMRInputGate::InitializationHelper() {
   assert(ENCRYPTO::BitVector<>::EqualSizeDimensions(input_));
 
   output_wires_.reserve(input_.size());
-  for (auto &v : input_) {
-    auto wire = std::make_shared<Wires::BMRWire>(v.GetSize(), backend_);
-    output_wires_.push_back(std::static_pointer_cast<MOTION::Wires::Wire>(wire));
-  }
+  for (auto &v : input_)
+    output_wires_.push_back(std::make_shared<Wires::BMRWire>(v.GetSize(), backend_));
 
-  for (auto &w : output_wires_) {
-    ptr_backend->GetRegister()->RegisterNextWire(w);
-  }
+  for (auto &w : output_wires_) GetRegister()->RegisterNextWire(w);
 
-  received_public_keys_.resize(ptr_backend->GetConfig()->GetNumOfParties());
+  received_public_keys_.resize(GetConfig()->GetNumOfParties());
 
   assert(input_owner_id_ >= 0);
   assert(gate_id_ >= 0);
-  const auto my_id = ptr_backend->GetConfig()->GetMyId();
+  const auto my_id = GetConfig()->GetMyId();
 
   if (my_id != static_cast<std::size_t>(input_owner_id_)) {
-    auto &data_storage = ptr_backend->GetConfig()
+    auto &data_storage = GetConfig()
                              ->GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
                              ->GetDataStorage();
     auto &bmr_data = data_storage->GetBMRData();
@@ -99,9 +92,9 @@ void BMRInputGate::InitializationHelper() {
     bitlen = bits_ * input_.size();
   }
 
-  for (auto i = 0ull; i < ptr_backend->GetConfig()->GetNumOfParties(); ++i) {
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
     if (my_id == i) continue;
-    auto &data_storage = ptr_backend->GetConfig()->GetCommunicationContext(i)->GetDataStorage();
+    auto &data_storage = GetConfig()->GetCommunicationContext(i)->GetDataStorage();
     auto &bmr_data = data_storage->GetBMRData();
 
     auto elem =
@@ -115,19 +108,16 @@ void BMRInputGate::InitializationHelper() {
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, input owner {}", gate_id_, input_owner_id_);
-    ptr_backend->GetLogger()->LogDebug(
+    GetLogger()->LogDebug(
         fmt::format("Created a BMRInputGate with following properties: {}", gate_info));
   }
 }
 
 void BMRInputGate::EvaluateSetup() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-
-  const auto my_id = ptr_backend->GetConfig()->GetMyId();
+  const auto my_id = GetConfig()->GetMyId();
   if (my_id != static_cast<std::size_t>(input_owner_id_)) {
     received_public_values_ =
-        ptr_backend->GetConfig()
+        GetConfig()
             ->GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
             ->GetDataStorage()
             ->GetBMRData()
@@ -135,9 +125,9 @@ void BMRInputGate::EvaluateSetup() {
             .second.get_future();
   }
 
-  for (auto i = 0ull; i < ptr_backend->GetConfig()->GetNumOfParties(); ++i) {
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
     if (my_id == i) continue;
-    received_public_keys_.at(i) = ptr_backend->GetConfig()
+    received_public_keys_.at(i) = GetConfig()
                                       ->GetCommunicationContext(i)
                                       ->GetDataStorage()
                                       ->GetBMRData()
@@ -170,7 +160,7 @@ void BMRInputGate::EvaluateSetup() {
       }
       if (!keys_1.empty()) keys_1.erase(keys_1.size() - 1);
 
-      ptr_backend->GetLogger()->LogTrace(
+      GetLogger()->LogTrace(
           fmt::format("Created a BMR wire #{} with real values {} permutation bits {}, keys 0 {}, "
                       "and keys 1 {}",
                       wire->GetWireId(), input_.at(i).AsString(),
@@ -186,7 +176,7 @@ void BMRInputGate::EvaluateOnline() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
 
-  const auto my_id = ptr_backend->GetConfig()->GetMyId();
+  const auto my_id = GetConfig()->GetMyId();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
   ENCRYPTO::BitVector<> buffer;
   if (my_input) {  // mask and publish inputs if my input
@@ -199,8 +189,8 @@ void BMRInputGate::EvaluateOnline() {
     const std::vector<std::uint8_t> payload(
         reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
         reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
-    for (auto i = 0ull; i < ptr_backend->GetConfig()->GetNumOfParties(); ++i) {
-      if (i == ptr_backend->GetConfig()->GetMyId()) continue;
+    for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+      if (i == GetConfig()->GetMyId()) continue;
       ptr_backend->Send(i, Communication::BuildBMRInput0Message(gate_id_, payload));
     }
   } else {  // receive masked values if not my input
@@ -231,14 +221,14 @@ void BMRInputGate::EvaluateOnline() {
   const std::vector<std::uint8_t> payload(
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
-  for (auto i = 0ull; i < ptr_backend->GetConfig()->GetNumOfParties(); ++i) {
-    if (i == ptr_backend->GetConfig()->GetMyId()) continue;
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+    if (i == GetConfig()->GetMyId()) continue;
     ptr_backend->Send(i, Communication::BuildBMRInput1Message(gate_id_, payload));
   }
 
   // parse published keys
-  for (auto i = 0ull; i < ptr_backend->GetConfig()->GetNumOfParties(); ++i) {
-    if (i == ptr_backend->GetConfig()->GetMyId()) {
+  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+    if (i == GetConfig()->GetMyId()) {
       for (auto j = 0ull; j < output_wires_.size(); ++j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
         assert(wire);
@@ -263,14 +253,14 @@ void BMRInputGate::EvaluateOnline() {
     }
   }
 
-  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s(fmt::format("Evaluated a BMR input gate #{} and got as result: ", gate_id_));
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
       std::string keys;
       assert(MOTION::Helpers::Compare::Dimensions(wire->GetPublicKeys()));
-      for (auto j = 0ull; j < ptr_backend->GetConfig()->GetNumOfParties(); ++j) {
+      for (auto j = 0ull; j < GetConfig()->GetNumOfParties(); ++j) {
         keys.append(std::to_string(j) + std::string(" "));
         for (const auto &key : wire->GetPublicKeys().at(j)) {
           keys.append(key.AsString() + " ");
@@ -280,13 +270,19 @@ void BMRInputGate::EvaluateOnline() {
       s.append(fmt::format("wire #{} with public bits {} and public keys {}\n", wire->GetWireId(),
                            wire->GetPublicValues().AsString(), keys));
     }
-    ptr_backend->GetLogger()->LogTrace(s);
+    GetLogger()->LogTrace(s);
   }
   SetOnlineIsReady();
 }
 
-const Shares::BMRSharePtr BMRInputGate::GetOutputAsBMRShare() {
+const Shares::BMRSharePtr BMRInputGate::GetOutputAsBMRShare() const {
   auto result = std::make_shared<Shares::BMRShare>(output_wires_);
+  assert(result);
+  return result;
+}
+
+const Shares::SharePtr BMRInputGate::GetOutputAsShare() const {
+  auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsBMRShare());
   assert(result);
   return result;
 }

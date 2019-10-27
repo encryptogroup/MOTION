@@ -55,7 +55,9 @@ class BMRInputGate final : public Gates::Interfaces::InputGate {
 
   void EvaluateOnline() final;
 
-  const Shares::BMRSharePtr GetOutputAsBMRShare();
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
 
  protected:
   /// two-dimensional vector for storing the raw inputs
