@@ -118,6 +118,65 @@ TEST_P(ConversionTest, Y2B) {
   }
 }
 
+TEST_P(ConversionTest, B2Y) {
+  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
+  std::srand(0);
+  const std::size_t input_owner = std::rand() % this->num_parties_,
+                    output_owner = std::rand() % this->num_parties_;
+  std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->num_parties_);
+  for (auto &bv_v : global_input) {
+    bv_v.resize(this->num_wires_);
+    for (auto &bv : bv_v) {
+      bv = ENCRYPTO::BitVector<>::Random(this->num_simd_);
+    }
+  }
+  std::vector<ENCRYPTO::BitVector<>> dummy_input(this->num_wires_,
+                                                 ENCRYPTO::BitVector<>(this->num_simd_, false));
+
+  try {
+    std::vector<PartyPtr> motion_parties(
+        std::move(GetNLocalParties(this->num_parties_, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
+      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+      p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
+    }
+    std::vector<std::thread> t;
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &motion_parties, this, input_owner, output_owner, &global_input,
+                      &dummy_input]() {
+        Shares::SharePtr tmp_share;
+        if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+          tmp_share =
+              motion_parties.at(party_id)->IN<BGMW>(global_input.at(input_owner), input_owner);
+        } else {
+          tmp_share = motion_parties.at(party_id)->IN<BGMW>(dummy_input, input_owner);
+        }
+
+        MOTION::Shares::ShareWrapper s_in(tmp_share);
+        EXPECT_EQ(s_in->GetBitLength(), this->num_wires_);
+        const auto s_conv{s_in.Convert<MPCProtocol::BMR>()};
+        auto s_out{s_conv.Out(output_owner)};
+
+        motion_parties.at(party_id)->Run();
+
+        if (party_id == output_owner) {
+          for (auto i = 0ull; i < this->num_wires_; ++i) {
+            auto wire_single{
+                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(i))};
+            assert(wire_single);
+            EXPECT_EQ(wire_single->GetPublicValues(), global_input.at(input_owner).at(i));
+          }
+        }
+        motion_parties.at(party_id)->Finish();
+      });
+    }
+    for (auto &tt : t)
+      if (tt.joinable()) tt.join();
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+  }
+}
+
 constexpr std::array<std::size_t, 2> conv_num_parties{2, 3};
 constexpr std::array<std::size_t, 3> conv_num_wires{1, 10, 64};
 constexpr std::array<std::size_t, 3> conv_num_simd{1, 10, 64};
