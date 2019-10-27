@@ -527,6 +527,7 @@ void GOTVectorReceiver::SetChoices(BitVector<> &&v) {
     ote->set_real_choices_.emplace(ot_id_);
   }
   ote->real_choices_cond_.at(ot_id_)->NotifyOne();
+  choices_flag_ = true;
 }
 
 void GOTVectorReceiver::SetChoices(const BitVector<> &v) {
@@ -539,6 +540,7 @@ void GOTVectorReceiver::SetChoices(const BitVector<> &v) {
     ote->set_real_choices_.emplace(ot_id_);
   }
   ote->real_choices_cond_.at(ot_id_)->NotifyOne();
+  choices_flag_ = true;
 }
 
 void GOTVectorReceiver::SendCorrections() {
@@ -606,6 +608,7 @@ void COTVectorReceiver::SetChoices(BitVector<> &&v) {
     ote->set_real_choices_.emplace(ot_id_);
   }
   ote->real_choices_cond_.at(ot_id_)->NotifyOne();
+  choices_flag_ = true;
 }
 
 void COTVectorReceiver::SetChoices(const BitVector<> &v) {
@@ -617,6 +620,7 @@ void COTVectorReceiver::SetChoices(const BitVector<> &v) {
     ote->set_real_choices_.emplace(ot_id_);
   }
   ote->real_choices_cond_.at(ot_id_)->NotifyOne();
+  choices_flag_ = true;
 }
 
 const std::vector<BitVector<>> &COTVectorReceiver::GetOutputs() {

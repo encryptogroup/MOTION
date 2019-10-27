@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <array>
 #include <memory>
 #include <unordered_map>
@@ -96,7 +97,8 @@ class OTVectorSender : public OTVector {
 class GOTVectorSender final : public OTVectorSender {
  public:
   GOTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                  const std::size_t bitlen, const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                  const std::size_t bitlen,
+                  const std::shared_ptr<MOTION::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -126,7 +128,8 @@ class COTVectorSender final : public OTVectorSender {
 class ROTVectorSender final : public OTVectorSender {
  public:
   ROTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                  const std::size_t bitlen, const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                  const std::size_t bitlen,
+                  const std::shared_ptr<MOTION::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -150,6 +153,8 @@ class OTVectorReceiver : public OTVector {
 
   void WaitSetup();
 
+  bool ChoicesAreSet() { return choices_flag_; }
+
  protected:
   OTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
                    const std::size_t bitlen, const OTProtocol p,
@@ -159,6 +164,7 @@ class OTVectorReceiver : public OTVector {
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
 
   BitVector<> choices_;
+  std::atomic<bool> choices_flag_{false};
   std::vector<BitVector<>> messages_;
 };
 
@@ -180,7 +186,7 @@ class GOTVectorReceiver final : public OTVectorReceiver {
   const std::vector<BitVector<>> &GetOutputs() final;
 
  private:
-  bool corrections_sent_ = false;
+  std::atomic<bool> corrections_sent_ = false;
 };
 
 class COTVectorReceiver final : public OTVectorReceiver {
@@ -201,7 +207,7 @@ class COTVectorReceiver final : public OTVectorReceiver {
   const std::vector<BitVector<>> &GetOutputs() final;
 
  private:
-  bool corrections_sent_ = false;
+  std::atomic<bool> corrections_sent_ = false;
 };
 
 class ROTVectorReceiver final : public OTVectorReceiver {
