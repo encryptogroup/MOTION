@@ -182,5 +182,11 @@ class ShareWrapper {
 
     return ShareWrapper(res);
   }
+
+  ShareWrapper ArithmeticGMWToBMR() const;
+
+  ShareWrapper BooleanGMWToBMR() const;
+
+  ShareWrapper BMRToBooleanGMW() const;
 };
 }

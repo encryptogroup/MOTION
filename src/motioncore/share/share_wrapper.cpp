@@ -27,11 +27,13 @@
 
 #include "algorithm/algorithm_description.h"
 #include "algorithm/tree.h"
-#include "arithmetic_gmw_share.h"
 #include "base/backend.h"
+#include "gate/bmr_gate.h"
+#include "secure_type/secure_unsigned_integer.h"
+
+#include "arithmetic_gmw_share.h"
 #include "bmr_share.h"
 #include "boolean_gmw_share.h"
-#include "gate/bmr_gate.h"
 
 namespace MOTION::Shares {
 using SharePtr = std::shared_ptr<Share>;
@@ -299,34 +301,22 @@ ShareWrapper ShareWrapper::Convert() const {
 
   if constexpr (p == AGMW) {
     if (share_->GetProtocol() == BGMW) {  // BGMW -> AGMW
-
       throw std::runtime_error("Not implemented yet");
     } else  // BMR -> AGMW
     {
       throw std::runtime_error("Not implemented yet");
     }
   } else if constexpr (p == BGMW) {
-    if (share_->GetProtocol() == AGMW) {  // AGMW -> BGMW
-
-      throw std::runtime_error("Not implemented yet");
-    } else  // BMR -> BGMW
-    {
-      auto bmr_share = std::dynamic_pointer_cast<Shares::BMRShare>(share_);
-      assert(bmr_share);
-      auto bmr_to_gmw_gate = std::make_shared<Gates::Conversion::BMRToGMWGate>(bmr_share);
-      share_->GetRegister()->RegisterNextGate(bmr_to_gmw_gate);
-      return ShareWrapper(bmr_to_gmw_gate->GetOutputAsShare());
+    if (share_->GetProtocol() == AGMW) {  // AGMW --(over BMR)--> BGMW
+      return this->Convert<BMR>().Convert<BGMW>();
+    } else {  // BMR -> BGMW
+      return BMRToBooleanGMW();
     }
   } else if constexpr (p == BMR) {
     if (share_->GetProtocol() == AGMW) {  // AGMW -> BMR
-
-      throw std::runtime_error("Not implemented yet");
+      return ArithmeticGMWToBMR();
     } else {  // BGMW -> BMR
-      auto bmr_share = std::dynamic_pointer_cast<Shares::GMWShare>(share_);
-      assert(bmr_share);
-      auto gmw_to_bmr_gate = std::make_shared<Gates::Conversion::GMWToBMRGate>(bmr_share);
-      share_->GetRegister()->RegisterNextGate(gmw_to_bmr_gate);
-      return ShareWrapper(gmw_to_bmr_gate->GetOutputAsShare());
+      return BooleanGMWToBMR();
     }
   } else {
     throw std::runtime_error("Unkown MPCProtocol");
@@ -337,6 +327,73 @@ ShareWrapper ShareWrapper::Convert() const {
 template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::ArithmeticGMW>() const;
 template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BooleanGMW>() const;
 template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BMR>() const;
+
+ShareWrapper ShareWrapper::ArithmeticGMWToBMR() const {
+  const auto bitlen{share_->GetBitLength()};
+  auto wire{share_->GetWires().at(0)};
+  auto backend{share_->GetBackend().lock()};
+  assert(backend);
+  std::vector<ENCRYPTO::BitVector<>> my_input;
+  switch (bitlen) {
+    case 8u: {
+      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint8_t>>(wire)};
+      assert(agmw_wire);
+      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
+      break;
+    }
+    case 16u: {
+      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint16_t>>(wire)};
+      assert(agmw_wire);
+      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
+      break;
+    }
+    case 32u: {
+      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint32_t>>(wire)};
+      assert(agmw_wire);
+      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
+      break;
+    }
+    case 64u: {
+      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint64_t>>(wire)};
+      assert(agmw_wire);
+      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
+      break;
+    }
+    default:
+      throw std::runtime_error(fmt::format("Invalid bitlength {}", bitlen));
+  }
+  std::vector<ENCRYPTO::BitVector<>> dummy_input(my_input.size(),
+                                                 ENCRYPTO::BitVector<>(my_input.at(0).GetSize()));
+
+  std::vector<SecureUnsignedInteger> shares;
+  for (auto party_id = 0ull; party_id < backend->GetConfig()->GetNumOfParties(); ++party_id) {
+    if (party_id == backend->GetConfig()->GetMyId())
+      shares.emplace_back(backend->BMRInput(party_id, my_input));
+    else
+      shares.emplace_back(backend->BMRInput(party_id, dummy_input));
+  }
+
+  auto result{shares.at(0)};
+  for (auto share_i = 0ull; share_i < shares.size(); ++share_i) result += shares.at(share_i);
+
+  return result.Get();
+}
+
+ShareWrapper ShareWrapper::BooleanGMWToBMR() const {
+  auto gmw_share = std::dynamic_pointer_cast<Shares::GMWShare>(share_);
+  assert(gmw_share);
+  auto gmw_to_bmr_gate{std::make_shared<Gates::Conversion::GMWToBMRGate>(gmw_share)};
+  share_->GetRegister()->RegisterNextGate(gmw_to_bmr_gate);
+  return ShareWrapper(gmw_to_bmr_gate->GetOutputAsShare());
+}
+
+ShareWrapper ShareWrapper::BMRToBooleanGMW() const {
+  auto bmr_share = std::dynamic_pointer_cast<Shares::BMRShare>(share_);
+  assert(bmr_share);
+  auto bmr_to_gmw_gate = std::make_shared<Gates::Conversion::BMRToGMWGate>(bmr_share);
+  share_->GetRegister()->RegisterNextGate(bmr_to_gmw_gate);
+  return ShareWrapper(bmr_to_gmw_gate->GetOutputAsShare());
+}
 
 const SharePtr ShareWrapper::Out(std::size_t output_owner) const {
   assert(share_);
