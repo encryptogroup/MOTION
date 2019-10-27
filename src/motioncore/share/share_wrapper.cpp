@@ -321,9 +321,12 @@ ShareWrapper ShareWrapper::Convert() const {
     if (share_->GetProtocol() == AGMW) {  // AGMW -> BMR
 
       throw std::runtime_error("Not implemented yet");
-    } else  // BGMW -> BMR
-    {
-      throw std::runtime_error("Not implemented yet");
+    } else {  // BGMW -> BMR
+      auto bmr_share = std::dynamic_pointer_cast<Shares::GMWShare>(share_);
+      assert(bmr_share);
+      auto gmw_to_bmr_gate = std::make_shared<Gates::Conversion::GMWToBMRGate>(bmr_share);
+      share_->GetRegister()->RegisterNextGate(gmw_to_bmr_gate);
+      return ShareWrapper(gmw_to_bmr_gate->GetOutputAsShare());
     }
   } else {
     throw std::runtime_error("Unkown MPCProtocol");
