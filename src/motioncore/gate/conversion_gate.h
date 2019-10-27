@@ -26,6 +26,10 @@
 
 #include "gate.h"
 
+#include <future>
+
+#include "utility/bit_vector.h"
+
 namespace MOTION {
 
 namespace Shares {
@@ -34,6 +38,9 @@ using SharePtr = std::shared_ptr<Shares::Share>;
 
 class GMWShare;
 using GMWSharePtr = std::shared_ptr<Shares::GMWShare>;
+
+class BMRShare;
+using BMRSharePtr = std::shared_ptr<Shares::BMRShare>;
 }  // namespace Shares
 
 namespace Gates::Conversion {
@@ -55,6 +62,29 @@ class BMRToGMWGate final : public Gates::Interfaces::OneGate {
   BMRToGMWGate() = delete;
 
   BMRToGMWGate(const Gate &) = delete;
+};
+
+class GMWToBMRGate final : public Gates::Interfaces::OneGate {
+ public:
+  GMWToBMRGate(const Shares::SharePtr &parent);
+
+  ~GMWToBMRGate() final = default;
+
+  void EvaluateSetup() final;
+
+  void EvaluateOnline() final;
+
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  GMWToBMRGate() = delete;
+
+  GMWToBMRGate(const Gate &) = delete;
+
+ private:
+  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_values_;
+  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_keys_;
 };
 
 }  // namespace Gates::Conversion
