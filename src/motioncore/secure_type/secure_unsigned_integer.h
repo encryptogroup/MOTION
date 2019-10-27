@@ -56,6 +56,18 @@ class SecureUnsignedInteger {
       : share_(std::make_unique<Shares::ShareWrapper>(std::move(other))),
         logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
+  SecureUnsignedInteger& operator=(const SecureUnsignedInteger& other) {
+    this->share_ = other.share_;
+    this->logger_ = other.logger_;
+    return *this;
+  }
+
+  SecureUnsignedInteger& operator=(SecureUnsignedInteger&& other) {
+    this->share_ = std::move(other.share_);
+    this->logger_ = std::move(other.logger_);
+    return *this;
+  }
+
   Shares::ShareWrapper& Get() { return *share_; }
 
   const Shares::ShareWrapper& Get() const { return *share_; }
@@ -66,18 +78,38 @@ class SecureUnsignedInteger {
 
   SecureUnsignedInteger operator+(const SecureUnsignedInteger& other) const;
 
+  SecureUnsignedInteger& operator+=(const SecureUnsignedInteger& other) {
+    *this = *this + other;
+    return *this;
+  }
+
   SecureUnsignedInteger operator-(const SecureUnsignedInteger& other) const;
+
+  SecureUnsignedInteger& operator-=(const SecureUnsignedInteger& other) {
+    *this = *this - other;
+    return *this;
+  }
 
   SecureUnsignedInteger operator*(const SecureUnsignedInteger& other) const;
 
+  SecureUnsignedInteger& operator*=(const SecureUnsignedInteger& other) {
+    *this = *this * other;
+    return *this;
+  }
+
   SecureUnsignedInteger operator/(const SecureUnsignedInteger& other) const;
+
+  SecureUnsignedInteger& operator/=(const SecureUnsignedInteger& other) {
+    *this = *this / other;
+    return *this;
+  }
 
   Shares::ShareWrapper operator>(const SecureUnsignedInteger& other) const;
 
   Shares::ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
  private:
-  std::unique_ptr<Shares::ShareWrapper> share_{nullptr};
+  std::shared_ptr<Shares::ShareWrapper> share_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};
 
   std::string ConstructPath(const ENCRYPTO::IntegerOperationType type, const std::size_t bitlen,
