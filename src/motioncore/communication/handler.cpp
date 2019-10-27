@@ -231,18 +231,22 @@ void Handler::ActAsReceiver() {
     });
     // separate thread for parsing received messages
     // TODO: consider >= 4GB messages.
-    //#pragma omp task
     std::thread thread_parse([this]() {
+      // FIXME: replace with coroutines
+      boost::asio::thread_pool pool(4);
       while (ContinueCommunication() || !lqueue_receive_->empty()) {
         auto items = lqueue_receive_->batch_dequeue(std::chrono::milliseconds(1));
         while (!items.empty()) {
           auto &item = items.front();
           auto shared_ptr_context = context_.lock();
           assert(shared_ptr_context);
-          shared_ptr_context->ParseMessage(std::move(item));
+          boost::asio::post(pool, [item(std::move(item)), shared_ptr_context]() mutable {
+            shared_ptr_context->ParseMessage(std::move(item));
+          });
           items.pop();
         }
       }
+      pool.join();
     });
     thread_rcv.join();
     thread_parse.join();
