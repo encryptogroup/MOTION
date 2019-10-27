@@ -862,6 +862,8 @@ void BMRANDGate::EvaluateSetup() {
 
   GenerateRandomness();
 
+  // 1-bit OTs
+
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     auto bmr_a{std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i))};
@@ -910,16 +912,18 @@ void BMRANDGate::EvaluateSetup() {
       // compute C-OTs for the real value, ie, b = (lambda_u ^ alpha) * (lambda_v ^ beta)
       for (auto j = 0ull; j < a_bv.GetSize(); ++j) s_v.emplace_back(ENCRYPTO::BitVector<>(a_bv[j]));
 
-      s_ot_1->WaitSetup();
       r_ot_1->WaitSetup();
+      s_ot_1->WaitSetup();
+
+      r_ot_1->SetChoices(b_bv);
+      r_ot_1->SendCorrections();
 
       s_ot_1->SetInputs(s_v);
-      r_ot_1->SetChoices(b_bv);
-
       s_ot_1->SendMessages();
-      r_ot_1->SendCorrections();
     }
   }
+
+  // kappa-bit OTs
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
@@ -933,6 +937,7 @@ void BMRANDGate::EvaluateSetup() {
       auto &r_ot_1{r_ots_1_.at(party_id).at(wire_i)};
       auto &s_ot_1{s_ots_1_.at(party_id).at(wire_i)};
 
+      assert(r_ot_1->ChoicesAreSet());
       const auto &r = r_ot_1->GetOutputs();
       const auto &s = s_ot_1->GetOutputs();
 
@@ -960,9 +965,6 @@ void BMRANDGate::EvaluateSetup() {
     }
   }
 
-  ENCRYPTO::PRG prg;
-  prg.SetKey(GetConfig()->GetFixedAESKey().GetData().data());
-
   std::vector<ENCRYPTO::BitVector<>> aggregated_choices(output_wires_.size());
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
@@ -989,12 +991,19 @@ void BMRANDGate::EvaluateSetup() {
       if (party_id == my_id) continue;
       // multiply individual parties' R's with the secret-shared real value XORed with
       // the permutation bit of the output wire, ie, R * (b ^ lambda_w)
-      s_ots_kappa_.at(party_id).at(wire_i)->SetInputs(R_for_OTs);
-      s_ots_kappa_.at(party_id).at(wire_i)->SendMessages();
       r_ots_kappa_.at(party_id).at(wire_i)->SetChoices(aggregated_choices.at(wire_i));
       r_ots_kappa_.at(party_id).at(wire_i)->SendCorrections();
+
+      s_ots_kappa_.at(party_id).at(wire_i)->SetInputs(R_for_OTs);
+      s_ots_kappa_.at(party_id).at(wire_i)->SendMessages();
     }
   }
+
+  ENCRYPTO::PRG prg;
+  prg.SetKey(GetConfig()->GetFixedAESKey().GetData().data());
+
+  // Compute garbled rows
+  // First, set rows to PRG outputs XOR key
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
@@ -1010,8 +1019,8 @@ void BMRANDGate::EvaluateSetup() {
       const auto &key_b_0{std::get<0>(bmr_b->GetSecretKeys()).at(simd_i)};
       const auto &key_b_1{std::get<1>(bmr_b->GetSecretKeys()).at(simd_i)};
 
-      for (auto p_id_i = 0ull; p_id_i < num_parties; ++p_id_i) {
-        uint128_t plaintext{p_id_i};
+      for (auto p_i = 0ull; p_i < num_parties; ++p_i) {
+        uint128_t plaintext{p_i};
         plaintext <<= 64;
         plaintext += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
 
@@ -1030,11 +1039,11 @@ void BMRANDGate::EvaluateSetup() {
               mask_b_1.AsString()));
         }
 
-        auto &garbled_row_00{garbled_rows_.at(p_id_i).at(wire_i).at(simd_i * 4)};
-        auto &garbled_row_01{garbled_rows_.at(p_id_i).at(wire_i).at(simd_i * 4 + 1)};
-        auto &garbled_row_10{garbled_rows_.at(p_id_i).at(wire_i).at(simd_i * 4 + 2)};
-        auto &garbled_row_11{garbled_rows_.at(p_id_i).at(wire_i).at(simd_i * 4 + 3)};
-        if (p_id_i == GetConfig()->GetMyId()) {
+        auto &garbled_row_00{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4)};
+        auto &garbled_row_01{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4 + 1)};
+        auto &garbled_row_10{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4 + 2)};
+        auto &garbled_row_11{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4 + 3)};
+        if (p_i == GetConfig()->GetMyId()) {
           const auto &key_w_0{std::get<0>(bmr_out->GetSecretKeys()).at(simd_i)};
           garbled_row_00 = mask_a_0 ^ mask_b_0 ^ key_w_0;
           garbled_row_01 = mask_a_0 ^ mask_b_1 ^ key_w_0;
@@ -1048,22 +1057,22 @@ void BMRANDGate::EvaluateSetup() {
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
-                    gate_id_, p_id_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
+                    gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
                     key_w_0.AsString(), garbled_row_00.AsString()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_1 {} = {}\n",
-                    gate_id_, p_id_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
+                    gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
                     key_w_0.AsString(), garbled_row_01.AsString()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
-                    gate_id_, p_id_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
+                    gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
                     key_w_0.AsString(), garbled_row_10.AsString()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 {} XOR "
                     "key_w_1 {} XOR R {} = {}\n",
-                    gate_id_, p_id_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
+                    gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
                     key_w_0.AsString(), R.AsString(), garbled_row_11.AsString()));
           }
         } else {
@@ -1077,19 +1086,19 @@ void BMRANDGate::EvaluateSetup() {
             ptr_backend->GetLogger()->LogTrace(
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 "
                             "{} = {}\n",
-                            gate_id_, p_id_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
+                            gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
                             garbled_row_00.AsString()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_1 "
                             "{} = {}\n",
-                            gate_id_, p_id_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
+                            gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
                             garbled_row_01.AsString()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_1 {} XOR mask_b_0 "
                             "{} = {}\n",
-                            gate_id_, p_id_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
+                            gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
                             garbled_row_10.AsString()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 "
                             "{} = {}\n",
-                            gate_id_, p_id_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
+                            gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
                             garbled_row_11.AsString()));
           }
         }
@@ -1097,7 +1106,7 @@ void BMRANDGate::EvaluateSetup() {
         std::array<ENCRYPTO::AlignedBitVector, 3> shared_R;
         const ENCRYPTO::AlignedBitVector zero_bv(kappa);
 
-        if (p_id_i == my_id) {
+        if (p_i == my_id) {
           shared_R.at(0) = aggregated_choices.at(wire_i)[simd_i * 3] ? R : zero_bv;
           shared_R.at(1) = aggregated_choices.at(wire_i)[simd_i * 3 + 1] ? R : zero_bv;
           shared_R.at(2) = aggregated_choices.at(wire_i)[simd_i * 3 + 2] ? R : zero_bv;
@@ -1106,11 +1115,11 @@ void BMRANDGate::EvaluateSetup() {
         }
 
         // R's from C-OTs
-        if (p_id_i == my_id) {
-          for (auto p_id_j = 0ull; p_id_j < num_parties; ++p_id_j) {
-            if (p_id_j == my_id) continue;
+        if (p_i == my_id) {
+          for (auto p_j = 0ull; p_j < num_parties; ++p_j) {
+            if (p_j == my_id) continue;
 
-            const auto &s_out = s_ots_kappa_.at(p_id_j).at(wire_i)->GetOutputs();
+            const auto &s_out = s_ots_kappa_.at(p_j).at(wire_i)->GetOutputs();
             const auto R_00 = s_out.at(simd_i * 3).Subset(0, kappa);
             const auto R_01 = s_out.at(simd_i * 3 + 1).Subset(0, kappa);
             const auto R_10 = s_out.at(simd_i * 3 + 2).Subset(0, kappa);
@@ -1125,11 +1134,12 @@ void BMRANDGate::EvaluateSetup() {
               ptr_backend->GetLogger()->LogTrace(fmt::format(
                   "Gate#{} (BMR AND gate) Me#{}: Party#{} received R's \n00 ({}) \n01 ({}) \n10 "
                   "({})\n",
-                  gate_id_, my_id, p_id_i, R_00.AsString(), R_01.AsString(), R_10.AsString()));
+                  gate_id_, my_id, p_i, R_00.AsString(), R_01.AsString(), R_10.AsString()));
             }
           }
         } else {
-          const auto &r_out = r_ots_kappa_.at(p_id_i).at(wire_i)->GetOutputs();
+          assert(r_ots_kappa_.at(p_i).at(wire_i)->ChoicesAreSet());
+          const auto &r_out = r_ots_kappa_.at(p_i).at(wire_i)->GetOutputs();
           const auto &R_00{r_out.at(simd_i * 3)};
           const auto &R_01{r_out.at(simd_i * 3 + 1)};
           const auto &R_10{r_out.at(simd_i * 3 + 2)};
@@ -1145,7 +1155,7 @@ void BMRANDGate::EvaluateSetup() {
           ptr_backend->GetLogger()->LogTrace(
               fmt::format("Gate#{} (BMR AND gate) Me#{}: Shared R's \n00 ({}) \n01 ({}) \n10 "
                           "({})\n",
-                          gate_id_, my_id, p_id_i, shared_R.at(0).AsString(),
+                          gate_id_, my_id, p_i, shared_R.at(0).AsString(),
                           shared_R.at(1).AsString(), shared_R.at(2).AsString()));
         }
         garbled_row_00 ^= shared_R.at(0);
