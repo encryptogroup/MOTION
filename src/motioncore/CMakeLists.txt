@@ -35,6 +35,7 @@ add_library(motion
         utility/data_storage.cpp
         utility/helpers.cpp
         utility/logger.cpp
+        utility/thread.cpp
         wire/bmr_wire.cpp
         wire/boolean_gmw_wire.cpp
         wire/wire.cpp
