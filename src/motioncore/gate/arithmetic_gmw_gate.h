@@ -26,7 +26,7 @@
 
 #include "gate.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "base/configuration.h"
 #include "base/register.h"
