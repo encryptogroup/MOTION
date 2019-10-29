@@ -24,6 +24,7 @@
 
 #include "backend.h"
 
+#include <chrono>
 #include <functional>
 #include <future>
 #include <iterator>
@@ -41,6 +42,11 @@
 #include "gate/boolean_gmw_gate.h"
 #include "register.h"
 #include "utility/constants.h"
+#include "utility/fiber_thread_pool/fiber_thread_pool.hpp"
+
+
+using namespace std::chrono_literals;
+
 
 namespace MOTION {
 
@@ -180,23 +186,24 @@ void Backend::EvaluateSequential() {
   }
   pool_setup.join();
 
-  for (auto &input_gate : register_->GetInputGates()) {
-    register_->AddToActiveQueue(input_gate->GetID());
+  // create a pool with std::thread::hardware_concurrency() no. of threads
+  // to execute fibers
+  ENCRYPTO::FiberThreadPool fpool_online(0, config_->GetNumOfParties());
+
+  // evaluate all the gates
+  for (auto& gate : register_->GetGates()) {
+    fpool_online.post([&] { gate->EvaluateOnline(); });
   }
 
-  boost::asio::thread_pool pool_online(register_->GetTotalNumOfGates());
-  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-    if (gate_id < 0) {
-      std::this_thread::sleep_for(std::chrono::microseconds(100));
-      continue;
-    }
-    boost::asio::post(pool_online, [this, gate_id]() {
-      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-      gate->EvaluateOnline();
-    });
-  }
-  pool_online.join();
+  // we have to wait until all gates are evaluated before we close the pool
+  register_->GetNumOfEvaluatedGatesCondition()->Wait();
+
+  fpool_online.join();
+
+  // XXX: since we never pop elements from the active queue, clear it manually for now
+  // otherwise there will be complains that it is not empty upon repeated execution
+  // -> maybe remove the active queue in the future
+  register_->ClearActiveQueue();
 }
 
 void Backend::EvaluateParallel() {
