@@ -23,10 +23,13 @@ find_package(OpenMP REQUIRED)
 
 find_package(Boost 1.66.0
         COMPONENTS
+        context
+        fiber
         log
         log_setup
         filesystem
         system
+        thread
         REQUIRED)
 set(Boost_USE_STATIC_LIBS ON)
 
