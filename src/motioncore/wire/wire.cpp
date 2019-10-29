@@ -29,14 +29,14 @@
 #include "base/backend.h"
 #include "base/register.h"
 #include "gate/gate.h"
-#include "utility/condition.h"
+#include "utility/fiber_condition.h"
 
 namespace MOTION::Wires {
 
 std::size_t Wire::GetNumOfSIMDValues() const { return n_simd_; }
 
 Wire::Wire() {
-  is_done_condition_ = std::make_shared<ENCRYPTO::Condition>([this]() { return IsReady().load(); });
+  is_done_condition_ = std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); });
 }
 
 Wire::~Wire() { assert(wire_id_ >= 0); }
