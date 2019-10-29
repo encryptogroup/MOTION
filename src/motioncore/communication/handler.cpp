@@ -36,6 +36,7 @@
 #include "utility/data_storage.h"
 #include "utility/locked_queue.h"
 #include "utility/logger.h"
+#include "utility/thread.h"
 
 namespace MOTION::Communication {
 // use explicit conversion function to prevent implementation-dependent
@@ -71,6 +72,11 @@ Handler::Handler(ContextPtr &context, const LoggerPtr &logger)
   sender_thread_ = std::thread([&]() { ActAsSender(); });
 
   receiver_thread_ = std::thread([&]() { ActAsReceiver(); });
+
+  if constexpr (MOTION_DEBUG) {
+    ENCRYPTO::thread_set_name(sender_thread_, "sender_thread");
+    ENCRYPTO::thread_set_name(receiver_thread_, "receiver_thread");
+  }
 }
 
 Handler::~Handler() {
@@ -248,6 +254,12 @@ void Handler::ActAsReceiver() {
       }
       pool.join();
     });
+
+    if constexpr (MOTION_DEBUG) {
+      ENCRYPTO::thread_set_name(thread_rcv, "thread_rcv");
+      ENCRYPTO::thread_set_name(thread_parse, "thread_parse");
+    }
+
     thread_rcv.join();
     thread_parse.join();
   }
