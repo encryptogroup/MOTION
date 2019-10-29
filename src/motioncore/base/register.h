@@ -118,6 +118,8 @@ class Register {
 
   void AddToActiveQueue(std::size_t gate_id);
 
+  void ClearActiveQueue();
+
   std::int64_t GetNextGateFromActiveQueue();
 
   void IncrementEvaluatedGatesCounter();

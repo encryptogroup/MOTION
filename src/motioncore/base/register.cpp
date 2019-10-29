@@ -112,6 +112,12 @@ void Register::AddToActiveQueue(std::size_t gate_id) {
   //                        gate_id);
 }
 
+void Register::ClearActiveQueue() {
+  logger_->LogDebug("Clearing active queue");
+  std::scoped_lock lock(active_queue_mutex_);
+  active_gates_ = {};
+}
+
 std::int64_t Register::GetNextGateFromActiveQueue() {
   std::scoped_lock lock(active_queue_mutex_);
   if (active_gates_.empty()) {
