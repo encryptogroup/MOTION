@@ -147,13 +147,16 @@ struct OTExtensionReceiverData {
 
 struct BMRData {
   // bitlen and promise with the return buffer
-  using in_pub_val_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  using in_pub_val_t =
+      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
   std::unordered_map<std::size_t, in_pub_val_t> input_public_values_;
 
-  using keys_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  using keys_t =
+      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
   std::unordered_map<std::size_t, keys_t> input_public_keys_;
 
-  using g_rows_t = std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  using g_rows_t =
+      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
   std::unordered_map<std::size_t, g_rows_t> garbled_rows_;
 };
 

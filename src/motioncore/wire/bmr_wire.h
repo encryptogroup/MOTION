@@ -93,7 +93,11 @@ class BMRWire : public BooleanWire {
 
   // also store the cleartext values in public_values_ if the wire is the outp
   ENCRYPTO::BitVector<> public_values_, shared_permutation_bits_;
+
   std::pair<std::vector<ENCRYPTO::BitVector<>>, std::vector<ENCRYPTO::BitVector<>>> secret_keys_;
+  // XXX: ^ it should be sufficient to store one of those as we have the global
+  // offset for freeXOR
+
   // for each party for each bit
   std::vector<std::vector<ENCRYPTO::BitVector<>>> public_keys_;
 

@@ -162,12 +162,12 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
 
     auto [it_pub_vals, _] = bmr_data->input_public_values_.emplace(
         static_cast<std::size_t>(gate_id_),
-        std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
+        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
     auto &bitlen_pub_values{std::get<0>(it_pub_vals->second)};
     bitlen_pub_values = num_simd * output_wires_.size();
 
     auto [it_pub_keys, __] = bmr_data->input_public_keys_.emplace(
-        gate_id_, std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
+        gate_id_, std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
     auto &bitlen_pub_keys = std::get<0>(it_pub_keys->second);
     bitlen_pub_keys = bitlen_pub_values * kappa;
   }

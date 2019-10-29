@@ -63,8 +63,8 @@ class BMRInputGate final : public Gates::Interfaces::InputGate {
   /// two-dimensional vector for storing the raw inputs
   std::vector<ENCRYPTO::BitVector<>> input_;
   std::size_t bits_;  ///< Number of parallel values on wires
-  std::future<std::unique_ptr<ENCRYPTO::BitVector<>>> received_public_values_;
-  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_keys_;
+  boost::fibers::future<std::unique_ptr<ENCRYPTO::BitVector<>>> received_public_values_;
+  std::vector<boost::fibers::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_keys_;
 };
 
 constexpr std::size_t ALL = std::numeric_limits<std::int64_t>::max();
@@ -158,7 +158,7 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> r_ots_1_,
       r_ots_kappa_;
 
-  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_garbled_rows_;
+  std::vector<boost::fibers::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_garbled_rows_;
   std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> garbled_rows_;
 
   void GenerateRandomness();
