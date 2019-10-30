@@ -124,64 +124,13 @@ class ShareWrapper {
   SharePtr share_;
 
   template <typename T>
-  ShareWrapper Add(SharePtr share, SharePtr other) const {
-    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
-    assert(this_a);
-    auto this_wire_a = this_a->GetArithmeticWire();
-
-    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
-    assert(other_a);
-    auto other_wire_a = other_a->GetArithmeticWire();
-
-    auto addition_gate =
-        std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(this_wire_a, other_wire_a);
-    auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
-    share_->GetRegister()->RegisterNextGate(addition_gate_cast);
-    auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
-
-    return ShareWrapper(res);
-  }
+  ShareWrapper Add(SharePtr share, SharePtr other) const;
 
   template <typename T>
-  ShareWrapper Sub(SharePtr share, SharePtr other) const {
-    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
-    assert(this_a);
-    auto this_wire_a = this_a->GetArithmeticWire();
-
-    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
-    assert(other_a);
-    auto other_wire_a = other_a->GetArithmeticWire();
-
-    auto subtraction_gate = std::make_shared<Gates::Arithmetic::ArithmeticSubtractionGate<T>>(
-        this_wire_a, other_wire_a);
-    auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(subtraction_gate);
-    share_->GetRegister()->RegisterNextGate(addition_gate_cast);
-    auto res =
-        std::static_pointer_cast<Shares::Share>(subtraction_gate->GetOutputAsArithmeticShare());
-
-    return ShareWrapper(res);
-  }
+  ShareWrapper Sub(SharePtr share, SharePtr other) const;
 
   template <typename T>
-  ShareWrapper Mul(SharePtr share, SharePtr other) const {
-    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
-    assert(this_a);
-    auto this_wire_a = this_a->GetArithmeticWire();
-
-    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
-    assert(other_a);
-    auto other_wire_a = other_a->GetArithmeticWire();
-
-    auto multiplication_gate = std::make_shared<Gates::Arithmetic::ArithmeticMultiplicationGate<T>>(
-        this_wire_a, other_wire_a);
-    auto multiplication_gate_cast =
-        std::static_pointer_cast<Gates::Interfaces::Gate>(multiplication_gate);
-    share_->GetRegister()->RegisterNextGate(multiplication_gate_cast);
-    auto res =
-        std::static_pointer_cast<Shares::Share>(multiplication_gate->GetOutputAsArithmeticShare());
-
-    return ShareWrapper(res);
-  }
+  ShareWrapper Mul(SharePtr share, SharePtr other) const;
 
   ShareWrapper ArithmeticGMWToBMR() const;
 
