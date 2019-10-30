@@ -179,14 +179,25 @@ void Backend::EvaluateSequential() {
     }
   }
 
-  boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
+  // setup phase: -------------------------------------------------------
 
-  for (auto i = 0ull; i < register_->GetTotalNumOfGates(); ++i) {
-    boost::asio::post(pool_setup, [this, i]() { register_->GetGate(i)->EvaluateSetup(); });
+  // create a pool with std::thread::hardware_concurrency() no. of threads
+  // to execute fibers
+  ENCRYPTO::FiberThreadPool fpool_setup(0, config_->GetNumOfParties());
+
+  // evaluate all the gates
+  for (auto& gate : register_->GetGates()) {
+    fpool_setup.post([&] { gate->EvaluateSetup(); });
   }
-  pool_setup.join();
+
+  // we have to wait until all gates are evaluated before we close the pool
+  register_->GetGatesSetupDoneCondition()->Wait();
+
+  fpool_setup.join();
 
   assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
+
+  // online phase: ------------------------------------------------------
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
