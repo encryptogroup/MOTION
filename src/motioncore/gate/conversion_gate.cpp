@@ -87,7 +87,7 @@ void BMRToGMWGate::EvaluateOnline() {
     auto gmw_out{std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i))};
     assert(gmw_out);
 
-    Helpers::WaitFor(*bmr_in->GetIsReadyCondition());
+    bmr_in->GetIsReadyCondition()->Wait();
     const auto my_id{GetConfig()->GetMyId()};
     const auto num_parties{GetConfig()->GetNumOfParties()};
     auto &v{gmw_out->GetMutableValues()};
