@@ -237,6 +237,7 @@ void GMWToBMRGate::EvaluateOnline() {
     assert(gmw_in);
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
     assert(bmr_out);
+    gmw_in->GetIsReadyCondition()->Wait();
     bmr_out->GetMutablePublicValues() = gmw_in->GetValues() ^ bmr_out->GetPermutationBits();
     buffer.Append(bmr_out->GetPublicValues());
   }
