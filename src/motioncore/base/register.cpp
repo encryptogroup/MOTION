@@ -38,7 +38,8 @@
 namespace MOTION {
 
 Register::Register(ConfigurationPtr &config) : config_(config) {
-  logger_ = std::make_shared<MOTION::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
+  logger_ =
+      std::make_shared<MOTION::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
   logger_->SetEnabled(config_->GetLoggingEnabled());
 
   evaluated_gates_condition_ =
@@ -191,6 +192,24 @@ void Register::Clear() {
     auto handler_ptr = communication_handlers_.at(i).lock();
     assert(handler_ptr);
     handler_ptr->Clear();
+  }
+}
+
+bool Register::AddCachedAlgorithmDescription(
+    std::string path, const std::shared_ptr<ENCRYPTO::AlgorithmDescription> &algo_description) {
+  std::scoped_lock lock(cached_algos_mutex_);
+  const auto [it, success] = cached_algos_.try_emplace(path, algo_description);
+  return success;
+}
+
+std::shared_ptr<ENCRYPTO::AlgorithmDescription> Register::GetCachedAlgorithmDescription(
+    const std::string &path) {
+  std::scoped_lock lock(cached_algos_mutex_);
+  const auto it = cached_algos_.find(path);
+  if (it == cached_algos_.end()) {
+    return nullptr;
+  } else {
+    return it->second;
   }
 }
 

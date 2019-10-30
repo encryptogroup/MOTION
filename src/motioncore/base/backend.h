@@ -66,6 +66,18 @@ class Handler;
 using HandlerPtr = std::shared_ptr<Handler>;
 }  // namespace Communication
 
+using base_ot_msgs_t = std::array<std::array<std::byte, 16>, kappa>;
+
+struct SenderMsgs{
+  base_ot_msgs_t messages_0_;
+  base_ot_msgs_t messages_1_;
+};
+
+struct ReceiverMsgs{
+  base_ot_msgs_t messages_c_;
+  ENCRYPTO::BitVector<> c_;
+};
+
 class Backend : public std::enable_shared_from_this<Backend> {
  public:
   Backend() = delete;
@@ -248,11 +260,11 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void ComputeBaseOTs();
 
-  void ImportBaseOTs(std::size_t i);
+  void ImportBaseOTs(std::size_t i, const ReceiverMsgs & msgs);
 
-  void ImportBaseOTs();
+  void ImportBaseOTs(std::size_t i, const SenderMsgs & msgs);
 
-  void ExportBaseOTs();
+  std::pair<ReceiverMsgs, SenderMsgs> ExportBaseOTs(std::size_t i);
 
   void GenerateFixedKeyAESKey();
 

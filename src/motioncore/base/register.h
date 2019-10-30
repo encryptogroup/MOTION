@@ -139,24 +139,12 @@ class Register {
   /// \param algo_description AlgorithmDescription object corresponding to the parsed file
   /// \returns true if the insertion was successful and false if the object is already in the cache
   bool AddCachedAlgorithmDescription(
-      std::string path, const std::shared_ptr<ENCRYPTO::AlgorithmDescription> &algo_description) {
-    std::scoped_lock lock(cached_algos_mutex_);
-    const auto [it, success] = cached_algos_.try_emplace(path, algo_description);
-    return success;
-  };
+      std::string path, const std::shared_ptr<ENCRYPTO::AlgorithmDescription> &algo_description);
 
   /// \brief Gets cached AlgorithmDescription object read from a file and placed into cached_algos_
   /// \return shared_ptr to the algorithm description or to nullptr if not in the hash table
   std::shared_ptr<ENCRYPTO::AlgorithmDescription> GetCachedAlgorithmDescription(
-      const std::string &path) {
-    std::scoped_lock lock(cached_algos_mutex_);
-    const auto it = cached_algos_.find(path);
-    if (it == cached_algos_.end()) {
-      return nullptr;
-    } else {
-      return it->second;
-    }
-  };
+      const std::string &path);
 
  private:
   // don't need atomic here, since only the master thread has access to these

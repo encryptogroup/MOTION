@@ -29,7 +29,6 @@
 #include <iterator>
 
 #include <fmt/format.h>
-#include <omp.h>
 #include <boost/asio/thread_pool.hpp>
 
 #include "communication/handler.h"
@@ -46,7 +45,6 @@
 namespace MOTION {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
-  omp_set_nested(1);
   register_ = std::make_shared<Register>(config_);
   ot_provider_.resize(config_->GetNumOfParties(), nullptr);
 
@@ -468,34 +466,39 @@ void Backend::ComputeBaseOTs() {
     data_storages.push_back(data_storage);
     base_ots.emplace_back(std::make_unique<OT_HL17>(send_function, data_storage));
 
-    task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
-      auto choices = ENCRYPTO::BitVector<>::Random(128);
-      auto chosen_messages = base_ots[i]->recv(choices);  // sender base ots
-      auto &receiver_data = data_storages[i]->GetBaseOTsReceiverData();
-      receiver_data->c_ = std::move(choices);
-      for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
-        auto b = receiver_data->messages_c_.at(i).begin();
-        std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
-      }
-      std::scoped_lock lock(receiver_data->is_ready_condition_->GetMutex());
-      receiver_data->is_ready_ = true;
-    }));
+    if (!data_storage->GetBaseOTsReceiverData()->is_ready_) {
+      task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
+        auto choices = ENCRYPTO::BitVector<>::Random(128);
+        auto chosen_messages = base_ots[i]->recv(choices);  // sender base ots
+        auto &receiver_data = data_storages[i]->GetBaseOTsReceiverData();
+        receiver_data->c_ = std::move(choices);
+        for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
+          auto b = receiver_data->messages_c_.at(i).begin();
+          std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
+        }
+        std::scoped_lock lock(receiver_data->is_ready_condition_->GetMutex());
+        receiver_data->is_ready_ = true;
+      }));
+    }
 
-    task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
-      auto both_messages = base_ots[i]->send(128);  // receiver base ots
-      auto &sender_data = data_storages[i]->GetBaseOTsSenderData();
-      for (std::size_t i = 0; i < both_messages.size(); ++i) {
-        auto b = sender_data->messages_0_.at(i).begin();
-        std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
-      }
-      for (std::size_t i = 0; i < both_messages.size(); ++i) {
-        auto b = sender_data->messages_1_.at(i).begin();
-        std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
-      }
-      std::scoped_lock lock(sender_data->is_ready_condition_->GetMutex());
-      sender_data->is_ready_ = true;
-    }));
+    if (!data_storage->GetBaseOTsSenderData()->is_ready_) {
+      task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
+        auto both_messages = base_ots[i]->send(128);  // receiver base ots
+        auto &sender_data = data_storages[i]->GetBaseOTsSenderData();
+        for (std::size_t i = 0; i < both_messages.size(); ++i) {
+          auto b = sender_data->messages_0_.at(i).begin();
+          std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
+        }
+        for (std::size_t i = 0; i < both_messages.size(); ++i) {
+          auto b = sender_data->messages_1_.at(i).begin();
+          std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
+        }
+        std::scoped_lock lock(sender_data->is_ready_condition_->GetMutex());
+        sender_data->is_ready_ = true;
+      }));
+    }
   }
+
   std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
   base_ots_finished_ = true;
 
@@ -504,27 +507,62 @@ void Backend::ComputeBaseOTs() {
   }
 }
 
-void Backend::ImportBaseOTs(std::size_t i) {
-  GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
-  GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
-  // TODO
-}
+void Backend::ImportBaseOTs(std::size_t i, const ReceiverMsgs &msgs) {
+  auto &rcv_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
+  if (rcv_data->is_ready_)
+    throw std::runtime_error(
+        fmt::format("Found previously computed receiver base OTs for Party#{}", i));
 
-void Backend::ImportBaseOTs() {
-  // GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
-  // GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
-  // TODO
-}
+  rcv_data->c_ = msgs.c_;
+  rcv_data->messages_c_ = msgs.messages_c_;
 
-void Backend::ExportBaseOTs() {
-  // TODO
-  for (std::size_t i = 0; i < GetConfig()->GetNumOfParties(); ++i) {
-    if (i == GetConfig()->GetMyId()) {
-      continue;
-    }
-    GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
-    GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
+  {
+    std::scoped_lock lock(rcv_data->is_ready_condition_->GetMutex());
+    rcv_data->is_ready_ = true;
   }
+  rcv_data->is_ready_condition_->NotifyAll();
+}
+
+void Backend::ImportBaseOTs(std::size_t i, const SenderMsgs &msgs) {
+  auto &snd_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
+  if (snd_data->is_ready_)
+    throw std::runtime_error(
+        fmt::format("Found previously computed sender base OTs for Party#{}", i));
+
+  snd_data->messages_0_ = msgs.messages_0_;
+  snd_data->messages_1_ = msgs.messages_1_;
+
+  {
+    std::scoped_lock lock(snd_data->is_ready_condition_->GetMutex());
+    snd_data->is_ready_ = true;
+  }
+  snd_data->is_ready_condition_->NotifyAll();
+}
+
+std::pair<ReceiverMsgs, SenderMsgs> Backend::ExportBaseOTs(std::size_t i) {
+  if (i == GetConfig()->GetMyId())
+    throw std::runtime_error("Base OTs export is only possible for other parties");
+
+  auto &rcv_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
+  auto &snd_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
+
+  if (!rcv_data->is_ready_)
+    throw std::runtime_error(
+        fmt::format("Trying to export non-existing receiver base OTs for Party#{}", i));
+
+  if (!snd_data->is_ready_)
+    throw std::runtime_error(
+        fmt::format("Trying to export non-existing sender base OTs for Party#{}", i));
+
+  std::pair<ReceiverMsgs, SenderMsgs> base_ots;
+
+  std::get<0>(base_ots).c_ = rcv_data->c_;
+  std::get<0>(base_ots).messages_c_ = rcv_data->messages_c_;
+
+  std::get<1>(base_ots).messages_0_ = snd_data->messages_0_;
+  std::get<1>(base_ots).messages_1_ = snd_data->messages_1_;
+
+  return base_ots;
 }
 
 void Backend::GenerateFixedKeyAESKey() {
