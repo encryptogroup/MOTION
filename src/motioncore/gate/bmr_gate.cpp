@@ -177,6 +177,7 @@ void BMRInputGate::EvaluateSetup() {
     }
   }
   SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
 }
 
 void BMRInputGate::EvaluateOnline() {
@@ -278,7 +279,6 @@ void BMRInputGate::EvaluateOnline() {
     }
   }
 
-  GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s(fmt::format("Evaluated a BMR input gate #{} and got as result: ", gate_id_));
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
@@ -298,6 +298,7 @@ void BMRInputGate::EvaluateOnline() {
     GetLogger()->LogTrace(s);
   }
   SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr BMRInputGate::GetOutputAsBMRShare() const {
@@ -386,7 +387,10 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
   }
 }
 
-void BMROutputGate::EvaluateSetup() { SetSetupIsReady(); }
+void BMROutputGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void BMROutputGate::EvaluateOnline() {
   WaitSetup();
@@ -434,8 +438,8 @@ void BMROutputGate::EvaluateOnline() {
         fmt::format("Evaluated online phase of BMR OutputGate with id#{}", gate_id_));
   }
 
-  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
   SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr BMROutputGate::GetOutputAsBMRShare() const {
@@ -527,13 +531,14 @@ void BMRXORGate::EvaluateSetup() {
     }
     bmr_out->SetSetupIsReady();
   }
-  SetSetupIsReady();
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Finished evaluating setup phase of BMR XOR Gate with id#{}", gate_id_));
   }
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
 }
 
 void BMRXORGate::EvaluateOnline() {
@@ -573,16 +578,14 @@ void BMRXORGate::EvaluateOnline() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
 
-  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
-
-  SetOnlineIsReady();
-
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Finished evaluating online phase of BMR XOR Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr BMRXORGate::GetOutputAsBMRShare() const {
@@ -672,13 +675,14 @@ void BMRINVGate::EvaluateSetup() {
     }
     bmr_out->SetSetupIsReady();
   }
-  SetSetupIsReady();
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Finished evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
 }
 
 void BMRINVGate::EvaluateOnline() {
@@ -708,19 +712,14 @@ void BMRINVGate::EvaluateOnline() {
     }
   }
 
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-
-  ptr_backend->GetRegister()->IncrementEvaluatedGatesCounter();
-
-  SetOnlineIsReady();
-
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend = backend_.lock();
     assert(ptr_backend);
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Finished evaluating online phase of BMR INV Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr BMRINVGate::GetOutputAsBMRShare() const {
@@ -1271,14 +1270,15 @@ void BMRANDGate::EvaluateSetup() {
   }
 
   // mark this gate as setup-ready to proceed with the online phase
-  SetSetupIsReady();
   if constexpr (MOTION_DEBUG) {
     auto ptr_backend{backend_.lock()};
     assert(ptr_backend);
     ptr_backend->GetLogger()->LogDebug(
         fmt::format("Finished evaluating setup phase of BMR AND Gate with id#{}", gate_id_));
   }
-}  // namespace MOTION::Gates::BMR
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void BMRANDGate::EvaluateOnline() {
   WaitSetup();
@@ -1386,12 +1386,11 @@ void BMRANDGate::EvaluateOnline() {
     }
   }
 
-  backend->GetRegister()->IncrementEvaluatedGatesCounter();
-  SetOnlineIsReady();
-
   if constexpr (MOTION_VERBOSE_DEBUG) {
     backend->GetLogger()->LogTrace(fmt::format("Evaluated BMR AND Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr BMRANDGate::GetOutputAsBMRShare() const {
@@ -1405,4 +1404,4 @@ const Shares::SharePtr BMRANDGate::GetOutputAsShare() const {
   assert(result);
   return result;
 }
-}
+}  // namespace MOTION::Gates::BMR

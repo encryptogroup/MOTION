@@ -186,6 +186,8 @@ void Backend::EvaluateSequential() {
   }
   pool_setup.join();
 
+  assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
+
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
   ENCRYPTO::FiberThreadPool fpool_online(0, config_->GetNumOfParties());

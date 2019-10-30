@@ -110,6 +110,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
       }
     }
     SetSetupIsReady();
+    GetRegister()->IncrementEvaluatedGateSetupsCounter();
   }
 
   // non-interactive input sharing based on distributed in advance randomness
@@ -171,9 +172,10 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
     auto my_wire = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(my_wire);
     my_wire->GetMutableValues() = std::move(result);
+
+    GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister()->IncrementEvaluatedGatesCounter();
-    GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
   }
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -293,7 +295,10 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
   ~ArithmeticOutputGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final {
+    SetSetupIsReady();
+    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  }
 
   void EvaluateOnline() final {
     // setup needs to be done first
@@ -387,11 +392,11 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     }
 
     // we are done with this gate
-    SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
     if constexpr (MOTION_DEBUG) {
       GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
     }
+    SetOnlineIsReady();
+    GetRegister()->IncrementEvaluatedGatesCounter();
   }
 
  protected:
@@ -442,7 +447,10 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
 
   ~ArithmeticAdditionGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final {
+    SetSetupIsReady();
+    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  }
 
   void EvaluateOnline() final {
     WaitSetup();
@@ -464,10 +472,9 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
         std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    SetOnlineIsReady();
-
-    GetRegister()->IncrementEvaluatedGatesCounter();
     GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
+    SetOnlineIsReady();
+    GetRegister()->IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -524,7 +531,10 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
 
   ~ArithmeticSubtractionGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final {
+    SetSetupIsReady();
+    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  }
 
   void EvaluateOnline() final {
     WaitSetup();
@@ -545,10 +555,9 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
         std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    SetOnlineIsReady();
-
-    GetRegister()->IncrementEvaluatedGatesCounter();
     GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticSubtractionGate with id#{}", gate_id_));
+    SetOnlineIsReady();
+    GetRegister()->IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -622,7 +631,10 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
 
   ~ArithmeticMultiplicationGate() final = default;
 
-  void EvaluateSetup() final { SetSetupIsReady(); }
+  void EvaluateSetup() final {
+    SetSetupIsReady();
+    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  }
 
   void EvaluateOnline() final {
     WaitSetup();
@@ -698,11 +710,10 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
       }
     }
 
-    SetOnlineIsReady();
-
-    GetRegister()->IncrementEvaluatedGatesCounter();
     GetLogger()->LogDebug(
         fmt::format("Evaluated ArithmeticMultiplicationGate with id#{}", gate_id_));
+    SetOnlineIsReady();
+    GetRegister()->IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the

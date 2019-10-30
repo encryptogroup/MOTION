@@ -108,6 +108,7 @@ void GMWInputGate::EvaluateSetup() {
     Helpers::WaitFor(*rand_generator->GetInitializedCondition());
   }
   SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWInputGate::EvaluateOnline() {
@@ -169,12 +170,12 @@ void GMWInputGate::EvaluateOnline() {
     auto buf = result.at(i);
     my_wire->GetMutableValues() = buf;
   }
-  GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger()->LogTrace(fmt::format("Evaluated Boolean GMWInputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-}  // namespace MOTION::Gates::GMW
+  GetRegister()->IncrementEvaluatedGatesCounter();
+}
 
 const Shares::GMWSharePtr GMWInputGate::GetOutputAsGMWShare() {
   auto result = std::make_shared<Shares::GMWShare>(output_wires_);
@@ -259,7 +260,10 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   }
 }
 
-void GMWOutputGate::EvaluateSetup() { SetSetupIsReady(); }
+void GMWOutputGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void GMWOutputGate::EvaluateOnline() {
   // setup needs to be done first
@@ -375,11 +379,11 @@ void GMWOutputGate::EvaluateOnline() {
   }
 
   // we are done with this gate
-  SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format("Evaluated Boolean GMWOutputGate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWOutputGate::GetOutputAsGMWShare() const {
@@ -438,7 +442,10 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 }
 
-void GMWXORGate::EvaluateSetup() { SetSetupIsReady(); }
+void GMWXORGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void GMWXORGate::EvaluateOnline() {
   WaitSetup();
@@ -467,11 +474,11 @@ void GMWXORGate::EvaluateOnline() {
   }
 
   // we are done with this gate
-  SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger()->LogTrace(fmt::format("Evaluated BooleanGMW XOR Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWXORGate::GetOutputAsGMWShare() const {
@@ -525,7 +532,10 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
   }
 }
 
-void GMWINVGate::EvaluateSetup() { SetSetupIsReady(); }
+void GMWINVGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void GMWINVGate::EvaluateOnline() {
   WaitSetup();
@@ -541,13 +551,11 @@ void GMWINVGate::EvaluateOnline() {
     gmw_wire->GetMutableValues() = inv ? ~wire->GetValues() : wire->GetValues();
   }
 
-  SetOnlineIsReady();
-
-  GetRegister()->IncrementEvaluatedGatesCounter();
-
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger()->LogTrace(fmt::format("Evaluated BooleanGMW INV Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWINVGate::GetOutputAsGMWShare() const {
@@ -632,7 +640,10 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 }
 
-void GMWANDGate::EvaluateSetup() { SetSetupIsReady(); }
+void GMWANDGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void GMWANDGate::EvaluateOnline() {
   WaitSetup();
@@ -716,13 +727,12 @@ void GMWANDGate::EvaluateOnline() {
     }
   }
 
-  SetOnlineIsReady();
-  backend->GetRegister()->IncrementEvaluatedGatesCounter();
-
   if constexpr (MOTION_VERBOSE_DEBUG) {
     backend->GetLogger()->LogTrace(
         fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWANDGate::GetOutputAsGMWShare() const {
@@ -805,7 +815,10 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   }
 }
 
-void GMWMUXGate::EvaluateSetup() { SetSetupIsReady(); }
+void GMWMUXGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void GMWMUXGate::EvaluateOnline() {
   WaitSetup();
@@ -883,12 +896,11 @@ void GMWMUXGate::EvaluateOnline() {
     out ^= wire_b->GetValues();
   }
 
-  SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
-
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger()->LogTrace(fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWMUXGate::GetOutputAsGMWShare() const {

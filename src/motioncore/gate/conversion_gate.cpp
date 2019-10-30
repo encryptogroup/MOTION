@@ -71,7 +71,10 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) {
   }
 }
 
-void BMRToGMWGate::EvaluateSetup() { SetSetupIsReady(); }
+void BMRToGMWGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void BMRToGMWGate::EvaluateOnline() {
   WaitSetup();
@@ -100,14 +103,12 @@ void BMRToGMWGate::EvaluateOnline() {
     if ((gmw_out->GetWireId() % num_parties) == my_id) v ^= bmr_in->GetPublicValues();
   }
 
-  GetRegister()->IncrementEvaluatedGatesCounter();
-
-  SetOnlineIsReady();
-
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format(
         "Finished evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr BMRToGMWGate::GetOutputAsGMWShare() const {
@@ -209,11 +210,12 @@ void GMWToBMRGate::EvaluateSetup() {
     bmr_out->GenerateRandomPermutationBits();
     bmr_out->SetSetupIsReady();
   }
-  SetSetupIsReady();
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format(
         "Finished evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWToBMRGate::EvaluateOnline() {
@@ -311,13 +313,12 @@ void GMWToBMRGate::EvaluateOnline() {
     }
   }
 
-  GetRegister()->IncrementEvaluatedGatesCounter();
-  SetOnlineIsReady();
-
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format(
         "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr GMWToBMRGate::GetOutputAsBMRShare() const {
@@ -332,4 +333,4 @@ const Shares::SharePtr GMWToBMRGate::GetOutputAsShare() const {
   return result;
 }
 
-}
+}  // namespace MOTION::Gates::Conversion
