@@ -106,7 +106,6 @@ inline std::vector<T> SubVectors(std::vector<T> a, std::vector<T> b) {
     return {};
   }  // if empty input vector
   std::vector<T> result = a;
-#pragma omp simd
   for (auto j = 0ull; j < result.size(); ++j) {
     result.at(j) -= b.at(j);  // TODO: implement using AVX2 and AVX512
   }
@@ -157,7 +156,7 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
     for (auto i = 1ull; i < v.size(); ++i) {
       assert(v.at(0).size() == v.at(i).size());
     }
-#pragma omp parallel for default(none) shared(sum, v)
+
     for (auto i = 0ull; i < sum.size(); ++i) {
       for (auto j = 0ull; j < v.size(); ++j) {
         sum.at(i) += v.at(j).at(i);
@@ -176,7 +175,7 @@ inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>> &v) {
     for (auto i = 1ull; i < v.size(); ++i) {
       assert(v.at(0).size() == v.at(i).size());
     }
-#pragma omp parallel for default(none) shared(result, v)
+
     for (auto i = 0ull; i < result.size(); ++i) {
       for (auto j = 1ull; j < v.size(); ++j) {
         result.at(i) -= v.at(j).at(i);
@@ -193,7 +192,7 @@ inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
     return {};
   }  // if empty input vector
   std::vector<T> result = a;
-#pragma omp simd
+
   for (auto j = 0ull; j < result.size(); ++j) {
     result.at(j) *= b.at(j);  // TODO: implement using AVX2 and AVX512
   }
@@ -209,7 +208,7 @@ inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>> &v) {
     for (auto i = 1ull; i < v.size(); ++i) {
       assert(v.at(0).size() == v.at(i).size());
     }
-#pragma omp parallel for default(none) shared(product, v)
+
     for (auto i = 0ull; i < product.size(); ++i) {
       for (auto j = 0ull; j < v.size(); ++j) {
         product.at(i) *= v.at(j).at(i);

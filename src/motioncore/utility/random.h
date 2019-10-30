@@ -31,12 +31,7 @@
 
 namespace MOTION {
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline static T CeilDivide(T value, T divisor) {
-  return value / divisor;
-}
-
-static inline std::vector<std::uint8_t> RandomVector(std::size_t size_in_bytes) {
+inline std::vector<std::uint8_t> RandomVector(std::size_t size_in_bytes) {
   std::vector<std::uint8_t> buffer(size_in_bytes);
   std::random_device random_device("/dev/urandom");  // use real randomness to create seeds
   for (auto i = 0u; i < buffer.size();) {

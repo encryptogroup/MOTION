@@ -63,11 +63,7 @@ namespace Compare {}  // namespace Compare
 
 std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
   assert(divisor != 0);
-  if (dividend == 0) {
-    return 0;
-  } else {
-    return 1 + ((dividend - 1) / divisor);
-  }
+  return 1 + ((dividend - 1) / divisor);
 }
 
 namespace Convert {
