@@ -297,17 +297,14 @@ bool Handler::VerifyHelloMessage() {
   auto shared_ptr_context = context_.lock();
   assert(shared_ptr_context);
   auto data_storage = shared_ptr_context->GetDataStorage();
-  auto *my_hm = data_storage->GetSentHelloMessage();
-  while (my_hm == nullptr) {
-    data_storage->GetSentHelloMessageCondition()->WaitFor(std::chrono::microseconds(200));
-    my_hm = data_storage->GetSentHelloMessage();
-  }
 
+  data_storage->GetSentHelloMessageCondition()->Wait();
+  auto my_hm = data_storage->GetSentHelloMessage();
+  assert(my_hm);
+
+  data_storage->GetReceivedHelloMessageCondition()->Wait();
   auto their_hm = data_storage->GetReceivedHelloMessage();
-  while (their_hm == nullptr) {
-    data_storage->GetReceivedHelloMessageCondition()->WaitFor(std::chrono::microseconds(200));
-    their_hm = data_storage->GetReceivedHelloMessage();
-  }
+  assert(their_hm);
 
   if (shared_ptr_context) {
     if (my_hm->MOTION_version() != their_hm->MOTION_version()) {
