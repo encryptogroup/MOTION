@@ -196,7 +196,7 @@ void Backend::EvaluateSequential() {
   }
 
   // we have to wait until all gates are evaluated before we close the pool
-  register_->GetNumOfEvaluatedGatesCondition()->Wait();
+  register_->GetGatesOnlineDoneCondition()->Wait();
 
   fpool_online.join();
 
