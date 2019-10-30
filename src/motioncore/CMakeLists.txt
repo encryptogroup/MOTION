@@ -1,5 +1,6 @@
 add_library(motion
         algorithm/algorithm_description.cpp
+        algorithm/tree.cpp
         base/backend.cpp
         base/configuration.cpp
         base/party.cpp
