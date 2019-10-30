@@ -22,12 +22,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
 #include "share/share_wrapper.h"
+#include "utility/helpers.h"
 
 namespace ENCRYPTO::Algorithm {
-MOTION::Shares::ShareWrapper FullANDTree(const MOTION::Shares::ShareWrapper& s);
+MOTION::Shares::ShareWrapper FullANDTree(const MOTION::Shares::ShareWrapper& s) {
+  assert(MOTION::Helpers::IsPowerOfTwo(s->GetBitLength()));
+  auto result = s;
+  while (result->GetBitLength() != 1) {
+    const auto split{result.Split()};
+    const auto left{MOTION::Shares::ShareWrapper::Join(std::vector<MOTION::Shares::ShareWrapper>(
+        split.begin(), split.begin() + split.size() / 2))};
+    const auto right{MOTION::Shares::ShareWrapper::Join(
+        std::vector<MOTION::Shares::ShareWrapper>(split.begin() + split.size() / 2, split.end()))};
+    result = left & right;
+  }
+  return result;
+}
 
-MOTION::Shares::ShareWrapper FullANDTree(const std::vector<MOTION::Shares::ShareWrapper>& v);
+MOTION::Shares::ShareWrapper FullANDTree(const std::vector<MOTION::Shares::ShareWrapper>& v) {
+  assert(MOTION::Helpers::IsPowerOfTwo(v.size()));
+  const auto s = MOTION::Shares::ShareWrapper::Join(v);
+  return FullANDTree(s);
+}
 }
