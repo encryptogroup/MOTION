@@ -224,49 +224,42 @@ void Backend::EvaluateParallel() {
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 
   // Run preprocessing setup in a separate thread
-  auto f_setup = std::async(std::launch::async, [this] {
+  auto f_preprocessing = std::async(std::launch::async, [this] {
     const bool needs_mts = mt_provider_->NeedMTs();
     if (needs_mts) {
       mt_provider_->PreSetup();
     }
     const bool need_ots = NeedOTs();
-    boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates() +
-                                        static_cast<int>(need_ots));
     if (need_ots) {
-      boost::asio::post(pool_setup, [needs_mts, this]() {
         OTExtensionSetup();
         if (needs_mts) {
           mt_provider_->Setup();
         }
-      });
-    }
-
-    for (auto &gate : register_->GetGates()) {
-      boost::asio::post(pool_setup, [gate]() { gate->EvaluateSetup(); });
-    }
-    pool_setup.join();
+      }
   });
 
-  // Run setup and online phase of circuit evaluation
-  for (auto &input_gate : register_->GetInputGates()) {
-    register_->AddToActiveQueue(input_gate->GetID());
-  }
-  boost::asio::thread_pool pool_online(register_->GetTotalNumOfGates());
-  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-    if (gate_id < 0) {
-      std::this_thread::sleep_for(std::chrono::microseconds(100));
-      continue;
-    }
-    boost::asio::post(pool_online, [this, gate_id]() {
-      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-      gate->EvaluateOnline();
-    });
-  }
-  pool_online.join();
+  // create a pool with std::thread::hardware_concurrency() no. of threads
+  // to execute fibers
+  ENCRYPTO::FiberThreadPool fpool(0, config_->GetNumOfParties());
 
-  f_setup.get();
-}  // namespace MOTION
+  // evaluate all the gates
+  for (auto& gate : register_->GetGates()) {
+    fpool.post([&] { gate->EvaluateSetup();
+        // XXX: maybe insert a 'yield' here?
+        gate->EvaluateOnline(); });
+  }
+
+  f_preprocessing.get();
+
+  // we have to wait until all gates are evaluated before we close the pool
+  register_->GetGatesOnlineDoneCondition()->Wait();
+  fpool.join();
+
+  // XXX: since we never pop elements from the active queue, clear it manually for now
+  // otherwise there will be complains that it is not empty upon repeated execution
+  // -> maybe remove the active queue in the future
+  register_->ClearActiveQueue();
+}
 
 void Backend::TerminateCommunication() {
   for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
