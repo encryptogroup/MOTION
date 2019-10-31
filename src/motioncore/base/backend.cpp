@@ -40,6 +40,8 @@
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
 #include "register.h"
+#include "share/bmr_share.h"
+#include "share/boolean_gmw_share.h"
 #include "utility/constants.h"
 
 namespace MOTION {

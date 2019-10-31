@@ -29,6 +29,7 @@
 #include "base/backend.h"
 #include "base/register.h"
 #include "communication/context.h"
+#include "configuration.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "utility/logger.h"
 
@@ -197,7 +198,6 @@ void Party::Connect() {
 }  // namespace MOTION
 
 void Party::Run(std::size_t repeats) {
-  omp_set_nested(1);
   backend_->GetLogger()->LogDebug("Party run");
   if (!IsConnected()) {
     Connect();

@@ -25,20 +25,19 @@
 #pragma once
 
 #include <fmt/format.h>
-#include <omp.h>
 #include <memory>
 #include <vector>
 
 #include "base/backend.h"
-#include "configuration.h"
-//#include "crypto/oblivious_transfer/ot_provider.h"
-#include "utility/constants.h"
 #include "utility/typedefs.h"
 
 namespace MOTION {
 
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
+
+class Configuration;
+using ConfigurationPtr = std::shared_ptr<Configuration>;
 
 class Party {
  public:
