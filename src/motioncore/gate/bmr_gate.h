@@ -28,23 +28,41 @@
 
 #include "gate.h"
 
-#include "boolean_gmw_gate.h"
-#include "share/bmr_share.h"
-#include "utility/bit_vector.h"
+using std_alloc = std::allocator<std::byte>;
 
-namespace ENCRYPTO::ObliviousTransfer {
+namespace ENCRYPTO {
+template <typename Allocator>
+class BitVector;
+
+namespace ObliviousTransfer {
 class OTVectorSender;
 class OTVectorReceiver;
-}  // namespace ENCRYPTO::ObliviousTransfer
+}  // namespace ObliviousTransfer
+}  // namespace ENCRYPTO
+
+namespace MOTION::Shares {
+class Share;
+using SharePtr = std::shared_ptr<Share>;
+
+class GMWShare;
+using GMWSharePtr = std::shared_ptr<GMWShare>;
+
+class BMRShare;
+using BMRSharePtr = std::shared_ptr<BMRShare>;
+}  // namespace MOTION::Shares
+
+namespace MOTION::Gates::GMW {
+class GMWOutputGate;
+}
 
 namespace MOTION::Gates::BMR {
 
 class BMRInputGate final : public Gates::Interfaces::InputGate {
  public:
-  BMRInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t input_owner_id,
+  BMRInputGate(const std::vector<ENCRYPTO::BitVector<std_alloc>> &input, std::size_t input_owner_id,
                std::weak_ptr<Backend> backend);
 
-  BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t input_owner_id,
+  BMRInputGate(std::vector<ENCRYPTO::BitVector<std_alloc>> &&input, std::size_t input_owner_id,
                std::weak_ptr<Backend> backend);
 
   void InitializationHelper();
@@ -61,10 +79,10 @@ class BMRInputGate final : public Gates::Interfaces::InputGate {
 
  protected:
   /// two-dimensional vector for storing the raw inputs
-  std::vector<ENCRYPTO::BitVector<>> input_;
+  std::vector<ENCRYPTO::BitVector<std_alloc>> input_;
   std::size_t bits_;  ///< Number of parallel values on wires
-  std::future<std::unique_ptr<ENCRYPTO::BitVector<>>> received_public_values_;
-  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_keys_;
+  std::future<std::unique_ptr<ENCRYPTO::BitVector<std_alloc>>> received_public_values_;
+  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<std_alloc>>>> received_public_keys_;
 };
 
 constexpr std::size_t ALL = std::numeric_limits<std::int64_t>::max();
@@ -87,8 +105,8 @@ class BMROutputGate final : public Interfaces::OutputGate {
   MOTION::Shares::GMWSharePtr gmw_out_share_;
   std::shared_ptr<MOTION::Gates::GMW::GMWOutputGate> out_;
 
-  std::vector<ENCRYPTO::BitVector<>> output_;
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> shared_outputs_;
+  std::vector<ENCRYPTO::BitVector<std_alloc>> output_;
+  std::vector<std::vector<ENCRYPTO::BitVector<std_alloc>>> shared_outputs_;
 
   bool is_my_output_ = false;
 
@@ -113,7 +131,6 @@ class BMRXORGate final : public Gates::Interfaces::TwoGate {
 
   BMRXORGate(const Gate &) = delete;
 };
-
 
 class BMRINVGate final : public Gates::Interfaces::OneGate {
  public:
@@ -158,8 +175,8 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> r_ots_1_,
       r_ots_kappa_;
 
-  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_garbled_rows_;
-  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> garbled_rows_;
+  std::vector<std::future<std::unique_ptr<ENCRYPTO::BitVector<std_alloc>>>> received_garbled_rows_;
+  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<std_alloc>>>> garbled_rows_;
 
   void GenerateRandomness();
 };

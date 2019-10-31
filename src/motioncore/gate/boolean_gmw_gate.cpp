@@ -32,6 +32,8 @@
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/sharing_randomness_generator.h"
+#include "share/boolean_gmw_share.h"
+#include "utility/bit_vector.h"
 #include "utility/helpers.h"
 #include "wire/boolean_gmw_wire.h"
 

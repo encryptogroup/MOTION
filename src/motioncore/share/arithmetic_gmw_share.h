@@ -26,6 +26,8 @@
 
 #include "share.h"
 
+#include <fmt/format.h>
+
 #include "wire/arithmetic_gmw_wire.h"
 
 namespace MOTION::Shares {

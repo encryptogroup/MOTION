@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include <utility/typedefs.h>
 #include <memory>
 #include <vector>
+#include "utility/typedefs.h"
 
 namespace MOTION::Wires {
 class Wire;  // forward declaration

@@ -26,22 +26,34 @@
 
 #include "gate.h"
 
-#include "share/boolean_gmw_share.h"
-#include "utility/bit_vector.h"
+using std_alloc = std::allocator<std::byte>;
 
-namespace ENCRYPTO::ObliviousTransfer {
+namespace ENCRYPTO {
+
+template <typename Allocator>
+class BitVector;
+namespace ObliviousTransfer {
 class OTVectorSender;
 class OTVectorReceiver;
-}  // namespace ENCRYPTO::ObliviousTransfer
+}  // namespace ObliviousTransfer
+}  // namespace ENCRYPTO
+
+namespace MOTION::Shares {
+class Share;
+using SharePtr = std::shared_ptr<Share>;
+
+class GMWShare;
+using GMWSharePtr = std::shared_ptr<GMWShare>;
+}  // namespace MOTION::Shares
 
 namespace MOTION::Gates::GMW {
 
 class GMWInputGate final : public Gates::Interfaces::InputGate {
  public:
-  GMWInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id,
+  GMWInputGate(const std::vector<ENCRYPTO::BitVector<std_alloc>> &input, std::size_t party_id,
                std::weak_ptr<Backend> backend);
 
-  GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id,
+  GMWInputGate(std::vector<ENCRYPTO::BitVector<std_alloc>> &&input, std::size_t party_id,
                std::weak_ptr<Backend> backend);
 
   void InitializationHelper();
@@ -56,7 +68,7 @@ class GMWInputGate final : public Gates::Interfaces::InputGate {
 
  protected:
   /// two-dimensional vector for storing the raw inputs
-  std::vector<ENCRYPTO::BitVector<>> input_;
+  std::vector<ENCRYPTO::BitVector<std_alloc>> input_;
 
   std::size_t bits_;                ///< Number of parallel values on wires
   std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
@@ -80,8 +92,8 @@ class GMWOutputGate final : public Interfaces::OutputGate {
   const Shares::SharePtr GetOutputAsShare() const;
 
  protected:
-  std::vector<ENCRYPTO::BitVector<>> output_;
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> shared_outputs_;
+  std::vector<ENCRYPTO::BitVector<std_alloc>> output_;
+  std::vector<std::vector<ENCRYPTO::BitVector<std_alloc>>> shared_outputs_;
 
   // indicates whether this party obtains the output
   bool is_my_output_ = false;

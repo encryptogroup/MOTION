@@ -24,10 +24,14 @@
 
 #include "bmr_gate.h"
 
+#include "boolean_gmw_gate.h"
 #include "base/backend.h"
 #include "communication/bmr_message.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/pseudo_random_generator.h"
+#include "share/bmr_share.h"
+#include "share/boolean_gmw_share.h"
+#include "utility/bit_vector.h"
 #include "wire/bmr_wire.h"
 #include "wire/boolean_gmw_wire.h"
 

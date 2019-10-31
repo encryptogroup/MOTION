@@ -24,10 +24,22 @@
 
 #include "secure_unsigned_integer.h"
 
+#include <fmt/format.h>
+
 #include "algorithm/algorithm_description.h"
+#include "base/register.h"
 #include "utility/logger.h"
+#include "utility/constants.h"
 
 namespace MOTION {
+
+SecureUnsignedInteger::SecureUnsignedInteger(const Shares::SharePtr& other)
+    : share_(std::make_unique<Shares::ShareWrapper>(other)),
+      logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
+
+SecureUnsignedInteger::SecureUnsignedInteger(Shares::SharePtr&& other)
+    : share_(std::make_unique<Shares::ShareWrapper>(std::move(other))),
+      logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
 SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteger& other) const {
   if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {

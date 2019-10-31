@@ -48,13 +48,9 @@ class SecureUnsignedInteger {
     other.Get().reset();
   }
 
-  SecureUnsignedInteger(const Shares::SharePtr& other)
-      : share_(std::make_unique<Shares::ShareWrapper>(other)),
-        logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
+  SecureUnsignedInteger(const Shares::SharePtr& other);
 
-  SecureUnsignedInteger(Shares::SharePtr&& other)
-      : share_(std::make_unique<Shares::ShareWrapper>(std::move(other))),
-        logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
+  SecureUnsignedInteger(Shares::SharePtr&& other);
 
   SecureUnsignedInteger& operator=(const SecureUnsignedInteger& other) {
     this->share_ = other.share_;

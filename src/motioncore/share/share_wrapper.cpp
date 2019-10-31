@@ -23,17 +23,20 @@
 // SOFTWARE.
 
 #include "share_wrapper.h"
-#include <gate/conversion_gate.h>
 
 #include "algorithm/algorithm_description.h"
 #include "algorithm/tree.h"
-#include "base/backend.h"
-#include "gate/bmr_gate.h"
-#include "secure_type/secure_unsigned_integer.h"
-
 #include "arithmetic_gmw_share.h"
+#include "base/backend.h"
 #include "bmr_share.h"
 #include "boolean_gmw_share.h"
+#include "gate/arithmetic_gmw_gate.h"
+#include "gate/bmr_gate.h"
+#include "gate/boolean_gmw_gate.h"
+#include "gate/conversion_gate.h"
+#include "secure_type/secure_unsigned_integer.h"
+#include "share/arithmetic_gmw_share.h"
+#include "share/boolean_gmw_share.h"
 
 namespace MOTION::Shares {
 using SharePtr = std::shared_ptr<Share>;

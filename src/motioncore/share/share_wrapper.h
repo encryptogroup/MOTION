@@ -24,17 +24,21 @@
 
 #pragma once
 
-#include "gate/arithmetic_gmw_gate.h"
-#include "gate/boolean_gmw_gate.h"
+#include <cassert>
+#include <memory>
+#include <vector>
 
-#include "share/arithmetic_gmw_share.h"
-#include "share/boolean_gmw_share.h"
+#include "share.h"
+#include "utility/typedefs.h"
 
 namespace ENCRYPTO {
 class AlgorithmDescription;
 }
 
 namespace MOTION::Shares {
+class Share;
+using SharePtr = std::shared_ptr<Share>;
+
 class ShareWrapper {
  public:
   ShareWrapper(const SharePtr &share) : share_(share) { assert(share_); }
