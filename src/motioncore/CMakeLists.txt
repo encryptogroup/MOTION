@@ -20,6 +20,7 @@ add_library(motion
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
+        crypto/multiplication_triple/sp_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
         data_storage/base_ot_data.cpp
         data_storage/bmr_data.cpp

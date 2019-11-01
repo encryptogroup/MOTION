@@ -38,6 +38,7 @@ class OTProvider;
 
 namespace MOTION {
 class MTProvider;
+class SPProvider;
 
 class BaseOTProvider;
 struct SenderMsgs;
@@ -268,6 +269,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   auto &GetMTProvider() { return mt_provider_; };
 
+  auto &GetSPProvider() { return sp_provider_; };
+
  private:
   ConfigurationPtr config_;
   RegisterPtr register_;
@@ -276,6 +279,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::unique_ptr<BaseOTProvider> base_ot_provider_;
   std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>> ot_provider_;
   std::shared_ptr<MTProvider> mt_provider_;
+  std::shared_ptr<SPProvider> sp_provider_;
 
   bool share_inputs_{true};
   bool require_base_ots_{false};
