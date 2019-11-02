@@ -26,11 +26,21 @@
 
 #include <flatbuffers/flatbuffers.h>
 #include <fmt/format.h>
+#include <random>
 
 #include "condition.h"
 #include "typedefs.h"
 
 namespace MOTION::Helpers {
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+std::vector<T> RandomVector(std::size_t length) {
+  std::random_device rd;
+  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  std::vector<T> vec(length);
+  std::for_each(vec.begin(), vec.end(), [&](auto &a) { a = dist(rd); });
+  return vec;
+}
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 inline std::vector<std::uint8_t> ToByteVector(const std::vector<T> &values) {
