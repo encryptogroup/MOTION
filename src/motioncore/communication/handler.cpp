@@ -26,7 +26,7 @@
 
 #include <algorithm>
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "context.h"
 #include "crypto/sharing_randomness_generator.h"

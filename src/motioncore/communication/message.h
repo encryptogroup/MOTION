@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 #include "fbs_headers/message_generated.h"
 

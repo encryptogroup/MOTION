@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include "flatbuffers/flatbuffers.h"
-#include "fmt/format.h"
+#include <flatbuffers/flatbuffers.h>
+#include <fmt/format.h>
 
 #include "condition.h"
 #include "typedefs.h"

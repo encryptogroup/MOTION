@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 namespace MOTION::Communication {
 // publish input owner's masked inputs

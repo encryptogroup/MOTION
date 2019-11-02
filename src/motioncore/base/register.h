@@ -30,7 +30,7 @@
 #include <mutex>
 #include <queue>
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 namespace ENCRYPTO {
 class AlgorithmDescription;

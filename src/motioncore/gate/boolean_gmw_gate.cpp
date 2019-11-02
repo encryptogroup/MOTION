@@ -24,7 +24,7 @@
 
 #include "boolean_gmw_gate.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "base/backend.h"
 #include "base/register.h"

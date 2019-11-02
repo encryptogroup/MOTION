@@ -26,7 +26,7 @@
 #include <functional>
 #include <memory>
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 #include "crypto/curve25519/mycurve25519.h"
 #include "ot.h"

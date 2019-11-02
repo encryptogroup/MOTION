@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "communication/handler.h"
 #include "configuration.h"

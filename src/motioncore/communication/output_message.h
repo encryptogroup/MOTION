@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 namespace MOTION::Communication {
 flatbuffers::FlatBufferBuilder BuildOutputMessage(std::size_t gate_id,

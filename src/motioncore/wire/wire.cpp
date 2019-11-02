@@ -24,7 +24,7 @@
 
 #include "wire.h"
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "base/backend.h"
 #include "base/register.h"

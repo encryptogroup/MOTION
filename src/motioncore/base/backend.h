@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 #include "gate/arithmetic_gmw_gate.h"
 

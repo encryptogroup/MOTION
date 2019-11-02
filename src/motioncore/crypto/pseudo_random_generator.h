@@ -27,8 +27,8 @@
 #include <memory>
 #include <vector>
 
-#include "openssl/aes.h"
-#include "openssl/evp.h"
+#include <openssl/aes.h>
+#include <openssl/evp.h>
 
 #include "utility/helpers.h"
 
