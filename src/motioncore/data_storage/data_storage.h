@@ -49,6 +49,7 @@ using LoggerPtr = std::shared_ptr<Logger>;
 struct BaseOTsData;
 struct BMRData;
 struct OTExtensionData;
+struct SharedBitsData;
 
 class DataStorage {
  public:
@@ -96,6 +97,8 @@ class DataStorage {
 
   auto &GetBMRData() { return bmr_data_; }
 
+  auto &GetSharedBitsData() { return *shared_bits_data_; }
+
   void SetFixedKeyAESKey(const ENCRYPTO::AlignedBitVector &key) { fixed_key_aes_key_ = key; }
   const auto &GetFixedKeyAESKey() { return fixed_key_aes_key_; }
 
@@ -119,6 +122,8 @@ class DataStorage {
   std::unique_ptr<OTExtensionData> ot_extension_data_;
 
   std::unique_ptr<BMRData> bmr_data_;
+
+  std::unique_ptr<SharedBitsData> shared_bits_data_;
 
   LoggerPtr logger_;
   std::int64_t id_{-1};

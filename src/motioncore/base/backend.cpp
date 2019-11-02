@@ -38,6 +38,7 @@
 #include "communication/message.h"
 #include "crypto/base_ots/base_ot_provider.h"
 #include "crypto/multiplication_triple/mt_provider.h"
+#include "crypto/multiplication_triple/sb_provider.h"
 #include "crypto/multiplication_triple/sp_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "data_storage/base_ot_data.h"
@@ -89,6 +90,7 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
 
   mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId());
   sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_, GetConfig()->GetMyId());
+  sb_provider_ = std::make_shared<SBProviderFromSPs>(config_, register_, sp_provider_);
 }
 
 Backend::~Backend() = default;

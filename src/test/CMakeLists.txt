@@ -8,6 +8,7 @@ add_executable(motiontest
         test_motion.cpp
         test_motion_main.cpp
         test_mt.cpp
+        test_sb.cpp
         test_sp.cpp
         test_ot.cpp
         test_reusable_future.cpp

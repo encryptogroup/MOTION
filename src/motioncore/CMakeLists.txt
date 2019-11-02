@@ -13,6 +13,7 @@ add_library(motion
         communication/message.cpp
         communication/ot_extension_message.cpp
         communication/output_message.cpp
+        communication/shared_bits_message.cpp
         crypto/sharing_randomness_generator.cpp
         crypto/blake2b.cpp
         crypto/pseudo_random_generator.cpp
@@ -20,12 +21,14 @@ add_library(motion
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
+        crypto/multiplication_triple/sb_provider.cpp
         crypto/multiplication_triple/sp_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
         data_storage/base_ot_data.cpp
         data_storage/bmr_data.cpp
-        data_storage/ot_extension_data.cpp
         data_storage/data_storage.cpp
+        data_storage/ot_extension_data.cpp
+        data_storage/shared_bits_data.cpp
         gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp
         gate/conversion_gate.cpp

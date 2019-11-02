@@ -1,0 +1,7 @@
+namespace MOTION.Communication;
+
+table SharedBitsMessage {
+  payload:[ubyte];
+}
+
+root_type SharedBitsMessage;

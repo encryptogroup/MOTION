@@ -33,6 +33,7 @@
 #include "data_storage/base_ot_data.h"
 #include "data_storage/bmr_data.h"
 #include "data_storage/ot_extension_data.h"
+#include "data_storage/shared_bits_data.h"
 #include "utility/condition.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
@@ -49,6 +50,7 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
   base_ots_data_ = std::make_unique<BaseOTsData>();
   ot_extension_data_ = std::make_unique<OTExtensionData>();
   bmr_data_ = std::make_unique<BMRData>();
+  shared_bits_data_ = std::make_unique<SharedBitsData>();
 
   sync_cond_ = std::make_shared<ENCRYPTO::Condition>(
       [this]() { return sync_state_received_ >= sync_state_actual_; });

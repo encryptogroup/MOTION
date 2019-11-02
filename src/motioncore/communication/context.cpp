@@ -34,11 +34,13 @@
 #include "communication/fbs_headers/hello_message_generated.h"
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/fbs_headers/ot_extension_generated.h"
+#include "communication/fbs_headers/shared_bits_message_generated.h"
 #include "crypto/sharing_randomness_generator.h"
 #include "data_storage/base_ot_data.h"
 #include "data_storage/bmr_data.h"
 #include "data_storage/data_storage.h"
 #include "data_storage/ot_extension_data.h"
+#include "data_storage/shared_bits_data.h"
 #include "utility/constants.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
@@ -208,6 +210,16 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
       data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::and_gate, id);
+      break;
+    }
+    case MessageType_SharedBitsMask: {
+      auto sb_msg_payload = GetSharedBitsMessage(message->payload()->data())->payload();
+      data_storage_->GetSharedBitsData().MessageReceived(SharedBitsMessageType::mask_message, sb_msg_payload->data(), sb_msg_payload->size());
+      break;
+    }
+    case MessageType_SharedBitsReconstruct: {
+      auto sb_msg_payload = GetSharedBitsMessage(message->payload()->data())->payload();
+      data_storage_->GetSharedBitsData().MessageReceived(SharedBitsMessageType::reconstruct_message, sb_msg_payload->data(), sb_msg_payload->size());
       break;
     }
     default:
