@@ -30,7 +30,7 @@
 #include "base/backend.h"
 #include "communication/base_ot_message.h"
 #include "crypto/blake2b.h"
-#include "utility/data_storage.h"
+#include "data_storage/data_storage.h"
 
 namespace MOTION {
 

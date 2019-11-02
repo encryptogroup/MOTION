@@ -30,10 +30,10 @@
 
 #include "context.h"
 #include "crypto/sharing_randomness_generator.h"
+#include "data_storage/data_storage.h"
 #include "message.h"
 #include "utility/condition.h"
 #include "utility/constants.h"
-#include "utility/data_storage.h"
 #include "utility/locked_queue.h"
 #include "utility/logger.h"
 #include "utility/thread.h"

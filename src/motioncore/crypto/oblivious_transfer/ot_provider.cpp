@@ -26,10 +26,10 @@
 
 #include "communication/ot_extension_message.h"
 #include "crypto/pseudo_random_generator.h"
+#include "data_storage/data_storage.h"
 #include "utility/bit_matrix.h"
 #include "utility/condition.h"
 #include "utility/config.h"
-#include "utility/data_storage.h"
 #include "utility/logger.h"
 
 namespace ENCRYPTO::ObliviousTransfer {
