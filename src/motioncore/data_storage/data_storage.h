@@ -24,19 +24,8 @@
 
 #pragma once
 
-#include <atomic>
-#include <future>
-#include <mutex>
-#include <queue>
-#include <unordered_set>
-
-#include <fmt/format.h>
-#include <boost/container/vector.hpp>
 #include <boost/fiber/future.hpp>
-
-#include "communication/fbs_headers/hello_message_generated.h"
-#include "communication/fbs_headers/message_generated.h"
-#include "communication/fbs_headers/output_message_generated.h"
+#include <mutex>
 
 #include "utility/bit_vector.h"
 #include "utility/typedefs.h"
@@ -50,126 +39,16 @@ class BitMatrix;
 
 namespace MOTION {
 
+namespace Communication {
+struct HelloMessage;
+}
+
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
 
-struct BaseOTsReceiverData {
-  BaseOTsReceiverData();
-  ~BaseOTsReceiverData() = default;
-
-  ENCRYPTO::BitVector<> c_;  /// choice bits
-  std::array<std::array<std::byte, 16>, 128> messages_c_;
-
-  std::vector<std::array<std::byte, 32>> S_;
-  boost::container::vector<bool> received_S_;
-  std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_S_condition_;
-
-  // number of used rows;
-  std::size_t consumed_offset_{0};
-
-  std::atomic<bool> is_ready_{false};
-  std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
-};
-
-struct BaseOTsSenderData {
-  BaseOTsSenderData();
-  ~BaseOTsSenderData() = default;
-
-  std::array<std::array<std::byte, 16>, 128> messages_0_;
-  std::array<std::array<std::byte, 16>, 128> messages_1_;
-
-  std::vector<std::array<std::byte, 32>> R_;
-  boost::container::vector<bool> received_R_;
-  std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_R_condition_;
-
-  // number of used rows;
-  std::size_t consumed_offset_{0};
-
-  std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
-  std::atomic<bool> is_ready_{false};
-};
-
-struct OTExtensionSenderData {
-  std::size_t bit_size_{0};
-  /// receiver's mask that are needed to construct matrix @param V_
-  std::array<ENCRYPTO::AlignedBitVector, 128> u_;
-  std::queue<std::size_t> received_u_ids_;
-  std::size_t num_u_received_{0};
-  std::unique_ptr<ENCRYPTO::Condition> received_u_condition_;
-
-  std::shared_ptr<ENCRYPTO::BitMatrix> V_;
-
-  // offset, num_ots
-  std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
-
-  // corrections for GOTs, i.e., if random choice bit is not the real choice bit
-  // send 1 to flip the messages before encoding or 0 otherwise for each GOT
-  std::unordered_set<std::size_t> received_correction_offsets_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>>
-      received_correction_offsets_cond_;
-  ENCRYPTO::BitVector<> corrections_;
-  std::mutex corrections_mutex_;
-
-  // output buffer
-  std::vector<ENCRYPTO::BitVector<>> y0_, y1_;
-  std::vector<std::size_t> bitlengths_;
-
-  std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
-  std::atomic<bool> setup_finished_{false};
-};
-
-struct OTExtensionReceiverData {
-  std::shared_ptr<ENCRYPTO::BitMatrix> T_;
-
-  // if many OTs are received in batches, it is not necessary to store all of the flags
-  // for received messages but only for the first OT id in the batch. Thus, use a hash table.
-  std::unordered_set<std::size_t> received_outputs_;
-  std::vector<ENCRYPTO::BitVector<>> outputs_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conds_;
-  std::mutex received_outputs_mutex_;
-
-  std::unordered_map<std::size_t, std::size_t> num_messages_;
-  std::unordered_set<std::size_t> xor_correlation_;
-  std::vector<std::size_t> bitlengths_;
-
-  std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> real_choices_cond_;
-  std::unordered_set<std::size_t> set_real_choices_;
-  std::mutex real_choices_mutex_;
-
-  std::unique_ptr<ENCRYPTO::AlignedBitVector> random_choices_;
-
-  std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
-
-  std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
-  std::atomic<bool> setup_finished_{false};
-};
-
-struct BMRData {
-  // bitlen and promise with the return buffer
-  using in_pub_val_t =
-      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
-  std::unordered_map<std::size_t, in_pub_val_t> input_public_values_;
-
-  using keys_t =
-      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
-  std::unordered_map<std::size_t, keys_t> input_public_keys_;
-
-  using g_rows_t =
-      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
-  std::unordered_map<std::size_t, g_rows_t> garbled_rows_;
-};
-
-enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 2 };
-
-enum OTExtensionDataType : uint {
-  rcv_masks = 0,
-  rcv_corrections = 1,
-  snd_messages = 2,
-  OTExtension_invalid_data_type = 3
-};
-
-enum BMRDataType : uint { input_step_0 = 0, input_step_1 = 1, and_gate = 2 };
+struct BaseOTsData;
+struct BMRData;
+struct OTExtensionData;
 
 class DataStorage {
  public:
@@ -211,18 +90,9 @@ class DataStorage {
 
   ENCRYPTO::ConditionPtr &GetSyncCondition();
 
-  void BaseOTsReceived(const std::uint8_t *message, const BaseOTsDataType type,
-                       const std::size_t ot_id = 0);
-  void OTExtensionReceived(const std::uint8_t *message, const OTExtensionDataType type,
-                           const std::size_t i);
+  auto &GetBaseOTsData() { return base_ots_data_; }
 
-  void BMRMessageReceived(const std::uint8_t *message, const BMRDataType type, const std::size_t i);
-
-  auto &GetBaseOTsReceiverData() { return base_ots_receiver_data_; }
-  auto &GetBaseOTsSenderData() { return base_ots_sender_data_; }
-
-  auto &GetOTExtensionReceiverData() { return ot_extension_receiver_data_; }
-  auto &GetOTExtensionSenderData() { return ot_extension_sender_data_; }
+  auto &GetOTExtensionData() { return ot_extension_data_; }
 
   auto &GetBMRData() { return bmr_data_; }
 
@@ -244,11 +114,9 @@ class DataStorage {
       output_message_promises_;
   std::mutex output_message_promises_mutex_;
 
-  std::unique_ptr<BaseOTsReceiverData> base_ots_receiver_data_;
-  std::unique_ptr<BaseOTsSenderData> base_ots_sender_data_;
+  std::unique_ptr<BaseOTsData> base_ots_data_;
 
-  std::unique_ptr<OTExtensionReceiverData> ot_extension_receiver_data_;
-  std::unique_ptr<OTExtensionSenderData> ot_extension_sender_data_;
+  std::unique_ptr<OTExtensionData> ot_extension_data_;
 
   std::unique_ptr<BMRData> bmr_data_;
 

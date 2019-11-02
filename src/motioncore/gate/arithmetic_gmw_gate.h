@@ -32,6 +32,8 @@
 #include "base/configuration.h"
 #include "base/register.h"
 #include "communication/context.h"
+#include "communication/fbs_headers/message_generated.h"
+#include "communication/fbs_headers/output_message_generated.h"
 #include "communication/output_message.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/sharing_randomness_generator.h"

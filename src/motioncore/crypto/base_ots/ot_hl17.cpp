@@ -30,6 +30,7 @@
 #include "base/backend.h"
 #include "communication/base_ot_message.h"
 #include "crypto/blake2b.h"
+#include "data_storage/base_ot_data.h"
 #include "data_storage/data_storage.h"
 
 namespace MOTION {
@@ -200,7 +201,7 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::
     states.emplace_back(i);
   }
 
-  auto& base_ots_snd = data_storage_->GetBaseOTsSenderData();
+  auto& base_ots_snd = data_storage_->GetBaseOTsData()->GetSenderData();
 
   std::vector<std::array<std::byte, curve25519_ge_byte_size>> msgs_s0(number_ots);
   std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> output(number_ots);
@@ -215,19 +216,18 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::
   }
 
   for (std::size_t i = 0; i < number_ots; ++i) {
-    auto& cond = base_ots_snd->received_R_condition_.at(i);
-    MOTION::Helpers::WaitFor(*cond);
-    output.at(i) = send_2(states.at(i), base_ots_snd->R_.at(i));
+    base_ots_snd.received_R_condition_.at(i)->Wait();
+    output.at(i) = send_2(states.at(i), base_ots_snd.R_.at(i));
   }
 
-  data_storage_->GetBaseOTsSenderData()->is_ready_ = true;
+  base_ots_snd.is_ready_ = true;
 
   return output;
 }
 
 std::vector<std::vector<std::byte>> OT_HL17::recv(const ENCRYPTO::BitVector<>& choices) {
   const auto number_ots = choices.GetSize();
-  auto& base_ots_rcv = data_storage_->GetBaseOTsReceiverData();
+  auto& base_ots_rcv = data_storage_->GetBaseOTsData()->GetReceiverData();
   std::vector<Receiver_State> states;
   for (std::size_t i = 0; i < number_ots; ++i) {
     states.emplace_back(i);
@@ -237,12 +237,11 @@ std::vector<std::vector<std::byte>> OT_HL17::recv(const ENCRYPTO::BitVector<>& c
 
   for (std::size_t i = 0; i < number_ots; ++i) {
     recv_0(states.at(i), choices.Get(i));
-    auto& cond = base_ots_rcv->received_S_condition_.at(i);
-    MOTION::Helpers::WaitFor(*cond);
+    base_ots_rcv.received_S_condition_.at(i)->Wait();
   }
 
   for (std::size_t i = 0; i < number_ots; ++i) {
-    recv_1(states.at(i), msgs_r1.at(i), base_ots_rcv->S_.at(i));
+    recv_1(states.at(i), msgs_r1.at(i), base_ots_rcv.S_.at(i));
     Send_(
         Communication::BuildBaseROTMessageReceiver(msgs_r1.at(i).data(), msgs_r1.at(i).size(), i));
   }
@@ -251,9 +250,9 @@ std::vector<std::vector<std::byte>> OT_HL17::recv(const ENCRYPTO::BitVector<>& c
     output.at(i) = recv_2(states.at(i));
   }
 
-  data_storage_->GetBaseOTsReceiverData()->is_ready_ = true;
+  base_ots_rcv.is_ready_ = true;
 
   return output;
 }
 
-}
+}  // namespace MOTION

@@ -20,6 +20,9 @@ add_library(motion
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
+        data_storage/base_ot_data.cpp
+        data_storage/bmr_data.cpp
+        data_storage/ot_extension_data.cpp
         data_storage/data_storage.cpp
         gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp

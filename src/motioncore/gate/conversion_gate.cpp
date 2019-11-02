@@ -28,6 +28,7 @@
 
 #include "base/backend.h"
 #include "communication/bmr_message.h"
+#include "data_storage/bmr_data.h"
 #include "share/bmr_share.h"
 #include "share/boolean_gmw_share.h"
 #include "utility/constants.h"

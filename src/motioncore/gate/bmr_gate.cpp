@@ -28,6 +28,8 @@
 #include "communication/bmr_message.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/pseudo_random_generator.h"
+#include "data_storage/bmr_data.h"
+#include "data_storage/data_storage.h"
 #include "wire/bmr_wire.h"
 #include "wire/boolean_gmw_wire.h"
 

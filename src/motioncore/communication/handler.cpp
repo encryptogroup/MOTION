@@ -28,6 +28,7 @@
 
 #include <fmt/format.h>
 
+#include "communication/fbs_headers/hello_message_generated.h"
 #include "context.h"
 #include "crypto/sharing_randomness_generator.h"
 #include "data_storage/data_storage.h"
