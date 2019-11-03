@@ -152,7 +152,7 @@ class MTProvider {
                                        const std::size_t n) const {
     assert(mts.a.size() == mts.b.size());
     assert(mts.c.size() == mts.b.size());
-    assert(offset + n < mts.a.size());
+    assert(offset + n <= mts.a.size());
 
     return IntegerMTVector<T>{std::vector<T>(mts.a.begin() + offset, mts.a.begin + offset + n),
                               std::vector<T>(mts.b.begin() + offset, mts.b.begin + offset + n),
