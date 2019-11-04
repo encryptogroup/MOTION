@@ -16,6 +16,7 @@ add_library(motion
         crypto/sharing_randomness_generator.cpp
         crypto/blake2b.cpp
         crypto/pseudo_random_generator.cpp
+        crypto/base_ots/base_ot_provider.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
