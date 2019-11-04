@@ -10,6 +10,7 @@ add_executable(motiontest
         test_mt.cpp
         test_sp.cpp
         test_ot.cpp
+        test_reusable_future.cpp
         )
 
 target_compile_features(motiontest PRIVATE cxx_std_17)
