@@ -473,8 +473,6 @@ TYPED_TEST(SecureUintTest, SubtractionInGMW) {
     if (tt.joinable()) tt.join();
 }
 
-// FIXME: fails for >32 bits due to operating system restriction for maximum number of threads
-// enable when replaced with co-routines
 TYPED_TEST(SecureUintTest, MultiplicationInBMR) {
   using T = TypeParam;
   using namespace MOTION;
@@ -587,16 +585,19 @@ TYPED_TEST(SecureUintTest, MultiplicationInGMW) {
     if (tt.joinable()) tt.join();
 }
 
-// FIXME: fails for >32 bits due to operating system restriction for maximum number of threads
-// enable when replaced with co-routines
-TYPED_TEST(SecureUintTest, DISABLED_DivisionInBMR) {
+TYPED_TEST(SecureUintTest, DivisionInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
   std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
-  const std::vector<T> raw_global_input = {r(), r()};
+  // HyCC operates on signed integers, so the max number is not 2^{l}-1, but 2^{l-1}-1
+  // let's make the divisor smaller than dividend to get something else than 0/1 from the result
+  std::uniform_int_distribution<T> dist_dividend(std::numeric_limits<T>::max() / 8,
+                                                 std::numeric_limits<T>::max() / 2);
+  std::uniform_int_distribution<T> dist_divisor(1, std::numeric_limits<T>::max() / 10);
+  auto r_dividend = std::bind(dist_dividend, g);
+  auto r_divisor = std::bind(dist_divisor, g);
+  const std::vector<T> raw_global_input = {r_dividend(), r_divisor()};
   constexpr auto n_wires{sizeof(T) * 8};
   constexpr std::size_t n_simd{1};
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input{
@@ -645,14 +646,20 @@ TYPED_TEST(SecureUintTest, DISABLED_DivisionInBMR) {
     if (tt.joinable()) tt.join();
 }
 
-TYPED_TEST(SecureUintTest, DISABLED_DivisionInGMW) {
+TYPED_TEST(SecureUintTest, DivisionInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
-  const std::vector<T> raw_global_input = {r(), r()};
+  std::mt19937 g(sizeof(T));
+  // HyCC operates on signed integers, so the max number is not 2^{l}-1, but 2^{l-1}-1
+  // let's make the divisor smaller than dividend to get something else than 0/1 from the result
+  std::uniform_int_distribution<T> dist_dividend(std::numeric_limits<T>::max() / 8,
+                                                 std::numeric_limits<T>::max() / 2);
+  std::uniform_int_distribution<T> dist_divisor(1, std::numeric_limits<T>::max() / 10);
+  auto r_dividend = std::bind(dist_dividend, g);
+  auto r_divisor = std::bind(dist_divisor, g);
+
+  const std::vector<T> raw_global_input = {r_dividend(), r_divisor()};
   constexpr auto n_wires{sizeof(T) * 8};
   constexpr std::size_t n_simd{1};
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input{
@@ -680,12 +687,12 @@ TYPED_TEST(SecureUintTest, DISABLED_DivisionInGMW) {
       EXPECT_EQ(s_0.Get()->GetBitLength(), n_wires);
       EXPECT_EQ(s_1.Get()->GetBitLength(), n_wires);
 
-      const auto s_add = s_0 / s_1;
-      auto s_out = s_add.Get().Out();
+      const auto s_div = s_0 / s_1;
+      auto s_out = s_div.Get().Out();
 
       motion_parties.at(party_id)->Run();
 
-      const T sum_check = raw_global_input.at(0) / raw_global_input.at(1);
+      const T div_check = raw_global_input.at(0) / raw_global_input.at(1);
       std::vector<ENCRYPTO::BitVector<>> out;
       for (auto i = 0ull; i < n_wires; ++i) {
         auto wire_single =
@@ -693,8 +700,8 @@ TYPED_TEST(SecureUintTest, DISABLED_DivisionInGMW) {
         assert(wire_single);
         out.emplace_back(wire_single->GetValues());
       }
-      T sum = ENCRYPTO::ToOutput<T>(out);
-      EXPECT_EQ(sum, sum_check);
+      T div = ENCRYPTO::ToOutput<T>(out);
+      EXPECT_EQ(div, div_check);
       motion_parties.at(party_id)->Finish();
     });
   }
