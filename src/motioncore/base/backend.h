@@ -26,7 +26,7 @@
 
 #include <memory>
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 #include "gate/arithmetic_gmw_gate.h"
 
@@ -38,6 +38,10 @@ class OTProvider;
 
 namespace MOTION {
 class MTProvider;
+
+class BaseOTProvider;
+struct SenderMsgs;
+struct ReceiverMsgs;
 
 class Logger;
 using LoggerPtr = std::shared_ptr<Logger>;
@@ -66,25 +70,13 @@ class Handler;
 using HandlerPtr = std::shared_ptr<Handler>;
 }  // namespace Communication
 
-using base_ot_msgs_t = std::array<std::array<std::byte, 16>, kappa>;
-
-struct SenderMsgs{
-  base_ot_msgs_t messages_0_;
-  base_ot_msgs_t messages_1_;
-};
-
-struct ReceiverMsgs{
-  base_ot_msgs_t messages_c_;
-  ENCRYPTO::BitVector<> c_;
-};
-
 class Backend : public std::enable_shared_from_this<Backend> {
  public:
   Backend() = delete;
 
   Backend(ConfigurationPtr &config);
 
-  ~Backend() = default;
+  ~Backend();
 
   const ConfigurationPtr &GetConfig() const noexcept { return config_; }
 
@@ -260,15 +252,17 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void ComputeBaseOTs();
 
-  void ImportBaseOTs(std::size_t i, const ReceiverMsgs & msgs);
+  void ImportBaseOTs(std::size_t i, const ReceiverMsgs &msgs);
 
-  void ImportBaseOTs(std::size_t i, const SenderMsgs & msgs);
+  void ImportBaseOTs(std::size_t i, const SenderMsgs &msgs);
 
   std::pair<ReceiverMsgs, SenderMsgs> ExportBaseOTs(std::size_t i);
 
   void GenerateFixedKeyAESKey();
 
   void OTExtensionSetup();
+
+  auto &GetBaseOTProvider() { return base_ot_provider_; };
 
   auto &GetOTProvider(const std::size_t i) { return ot_provider_.at(i); };
 
@@ -279,6 +273,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
   RegisterPtr register_;
 
   std::vector<Communication::HandlerPtr> communication_handlers_;
+  std::unique_ptr<BaseOTProvider> base_ot_provider_;
   std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>> ot_provider_;
   std::shared_ptr<MTProvider> mt_provider_;
 

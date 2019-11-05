@@ -34,6 +34,7 @@
 
 namespace ENCRYPTO {
 class Condition;
+class FiberCondition;
 namespace ObliviousTransfer {
 class OTProvider;
 }
@@ -110,7 +111,8 @@ class Gate {
 
   std::atomic<bool> added_to_active_queue = false;
 
-  std::shared_ptr<ENCRYPTO::Condition> setup_is_ready_cond_, online_is_ready_cond_;
+  std::shared_ptr<ENCRYPTO::Condition> setup_is_ready_cond_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> online_is_ready_cond_;
 
   std::atomic<std::size_t> num_ready_dependencies_ = 0;
 

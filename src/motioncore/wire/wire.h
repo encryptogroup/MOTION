@@ -34,7 +34,7 @@
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
-class Condition;
+class FiberCondition;
 }
 
 namespace MOTION {
@@ -66,7 +66,7 @@ class Wire {
 
   const std::atomic<bool> &IsReady() const noexcept;
 
-  std::shared_ptr<ENCRYPTO::Condition> GetIsReadyCondition() const noexcept {
+  std::shared_ptr<ENCRYPTO::FiberCondition> GetIsReadyCondition() const noexcept {
     return is_done_condition_;
   }
 
@@ -99,7 +99,7 @@ class Wire {
   // gates will wait for wires to be evaluated to proceed with their evaluation
   std::atomic<bool> is_done_ = false;
 
-  std::shared_ptr<ENCRYPTO::Condition> is_done_condition_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> is_done_condition_;
 
   std::int64_t wire_id_ = -1;
 

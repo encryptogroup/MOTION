@@ -28,6 +28,7 @@
 #include "base/register.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "utility/condition.h"
+#include "utility/fiber_condition.h"
 #include "wire/wire.h"
 
 namespace MOTION::Gates::Interfaces {
@@ -64,7 +65,7 @@ void Gate::SetOnlineIsReady() {
 
 void Gate::WaitSetup() { Helpers::WaitFor(*setup_is_ready_cond_); }
 
-void Gate::WaitOnline() { Helpers::WaitFor(*online_is_ready_cond_); }
+void Gate::WaitOnline() { online_is_ready_cond_->Wait(); }
 
 void Gate::IfReadyAddToProcessingQueue() {
   std::scoped_lock lock(mutex_);
@@ -85,7 +86,7 @@ void Gate::Clear() {
 
 Gate::Gate() {
   online_is_ready_cond_ =
-      std::make_shared<ENCRYPTO::Condition>([this]() { return online_is_ready_.load(); });
+      std::make_shared<ENCRYPTO::FiberCondition>([this]() { return online_is_ready_.load(); });
   setup_is_ready_cond_ =
       std::make_shared<ENCRYPTO::Condition>([this]() { return setup_is_ready_.load(); });
 }

@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -22,16 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "share.h"
+#pragma once
 
-#include <fmt/format.h>
+#include <boost/fiber/future.hpp>
+#include <cstddef>
+#include <memory>
+#include <unordered_map>
+#include <utility>
+#include "utility/bit_vector.h"
 
-#include "base/backend.h"
-
-namespace MOTION::Shares {
-std::shared_ptr<Register> Share::GetRegister() {
-  auto backend_ptr = backend_.lock();
-  assert(backend_ptr);
-  return backend_ptr->GetRegister();
+namespace ENCRYPTO {
+class Condition;
 }
-}  // namespace MOTION::Shares
+
+namespace MOTION {
+
+enum BMRDataType : uint { input_step_0 = 0, input_step_1 = 1, and_gate = 2 };
+
+struct BMRData {
+  void MessageReceived(const std::uint8_t* message, const BMRDataType type, const std::size_t i);
+  void Clear();
+
+  // bitlen and promise with the return buffer
+  using in_pub_val_t =
+      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  std::unordered_map<std::size_t, in_pub_val_t> input_public_values_;
+
+  using keys_t =
+      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  std::unordered_map<std::size_t, keys_t> input_public_keys_;
+
+  using g_rows_t =
+      std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>;
+  std::unordered_map<std::size_t, g_rows_t> garbled_rows_;
+};
+
+}  // namespace MOTION

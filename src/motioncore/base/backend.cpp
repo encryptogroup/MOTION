@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -24,6 +24,7 @@
 
 #include "backend.h"
 
+#include <chrono>
 #include <functional>
 #include <future>
 #include <iterator>
@@ -31,23 +32,30 @@
 #include <fmt/format.h>
 #include <boost/asio/thread_pool.hpp>
 
+#include "communication/fbs_headers/hello_message_generated.h"
 #include "communication/handler.h"
 #include "communication/hello_message.h"
 #include "communication/message.h"
-#include "crypto/base_ots/ot_hl17.h"
+#include "crypto/base_ots/base_ot_provider.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
+#include "data_storage/base_ot_data.h"
+#include "data_storage/data_storage.h"
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
 #include "register.h"
 #include "share/bmr_share.h"
 #include "share/boolean_gmw_share.h"
 #include "utility/constants.h"
+#include "utility/fiber_thread_pool/fiber_thread_pool.hpp"
+
+using namespace std::chrono_literals;
 
 namespace MOTION {
 
 Backend::Backend(ConfigurationPtr &config) : config_(config) {
   register_ = std::make_shared<Register>(config_);
+  base_ot_provider_ = std::make_unique<BaseOTProvider>(*config_, *register_->GetLogger(), *register_);
   ot_provider_.resize(config_->GetNumOfParties(), nullptr);
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
@@ -80,6 +88,8 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
 
   mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId());
 }
+
+Backend::~Backend() = default;
 
 const LoggerPtr &Backend::GetLogger() const noexcept { return register_->GetLogger(); }
 
@@ -175,30 +185,44 @@ void Backend::EvaluateSequential() {
     }
   }
 
-  boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates());
+  // setup phase: -------------------------------------------------------
 
-  for (auto i = 0ull; i < register_->GetTotalNumOfGates(); ++i) {
-    boost::asio::post(pool_setup, [this, i]() { register_->GetGate(i)->EvaluateSetup(); });
-  }
-  pool_setup.join();
+  // create a pool with std::thread::hardware_concurrency() no. of threads
+  // to execute fibers
+  ENCRYPTO::FiberThreadPool fpool_setup(0, config_->GetNumOfParties());
 
-  for (auto &input_gate : register_->GetInputGates()) {
-    register_->AddToActiveQueue(input_gate->GetID());
+  // evaluate all the gates
+  for (auto& gate : register_->GetGates()) {
+    fpool_setup.post([&] { gate->EvaluateSetup(); });
   }
 
-  boost::asio::thread_pool pool_online(register_->GetTotalNumOfGates());
-  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-    if (gate_id < 0) {
-      std::this_thread::sleep_for(std::chrono::microseconds(100));
-      continue;
-    }
-    boost::asio::post(pool_online, [this, gate_id]() {
-      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-      gate->EvaluateOnline();
-    });
+  // we have to wait until all gates are evaluated before we close the pool
+  register_->GetGatesSetupDoneCondition()->Wait();
+
+  fpool_setup.join();
+
+  assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
+
+  // online phase: ------------------------------------------------------
+
+  // create a pool with std::thread::hardware_concurrency() no. of threads
+  // to execute fibers
+  ENCRYPTO::FiberThreadPool fpool_online(0, config_->GetNumOfParties());
+
+  // evaluate all the gates
+  for (auto& gate : register_->GetGates()) {
+    fpool_online.post([&] { gate->EvaluateOnline(); });
   }
-  pool_online.join();
+
+  // we have to wait until all gates are evaluated before we close the pool
+  register_->GetGatesOnlineDoneCondition()->Wait();
+
+  fpool_online.join();
+
+  // XXX: since we never pop elements from the active queue, clear it manually for now
+  // otherwise there will be complains that it is not empty upon repeated execution
+  // -> maybe remove the active queue in the future
+  register_->ClearActiveQueue();
 }
 
 void Backend::EvaluateParallel() {
@@ -206,49 +230,42 @@ void Backend::EvaluateParallel() {
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 
   // Run preprocessing setup in a separate thread
-  auto f_setup = std::async(std::launch::async, [this] {
+  auto f_preprocessing = std::async(std::launch::async, [this] {
     const bool needs_mts = mt_provider_->NeedMTs();
     if (needs_mts) {
       mt_provider_->PreSetup();
     }
     const bool need_ots = NeedOTs();
-    boost::asio::thread_pool pool_setup(register_->GetTotalNumOfGates() +
-                                        static_cast<int>(need_ots));
     if (need_ots) {
-      boost::asio::post(pool_setup, [needs_mts, this]() {
         OTExtensionSetup();
         if (needs_mts) {
           mt_provider_->Setup();
         }
-      });
-    }
-
-    for (auto &gate : register_->GetGates()) {
-      boost::asio::post(pool_setup, [gate]() { gate->EvaluateSetup(); });
-    }
-    pool_setup.join();
+      }
   });
 
-  // Run setup and online phase of circuit evaluation
-  for (auto &input_gate : register_->GetInputGates()) {
-    register_->AddToActiveQueue(input_gate->GetID());
-  }
-  boost::asio::thread_pool pool_online(register_->GetTotalNumOfGates());
-  while (register_->GetNumOfEvaluatedGates() < register_->GetTotalNumOfGates()) {
-    const std::int64_t gate_id = register_->GetNextGateFromActiveQueue();
-    if (gate_id < 0) {
-      std::this_thread::sleep_for(std::chrono::microseconds(100));
-      continue;
-    }
-    boost::asio::post(pool_online, [this, gate_id]() {
-      auto gate = register_->GetGate(static_cast<std::size_t>(gate_id));
-      gate->EvaluateOnline();
-    });
-  }
-  pool_online.join();
+  // create a pool with std::thread::hardware_concurrency() no. of threads
+  // to execute fibers
+  ENCRYPTO::FiberThreadPool fpool(0, config_->GetNumOfParties());
 
-  f_setup.get();
-}  // namespace MOTION
+  // evaluate all the gates
+  for (auto& gate : register_->GetGates()) {
+    fpool.post([&] { gate->EvaluateSetup();
+        // XXX: maybe insert a 'yield' here?
+        gate->EvaluateOnline(); });
+  }
+
+  f_preprocessing.get();
+
+  // we have to wait until all gates are evaluated before we close the pool
+  register_->GetGatesOnlineDoneCondition()->Wait();
+  fpool.join();
+
+  // XXX: since we never pop elements from the active queue, clear it manually for now
+  // otherwise there will be complains that it is not empty upon repeated execution
+  // -> maybe remove the active queue in the future
+  register_->ClearActiveQueue();
+}
 
 void Backend::TerminateCommunication() {
   for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
@@ -442,129 +459,20 @@ void Backend::Sync() {
 }
 
 void Backend::ComputeBaseOTs() {
-  if constexpr (MOTION_DEBUG) {
-    register_->GetLogger()->LogDebug("Start computing base OTs");
-  }
-
-  std::vector<std::future<void>> task_futures;
-  std::vector<std::unique_ptr<OT_HL17>> base_ots;
-  std::vector<std::shared_ptr<DataStorage>> data_storages;
-
-  task_futures.reserve(2 * (config_->GetNumOfParties() - 1));
-  base_ots.reserve(config_->GetNumOfParties());
-  data_storages.reserve(config_->GetNumOfParties());
-
-  for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
-    if (i == config_->GetMyId()) {
-      data_storages.push_back(nullptr);
-      base_ots.emplace_back(nullptr);
-      continue;
-    }
-
-    auto send_function = [this, i](flatbuffers::FlatBufferBuilder &&message) {
-      Send(i, std::move(message));
-    };
-    auto data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
-    data_storages.push_back(data_storage);
-    base_ots.emplace_back(std::make_unique<OT_HL17>(send_function, data_storage));
-
-    if (!data_storage->GetBaseOTsReceiverData()->is_ready_) {
-      task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
-        auto choices = ENCRYPTO::BitVector<>::Random(128);
-        auto chosen_messages = base_ots[i]->recv(choices);  // sender base ots
-        auto &receiver_data = data_storages[i]->GetBaseOTsReceiverData();
-        receiver_data->c_ = std::move(choices);
-        for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
-          auto b = receiver_data->messages_c_.at(i).begin();
-          std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
-        }
-        std::scoped_lock lock(receiver_data->is_ready_condition_->GetMutex());
-        receiver_data->is_ready_ = true;
-      }));
-    }
-
-    if (!data_storage->GetBaseOTsSenderData()->is_ready_) {
-      task_futures.emplace_back(std::async(std::launch::async, [&base_ots, &data_storages, i] {
-        auto both_messages = base_ots[i]->send(128);  // receiver base ots
-        auto &sender_data = data_storages[i]->GetBaseOTsSenderData();
-        for (std::size_t i = 0; i < both_messages.size(); ++i) {
-          auto b = sender_data->messages_0_.at(i).begin();
-          std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
-        }
-        for (std::size_t i = 0; i < both_messages.size(); ++i) {
-          auto b = sender_data->messages_1_.at(i).begin();
-          std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
-        }
-        std::scoped_lock lock(sender_data->is_ready_condition_->GetMutex());
-        sender_data->is_ready_ = true;
-      }));
-    }
-  }
-
-  std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
+  base_ot_provider_->ComputeBaseOTs();
   base_ots_finished_ = true;
-
-  if constexpr (MOTION_DEBUG) {
-    register_->GetLogger()->LogDebug("Finished computing base OTs");
-  }
 }
 
 void Backend::ImportBaseOTs(std::size_t i, const ReceiverMsgs &msgs) {
-  auto &rcv_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
-  if (rcv_data->is_ready_)
-    throw std::runtime_error(
-        fmt::format("Found previously computed receiver base OTs for Party#{}", i));
-
-  rcv_data->c_ = msgs.c_;
-  rcv_data->messages_c_ = msgs.messages_c_;
-
-  {
-    std::scoped_lock lock(rcv_data->is_ready_condition_->GetMutex());
-    rcv_data->is_ready_ = true;
-  }
-  rcv_data->is_ready_condition_->NotifyAll();
+  base_ot_provider_->ImportBaseOTs(i, msgs);
 }
 
 void Backend::ImportBaseOTs(std::size_t i, const SenderMsgs &msgs) {
-  auto &snd_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
-  if (snd_data->is_ready_)
-    throw std::runtime_error(
-        fmt::format("Found previously computed sender base OTs for Party#{}", i));
-
-  snd_data->messages_0_ = msgs.messages_0_;
-  snd_data->messages_1_ = msgs.messages_1_;
-
-  {
-    std::scoped_lock lock(snd_data->is_ready_condition_->GetMutex());
-    snd_data->is_ready_ = true;
-  }
-  snd_data->is_ready_condition_->NotifyAll();
+  base_ot_provider_->ImportBaseOTs(i, msgs);
 }
 
 std::pair<ReceiverMsgs, SenderMsgs> Backend::ExportBaseOTs(std::size_t i) {
-  if (i == GetConfig()->GetMyId())
-    throw std::runtime_error("Base OTs export is only possible for other parties");
-
-  auto &rcv_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsReceiverData();
-  auto &snd_data = GetConfig()->GetContexts().at(i)->GetDataStorage()->GetBaseOTsSenderData();
-
-  if (!rcv_data->is_ready_)
-    throw std::runtime_error(
-        fmt::format("Trying to export non-existing receiver base OTs for Party#{}", i));
-
-  if (!snd_data->is_ready_)
-    throw std::runtime_error(
-        fmt::format("Trying to export non-existing sender base OTs for Party#{}", i));
-
-  std::pair<ReceiverMsgs, SenderMsgs> base_ots;
-
-  std::get<0>(base_ots).c_ = rcv_data->c_;
-  std::get<0>(base_ots).messages_c_ = rcv_data->messages_c_;
-
-  std::get<1>(base_ots).messages_0_ = snd_data->messages_0_;
-  std::get<1>(base_ots).messages_1_ = snd_data->messages_1_;
-
-  return base_ots;
+  return base_ot_provider_->ExportBaseOTs(i);
 }
 
 void Backend::GenerateFixedKeyAESKey() {

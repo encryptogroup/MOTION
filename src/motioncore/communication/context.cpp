@@ -31,10 +31,15 @@
 
 #include "communication/fbs_headers/base_ot_generated.h"
 #include "communication/fbs_headers/bmr_message_generated.h"
+#include "communication/fbs_headers/hello_message_generated.h"
+#include "communication/fbs_headers/message_generated.h"
 #include "communication/fbs_headers/ot_extension_generated.h"
 #include "crypto/sharing_randomness_generator.h"
+#include "data_storage/base_ot_data.h"
+#include "data_storage/bmr_data.h"
+#include "data_storage/data_storage.h"
+#include "data_storage/ot_extension_data.h"
 #include "utility/constants.h"
-#include "utility/data_storage.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
 #include "utility/random.h"
@@ -157,49 +162,52 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
     case MessageType_BaseROTMessageReceiver: {
       auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
       auto ot_data = GetBaseROTMessage(message->payload()->data())->buffer()->data();
-      data_storage_->BaseOTsReceived(ot_data, BaseOTsDataType::HL17_R, ot_id);
+      data_storage_->GetBaseOTsData()->MessageReceived(ot_data, BaseOTsDataType::HL17_R, ot_id);
       break;
     }
     case MessageType_BaseROTMessageSender: {
       auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
       auto ot_data = GetBaseROTMessage(message->payload()->data())->buffer()->data();
-      data_storage_->BaseOTsReceived(ot_data, BaseOTsDataType::HL17_S, ot_id);
+      data_storage_->GetBaseOTsData()->MessageReceived(ot_data, BaseOTsDataType::HL17_S, ot_id);
       break;
     }
     case MessageType_OTExtensionReceiverMasks: {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
-      data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::rcv_masks, i);
+      data_storage_->GetOTExtensionData()->MessageReceived(ot_data, OTExtensionDataType::rcv_masks,
+                                                           i);
       break;
     }
     case MessageType_OTExtensionReceiverCorrections: {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
-      data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::rcv_corrections, i);
+      data_storage_->GetOTExtensionData()->MessageReceived(ot_data,
+                                                           OTExtensionDataType::rcv_corrections, i);
       break;
     }
     case MessageType_OTExtensionSender: {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
-      data_storage_->OTExtensionReceived(ot_data, OTExtensionDataType::snd_messages, i);
+      data_storage_->GetOTExtensionData()->MessageReceived(ot_data,
+                                                           OTExtensionDataType::snd_messages, i);
       break;
     }
     case MessageType_BMRInputGate0: {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
-      data_storage_->BMRMessageReceived(bmr_data, BMRDataType::input_step_0, id);
+      data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::input_step_0, id);
       break;
     }
     case MessageType_BMRInputGate1: {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
-      data_storage_->BMRMessageReceived(bmr_data, BMRDataType::input_step_1, id);
+      data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::input_step_1, id);
       break;
     }
     case MessageType_BMRANDGate: {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
-      data_storage_->BMRMessageReceived(bmr_data, BMRDataType::and_gate, id);
+      data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::and_gate, id);
       break;
     }
     default:
@@ -248,14 +256,9 @@ void Context::InitializeSocketClient() {
 }
 
 void Context::WaitForBaseOTs() {
-  auto &rc = *GetDataStorage()->GetBaseOTsReceiverData()->is_ready_condition_;
-  auto &sc = *GetDataStorage()->GetBaseOTsReceiverData()->is_ready_condition_;
+  const auto &ot_data = GetDataStorage()->GetBaseOTsData();
+  ot_data->GetReceiverData().is_ready_condition_->Wait();
+  ot_data->GetSenderData().is_ready_condition_->Wait();
+}
 
-  while (!rc()) {
-    rc.WaitFor(std::chrono::milliseconds(1));
-  }
-  while (!sc()) {
-    sc.WaitFor(std::chrono::milliseconds(1));
-  }
-}
-}
+}  // namespace MOTION::Communication

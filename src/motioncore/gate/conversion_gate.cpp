@@ -28,6 +28,7 @@
 
 #include "base/backend.h"
 #include "communication/bmr_message.h"
+#include "data_storage/bmr_data.h"
 #include "share/bmr_share.h"
 #include "share/boolean_gmw_share.h"
 #include "utility/constants.h"
@@ -71,7 +72,10 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) {
   }
 }
 
-void BMRToGMWGate::EvaluateSetup() { SetSetupIsReady(); }
+void BMRToGMWGate::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+}
 
 void BMRToGMWGate::EvaluateOnline() {
   WaitSetup();
@@ -87,7 +91,7 @@ void BMRToGMWGate::EvaluateOnline() {
     auto gmw_out{std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i))};
     assert(gmw_out);
 
-    Helpers::WaitFor(*bmr_in->GetIsReadyCondition());
+    bmr_in->GetIsReadyCondition()->Wait();
     const auto my_id{GetConfig()->GetMyId()};
     const auto num_parties{GetConfig()->GetNumOfParties()};
     auto &v{gmw_out->GetMutableValues()};
@@ -100,14 +104,12 @@ void BMRToGMWGate::EvaluateOnline() {
     if ((gmw_out->GetWireId() % num_parties) == my_id) v ^= bmr_in->GetPublicValues();
   }
 
-  GetRegister()->IncrementEvaluatedGatesCounter();
-
-  SetOnlineIsReady();
-
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format(
         "Finished evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr BMRToGMWGate::GetOutputAsGMWShare() const {
@@ -162,12 +164,12 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
 
     auto [it_pub_vals, _] = bmr_data->input_public_values_.emplace(
         static_cast<std::size_t>(gate_id_),
-        std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
+        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
     auto &bitlen_pub_values{std::get<0>(it_pub_vals->second)};
     bitlen_pub_values = num_simd * output_wires_.size();
 
     auto [it_pub_keys, __] = bmr_data->input_public_keys_.emplace(
-        gate_id_, std::pair<std::size_t, std::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
+        gate_id_, std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
     auto &bitlen_pub_keys = std::get<0>(it_pub_keys->second);
     bitlen_pub_keys = bitlen_pub_values * kappa;
   }
@@ -209,11 +211,12 @@ void GMWToBMRGate::EvaluateSetup() {
     bmr_out->GenerateRandomPermutationBits();
     bmr_out->SetSetupIsReady();
   }
-  SetSetupIsReady();
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format(
         "Finished evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
+  SetSetupIsReady();
+  GetRegister()->IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWToBMRGate::EvaluateOnline() {
@@ -311,13 +314,12 @@ void GMWToBMRGate::EvaluateOnline() {
     }
   }
 
-  GetRegister()->IncrementEvaluatedGatesCounter();
-  SetOnlineIsReady();
-
   if constexpr (MOTION_DEBUG) {
     GetLogger()->LogDebug(fmt::format(
         "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
+  SetOnlineIsReady();
+  GetRegister()->IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr GMWToBMRGate::GetOutputAsBMRShare() const {
@@ -332,4 +334,4 @@ const Shares::SharePtr GMWToBMRGate::GetOutputAsShare() const {
   return result;
 }
 
-}
+}  // namespace MOTION::Gates::Conversion

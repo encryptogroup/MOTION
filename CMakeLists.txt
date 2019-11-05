@@ -3,6 +3,7 @@ cmake_policy(SET CMP0075 NEW)
 project(MOTION LANGUAGES CXX)
 set(MOTION_VERSION 0.01)
 
+string(REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 
 if (CMAKE_COMPILER_IS_GNUCXX AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 8.0)
     message(FATAL_ERROR "MOTION requires at least g++-8")
@@ -20,12 +21,15 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(OpenMP REQUIRED)
 
-find_package(Boost 1.66.0
+find_package(Boost 1.69.0
         COMPONENTS
+        context
+        fiber
         log
         log_setup
         filesystem
         system
+        thread
         REQUIRED)
 set(Boost_USE_STATIC_LIBS ON)
 
@@ -45,7 +49,7 @@ if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
     message("BUILD TYPE: " ${CMAKE_BUILD_TYPE})
 endif ()
 
-if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug")
+if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug" OR "${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
     set(MOTION_DEBUG "true")
 else ()
     set(MOTION_DEBUG "false")

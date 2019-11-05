@@ -24,12 +24,12 @@
 
 #pragma once
 
-#include <atomic>
 #include <array>
+#include <atomic>
 #include <memory>
 #include <unordered_map>
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 #include "utility/bit_vector.h"
 

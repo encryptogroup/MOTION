@@ -16,10 +16,15 @@ add_library(motion
         crypto/sharing_randomness_generator.cpp
         crypto/blake2b.cpp
         crypto/pseudo_random_generator.cpp
+        crypto/base_ots/base_ot_provider.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
+        data_storage/base_ot_data.cpp
+        data_storage/bmr_data.cpp
+        data_storage/ot_extension_data.cpp
+        data_storage/data_storage.cpp
         gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp
         gate/conversion_gate.cpp
@@ -32,9 +37,11 @@ add_library(motion
         utility/bit_matrix.cpp
         utility/bit_vector.cpp
         utility/condition.cpp
-        utility/data_storage.cpp
+        utility/fiber_thread_pool/fiber_thread_pool.cpp
+        utility/fiber_thread_pool/pooled_work_stealing.cpp
         utility/helpers.cpp
         utility/logger.cpp
+        utility/thread.cpp
         wire/bmr_wire.cpp
         wire/boolean_gmw_wire.cpp
         wire/wire.cpp

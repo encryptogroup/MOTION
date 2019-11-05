@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -26,7 +26,7 @@
 
 #include <iostream>
 
-#include "fmt/format.h"
+#include <fmt/format.h>
 
 #include "communication/handler.h"
 #include "configuration.h"
@@ -42,7 +42,9 @@ Register::Register(ConfigurationPtr &config) : config_(config) {
       std::make_shared<MOTION::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
   logger_->SetEnabled(config_->GetLoggingEnabled());
 
-  evaluated_gates_condition_ =
+  gates_setup_done_condition_ = std::make_shared<ENCRYPTO::Condition>(
+      [this]() { return evaluated_gate_setups_ == gates_.size(); });
+  gates_online_done_condition_ =
       std::make_shared<ENCRYPTO::Condition>([this]() { return evaluated_gates_ == gates_.size(); });
 }
 
@@ -112,6 +114,12 @@ void Register::AddToActiveQueue(std::size_t gate_id) {
   //                        gate_id);
 }
 
+void Register::ClearActiveQueue() {
+  logger_->LogDebug("Clearing active queue");
+  std::scoped_lock lock(active_queue_mutex_);
+  active_gates_ = {};
+}
+
 std::int64_t Register::GetNextGateFromActiveQueue() {
   std::scoped_lock lock(active_queue_mutex_);
   if (active_gates_.empty()) {
@@ -124,12 +132,18 @@ std::int64_t Register::GetNextGateFromActiveQueue() {
   }
 }
 
-void Register::IncrementEvaluatedGatesCounter() {
-  {
-    std::scoped_lock lock(evaluated_gates_condition_->GetMutex());
-    ++evaluated_gates_;
+void Register::IncrementEvaluatedGateSetupsCounter() {
+  auto no_evaluated_gate_setups = ++evaluated_gate_setups_;
+  if (no_evaluated_gate_setups == gates_.size()) {
+    gates_setup_done_condition_->NotifyAll();
   }
-  evaluated_gates_condition_->NotifyAll();
+}
+
+void Register::IncrementEvaluatedGatesCounter() {
+  auto no_evaluated_gates = ++evaluated_gates_;
+  if (no_evaluated_gates == gates_.size()) {
+    gates_online_done_condition_->NotifyAll();
+  }
 }
 
 void Register::Reset() {
@@ -151,10 +165,8 @@ void Register::Reset() {
   gates_.clear();
   input_gates_.clear();
 
-  {
-    std::scoped_lock(evaluated_gates_condition_->GetMutex());
-    evaluated_gates_ = 0;
-  }
+  evaluated_gate_setups_ = 0;
+  evaluated_gates_ = 0;
 
   for (auto i = 0ull; i < communication_handlers_.size(); ++i) {
     if (GetConfig()->GetMyId() == i) {
@@ -180,10 +192,8 @@ void Register::Clear() {
     wire->Clear();
   }
 
-  {
-    std::scoped_lock(evaluated_gates_condition_->GetMutex());
-    evaluated_gates_ = 0;
-  }
+  evaluated_gate_setups_ = 0;
+  evaluated_gates_ = 0;
 
   for (auto i = 0ull; i < communication_handlers_.size(); ++i) {
     if (GetConfig()->GetMyId() == i) {

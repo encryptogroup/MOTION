@@ -475,7 +475,7 @@ TYPED_TEST(SecureUintTest, SubtractionInGMW) {
 
 // FIXME: fails for >32 bits due to operating system restriction for maximum number of threads
 // enable when replaced with co-routines
-TYPED_TEST(SecureUintTest, DISABLED_MultiplicationInBMR) {
+TYPED_TEST(SecureUintTest, MultiplicationInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
@@ -531,7 +531,7 @@ TYPED_TEST(SecureUintTest, DISABLED_MultiplicationInBMR) {
     if (tt.joinable()) tt.join();
 }
 
-TYPED_TEST(SecureUintTest, DISABLED_MultiplicationInGMW) {
+TYPED_TEST(SecureUintTest, MultiplicationInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;

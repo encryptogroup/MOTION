@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -30,7 +30,7 @@
 #include <mutex>
 #include <queue>
 
-#include "flatbuffers/flatbuffers.h"
+#include <flatbuffers/flatbuffers.h>
 
 namespace ENCRYPTO {
 class AlgorithmDescription;
@@ -118,20 +118,30 @@ class Register {
 
   void AddToActiveQueue(std::size_t gate_id);
 
+  void ClearActiveQueue();
+
   std::int64_t GetNextGateFromActiveQueue();
+
+  void IncrementEvaluatedGateSetupsCounter();
 
   void IncrementEvaluatedGatesCounter();
 
-  std::size_t GetNumOfEvaluatedGates() { return evaluated_gates_; }
+  std::size_t GetNumOfEvaluatedGateSetups() const { return evaluated_gate_setups_; }
 
-  std::size_t GetTotalNumOfGates() { return global_gate_id_ - gate_id_offset_; }
+  std::size_t GetNumOfEvaluatedGates() const { return evaluated_gates_; }
+
+  std::size_t GetTotalNumOfGates() const { return global_gate_id_ - gate_id_offset_; }
 
   void Reset();
 
   void Clear();
 
-  std::shared_ptr<ENCRYPTO::Condition> GetNumOfEvaluatedGatesCondition() {
-    return evaluated_gates_condition_;
+  std::shared_ptr<ENCRYPTO::Condition> GetGatesSetupDoneCondition() {
+    return gates_setup_done_condition_;
+  };
+
+  std::shared_ptr<ENCRYPTO::Condition> GetGatesOnlineDoneCondition() {
+    return gates_online_done_condition_;
   };
 
   /// \brief Tries to insert an AlgorithmDescription object read from a file into cached_algos_
@@ -153,7 +163,9 @@ class Register {
   std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
   std::atomic<std::size_t> evaluated_gates_ = 0;
-  std::shared_ptr<ENCRYPTO::Condition> evaluated_gates_condition_;
+  std::atomic<std::size_t> evaluated_gate_setups_ = 0;
+  std::shared_ptr<ENCRYPTO::Condition> gates_setup_done_condition_;
+  std::shared_ptr<ENCRYPTO::Condition> gates_online_done_condition_;
 
   ConfigurationPtr config_;
   LoggerPtr logger_;

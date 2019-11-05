@@ -28,6 +28,7 @@
 
 #include "base/party.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
+#include "data_storage/base_ot_data.h"
 
 namespace {
 
@@ -71,25 +72,25 @@ TEST(ObliviousTransfer, BaseOT) {
                              .at(other_id)
                              ->GetDataStorage();
 
-              auto &base_ots_recv = ds->GetBaseOTsReceiverData();
+              const auto &base_ots_recv = ds->GetBaseOTsData()->GetReceiverData();
               auto &bo = base_ots.at(i).at(other_id);
-              assert((*base_ots_recv->is_ready_condition_)());
+              assert((*base_ots_recv.is_ready_condition_)());
               for (auto j = 0ull; j < bo.messages_c_.size(); ++j) {
-                std::copy(base_ots_recv->messages_c_.at(j).begin(),
-                          base_ots_recv->messages_c_.at(j).end(), bo.messages_c_.at(j).begin());
+                std::copy(base_ots_recv.messages_c_.at(j).begin(),
+                          base_ots_recv.messages_c_.at(j).end(), bo.messages_c_.at(j).begin());
               }
-              base_ots.at(i).at(other_id).c = base_ots_recv->c_;
+              base_ots.at(i).at(other_id).c = base_ots_recv.c_;
 
-              auto &base_ots_snd = ds->GetBaseOTsSenderData();
-              assert((*base_ots_snd->is_ready_condition_)());
+              const auto &base_ots_snd = ds->GetBaseOTsData()->GetSenderData();
+              assert((*base_ots_snd.is_ready_condition_)());
 
               for (auto k = 0ull; k < bo.messages0_.size(); ++k) {
-                std::copy(base_ots_snd->messages_0_.at(k).begin(),
-                          base_ots_snd->messages_0_.at(k).end(), bo.messages0_.at(k).begin());
+                std::copy(base_ots_snd.messages_0_.at(k).begin(),
+                          base_ots_snd.messages_0_.at(k).end(), bo.messages0_.at(k).begin());
               }
               for (auto k = 0ull; k < bo.messages1_.size(); ++k) {
-                std::copy(base_ots_snd->messages_1_.at(k).begin(),
-                          base_ots_snd->messages_1_.at(k).end(), bo.messages1_.at(k).begin());
+                std::copy(base_ots_snd.messages_1_.at(k).begin(),
+                          base_ots_snd.messages_1_.at(k).end(), bo.messages1_.at(k).begin());
               }
             }
           });

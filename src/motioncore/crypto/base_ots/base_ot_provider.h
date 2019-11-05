@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -22,16 +22,48 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "share.h"
+#pragma once
 
-#include <fmt/format.h>
+#include <array>
+#include <cstddef>
 
-#include "base/backend.h"
+#include "utility/bit_vector.h"
+#include "utility/constants.h"
 
-namespace MOTION::Shares {
-std::shared_ptr<Register> Share::GetRegister() {
-  auto backend_ptr = backend_.lock();
-  assert(backend_ptr);
-  return backend_ptr->GetRegister();
-}
-}  // namespace MOTION::Shares
+namespace MOTION {
+
+class Configuration;
+class Logger;
+class Register;
+
+using base_ot_msgs_t = std::array<std::array<std::byte, 16>, kappa>;
+
+struct SenderMsgs {
+  base_ot_msgs_t messages_0_;
+  base_ot_msgs_t messages_1_;
+};
+
+struct ReceiverMsgs {
+  base_ot_msgs_t messages_c_;
+  ENCRYPTO::BitVector<> c_;
+};
+
+class BaseOTProvider {
+ public:
+  BaseOTProvider(Configuration&, Logger&, Register&);
+  ~BaseOTProvider() = default;
+  void ComputeBaseOTs();
+  void ImportBaseOTs(std::size_t party_id, const ReceiverMsgs& msgs);
+  void ImportBaseOTs(std::size_t party_id, const SenderMsgs& msgs);
+  std::pair<ReceiverMsgs, SenderMsgs> ExportBaseOTs(std::size_t party_id);
+
+ private:
+  Configuration& config_;
+  Logger& logger_;
+  Register& register_;
+  bool finished_;
+
+  Logger& GetLogger();
+};
+
+}  // namespace MOTION
