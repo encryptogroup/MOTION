@@ -496,9 +496,9 @@ ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
 }
 
 ShareWrapper ShareWrapper::Evaluate(
-    const std::shared_ptr<const ENCRYPTO::AlgorithmDescription> &algo) const {
-  std::size_t n_input_wires = algo->n_input_wires_parent_a_;
-  if (algo->n_input_wires_parent_b_) n_input_wires += *algo->n_input_wires_parent_b_;
+    const ENCRYPTO::AlgorithmDescription &algo) const {
+  std::size_t n_input_wires = algo.n_input_wires_parent_a_;
+  if (algo.n_input_wires_parent_b_) n_input_wires += *algo.n_input_wires_parent_b_;
 
   if (n_input_wires != share_->GetBitLength()) {
     share_->GetRegister()->GetLogger()->LogError(fmt::format(
@@ -510,13 +510,13 @@ ShareWrapper ShareWrapper::Evaluate(
   std::vector<std::shared_ptr<ShareWrapper>> wires;
   for (const auto &w : wires_tmp) wires.emplace_back(std::make_shared<ShareWrapper>(w.Get()));
 
-  wires.resize(algo->n_wires_, nullptr);
+  wires.resize(algo.n_wires_, nullptr);
 
-  assert((algo->n_gates_ + n_input_wires) == wires.size());
+  assert((algo.n_gates_ + n_input_wires) == wires.size());
 
-  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo->n_wires_;
+  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo.n_wires_;
        ++wire_i, ++gate_i) {
-    const auto &gate = algo->gates_.at(gate_i);
+    const auto &gate = algo.gates_.at(gate_i);
     const auto type = gate.type_;
     switch (type) {
       case ENCRYPTO::PrimitiveOperationType::XOR: {
@@ -548,7 +548,7 @@ ShareWrapper ShareWrapper::Evaluate(
   }
 
   std::vector<ShareWrapper> out;
-  for (auto i = wires.size() - algo->n_output_wires_; i < wires.size(); i++) {
+  for (auto i = wires.size() - algo.n_output_wires_; i < wires.size(); i++) {
     out.emplace_back(*wires.at(i));
   }
 

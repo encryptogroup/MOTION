@@ -122,7 +122,11 @@ class ShareWrapper {
 
   static ShareWrapper Join(const std::vector<ShareWrapper> &v);
 
-  ShareWrapper Evaluate(const std::shared_ptr<const ENCRYPTO::AlgorithmDescription> &algo) const;
+  ShareWrapper Evaluate(const std::shared_ptr<const ENCRYPTO::AlgorithmDescription> &algo) const {
+    return Evaluate(*algo);
+  }
+
+  ShareWrapper Evaluate(const ENCRYPTO::AlgorithmDescription &algo) const;
 
  private:
   SharePtr share_;
