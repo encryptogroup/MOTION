@@ -1,1 +1,2 @@
-add_subdirectory(example_dummy)
+add_subdirectory(example_template)
+add_subdirectory(aes128)
