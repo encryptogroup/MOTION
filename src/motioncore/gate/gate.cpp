@@ -115,6 +115,12 @@ std::shared_ptr<MTProvider> Gate::GetMTProvider() {
   return ptr_backend->GetMTProvider();
 }
 
+std::shared_ptr<SPProvider> Gate::GetSPProvider() {
+  auto ptr_backend = backend_.lock();
+  assert(ptr_backend);
+  return ptr_backend->GetSPProvider();
+}
+
 std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider> Gate::GetOTProvider(const std::size_t i) {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);

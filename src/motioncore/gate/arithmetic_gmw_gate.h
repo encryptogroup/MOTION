@@ -36,6 +36,7 @@
 #include "communication/fbs_headers/output_message_generated.h"
 #include "communication/output_message.h"
 #include "crypto/multiplication_triple/mt_provider.h"
+#include "crypto/multiplication_triple/sp_provider.h"
 #include "crypto/sharing_randomness_generator.h"
 #include "data_storage/data_storage.h"
 #include "share/arithmetic_gmw_share.h"
@@ -738,4 +739,132 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
 
   std::size_t num_mts_, mt_offset_;
 };
+
+template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
+ public:
+  ArithmeticSquareGate(const MOTION::Wires::ArithmeticWirePtr<T> &a) {
+    parent_ = {std::static_pointer_cast<MOTION::Wires::Wire>(a)};
+    backend_ = parent_.at(0)->GetBackend();
+
+    requires_online_interaction_ = true;
+    gate_type_ = GateType::InteractiveGate;
+
+    const std::vector<T> tmp_v(parent_.at(0)->GetNumOfSIMDValues());
+
+    d_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
+    GetRegister()->RegisterNextWire(d_);
+
+    d_out_ = std::make_shared<ArithmeticOutputGate<T>>(d_);
+
+    GetRegister()->RegisterNextGate(d_out_);
+
+    gate_id_ = GetRegister()->NextGateId();
+
+    RegisterWaitingFor(parent_.at(0)->GetWireId());
+    parent_.at(0)->RegisterWaitingGate(gate_id_);
+
+    output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
+        std::make_shared<MOTION::Wires::ArithmeticWire<T>>(tmp_v, backend_)))};
+    for (auto &w : output_wires_) {
+      GetRegister()->RegisterNextWire(w);
+    }
+
+    num_sps_ = parent_.at(0)->GetNumOfSIMDValues();
+    sp_offset_ = GetSPProvider()->template RequestSPs<T>(num_sps_);
+
+    auto gate_info =
+        fmt::format("uint{}_t type, gate id {}, parent: {}", sizeof(T) * 8, gate_id_,
+                    parent_.at(0)->GetWireId());
+    GetLogger()->LogDebug(fmt::format(
+        "Created an ArithmeticSquareGate with following properties: {}", gate_info));
+  }
+
+  ~ArithmeticSquareGate() final = default;
+
+  void EvaluateSetup() final {
+    SetSetupIsReady();
+    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  }
+
+  void EvaluateOnline() final {
+    WaitSetup();
+    assert(setup_is_ready_);
+    parent_.at(0)->GetIsReadyCondition()->Wait();
+
+    auto sp_provider = GetSPProvider();
+    sp_provider->WaitFinished();
+    const auto &sps = sp_provider->template GetSPsAll<T>();
+    {
+      const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
+      assert(x);
+      d_->GetMutableValues() = std::vector<T>(sps.a.begin() + sp_offset_,
+                                              sps.a.begin() + sp_offset_ + x->GetNumOfSIMDValues());
+      auto &d_v = d_->GetMutableValues();
+      const auto &x_v = x->GetValues();
+      for (auto i = 0ull; i < d_v.size(); ++i) {
+        d_v.at(i) += x_v.at(i);
+      }
+      d_->SetOnlineFinished();
+    }
+
+    d_out_->WaitOnline();
+
+    const auto &d_clear = d_out_->GetOutputWires().at(0);
+
+    d_clear->GetIsReadyCondition()->Wait();
+
+    const auto d_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(d_clear);
+    const auto x_i_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
+
+    assert(d_w);
+    assert(x_i_w);
+
+    auto out = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
+    assert(out);
+    out->GetMutableValues() =
+        std::vector<T>(sps.c.begin() + sp_offset_,
+                       sps.c.begin() + sp_offset_ + parent_.at(0)->GetNumOfSIMDValues());
+
+    const auto &d = d_w->GetValues();
+    const auto &s_x = x_i_w->GetValues();
+
+    if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
+      for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
+        out->GetMutableValues().at(i) +=
+            2 * (d.at(i) * s_x.at(i)) - (d.at(i) * d.at(i));
+      }
+    } else {
+      for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
+        out->GetMutableValues().at(i) += 2 * (d.at(i) * s_x.at(i));
+      }
+    }
+
+    GetLogger()->LogDebug(
+        fmt::format("Evaluated ArithmeticSquareGate with id#{}", gate_id_));
+    SetOnlineIsReady();
+    GetRegister()->IncrementEvaluatedGatesCounter();
+  }
+
+  // perhaps, we should return a copy of the pointer and not move it for the
+  // case we need it multiple times
+  MOTION::Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
+    auto arithmetic_wire =
+        std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+    assert(arithmetic_wire);
+    auto result = std::make_shared<MOTION::Shares::ArithmeticShare<T>>(arithmetic_wire);
+    return result;
+  }
+
+  ArithmeticSquareGate() = delete;
+
+  ArithmeticSquareGate(Gate &) = delete;
+
+ private:
+  Wires::ArithmeticWirePtr<T> d_;
+  std::shared_ptr<ArithmeticOutputGate<T>> d_out_;
+
+  std::size_t num_sps_, sp_offset_;
+};
+
 }  // namespace MOTION::Gates::Arithmetic
