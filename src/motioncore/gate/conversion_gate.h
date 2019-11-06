@@ -30,6 +30,8 @@
 
 #include "utility/bit_vector.h"
 
+#include "gate/b2a_gate.h"  // XXX: maybe move the content to this file
+
 namespace MOTION {
 
 namespace Shares {

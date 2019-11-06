@@ -51,6 +51,7 @@ class Register;
 class Configuration;
 class Logger;
 class MTProvider;
+class SBProvider;
 class SPProvider;
 }  // namespace MOTION
 
@@ -124,6 +125,7 @@ class Gate {
   std::shared_ptr<Logger> GetLogger();
   std::shared_ptr<MTProvider> GetMTProvider();
   std::shared_ptr<SPProvider> GetSPProvider();
+  std::shared_ptr<SBProvider> GetSBProvider();
   std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider> GetOTProvider(const std::size_t i);
 
  private:
