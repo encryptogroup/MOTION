@@ -21,7 +21,9 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(OpenMP REQUIRED)
 
-find_package(Boost 1.69.0
+set(REQUIRED_BOOST_VERSION "1.69.0")
+
+find_package(Boost ${REQUIRED_BOOST_VERSION}
         COMPONENTS
         context
         fiber
@@ -29,9 +31,12 @@ find_package(Boost 1.69.0
         log_setup
         filesystem
         system
-        thread
-        REQUIRED)
+        thread)
 set(Boost_USE_STATIC_LIBS ON)
+
+if (NOT Boost_FOUND)
+    include(cmake/BuildBoostLocally.cmake)
+endif ()
 
 set(MOTION_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -58,7 +63,7 @@ endif ()
 configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/src/motioncore/utility/config.h.in
         ${CMAKE_CURRENT_SOURCE_DIR}/src/motioncore/utility/config.h
-        ESCAPE_QUOTES
+        ESCAPE_QUOTES @ONLY
 )
 
 # Write built executables and libraries to bin/ and lib/, respectively.
