@@ -100,6 +100,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void RegisterGate(const Gates::Interfaces::GatePtr &gate);
 
+  void RunPreprocessing();
+
   void EvaluateSequential();
 
   void EvaluateParallel();

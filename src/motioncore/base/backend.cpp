@@ -171,23 +171,42 @@ bool Backend::NeedOTs() {
   return false;
 }
 
-void Backend::EvaluateSequential() {
-  register_->GetLogger()->LogInfo(
-      "Start evaluating the circuit gates sequentially (online after all finished setup)");
-  const bool needs_mts = GetMTProvider()->NeedMTs();
+void Backend::RunPreprocessing() {
+  register_->GetLogger()->LogInfo("Start preprocessing");
 
+  // SB needs SP
+  // SP needs OT
+  // MT needs OT
+
+  const bool needs_mts = GetMTProvider()->NeedMTs();
   if (needs_mts) {
     mt_provider_->PreSetup();
   }
-
-  const bool need_ots = NeedOTs();
-
-  if (need_ots) {
-    OTExtensionSetup();
-    if (needs_mts) {
-      mt_provider_->Setup();
-    }
+  const bool needs_sbs = GetSBProvider()->NeedSBs();
+  if (needs_sbs) {
+    sb_provider_->PreSetup();
   }
+  const bool needs_sps = GetSPProvider()->NeedSPs();
+  if (needs_sps) {
+    sp_provider_->PreSetup();
+  }
+
+  if (NeedOTs()) {
+    OTExtensionSetup();
+  }
+
+  std::array<std::future<void>, 3> futures;
+  futures.at(0) = std::async(std::launch::async, [this] { mt_provider_->Setup(); });
+  futures.at(1) = std::async(std::launch::async, [this] { sp_provider_->Setup(); });
+  futures.at(2) = std::async(std::launch::async, [this] { sb_provider_->Setup(); });
+  std::for_each(futures.begin(), futures.end(), [](auto &f) { f.get(); });
+}
+
+void Backend::EvaluateSequential() {
+  RunPreprocessing();
+
+  register_->GetLogger()->LogInfo(
+      "Start evaluating the circuit gates sequentially (online after all finished setup)");
 
   // setup phase: -------------------------------------------------------
 
@@ -234,19 +253,7 @@ void Backend::EvaluateParallel() {
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 
   // Run preprocessing setup in a separate thread
-  auto f_preprocessing = std::async(std::launch::async, [this] {
-    const bool needs_mts = mt_provider_->NeedMTs();
-    if (needs_mts) {
-      mt_provider_->PreSetup();
-    }
-    const bool need_ots = NeedOTs();
-    if (need_ots) {
-        OTExtensionSetup();
-        if (needs_mts) {
-          mt_provider_->Setup();
-        }
-      }
-  });
+  auto f_preprocessing = std::async(std::launch::async, [this] { RunPreprocessing(); });
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
