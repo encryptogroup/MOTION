@@ -147,7 +147,6 @@ target_link_libraries(motion
         Threads::Threads
         OpenSSL::Crypto
         OpenSSL::SSL
-        # PRIVATE fmt::fmt  # we use the header-only version of fmt
         )
 
 if (${SANITIZE_ADDRESS_LINK_OPT})
