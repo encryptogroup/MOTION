@@ -83,7 +83,7 @@ class SecureUintTest : public ::testing::Test {
   void TestSingle() {
     using namespace MOTION;
     constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-    std::mt19937 g(0);
+    std::mt19937 g(sizeof(T));
     std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
     auto r = std::bind(dist, g);
     const std::vector<T> raw_global_input = {r(), r()};
@@ -138,7 +138,7 @@ class SecureUintTest : public ::testing::Test {
   void TestSIMD() {
     using namespace MOTION;
     constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-    std::mt19937 g(0);
+    std::mt19937 g(sizeof(T));
     std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
     auto r = std::bind(dist, g);
     const std::vector<T> raw_global_input = {r(), r()};
@@ -228,7 +228,7 @@ TYPED_TEST(SecureUintTest, AdditionInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -309,7 +309,7 @@ TYPED_TEST(SecureUintTest, AdditionInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -365,7 +365,7 @@ TYPED_TEST(SecureUintTest, SubtractionInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -421,7 +421,7 @@ TYPED_TEST(SecureUintTest, SubtractionInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -477,7 +477,7 @@ TYPED_TEST(SecureUintTest, MultiplicationInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -533,10 +533,15 @@ TYPED_TEST(SecureUintTest, MultiplicationInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
-  const std::vector<T> raw_global_input = {r(), r()};
+  std::mt19937 g(sizeof(T));
+  // HyCC operates on signed integers, so the max number is not 2^{l}-1, but 2^{l-1}-1
+  // let's make the divisor smaller than dividend to get something else than 0/1 from the result
+  std::uniform_int_distribution<T> dist_dividend(std::numeric_limits<T>::max() / 8,
+                                                 std::numeric_limits<T>::max() / 2);
+  std::uniform_int_distribution<T> dist_divisor(1, std::numeric_limits<T>::max() / 10);
+  auto r_dividend = std::bind(dist_dividend, g);
+  auto r_divisor = std::bind(dist_divisor, g);
+  const std::vector<T> raw_global_input = {r_dividend(), r_divisor()};
   constexpr auto n_wires{sizeof(T) * 8};
   constexpr std::size_t n_simd{1};
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input{
@@ -589,7 +594,7 @@ TYPED_TEST(SecureUintTest, DivisionInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   // HyCC operates on signed integers, so the max number is not 2^{l}-1, but 2^{l-1}-1
   // let's make the divisor smaller than dividend to get something else than 0/1 from the result
   std::uniform_int_distribution<T> dist_dividend(std::numeric_limits<T>::max() / 8,
@@ -713,7 +718,7 @@ TYPED_TEST(SecureUintTest, EqualityInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -767,7 +772,7 @@ TYPED_TEST(SecureUintTest, EqualityInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
+  std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
@@ -821,8 +826,8 @@ TYPED_TEST(SecureUintTest, GreaterThanInGMW) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  std::mt19937 g(sizeof(T));
+  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max() / 2);
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
   constexpr auto n_wires{sizeof(T) * 8};
@@ -876,8 +881,8 @@ TYPED_TEST(SecureUintTest, GreaterThanInBMR) {
   using T = TypeParam;
   using namespace MOTION;
   constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  std::mt19937 g(sizeof(T));
+  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max() / 2);
   auto r = std::bind(dist, g);
   const std::vector<T> raw_global_input = {r(), r()};
   constexpr auto n_wires{sizeof(T) * 8};
