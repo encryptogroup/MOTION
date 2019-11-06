@@ -13,10 +13,8 @@ add_executable(motiontest
 
 target_compile_features(motiontest PRIVATE cxx_std_17)
 
-target_include_directories(motiontest PRIVATE
-        ${PROJECT_SOURCE_DIR}/extern/googletest/googletest/include)
-
 target_link_libraries(motiontest PRIVATE
         MOTION::motion
+        OpenMP::OpenMP_CXX
         gtest
         )

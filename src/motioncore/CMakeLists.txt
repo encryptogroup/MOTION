@@ -56,7 +56,7 @@ endif ()
 
 set_property(TARGET motion PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_compile_definitions(motion PRIVATE BOOST_LOG_DYN_LINK=1 PUBLIC OMP_NESTED=1)
+target_compile_definitions(motion PUBLIC OMP_NESTED=1)
 #target_compile_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
 #target_link_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
 #target_compile_options(motion PUBLIC "-fsanitize=thread")
@@ -128,14 +128,21 @@ target_include_directories(motion PUBLIC
         ${Boost_INCLUDE_DIRS}
         )
 
-target_compile_definitions(motion PUBLIC FMT_HEADER_ONLY)
+target_compile_definitions(motion PUBLIC FMT_HEADER_ONLY BOOST_ERROR_CODE_HEADER_ONLY)
 
 target_link_libraries(motion
-        PUBLIC ${Boost_LIBRARIES}
-        PUBLIC OpenMP::OpenMP_CXX
-        PRIVATE Threads::Threads
-        PRIVATE OpenSSL::Crypto
-        PRIVATE OpenSSL::SSL
+        PRIVATE
+        Boost::log_setup
+        Boost::log
+        Boost::filesystem
+        Boost::system
+        Boost::fiber
+        Boost::thread
+        Boost::context
+        OpenMP::OpenMP_CXX
+        Threads::Threads
+        OpenSSL::Crypto
+        OpenSSL::SSL
         # PRIVATE fmt::fmt  # we use the header-only version of fmt
         )
 
