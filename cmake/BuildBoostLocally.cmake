@@ -22,8 +22,7 @@ ExternalProject_Add(external_boost
         --with-libraries=context,fiber,log,filesystem,system,thread,program_options
         --prefix=<INSTALL_DIR>
         BUILD_COMMAND
-        #./b2 install link=static variant=${boost_BUILD_TYPE} threading=multi -j 100 --no-cmake-config define=BOOST_LOG_USE_NATIVE_SYSLOG define=BOOST_ERROR_CODE_HEADER_ONLY
-        ./b2 install link=static variant=${boost_BUILD_TYPE} threading=multi -j 100 define=BOOST_LOG_USE_NATIVE_SYSLOG define=BOOST_ERROR_CODE_HEADER_ONLY
+        env -u CPATH -u C_INCLUDE_PATH ./b2 install link=static variant=${boost_BUILD_TYPE} threading=multi -j 10 define=BOOST_LOG_USE_NATIVE_SYSLOG define=BOOST_ERROR_CODE_HEADER_ONLY
         INSTALL_COMMAND ""
         INSTALL_DIR ${boost_INSTALL}
         SOURCE_DIR ${boost_INCLUDE_DIR})
