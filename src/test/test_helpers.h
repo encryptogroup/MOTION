@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -22,12 +22,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include <algorithm>
+#include <limits>
+#include <random>
+#include <vector>
 
-#include <initializer_list>
+template <typename T>
+inline T Rand() {
+  std::random_device rd("/dev/urandom");
+  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  return dist(rd);
+}
 
-constexpr auto TEST_ITERATIONS = 2u;  // increase if needed
-constexpr auto DETAILED_LOGGING_ENABLED = false;
-constexpr auto PORT_OFFSET = 17777u;
-
-constexpr auto num_parties_list = {2u, 3u, 4u, 5u, 10u};
+template <typename T>
+inline std::vector<T> RandomVector(std::size_t size) {
+  std::vector<T> v(size);
+  std::generate(v.begin(), v.end(), Rand<T>);
+  return v;
+}
