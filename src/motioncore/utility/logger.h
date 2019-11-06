@@ -24,8 +24,6 @@
 
 #pragma once
 
-#define BOOST_LOG_DYN_LINK 1
-
 #include <boost/log/sinks/sync_frontend.hpp>
 #include <boost/log/sinks/text_file_backend.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
