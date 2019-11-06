@@ -33,6 +33,7 @@
 #include "gate/arithmetic_gmw_gate.h"
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
+#include "gate/b2a_gate.h"
 #include "gate/conversion_gate.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "share/arithmetic_gmw_share.h"
@@ -304,7 +305,7 @@ ShareWrapper ShareWrapper::Convert() const {
 
   if constexpr (p == AGMW) {
     if (share_->GetProtocol() == BGMW) {  // BGMW -> AGMW
-      throw std::runtime_error("Not implemented yet");
+      return BooleanGMWToArithmeticGMW();
     } else  // BMR -> AGMW
     {
       throw std::runtime_error("Not implemented yet");
@@ -380,6 +381,38 @@ ShareWrapper ShareWrapper::ArithmeticGMWToBMR() const {
   for (auto share_i = 0ull; share_i < shares.size(); ++share_i) result += shares.at(share_i);
 
   return result.Get();
+}
+
+ShareWrapper ShareWrapper::BooleanGMWToArithmeticGMW() const {
+  const auto bitlen = share_->GetBitLength();
+  switch (bitlen) {
+    case 8u: {
+      auto bgmw_to_agmw_gate =
+          std::make_shared<Gates::Conversions::GMWToArithmeticGate<std::uint8_t>>(share_);
+      share_->GetRegister()->RegisterNextGate(bgmw_to_agmw_gate);
+      return ShareWrapper(bgmw_to_agmw_gate->GetOutputAsShare());
+    }
+    case 16u: {
+      auto bgmw_to_agmw_gate{
+          std::make_shared<Gates::Conversions::GMWToArithmeticGate<std::uint16_t>>(share_)};
+      share_->GetRegister()->RegisterNextGate(bgmw_to_agmw_gate);
+      return ShareWrapper(bgmw_to_agmw_gate->GetOutputAsShare());
+    }
+    case 32u: {
+      auto bgmw_to_agmw_gate{
+          std::make_shared<Gates::Conversions::GMWToArithmeticGate<std::uint32_t>>(share_)};
+      share_->GetRegister()->RegisterNextGate(bgmw_to_agmw_gate);
+      return ShareWrapper(bgmw_to_agmw_gate->GetOutputAsShare());
+    }
+    case 64u: {
+      auto bgmw_to_agmw_gate{
+          std::make_shared<Gates::Conversions::GMWToArithmeticGate<std::uint64_t>>(share_)};
+      share_->GetRegister()->RegisterNextGate(bgmw_to_agmw_gate);
+      return ShareWrapper(bgmw_to_agmw_gate->GetOutputAsShare());
+    }
+    default:
+      throw std::runtime_error(fmt::format("Invalid bitlength {}", bitlen));
+  }
 }
 
 ShareWrapper ShareWrapper::BooleanGMWToBMR() const {
@@ -495,8 +528,7 @@ ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
   }
 }
 
-ShareWrapper ShareWrapper::Evaluate(
-    const ENCRYPTO::AlgorithmDescription &algo) const {
+ShareWrapper ShareWrapper::Evaluate(const ENCRYPTO::AlgorithmDescription &algo) const {
   std::size_t n_input_wires = algo.n_input_wires_parent_a_;
   if (algo.n_input_wires_parent_b_) n_input_wires += *algo.n_input_wires_parent_b_;
 
@@ -514,8 +546,7 @@ ShareWrapper ShareWrapper::Evaluate(
 
   assert((algo.n_gates_ + n_input_wires) == wires.size());
 
-  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo.n_wires_;
-       ++wire_i, ++gate_i) {
+  for (std::size_t wire_i = n_input_wires, gate_i = 0; wire_i < algo.n_wires_; ++wire_i, ++gate_i) {
     const auto &gate = algo.gates_.at(gate_i);
     const auto type = gate.type_;
     switch (type) {
@@ -630,4 +661,4 @@ template ShareWrapper ShareWrapper::Mul<std::uint16_t>(SharePtr share, SharePtr 
 template ShareWrapper ShareWrapper::Mul<std::uint32_t>(SharePtr share, SharePtr other) const;
 template ShareWrapper ShareWrapper::Mul<std::uint64_t>(SharePtr share, SharePtr other) const;
 
-}
+}  // namespace MOTION::Shares

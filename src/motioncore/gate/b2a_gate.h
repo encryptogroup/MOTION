@@ -29,6 +29,7 @@
 #include "crypto/multiplication_triple/sb_provider.h"
 #include "gate.h"
 #include "share/arithmetic_gmw_share.h"
+#include "share/boolean_gmw_share.h"
 #include "share/share.h"
 #include "utility/constants.h"
 #include "utility/fiber_condition.h"
@@ -36,6 +37,8 @@
 #include "wire/boolean_gmw_wire.h"
 
 namespace MOTION {
+namespace Gates {
+namespace Conversions {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
@@ -49,6 +52,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     assert(parent_.size() == bit_size);
     for (const auto& wire : parent_) {
       assert(wire->GetBitLength() == 1);
+      assert(wire->GetNumOfSIMDValues() == num_simd);
       assert(wire->GetProtocol() == MPCProtocol::BooleanGMW);
     }
 
@@ -58,18 +62,22 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     gate_type_ = GateType::InteractiveGate;
 
     // create the output wire
-    output_wires_.emplace_back(std::make_shared<Wires::ArithmeticWire<T>>(num_simd, backend_));
+    const std::vector<T> dummy_v(num_simd);
+    output_wires_.emplace_back(std::make_shared<Wires::ArithmeticWire<T>>(dummy_v, backend_));
     GetRegister()->RegisterNextWire(output_wires_.at(0));
 
-    // create wires for the intermediate values t
-    ts_.reserve(parent_.size());
-    // - we need some dummy values ...
-    const std::vector<T> tmp_v(num_simd);
+    // create shares for the intermediate values t
+    // - we need some dummy values to create wires ...
+    const ENCRYPTO::BitVector<> dummy_bv(num_simd);
+    // - then we need dummy (?) wires to create shares ...
+    std::vector<Wires::WirePtr> dummy_ws;
+    dummy_ws.reserve(num_simd);
     for (std::size_t i = 0; i < bit_size; ++i) {
-      auto w = std::make_shared<Wires::BooleanWire>> (tmp_v, backend_);
+      auto w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
       GetRegister()->RegisterNextWire(w);
-      ts_.emplace_back(std::move(w));
+      dummy_ws.emplace_back(std::move(w));
     }
+    ts_ = std::make_shared<Shares::GMWShare>(dummy_ws);
     // also create an output gate for the ts
     ts_out_ = std::make_shared<Gates::GMW::GMWOutputGate>(ts_);
     GetRegister()->RegisterNextGate(ts_out_);
@@ -123,16 +131,18 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     // mask the input bits with the shared bits
     // and assign the result to t
     const auto& sbs = sb_provider->template GetSBsAll<T>();
+    auto& ts_wires = ts_->GetMutableWires();
     for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
+      auto t_wire = std::dynamic_pointer_cast<Wires::GMWWire>(ts_wires.at(wire_i));
       auto parent_gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(parent_.at(wire_i));
-      ts_.at(wire_i)->GetMutableValues() = parent_gmw_wire->GetValues();
+      t_wire->GetMutableValues() = parent_gmw_wire->GetValues();
       // xor them with the shared bits
       for (std::size_t j = 0; j < num_simd; ++j) {
-        auto b = ts_.at(wire_i)->GetValues().Get(j);
+        auto b = t_wire->GetValues().Get(j);
         bool sb = sbs.at(sb_offset_ + wire_i * num_simd + j) & 1;
-        ts_.at(wire_i)->GetMutableValues().Set(b ^ sb, j);
+        t_wire->GetMutableValues().Set(b ^ sb, j);
       }
-      ts_.at(wire_i)->SetOnlineFinished();
+      t_wire->SetOnlineFinished();
     }
 
     // reconstruct t
@@ -145,7 +155,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
 
     auto out = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     for (std::size_t j = 0; j < num_simd; ++j) {
-      auto& out_val = out.GetMutableValues().at(j);
+      auto& out_val = out->GetMutableValues().at(j);
       out_val = 0;
       for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
         if (GetConfig()->GetMyId() == 0) {
@@ -159,16 +169,22 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
         }
       }
     }
-    out->SetOnlineIsReady();
 
     GetLogger()->LogDebug(fmt::format("Evaluated B2AGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister()->IncrementEvaluatedGatesCounter();
   }
 
-  const Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() const;
+  const Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() const {
+    auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
+    assert(arithmetic_wire);
+    auto result = std::make_shared<Shares::ArithmeticShare<T>>(arithmetic_wire);
+    return result;
+  }
 
-  const Shares::SharePtr GetOutputAsShare() const;
+  const Shares::SharePtr GetOutputAsShare() const {
+    return std::dynamic_pointer_cast<Shares::Share>(GetOutputAsArithmeticShare());
+  }
 
   GMWToArithmeticGate() = delete;
 
@@ -177,8 +193,10 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
  private:
   std::size_t num_sbs_;
   std::size_t sb_offset_;
-  std::vector<Wires::GMWWirePtr> ts_;
+  Shares::GMWSharePtr ts_;
   std::shared_ptr<Gates::GMW::GMWOutputGate> ts_out_;
 };
 
+}  // namespace Conversions
+}  // namespace Gates
 }  // namespace MOTION

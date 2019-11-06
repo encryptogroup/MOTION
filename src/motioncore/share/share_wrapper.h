@@ -142,6 +142,8 @@ class ShareWrapper {
 
   ShareWrapper ArithmeticGMWToBMR() const;
 
+  ShareWrapper BooleanGMWToArithmeticGMW() const;
+
   ShareWrapper BooleanGMWToBMR() const;
 
   ShareWrapper BMRToBooleanGMW() const;
