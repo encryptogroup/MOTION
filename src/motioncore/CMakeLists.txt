@@ -56,7 +56,11 @@ endif ()
 
 set_property(TARGET motion PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-target_compile_definitions(motion PUBLIC OMP_NESTED=1)
+if (MOTION_BOOST_LOG_DYN_LINK)
+    target_compile_definitions(motion PUBLIC OMP_NESTED=1 BOOST_LOG_DYN_LINK=1)
+else ()
+    target_compile_definitions(motion PUBLIC OMP_NESTED=1)
+endif ()
 #target_compile_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
 #target_link_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
 #target_compile_options(motion PUBLIC "-fsanitize=thread")

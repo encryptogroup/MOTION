@@ -34,7 +34,9 @@ find_package(Boost ${REQUIRED_BOOST_VERSION}
         thread)
 set(Boost_USE_STATIC_LIBS ON)
 
-if (NOT Boost_FOUND)
+if (Boost_FOUND)
+    set(MOTION_BOOST_LOG_DYN_LINK ON)
+    else()
     include(cmake/BuildBoostLocally.cmake)
 endif ()
 
