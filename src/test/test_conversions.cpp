@@ -376,4 +376,107 @@ INSTANTIATE_TEST_SUITE_P(
       return name;
     });
 
+
+class BooleanConversionTest : public testing::TestWithParam<aconv_parameters_t> {
+ public:
+  void SetUp() override {
+    auto parameters = GetParam();
+    std::tie(num_parties_, num_simd_, online_after_setup_) = parameters;
+  }
+  void TearDown() override { num_parties_ = num_simd_ = 0; }
+
+ protected:
+  std::size_t num_parties_ = 0, num_simd_ = 0;
+  bool online_after_setup_ = false;
+};
+
+template <typename T>
+void B2ARun(const std::size_t num_parties, const std::size_t num_simd,
+            const bool online_after_setup) {
+  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
+  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
+  constexpr auto bit_size = sizeof(T) * 8;
+  std::srand(0);
+  std::mt19937 g(0);
+  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  auto r = std::bind(dist, g);
+
+  const std::size_t input_owner = std::rand() % num_parties,
+                    output_owner = std::rand() % num_parties;
+  std::vector<ENCRYPTO::BitVector<>> global_input(bit_size);
+  for (auto &bv : global_input) {
+    bv = ENCRYPTO::BitVector<>::Random(num_simd);
+  }
+  const auto global_input_as_int{ENCRYPTO::ToVectorOutput<T>(global_input)};
+  std::vector<ENCRYPTO::BitVector<>> dummy_input(bit_size, ENCRYPTO::BitVector<>(num_simd, false));
+
+  try {
+    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+    for (auto &p : motion_parties) {
+      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+      p->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
+    }
+    std::vector<std::thread> t;
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      t.emplace_back([party_id, &motion_parties, input_owner, output_owner, &global_input,
+                      &global_input_as_int, &dummy_input]() {
+        Shares::SharePtr tmp_share;
+        if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+          tmp_share = motion_parties.at(party_id)->IN<BGMW>(global_input, input_owner);
+        } else {
+          tmp_share = motion_parties.at(party_id)->IN<BGMW>(dummy_input, input_owner);
+        }
+
+        MOTION::Shares::ShareWrapper s_in(tmp_share);
+        const auto s_conv{s_in.Convert<AGMW>()};
+        const auto s_out{s_conv.Out(output_owner)};
+
+        motion_parties.at(party_id)->Run();
+
+        if (party_id == output_owner) {
+          auto wire{
+              std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(s_out->GetWires().at(0))};
+          assert(wire);
+          auto result = wire->GetValues();
+
+          for (auto simd_i = 0ull; simd_i < s_in->GetNumOfSIMDValues(); ++simd_i)
+            EXPECT_EQ(result.at(simd_i), global_input_as_int.at(simd_i));
+        }
+        motion_parties.at(party_id)->Finish();
+      });
+    }
+    for (auto &tt : t)
+      if (tt.joinable()) tt.join();
+  } catch (std::exception &e) {
+    std::cerr << e.what() << std::endl;
+  }
+}
+
+TEST_P(BooleanConversionTest, B2A_8_bit) {
+  B2ARun<std::uint8_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+}
+TEST_P(BooleanConversionTest, B2A_16_bit) {
+  B2ARun<std::uint16_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+}
+TEST_P(BooleanConversionTest, B2A_32_bit) {
+  B2ARun<std::uint32_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+}
+TEST_P(BooleanConversionTest, B2A_64_bit) {
+  B2ARun<std::uint64_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+}
+
+INSTANTIATE_TEST_SUITE_P(BooleanConversionTestSuite, BooleanConversionTest,
+                         testing::Combine(testing::ValuesIn(conv_num_parties),
+                                          testing::ValuesIn(conv_num_simd),
+                                          testing::ValuesIn(conv_online_after_setup)),
+                         [](const testing::TestParamInfo<BooleanConversionTest::ParamType> &info) {
+                           const auto mode =
+                               static_cast<bool>(std::get<2>(info.param)) ? "Seq" : "Par";
+                           std::string name =
+                               fmt::format("{}_Parties_{}_SIMD__{}", std::get<0>(info.param),
+                                           std::get<1>(info.param), mode);
+                           return name;
+                         });
+
+
 }  // namespace
