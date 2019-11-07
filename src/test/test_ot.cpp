@@ -463,7 +463,7 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
 
 TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
   constexpr std::size_t num_ots{10};
-  constexpr std::array<std::size_t, 4> bitlens{8, 16, 32, 64};
+  constexpr std::array<std::size_t, 5> bitlens{8, 16, 32, 64, 128};
   for (auto num_parties : num_parties_list) {
     try {
       std::random_device rd("/dev/urandom");
@@ -601,6 +601,9 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
                   } else if (bitlen.at(k) == 64u) {
                     *reinterpret_cast<std::uint64_t *>(x.GetMutableData().data()) -=
                         *reinterpret_cast<const std::uint64_t *>(mask.GetData().data());
+                  } else if (bitlen.at(k) == 128u) {
+                    *reinterpret_cast<__uint128_t *>(x.GetMutableData().data()) -=
+                        *reinterpret_cast<const __uint128_t *>(mask.GetData().data());
                   }
                   ASSERT_EQ(x, sender_msgs.at(i).at(j).at(k).at(l));
                 }

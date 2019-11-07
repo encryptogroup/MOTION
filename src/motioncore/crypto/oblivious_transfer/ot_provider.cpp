@@ -323,9 +323,9 @@ COTVectorSender::COTVectorSender(const std::size_t id, const std::size_t vector_
                                  const std::shared_ptr<MOTION::DataStorage> &data_storage,
                                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : OTVectorSender(id, vector_id, num_ots, bitlen, p, data_storage, Send) {
-  if (p == OTProtocol::ACOT && (bitlen != 8u && bitlen != 16u && bitlen != 32u && bitlen != 64u)) {
+  if (p == OTProtocol::ACOT && (bitlen != 8u && bitlen != 16u && bitlen != 32u && bitlen != 64u && bitlen != 128)) {
     throw std::runtime_error(fmt::format(
-        "Invalid parameter bitlen={}, only 8, 16, 32, or 64 are allowed in ACOT", bitlen_));
+        "Invalid parameter bitlen={}, only 8, 16, 32, 64, or 128 are allowed in ACOT", bitlen_));
   }
   auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
   ot_ext_snd.received_correction_offsets_cond_.emplace(
@@ -395,6 +395,11 @@ const std::vector<BitVector<>> &COTVectorSender::GetOutputs() {
                 *reinterpret_cast<const uint64_t *>(inputs_.at(i).GetData().data());
             break;
           }
+          case (128u): {
+            *reinterpret_cast<__uint128_t *>(bv.GetMutableData().data() + 16) +=
+                *reinterpret_cast<const __uint128_t *>(inputs_.at(i).GetData().data());
+            break;
+          }
         }
       } else {  // OTProtocol::XCOT
         bv.Append(inputs_.at(i) ^ bv);
@@ -446,6 +451,14 @@ void COTVectorSender::SendMessages() {
               *(reinterpret_cast<const std::uint64_t *>(inputs_.at(i).GetMutableData().data()));
           *(reinterpret_cast<std::uint64_t *>(bv.GetMutableData().data())) +=
               *(reinterpret_cast<const std::uint64_t *>(
+                  ot_ext_snd.y1_.at(ot_id_ + i).GetMutableData().data()));
+          break;
+        }
+        case 128u: {
+          *(reinterpret_cast<__uint128_t *>(bv.GetMutableData().data())) +=
+              *(reinterpret_cast<const __uint128_t *>(inputs_.at(i).GetMutableData().data()));
+          *(reinterpret_cast<__uint128_t *>(bv.GetMutableData().data())) +=
+              *(reinterpret_cast<const __uint128_t *>(
                   ot_ext_snd.y1_.at(ot_id_ + i).GetMutableData().data()));
           break;
         }
@@ -577,9 +590,9 @@ COTVectorReceiver::COTVectorReceiver(
     const std::shared_ptr<MOTION::DataStorage> &data_storage,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : OTVectorReceiver(ot_id, vector_id, num_ots, bitlen, p, data_storage, Send) {
-  if (p == OTProtocol::ACOT && (bitlen != 8u && bitlen != 16u && bitlen != 32u && bitlen != 64u)) {
+  if (p == OTProtocol::ACOT && (bitlen != 8u && bitlen != 16u && bitlen != 32u && bitlen != 64u && bitlen != 128u)) {
     throw std::runtime_error(fmt::format(
-        "Invalid parameter bitlen={}, only 8, 16, 32, or 64 are allowed in ACOT", bitlen_));
+        "Invalid parameter bitlen={}, only 8, 16, 32, 64, or 128 are allowed in ACOT", bitlen_));
   }
   auto &ot_ext_rcv = data_storage_->GetOTExtensionData()->GetReceiverData();
   ot_ext_rcv.num_messages_.emplace(ot_id_, 1);

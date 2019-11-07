@@ -158,6 +158,12 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
                         *reinterpret_cast<const uint64_t *>(out);
                     break;
                   }
+                  case 128u: {
+                    *reinterpret_cast<__uint128_t *>(out) =
+                        *reinterpret_cast<const __uint128_t *>(msg.GetData().data()) -
+                        *reinterpret_cast<const __uint128_t *>(out);
+                    break;
+                  }
                   default:
                     throw std::runtime_error(
                         fmt::format("Unsupported bitlen={} for additive correlation. Allowed are "
