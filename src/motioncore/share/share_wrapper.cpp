@@ -306,9 +306,8 @@ ShareWrapper ShareWrapper::Convert() const {
   if constexpr (p == AGMW) {
     if (share_->GetProtocol() == BGMW) {  // BGMW -> AGMW
       return BooleanGMWToArithmeticGMW();
-    } else  // BMR -> AGMW
-    {
-      throw std::runtime_error("Not implemented yet");
+    } else  {  // BMR --(over BGMW)--> AGMW
+      return this->Convert<BGMW>().Convert<AGMW>();
     }
   } else if constexpr (p == BGMW) {
     if (share_->GetProtocol() == AGMW) {  // AGMW --(over BMR)--> BGMW
