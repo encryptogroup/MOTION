@@ -195,16 +195,30 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) const {
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
   }
 
-  if (share_->GetBitLength() == 8u) {
-    return Mul<std::uint8_t>(share_, *other);
-  } else if (share_->GetBitLength() == 16u) {
-    return Mul<std::uint16_t>(share_, *other);
-  } else if (share_->GetBitLength() == 32u) {
-    return Mul<std::uint32_t>(share_, *other);
-  } else if (share_->GetBitLength() == 64u) {
-    return Mul<std::uint64_t>(share_, *other);
+  if (share_ == other.share_) {  // squaring
+    if (share_->GetBitLength() == 8u) {
+      return Square<std::uint8_t>(share_);
+    } else if (share_->GetBitLength() == 16u) {
+      return Square<std::uint16_t>(share_);
+    } else if (share_->GetBitLength() == 32u) {
+      return Square<std::uint32_t>(share_);
+    } else if (share_->GetBitLength() == 64u) {
+      return Square<std::uint64_t>(share_);
+    } else {
+      throw std::bad_cast();
+    }
   } else {
-    throw std::bad_cast();
+    if (share_->GetBitLength() == 8u) {
+      return Mul<std::uint8_t>(share_, *other);
+    } else if (share_->GetBitLength() == 16u) {
+      return Mul<std::uint16_t>(share_, *other);
+    } else if (share_->GetBitLength() == 32u) {
+      return Mul<std::uint32_t>(share_, *other);
+    } else if (share_->GetBitLength() == 64u) {
+      return Mul<std::uint64_t>(share_, *other);
+    } else {
+      throw std::bad_cast();
+    }
   }
 }
 
@@ -651,6 +665,20 @@ ShareWrapper ShareWrapper::Mul(SharePtr share, SharePtr other) const {
   share_->GetRegister()->RegisterNextGate(multiplication_gate_cast);
   auto res =
       std::static_pointer_cast<Shares::Share>(multiplication_gate->GetOutputAsArithmeticShare());
+
+  return ShareWrapper(res);
+}
+
+template <typename T>
+ShareWrapper ShareWrapper::Square(SharePtr share) const {
+  auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
+  assert(this_a);
+  auto this_wire_a = this_a->GetArithmeticWire();
+
+  auto square_gate = std::make_shared<Gates::Arithmetic::ArithmeticSquareGate<T>>(this_wire_a);
+  auto square_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(square_gate);
+  share_->GetRegister()->RegisterNextGate(square_gate_cast);
+  auto res = std::static_pointer_cast<Shares::Share>(square_gate->GetOutputAsArithmeticShare());
 
   return ShareWrapper(res);
 }

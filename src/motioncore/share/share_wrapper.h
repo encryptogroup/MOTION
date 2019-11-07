@@ -140,6 +140,9 @@ class ShareWrapper {
   template <typename T>
   ShareWrapper Mul(SharePtr share, SharePtr other) const;
 
+  template <typename T>
+  ShareWrapper Square(SharePtr share) const;
+
   ShareWrapper ArithmeticGMWToBMR() const;
 
   ShareWrapper BooleanGMWToArithmeticGMW() const;
