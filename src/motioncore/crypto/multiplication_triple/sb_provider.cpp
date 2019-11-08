@@ -138,7 +138,7 @@ static std::vector<std::uint8_t> scatter(std::vector<std::uint16_t>& ds_8,
   auto size_8 = get_byte_size(ds_8);
   auto size_16 = get_byte_size(ds_16);
   auto size_32 = get_byte_size(ds_32);
-  auto size_64 = get_byte_size(ds_64);
+  [[maybe_unused]] auto size_64 = get_byte_size(ds_64);
 
   assert(buffer.size() == size_8 + size_16 + size_32 + size_64);
   auto start_8 = reinterpret_cast<const std::uint16_t*>(buffer.data());

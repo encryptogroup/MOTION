@@ -50,7 +50,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
 
     // check that we have enough input wires to represent an element of T
     assert(parent_.size() == bit_size);
-    for (const auto& wire : parent_) {
+    for ([[maybe_unused]] const auto& wire : parent_) {
       assert(wire->GetBitLength() == 1);
       assert(wire->GetNumOfSIMDValues() == num_simd);
       assert(wire->GetProtocol() == MPCProtocol::BooleanGMW);
