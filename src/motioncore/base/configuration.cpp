@@ -48,6 +48,7 @@ Configuration::Configuration(const std::vector<Communication::ContextPtr> &conte
   }
 
   for (auto &p : contexts) {
+    assert(p);
     if (p->GetId() < 0) {
       throw(std::runtime_error(
           fmt::format("IDs should be positive integers, found: {}", p->GetId())));
