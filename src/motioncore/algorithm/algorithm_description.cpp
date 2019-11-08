@@ -99,7 +99,7 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
       line_v.emplace_back(std::move(str));
     }
 
-    assert(line_v.size());
+    if(line_v.empty()) continue;
     const auto& type = line_v.at(line_v.size() - 1);
     PrimitiveOperation op;
     if (type == std::string("XOR") || type == std::string("AND") || type == std::string("ADD") ||
