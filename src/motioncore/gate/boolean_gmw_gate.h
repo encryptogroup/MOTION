@@ -26,10 +26,9 @@
 
 #include "gate.h"
 
-#include <boost/fiber/future.hpp>
-
 #include "share/boolean_gmw_share.h"
 #include "utility/bit_vector.h"
+#include "utility/reusable_future.h"
 
 namespace ENCRYPTO::ObliviousTransfer {
 class OTVectorSender;
@@ -85,7 +84,7 @@ class GMWOutputGate final : public Interfaces::OutputGate {
   // indicates whether this party obtains the output
   bool is_my_output_ = false;
 
-  std::vector<boost::fibers::future<std::vector<std::uint8_t>>> output_message_futures_;
+  std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>> output_message_futures_;
 
   std::mutex m;
 };

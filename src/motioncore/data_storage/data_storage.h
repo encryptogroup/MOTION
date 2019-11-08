@@ -28,6 +28,7 @@
 #include <mutex>
 
 #include "utility/bit_vector.h"
+#include "utility/reusable_future.h"
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
@@ -61,7 +62,8 @@ class DataStorage {
 
   const auto &GetLogger() { return logger_; }
 
-  boost::fibers::future<std::vector<std::uint8_t>> RegisterForOutputMessage(std::size_t gate_id);
+  ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>> RegisterForOutputMessage(
+      std::size_t gate_id);
 
   void SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_message);
 
@@ -113,7 +115,7 @@ class DataStorage {
   std::size_t sync_state_received_{0}, sync_state_actual_{0};
 
   // gate_id -> promise<buffer>
-  std::unordered_map<std::size_t, boost::fibers::promise<std::vector<std::uint8_t>>>
+  std::unordered_map<std::size_t, ENCRYPTO::ReusableFiberPromise<std::vector<std::uint8_t>>>
       output_message_promises_;
   std::mutex output_message_promises_mutex_;
 

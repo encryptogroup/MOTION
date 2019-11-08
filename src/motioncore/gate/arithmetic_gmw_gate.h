@@ -27,7 +27,6 @@
 #include "gate.h"
 
 #include <fmt/format.h>
-#include <boost/fiber/future.hpp>
 
 #include "base/configuration.h"
 #include "base/register.h"
@@ -43,6 +42,7 @@
 #include "utility/fiber_condition.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
+#include "utility/reusable_future.h"
 
 namespace MOTION::Gates::Arithmetic {
 
@@ -357,12 +357,6 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
         shared_outputs.push_back(
             Helpers::FromByteVector<T>(*output_message_ptr->wires()->Get(0)->payload()));
         assert(shared_outputs.at(i).size() == parent_.at(0)->GetNumOfSIMDValues());
-        {
-          // replace promise/future pair
-          // XXX: this should be replaced by some channel construct
-          const auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
-          output_message_futures_.at(i) = data_storage->RegisterForOutputMessage(gate_id_);
-        }
       }
 
       // reconstruct the shared value
@@ -406,7 +400,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
   // indicates whether this party obtains the output
   bool is_my_output_ = false;
 
-  std::vector<boost::fibers::future<std::vector<std::uint8_t>>> output_message_futures_;
+  std::vector<ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>> output_message_futures_;
 
   std::mutex m;
 };
@@ -528,8 +522,8 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(
-        fmt::format("Created an ArithmeticSubtractionGate with following properties: {}", gate_info));
+    GetLogger()->LogDebug(fmt::format(
+        "Created an ArithmeticSubtractionGate with following properties: {}", gate_info));
   }
 
   ~ArithmeticSubtractionGate() final = default;
@@ -773,11 +767,10 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     num_sps_ = parent_.at(0)->GetNumOfSIMDValues();
     sp_offset_ = GetSPProvider()->template RequestSPs<T>(num_sps_);
 
-    auto gate_info =
-        fmt::format("uint{}_t type, gate id {}, parent: {}", sizeof(T) * 8, gate_id_,
-                    parent_.at(0)->GetWireId());
-    GetLogger()->LogDebug(fmt::format(
-        "Created an ArithmeticSquareGate with following properties: {}", gate_info));
+    auto gate_info = fmt::format("uint{}_t type, gate id {}, parent: {}", sizeof(T) * 8, gate_id_,
+                                 parent_.at(0)->GetWireId());
+    GetLogger()->LogDebug(
+        fmt::format("Created an ArithmeticSquareGate with following properties: {}", gate_info));
   }
 
   ~ArithmeticSquareGate() final = default;
@@ -831,8 +824,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
 
     if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
-        out->GetMutableValues().at(i) +=
-            2 * (d.at(i) * s_x.at(i)) - (d.at(i) * d.at(i));
+        out->GetMutableValues().at(i) += 2 * (d.at(i) * s_x.at(i)) - (d.at(i) * d.at(i));
       }
     } else {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
@@ -840,8 +832,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
       }
     }
 
-    GetLogger()->LogDebug(
-        fmt::format("Evaluated ArithmeticSquareGate with id#{}", gate_id_));
+    GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticSquareGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister()->IncrementEvaluatedGatesCounter();
   }

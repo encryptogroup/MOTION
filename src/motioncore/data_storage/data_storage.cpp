@@ -56,9 +56,9 @@ DataStorage::DataStorage(std::size_t id) : id_(id) {
       [this]() { return sync_state_received_ >= sync_state_actual_; });
 }
 
-boost::fibers::future<std::vector<std::uint8_t>> DataStorage::RegisterForOutputMessage(
+ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>> DataStorage::RegisterForOutputMessage(
     std::size_t gate_id) {
-  boost::fibers::promise<std::vector<std::uint8_t>> promise;
+  ENCRYPTO::ReusableFiberPromise<std::vector<std::uint8_t>> promise;
   auto future = promise.get_future();
   std::unique_lock<std::mutex> lock(output_message_promises_mutex_);
   auto [_, success] = output_message_promises_.insert({gate_id, std::move(promise)});
@@ -66,8 +66,7 @@ boost::fibers::future<std::vector<std::uint8_t>> DataStorage::RegisterForOutputM
   if (!success) {
     logger_->LogError(
         fmt::format("Tried to register twice for OutputMessage with gate#{}", gate_id));
-    return boost::fibers::future<std::vector<std::uint8_t>>();  // XXX: maybe throw an exception
-                                                                // here
+    return {};  // XXX: maybe throw an exception here
   }
   if constexpr (MOTION_VERBOSE_DEBUG) {
     logger_->LogDebug(
@@ -83,7 +82,6 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
   auto gate_id = output_message_ptr->gate_id();
 
   // find promise
-  std::unique_lock<std::mutex> lock(output_message_promises_mutex_);
   auto it = output_message_promises_.find(gate_id);
   if (it == output_message_promises_.end()) {
     // no promise found -> drop message
@@ -91,9 +89,7 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
         "Received unexpected OutputMessage from Party#{} for gate#{}, dropping", id_, gate_id));
     return;
   }
-  auto promise = std::move(it->second);
-  output_message_promises_.erase(it);
-  lock.unlock();
+  auto &promise = it->second;
   // put the received message into the promise
   try {
     promise.set_value(std::move(output_message));

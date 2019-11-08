@@ -341,12 +341,6 @@ void GMWOutputGate::EvaluateOnline() {
                                           parent_.at(0)->GetNumOfSIMDValues());
       }
       assert(shared_outputs.at(i).size() == num_wires);
-      {
-        // replace promise/future pair
-        // XXX: this should be replaced by some channel construct
-        const auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
-        output_message_futures_.at(i) = data_storage->RegisterForOutputMessage(gate_id_);
-      }
     }
 
     // reconstruct the shared value
