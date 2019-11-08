@@ -51,7 +51,17 @@ int main(int ac, char* av[]) {
   // establish communication channels with other parties
   party->Connect();
 
-  EvaluateProtocol(party);
+  const auto num_simd{vm["num-simd"].as<std::size_t>()};
+  MOTION::MPCProtocol protocol;
+  const std::string protocol_str{vm["protocol"].as<std::string>()};
+  
+  if (protocol_str == "BMR")
+    EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
+  else if (protocol_str == "GMW" || protocol_str == "BooleanGMW")
+    EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW);
+  else
+    throw std::invalid_argument("Only GMW or BMR is allowed");
+
   return 0;
 }
 
@@ -75,7 +85,9 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
       ("print-config,p", po::bool_switch(&print)->default_value(false), "print config")
       ("config-file,f", po::value<std::string>(), config_file_msg.data())
       ("my-id", po::value<std::size_t>(), "my party id")
-      ("other-parties", po::value<std::vector<std::string>>()->multitoken(), "(other party id, IP, port, my role), e.g., --other-parties 1,127.0.0.1,7777");
+      ("other-parties", po::value<std::vector<std::string>>()->multitoken(), "(other party id, IP, port, my role), e.g., --other-parties 1,127.0.0.1,7777")
+      ("num-simd", po::value<std::size_t>()->default_value(1), "number of SIMD values for AES evaluation")
+      ("protocol", po::value<std::string>()->default_value("BMR"), "Boolean MPC protocol (BMR or GMW)");
   // clang-format on
 
   po::variables_map vm;
@@ -84,7 +96,7 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
   po::notify(vm);
 
   // argument help or no arguments (at least a config file is expected)
-  if (vm.count("help") || ac == 1) {
+  if (help) {
     std::cout << desc << "\n";
     return std::make_pair<po::variables_map, bool>({}, true);
   }
@@ -118,13 +130,19 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
   } else
     throw std::runtime_error("Other parties' information is not set but required");
 
+  if (print) {
+    std::cout << "Number of SIMD AES evaluations: " << vm["num-simd"].as<std::size_t>()
+              << std::endl;
+
+    std::cout << "MPC Protocol: " << vm["protocol"].as<std::string>() << std::endl;
+  }
   return std::make_pair(vm, help);
 }
 
 MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
   const auto parties_str{vm["other-parties"].as<const std::vector<std::string>>()};
   const auto num_parties{parties_str.size() + 1};
-  const auto my_id{vm["my_id"].as<std::size_t>()};
+  const auto my_id{vm["my-id"].as<std::size_t>()};
   if (my_id >= num_parties) {
     throw std::runtime_error(fmt::format(
         "My id needs to be in the range [0, #parties - 1], current my id is {} and #parties is {}",
@@ -132,7 +150,7 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
   }
 
   // create communication contexts for other parties
-  std::vector<MOTION::Communication::ContextPtr> contexts(num_parties, nullptr);
+  std::vector<MOTION::Communication::ContextPtr> contexts;
   for (const auto& party_str : parties_str) {
     const auto comma1{party_str.find_first_of(',')};
     const auto comma2{party_str.find_last_of(',')};
@@ -143,19 +161,16 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
           fmt::format("Other party's id needs to be in the range [0, #parties - 1], current id "
                       "is {} and #parties is {}",
                       other_id, num_parties));
-    } else if (contexts.at(other_id)) {
-      throw std::runtime_error(
-          fmt::format("Other party ids must be unique, id {} is not unique", other_id));
     }
 
     const auto role{other_id < my_id ? MOTION::Role::Client : MOTION::Role::Server};
 
     const std::uint16_t port{
-        boost::lexical_cast<std::uint16_t>(party_str.substr(comma2, party_str.size()))};
+        boost::lexical_cast<std::uint16_t>(party_str.substr(comma2 + 1, party_str.size()))};
     const std::string ip{party_str.substr(comma1, comma2)};
 
-    contexts.emplace(contexts.begin() + other_id, std::make_shared<MOTION::Communication::Context>(
-                                                      "127.0.0.1", port, role, other_id));
+    contexts.emplace_back(
+        std::make_shared<MOTION::Communication::Context>("127.0.0.1", port, role, other_id));
   }
   // create config for my party
   auto config{std::make_shared<MOTION::Configuration>(std::move(contexts), my_id)};

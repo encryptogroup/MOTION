@@ -28,12 +28,15 @@
 #include "share/share_wrapper.h"
 #include "utility/config.h"
 
-void EvaluateProtocol(MOTION::PartyPtr& party) {
-  // put your code here
-  ENCRYPTO::BitVector<> tmp(256);
-  MOTION::Shares::ShareWrapper input{party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp, 0)};
+void EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd, MOTION::MPCProtocol protocol) {
+  // TODO tests
+  std::vector<ENCRYPTO::BitVector<>> tmp(256, ENCRYPTO::BitVector<>(num_simd));
+  MOTION::Shares::ShareWrapper input{protocol == MOTION::MPCProtocol::BooleanGMW
+                                         ? party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp, 0)
+                                         : party->IN<MOTION::MPCProtocol::BMR>(tmp, 0)};
   const auto algo_path{std::string(MOTION::MOTION_ROOT_DIR) + "/circuits/advanced/aes_128.bristol"};
   const auto aes_algo{ENCRYPTO::AlgorithmDescription::FromBristol(algo_path)};
   const auto result{input.Evaluate(aes_algo)};
+  party->Run();
   party->Finish();
 }

@@ -26,4 +26,4 @@
 
 #include "base/party.h"
 
-void EvaluateProtocol(MOTION::PartyPtr & party);
+void EvaluateProtocol(MOTION::PartyPtr & party, std::size_t num_simd, MOTION::MPCProtocol protocol);
