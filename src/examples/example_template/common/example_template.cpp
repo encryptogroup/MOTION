@@ -30,5 +30,6 @@
 
 void EvaluateProtocol(MOTION::PartyPtr& party) {
   // put your code here
+  party->Run();
   party->Finish();
 }
