@@ -145,6 +145,7 @@ class ReusableFuture {
   ReusableFuture& operator=(ReusableFuture&& other) noexcept {
     shared_state_ = std::move(other.shared_state_);
     other.shared_state_ = nullptr;
+    return *this;
   }
 
   // retrieve the stored value
