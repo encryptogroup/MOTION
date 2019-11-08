@@ -20,7 +20,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-
 // This file contains promise/future-like data structures with the difference
 // that they can be reused:  After the value stored in the future was
 // retrieved, a new value can be set using the same promise.
@@ -29,6 +28,7 @@
 
 #pragma once
 
+#include <boost/fiber/future.hpp>
 #include <condition_variable>
 #include <future>
 #include <mutex>
@@ -39,7 +39,7 @@ namespace ENCRYPTO {
 namespace detail {
 
 // shared state to be used by ReusableFuture and ReusablePromise
-template <typename R>
+template <typename R, typename MutexType, typename CVType>
 class ReusableSharedState {
  public:
   ReusableSharedState() : contains_value_(false) {}
@@ -100,8 +100,8 @@ class ReusableSharedState {
   bool contains_value_;
 
   // synchronization stuff
-  mutable std::mutex mutex_;
-  mutable std::condition_variable cv_;
+  mutable MutexType mutex_;
+  mutable CVType cv_;
 
   // helper functions
   void wait_helper(std::unique_lock<decltype(mutex_)>& lock) const noexcept {
@@ -114,14 +114,14 @@ class ReusableSharedState {
   void delete_helper() noexcept { reinterpret_cast<R*>(&value_storage_)->~R(); }
 };
 
-}  // namespace
+}  // namespace detail
 
-template <typename R>
+template <typename R, typename MutexType, typename CVType>
 class ReusablePromise;
 
 // std::future-like future whose value can be set and read repeatedly,
 // basically the consumer end of a channel with a capacity of one
-template <typename R>
+template <typename R, typename MutexType = std::mutex, typename CVType = std::condition_variable>
 class ReusableFuture {
  public:
   // create future without associated state
@@ -131,8 +131,7 @@ class ReusableFuture {
   ReusableFuture(const ReusableFuture&) = delete;
 
   // move constructor
-  ReusableFuture(ReusableFuture&& other) noexcept
-      : shared_state_(std::move(other.shared_state_)) {
+  ReusableFuture(ReusableFuture&& other) noexcept : shared_state_(std::move(other.shared_state_)) {
     other.shared_state_ = nullptr;
   }
 
@@ -169,23 +168,29 @@ class ReusableFuture {
 
  private:
   // allow ReusablePromise to use the following constructor
-  friend ReusablePromise<R>;
+  friend ReusablePromise<R, MutexType, CVType>;
 
   // create future with associated state
-  ReusableFuture(std::shared_ptr<detail::ReusableSharedState<R>> shared_state) noexcept
+  ReusableFuture(
+      std::shared_ptr<detail::ReusableSharedState<R, MutexType, CVType>> shared_state) noexcept
       : shared_state_(std::move(shared_state)) {}
 
   // pointer to the shared state
-  std::shared_ptr<detail::ReusableSharedState<R>> shared_state_;
+  std::shared_ptr<detail::ReusableSharedState<R, MutexType, CVType>> shared_state_;
 };
+
+template <typename R>
+using ReusableFiberFuture =
+    ReusableFuture<R, boost::fibers::mutex, boost::fibers::condition_variable>;
 
 // std::promise-like promise which can be used repeatedly to set thevalue in the corresponding
 // shared state, basically the produceer end of a channel with a capacity of one
-template <typename R>
+template <typename R, typename MutexType = std::mutex, typename CVType = std::condition_variable>
 class ReusablePromise {
  public:
   ReusablePromise() noexcept
-      : shared_state_(std::make_shared<detail::ReusableSharedState<R>>()), future_retrieved_(false) {}
+      : shared_state_(std::make_shared<detail::ReusableSharedState<R, MutexType, CVType>>()),
+        future_retrieved_(false) {}
 
   // no copy constructor
   ReusablePromise(const ReusablePromise&) = delete;
@@ -227,7 +232,7 @@ class ReusablePromise {
   }
 
   // returns future associated with the shared state of the promise
-  ReusableFuture<R> get_future() {
+  ReusableFuture<R, MutexType, CVType> get_future() {
     if (!shared_state_) {
       throw std::future_error(std::future_errc::no_state);
     }
@@ -245,13 +250,18 @@ class ReusablePromise {
   }
 
  private:
-  std::shared_ptr<detail::ReusableSharedState<R>> shared_state_;
+  std::shared_ptr<detail::ReusableSharedState<R, MutexType, CVType>> shared_state_;
   bool future_retrieved_ = false;
 };
 
-// make ReusablePromise swappable
 template <typename R>
-void swap(ReusablePromise<R>& lhs, ReusablePromise<R>& rhs) noexcept {
+using ReusableFiberPromise =
+    ReusablePromise<R, boost::fibers::mutex, boost::fibers::condition_variable>;
+
+// make ReusablePromise swappable
+template <typename R, typename MutexType, typename CVType>
+void swap(ReusablePromise<R, MutexType, CVType>& lhs,
+          ReusablePromise<R, MutexType, CVType>& rhs) noexcept {
   lhs.swap(rhs);
 }
 
