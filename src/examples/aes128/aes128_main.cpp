@@ -22,6 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <random>
@@ -154,6 +155,7 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
   for (const auto& party_str : parties_str) {
     const auto comma1{party_str.find_first_of(',')};
     const auto comma2{party_str.find_last_of(',')};
+    assert(std::abs<long long int>(static_cast<std::uint64_t>(comma1) - comma2) >= 2);
 
     const auto other_id{boost::lexical_cast<std::size_t>(party_str.substr(0, comma1))};
     if (other_id >= num_parties) {
@@ -167,10 +169,10 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
 
     const std::uint16_t port{
         boost::lexical_cast<std::uint16_t>(party_str.substr(comma2 + 1, party_str.size()))};
-    const std::string ip{party_str.substr(comma1, comma2)};
+    const std::string ip{party_str.substr(comma1 + 1, comma2 - 2)};
 
     contexts.emplace_back(
-        std::make_shared<MOTION::Communication::Context>("127.0.0.1", port, role, other_id));
+        std::make_shared<MOTION::Communication::Context>(ip, port, role, other_id));
   }
   // create config for my party
   auto config{std::make_shared<MOTION::Configuration>(std::move(contexts), my_id)};
