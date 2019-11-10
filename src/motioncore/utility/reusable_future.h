@@ -90,7 +90,10 @@ class ReusableSharedState {
   }
 
   // check if there is some value stored
-  bool contains_value() const noexcept { return contains_value_; }
+  bool contains_value() const noexcept {
+    std::scoped_lock lock(mutex_);
+    return contains_value_;
+  }
 
  private:
   // storage for the value
