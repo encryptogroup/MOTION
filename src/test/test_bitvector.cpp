@@ -185,7 +185,15 @@ TEST(BitVector, VectorVectorOperations) {
       }
     }
   }
-}  // namespace
+}
+
+TEST(BitVector, ANDReduce) {
+  for (auto size : {0, 1, 2, 64, 65}) {
+    ENCRYPTO::BitVector<> bv(size, true);
+    auto result = ENCRYPTO::BitVector<>::ANDReduceBitVector(bv);
+    EXPECT_TRUE(result);
+  }
+}
 
 TEST(BitVector, Append) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
@@ -358,4 +366,4 @@ TEST(BitVector, Copy) {
     }
   }
 }
-}
+}  // namespace
