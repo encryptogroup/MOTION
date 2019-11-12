@@ -43,7 +43,7 @@ std::vector<std::byte> PRG::Encrypt(const std::size_t bytes) {
   int len = bytes;
   const std::size_t bytelen = num_blocks * AES_BLOCK_SIZE;
 
-  std::vector<std::byte> output(bytelen, std::byte(0)), input(bytelen, std::byte(0));
+  std::vector<std::byte> output(bytelen), input(bytelen, std::byte(0));
 
   for (auto i = 0ull; i < input.size() / AES_BLOCK_SIZE; ++i) {
     *reinterpret_cast<uint64_t *>(input.data() + i * AES_BLOCK_SIZE) = i + offset_;
@@ -63,7 +63,7 @@ std::vector<std::byte> PRG::Encrypt(const std::byte *input, const std::size_t by
   const std::size_t num_blocks = (bytes / 16) + remainder;
   int len = bytes;
   const std::size_t bytelen = num_blocks * AES_BLOCK_SIZE;
-  std::vector<std::byte> output(bytelen, std::byte(0));
+  std::vector<std::byte> output(bytelen);
 
   if (1 != EVP_EncryptUpdate(ctx_.get(), reinterpret_cast<std::uint8_t *>(output.data()), &len,
                              reinterpret_cast<const std::uint8_t *>(input),

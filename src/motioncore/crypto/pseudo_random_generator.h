@@ -68,7 +68,7 @@ class PRG {
 
   EVP_CIPHER_CTX_PTR ctx_ = MakeCipherCtx();
 
-  std::array<std::uint8_t *, AES_BLOCK_SIZE> key_;
+  std::array<std::uint8_t, AES_BLOCK_SIZE> key_;
 
   std::size_t offset_{0};
 };
