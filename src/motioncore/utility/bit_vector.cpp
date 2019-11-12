@@ -29,51 +29,53 @@ namespace ENCRYPTO {
 using std_alloc = std::allocator<std::byte>;
 using aligned_alloc = boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>;
 
+auto constexpr bits_to_bytes(std::size_t n_bits) { return (n_bits + 7) >> 3; }
+
 template <typename Allocator>
-BitVector<Allocator>::BitVector(std::size_t n_bits, bool value) noexcept : bit_size_(n_bits) {
-  if (n_bits > 0u) {
-    const std::byte value_byte = value ? std::byte(0xFF) : std::byte(0);
-    const auto byte_size = MOTION::Helpers::Convert::BitsToBytes(n_bits);
-    data_vector_.reserve(byte_size);
-
-    while (data_vector_.size() < byte_size) {
-      data_vector_.push_back(value_byte);
-    }
-
-    if (value) {
-      TruncateToFit();
-    }
+BitVector<Allocator>::BitVector(std::size_t n_bits, bool value) noexcept
+    : data_vector_(bits_to_bytes(n_bits), value ? std::byte(0xFF) : std::byte(0x00)),
+      bit_size_(n_bits) {
+  if (value) {
+    TruncateToFit();
   }
 }
 
 template <typename Allocator>
-BitVector<Allocator>::BitVector(const std::byte* buf, std::size_t bits) : bit_size_(bits) {
-  data_vector_.insert(data_vector_.begin(), buf, buf + MOTION::Helpers::Convert::BitsToBytes(bits));
-
+BitVector<Allocator>::BitVector(const std::byte* buf, std::size_t n_bits)
+    : data_vector_(buf, buf + bits_to_bytes(n_bits)), bit_size_(n_bits) {
   TruncateToFit();
 }
 
 template <typename Allocator>
-BitVector<Allocator>::BitVector(const std::vector<std::byte>& data, std::size_t n_bits)
+template <typename Allocator2>
+BitVector<Allocator>::BitVector(const std::vector<std::byte, Allocator2>& data, std::size_t n_bits)
+    : bit_size_(n_bits) {
+  const std::size_t byte_size = bits_to_bytes(n_bits);
+  if (byte_size > data.size()) {
+    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
+  }
+  data_vector_.assign(data.cbegin(), data.cbegin() + byte_size);
+  TruncateToFit();
+}
+
+template BitVector<std_alloc>::BitVector(const std::vector<std::byte, std_alloc>& data,
+                                         std::size_t n_bits);
+template BitVector<std_alloc>::BitVector(const std::vector<std::byte, aligned_alloc>& data,
+                                         std::size_t n_bits);
+template BitVector<aligned_alloc>::BitVector(const std::vector<std::byte, std_alloc>& data,
+                                             std::size_t n_bits);
+template BitVector<aligned_alloc>::BitVector(const std::vector<std::byte, aligned_alloc>& data,
+                                             std::size_t n_bits);
+
+template <typename Allocator>
+BitVector<Allocator>::BitVector(std::vector<std::byte, Allocator>&& data, std::size_t n_bits)
     : bit_size_(n_bits) {
   const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(n_bits);
   if (byte_size > data.size()) {
     throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
   }
-  data_vector_.insert(data_vector_.begin(), data.begin(), data.begin() + byte_size);
-
-  TruncateToFit();
-}
-
-template <typename Allocator>
-BitVector<Allocator>::BitVector(std::vector<std::byte>&& data, std::size_t n_bits)
-    : bit_size_(n_bits) {
-  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(n_bits);
-  if (byte_size > data.size()) {
-    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
-  }
-  data_vector_.assign(data.begin(), data.begin() + byte_size);
-
+  data_vector_ = std::move(data);
+  data_vector_.resize(byte_size);
   TruncateToFit();
 }
 
@@ -183,10 +185,23 @@ template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator|(
 
 template <typename Allocator>
 BitVector<Allocator>& BitVector<Allocator>::operator=(const BitVector<Allocator>& other) noexcept {
-  bit_size_ = other.GetSize();
-  data_vector_ = other.GetData();
+  bit_size_ = other.bit_size_;
+  data_vector_ = other.data_vector_;
   return *this;
 }
+
+template <typename Allocator>
+template <typename Allocator2>
+BitVector<Allocator>& BitVector<Allocator>::operator=(const BitVector<Allocator2>& other) noexcept {
+  bit_size_ = other.GetSize();
+  data_vector_.assign(other.data_vector_.cbegin(), other.data_vector_.cend());
+  return *this;
+}
+
+template BitVector<std_alloc>& BitVector<std_alloc>::operator=(
+    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator=(
+    const BitVector<std_alloc>& other) noexcept;
 
 template <typename Allocator>
 BitVector<Allocator>& BitVector<Allocator>::operator=(BitVector<Allocator>&& other) noexcept {
@@ -926,4 +941,4 @@ template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint8_
 template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint16_t>&);
 template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint32_t>&);
 template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint64_t>&);
-}
+}  // namespace ENCRYPTO

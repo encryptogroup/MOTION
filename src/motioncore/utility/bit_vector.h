@@ -56,16 +56,27 @@ class BitVector {
   friend class BitVector;
 
  public:
+  // Default constructor, results in an empty vector
   BitVector() noexcept : bit_size_(0){};
 
-  explicit BitVector(bool value) noexcept : bit_size_(0) { Append(value); }
+  // Initialized with a single bit
+  explicit BitVector(bool value) noexcept
+      : data_vector_{value ? SET_BIT_MASK[0] : std::byte(0x00)}, bit_size_(1) {}
 
+  // Move constructor
   BitVector(BitVector&& bv) noexcept
       : data_vector_(std::move(bv.data_vector_)), bit_size_(bv.bit_size_) {}
 
+  // Copy constructor
   BitVector(const BitVector& bv) noexcept
-      : data_vector_(bv.data_vector_.begin(), bv.data_vector_.end()), bit_size_(bv.bit_size_) {}
+      : data_vector_(bv.data_vector_), bit_size_(bv.bit_size_) {}
 
+  // Copy constructor from BitVector with different allocator
+  template <typename Allocator2>
+  BitVector(const BitVector<Allocator2>& bv) noexcept
+      : data_vector_(bv.data_vector_.cbegin(), bv.data_vector_.cend()), bit_size_(bv.bit_size_) {}
+
+  // Initialize from a std::vector<bool>, inefficient!
   BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {}
 
   explicit BitVector(uint n_bits, bool value = false)
@@ -83,17 +94,24 @@ class BitVector {
   explicit BitVector(long long unsigned int n_bits, bool value = false)
       : BitVector(static_cast<std::size_t>(n_bits), value) {}
 
+  // Initialize with given length and value
   explicit BitVector(std::size_t n_bits, bool value = false) noexcept;
 
+  // Initialize from pointer + size
   BitVector(const unsigned char* buf, std::size_t bits)
       : BitVector(reinterpret_cast<const std::byte*>(buf), bits) {}
 
+  // Initialize from pointer + size
   BitVector(const std::byte* buf, std::size_t bits);
 
-  BitVector(const std::vector<std::byte>& data, std::size_t n_bits);
+  // Initialize from std::vector content, performs length check
+  template <typename Allocator2>
+  BitVector(const std::vector<std::byte, Allocator2>& data, std::size_t n_bits);
 
-  BitVector(std::vector<std::byte>&& data, std::size_t n_bits);
+  // Initialize from std::vector rvalue (requires same allocator), performs length check
+  BitVector(std::vector<std::byte, Allocator>&& data, std::size_t n_bits);
 
+  // Initialize from a std::vector<bool>, inefficient!
   BitVector(const std::vector<bool>& data, std::size_t n_bits);
 
   bool Empty() { return bit_size_ == 0; }
@@ -130,6 +148,9 @@ class BitVector {
   BitVector<Allocator>& operator=(const BitVector<Allocator>& other) noexcept;
 
   BitVector<Allocator>& operator=(BitVector<Allocator>&& other) noexcept;
+
+  template <typename Allocator2>
+  BitVector<Allocator>& operator=(const BitVector<Allocator2>& other) noexcept;
 
   template <typename Allocator2>
   bool operator==(const BitVector<Allocator2>& other) const noexcept;
@@ -296,5 +317,6 @@ std::vector<T> ToVectorOutput(std::vector<BitVector<Allocator>> v) {
   return v_t;
 }
 
-using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>>;
+using AlignedBitVector =
+    BitVector<boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>>;
 }  // namespace ENCRYPTO

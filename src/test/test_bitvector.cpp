@@ -31,6 +31,19 @@
 #include "test_constants.h"
 
 namespace {
+
+TEST(BitVector, Constructors) {
+  {
+    auto bv = ENCRYPTO::BitVector();
+    EXPECT_EQ(bv.GetSize(), 0);
+  }
+  {
+    auto bv = ENCRYPTO::BitVector(true);
+    EXPECT_EQ(bv.GetSize(), 1);
+    EXPECT_EQ(bv.Get(0), true);
+  }
+}
+
 TEST(BitVector, OutOfBoundsException) {
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
     for (auto i = 0ull, j = 1ull; i < 20u; ++i) {
