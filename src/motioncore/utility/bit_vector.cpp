@@ -609,10 +609,10 @@ BitVector<Allocator> BitVector<Allocator>::Random(std::size_t size) noexcept {
 template <typename Allocator>
 bool BitVector<Allocator>::ANDReduceBitVector(const BitVector& vector) {
   if (vector.GetSize() == 0) {
-    return {};
+    return false;
   } else if (vector.GetSize() == 1) {
     return vector.Get(0);
-  } else if (vector.GetSize() <= 64) {
+  } else if (vector.GetSize() <= 16) {
     bool result = vector.Get(0);
     for (auto i = 1ull; i < vector.GetSize(); ++i) {
       result &= vector.Get(i);
@@ -622,15 +622,18 @@ bool BitVector<Allocator>::ANDReduceBitVector(const BitVector& vector) {
     auto raw_vector = vector.GetData();
     std::byte b = raw_vector.at(0);
 
-    for (auto i = 1ull; i < raw_vector.size(); ++i) {
-      b &= raw_vector.at(i);
-    }
+    const bool div_by_8{(vector.GetSize() % 8) == 0};
+    const auto size{div_by_8 ? raw_vector.size() : raw_vector.size() - 1};
+    const auto remainder_size{vector.GetSize() - (size * 8)};
+
+    for (auto i = 1ull; i < size; ++i) b &= raw_vector.at(i);
+
     BitVector bv({b}, 8);
     bool result = bv.Get(0);
 
-    for (auto i = 1; i < 8; ++i) {
-      result &= bv.Get(i);
-    }
+    for (auto i = 1; i < 8; ++i) result &= bv.Get(i);
+
+    for (std::size_t i = 0; i < remainder_size; ++i) result &= vector.Get(vector.GetSize() - i - 1);
 
     return result;
   }
