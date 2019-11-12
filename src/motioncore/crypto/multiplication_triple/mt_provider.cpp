@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include "mt_provider.h"
+#include "statistics/run_time_stats.h"
 
 namespace MOTION {
 
@@ -58,19 +59,28 @@ MTProvider::MTProvider(const std::size_t my_id) : my_id_(my_id) {
 
 MTProviderFromOTs::MTProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
-    const std::size_t my_id)
-    : MTProvider(my_id), ot_providers_(ot_providers) {
+    const std::size_t my_id, Statistics::RunTimeStats& run_time_stats)
+    : MTProvider(my_id), ot_providers_(ot_providers), run_time_stats_(run_time_stats) {
   ots_rcv_.resize(ot_providers_.size());
   ots_snd_.resize(ot_providers_.size());
 }
 
 void MTProviderFromOTs::PreSetup() {
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::mt_presetup>();
+
   if (NeedMTs()) RegisterOTs();
+
+  run_time_stats_.record_end<Statistics::RunTimeStats::StatID::mt_presetup>();
 }
 
 // needs completed OTExtension
 void MTProviderFromOTs::Setup() {
-  if (!NeedMTs()) return;
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::mt_setup>();
+
+  if (!NeedMTs()) {
+    run_time_stats_.record_end<Statistics::RunTimeStats::StatID::mt_setup>();
+    return;
+  }
 
 #pragma omp parallel for
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
@@ -90,6 +100,8 @@ void MTProviderFromOTs::Setup() {
     finished_ = true;
   }
   finished_condition_->NotifyAll();
+
+  run_time_stats_.record_end<Statistics::RunTimeStats::StatID::mt_setup>();
 }
 
 static void generate_random_triples_bool(BinaryMTVector& bit_mts, std::size_t num_bit_mts) {

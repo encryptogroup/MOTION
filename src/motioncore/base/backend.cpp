@@ -48,6 +48,7 @@
 #include "register.h"
 #include "share/bmr_share.h"
 #include "share/boolean_gmw_share.h"
+#include "statistics/run_time_stats.h"
 #include "utility/constants.h"
 #include "utility/fiber_thread_pool/fiber_thread_pool.hpp"
 
@@ -55,7 +56,7 @@ using namespace std::chrono_literals;
 
 namespace MOTION {
 
-Backend::Backend(ConfigurationPtr &config) : config_(config) {
+Backend::Backend(ConfigurationPtr &config) : run_time_stats_(1), config_(config) {
   register_ = std::make_shared<Register>(config_);
   base_ot_provider_ = std::make_unique<BaseOTProvider>(*config_, *register_->GetLogger(), *register_);
   ot_provider_.resize(config_->GetNumOfParties(), nullptr);
@@ -88,9 +89,9 @@ Backend::Backend(ConfigurationPtr &config) : config_(config) {
     }
   }
 
-  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId());
-  sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_, GetConfig()->GetMyId());
-  sb_provider_ = std::make_shared<SBProviderFromSPs>(config_, register_, sp_provider_);
+  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), run_time_stats_.back());
+  sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), run_time_stats_.back());
+  sb_provider_ = std::make_shared<SBProviderFromSPs>(config_, register_, sp_provider_, run_time_stats_.back());
 }
 
 Backend::~Backend() = default;
@@ -173,6 +174,7 @@ bool Backend::NeedOTs() {
 
 void Backend::RunPreprocessing() {
   register_->GetLogger()->LogInfo("Start preprocessing");
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::preprocessing>();
 
   // SB needs SP
   // SP needs OT
@@ -200,9 +202,13 @@ void Backend::RunPreprocessing() {
   futures.at(1) = std::async(std::launch::async, [this] { sp_provider_->Setup(); });
   futures.at(2) = std::async(std::launch::async, [this] { sb_provider_->Setup(); });
   std::for_each(futures.begin(), futures.end(), [](auto &f) { f.get(); });
+
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::preprocessing>();
 }
 
 void Backend::EvaluateSequential() {
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::evaluate>();
+
   RunPreprocessing();
 
   register_->GetLogger()->LogInfo(
@@ -214,6 +220,8 @@ void Backend::EvaluateSequential() {
   // to execute fibers
   ENCRYPTO::FiberThreadPool fpool_setup(0, config_->GetNumOfParties());
 
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_setup>();
+
   // evaluate all the gates
   for (auto& gate : register_->GetGates()) {
     fpool_setup.post([&] { gate->EvaluateSetup(); });
@@ -221,6 +229,8 @@ void Backend::EvaluateSequential() {
 
   // we have to wait until all gates are evaluated before we close the pool
   register_->GetGatesSetupDoneCondition()->Wait();
+
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::gates_setup>();
 
   fpool_setup.join();
 
@@ -232,6 +242,8 @@ void Backend::EvaluateSequential() {
   // to execute fibers
   ENCRYPTO::FiberThreadPool fpool_online(0, config_->GetNumOfParties());
 
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_online>();
+
   // evaluate all the gates
   for (auto& gate : register_->GetGates()) {
     fpool_online.post([&] { gate->EvaluateOnline(); });
@@ -240,17 +252,23 @@ void Backend::EvaluateSequential() {
   // we have to wait until all gates are evaluated before we close the pool
   register_->GetGatesOnlineDoneCondition()->Wait();
 
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::gates_online>();
+
   fpool_online.join();
 
   // XXX: since we never pop elements from the active queue, clear it manually for now
   // otherwise there will be complains that it is not empty upon repeated execution
   // -> maybe remove the active queue in the future
   register_->ClearActiveQueue();
+
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::evaluate>();
 }
 
 void Backend::EvaluateParallel() {
   register_->GetLogger()->LogInfo(
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
+
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::evaluate>();
 
   // Run preprocessing setup in a separate thread
   auto f_preprocessing = std::async(std::launch::async, [this] { RunPreprocessing(); });
@@ -276,6 +294,8 @@ void Backend::EvaluateParallel() {
   // otherwise there will be complains that it is not empty upon repeated execution
   // -> maybe remove the active queue in the future
   register_->ClearActiveQueue();
+
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::evaluate>();
 }
 
 void Backend::TerminateCommunication() {
@@ -535,6 +555,8 @@ void Backend::OTExtensionSetup() {
     register_->GetLogger()->LogDebug("Start computing setup for OTExtensions");
   }
 
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::ot_extension_setup>();
+
   std::vector<std::future<void>> task_futures;
   task_futures.reserve(2 * (config_->GetNumOfParties() - 1));
 
@@ -550,6 +572,8 @@ void Backend::OTExtensionSetup() {
 
   std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
   ot_extension_finished_ = true;
+
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::ot_extension_setup>();
 
   if constexpr (MOTION_DEBUG) {
     register_->GetLogger()->LogDebug("Finished setup for OTExtensions");

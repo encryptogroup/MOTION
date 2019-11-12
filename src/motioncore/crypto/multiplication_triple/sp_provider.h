@@ -43,6 +43,10 @@ class OTVectorReceiver;
 
 namespace MOTION {
 
+namespace Statistics {
+struct RunTimeStats;
+}
+
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 struct SPVector {
   std::vector<T> a, c;  // c[i] = a[i]^2
@@ -170,7 +174,7 @@ class SPProviderFromOTs final : public SPProvider {
  public:
   SPProviderFromOTs(
       std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
-      const std::size_t my_id);
+      const std::size_t my_id, Statistics::RunTimeStats& run_time_stats);
 
   void PreSetup() final;
 
@@ -189,5 +193,8 @@ class SPProviderFromOTs final : public SPProvider {
   std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> ots_rcv_;
 
   const std::size_t max_batch_size_{10'000};
+
+  Statistics::RunTimeStats& run_time_stats_;
 };
+
 }  // namespace MOTION

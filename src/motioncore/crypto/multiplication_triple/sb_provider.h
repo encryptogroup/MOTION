@@ -34,6 +34,10 @@
 
 namespace MOTION {
 
+namespace Statistics {
+struct RunTimeStats;
+}
+
 class Configuration;
 class Register;
 class SPProvider;
@@ -146,7 +150,8 @@ class SBProvider {
 class SBProviderFromSPs final : public SBProvider {
  public:
   SBProviderFromSPs(std::shared_ptr<Configuration> config, std::shared_ptr<Register> _register,
-                    std::shared_ptr<SPProvider> sp_provider);
+                    std::shared_ptr<SPProvider> sp_provider,
+                    Statistics::RunTimeStats& run_time_stats);
 
   void PreSetup() final;
 
@@ -179,6 +184,8 @@ class SBProviderFromSPs final : public SBProvider {
   std::vector<ENCRYPTO::ReusableFuture<std::vector<uint8_t>>> reconstruct_message_futures_;
 
   const std::size_t max_batch_size_{10'000};
+
+  Statistics::RunTimeStats& run_time_stats_;
 };
 
 }  // namespace MOTION

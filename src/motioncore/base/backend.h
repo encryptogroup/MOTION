@@ -54,6 +54,10 @@ using ConfigurationPtr = std::shared_ptr<Configuration>;
 class Register;
 using RegisterPtr = std::shared_ptr<Register>;
 
+namespace Statistics {
+  struct RunTimeStats;
+}
+
 namespace Shares {
 class GMWShare;
 using GMWSharePtr = std::shared_ptr<GMWShare>;
@@ -276,7 +280,11 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   auto &GetSBProvider() { return sb_provider_; };
 
+  const auto &GetRunTimeStats() const { return run_time_stats_; }
+
  private:
+  std::list<Statistics::RunTimeStats> run_time_stats_;
+
   ConfigurationPtr config_;
   RegisterPtr register_;
 

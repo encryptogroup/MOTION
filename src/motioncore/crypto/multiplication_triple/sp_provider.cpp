@@ -24,6 +24,7 @@
 
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "sp_provider.h"
+#include "statistics/run_time_stats.h"
 
 namespace MOTION {
 
@@ -37,18 +38,27 @@ SPProvider::SPProvider(const std::size_t my_id) : my_id_(my_id) {
 
 SPProviderFromOTs::SPProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
-    const std::size_t my_id)
-    : SPProvider(my_id), ot_providers_(ot_providers) {
+    const std::size_t my_id, Statistics::RunTimeStats& run_time_stats)
+    : SPProvider(my_id), ot_providers_(ot_providers), run_time_stats_(run_time_stats) {
   ots_rcv_.resize(ot_providers_.size());
   ots_snd_.resize(ot_providers_.size());
 }
 
 void SPProviderFromOTs::PreSetup() {
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sp_presetup>();
+
   if (NeedSPs()) RegisterOTs();
+
+  run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sp_presetup>();
 }
 
 void SPProviderFromOTs::Setup() {
-  if (!NeedSPs()) return;
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sp_setup>();
+
+  if (!NeedSPs()) {
+    run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sp_setup>();
+    return;
+  }
 
 #pragma omp parallel for
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
@@ -68,6 +78,8 @@ void SPProviderFromOTs::Setup() {
     finished_ = true;
   }
   finished_condition_->NotifyAll();
+
+  run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sp_setup>();
 }
 
 template <typename T>

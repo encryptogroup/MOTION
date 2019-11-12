@@ -30,10 +30,11 @@
 #include "communication/shared_bits_message.h"
 #include "data_storage/data_storage.h"
 #include "data_storage/shared_bits_data.h"
+#include "sb_impl.h"
 #include "sb_provider.h"
 #include "sp_provider.h"
+#include "statistics/run_time_stats.h"
 #include "utility/helpers.h"
-#include "sb_impl.h"
 
 namespace MOTION {
 
@@ -47,23 +48,30 @@ SBProvider::SBProvider(const std::size_t my_id) : my_id_(my_id) {
 
 SBProviderFromSPs::SBProviderFromSPs(std::shared_ptr<Configuration> config,
                                      std::shared_ptr<Register> _register,
-                                     std::shared_ptr<SPProvider> sp_provider)
+                                     std::shared_ptr<SPProvider> sp_provider,
+                                     Statistics::RunTimeStats& run_time_stats)
     : SBProvider(config->GetMyId()),
       config_(config),
       register_(_register),
-      sp_provider_(sp_provider) {}
+      sp_provider_(sp_provider),
+      run_time_stats_(run_time_stats) {}
 
 void SBProviderFromSPs::PreSetup() {
-  if (!NeedSBs()) {
-    return;
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sb_presetup>();
+
+  if (NeedSBs()) {
+    RegisterSPs();
+    RegisterForMessages();
   }
 
-  RegisterSPs();
-  RegisterForMessages();
+  run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sb_presetup>();
 }
 
 void SBProviderFromSPs::Setup() {
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sb_setup>();
+
   if (!NeedSBs()) {
+    run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sb_setup>();
     return;
   }
 
@@ -76,6 +84,8 @@ void SBProviderFromSPs::Setup() {
     finished_ = true;
   }
   finished_condition_->NotifyAll();
+
+  run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sb_setup>();
 }
 
 void SBProviderFromSPs::RegisterSPs() {
@@ -102,7 +112,6 @@ void SBProviderFromSPs::RegisterForMessages() {
         sb_data.RegisterForReconstructMessage(expected_msg_size));
   }
 }
-
 
 template <typename T>
 static constexpr auto get_byte_size(const std::vector<T>& v) {
