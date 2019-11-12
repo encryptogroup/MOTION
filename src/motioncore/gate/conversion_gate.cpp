@@ -48,7 +48,7 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) {
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
-  gate_id_ = GetRegister()->NextGateId();
+  gate_id_ = GetRegister().NextGateId();
 
   for (auto &wire : parent_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -59,7 +59,7 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) {
   const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfSIMDValues());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::GMWWire>(tmp_bv, backend_);
-    GetRegister()->RegisterNextWire(w);
+    GetRegister().RegisterNextWire(w);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -67,20 +67,20 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) {
     for (const auto &wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
     gate_info.append(" output wires: ");
     for (const auto &wire : output_wires_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Created a BMR to Boolean GMW conversion gate with following properties: {}", gate_info));
   }
 }
 
 void BMRToGMWGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void BMRToGMWGate::EvaluateOnline() {
   WaitSetup();
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Start evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
   }
 
@@ -92,8 +92,8 @@ void BMRToGMWGate::EvaluateOnline() {
     assert(gmw_out);
 
     bmr_in->GetIsReadyCondition()->Wait();
-    const auto my_id{GetConfig()->GetMyId()};
-    const auto num_parties{GetConfig()->GetNumOfParties()};
+    const auto my_id{GetConfig().GetMyId()};
+    const auto num_parties{GetConfig().GetNumOfParties()};
     auto &v{gmw_out->GetMutableValues()};
 
     // set current gmw shared bits on wire to permutation bits of parent BMR wire
@@ -105,11 +105,11 @@ void BMRToGMWGate::EvaluateOnline() {
   }
 
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Finished evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr BMRToGMWGate::GetOutputAsGMWShare() const {
@@ -137,7 +137,7 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
-  gate_id_ = GetRegister()->NextGateId();
+  gate_id_ = GetRegister().NextGateId();
 
   for (auto &wire : parent_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -147,19 +147,19 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
   output_wires_.resize(parent_.size());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::BMRWire>(parent->GetNumOfSIMDValues(), backend_);
-    GetRegister()->RegisterNextWire(w);
+    GetRegister().RegisterNextWire(w);
   }
 
-  received_public_values_.resize(GetConfig()->GetNumOfParties());
-  received_public_keys_.resize(GetConfig()->GetNumOfParties());
+  received_public_values_.resize(GetConfig().GetNumOfParties());
+  received_public_keys_.resize(GetConfig().GetNumOfParties());
 
   assert(gate_id_ >= 0);
-  const auto my_id{GetConfig()->GetMyId()};
+  const auto my_id{GetConfig().GetMyId()};
 
-  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
+  for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
     if (my_id == i) continue;
     auto &data_storage =
-        GetConfig()->GetCommunicationContext(static_cast<std::size_t>(i))->GetDataStorage();
+        GetConfig().GetCommunicationContext(static_cast<std::size_t>(i))->GetDataStorage();
     auto &bmr_data = data_storage->GetBMRData();
 
     auto [it_pub_vals, _] = bmr_data->input_public_values_.emplace(
@@ -169,7 +169,8 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
     bitlen_pub_values = num_simd * output_wires_.size();
 
     auto [it_pub_keys, __] = bmr_data->input_public_keys_.emplace(
-        gate_id_, std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
+        gate_id_,
+        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
     auto &bitlen_pub_keys = std::get<0>(it_pub_keys->second);
     bitlen_pub_keys = bitlen_pub_values * kappa;
   }
@@ -179,24 +180,24 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
     for (const auto &wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
     gate_info.append(" output wires: ");
     for (const auto &wire : output_wires_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Created a Boolean GMW to BMR conversion gate with following properties: {}", gate_info));
   }
 }
 
 void GMWToBMRGate::EvaluateSetup() {
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Start evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
 
-  const auto my_id{GetConfig()->GetMyId()};
-  const auto num_parties{GetConfig()->GetNumOfParties()};
+  const auto my_id{GetConfig().GetMyId()};
+  const auto num_parties{GetConfig().GetNumOfParties()};
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
     const auto &bmr_data{
-        GetConfig()->GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData()};
+        GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData()};
 
     received_public_values_.at(party_id) =
         bmr_data->input_public_values_.at(static_cast<std::size_t>(gate_id_)).second.get_future();
@@ -212,17 +213,17 @@ void GMWToBMRGate::EvaluateSetup() {
     bmr_out->SetSetupIsReady();
   }
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Finished evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWToBMRGate::EvaluateOnline() {
   WaitSetup();
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Start evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
 
@@ -230,8 +231,8 @@ void GMWToBMRGate::EvaluateOnline() {
   assert(ptr_backend);
 
   const auto num_simd{output_wires_.at(0)->GetNumOfSIMDValues()};
-  const auto my_id{GetConfig()->GetMyId()};
-  const auto num_parties{GetConfig()->GetNumOfParties()};
+  const auto my_id{GetConfig().GetMyId()};
+  const auto num_parties{GetConfig().GetNumOfParties()};
   ENCRYPTO::BitVector<> buffer;
 
   // mask and publish inputs
@@ -248,7 +249,7 @@ void GMWToBMRGate::EvaluateOnline() {
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
   for (auto i = 0ull; i < num_parties; ++i) {
-    if (i == GetConfig()->GetMyId()) continue;
+    if (i == GetConfig().GetMyId()) continue;
     ptr_backend->Send(i, Communication::BuildBMRInput0Message(gate_id_, payload_pub_vals));
   }
 
@@ -283,13 +284,13 @@ void GMWToBMRGate::EvaluateOnline() {
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
   for (auto i = 0ull; i < num_parties; ++i) {
-    if (i == GetConfig()->GetMyId()) continue;
+    if (i == GetConfig().GetMyId()) continue;
     ptr_backend->Send(i, Communication::BuildBMRInput1Message(gate_id_, payload_pub_keys));
   }
 
   // parse published keys
   for (auto i = 0ull; i < num_parties; ++i) {
-    if (i == GetConfig()->GetMyId()) {
+    if (i == GetConfig().GetMyId()) {
       for (auto j = 0ull; j < output_wires_.size(); ++j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
         assert(wire);
@@ -315,11 +316,11 @@ void GMWToBMRGate::EvaluateOnline() {
   }
 
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::BMRSharePtr GMWToBMRGate::GetOutputAsBMRShare() const {

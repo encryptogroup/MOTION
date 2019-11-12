@@ -52,7 +52,7 @@ void Gate::SetSetupIsReady() {
 }
 
 void Gate::SetOnlineIsReady() {
-  for (auto &wire : output_wires_) {
+  for (auto& wire : output_wires_) {
     assert(wire);
     wire->SetOnlineFinished();
   }
@@ -91,46 +91,46 @@ Gate::Gate() {
       std::make_shared<ENCRYPTO::Condition>([this]() { return setup_is_ready_.load(); });
 }
 
-std::shared_ptr<Register> Gate::GetRegister() {
+Register& Gate::GetRegister() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetRegister();
+  return *ptr_backend->GetRegister();
 }
 
-std::shared_ptr<Configuration> Gate::GetConfig() {
+Configuration& Gate::GetConfig() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetConfig();
+  return *ptr_backend->GetConfig();
 }
 
-std::shared_ptr<Logger> Gate::GetLogger() {
+Logger& Gate::GetLogger() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetLogger();
+  return *ptr_backend->GetLogger();
 }
 
-std::shared_ptr<MTProvider> Gate::GetMTProvider() {
+MTProvider& Gate::GetMTProvider() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetMTProvider();
+  return *ptr_backend->GetMTProvider();
 }
 
-std::shared_ptr<SPProvider> Gate::GetSPProvider() {
+SPProvider& Gate::GetSPProvider() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetSPProvider();
+  return *ptr_backend->GetSPProvider();
 }
 
-std::shared_ptr<SBProvider> Gate::GetSBProvider() {
+SBProvider& Gate::GetSBProvider() {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetSBProvider();
+  return *ptr_backend->GetSBProvider();
 }
 
-std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider> Gate::GetOTProvider(const std::size_t i) {
+ENCRYPTO::ObliviousTransfer::OTProvider& Gate::GetOTProvider(const std::size_t i) {
   auto ptr_backend = backend_.lock();
   assert(ptr_backend);
-  return ptr_backend->GetOTProvider(i);
+  return *ptr_backend->GetOTProvider(i);
 }
 
-}
+}  // namespace MOTION::Gates::Interfaces

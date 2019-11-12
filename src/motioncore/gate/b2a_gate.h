@@ -64,7 +64,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     // create the output wire
     const std::vector<T> dummy_v(num_simd);
     output_wires_.emplace_back(std::make_shared<Wires::ArithmeticWire<T>>(dummy_v, backend_));
-    GetRegister()->RegisterNextWire(output_wires_.at(0));
+    GetRegister().RegisterNextWire(output_wires_.at(0));
 
     // create shares for the intermediate values t
     // - we need some dummy values to create wires ...
@@ -74,20 +74,20 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     dummy_ws.reserve(num_simd);
     for (std::size_t i = 0; i < bit_size; ++i) {
       auto w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
       dummy_ws.emplace_back(std::move(w));
     }
     ts_ = std::make_shared<Shares::GMWShare>(dummy_ws);
     // also create an output gate for the ts
     ts_out_ = std::make_shared<Gates::GMW::GMWOutputGate>(ts_);
-    GetRegister()->RegisterNextGate(ts_out_);
+    GetRegister().RegisterNextGate(ts_out_);
 
     // register the required number of shared bits
     num_sbs_ = num_simd * bit_size;
-    sb_offset_ = GetSBProvider()->template RequestSBs<T>(num_sbs_);
+    sb_offset_ = GetSBProvider().template RequestSBs<T>(num_sbs_);
 
     // register this gate
-    gate_id_ = GetRegister()->NextGateId();
+    gate_id_ = GetRegister().NextGateId();
 
     // register this gate with the parent wires
     for (auto& wire : parent_) {
@@ -99,7 +99,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
       auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
       for (const auto& wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
       gate_info.append(fmt::format(" output wire: {}", output_wires_.at(0)->GetWireId()));
-      GetLogger()->LogDebug(fmt::format(
+      GetLogger().LogDebug(fmt::format(
           "Created a Boolean GMW to Arithmetic GMW conversion gate with following properties: {}",
           gate_info));
     }
@@ -109,7 +109,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   void EvaluateOnline() final {
@@ -122,15 +122,15 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     }
 
     // wait for the SBProvider to finish
-    auto sb_provider = GetSBProvider();
-    sb_provider->WaitFinished();
+    auto& sb_provider = GetSBProvider();
+    sb_provider.WaitFinished();
 
     const auto num_simd{parent_.at(0)->GetNumOfSIMDValues()};
     constexpr auto bit_size = sizeof(T) * 8;
 
     // mask the input bits with the shared bits
     // and assign the result to t
-    const auto& sbs = sb_provider->template GetSBsAll<T>();
+    const auto& sbs = sb_provider.template GetSBsAll<T>();
     auto& ts_wires = ts_->GetMutableWires();
     for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
       auto t_wire = std::dynamic_pointer_cast<Wires::GMWWire>(ts_wires.at(wire_i));
@@ -158,7 +158,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
       auto& out_val = out->GetMutableValues().at(j);
       out_val = 0;
       for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
-        if (GetConfig()->GetMyId() == 0) {
+        if (GetConfig().GetMyId() == 0) {
           T t(ts_clear_b.at(wire_i)->GetValues().Get(j));   // the masked bit
           T r(sbs.at(sb_offset_ + wire_i * num_simd + j));  // the arithmetically shared bit
           out_val += T(t + r - 2 * t * r) << wire_i;
@@ -170,9 +170,9 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
       }
     }
 
-    GetLogger()->LogDebug(fmt::format("Evaluated B2AGate with id#{}", gate_id_));
+    GetLogger().LogDebug(fmt::format("Evaluated B2AGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
 
   const Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() const {

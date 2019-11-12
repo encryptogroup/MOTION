@@ -76,7 +76,7 @@ class Gate {
 
   virtual void EvaluateOnline() = 0;
 
-  const std::vector<Wires::WirePtr> &GetOutputWires() const { return output_wires_; }
+  const std::vector<Wires::WirePtr>& GetOutputWires() const { return output_wires_; }
 
   void Clear();
 
@@ -98,7 +98,7 @@ class Gate {
 
   std::int64_t GetID() const { return gate_id_; }
 
-  Gate(Gate &) = delete;
+  Gate(Gate&) = delete;
 
  protected:
   std::vector<Wires::WirePtr> output_wires_;
@@ -120,13 +120,14 @@ class Gate {
 
   Gate();
 
-  std::shared_ptr<Register> GetRegister();
-  std::shared_ptr<Configuration> GetConfig();
-  std::shared_ptr<Logger> GetLogger();
-  std::shared_ptr<MTProvider> GetMTProvider();
-  std::shared_ptr<SPProvider> GetSPProvider();
-  std::shared_ptr<SBProvider> GetSBProvider();
-  std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider> GetOTProvider(const std::size_t i);
+ protected:
+  Register& GetRegister();
+  Configuration& GetConfig();
+  Logger& GetLogger();
+  MTProvider& GetMTProvider();
+  SPProvider& GetSPProvider();
+  SBProvider& GetSBProvider();
+  ENCRYPTO::ObliviousTransfer::OTProvider& GetOTProvider(const std::size_t i);
 
  private:
   void IfReadyAddToProcessingQueue();
@@ -150,7 +151,7 @@ class OneGate : public Gate {
  public:
   ~OneGate() override = default;
 
-  OneGate(OneGate &) = delete;
+  OneGate(OneGate&) = delete;
 
  protected:
   std::vector<Wires::WirePtr> parent_;
@@ -175,7 +176,7 @@ class InputGate : public OneGate {
 
   InputGate() { gate_type_ = GateType::InputGate; }
 
-  InputGate(InputGate &) = delete;
+  InputGate(InputGate&) = delete;
 
   std::int64_t input_owner_id_ = -1;
 };
@@ -196,7 +197,7 @@ class OutputGate : public OneGate {
  public:
   ~OutputGate() override = default;
 
-  OutputGate(OutputGate &) = delete;
+  OutputGate(OutputGate&) = delete;
 
   OutputGate() { gate_type_ = GateType::InteractiveGate; }
 
@@ -226,7 +227,6 @@ class TwoGate : public Gate {
  public:
   ~TwoGate() override = default;
 };
-
 
 //
 //  |  |  | <- three SharePtrs input
@@ -275,4 +275,4 @@ class nInputGate : public Gate {
 namespace MOTION::Gates {
 // alias
 using Gate = MOTION::Gates::Interfaces::Gate;
-}
+}  // namespace MOTION::Gates

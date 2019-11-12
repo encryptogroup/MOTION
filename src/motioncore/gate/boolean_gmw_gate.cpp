@@ -57,25 +57,25 @@ GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size
 }
 
 void GMWInputGate::InitializationHelper() {
-  auto config = GetConfig();
-  auto _register = GetRegister();
+  auto &config = GetConfig();
+  auto &_register = GetRegister();
 
-  if (static_cast<std::size_t>(input_owner_id_) >= config->GetNumOfParties()) {
+  if (static_cast<std::size_t>(input_owner_id_) >= config.GetNumOfParties()) {
     throw std::runtime_error(
-        fmt::format("Invalid input owner: {} of {}", input_owner_id_, config->GetNumOfParties()));
+        fmt::format("Invalid input owner: {} of {}", input_owner_id_, config.GetNumOfParties()));
   }
 
-  gate_id_ = _register->NextGateId();
+  gate_id_ = _register.NextGateId();
 
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
   assert(ENCRYPTO::BitVector<>::EqualSizeDimensions(input_));
 
-  boolean_sharing_id_ = _register->NextBooleanGMWSharingId(input_.size() * bits_);
+  boolean_sharing_id_ = _register.NextBooleanGMWSharingId(input_.size() * bits_);
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    GetLogger()->LogTrace(fmt::format("Created a BooleanGMWInputGate with global id {}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Created a BooleanGMWInputGate with global id {}", gate_id_));
   }
 
   output_wires_.reserve(input_.size());
@@ -85,39 +85,39 @@ void GMWInputGate::InitializationHelper() {
   }
 
   for (auto &w : output_wires_) {
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {},", gate_id_);
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created a BooleanGMWInputGate with following properties: {}", gate_info));
   }
 }
 
 void GMWInputGate::EvaluateSetup() {
-  auto config = GetConfig();
+  auto &config = GetConfig();
 
-  if (static_cast<std::size_t>(input_owner_id_) == config->GetMyId()) {
+  if (static_cast<std::size_t>(input_owner_id_) == config.GetMyId()) {
     // we always generate our own seeds for the input sharing before we start evaluating
     // the circuit, hence, nothing to wait here for
   } else {
     auto &rand_generator =
-        config->GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
+        config.GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
 
     Helpers::WaitFor(*rand_generator->GetInitializedCondition());
   }
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWInputGate::EvaluateOnline() {
   WaitSetup();
   assert(setup_is_ready_);
 
-  auto config = GetConfig();
-  auto my_id = config->GetMyId();
-  auto num_of_parties = config->GetNumOfParties();
+  auto &config = GetConfig();
+  auto my_id = config.GetMyId();
+  auto num_of_parties = config.GetNumOfParties();
 
   std::vector<ENCRYPTO::BitVector<>> result(input_.size());
   auto sharing_id = boolean_sharing_id_;
@@ -129,7 +129,7 @@ void GMWInputGate::EvaluateOnline() {
         if (j == my_id) {
           continue;
         }
-        auto &rand_generator = config->GetCommunicationContext(j)->GetMyRandomnessGenerator();
+        auto &rand_generator = config.GetCommunicationContext(j)->GetMyRandomnessGenerator();
         auto randomness = rand_generator->GetBits(sharing_id, bits_);
 
         if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -146,11 +146,11 @@ void GMWInputGate::EvaluateOnline() {
             "share: {}, expected shares of other parties: {}",
             input_owner_id_, gate_id_, input_.at(i).AsString(), result.at(i).AsString(),
             log_string);
-        GetLogger()->LogTrace(s);
+        GetLogger().LogTrace(s);
       }
     } else {
       auto &rand_generator =
-          config->GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
+          config.GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
       auto randomness = rand_generator->GetBits(sharing_id, bits_);
       result.at(i) = randomness;
 
@@ -159,7 +159,7 @@ void GMWInputGate::EvaluateOnline() {
             "Boolean input sharing (gate#{}) of Party's#{} input, got a "
             "share {} from the seed",
             gate_id_, input_owner_id_, result.at(i).AsString());
-        GetLogger()->LogTrace(s);
+        GetLogger().LogTrace(s);
       }
       sharing_id += bits_;
     }
@@ -171,10 +171,10 @@ void GMWInputGate::EvaluateOnline() {
     my_wire->GetMutableValues() = buf;
   }
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    GetLogger()->LogTrace(fmt::format("Evaluated Boolean GMWInputGate with id#{}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Evaluated Boolean GMWInputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWInputGate::GetOutputAsGMWShare() {
@@ -200,9 +200,9 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   backend_ = parent_.at(0)->GetBackend();
 
   // values we need repeatedly
-  auto config = GetConfig();
-  auto my_id = config->GetMyId();
-  auto num_parties = config->GetNumOfParties();
+  auto &config = GetConfig();
+  auto my_id = config.GetMyId();
+  auto num_parties = config.GetNumOfParties();
   auto num_simd_values = parent_.at(0)->GetNumOfSIMDValues();
   auto num_wires = parent_.size();
 
@@ -214,7 +214,7 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   output_owner_ = output_owner;
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
-  gate_id_ = GetRegister()->NextGateId();
+  gate_id_ = GetRegister().NextGateId();
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == ALL;
 
@@ -231,7 +231,7 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   }
 
   for (auto &wire : output_wires_) {
-    GetRegister()->RegisterNextWire(wire);
+    GetRegister().RegisterNextWire(wire);
   }
 
   // Tell the DataStorages that we want to receive OutputMessages from the
@@ -245,7 +245,7 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
         output_message_futures_.emplace_back();
         continue;
       }
-      const auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
+      const auto &data_storage = config.GetCommunicationContext(i)->GetDataStorage();
       // Get a future that will eventually contain the received data.
       output_message_futures_.push_back(data_storage->RegisterForOutputMessage(gate_id_));
     }
@@ -255,14 +255,14 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
     auto gate_info =
         fmt::format("bitlength {}, gate id {}, owner {}", num_wires, gate_id_, output_owner_);
 
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created a BooleanGMW OutputGate with following properties: {}", gate_info));
   }
 }
 
 void GMWOutputGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWOutputGate::EvaluateOnline() {
@@ -271,9 +271,9 @@ void GMWOutputGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
   // data we need repeatedly
-  const auto config = GetConfig();
-  const auto my_id = config->GetMyId();
-  const auto num_parties = config->GetNumOfParties();
+  const auto &config = GetConfig();
+  const auto my_id = config.GetMyId();
+  const auto num_parties = config.GetNumOfParties();
   const auto num_wires = parent_.size();
 
   std::vector<ENCRYPTO::BitVector<>> output;
@@ -299,14 +299,14 @@ void GMWOutputGate::EvaluateOnline() {
     // we need to send shares to one other party:
     if (!is_my_output_) {
       auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payloads);
-      GetRegister()->Send(output_owner_, std::move(output_message));
+      GetRegister().Send(output_owner_, std::move(output_message));
     }
     // we need to send shares to all other parties:
     else if (output_owner_ == ALL) {
       for (std::size_t i = 0; i < num_parties; ++i) {
         if (i == my_id) continue;
         auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payloads);
-        GetRegister()->Send(i, std::move(output_message));
+        GetRegister().Send(i, std::move(output_message));
       }
     }
   }
@@ -361,11 +361,11 @@ void GMWOutputGate::EvaluateOnline() {
 
     if constexpr (MOTION_VERBOSE_DEBUG) {
       std::string shares{""};
-      for (std::size_t i = 0; i < config->GetNumOfParties(); ++i) {
+      for (std::size_t i = 0; i < config.GetNumOfParties(); ++i) {
         shares.append(fmt::format("id#{}:{} ", i, shared_outputs.at(i).at(0).AsString()));
       }
 
-      GetLogger()->LogTrace(
+      GetLogger().LogTrace(
           fmt::format("Received output shares: {} from other parties, "
                       "reconstructed result is {}",
                       shares, output.at(0).AsString()));
@@ -374,10 +374,10 @@ void GMWOutputGate::EvaluateOnline() {
 
   // we are done with this gate
   if constexpr (MOTION_DEBUG) {
-    GetLogger()->LogDebug(fmt::format("Evaluated Boolean GMWOutputGate with id#{}", gate_id_));
+    GetLogger().LogDebug(fmt::format("Evaluated Boolean GMWOutputGate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWOutputGate::GetOutputAsGMWShare() const {
@@ -405,8 +405,8 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
 
-  auto _register = GetRegister();
-  gate_id_ = _register->NextGateId();
+  auto &_register = GetRegister();
+  gate_id_ = _register.NextGateId();
 
   for (auto &wire : parent_a_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -425,20 +425,20 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   }
 
   for (auto &w : output_wires_) {
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
                                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created a BooleanGMW XOR gate with following properties: {}", gate_info));
   }
 }
 
 void GMWXORGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWXORGate::EvaluateOnline() {
@@ -469,10 +469,10 @@ void GMWXORGate::EvaluateOnline() {
 
   // we are done with this gate
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    GetLogger()->LogTrace(fmt::format("Evaluated BooleanGMW XOR Gate with id#{}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW XOR Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWXORGate::GetOutputAsGMWShare() const {
@@ -498,8 +498,8 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
 
-  auto _register = GetRegister();
-  gate_id_ = _register->NextGateId();
+  auto &_register = GetRegister();
+  gate_id_ = _register.NextGateId();
 
   for (auto &wire : parent_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -513,7 +513,7 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
   }
 
   for (auto &w : output_wires_) {
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -521,14 +521,14 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
     for (const auto &wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
     gate_info.append(" output wires: ");
     for (const auto &wire : output_wires_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created a BooleanGMW INV gate with following properties: {}", gate_info));
   }
 }
 
 void GMWINVGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWINVGate::EvaluateOnline() {
@@ -541,15 +541,15 @@ void GMWINVGate::EvaluateOnline() {
     wire->GetIsReadyCondition()->Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(gmw_wire);
-    const bool inv = (wire->GetWireId() % GetConfig()->GetNumOfParties()) == GetConfig()->GetMyId();
+    const bool inv = (wire->GetWireId() % GetConfig().GetNumOfParties()) == GetConfig().GetMyId();
     gmw_wire->GetMutableValues() = inv ? ~wire->GetValues() : wire->GetValues();
   }
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    GetLogger()->LogTrace(fmt::format("Evaluated BooleanGMW INV Gate with id#{}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW INV Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWINVGate::GetOutputAsGMWShare() const {
@@ -580,16 +580,16 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfSIMDValues());
   std::vector<Wires::WirePtr> dummy_wires_e(parent_a_.size()), dummy_wires_d(parent_a_.size());
 
-  const auto _register = GetRegister();
+  auto &_register = GetRegister();
 
   for (auto &w : dummy_wires_d) {
     w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   for (auto &w : dummy_wires_e) {
     w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   d_ = std::make_shared<Shares::GMWShare>(dummy_wires_d);
@@ -598,10 +598,10 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   d_out_ = std::make_shared<GMWOutputGate>(d_);
   e_out_ = std::make_shared<GMWOutputGate>(e_);
 
-  _register->RegisterNextGate(d_out_);
-  _register->RegisterNextGate(e_out_);
+  _register.RegisterNextGate(d_out_);
+  _register.RegisterNextGate(e_out_);
 
-  gate_id_ = _register->NextGateId();
+  gate_id_ = _register.NextGateId();
 
   for (auto &wire : parent_a_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -616,7 +616,7 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   output_wires_.resize(parent_a_.size());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   auto backend = backend_.lock();
@@ -629,14 +629,14 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
                                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created a BooleanGMW AND gate with following properties: {}", gate_info));
   }
 }
 
 void GMWANDGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWANDGate::EvaluateOnline() {
@@ -714,7 +714,7 @@ void GMWANDGate::EvaluateOnline() {
     const auto &e = e_w->GetValues();
     const auto &y_i = y_i_w->GetValues();
 
-    if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
+    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
       out->GetMutableValues() ^= (d & y_i) ^ (e & x_i) ^ (e & d);
     } else {
       out->GetMutableValues() ^= (d & y_i) ^ (e & x_i);
@@ -722,11 +722,10 @@ void GMWANDGate::EvaluateOnline() {
   }
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    backend->GetLogger()->LogTrace(
-        fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWANDGate::GetOutputAsGMWShare() const {
@@ -759,8 +758,8 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
 
   const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfSIMDValues());
 
-  auto _register = GetRegister();
-  gate_id_ = _register->NextGateId();
+  auto &_register = GetRegister();
+  gate_id_ = _register.NextGateId();
 
   for (auto &wire : parent_a_) {
     RegisterWaitingFor(wire->GetWireId());
@@ -780,14 +779,14 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   output_wires_.resize(parent_a_.size());
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-    _register->RegisterNextWire(w);
+    _register.RegisterNextWire(w);
   }
 
   auto backend = backend_.lock();
   assert(backend);
 
-  const auto num_parties = GetConfig()->GetNumOfParties();
-  const auto my_id = GetConfig()->GetMyId();
+  const auto num_parties = GetConfig().GetNumOfParties();
+  const auto my_id = GetConfig().GetMyId();
   const auto num_simd = parent_a_.at(0)->GetNumOfSIMDValues();
   const auto num_bits = parent_a_.size();
   constexpr auto XCOT = ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT;
@@ -804,14 +803,14 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
                                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created a BooleanGMW AND gate with following properties: {}", gate_info));
   }
 }
 
 void GMWMUXGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister()->IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGateSetupsCounter();
 }
 
 void GMWMUXGate::EvaluateOnline() {
@@ -830,8 +829,8 @@ void GMWMUXGate::EvaluateOnline() {
 
   const auto num_bits = parent_a_.size();
   const auto num_simd = parent_a_.at(0)->GetNumOfSIMDValues();
-  const auto num_parties = GetConfig()->GetNumOfParties();
-  const auto my_id = GetConfig()->GetMyId();
+  const auto num_parties = GetConfig().GetNumOfParties();
+  const auto my_id = GetConfig().GetMyId();
 
   std::vector<ENCRYPTO::BitVector<>> xored_v;
   for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
@@ -891,10 +890,10 @@ void GMWMUXGate::EvaluateOnline() {
   }
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    GetLogger()->LogTrace(fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister()->IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesCounter();
 }
 
 const Shares::GMWSharePtr GMWMUXGate::GetOutputAsGMWShare() const {

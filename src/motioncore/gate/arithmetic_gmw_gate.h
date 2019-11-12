@@ -78,42 +78,39 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
   void InitializationHelper() {
     static_assert(!std::is_same_v<T, bool>);
 
-    gate_id_ = GetRegister()->NextGateId();
-    arithmetic_sharing_id_ = GetRegister()->NextArithmeticSharingId(input_.size());
-    GetLogger()->LogTrace(
-        fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+    gate_id_ = GetRegister().NextGateId();
+    arithmetic_sharing_id_ = GetRegister().NextArithmeticSharingId(input_.size());
+    GetLogger().LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
     output_wires_ = {std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(input_, backend_))};
     for (auto &w : output_wires_) {
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
     }
 
     auto gate_info = fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_,
                                  input_owner_id_);
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Allocate an ArithmeticInputGate with following properties: {}", gate_info));
   }
 
   ~ArithmeticInputGate() final = default;
 
   void EvaluateSetup() final {
-    auto my_id = GetRegister()->GetConfig()->GetMyId();
+    auto my_id = GetConfig().GetMyId();
     if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       // we always generate seeds for the input sharing
       // before we start evaluating the circuit
     } else {
-      auto &rand_generator =
-          GetRegister()
-              ->GetConfig()
-              ->GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
-              ->GetTheirRandomnessGenerator();
+      auto &rand_generator = GetConfig()
+                                 .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
+                                 ->GetTheirRandomnessGenerator();
 
       while (!rand_generator->IsInitialized()) {
         rand_generator->GetInitializedCondition()->WaitFor(std::chrono::milliseconds(1));
       }
     }
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   // non-interactive input sharing based on distributed in advance randomness
@@ -122,19 +119,19 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
     WaitSetup();
     assert(setup_is_ready_);
 
-    auto my_id = GetConfig()->GetMyId();
+    auto my_id = GetConfig().GetMyId();
     std::vector<T> result;
 
     if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       result.resize(input_.size());
       auto log_string = std::string("");
-      for (auto i = 0u; i < GetConfig()->GetNumOfParties(); ++i) {
+      for (auto i = 0u; i < GetConfig().GetNumOfParties(); ++i) {
         if (i == my_id) {
           continue;
         }
         auto randomness =
             std::move(GetConfig()
-                          ->GetCommunicationContext(i)
+                          .GetCommunicationContext(i)
                           ->GetMyRandomnessGenerator()
                           ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
         if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -153,13 +150,12 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
             "My (id#{}) arithmetic input sharing for gate#{}, my input: {}, my "
             "share: {}, expected shares of other parties: {}",
             input_owner_id_, gate_id_, input_.at(0), result.at(0), log_string);
-        GetLogger()->LogTrace(s);
+        GetLogger().LogTrace(s);
       }
     } else {
-      auto &rand_generator =
-          GetConfig()
-              ->GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
-              ->GetTheirRandomnessGenerator();
+      auto &rand_generator = GetConfig()
+                                 .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
+                                 ->GetTheirRandomnessGenerator();
 
       result =
           std::move(rand_generator->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
@@ -169,16 +165,16 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
             "Arithmetic input sharing (gate#{}) of Party's#{} input, got a share "
             "{} from the seed",
             gate_id_, input_owner_id_, result.at(0));
-        GetLogger()->LogTrace(s);
+        GetLogger().LogTrace(s);
       }
     }
     auto my_wire = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(my_wire);
     my_wire->GetMutableValues() = std::move(result);
 
-    GetLogger()->LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
+    GetLogger().LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -231,9 +227,9 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     backend_ = parent->GetBackend();
 
     // values we need repeatedly
-    const auto config = GetConfig();
-    const auto my_id = config->GetMyId();
-    const auto num_parties = config->GetNumOfParties();
+    auto &config = GetConfig();
+    const auto my_id = config.GetMyId();
+    const auto num_parties = config.GetNumOfParties();
 
     if (static_cast<std::size_t>(output_owner) >= num_parties &&
         static_cast<std::size_t>(output_owner) != ALL) {
@@ -244,7 +240,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     output_owner_ = output_owner;
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;
-    gate_id_ = GetRegister()->NextGateId();
+    gate_id_ = GetRegister().NextGateId();
     is_my_output_ = my_id == static_cast<std::size_t>(output_owner_) ||
                     static_cast<std::size_t>(output_owner_) == ALL;
 
@@ -257,7 +253,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(placeholder_vector, backend_))};
 
     for (auto &w : output_wires_) {
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
     }
 
     // Tell the DataStorages that we want to receive OutputMessages from the
@@ -271,7 +267,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
           output_message_futures_.emplace_back();
           continue;
         }
-        const auto &data_storage = config->GetCommunicationContext(i)->GetDataStorage();
+        const auto &data_storage = config.GetCommunicationContext(i)->GetDataStorage();
         // Get a future that will eventually contain the received data.
         output_message_futures_.push_back(data_storage->RegisterForOutputMessage(gate_id_));
       }
@@ -280,7 +276,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     if constexpr (MOTION_DEBUG) {
       auto gate_info = fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_,
                                    output_owner_);
-      GetLogger()->LogDebug(
+      GetLogger().LogDebug(
           fmt::format("Allocate an ArithmeticOutputGate with following properties: {}", gate_info));
     }
   }
@@ -300,7 +296,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   void EvaluateOnline() final {
@@ -309,9 +305,9 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     assert(setup_is_ready_);
 
     // data we need repeatedly
-    const auto config = GetConfig();
-    auto my_id = config->GetMyId();
-    auto num_parties = config->GetNumOfParties();
+    const auto &config = GetConfig();
+    auto my_id = config.GetMyId();
+    auto num_parties = config.GetNumOfParties();
 
     // note that arithmetic gates have only a single wire
     auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
@@ -325,7 +321,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     if (!is_my_output_) {
       auto payload = Helpers::ToByteVector(output);
       auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payload);
-      GetRegister()->Send(output_owner_, std::move(output_message));
+      GetRegister().Send(output_owner_, std::move(output_message));
     }
     // we need to send shares to all other parties:
     else if (output_owner_ == ALL) {
@@ -333,7 +329,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
       for (auto i = 0ull; i < num_parties; ++i) {
         if (i == my_id) continue;
         auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payload);
-        GetRegister()->Send(i, std::move(output_message));
+        GetRegister().Send(i, std::move(output_message));
       }
     }
 
@@ -381,7 +377,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
               fmt::format("id#{}:{} ", i, Helpers::Print::ToString(shared_outputs.at(i))));
         }
         auto result = Helpers::Print::ToString(output);
-        GetLogger()->LogTrace(
+        GetLogger().LogTrace(
             fmt::format("Received output shares: {} from other parties, "
                         "reconstructed result is {}",
                         shares, result));
@@ -390,10 +386,10 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
     // we are done with this gate
     if constexpr (MOTION_DEBUG) {
-      GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
+      GetLogger().LogDebug(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
     }
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
 
  protected:
@@ -419,7 +415,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     requires_online_interaction_ = false;
     gate_type_ = GateType::NonInteractiveGate;
 
-    gate_id_ = GetRegister()->NextGateId();
+    gate_id_ = GetRegister().NextGateId();
 
     RegisterWaitingFor(parent_a_.at(0)->GetWireId());
     parent_a_.at(0)->RegisterWaitingGate(gate_id_);
@@ -432,13 +428,13 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(placeholder_vector, backend_)))};
     for (auto &w : output_wires_) {
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
     }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created an ArithmeticAdditionGate with following properties: {}", gate_info));
   }
 
@@ -446,7 +442,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   void EvaluateOnline() final {
@@ -469,9 +465,9 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
         std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
+    GetLogger().LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -503,7 +499,7 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     requires_online_interaction_ = false;
     gate_type_ = GateType::NonInteractiveGate;
 
-    gate_id_ = GetRegister()->NextGateId();
+    gate_id_ = GetRegister().NextGateId();
 
     RegisterWaitingFor(parent_a_.at(0)->GetWireId());
     parent_a_.at(0)->RegisterWaitingGate(gate_id_);
@@ -516,13 +512,13 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(placeholder_vector, backend_)))};
     for (auto &w : output_wires_) {
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
     }
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Created an ArithmeticSubtractionGate with following properties: {}", gate_info));
   }
 
@@ -530,7 +526,7 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   void EvaluateOnline() final {
@@ -552,9 +548,9 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
         std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticSubtractionGate with id#{}", gate_id_));
+    GetLogger().LogDebug(fmt::format("Evaluated ArithmeticSubtractionGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -589,17 +585,17 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     const std::vector<T> tmp_v(parent_a_.at(0)->GetNumOfSIMDValues());
 
     d_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
-    GetRegister()->RegisterNextWire(d_);
+    GetRegister().RegisterNextWire(d_);
     e_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
-    GetRegister()->RegisterNextWire(e_);
+    GetRegister().RegisterNextWire(e_);
 
     d_out_ = std::make_shared<ArithmeticOutputGate<T>>(d_);
     e_out_ = std::make_shared<ArithmeticOutputGate<T>>(e_);
 
-    GetRegister()->RegisterNextGate(d_out_);
-    GetRegister()->RegisterNextGate(e_out_);
+    GetRegister().RegisterNextGate(d_out_);
+    GetRegister().RegisterNextGate(e_out_);
 
-    gate_id_ = GetRegister()->NextGateId();
+    gate_id_ = GetRegister().NextGateId();
 
     RegisterWaitingFor(parent_a_.at(0)->GetWireId());
     parent_a_.at(0)->RegisterWaitingGate(gate_id_);
@@ -610,19 +606,19 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(tmp_v, backend_)))};
     for (auto &w : output_wires_) {
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
     }
 
     auto backend = backend_.lock();
     assert(backend);
 
     num_mts_ = parent_a_.at(0)->GetNumOfSIMDValues();
-    mt_offset_ = GetMTProvider()->template RequestArithmeticMTs<T>(num_mts_);
+    mt_offset_ = GetMTProvider().template RequestArithmeticMTs<T>(num_mts_);
 
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger()->LogDebug(fmt::format(
+    GetLogger().LogDebug(fmt::format(
         "Created an ArithmeticMultiplicationGate with following properties: {}", gate_info));
   }
 
@@ -630,7 +626,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   void EvaluateOnline() final {
@@ -639,9 +635,9 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     parent_a_.at(0)->GetIsReadyCondition()->Wait();
     parent_b_.at(0)->GetIsReadyCondition()->Wait();
 
-    auto mt_provider = GetMTProvider();
-    mt_provider->WaitFinished();
-    const auto &mts = mt_provider->template GetIntegerAll<T>();
+    auto &mt_provider = GetMTProvider();
+    mt_provider.WaitFinished();
+    const auto &mts = mt_provider.template GetIntegerAll<T>();
     {
       const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_a_.at(0));
       assert(x);
@@ -696,7 +692,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     const auto &e = e_w->GetValues();
     const auto &s_y = y_i_w->GetValues();
 
-    if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
+    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
         out->GetMutableValues().at(i) +=
             (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i)) - (e.at(i) * d.at(i));
@@ -707,10 +703,10 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
       }
     }
 
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Evaluated ArithmeticMultiplicationGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -747,13 +743,13 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     const std::vector<T> tmp_v(parent_.at(0)->GetNumOfSIMDValues());
 
     d_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
-    GetRegister()->RegisterNextWire(d_);
+    GetRegister().RegisterNextWire(d_);
 
     d_out_ = std::make_shared<ArithmeticOutputGate<T>>(d_);
 
-    GetRegister()->RegisterNextGate(d_out_);
+    GetRegister().RegisterNextGate(d_out_);
 
-    gate_id_ = GetRegister()->NextGateId();
+    gate_id_ = GetRegister().NextGateId();
 
     RegisterWaitingFor(parent_.at(0)->GetWireId());
     parent_.at(0)->RegisterWaitingGate(gate_id_);
@@ -761,15 +757,15 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(tmp_v, backend_)))};
     for (auto &w : output_wires_) {
-      GetRegister()->RegisterNextWire(w);
+      GetRegister().RegisterNextWire(w);
     }
 
     num_sps_ = parent_.at(0)->GetNumOfSIMDValues();
-    sp_offset_ = GetSPProvider()->template RequestSPs<T>(num_sps_);
+    sp_offset_ = GetSPProvider().template RequestSPs<T>(num_sps_);
 
     auto gate_info = fmt::format("uint{}_t type, gate id {}, parent: {}", sizeof(T) * 8, gate_id_,
                                  parent_.at(0)->GetWireId());
-    GetLogger()->LogDebug(
+    GetLogger().LogDebug(
         fmt::format("Created an ArithmeticSquareGate with following properties: {}", gate_info));
   }
 
@@ -777,7 +773,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister()->IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGateSetupsCounter();
   }
 
   void EvaluateOnline() final {
@@ -785,9 +781,9 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     assert(setup_is_ready_);
     parent_.at(0)->GetIsReadyCondition()->Wait();
 
-    auto sp_provider = GetSPProvider();
-    sp_provider->WaitFinished();
-    const auto &sps = sp_provider->template GetSPsAll<T>();
+    auto &sp_provider = GetSPProvider();
+    sp_provider.WaitFinished();
+    const auto &sps = sp_provider.template GetSPsAll<T>();
     {
       const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
       assert(x);
@@ -822,7 +818,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     const auto &d = d_w->GetValues();
     const auto &s_x = x_i_w->GetValues();
 
-    if (GetConfig()->GetMyId() == (gate_id_ % GetConfig()->GetNumOfParties())) {
+    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
         out->GetMutableValues().at(i) += 2 * (d.at(i) * s_x.at(i)) - (d.at(i) * d.at(i));
       }
@@ -832,9 +828,9 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
       }
     }
 
-    GetLogger()->LogDebug(fmt::format("Evaluated ArithmeticSquareGate with id#{}", gate_id_));
+    GetLogger().LogDebug(fmt::format("Evaluated ArithmeticSquareGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister()->IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
