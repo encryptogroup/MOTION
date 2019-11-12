@@ -38,6 +38,7 @@ add_library(motion
         share/boolean_gmw_share.cpp
         share/share.cpp
         share/share_wrapper.cpp
+        statistics/run_time_stats.cpp
         utility/bit_matrix.cpp
         utility/bit_vector.cpp
         utility/condition.cpp
