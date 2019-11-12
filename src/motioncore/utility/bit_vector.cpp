@@ -629,7 +629,7 @@ bool BitVector<Allocator>::ANDReduceBitVector(const BitVector& vector) {
     for (auto i = 1ull; i < size; ++i) b &= raw_vector.at(i);
 
     BitVector bv({b}, 8);
-    bool result = bv.Get(0);
+    bool result{b == std::byte(0xFF)};
 
     for (auto i = 1; i < 8; ++i) result &= bv.Get(i);
 
