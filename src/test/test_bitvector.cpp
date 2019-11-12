@@ -188,7 +188,7 @@ TEST(BitVector, VectorVectorOperations) {
 }
 
 TEST(BitVector, ANDReduce) {
-  for (auto size : {1, 2, 15, 16, 17, 64, 65, 100}) {
+  for (auto size : {0, 1, 2, 15, 16, 17, 64, 65, 100}) {
     ENCRYPTO::BitVector<> bv(size, true);
     auto result = ENCRYPTO::BitVector<>::ANDReduceBitVector(bv);
     EXPECT_TRUE(result);

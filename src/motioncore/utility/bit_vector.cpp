@@ -609,7 +609,7 @@ BitVector<Allocator> BitVector<Allocator>::Random(std::size_t size) noexcept {
 template <typename Allocator>
 bool BitVector<Allocator>::ANDReduceBitVector(const BitVector& vector) {
   if (vector.GetSize() == 0) {
-    return false;
+    return true;
   } else if (vector.GetSize() == 1) {
     return vector.Get(0);
   } else if (vector.GetSize() <= 16) {
