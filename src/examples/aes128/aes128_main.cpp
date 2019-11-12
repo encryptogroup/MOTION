@@ -44,25 +44,30 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]);
 MOTION::PartyPtr CreateParty(const po::variables_map& vm);
 
 int main(int ac, char* av[]) {
-  auto [vm, help_flag] = ParseProgramOptions(ac, av);
-  // if help flag is set - print allowed command line arguments and exit
-  if (help_flag) return 1;
+  try {
+    auto [vm, help_flag] = ParseProgramOptions(ac, av);
+    // if help flag is set - print allowed command line arguments and exit
+    if (help_flag) return 1;
 
-  MOTION::PartyPtr party{CreateParty(vm)};
-  // establish communication channels with other parties
-  party->Connect();
+    MOTION::PartyPtr party{CreateParty(vm)};
+    // establish communication channels with other parties
+    party->Connect();
 
-  const auto num_simd{vm["num-simd"].as<std::size_t>()};
-  MOTION::MPCProtocol protocol;
-  const std::string protocol_str{vm["protocol"].as<std::string>()};
-  
-  if (protocol_str == "BMR")
-    EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
-  else if (protocol_str == "GMW" || protocol_str == "BooleanGMW")
-    EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW);
-  else
-    throw std::invalid_argument("Only GMW or BMR is allowed");
+    const auto num_simd{vm["num-simd"].as<std::size_t>()};
+    MOTION::MPCProtocol protocol;
+    const std::string protocol_str{vm["protocol"].as<std::string>()};
 
+    if (protocol_str == "BMR")
+      EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
+    else if (protocol_str == "GMW" || protocol_str == "BooleanGMW")
+      EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW);
+    else
+      throw std::invalid_argument("Only GMW or BMR is allowed");
+
+  } catch (std::runtime_error& e) {
+    std::cerr << e.what() << "\n";
+    return 1;
+  }
   return 0;
 }
 
@@ -88,7 +93,8 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
       ("my-id", po::value<std::size_t>(), "my party id")
       ("other-parties", po::value<std::vector<std::string>>()->multitoken(), "(other party id, IP, port, my role), e.g., --other-parties 1,127.0.0.1,7777")
       ("num-simd", po::value<std::size_t>()->default_value(1), "number of SIMD values for AES evaluation")
-      ("protocol", po::value<std::string>()->default_value("BMR"), "Boolean MPC protocol (BMR or GMW)");
+      ("protocol", po::value<std::string>()->default_value("BMR"), "Boolean MPC protocol (BMR or GMW)")
+      ("online-after-setup", po::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)");
   // clang-format on
 
   po::variables_map vm;
@@ -179,6 +185,7 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
   // disable logging if the corresponding flag was set
   const auto logging{!vm.count("disable-logging")};
   config->SetLoggingEnabled(logging);
+  config->SetOnlineAfterSetup(vm["online-after-setup"].as<bool>());
   // create party object using the given config
   return std::make_unique<MOTION::Party>(config);
 }

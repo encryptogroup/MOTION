@@ -26,6 +26,7 @@
 
 #include "algorithm/algorithm_description.h"
 #include "share/share_wrapper.h"
+#include "statistics/run_time_stats.h"
 #include "utility/config.h"
 
 void EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd, MOTION::MPCProtocol protocol) {
@@ -39,4 +40,6 @@ void EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd, MOTION::MPC
   const auto result{input.Evaluate(aes_algo)};
   party->Run();
   party->Finish();
+  const auto& stats = party->GetBackend()->GetRunTimeStats();
+  std::cout << stats.back().print_human_readable() << std::endl;
 }
