@@ -35,9 +35,10 @@ namespace MOTION::Wires {
 
 std::size_t Wire::GetNumOfSIMDValues() const { return n_simd_; }
 
-Wire::Wire() {
-  is_done_condition_ = std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); });
-}
+Wire::Wire(Backend &backend)
+    : backend_(backend),
+      is_done_condition_(
+          std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); })) {}
 
 Wire::~Wire() { assert(wire_id_ >= 0); }
 
@@ -80,18 +81,12 @@ std::string Wire::PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wire
   return result;
 }
 
-void Wire::SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> backend) {
-  auto ptr_backend = backend.lock();
-  assert(ptr_backend);
-  auto gate = ptr_backend->GetGate(gate_id);
+void Wire::SignalReadyToDependency(std::size_t gate_id, Backend &backend) {
+  auto gate = backend.GetGate(gate_id);
   assert(gate != nullptr);
   gate->SignalDependencyIsReady();
 }
 
-void Wire::InitializationHelper() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  wire_id_ = ptr_backend->GetRegister()->NextWireId();
-}
+void Wire::InitializationHelper() { wire_id_ = backend_.GetRegister()->NextWireId(); }
 
-}
+}  // namespace MOTION::Wires

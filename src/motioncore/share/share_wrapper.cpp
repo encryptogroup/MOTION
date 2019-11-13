@@ -31,9 +31,9 @@
 #include "bmr_share.h"
 #include "boolean_gmw_share.h"
 #include "gate/arithmetic_gmw_gate.h"
+#include "gate/b2a_gate.h"
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
-#include "gate/b2a_gate.h"
 #include "gate/conversion_gate.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "share/arithmetic_gmw_share.h"
@@ -224,16 +224,13 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) const {
 
 ShareWrapper ShareWrapper::operator==(const ShareWrapper &other) const {
   if (other->GetBitLength() != share_->GetBitLength()) {
-    const auto backend = share_->GetBackend().lock();
-    assert(backend);
-    backend->GetLogger()->LogError(
+    share_->GetBackend().GetLogger()->LogError(
         fmt::format("Comparing shared bit strings of different bit lengths: this {} bits vs other "
                     "share's {} bits",
                     share_->GetBitLength(), other->GetBitLength()));
   } else if (other->GetBitLength() == 0) {
-    const auto backend = share_->GetBackend().lock();
-    assert(backend);
-    backend->GetLogger()->LogError("Comparing shared bit strings of bit length 0 is not allowed");
+    share_->GetBackend().GetLogger()->LogError(
+        "Comparing shared bit strings of bit length 0 is not allowed");
   }
 
   auto result = ~(*this ^ other);  // XNOR
@@ -320,7 +317,7 @@ ShareWrapper ShareWrapper::Convert() const {
   if constexpr (p == AGMW) {
     if (share_->GetProtocol() == BGMW) {  // BGMW -> AGMW
       return BooleanGMWToArithmeticGMW();
-    } else  {  // BMR --(over BGMW)--> AGMW
+    } else {  // BMR --(over BGMW)--> AGMW
       return this->Convert<BGMW>().Convert<AGMW>();
     }
   } else if constexpr (p == BGMW) {
@@ -348,8 +345,7 @@ template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BMR>() const;
 ShareWrapper ShareWrapper::ArithmeticGMWToBMR() const {
   const auto bitlen{share_->GetBitLength()};
   auto wire{share_->GetWires().at(0)};
-  auto backend{share_->GetBackend().lock()};
-  assert(backend);
+  auto &backend = share_->GetBackend();
   std::vector<ENCRYPTO::BitVector<>> my_input;
   switch (bitlen) {
     case 8u: {
@@ -383,11 +379,11 @@ ShareWrapper ShareWrapper::ArithmeticGMWToBMR() const {
                                                  ENCRYPTO::BitVector<>(my_input.at(0).GetSize()));
 
   std::vector<SecureUnsignedInteger> shares;
-  for (auto party_id = 0ull; party_id < backend->GetConfig()->GetNumOfParties(); ++party_id) {
-    if (party_id == backend->GetConfig()->GetMyId())
-      shares.emplace_back(backend->BMRInput(party_id, my_input));
+  for (auto party_id = 0ull; party_id < backend.GetConfig()->GetNumOfParties(); ++party_id) {
+    if (party_id == backend.GetConfig()->GetMyId())
+      shares.emplace_back(backend.BMRInput(party_id, my_input));
     else
-      shares.emplace_back(backend->BMRInput(party_id, dummy_input));
+      shares.emplace_back(backend.BMRInput(party_id, dummy_input));
   }
 
   auto result{shares.at(0)};
@@ -446,22 +442,21 @@ ShareWrapper ShareWrapper::BMRToBooleanGMW() const {
 
 const SharePtr ShareWrapper::Out(std::size_t output_owner) const {
   assert(share_);
-  auto backend = share_->GetBackend().lock();
-  assert(backend);
+  auto &backend = share_->GetBackend();
   switch (share_->GetProtocol()) {
     case MPCProtocol::ArithmeticGMW: {
       switch (share_->GetBitLength()) {
         case 8u: {
-          return backend->ArithmeticGMWOutput<std::uint8_t>(share_, output_owner);
+          return backend.ArithmeticGMWOutput<std::uint8_t>(share_, output_owner);
         }
         case 16u: {
-          return backend->ArithmeticGMWOutput<std::uint16_t>(share_, output_owner);
+          return backend.ArithmeticGMWOutput<std::uint16_t>(share_, output_owner);
         }
         case 32u: {
-          return backend->ArithmeticGMWOutput<std::uint32_t>(share_, output_owner);
+          return backend.ArithmeticGMWOutput<std::uint32_t>(share_, output_owner);
         }
         case 64u: {
-          return backend->ArithmeticGMWOutput<std::uint64_t>(share_, output_owner);
+          return backend.ArithmeticGMWOutput<std::uint64_t>(share_, output_owner);
         }
         default: {
           throw(std::runtime_error(
@@ -470,10 +465,10 @@ const SharePtr ShareWrapper::Out(std::size_t output_owner) const {
       }
     }
     case MPCProtocol::BooleanGMW: {
-      return backend->BooleanGMWOutput(share_, output_owner);
+      return backend.BooleanGMWOutput(share_, output_owner);
     }
     case MPCProtocol::BMR: {
-      return backend->BMROutput(share_, output_owner);
+      return backend.BMROutput(share_, output_owner);
     }
     default: {
       throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",

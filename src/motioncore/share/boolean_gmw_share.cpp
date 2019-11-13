@@ -49,7 +49,8 @@ CircuitType GMWShare::GetCircuitType() const noexcept {
   return BooleanCircuitType;
 }
 
-GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
+GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires)
+    : BooleanShare(wires.at(0)->GetBackend()) {
   if (wires.size() == 0) {
     throw(std::runtime_error("Trying to create a Boolean GMW share without wires"));
   }
@@ -76,7 +77,6 @@ GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
       assert(size == gmw_wire_next->GetValues().GetSize());
     }
   }
-  backend_ = wires.at(0)->GetBackend();
   bits_ = wires.at(0)->GetBitLength();
 }
 
@@ -95,4 +95,4 @@ std::vector<std::shared_ptr<Share>> GMWShare::Split() const noexcept {
   }
   return v;
 }
-}
+}  // namespace MOTION::Shares

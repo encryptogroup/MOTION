@@ -59,19 +59,15 @@ namespace MOTION::Gates::Arithmetic {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticInputGate final : public Interfaces::InputGate {
  public:
-  ArithmeticInputGate(const std::vector<T> &input, std::size_t input_owner,
-                      std::weak_ptr<Backend> backend)
-      : input_(input) {
+  ArithmeticInputGate(const std::vector<T> &input, std::size_t input_owner, Backend &backend)
+      : InputGate(backend), input_(input) {
     input_owner_id_ = input_owner;
-    backend_ = backend;
     InitializationHelper();
   }
 
-  ArithmeticInputGate(std::vector<T> &&input, std::size_t input_owner,
-                      std::weak_ptr<Backend> backend)
-      : input_(std::move(input)) {
+  ArithmeticInputGate(std::vector<T> &&input, std::size_t input_owner, Backend &backend)
+      : InputGate(backend), input_(std::move(input)) {
     input_owner_id_ = input_owner;
-    backend_ = backend;
     InitializationHelper();
   }
 
@@ -212,7 +208,8 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     return result;
   }
 
-  ArithmeticOutputGate(const Wires::ArithmeticWirePtr<T> &parent, std::size_t output_owner = ALL) {
+  ArithmeticOutputGate(const Wires::ArithmeticWirePtr<T> &parent, std::size_t output_owner = ALL)
+      : OutputGate(parent->GetBackend()) {
     assert(parent);
 
     if (parent->GetProtocol() != MPCProtocol::ArithmeticGMW) {
@@ -224,7 +221,6 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     }
 
     parent_ = {parent};
-    backend_ = parent->GetBackend();
 
     // values we need repeatedly
     auto &config = GetConfig();
@@ -405,10 +401,10 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
  public:
   ArithmeticAdditionGate(const MOTION::Wires::ArithmeticWirePtr<T> &a,
-                         const MOTION::Wires::ArithmeticWirePtr<T> &b) {
+                         const MOTION::Wires::ArithmeticWirePtr<T> &b)
+      : TwoGate(a->GetBackend()) {
     parent_a_ = {std::static_pointer_cast<MOTION::Wires::Wire>(a)};
     parent_b_ = {std::static_pointer_cast<MOTION::Wires::Wire>(b)};
-    backend_ = parent_a_.at(0)->GetBackend();
 
     assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
@@ -489,10 +485,10 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGate {
  public:
   ArithmeticSubtractionGate(const MOTION::Wires::ArithmeticWirePtr<T> &a,
-                            const MOTION::Wires::ArithmeticWirePtr<T> &b) {
+                            const MOTION::Wires::ArithmeticWirePtr<T> &b)
+      : TwoGate(a->GetBackend()) {
     parent_a_ = {std::static_pointer_cast<MOTION::Wires::Wire>(a)};
     parent_b_ = {std::static_pointer_cast<MOTION::Wires::Wire>(b)};
-    backend_ = parent_a_.at(0)->GetBackend();
 
     assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
@@ -572,10 +568,10 @@ template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::TwoGate {
  public:
   ArithmeticMultiplicationGate(const MOTION::Wires::ArithmeticWirePtr<T> &a,
-                               const MOTION::Wires::ArithmeticWirePtr<T> &b) {
+                               const MOTION::Wires::ArithmeticWirePtr<T> &b)
+      : TwoGate(a->GetBackend()) {
     parent_a_ = {std::static_pointer_cast<MOTION::Wires::Wire>(a)};
     parent_b_ = {std::static_pointer_cast<MOTION::Wires::Wire>(b)};
-    backend_ = parent_a_.at(0)->GetBackend();
 
     assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
@@ -608,9 +604,6 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     for (auto &w : output_wires_) {
       GetRegister().RegisterNextWire(w);
     }
-
-    auto backend = backend_.lock();
-    assert(backend);
 
     num_mts_ = parent_a_.at(0)->GetNumOfSIMDValues();
     mt_offset_ = GetMTProvider().template RequestArithmeticMTs<T>(num_mts_);
@@ -733,9 +726,8 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
  public:
-  ArithmeticSquareGate(const MOTION::Wires::ArithmeticWirePtr<T> &a) {
+  ArithmeticSquareGate(const MOTION::Wires::ArithmeticWirePtr<T> &a) : OneGate(a->GetBackend()) {
     parent_ = {std::static_pointer_cast<MOTION::Wires::Wire>(a)};
-    backend_ = parent_.at(0)->GetBackend();
 
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;

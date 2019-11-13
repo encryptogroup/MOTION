@@ -37,20 +37,19 @@ namespace MOTION::Shares {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticShare final : public Shares::Share {
  public:
-  ArithmeticShare(const Wires::WirePtr &wire) {
+  ArithmeticShare(const Wires::WirePtr &wire) : Share(wire->GetBackend()) {
     wires_ = {wire};
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(const Wires::ArithmeticWirePtr<T> &wire) {
+  ArithmeticShare(const Wires::ArithmeticWirePtr<T> &wire) : Share(wire->GetBackend()) {
     wires_ = {std::static_pointer_cast<Wires::Wire>(wire)};
-    backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(const std::vector<Wires::ArithmeticWirePtr<T>> &wires) {
+  ArithmeticShare(const std::vector<Wires::ArithmeticWirePtr<T>> &wires)
+      : Share(wires.at(0)->GetBackend()) {
     for (auto i = 0ull; i < wires.size(); ++i) {
       wires_.emplace_back(wires.at(i));
     }
@@ -63,10 +62,9 @@ class ArithmeticShare final : public Shares::Share {
                                          "from more than 1 wire; got {} wires",
                                          wires.size())));
     }
-    backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(const std::vector<Wires::WirePtr> &wires) {
+  ArithmeticShare(const std::vector<Wires::WirePtr> &wires) : Share(wires.at(0)->GetBackend()) {
     if (wires.size() == 0) {
       throw(std::runtime_error("Trying to create an arithmetic share without wires"));
     }
@@ -80,16 +78,13 @@ class ArithmeticShare final : public Shares::Share {
     if (!wires_.at(0)) {
       throw(std::runtime_error("Something went wrong with creating an arithmetic share"));
     }
-    backend_ = wires_.at(0)->GetBackend();
   }
 
-  ArithmeticShare(const std::vector<T> &input, const std::weak_ptr<Backend> &backend) {
-    backend_ = backend;
+  ArithmeticShare(const std::vector<T> &input, Backend &backend) : Share(backend) {
     wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
 
-  ArithmeticShare(const T input, const std::weak_ptr<Backend> &backend) {
-    backend_ = backend;
+  ArithmeticShare(const T input, Backend &backend) : Share(backend) {
     wires_ = {std::make_shared<Wires::ArithmeticWire<T>>(input, backend)};
   }
 
@@ -156,19 +151,13 @@ using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticConstantShare : public Share {
  public:
-  ArithmeticConstantShare(T input, const std::weak_ptr<Backend> &backend) : values_({input}) {
-    backend_ = backend;
-  }
+  ArithmeticConstantShare(T input, Backend &backend) : Share(backend), values_({input}) {}
 
-  ArithmeticConstantShare(std::vector<T> &input, const std::weak_ptr<Backend> &backend)
-      : values_(input) {
-    backend_ = backend;
-  }
+  ArithmeticConstantShare(std::vector<T> &input, Backend &backend)
+      : Share(backend), values_(input) {}
 
-  ArithmeticConstantShare(std::vector<T> &&input, const std::weak_ptr<Backend> &backend)
-      : values_(std::move(input)) {
-    backend_ = backend;
-  }
+  ArithmeticConstantShare(std::vector<T> &&input, Backend &backend)
+      : Share(backend), values_(std::move(input)) {}
 
   ~ArithmeticConstantShare() override = default;
 
@@ -192,4 +181,4 @@ class ArithmeticConstantShare : public Share {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 using ArithmeticConstantSharePtr = std::shared_ptr<ArithmeticConstantShare<T>>;
-}
+}  // namespace MOTION::Shares

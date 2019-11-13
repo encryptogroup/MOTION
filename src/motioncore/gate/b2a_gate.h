@@ -43,7 +43,7 @@ namespace Conversions {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
  public:
-  GMWToArithmeticGate(const Shares::SharePtr& parent) {
+  GMWToArithmeticGate(const Shares::SharePtr& parent) : OneGate(parent->GetBackend()) {
     parent_ = parent->GetWires();
     const auto num_simd{parent->GetNumOfSIMDValues()};
     constexpr auto bit_size = sizeof(T) * 8;
@@ -55,8 +55,6 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
       assert(wire->GetNumOfSIMDValues() == num_simd);
       assert(wire->GetProtocol() == MPCProtocol::BooleanGMW);
     }
-
-    backend_ = parent_.at(0)->GetBackend();
 
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;

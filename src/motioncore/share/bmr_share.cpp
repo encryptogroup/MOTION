@@ -48,7 +48,8 @@ CircuitType BMRShare::GetCircuitType() const noexcept {
   return BooleanCircuitType;
 }
 
-BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
+BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires)
+    : BooleanShare(wires.at(0)->GetBackend()) {
   if (wires.size() == 0) {
     throw(std::runtime_error("Trying to create a Boolean BMR share without wires"));
   }
@@ -75,7 +76,6 @@ BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires) {
       assert(size == bmr_wire_next->GetNumOfSIMDValues());
     }
   }
-  backend_ = wires.at(0)->GetBackend();
   bits_ = wires.at(0)->GetBitLength();
 }
 
@@ -94,4 +94,4 @@ std::vector<std::shared_ptr<Share>> BMRShare::Split() const noexcept {
   return v;
 }
 
-}
+}  // namespace MOTION::Shares

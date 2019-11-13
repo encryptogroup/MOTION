@@ -170,8 +170,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, const std::vector<T> &input_vector) {
-    auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
-        input_vector, party_id, weak_from_this());
+    auto in_gate =
+        std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(input_vector, party_id, *this);
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());
@@ -180,7 +180,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, std::vector<T> &&input_vector) {
     auto in_gate = std::make_shared<Gates::Arithmetic::ArithmeticInputGate<T>>(
-        std::move(input_vector), party_id, weak_from_this());
+        std::move(input_vector), party_id, *this);
     auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
     RegisterInputGate(in_gate_cast);
     return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsArithmeticShare());

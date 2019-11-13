@@ -102,7 +102,7 @@ class Gate {
 
  protected:
   std::vector<Wires::WirePtr> output_wires_;
-  std::weak_ptr<Backend> backend_;
+  Backend& backend_;
   std::int64_t gate_id_ = -1;
   std::unordered_set<std::size_t> wire_dependencies_;
 
@@ -118,7 +118,7 @@ class Gate {
 
   std::atomic<std::size_t> num_ready_dependencies_ = 0;
 
-  Gate();
+  Gate(Backend& backend);
 
  protected:
   Register& GetRegister();
@@ -156,7 +156,7 @@ class OneGate : public Gate {
  protected:
   std::vector<Wires::WirePtr> parent_;
 
-  OneGate() = default;
+  OneGate(Backend& backend) : Gate(backend) {}
 };
 
 //
@@ -174,7 +174,7 @@ class InputGate : public OneGate {
  protected:
   ~InputGate() override = default;
 
-  InputGate() { gate_type_ = GateType::InputGate; }
+  InputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::InputGate; }
 
   InputGate(InputGate&) = delete;
 
@@ -199,7 +199,7 @@ class OutputGate : public OneGate {
 
   OutputGate(OutputGate&) = delete;
 
-  OutputGate() { gate_type_ = GateType::InteractiveGate; }
+  OutputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::InteractiveGate; }
 
  protected:
   std::int64_t output_owner_ = -1;
@@ -222,7 +222,7 @@ class TwoGate : public Gate {
   std::vector<Wires::WirePtr> parent_a_;
   std::vector<Wires::WirePtr> parent_b_;
 
-  TwoGate() = default;
+  TwoGate(Backend& backend) : Gate(backend) {}
 
  public:
   ~TwoGate() override = default;
@@ -244,7 +244,7 @@ class ThreeGate : public Gate {
   std::vector<Wires::WirePtr> parent_b_;
   std::vector<Wires::WirePtr> parent_c_;
 
-  ThreeGate() = default;
+  ThreeGate(Backend& backend) : Gate(backend) {}
 
  public:
   ~ThreeGate() override = default;
@@ -264,7 +264,7 @@ class nInputGate : public Gate {
  protected:
   std::vector<Wires::WirePtr> parents_;
 
-  nInputGate() = default;
+  nInputGate(Backend& backend) : Gate(backend) {}
 
  public:
   ~nInputGate() override = default;

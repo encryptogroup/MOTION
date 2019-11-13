@@ -39,20 +39,18 @@
 namespace MOTION::Gates::GMW {
 
 GMWInputGate::GMWInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id,
-                           std::weak_ptr<Backend> backend)
-    : input_(input) {
+                           Backend &backend)
+    : InputGate(backend), input_(input) {
   input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
-  backend_ = backend;
   InitializationHelper();
 }
 
 GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id,
-                           std::weak_ptr<Backend> backend)
-    : input_(std::move(input)) {
+                           Backend &backend)
+    : InputGate(backend), input_(std::move(input)) {
   input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
-  backend_ = backend;
   InitializationHelper();
 }
 
@@ -183,7 +181,8 @@ const Shares::GMWSharePtr GMWInputGate::GetOutputAsGMWShare() {
   return result;
 }
 
-GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_owner) {
+GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_owner)
+    : OutputGate(parent->GetBackend()) {
   if (parent->GetWires().size() == 0) {
     throw std::runtime_error("Trying to construct an output gate with no wires");
   }
@@ -197,7 +196,6 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   }
 
   parent_ = parent->GetWires();
-  backend_ = parent_.at(0)->GetBackend();
 
   // values we need repeatedly
   auto &config = GetConfig();
@@ -392,15 +390,14 @@ const Shares::SharePtr GMWOutputGate::GetOutputAsShare() const {
   return result;
 }
 
-GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
+    : TwoGate(a->GetBackend()) {
   parent_a_ = a->GetWires();
   parent_b_ = b->GetWires();
 
   assert(parent_a_.size() > 0);
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_a_.at(0)->GetBitLength() > 0);
-
-  backend_ = parent_a_.at(0)->GetBackend();
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
@@ -487,13 +484,11 @@ const Shares::SharePtr GMWXORGate::GetOutputAsShare() const {
   return result;
 }
 
-GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) {
+GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
 
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
-
-  backend_ = parent_.at(0)->GetBackend();
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
@@ -564,15 +559,14 @@ const Shares::SharePtr GMWINVGate::GetOutputAsShare() const {
   return result;
 }
 
-GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
+    : TwoGate(a->GetBackend()) {
   parent_a_ = a->GetWires();
   parent_b_ = b->GetWires();
 
   assert(parent_a_.size() > 0);
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_a_.at(0)->GetBitLength() > 0);
-
-  backend_ = parent_a_.at(0)->GetBackend();
 
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
@@ -619,10 +613,7 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
     _register.RegisterNextWire(w);
   }
 
-  auto backend = backend_.lock();
-  assert(backend);
-
-  auto &mt_provider = backend->GetMTProvider();
+  auto &mt_provider = backend_.GetMTProvider();
   mt_bitlen_ = parent_a_.size() * parent_a_.at(0)->GetNumOfSIMDValues();
   mt_offset_ = mt_provider->RequestBinaryMTs(mt_bitlen_);
 
@@ -649,11 +640,9 @@ void GMWANDGate::EvaluateOnline() {
     wire->GetIsReadyCondition()->Wait();
   }
 
-  auto backend = backend_.lock();
-  assert(backend);
-  auto &mt_provider = backend->GetMTProvider();
-  mt_provider->WaitFinished();
-  const auto &mts = mt_provider->GetBinaryAll();
+  auto &mt_provider = GetMTProvider();
+  mt_provider.WaitFinished();
+  const auto &mts = mt_provider.GetBinaryAll();
 
   auto &d_mut = d_->GetMutableWires();
   for (auto i = 0ull; i < d_mut.size(); ++i) {
@@ -741,7 +730,8 @@ const Shares::SharePtr GMWANDGate::GetOutputAsShare() const {
 }
 
 GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
-                       const Shares::SharePtr &c) {
+                       const Shares::SharePtr &c)
+    : ThreeGate(a->GetBackend()) {
   parent_a_ = a->GetWires();
   parent_b_ = b->GetWires();
   parent_c_ = c->GetWires();
@@ -750,8 +740,6 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_c_.size() == 1);
   assert(parent_a_.at(0)->GetBitLength() > 0);
-
-  backend_ = parent_a_.at(0)->GetBackend();
 
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
@@ -782,9 +770,6 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
     _register.RegisterNextWire(w);
   }
 
-  auto backend = backend_.lock();
-  assert(backend);
-
   const auto num_parties = GetConfig().GetNumOfParties();
   const auto my_id = GetConfig().GetMyId();
   const auto num_simd = parent_a_.at(0)->GetNumOfSIMDValues();
@@ -796,8 +781,8 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
 
   for (std::size_t i = 0; i < num_parties; ++i) {
     if (i == my_id) continue;
-    ot_sender_.at(i) = backend->GetOTProvider(i)->RegisterSend(num_bits, num_simd, XCOT);
-    ot_receiver_.at(i) = backend->GetOTProvider(i)->RegisterReceive(num_bits, num_simd, XCOT);
+    ot_sender_.at(i) = GetOTProvider(i).RegisterSend(num_bits, num_simd, XCOT);
+    ot_receiver_.at(i) = GetOTProvider(i).RegisterReceive(num_bits, num_simd, XCOT);
   }
 
   if constexpr (MOTION_DEBUG) {

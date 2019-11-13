@@ -360,8 +360,7 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id, ENCRYPTO::BitVec
 
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           const std::vector<ENCRYPTO::BitVector<>> &input) {
-  const auto in_gate =
-      std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, weak_from_this());
+  const auto in_gate = std::make_shared<Gates::GMW::GMWInputGate>(input, party_id, *this);
   const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -370,7 +369,7 @@ Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
 Shares::SharePtr Backend::BooleanGMWInput(std::size_t party_id,
                                           std::vector<ENCRYPTO::BitVector<>> &&input) {
   const auto in_gate =
-      std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, weak_from_this());
+      std::make_shared<Gates::GMW::GMWInputGate>(std::move(input), party_id, *this);
   const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsGMWShare());
@@ -461,8 +460,7 @@ Shares::SharePtr Backend::BMRInput(std::size_t party_id, ENCRYPTO::BitVector<> &
 
 Shares::SharePtr Backend::BMRInput(std::size_t party_id,
                                    const std::vector<ENCRYPTO::BitVector<>> &input) {
-  const auto in_gate =
-      std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, weak_from_this());
+  const auto in_gate = std::make_shared<Gates::BMR::BMRInputGate>(input, party_id, *this);
   const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());
@@ -471,7 +469,7 @@ Shares::SharePtr Backend::BMRInput(std::size_t party_id,
 Shares::SharePtr Backend::BMRInput(std::size_t party_id,
                                    std::vector<ENCRYPTO::BitVector<>> &&input) {
   const auto in_gate =
-      std::make_shared<Gates::BMR::BMRInputGate>(std::move(input), party_id, weak_from_this());
+      std::make_shared<Gates::BMR::BMRInputGate>(std::move(input), party_id, *this);
   const auto in_gate_cast = std::static_pointer_cast<Gates::Interfaces::InputGate>(in_gate);
   RegisterInputGate(in_gate_cast);
   return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsBMRShare());

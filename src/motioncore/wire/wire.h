@@ -62,9 +62,9 @@ class Wire {
 
   void SetOnlineFinished();
 
-  const auto &GetWaitingGatesIds() const noexcept { return waiting_gate_ids_; }
+  const auto& GetWaitingGatesIds() const noexcept { return waiting_gate_ids_; }
 
-  const std::atomic<bool> &IsReady() const noexcept;
+  const std::atomic<bool>& IsReady() const noexcept;
 
   std::shared_ptr<ENCRYPTO::FiberCondition> GetIsReadyCondition() const noexcept {
     return is_done_condition_;
@@ -74,9 +74,9 @@ class Wire {
 
   std::size_t GetWireId() const { return static_cast<std::size_t>(wire_id_); }
 
-  std::weak_ptr<MOTION::Backend> GetBackend() const { return backend_; }
+  Backend& GetBackend() const { return backend_; }
 
-  static std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires);
+  static std::string PrintIds(const std::vector<std::shared_ptr<Wires::Wire>>& wires);
 
   virtual std::size_t GetBitLength() const = 0;
 
@@ -85,9 +85,11 @@ class Wire {
     DynamicClear();
   }
 
-  Wire(const Wire &) = delete;
+  Wire(const Wire&) = delete;
 
  protected:
+  Backend& backend_;
+
   /// Number of values that are _logically_ processed in parallel
   std::size_t n_simd_ = 0;
 
@@ -103,13 +105,11 @@ class Wire {
 
   std::int64_t wire_id_ = -1;
 
-  std::weak_ptr<Backend> backend_;
-
   std::unordered_set<std::size_t> waiting_gate_ids_;
 
-  Wire();
+  Wire(Backend& backend);
 
-  static void SignalReadyToDependency(std::size_t gate_id, std::weak_ptr<Backend> backend);
+  static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
 
   void InitializationHelper();
 
@@ -129,10 +129,10 @@ class BooleanWire : public Wire {
 
   MPCProtocol GetProtocol() const override = 0;
 
-  BooleanWire(BooleanWire &) = delete;
+  BooleanWire(BooleanWire&) = delete;
 
  protected:
-  BooleanWire() = default;
+  BooleanWire(Backend& backend) : Wire(backend) {}
 };
 
 using BooleanWirePtr = std::shared_ptr<BooleanWire>;

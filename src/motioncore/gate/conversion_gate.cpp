@@ -37,14 +37,12 @@
 
 namespace MOTION::Gates::Conversion {
 
-BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) {
+BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
 
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
   for ([[maybe_unused]] const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
-
-  backend_ = parent_.at(0)->GetBackend();
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
@@ -124,7 +122,7 @@ const Shares::SharePtr BMRToGMWGate::GetOutputAsShare() const {
   return result;
 }
 
-GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
+GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
   const auto num_simd{parent->GetNumOfSIMDValues()};
 
@@ -132,8 +130,6 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) {
   assert(parent_.at(0)->GetBitLength() > 0);
   for ([[maybe_unused]] const auto &wire : parent_)
     assert(wire->GetProtocol() == MPCProtocol::BooleanGMW);
-
-  backend_ = parent_.at(0)->GetBackend();
 
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
@@ -227,9 +223,6 @@ void GMWToBMRGate::EvaluateOnline() {
         "Start evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
 
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-
   const auto num_simd{output_wires_.at(0)->GetNumOfSIMDValues()};
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
@@ -250,7 +243,7 @@ void GMWToBMRGate::EvaluateOnline() {
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
   for (auto i = 0ull; i < num_parties; ++i) {
     if (i == GetConfig().GetMyId()) continue;
-    ptr_backend->Send(i, Communication::BuildBMRInput0Message(gate_id_, payload_pub_vals));
+    backend_.Send(i, Communication::BuildBMRInput0Message(gate_id_, payload_pub_vals));
   }
 
   // receive masked values if not my input
@@ -285,7 +278,7 @@ void GMWToBMRGate::EvaluateOnline() {
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
   for (auto i = 0ull; i < num_parties; ++i) {
     if (i == GetConfig().GetMyId()) continue;
-    ptr_backend->Send(i, Communication::BuildBMRInput1Message(gate_id_, payload_pub_keys));
+    backend_.Send(i, Communication::BuildBMRInput1Message(gate_id_, payload_pub_keys));
   }
 
   // parse published keys

@@ -36,12 +36,11 @@ namespace MOTION::Wires {
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant = false);
+  GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant = false);
 
-  GMWWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
-          bool is_constant = false);
+  GMWWire(const ENCRYPTO::BitVector<> &values, Backend &backend, bool is_constant = false);
 
-  GMWWire(bool value, std::weak_ptr<Backend> backend, bool is_constant = false);
+  GMWWire(bool value, Backend &backend, bool is_constant = false);
 
   ~GMWWire() final = default;
 
@@ -63,4 +62,4 @@ class GMWWire : public BooleanWire {
 
 using GMWWirePtr = std::shared_ptr<GMWWire>;
 
-}
+}  // namespace MOTION::Wires

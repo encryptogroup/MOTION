@@ -40,10 +40,9 @@ namespace MOTION::Gates::GMW {
 class GMWInputGate final : public Gates::Interfaces::InputGate {
  public:
   GMWInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id,
-               std::weak_ptr<Backend> backend);
+               Backend &backend);
 
-  GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id,
-               std::weak_ptr<Backend> backend);
+  GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id, Backend &backend);
 
   void InitializationHelper();
 

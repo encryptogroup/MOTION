@@ -28,36 +28,34 @@
 #include "utility/condition.h"
 
 namespace MOTION::Wires {
-BMRWire::BMRWire(const std::size_t n_simd, std::weak_ptr<Backend> backend, bool is_constant) {
-  backend_ = backend;
+BMRWire::BMRWire(const std::size_t n_simd, Backend& backend, bool is_constant)
+    : BooleanWire(backend) {
   is_constant_ = is_constant;
   n_simd_ = n_simd;
   InitializationHelper();
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(ENCRYPTO::BitVector<> &&values, std::weak_ptr<Backend> backend, bool is_constant) {
+BMRWire::BMRWire(ENCRYPTO::BitVector<>&& values, Backend& backend, bool is_constant)
+    : BooleanWire(backend) {
   public_values_ = std::move(values);
-  backend_ = backend;
   is_constant_ = is_constant;
   n_simd_ = public_values_.GetSize();
   InitializationHelper();
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(const ENCRYPTO::BitVector<> &values, std::weak_ptr<Backend> backend,
-                 bool is_constant) {
+BMRWire::BMRWire(const ENCRYPTO::BitVector<>& values, Backend& backend, bool is_constant)
+    : BooleanWire(backend) {
   public_values_ = values;
-  backend_ = backend;
   is_constant_ = is_constant;
   n_simd_ = public_values_.GetSize();
   InitializationHelper();
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
+BMRWire::BMRWire(bool value, Backend& backend, bool is_constant) : BooleanWire(backend) {
   public_values_.Append(value);
-  backend_ = backend;
   is_constant_ = is_constant;
   n_simd_ = 1;
   InitializationHelper();
@@ -65,9 +63,7 @@ BMRWire::BMRWire(bool value, std::weak_ptr<Backend> backend, bool is_constant) {
 }
 
 void BMRWire::InitializationHelperBMR() {
-  const auto backend = GetBackend().lock();
-  assert(backend);
-  const auto num_parties = backend->GetConfig()->GetNumOfParties();
+  const auto num_parties = backend_.GetConfig()->GetNumOfParties();
   std::get<0>(secret_keys_).resize(n_simd_);
   std::get<1>(secret_keys_).resize(n_simd_);
   public_keys_.resize(num_parties);
@@ -78,9 +74,7 @@ void BMRWire::InitializationHelperBMR() {
 }
 
 void BMRWire::GenerateRandomPrivateKeys() {
-  auto backend = GetBackend().lock();
-  assert(backend);
-  const auto &R{backend->GetConfig()->GetBMRRandomOffset()};
+  const auto& R{backend_.GetConfig()->GetBMRRandomOffset()};
   for (auto i = 0ull; i < n_simd_; ++i) {
     std::get<0>(secret_keys_).at(i) = ENCRYPTO::BitVector<>::Random(kappa);
     std::get<1>(secret_keys_).at(i) = std::get<0>(secret_keys_).at(i) ^ R;
@@ -90,4 +84,4 @@ void BMRWire::GenerateRandomPrivateKeys() {
 void BMRWire::GenerateRandomPermutationBits() {
   shared_permutation_bits_ = ENCRYPTO::BitVector<>::Random(n_simd_);
 }
-}
+}  // namespace MOTION::Wires

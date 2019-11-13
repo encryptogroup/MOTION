@@ -70,9 +70,7 @@ void Gate::WaitOnline() { online_is_ready_cond_->Wait(); }
 void Gate::IfReadyAddToProcessingQueue() {
   std::scoped_lock lock(mutex_);
   if (AreDependenciesReady() && !added_to_active_queue) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
-    ptr_backend->GetRegister()->AddToActiveQueue(gate_id_);
+    GetRegister().AddToActiveQueue(gate_id_);
     added_to_active_queue = true;
   }
 }
@@ -84,53 +82,27 @@ void Gate::Clear() {
   num_ready_dependencies_ = 0;
 }
 
-Gate::Gate() {
+Gate::Gate(Backend& backend) : backend_(backend) {
   online_is_ready_cond_ =
       std::make_shared<ENCRYPTO::FiberCondition>([this]() { return online_is_ready_.load(); });
   setup_is_ready_cond_ =
       std::make_shared<ENCRYPTO::Condition>([this]() { return setup_is_ready_.load(); });
 }
 
-Register& Gate::GetRegister() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetRegister();
-}
+Register& Gate::GetRegister() { return *backend_.GetRegister(); }
 
-Configuration& Gate::GetConfig() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetConfig();
-}
+Configuration& Gate::GetConfig() { return *backend_.GetConfig(); }
 
-Logger& Gate::GetLogger() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetLogger();
-}
+Logger& Gate::GetLogger() { return *backend_.GetLogger(); }
 
-MTProvider& Gate::GetMTProvider() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetMTProvider();
-}
+MTProvider& Gate::GetMTProvider() { return *backend_.GetMTProvider(); }
 
-SPProvider& Gate::GetSPProvider() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetSPProvider();
-}
+SPProvider& Gate::GetSPProvider() { return *backend_.GetSPProvider(); }
 
-SBProvider& Gate::GetSBProvider() {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetSBProvider();
-}
+SBProvider& Gate::GetSBProvider() { return *backend_.GetSBProvider(); }
 
 ENCRYPTO::ObliviousTransfer::OTProvider& Gate::GetOTProvider(const std::size_t i) {
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-  return *ptr_backend->GetOTProvider(i);
+  return *backend_.GetOTProvider(i);
 }
 
 }  // namespace MOTION::Gates::Interfaces

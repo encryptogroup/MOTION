@@ -63,7 +63,7 @@ class Share : public std::enable_shared_from_this<Share> {
 
   virtual std::vector<std::shared_ptr<Share>> Split() const noexcept = 0;
 
-  std::weak_ptr<Backend> GetBackend() const { return backend_; }
+  Backend &GetBackend() const { return backend_; }
 
   std::shared_ptr<Register> GetRegister();
 
@@ -74,9 +74,9 @@ class Share : public std::enable_shared_from_this<Share> {
   static std::shared_ptr<Share> Join(const std::vector<std::shared_ptr<Share>> &v);
 
  protected:
-  Share() = default;
+  Share(Backend &backend) : backend_(backend) {}
 
-  std::weak_ptr<Backend> backend_;
+  Backend &backend_;
   std::vector<MOTION::Wires::WirePtr> wires_;
 };
 
@@ -89,7 +89,7 @@ class BooleanShare : public Share {
   BooleanShare(BooleanShare &) = delete;
 
  protected:
-  BooleanShare() = default;
+  BooleanShare(Backend &backend) : Share(backend) {}
 
   std::size_t bits_;
 };

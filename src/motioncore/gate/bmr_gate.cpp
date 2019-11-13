@@ -36,22 +36,20 @@
 namespace MOTION::Gates::BMR {
 
 BMRInputGate::BMRInputGate(const std::vector<ENCRYPTO::BitVector<>> &input,
-                           std::size_t input_owner_id, std::weak_ptr<Backend> backend)
-    : input_(input) {
+                           std::size_t input_owner_id, Backend &backend)
+    : InputGate(backend), input_(input) {
   assert(!input_.empty());
   input_owner_id_ = input_owner_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
-  backend_ = backend;
   InitializationHelper();
 }
 
 BMRInputGate::BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t input_owner_id,
-                           std::weak_ptr<Backend> backend)
-    : input_(std::move(input)) {
+                           Backend &backend)
+    : InputGate(backend), input_(std::move(input)) {
   assert(!input_.empty());
   input_owner_id_ = input_owner_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
-  backend_ = backend;
   InitializationHelper();
 }
 
@@ -185,9 +183,6 @@ void BMRInputGate::EvaluateSetup() {
 void BMRInputGate::EvaluateOnline() {
   WaitSetup();
 
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-
   const auto my_id = GetConfig().GetMyId();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
   ENCRYPTO::BitVector<> buffer;
@@ -208,7 +203,7 @@ void BMRInputGate::EvaluateOnline() {
         reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
     for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
       if (i == GetConfig().GetMyId()) continue;
-      ptr_backend->Send(i, Communication::BuildBMRInput0Message(gate_id_, payload));
+      backend_.Send(i, Communication::BuildBMRInput0Message(gate_id_, payload));
     }
   }
   // otherwise receive the public values from the party that provides the input
@@ -249,7 +244,7 @@ void BMRInputGate::EvaluateOnline() {
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
   for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
     if (i == GetConfig().GetMyId()) continue;
-    ptr_backend->Send(i, Communication::BuildBMRInput1Message(gate_id_, payload));
+    backend_.Send(i, Communication::BuildBMRInput1Message(gate_id_, payload));
   }
 
   // receive the published keys from the other parties
@@ -315,7 +310,8 @@ const Shares::SharePtr BMRInputGate::GetOutputAsShare() const {
   return result;
 }
 
-BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_owner) {
+BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_owner)
+    : OutputGate(parent->GetBackend()) {
   if (parent->GetWires().at(0)->GetProtocol() != MPCProtocol::BMR) {
     auto sharing_type = Helpers::Print::ToString(parent->GetWires().at(0)->GetProtocol());
     throw std::runtime_error(
@@ -334,10 +330,6 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
   output_.resize(parent_.size());
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
-
-  backend_ = parent_.at(0)->GetBackend();
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
 
   if (output_owner >= GetConfig().GetNumOfParties() && output_owner != ALL) {
     throw std::runtime_error(
@@ -374,7 +366,7 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
 
   for (auto &bv : output_) {
     output_wires_.push_back(std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<Wires::BMRWire>(bv, ptr_backend)));
+        std::make_shared<Wires::BMRWire>(bv, backend_)));
   }
 
   for (auto &wire : output_wires_) {
@@ -397,8 +389,6 @@ void BMROutputGate::EvaluateSetup() {
 void BMROutputGate::EvaluateOnline() {
   WaitSetup();
   assert(setup_is_ready_);
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
 
   std::size_t i;
 
@@ -456,7 +446,8 @@ const Shares::SharePtr BMROutputGate::GetOutputAsShare() const {
   return result;
 }
 
-BMRXORGate::BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+BMRXORGate::BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
+    : TwoGate(a->GetBackend()) {
   parent_a_ = a->GetWires();
   parent_b_ = b->GetWires();
 
@@ -466,13 +457,8 @@ BMRXORGate::BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(parent_a_.at(0)->GetProtocol() == parent_b_.at(0)->GetProtocol());
   assert(parent_a_.at(0)->GetProtocol() == MPCProtocol::BMR);
 
-  backend_ = parent_a_.at(0)->GetBackend();
-
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
-
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
 
   gate_id_ = GetRegister().NextGateId();
 
@@ -503,8 +489,6 @@ BMRXORGate::BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
 
 void BMRXORGate::EvaluateSetup() {
   if constexpr (MOTION_DEBUG) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
     GetLogger().LogDebug(
         fmt::format("Start evaluating setup phase of BMR XOR Gate with id#{}", gate_id_));
   }
@@ -534,8 +518,6 @@ void BMRXORGate::EvaluateSetup() {
     bmr_out->SetSetupIsReady();
   }
   if constexpr (MOTION_DEBUG) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
     GetLogger().LogDebug(
         fmt::format("Finished evaluating setup phase of BMR XOR Gate with id#{}", gate_id_));
   }
@@ -546,8 +528,6 @@ void BMRXORGate::EvaluateSetup() {
 void BMRXORGate::EvaluateOnline() {
   WaitSetup();
   if constexpr (MOTION_DEBUG) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
     GetLogger().LogDebug(
         fmt::format("Start evaluating online phase of BMR XOR Gate with id#{}", gate_id_));
   }
@@ -577,12 +557,7 @@ void BMRXORGate::EvaluateOnline() {
     bmr_out->GetMutablePublicValues() = wire_a->GetPublicValues() ^ wire_b->GetPublicValues();
   }
 
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
-
   if constexpr (MOTION_DEBUG) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
     GetLogger().LogDebug(
         fmt::format("Finished evaluating online phase of BMR XOR Gate with id#{}", gate_id_));
   }
@@ -602,20 +577,15 @@ const Shares::SharePtr BMRXORGate::GetOutputAsShare() const {
   return result;
 }
 
-BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) {
+BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
 
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
   for ([[maybe_unused]] const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
 
-  backend_ = parent_.at(0)->GetBackend();
-
   requires_online_interaction_ = false;
   gate_type_ = GateType::NonInteractiveGate;
-
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
 
   gate_id_ = GetRegister().NextGateId();
 
@@ -643,8 +613,6 @@ BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) {
 
 void BMRINVGate::EvaluateSetup() {
   if constexpr (MOTION_DEBUG) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
     GetLogger().LogDebug(
         fmt::format("Start evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
@@ -678,8 +646,6 @@ void BMRINVGate::EvaluateSetup() {
     bmr_out->SetSetupIsReady();
   }
   if constexpr (MOTION_DEBUG) {
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
     GetLogger().LogDebug(
         fmt::format("Finished evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
@@ -732,7 +698,8 @@ const Shares::SharePtr BMRINVGate::GetOutputAsShare() const {
   return result;
 }
 
-BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
+    : TwoGate(a->GetBackend()) {
   parent_a_ = a->GetWires();
   parent_b_ = b->GetWires();
 
@@ -741,10 +708,6 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b) {
   assert(parent_a_.at(0)->GetBitLength() > 0);
   assert(parent_a_.at(0)->GetProtocol() == parent_b_.at(0)->GetProtocol());
   assert(parent_a_.at(0)->GetProtocol() == MPCProtocol::BMR);
-
-  backend_ = parent_a_.at(0)->GetBackend();
-  auto ptr_backend = backend_.lock();
-  assert(ptr_backend);
 
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
@@ -1215,10 +1178,8 @@ void BMRANDGate::EvaluateSetup() {
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
-    auto ptr_backend = backend_.lock();
-    assert(ptr_backend);
-    ptr_backend->Send(
-        party_id, Communication::BuildBMRANDMessage(static_cast<std::size_t>(gate_id_), buffer_u8));
+    backend_.Send(party_id,
+                  Communication::BuildBMRANDMessage(static_cast<std::size_t>(gate_id_), buffer_u8));
   }
 
   {
@@ -1257,9 +1218,6 @@ void BMRANDGate::EvaluateSetup() {
 
 void BMRANDGate::EvaluateOnline() {
   WaitSetup();
-
-  auto backend = backend_.lock();
-  assert(backend);
 
   const auto num_parties = GetConfig().GetNumOfParties();
 

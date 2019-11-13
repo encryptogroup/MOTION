@@ -42,10 +42,10 @@ namespace MOTION::Gates::BMR {
 class BMRInputGate final : public Gates::Interfaces::InputGate {
  public:
   BMRInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t input_owner_id,
-               std::weak_ptr<Backend> backend);
+               Backend &backend);
 
   BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t input_owner_id,
-               std::weak_ptr<Backend> backend);
+               Backend &backend);
 
   void InitializationHelper();
 
@@ -114,7 +114,6 @@ class BMRXORGate final : public Gates::Interfaces::TwoGate {
   BMRXORGate(const Gate &) = delete;
 };
 
-
 class BMRINVGate final : public Gates::Interfaces::OneGate {
  public:
   BMRINVGate(const Shares::SharePtr &parent);
@@ -164,4 +163,4 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   void GenerateRandomness();
 };
 
-}
+}  // namespace MOTION::Gates::BMR
