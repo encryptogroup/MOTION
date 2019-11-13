@@ -36,6 +36,8 @@ namespace MOTION::Wires {
 
 class GMWWire : public BooleanWire {
  public:
+  GMWWire(size_t num_simd, Backend &backend, bool is_constant = false);
+
   GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant = false);
 
   GMWWire(const ENCRYPTO::BitVector<> &values, Backend &backend, bool is_constant = false);

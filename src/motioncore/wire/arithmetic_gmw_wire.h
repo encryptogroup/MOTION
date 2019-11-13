@@ -32,27 +32,19 @@ namespace MOTION::Wires {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticWire : public Wire {
  public:
+  ArithmeticWire(Backend &backend, std::size_t num_simd, bool is_constant = false)
+      : Wire(backend, num_simd, is_constant) {
+  }
+
   ArithmeticWire(std::vector<T> &&values, Backend &backend, bool is_constant = false)
-      : Wire(backend) {
-    is_constant_ = is_constant;
-    values_ = std::move(values);
-    n_simd_ = values_.size();
-    InitializationHelper();
+      : Wire(backend, values.size(), is_constant), values_(std::move(values)) {
   }
 
   ArithmeticWire(const std::vector<T> &values, Backend &backend, bool is_constant = false)
-      : Wire(backend) {
-    is_constant_ = is_constant;
-    values_ = values;
-    n_simd_ = values_.size();
-    InitializationHelper();
+      : Wire(backend, values.size(), is_constant), values_(values) {
   }
 
-  ArithmeticWire(T t, Backend &backend, bool is_constant = false) : Wire(backend) {
-    is_constant_ = is_constant;
-    values_.push_back(t);
-    n_simd_ = 1;
-    InitializationHelper();
+  ArithmeticWire(T t, Backend &backend, bool is_constant = false) : Wire(backend, 1, is_constant), values_({t}) {
   }
 
   ~ArithmeticWire() final = default;

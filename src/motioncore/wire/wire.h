@@ -107,7 +107,7 @@ class Wire {
 
   std::unordered_set<std::size_t> waiting_gate_ids_;
 
-  Wire(Backend& backend);
+  Wire(Backend& backend, std::size_t num_simd, bool is_constant);
 
   static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
 
@@ -132,7 +132,8 @@ class BooleanWire : public Wire {
   BooleanWire(BooleanWire&) = delete;
 
  protected:
-  BooleanWire(Backend& backend) : Wire(backend) {}
+  BooleanWire(Backend& backend, std::size_t num_simd, bool is_constant)
+      : Wire(backend, num_simd, is_constant) {}
 };
 
 using BooleanWirePtr = std::shared_ptr<BooleanWire>;

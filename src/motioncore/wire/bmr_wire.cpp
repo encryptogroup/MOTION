@@ -28,37 +28,24 @@
 #include "utility/condition.h"
 
 namespace MOTION::Wires {
+
 BMRWire::BMRWire(const std::size_t n_simd, Backend& backend, bool is_constant)
-    : BooleanWire(backend) {
-  is_constant_ = is_constant;
-  n_simd_ = n_simd;
-  InitializationHelper();
+    : BooleanWire(backend, n_simd, is_constant) {
   InitializationHelperBMR();
 }
 
 BMRWire::BMRWire(ENCRYPTO::BitVector<>&& values, Backend& backend, bool is_constant)
-    : BooleanWire(backend) {
-  public_values_ = std::move(values);
-  is_constant_ = is_constant;
-  n_simd_ = public_values_.GetSize();
-  InitializationHelper();
+    : BooleanWire(backend, values.GetSize(), is_constant), public_values_(std::move(values)) {
   InitializationHelperBMR();
 }
 
 BMRWire::BMRWire(const ENCRYPTO::BitVector<>& values, Backend& backend, bool is_constant)
-    : BooleanWire(backend) {
-  public_values_ = values;
-  is_constant_ = is_constant;
-  n_simd_ = public_values_.GetSize();
-  InitializationHelper();
+    : BooleanWire(backend, values.GetSize(), is_constant), public_values_(values) {
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(bool value, Backend& backend, bool is_constant) : BooleanWire(backend) {
-  public_values_.Append(value);
-  is_constant_ = is_constant;
-  n_simd_ = 1;
-  InitializationHelper();
+BMRWire::BMRWire(bool value, Backend& backend, bool is_constant)
+    : BooleanWire(backend, 1, is_constant), public_values_(value) {
   InitializationHelperBMR();
 }
 

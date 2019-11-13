@@ -26,27 +26,20 @@
 
 namespace MOTION::Wires {
 
-GMWWire::GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant)
-    : BooleanWire(backend) {
-  values_ = std::move(values);
-  is_constant_ = is_constant;
-  n_simd_ = values_.GetSize();
+GMWWire::GMWWire(std::size_t num_simd, Backend &backend, bool is_constant)
+    : BooleanWire(backend, num_simd, is_constant) {
   InitializationHelper();
 }
+
+GMWWire::GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant)
+    : BooleanWire(backend, values.GetSize(), is_constant), values_(std::move(values)) {}
 
 GMWWire::GMWWire(const ENCRYPTO::BitVector<> &values, Backend &backend, bool is_constant)
-    : BooleanWire(backend) {
-  values_ = values;
-  is_constant_ = is_constant;
-  n_simd_ = values_.GetSize();
-  InitializationHelper();
-}
+    : BooleanWire(backend, values.GetSize(), is_constant), values_(values) {}
 
-GMWWire::GMWWire(bool value, Backend &backend, bool is_constant) : BooleanWire(backend) {
+GMWWire::GMWWire(bool value, Backend &backend, bool is_constant)
+    : BooleanWire(backend, 1, is_constant), values_(value) {
   values_.Append(value);
-  is_constant_ = is_constant;
-  n_simd_ = 1;
-  InitializationHelper();
 }
 
 }  // namespace MOTION::Wires

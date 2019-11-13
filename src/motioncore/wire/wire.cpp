@@ -35,10 +35,14 @@ namespace MOTION::Wires {
 
 std::size_t Wire::GetNumOfSIMDValues() const { return n_simd_; }
 
-Wire::Wire(Backend &backend)
+Wire::Wire(Backend &backend, std::size_t num_simd, bool is_constant)
     : backend_(backend),
+      n_simd_(num_simd),
+      is_constant_(is_constant),
       is_done_condition_(
-          std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); })) {}
+          std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); })) {
+        InitializationHelper();
+      }
 
 Wire::~Wire() { assert(wire_id_ >= 0); }
 
