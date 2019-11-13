@@ -34,7 +34,9 @@
 #include "sb_provider.h"
 #include "sp_provider.h"
 #include "statistics/run_time_stats.h"
+#include "utility/constants.h"
 #include "utility/helpers.h"
+#include "utility/logger.h"
 
 namespace MOTION {
 
@@ -48,32 +50,43 @@ SBProvider::SBProvider(const std::size_t my_id) : my_id_(my_id) {
 
 SBProviderFromSPs::SBProviderFromSPs(std::shared_ptr<Configuration> config,
                                      std::shared_ptr<Register> _register,
-                                     std::shared_ptr<SPProvider> sp_provider,
+                                     std::shared_ptr<SPProvider> sp_provider, Logger& logger,
                                      Statistics::RunTimeStats& run_time_stats)
     : SBProvider(config->GetMyId()),
       config_(config),
       register_(_register),
       sp_provider_(sp_provider),
+      logger_(logger),
       run_time_stats_(run_time_stats) {}
 
 void SBProviderFromSPs::PreSetup() {
-  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sb_presetup>();
-
-  if (NeedSBs()) {
-    RegisterSPs();
-    RegisterForMessages();
+  if (!NeedSBs()) {
+    return;
   }
 
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Start computing presetup for SBs");
+  }
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sb_presetup>();
+
+  RegisterSPs();
+  RegisterForMessages();
+
   run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sb_presetup>();
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Finished computing presetup for SBs");
+  }
 }
 
 void SBProviderFromSPs::Setup() {
-  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sb_setup>();
-
   if (!NeedSBs()) {
-    run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sb_setup>();
     return;
   }
+
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Start computing setup for SBs");
+  }
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sb_setup>();
 
   sp_provider_->WaitFinished();
 
@@ -86,6 +99,9 @@ void SBProviderFromSPs::Setup() {
   finished_condition_->NotifyAll();
 
   run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sb_setup>();
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Finished computing setup for SBs");
+  }
 }
 
 void SBProviderFromSPs::RegisterSPs() {

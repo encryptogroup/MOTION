@@ -39,6 +39,7 @@ struct RunTimeStats;
 }
 
 class Configuration;
+class Logger;
 class Register;
 class SPProvider;
 
@@ -150,7 +151,7 @@ class SBProvider {
 class SBProviderFromSPs final : public SBProvider {
  public:
   SBProviderFromSPs(std::shared_ptr<Configuration> config, std::shared_ptr<Register> _register,
-                    std::shared_ptr<SPProvider> sp_provider,
+                    std::shared_ptr<SPProvider> sp_provider, Logger& logger,
                     Statistics::RunTimeStats& run_time_stats);
 
   void PreSetup() final;
@@ -185,6 +186,7 @@ class SBProviderFromSPs final : public SBProvider {
 
   const std::size_t max_batch_size_{10'000};
 
+  Logger& logger_;
   Statistics::RunTimeStats& run_time_stats_;
 };
 

@@ -58,8 +58,11 @@ namespace MOTION {
 
 Backend::Backend(ConfigurationPtr &config) : run_time_stats_(1), config_(config) {
   register_ = std::make_shared<Register>(config_);
-  base_ot_provider_ = std::make_unique<BaseOTProvider>(*config_, *register_->GetLogger(), *register_);
+  base_ot_provider_ =
+      std::make_unique<BaseOTProvider>(*config_, *register_->GetLogger(), *register_);
   ot_provider_.resize(config_->GetNumOfParties(), nullptr);
+
+  auto &logger = register_->GetLogger();
 
   for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
     if (i != config_->GetMyId()) {
@@ -70,7 +73,6 @@ Backend::Backend(ConfigurationPtr &config) : run_time_stats_(1), config_(config)
 
     config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
     config_->GetCommunicationContext(i)->SetLogger(register_->GetLogger());
-    auto &logger = register_->GetLogger();
 
     auto &data_storage = config_->GetCommunicationContext(i)->GetDataStorage();
 
@@ -89,9 +91,12 @@ Backend::Backend(ConfigurationPtr &config) : run_time_stats_(1), config_(config)
     }
   }
 
-  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), run_time_stats_.back());
-  sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), run_time_stats_.back());
-  sb_provider_ = std::make_shared<SBProviderFromSPs>(config_, register_, sp_provider_, run_time_stats_.back());
+  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), *logger,
+                                                     run_time_stats_.back());
+  sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), *logger,
+                                                     run_time_stats_.back());
+  sb_provider_ = std::make_shared<SBProviderFromSPs>(config_, register_, sp_provider_, *logger,
+                                                     run_time_stats_.back());
 }
 
 Backend::~Backend() = default;

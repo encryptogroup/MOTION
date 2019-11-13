@@ -25,6 +25,8 @@
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "sp_provider.h"
 #include "statistics/run_time_stats.h"
+#include "utility/constants.h"
+#include "utility/logger.h"
 
 namespace MOTION {
 
@@ -38,27 +40,41 @@ SPProvider::SPProvider(const std::size_t my_id) : my_id_(my_id) {
 
 SPProviderFromOTs::SPProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
-    const std::size_t my_id, Statistics::RunTimeStats& run_time_stats)
-    : SPProvider(my_id), ot_providers_(ot_providers), run_time_stats_(run_time_stats) {
-  ots_rcv_.resize(ot_providers_.size());
-  ots_snd_.resize(ot_providers_.size());
-}
+    const std::size_t my_id, Logger& logger, Statistics::RunTimeStats& run_time_stats)
+    : SPProvider(my_id),
+      ot_providers_(ot_providers),
+      ots_rcv_(ot_providers_.size()),
+      ots_snd_(ot_providers_.size()),
+      logger_(logger),
+      run_time_stats_(run_time_stats) {}
 
 void SPProviderFromOTs::PreSetup() {
+  if (!NeedSPs()) {
+    return;
+  }
+
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Start computing presetup for SPs");
+  }
   run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sp_presetup>();
 
-  if (NeedSPs()) RegisterOTs();
+  RegisterOTs();
 
   run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sp_presetup>();
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Finished computing presetup for SPs");
+  }
 }
 
 void SPProviderFromOTs::Setup() {
-  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sp_setup>();
-
   if (!NeedSPs()) {
-    run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sp_setup>();
     return;
   }
+
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Start computing setup for SPs");
+  }
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::sp_setup>();
 
 #pragma omp parallel for
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
@@ -80,6 +96,9 @@ void SPProviderFromOTs::Setup() {
   finished_condition_->NotifyAll();
 
   run_time_stats_.record_end<Statistics::RunTimeStats::StatID::sp_setup>();
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Finished computing setup for SPs");
+  }
 }
 
 template <typename T>

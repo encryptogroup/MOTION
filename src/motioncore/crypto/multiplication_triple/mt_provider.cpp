@@ -24,6 +24,8 @@
 
 #include "mt_provider.h"
 #include "statistics/run_time_stats.h"
+#include "utility/constants.h"
+#include "utility/logger.h"
 
 namespace MOTION {
 
@@ -59,28 +61,42 @@ MTProvider::MTProvider(const std::size_t my_id) : my_id_(my_id) {
 
 MTProviderFromOTs::MTProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
-    const std::size_t my_id, Statistics::RunTimeStats& run_time_stats)
-    : MTProvider(my_id), ot_providers_(ot_providers), run_time_stats_(run_time_stats) {
-  ots_rcv_.resize(ot_providers_.size());
-  ots_snd_.resize(ot_providers_.size());
-}
+    const std::size_t my_id, Logger& logger, Statistics::RunTimeStats& run_time_stats)
+    : MTProvider(my_id),
+      ot_providers_(ot_providers),
+      ots_rcv_(ot_providers_.size()),
+      ots_snd_(ot_providers_.size()),
+      logger_(logger),
+      run_time_stats_(run_time_stats) {}
 
 void MTProviderFromOTs::PreSetup() {
+  if (!NeedMTs()) {
+    return;
+  }
+
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Start computing presetup for MTs");
+  }
   run_time_stats_.record_start<Statistics::RunTimeStats::StatID::mt_presetup>();
 
-  if (NeedMTs()) RegisterOTs();
+  RegisterOTs();
 
   run_time_stats_.record_end<Statistics::RunTimeStats::StatID::mt_presetup>();
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Finished computing presetup for MTs");
+  }
 }
 
 // needs completed OTExtension
 void MTProviderFromOTs::Setup() {
-  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::mt_setup>();
-
   if (!NeedMTs()) {
-    run_time_stats_.record_end<Statistics::RunTimeStats::StatID::mt_setup>();
     return;
   }
+
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Start computing setup for MTs");
+  }
+  run_time_stats_.record_start<Statistics::RunTimeStats::StatID::mt_setup>();
 
 #pragma omp parallel for
   for (auto i = 0ull; i < ot_providers_.size(); ++i) {
@@ -102,6 +118,9 @@ void MTProviderFromOTs::Setup() {
   finished_condition_->NotifyAll();
 
   run_time_stats_.record_end<Statistics::RunTimeStats::StatID::mt_setup>();
+  if constexpr (MOTION_DEBUG) {
+    logger_.LogDebug("Finished computing setup for MTs");
+  }
 }
 
 static void generate_random_triples_bool(BinaryMTVector& bit_mts, std::size_t num_bit_mts) {
