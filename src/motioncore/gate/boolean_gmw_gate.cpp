@@ -221,15 +221,12 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
     wire->RegisterWaitingGate(gate_id_);    // register this gate in @param wire as waiting
   }
 
-  // XXX: remove placeholder_vector when we can create uninitialized wires
-  ENCRYPTO::BitVector<> placeholder_vector(num_simd_values);
+  // create output wires
+  output_wires_.reserve(num_wires);
   for (size_t i = 0; i < num_wires; ++i) {
-    output_wires_.push_back(std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<Wires::GMWWire>(placeholder_vector, backend_)));
-  }
-
-  for (auto &wire : output_wires_) {
-    GetRegister().RegisterNextWire(wire);
+    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+        std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
+    GetRegister().RegisterNextWire(w);
   }
 
   // Tell the DataStorages that we want to receive OutputMessages from the
@@ -278,7 +275,7 @@ void GMWOutputGate::EvaluateOnline() {
   output.reserve(num_wires);
   for (std::size_t i = 0; i < num_wires; ++i) {
     // wait for parent wire to obtain a value
-    auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(parent_.at(i));
+    auto gmw_wire = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_.at(i));
     assert(gmw_wire);
     gmw_wire->GetIsReadyCondition()->Wait();
     // initialize output with local share
@@ -415,14 +412,15 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     wire->RegisterWaitingGate(gate_id_);
   }
 
-  output_wires_.resize(parent_a_.size());
-  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfSIMDValues());
-  for (auto &w : output_wires_) {
-    w = std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_));
-  }
+  auto num_wires = parent_a_.size();
+  auto num_simd_values = a->GetNumOfSIMDValues();
 
-  for (auto &w : output_wires_) {
-    _register.RegisterNextWire(w);
+  // create output wires
+  output_wires_.reserve(num_wires);
+  for (size_t i = 0; i < num_wires; ++i) {
+    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+        std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
+    GetRegister().RegisterNextWire(w);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -451,8 +449,8 @@ void GMWXORGate::EvaluateOnline() {
   }
 
   for (auto i = 0ull; i < parent_a_.size(); ++i) {
-    auto wire_a = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
-    auto wire_b = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
+    auto wire_a = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_a_.at(i));
+    auto wire_b = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_b_.at(i));
 
     assert(wire_a);
     assert(wire_b);
@@ -462,6 +460,7 @@ void GMWXORGate::EvaluateOnline() {
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(gmw_wire);
     gmw_wire->GetMutableValues() = std::move(output);
+    assert(gmw_wire->GetValues().GetSize() == parent_a_.at(0)->GetNumOfSIMDValues());
   }
 
   // we are done with this gate
@@ -501,14 +500,15 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) : OneGate(parent->GetBack
     wire->RegisterWaitingGate(gate_id_);
   }
 
-  output_wires_.resize(parent_.size());
-  const ENCRYPTO::BitVector tmp_bv(parent->GetNumOfSIMDValues());
-  for (auto &w : output_wires_) {
-    w = std::static_pointer_cast<Wires::Wire>(std::make_shared<Wires::GMWWire>(tmp_bv, backend_));
-  }
+  auto num_wires = parent_.size();
+  auto num_simd_values = parent->GetNumOfSIMDValues();
 
-  for (auto &w : output_wires_) {
-    _register.RegisterNextWire(w);
+  // create output wires
+  output_wires_.reserve(num_wires);
+  for (size_t i = 0; i < num_wires; ++i) {
+    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+        std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
+    GetRegister().RegisterNextWire(w);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -531,7 +531,7 @@ void GMWINVGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
   for (auto i = 0ull; i < parent_.size(); ++i) {
-    auto wire = std::dynamic_pointer_cast<Wires::GMWWire>(parent_.at(i));
+    auto wire = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_.at(i));
     assert(wire);
     wire->GetIsReadyCondition()->Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
@@ -568,21 +568,23 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_a_.at(0)->GetBitLength() > 0);
 
+  auto num_wires = parent_a_.size();
+  auto num_simd_values = a->GetNumOfSIMDValues();
+
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
 
-  const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfSIMDValues());
-  std::vector<Wires::WirePtr> dummy_wires_e(parent_a_.size()), dummy_wires_d(parent_a_.size());
+  std::vector<Wires::WirePtr> dummy_wires_e(num_wires), dummy_wires_d(num_wires);
 
   auto &_register = GetRegister();
 
   for (auto &w : dummy_wires_d) {
-    w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
+    w = std::make_shared<Wires::GMWWire>(num_simd_values, backend_);
     _register.RegisterNextWire(w);
   }
 
   for (auto &w : dummy_wires_e) {
-    w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
+    w = std::make_shared<Wires::GMWWire>(num_simd_values, backend_);
     _register.RegisterNextWire(w);
   }
 
@@ -607,10 +609,12 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     wire->RegisterWaitingGate(gate_id_);
   }
 
-  output_wires_.resize(parent_a_.size());
-  for (auto &w : output_wires_) {
-    w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-    _register.RegisterNextWire(w);
+  // create output wires
+  output_wires_.reserve(num_wires);
+  for (size_t i = 0; i < num_wires; ++i) {
+    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+        std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
+    GetRegister().RegisterNextWire(w);
   }
 
   auto &mt_provider = backend_.GetMTProvider();
@@ -647,7 +651,7 @@ void GMWANDGate::EvaluateOnline() {
   auto &d_mut = d_->GetMutableWires();
   for (auto i = 0ull; i < d_mut.size(); ++i) {
     auto d = std::dynamic_pointer_cast<Wires::GMWWire>(d_mut.at(i));
-    const auto x = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
+    const auto x = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_a_.at(i));
     assert(d);
     assert(x);
     d->GetMutableValues() = mts.a.Subset(mt_offset_ + i * x->GetNumOfSIMDValues(),
@@ -659,7 +663,7 @@ void GMWANDGate::EvaluateOnline() {
   auto &e_mut = e_->GetMutableWires();
   for (auto i = 0ull; i < e_mut.size(); ++i) {
     auto e = std::dynamic_pointer_cast<Wires::GMWWire>(e_mut.at(i));
-    const auto y = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
+    const auto y = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_b_.at(i));
     assert(e);
     assert(y);
     e->GetMutableValues() = mts.b.Subset(mt_offset_ + i * y->GetNumOfSIMDValues(),
@@ -682,10 +686,10 @@ void GMWANDGate::EvaluateOnline() {
   }
 
   for (auto i = 0ull; i < d_clear.size(); ++i) {
-    const auto d_w = std::dynamic_pointer_cast<Wires::GMWWire>(d_clear.at(i));
-    const auto x_i_w = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(i));
-    const auto e_w = std::dynamic_pointer_cast<Wires::GMWWire>(e_clear.at(i));
-    const auto y_i_w = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(i));
+    const auto d_w = std::dynamic_pointer_cast<const Wires::GMWWire>(d_clear.at(i));
+    const auto x_i_w = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_a_.at(i));
+    const auto e_w = std::dynamic_pointer_cast<const Wires::GMWWire>(e_clear.at(i));
+    const auto y_i_w = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_b_.at(i));
 
     assert(d_w);
     assert(x_i_w);
@@ -744,8 +748,6 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   requires_online_interaction_ = true;
   gate_type_ = GateType::InteractiveGate;
 
-  const ENCRYPTO::BitVector<> dummy_bv(a->GetNumOfSIMDValues());
-
   auto &_register = GetRegister();
   gate_id_ = _register.NextGateId();
 
@@ -764,15 +766,21 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
     wire->RegisterWaitingGate(gate_id_);
   }
 
-  output_wires_.resize(parent_a_.size());
-  for (auto &w : output_wires_) {
-    w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
-    _register.RegisterNextWire(w);
+  auto num_wires = parent_a_.size();
+  auto num_simd_values = a->GetNumOfSIMDValues();
+
+  // create output wires
+  // (EvaluateOnline expects the output wires already having buffers)
+  output_wires_.reserve(num_wires);
+  ENCRYPTO::BitVector dummy_bv(num_simd_values);
+  for (size_t i = 0; i < num_wires; ++i) {
+    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+        std::make_shared<Wires::GMWWire>(dummy_bv, backend_)));
+    GetRegister().RegisterNextWire(w);
   }
 
   const auto num_parties = GetConfig().GetNumOfParties();
   const auto my_id = GetConfig().GetMyId();
-  const auto num_simd = parent_a_.at(0)->GetNumOfSIMDValues();
   const auto num_bits = parent_a_.size();
   constexpr auto XCOT = ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT;
 
@@ -781,15 +789,16 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
 
   for (std::size_t i = 0; i < num_parties; ++i) {
     if (i == my_id) continue;
-    ot_sender_.at(i) = GetOTProvider(i).RegisterSend(num_bits, num_simd, XCOT);
-    ot_receiver_.at(i) = GetOTProvider(i).RegisterReceive(num_bits, num_simd, XCOT);
+    ot_sender_.at(i) = GetOTProvider(i).RegisterSend(num_bits, num_simd_values, XCOT);
+    ot_receiver_.at(i) = GetOTProvider(i).RegisterReceive(num_bits, num_simd_values, XCOT);
   }
 
   if constexpr (MOTION_DEBUG) {
-    auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
-                                 parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+    auto gate_info =
+        fmt::format("gate id {}, parents: {}, {}, {}", gate_id_, parent_a_.at(0)->GetWireId(),
+                    parent_b_.at(0)->GetWireId(), parent_c_.at(0)->GetWireId());
     GetLogger().LogDebug(
-        fmt::format("Created a BooleanGMW AND gate with following properties: {}", gate_info));
+        fmt::format("Created a BooleanGMW MUX gate with following properties: {}", gate_info));
   }
 }
 
@@ -821,8 +830,8 @@ void GMWMUXGate::EvaluateOnline() {
   for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
     ENCRYPTO::BitVector<> a, b;
     for (auto bit_i = 0ull; bit_i < num_bits; ++bit_i) {
-      auto wire_a = std::dynamic_pointer_cast<Wires::GMWWire>(parent_a_.at(bit_i));
-      auto wire_b = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(bit_i));
+      auto wire_a = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_a_.at(bit_i));
+      auto wire_b = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_b_.at(bit_i));
       assert(wire_a);
       assert(wire_b);
       a.Append(wire_a->GetValues()[simd_i]);
@@ -830,7 +839,7 @@ void GMWMUXGate::EvaluateOnline() {
     }
     xored_v.emplace_back(a ^ b);
   }
-  auto gmw_wire_selection_bits = std::dynamic_pointer_cast<Wires::GMWWire>(parent_c_.at(0));
+  auto gmw_wire_selection_bits = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_c_.at(0));
   assert(gmw_wire_selection_bits);
   const auto &selection_bits = gmw_wire_selection_bits->GetValues();
   for (auto other_pid = 0ull; other_pid < num_parties; ++other_pid) {
@@ -869,7 +878,7 @@ void GMWMUXGate::EvaluateOnline() {
     assert(wire_out);
     auto &out = wire_out->GetMutableValues();
 
-    auto wire_b = std::dynamic_pointer_cast<Wires::GMWWire>(parent_b_.at(bit_i));
+    auto wire_b = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_b_.at(bit_i));
     assert(wire_b);
     out ^= wire_b->GetValues();
   }

@@ -164,7 +164,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
         GetLogger().LogTrace(s);
       }
     }
-    auto my_wire = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+    auto my_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(my_wire);
     my_wire->GetMutableValues() = std::move(result);
 
@@ -243,13 +243,11 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     RegisterWaitingFor(parent_.at(0)->GetWireId());
     parent_.at(0)->RegisterWaitingGate(gate_id_);
 
-    // XXX: remove placeholder_vector when we can create uninitialized wires
-    std::vector<T> placeholder_vector(parent->GetNumOfSIMDValues());
-    output_wires_ = {std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<MOTION::Wires::ArithmeticWire<T>>(placeholder_vector, backend_))};
-
-    for (auto &w : output_wires_) {
+    {
+      auto w = std::static_pointer_cast<Wires::Wire>(
+          std::make_shared<Wires::ArithmeticWire<T>>(backend_, parent->GetNumOfSIMDValues()));
       GetRegister().RegisterNextWire(w);
+      output_wires_ = {std::move(w)};
     }
 
     // Tell the DataStorages that we want to receive OutputMessages from the
@@ -283,7 +281,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
   }
 
   ArithmeticOutputGate(const Shares::SharePtr &parent, std::size_t output_owner)
-      : ArithmeticOutputGate(std::dynamic_pointer_cast<Shares::ArithmeticShare<T>>(parent),
+      : ArithmeticOutputGate(std::dynamic_pointer_cast<const Shares::ArithmeticShare<T>>(parent),
                              output_owner) {
     assert(parent);
   }
@@ -306,7 +304,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     auto num_parties = config.GetNumOfParties();
 
     // note that arithmetic gates have only a single wire
-    auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_.at(0));
     assert(arithmetic_wire);
     // wait for parent wire to obtain a value
     arithmetic_wire->GetIsReadyCondition()->Wait();
@@ -419,12 +417,11 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     RegisterWaitingFor(parent_b_.at(0)->GetWireId());
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-    std::vector<T> placeholder_vector;
-    placeholder_vector.resize(parent_a_.at(0)->GetNumOfSIMDValues());
-    output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<MOTION::Wires::ArithmeticWire<T>>(placeholder_vector, backend_)))};
-    for (auto &w : output_wires_) {
+    {
+      auto w = std::static_pointer_cast<Wires::Wire>(
+          std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues()));
       GetRegister().RegisterNextWire(w);
+      output_wires_ = {std::move(w)};
     }
 
     auto gate_info =
@@ -448,8 +445,8 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     parent_a_.at(0)->GetIsReadyCondition()->Wait();
     parent_b_.at(0)->GetIsReadyCondition()->Wait();
 
-    auto wire_a = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(parent_a_.at(0));
-    auto wire_b = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(parent_b_.at(0));
+    auto wire_a = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
+    auto wire_b = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
 
     assert(wire_a);
     assert(wire_b);
@@ -503,12 +500,11 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     RegisterWaitingFor(parent_b_.at(0)->GetWireId());
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-    std::vector<T> placeholder_vector;
-    placeholder_vector.resize(parent_a_.at(0)->GetNumOfSIMDValues());
-    output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<MOTION::Wires::ArithmeticWire<T>>(placeholder_vector, backend_)))};
-    for (auto &w : output_wires_) {
+    {
+      auto w = std::static_pointer_cast<Wires::Wire>(
+          std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues()));
       GetRegister().RegisterNextWire(w);
+      output_wires_ = {std::move(w)};
     }
 
     auto gate_info =
@@ -532,8 +528,8 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     parent_a_.at(0)->GetIsReadyCondition()->Wait();
     parent_b_.at(0)->GetIsReadyCondition()->Wait();
 
-    auto wire_a = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(parent_a_.at(0));
-    auto wire_b = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(parent_b_.at(0));
+    auto wire_a = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
+    auto wire_b = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
 
     assert(wire_a);
     assert(wire_b);
@@ -578,11 +574,9 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;
 
-    const std::vector<T> tmp_v(parent_a_.at(0)->GetNumOfSIMDValues());
-
-    d_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
+    d_ = std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues());
     GetRegister().RegisterNextWire(d_);
-    e_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
+    e_ = std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues());
     GetRegister().RegisterNextWire(e_);
 
     d_out_ = std::make_shared<ArithmeticOutputGate<T>>(d_);
@@ -599,10 +593,11 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     RegisterWaitingFor(parent_b_.at(0)->GetWireId());
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-    output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<MOTION::Wires::ArithmeticWire<T>>(tmp_v, backend_)))};
-    for (auto &w : output_wires_) {
+    {
+      auto w = std::static_pointer_cast<Wires::Wire>(
+          std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues()));
       GetRegister().RegisterNextWire(w);
+      output_wires_ = {std::move(w)};
     }
 
     num_mts_ = parent_a_.at(0)->GetNumOfSIMDValues();
@@ -632,7 +627,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     mt_provider.WaitFinished();
     const auto &mts = mt_provider.template GetIntegerAll<T>();
     {
-      const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_a_.at(0));
+      const auto x = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
       assert(x);
       d_->GetMutableValues() = std::vector<T>(mts.a.begin() + mt_offset_,
                                               mts.a.begin() + mt_offset_ + x->GetNumOfSIMDValues());
@@ -643,7 +638,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
       }
       d_->SetOnlineFinished();
 
-      const auto y = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_b_.at(0));
+      const auto y = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
       assert(y);
       e_->GetMutableValues() = std::vector<T>(mts.b.begin() + mt_offset_,
                                               mts.b.begin() + mt_offset_ + x->GetNumOfSIMDValues());
@@ -664,10 +659,10 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     d_clear->GetIsReadyCondition()->Wait();
     e_clear->GetIsReadyCondition()->Wait();
 
-    const auto d_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(d_clear);
-    const auto x_i_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_a_.at(0));
-    const auto e_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(e_clear);
-    const auto y_i_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_b_.at(0));
+    const auto d_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(d_clear);
+    const auto x_i_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
+    const auto e_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(e_clear);
+    const auto y_i_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
 
     assert(d_w);
     assert(x_i_w);
@@ -732,9 +727,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     requires_online_interaction_ = true;
     gate_type_ = GateType::InteractiveGate;
 
-    const std::vector<T> tmp_v(parent_.at(0)->GetNumOfSIMDValues());
-
-    d_ = std::make_shared<Wires::ArithmeticWire<T>>(tmp_v, backend_);
+    d_ = std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues());
     GetRegister().RegisterNextWire(d_);
 
     d_out_ = std::make_shared<ArithmeticOutputGate<T>>(d_);
@@ -746,10 +739,11 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     RegisterWaitingFor(parent_.at(0)->GetWireId());
     parent_.at(0)->RegisterWaitingGate(gate_id_);
 
-    output_wires_ = {std::move(std::static_pointer_cast<MOTION::Wires::Wire>(
-        std::make_shared<MOTION::Wires::ArithmeticWire<T>>(tmp_v, backend_)))};
-    for (auto &w : output_wires_) {
+    {
+      auto w = std::static_pointer_cast<Wires::Wire>(
+          std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues()));
       GetRegister().RegisterNextWire(w);
+      output_wires_ = {std::move(w)};
     }
 
     num_sps_ = parent_.at(0)->GetNumOfSIMDValues();
@@ -777,7 +771,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     sp_provider.WaitFinished();
     const auto &sps = sp_provider.template GetSPsAll<T>();
     {
-      const auto x = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
+      const auto x = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_.at(0));
       assert(x);
       d_->GetMutableValues() = std::vector<T>(sps.a.begin() + sp_offset_,
                                               sps.a.begin() + sp_offset_ + x->GetNumOfSIMDValues());
@@ -795,8 +789,8 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
 
     d_clear->GetIsReadyCondition()->Wait();
 
-    const auto d_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(d_clear);
-    const auto x_i_w = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(parent_.at(0));
+    const auto d_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(d_clear);
+    const auto x_i_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_.at(0));
 
     assert(d_w);
     assert(x_i_w);
@@ -828,8 +822,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
   MOTION::Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() {
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
     assert(arithmetic_wire);
     auto result = std::make_shared<MOTION::Shares::ArithmeticShare<T>>(arithmetic_wire);
     return result;

@@ -60,8 +60,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     gate_type_ = GateType::InteractiveGate;
 
     // create the output wire
-    const std::vector<T> dummy_v(num_simd);
-    output_wires_.emplace_back(std::make_shared<Wires::ArithmeticWire<T>>(dummy_v, backend_));
+    output_wires_.emplace_back(std::make_shared<Wires::ArithmeticWire<T>>(backend_, num_simd));
     GetRegister().RegisterNextWire(output_wires_.at(0));
 
     // create shares for the intermediate values t
@@ -132,7 +131,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     auto& ts_wires = ts_->GetMutableWires();
     for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
       auto t_wire = std::dynamic_pointer_cast<Wires::GMWWire>(ts_wires.at(wire_i));
-      auto parent_gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(parent_.at(wire_i));
+      auto parent_gmw_wire = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_.at(wire_i));
       t_wire->GetMutableValues() = parent_gmw_wire->GetValues();
       // xor them with the shared bits
       for (std::size_t j = 0; j < num_simd; ++j) {
@@ -152,9 +151,9 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
                    [](auto& w) { return std::dynamic_pointer_cast<Wires::GMWWire>(w); });
 
     auto out = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(output_wires_.at(0));
+    out->GetMutableValues().resize(num_simd);
     for (std::size_t j = 0; j < num_simd; ++j) {
-      auto& out_val = out->GetMutableValues().at(j);
-      out_val = 0;
+      T out_val = 0;
       for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
         if (GetConfig().GetMyId() == 0) {
           T t(ts_clear_b.at(wire_i)->GetValues().Get(j));   // the masked bit
@@ -166,6 +165,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
           out_val += T(r - 2 * t * r) << wire_i;
         }
       }
+      out->GetMutableValues().at(j) = out_val;
     }
 
     GetLogger().LogDebug(fmt::format("Evaluated B2AGate with id#{}", gate_id_));

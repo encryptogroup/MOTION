@@ -65,25 +65,26 @@ GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires)
   wires_ = wires;
   if constexpr (MOTION_DEBUG) {
     assert(wires_.size() > 0);
-    const auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
+    const auto gmw_wire = std::dynamic_pointer_cast<const Wires::GMWWire>(wires_.at(0));
     assert(gmw_wire);
 
     // maybe_unused due to assert which is optimized away in Release
-    [[maybe_unused]] const auto size = gmw_wire->GetValues().GetSize();
+    [[maybe_unused]] const auto num_simd = gmw_wire->GetNumOfSIMDValues();
 
-    for (auto i = 0ull; i < wires_.size(); ++i) {
-      const auto gmw_wire_next = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
+    // check that all wires have same simd width
+    for (auto i = 1ull; i < wires_.size(); ++i) {
+      const auto gmw_wire_next = std::dynamic_pointer_cast<const Wires::GMWWire>(wires_.at(i));
       assert(gmw_wire_next);
-      assert(size == gmw_wire_next->GetValues().GetSize());
+      assert(num_simd == gmw_wire_next->GetNumOfSIMDValues());
     }
   }
   bits_ = wires.at(0)->GetBitLength();
 }
 
 std::size_t GMWShare::GetNumOfSIMDValues() const noexcept {
-  const auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires_.at(0));
+  const auto gmw_wire = std::dynamic_pointer_cast<const Wires::GMWWire>(wires_.at(0));
   assert(gmw_wire);
-  return gmw_wire->GetValues().GetSize();
+  return gmw_wire->GetNumOfSIMDValues();
 }
 
 std::vector<std::shared_ptr<Share>> GMWShare::Split() const noexcept {
