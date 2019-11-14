@@ -32,7 +32,7 @@
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
-class AlgorithmDescription;
+struct AlgorithmDescription;
 }
 
 namespace MOTION::Shares {

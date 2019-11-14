@@ -33,7 +33,7 @@
 #include <flatbuffers/flatbuffers.h>
 
 namespace ENCRYPTO {
-class AlgorithmDescription;
+struct AlgorithmDescription;
 }
 
 namespace MOTION {
