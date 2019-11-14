@@ -32,6 +32,7 @@
 #include "utility/bit_matrix.h"
 #include "utility/condition.h"
 #include "utility/config.h"
+#include "utility/fiber_condition.h"
 #include "utility/logger.h"
 
 namespace ENCRYPTO::ObliviousTransfer {
@@ -268,7 +269,7 @@ GOTVectorSender::GOTVectorSender(const std::size_t ot_id, const std::size_t vect
     : OTVectorSender(ot_id, vector_id, num_ots, bitlen, OTProtocol::GOT, data_storage, Send) {
   auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
   ot_ext_snd.received_correction_offsets_cond_.emplace(
-      ot_id_, std::make_unique<Condition>([ot_id, &ot_ext_snd]() {
+      ot_id_, std::make_unique<FiberCondition>([ot_id, &ot_ext_snd]() {
         std::scoped_lock lock(ot_ext_snd.corrections_mutex_);
         return ot_ext_snd.received_correction_offsets_.find(ot_id) !=
                ot_ext_snd.received_correction_offsets_.end();
@@ -329,7 +330,7 @@ COTVectorSender::COTVectorSender(const std::size_t id, const std::size_t vector_
   }
   auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
   ot_ext_snd.received_correction_offsets_cond_.emplace(
-      ot_id_, std::make_unique<Condition>([this, &ot_ext_snd]() {
+      ot_id_, std::make_unique<FiberCondition>([this, &ot_ext_snd]() {
         std::scoped_lock lock(ot_ext_snd.corrections_mutex_);
         return ot_ext_snd.received_correction_offsets_.find(ot_id_) !=
                ot_ext_snd.received_correction_offsets_.end();
@@ -804,7 +805,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
 
   if (p != OTProtocol::ROT) {
     {
-      auto &&e = std::pair(i, std::make_unique<Condition>([i, &ot_ext_rcv]() {
+      auto &&e = std::pair(i, std::make_unique<FiberCondition>([i, &ot_ext_rcv]() {
                              std::scoped_lock lock(ot_ext_rcv.received_outputs_mutex_);
                              return ot_ext_rcv.received_outputs_.find(i) !=
                                     ot_ext_rcv.received_outputs_.end();

@@ -38,6 +38,7 @@
 
 namespace ENCRYPTO {
 class Condition;
+class FiberCondition;
 }
 
 namespace MOTION {
@@ -59,7 +60,7 @@ struct OTExtensionReceiverData {
   // for received messages but only for the first OT id in the batch. Thus, use a hash table.
   std::unordered_set<std::size_t> received_outputs_;
   std::vector<ENCRYPTO::BitVector<>> outputs_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> output_conds_;
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>> output_conds_;
   std::mutex received_outputs_mutex_;
 
   std::unordered_map<std::size_t, std::size_t> num_messages_;
@@ -98,7 +99,7 @@ struct OTExtensionSenderData {
   // corrections for GOTs, i.e., if random choice bit is not the real choice bit
   // send 1 to flip the messages before encoding or 0 otherwise for each GOT
   std::unordered_set<std::size_t> received_correction_offsets_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>>
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>>
       received_correction_offsets_cond_;
   ENCRYPTO::BitVector<> corrections_;
   mutable std::mutex corrections_mutex_;

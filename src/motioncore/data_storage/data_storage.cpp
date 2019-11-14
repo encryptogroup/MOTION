@@ -36,6 +36,7 @@
 #include "data_storage/shared_bits_data.h"
 #include "utility/condition.h"
 #include "utility/constants.h"
+#include "utility/fiber_condition.h"
 #include "utility/logger.h"
 
 namespace MOTION {

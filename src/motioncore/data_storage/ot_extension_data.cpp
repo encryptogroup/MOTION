@@ -25,6 +25,7 @@
 #include <thread>
 #include "ot_extension_data.h"
 #include "utility/condition.h"
+#include "utility/fiber_condition.h"
 
 namespace MOTION {
 

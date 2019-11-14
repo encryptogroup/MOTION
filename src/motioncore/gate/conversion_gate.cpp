@@ -32,6 +32,7 @@
 #include "share/bmr_share.h"
 #include "share/boolean_gmw_share.h"
 #include "utility/constants.h"
+#include "utility/fiber_condition.h"
 #include "wire/bmr_wire.h"
 #include "wire/boolean_gmw_wire.h"
 

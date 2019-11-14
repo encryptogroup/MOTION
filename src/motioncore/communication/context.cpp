@@ -42,6 +42,7 @@
 #include "data_storage/ot_extension_data.h"
 #include "data_storage/shared_bits_data.h"
 #include "utility/constants.h"
+#include "utility/fiber_condition.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
 #include "utility/random.h"
