@@ -143,7 +143,7 @@ class MTProvider {
 
   const std::size_t my_id_;
 
-  bool finished_ = false;
+  std::atomic<bool> finished_{false};
   std::shared_ptr<ENCRYPTO::Condition> finished_condition_;
 
  private:
