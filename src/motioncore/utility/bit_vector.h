@@ -197,6 +197,11 @@ class BitVector {
   void TruncateToFit() noexcept;
 };
 
+template <typename Allocator>
+std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bar) {
+  return os << bar.AsString();
+}
+
 // Input functions that convert inputs of integer and floating point types to vectors of
 // BitVectors, which are a suitable input to MOTION
 
@@ -288,4 +293,4 @@ std::vector<T> ToVectorOutput(std::vector<BitVector<Allocator>> v) {
 }
 
 using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, 16>>;
-}
+}  // namespace ENCRYPTO
