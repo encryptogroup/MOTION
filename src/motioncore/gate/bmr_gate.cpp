@@ -839,13 +839,13 @@ void BMRANDGate::EvaluateSetup() {
         bmr_data->garbled_rows_.at(static_cast<std::size_t>(gate_id_)).second.get_future();
   }
 
-  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> r_out(num_parties),
-      s_out(num_parties);
-  for (auto &v : r_out) v.resize(output_wires_.size());
-  for (auto &v : s_out) v.resize(output_wires_.size());
+  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> r_out(
+      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(output_wires_.size()));
+  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> s_out(
+      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(output_wires_.size()));
 
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(num_parties);
-  for (auto &v : choices) v.resize(output_wires_.size());
+  std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(
+      num_parties, std::vector<ENCRYPTO::BitVector<>>(output_wires_.size()));
 
   const std::vector<ENCRYPTO::BitVector<>> R_for_OTs(
       batch_size_3, ENCRYPTO::BitVector<>(R.GetData().data(), kappa));
@@ -903,7 +903,7 @@ void BMRANDGate::EvaluateSetup() {
             bmr_b->GetPermutationBits().AsString(), choices.at(party_id).at(wire_i).AsString()));
       }
       // compute C-OTs for the real value, ie, b = (lambda_u ^ alpha) * (lambda_v ^ beta)
-      for (auto j = 0ull; j < a_bv.GetSize(); ++j) s_v.emplace_back(ENCRYPTO::BitVector<>(a_bv[j]));
+      for (auto j = 0ull; j < a_bv.GetSize(); ++j) s_v.emplace_back(a_bv[j]);
 
       r_ot_1->WaitSetup();
       s_ot_1->WaitSetup();
