@@ -25,7 +25,7 @@
 #include "bmr_wire.h"
 
 #include "base/backend.h"
-#include "utility/condition.h"
+#include "utility/fiber_condition.h"
 
 namespace MOTION::Wires {
 
@@ -57,7 +57,7 @@ void BMRWire::InitializationHelperBMR() {
   for (auto i = 0ull; i < public_keys_.size(); ++i) public_keys_.at(i).resize(n_simd_);
 
   setup_ready_cond_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return setup_ready_.load(); });
+      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_ready_.load(); });
 }
 
 void BMRWire::GenerateRandomPrivateKeys() {

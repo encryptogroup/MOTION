@@ -27,10 +27,8 @@
 #include "wire.h"
 
 #include "utility/bit_vector.h"
+#include "utility/fiber_condition.h"
 
-namespace ENCRYPTO {
-class Condition;
-}
 
 namespace MOTION::Wires {
 
@@ -101,7 +99,7 @@ class BMRWire : public BooleanWire {
   std::vector<std::vector<ENCRYPTO::BitVector<>>> public_keys_;
 
   std::atomic<bool> setup_ready_{false};
-  std::unique_ptr<ENCRYPTO::Condition> setup_ready_cond_;
+  std::unique_ptr<ENCRYPTO::FiberCondition> setup_ready_cond_;
 };
 
 using BMRWirePtr = std::shared_ptr<BMRWire>;

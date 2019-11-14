@@ -500,8 +500,8 @@ void BMRXORGate::EvaluateSetup() {
     assert(bmr_out);
     assert(bmr_a);
     assert(bmr_b);
-    MOTION::Helpers::WaitFor(*bmr_a->GetSetupReadyCondition());
-    MOTION::Helpers::WaitFor(*bmr_b->GetSetupReadyCondition());
+    bmr_a->GetSetupReadyCondition()->Wait();
+    bmr_b->GetSetupReadyCondition()->Wait();
 
     // use freeXOR garbling
     bmr_out->GetMutablePermutationBits() =
@@ -625,7 +625,7 @@ void BMRINVGate::EvaluateSetup() {
     auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
     assert(bmr_out);
     assert(bmr_in);
-    MOTION::Helpers::WaitFor(*bmr_in->GetSetupReadyCondition());
+    bmr_in->GetSetupReadyCondition()->Wait();
 
     bmr_out->GetMutablePermutationBits() = bmr_in->GetPermutationBits();
 
@@ -806,8 +806,8 @@ void BMRANDGate::GenerateRandomness() {
         auto bmr_b = std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i));
         assert(bmr_a);
         assert(bmr_b);
-        MOTION::Helpers::WaitFor(*bmr_a->GetSetupReadyCondition());
-        MOTION::Helpers::WaitFor(*bmr_b->GetSetupReadyCondition());
+        bmr_a->GetSetupReadyCondition()->Wait();
+        bmr_b->GetSetupReadyCondition()->Wait();
         GetLogger().LogTrace(fmt::format(
             "Gate#{} (BMR AND gate) Party#{} wire_i {} simd_i {} perm_bits (a {} b {} out {}) key0 "
             "{} key 1 {}\n",
@@ -866,8 +866,8 @@ void BMRANDGate::EvaluateSetup() {
     assert(bmr_out);
     assert(bmr_a);
     assert(bmr_b);
-    MOTION::Helpers::WaitFor(*bmr_a->GetSetupReadyCondition());
-    MOTION::Helpers::WaitFor(*bmr_b->GetSetupReadyCondition());
+    bmr_a->GetSetupReadyCondition()->Wait();
+    bmr_b->GetSetupReadyCondition()->Wait();
     const bool permutation{(bmr_out->GetWireId() % GetConfig().GetNumOfParties()) ==
                            GetConfig().GetMyId()};
 
