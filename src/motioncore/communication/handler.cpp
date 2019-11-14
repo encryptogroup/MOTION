@@ -276,14 +276,16 @@ std::uint32_t Handler::ParseHeader() {
   std::uint32_t size = u8tou32(message_size_buffer);
 
   if (size > 0) {
-    std::string s;
-    for (auto i = 0u; i < 4; ++i) {
-      s.append(fmt::format("{0:#x} ", reinterpret_cast<std::uint8_t *>(&size)[i]));
-    };
-    GetLogger()->LogTrace(
-        fmt::format("{}: Got a new message from the socket and have read the "
-                    "header (size: {}), header: {}",
-                    GetInfo(), size, s));
+    if constexpr(MOTION_VERBOSE_DEBUG) {
+      std::string s;
+      for (auto i = 0u; i < 4; ++i) {
+        s.append(fmt::format("{0:#x} ", reinterpret_cast<std::uint8_t *>(&size)[i]));
+      };
+      GetLogger()->LogTrace(
+          fmt::format("{}: Got a new message from the socket and have read the "
+                      "header (size: {}), header: {}",
+                      GetInfo(), size, s));
+    }
   } else if (size == 0 ||
              (ec == boost::asio::error::would_block || ec == boost::asio::error::eof)) {
     return 0;
