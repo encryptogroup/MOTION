@@ -55,7 +55,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteg
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_ADD, bitlen, "_depth");
 
-    if (add_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+    if ((add_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
@@ -87,7 +87,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteg
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_SUB, bitlen, "_depth");
 
-    if (sub_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+    if ((sub_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
@@ -119,7 +119,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteg
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_MUL, bitlen, "_depth");
 
-    if (mul_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+    if ((mul_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
@@ -151,7 +151,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteg
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_DIV, bitlen, "_depth");
 
-    if (div_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+    if ((div_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
@@ -183,7 +183,7 @@ Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedIntege
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_GT, bitlen, "_depth");
 
-    if (gt_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)) {
+    if ((gt_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
