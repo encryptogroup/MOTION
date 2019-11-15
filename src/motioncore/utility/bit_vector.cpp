@@ -309,20 +309,12 @@ template <typename Allocator1>
 template <typename Allocator2>
 BitVector<Allocator1>& BitVector<Allocator1>::operator^=(
     const BitVector<Allocator2>& other) noexcept {
-  const auto max_bit_size = std::max(bit_size_, other.GetSize());
-  const auto min_byte_size = std::min(data_vector_.size(), other.GetData().size());
+  auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
 
-  Resize(max_bit_size, true);
+  std::transform(data_vector_.cbegin(), data_vector_.cbegin() + min_byte_size,
+                 other.data_vector_.cbegin(), data_vector_.begin(),
+                 [](auto a, auto b) { return a ^ b; });
 
-  for (auto i = 0ull; i < min_byte_size; ++i) {
-    data_vector_.at(i) ^= other.GetData().at(i);
-  }
-
-  if (data_vector_.size() < other.GetData().size()) {
-    for (auto i = min_byte_size; i < other.GetData().size(); ++i) {
-      data_vector_.at(i) ^= other.GetData().at(i);
-    }
-  }
   return *this;
 }
 
