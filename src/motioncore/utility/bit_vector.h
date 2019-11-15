@@ -52,6 +52,9 @@ constexpr std::byte TRUNCATION_BIT_MASK[] = {
 
 template <typename Allocator = std::allocator<std::byte>>
 class BitVector {
+  template <typename Allocator2>
+  friend class BitVector;
+
  public:
   BitVector() noexcept : bit_size_(0){};
 
