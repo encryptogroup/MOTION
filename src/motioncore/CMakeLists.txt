@@ -106,15 +106,27 @@ target_compile_options(motion PRIVATE
         ${MOTION_VECT_COST_MODEL_GCC_FLAG}
         )
 
+set(MOTION_ALIGNMENT 16)
 if (MOTION_USE_AVX)
+    # at least AVX
     target_compile_options(motion PRIVATE -mavx)
+    set(MOTION_ALIGNMENT 32)
     if (NOT MOTION_USE_AVX STREQUAL "AVX")
+        # at least AVX2
         target_compile_options(motion PRIVATE -mavx2)
         if (NOT MOTION_USE_AVX STREQUAL "AVX2")
+            # AVX512
             target_compile_options(motion PRIVATE -mavx512f -mavx512dq -mavx512cd -mavx512bw -mavx512vl)
+            set(MOTION_ALIGNMENT 64)
         endif ()
     endif ()
 endif ()
+
+configure_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/utility/config.h.in
+        ${CMAKE_CURRENT_SOURCE_DIR}/utility/config.h
+        ESCAPE_QUOTES @ONLY
+)
 
 add_custom_target(
         motion_config ALL DEPENDS

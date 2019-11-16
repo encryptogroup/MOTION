@@ -62,12 +62,6 @@ else ()
     set(MOTION_DEBUG "false")
 endif ()
 
-configure_file(
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/motioncore/utility/config.h.in
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/motioncore/utility/config.h
-        ESCAPE_QUOTES @ONLY
-)
-
 # Write built executables and libraries to bin/ and lib/, respectively.
 if (NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")

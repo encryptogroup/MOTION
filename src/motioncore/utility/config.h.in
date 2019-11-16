@@ -30,4 +30,7 @@ constexpr bool MOTION_DEBUG{@MOTION_DEBUG@};
 constexpr float MOTION_VERSION{@MOTION_VERSION@};
 constexpr std::string_view MOTION_ROOT_DIR{"@MOTION_ROOT_DIR@"};
 
+// alignment for data buffers
+constexpr std::size_t MOTION_ALIGNMENT{@MOTION_ALIGNMENT@};
+
 }  // namespace MOTION
