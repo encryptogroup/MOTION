@@ -50,6 +50,12 @@ std::vector<std::uint8_t> u32tou8(std::uint32_t v) {
   return result;
 }
 
+void u32tou8(std::uint32_t v, std::uint8_t* result) {
+  for (auto i = 0u; i < sizeof(std::uint32_t); ++i) {
+    result[i] = (v >> i * 8) & 0xFF;
+  }
+}
+
 // use explicit conversion function to prevent implementation-dependent
 // conversion issues on different architectures
 std::uint32_t u8tou32(std::vector<std::uint8_t> &v) {
@@ -163,8 +169,12 @@ void Handler::ActAsSender() {
                                              message.size())));
       }
 
-      auto message_size = u32tou8(message.size());
-      message.insert(message.begin(), message_size.begin(), message_size.end());
+      std::array<std::uint8_t, sizeof(std::uint32_t)> message_size;
+      u32tou8(message.size(), message_size.data());
+
+      std::array<boost::asio::const_buffer, 2> buffers = {boost::asio::buffer(message_size),
+                                                          boost::asio::buffer(message)};
+
       boost::system::error_code ec;
       auto boost_socket = GetSocket();
       assert(boost_socket);
@@ -173,8 +183,7 @@ void Handler::ActAsSender() {
       if (ec) {
         throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
       }
-      boost::asio::write(*boost_socket.get(), boost::asio::buffer(message),
-                         boost::asio::transfer_exactly(message.size()), ec);
+      boost::asio::write(*boost_socket.get(), buffers, boost::asio::transfer_all(), ec);
       if (ec) {
         throw(std::runtime_error(fmt::format("Error while writing to socket: {}", ec.message())));
       }
