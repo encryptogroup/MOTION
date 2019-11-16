@@ -53,18 +53,17 @@ class OTVector {
  public:
   OTVector() = delete;
 
-  std::size_t GetOtId() const noexcept { return ot_id_; }
-  std::size_t GetNumOTs() const noexcept { return num_ots_; }
-  std::size_t GetBitlen() const noexcept { return bitlen_; }
-  OTProtocol GetProtocol() const noexcept { return p_; }
+  [[nodiscard]] std::size_t GetOtId() const noexcept { return ot_id_; }
+  [[nodiscard]] std::size_t GetNumOTs() const noexcept { return num_ots_; }
+  [[nodiscard]] std::size_t GetBitlen() const noexcept { return bitlen_; }
+  [[nodiscard]] OTProtocol GetProtocol() const noexcept { return p_; }
 
  protected:
-  OTVector(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-           const std::size_t bitlen, const OTProtocol p,
-           const std::shared_ptr<MOTION::DataStorage> &data_storage,
+  OTVector(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
+           const OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
            const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
-  const std::size_t ot_id_, vector_id_, num_ots_, bitlen_;
+  const std::size_t ot_id_, num_ots_, bitlen_;
   const OTProtocol p_;
 
   std::shared_ptr<MOTION::DataStorage> data_storage_;
@@ -73,7 +72,7 @@ class OTVector {
 
 class OTVectorSender : public OTVector {
  public:
-  const std::vector<BitVector<>> &GetInputs() const { return inputs_; };
+  [[nodiscard]] const std::vector<BitVector<>> &GetInputs() const { return inputs_; };
   virtual const std::vector<BitVector<>> &GetOutputs();
 
   virtual void SetInputs(const std::vector<BitVector<>> &v) = 0;
@@ -84,9 +83,8 @@ class OTVectorSender : public OTVector {
   void WaitSetup();
 
  protected:
-  OTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                 const std::size_t bitlen, const OTProtocol p,
-                 const std::shared_ptr<MOTION::DataStorage> &data_storage,
+  OTVectorSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
+                 const OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
@@ -96,8 +94,7 @@ class OTVectorSender : public OTVector {
 
 class GOTVectorSender final : public OTVectorSender {
  public:
-  GOTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                  const std::size_t bitlen,
+  GOTVectorSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
                   const std::shared_ptr<MOTION::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -111,9 +108,8 @@ class GOTVectorSender final : public OTVectorSender {
 
 class COTVectorSender final : public OTVectorSender {
  public:
-  COTVectorSender(const std::size_t id, const std::size_t vector_id, const std::size_t num_ots,
-                  const std::size_t bitlen, OTProtocol p,
-                  const std::shared_ptr<MOTION::DataStorage> &data_storage,
+  COTVectorSender(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
+                  OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -127,8 +123,7 @@ class COTVectorSender final : public OTVectorSender {
 
 class ROTVectorSender final : public OTVectorSender {
  public:
-  ROTVectorSender(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                  const std::size_t bitlen,
+  ROTVectorSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
                   const std::shared_ptr<MOTION::DataStorage> &data_storage,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -145,9 +140,9 @@ class OTVectorReceiver : public OTVector {
 
   virtual void SetChoices(BitVector<> &&v) = 0;
 
-  const virtual BitVector<> &GetChoices() = 0;
+  [[nodiscard]] const virtual BitVector<> &GetChoices() = 0;
 
-  const virtual std::vector<BitVector<>> &GetOutputs() = 0;
+  [[nodiscard]] const virtual std::vector<BitVector<>> &GetOutputs() = 0;
 
   virtual void SendCorrections() = 0;
 
@@ -156,9 +151,8 @@ class OTVectorReceiver : public OTVector {
   bool ChoicesAreSet() { return choices_flag_; }
 
  protected:
-  OTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                   const std::size_t bitlen, const OTProtocol p,
-                   const std::shared_ptr<MOTION::DataStorage> &data_storage,
+  OTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
+                   const OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
                    std::function<void(flatbuffers::FlatBufferBuilder &&)> Send);
 
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
@@ -170,8 +164,7 @@ class OTVectorReceiver : public OTVector {
 
 class GOTVectorReceiver final : public OTVectorReceiver {
  public:
-  GOTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                    const std::size_t bitlen,
+  GOTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
                     const std::shared_ptr<MOTION::DataStorage> &data_storage,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -191,9 +184,8 @@ class GOTVectorReceiver final : public OTVectorReceiver {
 
 class COTVectorReceiver final : public OTVectorReceiver {
  public:
-  COTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                    const std::size_t bitlen, OTProtocol p,
-                    const std::shared_ptr<MOTION::DataStorage> &data_storage,
+  COTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
+                    OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SendCorrections() final;
@@ -212,8 +204,7 @@ class COTVectorReceiver final : public OTVectorReceiver {
 
 class ROTVectorReceiver final : public OTVectorReceiver {
  public:
-  ROTVectorReceiver(const std::size_t ot_id, const std::size_t vector_id, const std::size_t num_ots,
-                    const std::size_t bitlen,
+  ROTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
                     const std::shared_ptr<MOTION::DataStorage> &data_storage,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -254,7 +245,7 @@ class OTProviderSender {
  private:
   std::unordered_map<std::size_t, std::shared_ptr<OTVectorSender>> sender_data_;
 
-  std::size_t total_ots_count_{0}, next_vector_id_{0};
+  std::size_t total_ots_count_{0};
 
   std::shared_ptr<MOTION::DataStorage> data_storage_;
 };
@@ -284,7 +275,7 @@ class OTProviderReceiver {
  private:
   std::unordered_map<std::size_t, std::shared_ptr<OTVectorReceiver>> receiver_data_;
 
-  std::size_t total_ots_count_{0}, next_vector_id_{0};
+  std::size_t total_ots_count_{0};
 
   std::shared_ptr<MOTION::DataStorage> data_storage_;
 };
@@ -300,9 +291,9 @@ class OTProvider {
   /// @param num_ots Number of OTs
   /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
   /// @return Offset to the OT that can be used to set input messages
-  std::shared_ptr<OTVectorSender> &RegisterSend(const std::size_t bitlen = 1,
-                                                const std::size_t num_ots = 1,
-                                                const OTProtocol p = GOT) {
+  [[nodiscard]] std::shared_ptr<OTVectorSender> &RegisterSend(const std::size_t bitlen = 1,
+                                                              const std::size_t num_ots = 1,
+                                                              const OTProtocol p = GOT) {
     return sender_provider_.RegisterOTs(bitlen, num_ots, p, Send_);
   }
 
@@ -310,21 +301,15 @@ class OTProvider {
   /// @param num_ots Number of OTs
   /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
   /// @return Offset to the OT that can be used to retrieve the output of the OT
-  std::shared_ptr<OTVectorReceiver> &RegisterReceive(const std::size_t bitlen = 1,
-                                                     const std::size_t num_ots = 1,
-                                                     const OTProtocol p = GOT) {
+  [[nodiscard]] std::shared_ptr<OTVectorReceiver> &RegisterReceive(const std::size_t bitlen = 1,
+                                                                   const std::size_t num_ots = 1,
+                                                                   const OTProtocol p = GOT) {
     return receiver_provider_.RegisterOTs(bitlen, num_ots, p, Send_);
   }
 
-  std::shared_ptr<OTVectorSender> &GetSent(const size_t id) { return sender_provider_.GetOTs(id); }
+  [[nodiscard]] std::size_t GetNumOTsReceiver() const { return receiver_provider_.GetNumOTs(); }
 
-  std::shared_ptr<OTVectorReceiver> &GetReceiver(const size_t id) {
-    return receiver_provider_.GetOTs(id);
-  }
-
-  std::size_t GetNumOTsReceiver() const { return receiver_provider_.GetNumOTs(); }
-
-  std::size_t GetNumOTsSender() const { return sender_provider_.GetNumOTs(); }
+  [[nodiscard]] std::size_t GetNumOTsSender() const { return sender_provider_.GetNumOTs(); }
 
   virtual void SendSetup() = 0;
   virtual void ReceiveSetup() = 0;
