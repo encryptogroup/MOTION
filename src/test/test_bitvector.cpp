@@ -34,11 +34,11 @@ namespace {
 
 TEST(BitVector, Constructors) {
   {
-    auto bv = ENCRYPTO::BitVector();
+    auto bv = ENCRYPTO::BitVector<>();
     EXPECT_EQ(bv.GetSize(), 0);
   }
   {
-    auto bv = ENCRYPTO::BitVector(true);
+    auto bv = ENCRYPTO::BitVector<>(true);
     EXPECT_EQ(bv.GetSize(), 1);
     EXPECT_EQ(bv.Get(0), true);
   }
