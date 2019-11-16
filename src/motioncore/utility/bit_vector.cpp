@@ -27,7 +27,7 @@
 namespace ENCRYPTO {
 
 using std_alloc = std::allocator<std::byte>;
-using boost_alloc = boost::alignment::aligned_allocator<std::byte, 16>;
+using aligned_alloc = boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>;
 
 template <typename Allocator>
 BitVector<Allocator>::BitVector(std::size_t n_bits, bool value) noexcept : bit_size_(n_bits) {
@@ -120,9 +120,11 @@ bool BitVector<Allocator1>::operator!=(const BitVector<Allocator2>& other) const
 }
 
 template bool BitVector<std_alloc>::operator!=(const BitVector<std_alloc>& other) const noexcept;
-template bool BitVector<std_alloc>::operator!=(const BitVector<boost_alloc>& other) const noexcept;
-template bool BitVector<boost_alloc>::operator!=(const BitVector<std_alloc>& other) const noexcept;
-template bool BitVector<boost_alloc>::operator!=(const BitVector<boost_alloc>& other) const
+template bool BitVector<std_alloc>::operator!=(const BitVector<aligned_alloc>& other) const
+    noexcept;
+template bool BitVector<aligned_alloc>::operator!=(const BitVector<std_alloc>& other) const
+    noexcept;
+template bool BitVector<aligned_alloc>::operator!=(const BitVector<aligned_alloc>& other) const
     noexcept;
 
 template <typename Allocator1>
@@ -137,11 +139,11 @@ BitVector<Allocator1> BitVector<Allocator1>::operator&(const BitVector<Allocator
 template BitVector<std_alloc> BitVector<std_alloc>::operator&(
     const BitVector<std_alloc>& other) const noexcept;
 template BitVector<std_alloc> BitVector<std_alloc>::operator&(
-    const BitVector<boost_alloc>& other) const noexcept;
-template BitVector<boost_alloc> BitVector<boost_alloc>::operator&(
+    const BitVector<aligned_alloc>& other) const noexcept;
+template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator&(
     const BitVector<std_alloc>& other) const noexcept;
-template BitVector<boost_alloc> BitVector<boost_alloc>::operator&(
-    const BitVector<boost_alloc>& other) const noexcept;
+template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator&(
+    const BitVector<aligned_alloc>& other) const noexcept;
 
 template <typename Allocator1>
 template <typename Allocator2>
@@ -155,11 +157,11 @@ BitVector<Allocator1> BitVector<Allocator1>::operator^(const BitVector<Allocator
 template BitVector<std_alloc> BitVector<std_alloc>::operator^(
     const BitVector<std_alloc>& other) const noexcept;
 template BitVector<std_alloc> BitVector<std_alloc>::operator^(
-    const BitVector<boost_alloc>& other) const noexcept;
-template BitVector<boost_alloc> BitVector<boost_alloc>::operator^(
+    const BitVector<aligned_alloc>& other) const noexcept;
+template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator^(
     const BitVector<std_alloc>& other) const noexcept;
-template BitVector<boost_alloc> BitVector<boost_alloc>::operator^(
-    const BitVector<boost_alloc>& other) const noexcept;
+template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator^(
+    const BitVector<aligned_alloc>& other) const noexcept;
 
 template <typename Allocator1>
 template <typename Allocator2>
@@ -173,11 +175,11 @@ BitVector<Allocator1> BitVector<Allocator1>::operator|(const BitVector<Allocator
 template BitVector<std_alloc> BitVector<std_alloc>::operator|(
     const BitVector<std_alloc>& other) const noexcept;
 template BitVector<std_alloc> BitVector<std_alloc>::operator|(
-    const BitVector<boost_alloc>& other) const noexcept;
-template BitVector<boost_alloc> BitVector<boost_alloc>::operator|(
+    const BitVector<aligned_alloc>& other) const noexcept;
+template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator|(
     const BitVector<std_alloc>& other) const noexcept;
-template BitVector<boost_alloc> BitVector<boost_alloc>::operator|(
-    const BitVector<boost_alloc>& other) const noexcept;
+template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator|(
+    const BitVector<aligned_alloc>& other) const noexcept;
 
 template <typename Allocator>
 BitVector<Allocator>& BitVector<Allocator>::operator=(const BitVector<Allocator>& other) noexcept {
@@ -211,9 +213,11 @@ bool BitVector<Allocator1>::operator==(const BitVector<Allocator2>& other) const
 }
 
 template bool BitVector<std_alloc>::operator==(const BitVector<std_alloc>& other) const noexcept;
-template bool BitVector<std_alloc>::operator==(const BitVector<boost_alloc>& other) const noexcept;
-template bool BitVector<boost_alloc>::operator==(const BitVector<std_alloc>& other) const noexcept;
-template bool BitVector<boost_alloc>::operator==(const BitVector<boost_alloc>& other) const
+template bool BitVector<std_alloc>::operator==(const BitVector<aligned_alloc>& other) const
+    noexcept;
+template bool BitVector<aligned_alloc>::operator==(const BitVector<std_alloc>& other) const
+    noexcept;
+template bool BitVector<aligned_alloc>::operator==(const BitVector<aligned_alloc>& other) const
     noexcept;
 
 template <typename Allocator>
@@ -280,11 +284,11 @@ BitVector<Allocator1>& BitVector<Allocator1>::operator&=(
 template BitVector<std_alloc>& BitVector<std_alloc>::operator&=(
     const BitVector<std_alloc>& other) noexcept;
 template BitVector<std_alloc>& BitVector<std_alloc>::operator&=(
-    const BitVector<boost_alloc>& other) noexcept;
-template BitVector<boost_alloc>& BitVector<boost_alloc>::operator&=(
+    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator&=(
     const BitVector<std_alloc>& other) noexcept;
-template BitVector<boost_alloc>& BitVector<boost_alloc>::operator&=(
-    const BitVector<boost_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator&=(
+    const BitVector<aligned_alloc>& other) noexcept;
 
 template <typename Allocator1>
 template <typename Allocator2>
@@ -310,11 +314,11 @@ BitVector<Allocator1>& BitVector<Allocator1>::operator^=(
 template BitVector<std_alloc>& BitVector<std_alloc>::operator^=(
     const BitVector<std_alloc>& other) noexcept;
 template BitVector<std_alloc>& BitVector<std_alloc>::operator^=(
-    const BitVector<boost_alloc>& other) noexcept;
-template BitVector<boost_alloc>& BitVector<boost_alloc>::operator^=(
+    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator^=(
     const BitVector<std_alloc>& other) noexcept;
-template BitVector<boost_alloc>& BitVector<boost_alloc>::operator^=(
-    const BitVector<boost_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator^=(
+    const BitVector<aligned_alloc>& other) noexcept;
 
 template <typename Allocator1>
 template <typename Allocator2>
@@ -341,11 +345,11 @@ BitVector<Allocator1>& BitVector<Allocator1>::operator|=(
 template BitVector<std_alloc>& BitVector<std_alloc>::operator|=(
     const BitVector<std_alloc>& other) noexcept;
 template BitVector<std_alloc>& BitVector<std_alloc>::operator|=(
-    const BitVector<boost_alloc>& other) noexcept;
-template BitVector<boost_alloc>& BitVector<boost_alloc>::operator|=(
+    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator|=(
     const BitVector<std_alloc>& other) noexcept;
-template BitVector<boost_alloc>& BitVector<boost_alloc>::operator|=(
-    const BitVector<boost_alloc>& other) noexcept;
+template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator|=(
+    const BitVector<aligned_alloc>& other) noexcept;
 
 template <typename Allocator>
 void BitVector<Allocator>::Resize(std::size_t n_bits, bool zero_fill) noexcept {
@@ -835,7 +839,7 @@ void BitVector<Allocator>::TruncateToFit() noexcept {
 }
 
 template class BitVector<std_alloc>;
-template class BitVector<boost_alloc>;
+template class BitVector<aligned_alloc>;
 
 template <>
 std::vector<BitVector<std_alloc>> ToInput<float, std::true_type, std_alloc>(float t) {

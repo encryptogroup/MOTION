@@ -34,6 +34,7 @@
 #include <fmt/format.h>
 #include <boost/align/aligned_allocator.hpp>
 
+#include "config.h"
 #include "helpers.h"
 
 namespace ENCRYPTO {
@@ -292,5 +293,5 @@ std::vector<T> ToVectorOutput(std::vector<BitVector<Allocator>> v) {
   return v_t;
 }
 
-using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, 16>>;
+using AlignedBitVector = BitVector<boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>>;
 }  // namespace ENCRYPTO
