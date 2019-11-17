@@ -216,6 +216,7 @@ class ReusablePromise {
     future_retrieved_ = other.future_retrieved_;
     other.shared_state_ = nullptr;
     other.future_retrieved_ = false;
+    return *this;
   }
 
   // set value of the shared state
