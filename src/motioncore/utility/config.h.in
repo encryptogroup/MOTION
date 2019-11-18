@@ -24,6 +24,9 @@
 
 #pragma once
 
+#include <cstddef>
+#include <string_view>
+
 namespace MOTION {
 
 constexpr bool MOTION_DEBUG{@MOTION_DEBUG@};
