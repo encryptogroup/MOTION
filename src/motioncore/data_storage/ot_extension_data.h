@@ -78,6 +78,8 @@ struct OTExtensionReceiverData {
 
   std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
   std::atomic<bool> setup_finished_{false};
+
+  std::atomic<std::size_t> consumed_offset_{0};
 };
 
 struct OTExtensionSenderData {
@@ -110,6 +112,8 @@ struct OTExtensionSenderData {
 
   std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
   std::atomic<bool> setup_finished_{false};
+
+  std::atomic<std::size_t> consumed_offset_{0};
 };
 
 struct OTExtensionData {
