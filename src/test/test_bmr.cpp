@@ -61,7 +61,7 @@ class BMRTest : public testing::TestWithParam<parameters_t> {
 
 TEST_P(BMRTest, InputOutput) {
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::srand(std::time(nullptr));
+  std::srand(0);
   const std::size_t input_owner = std::rand() % this->n_parties_,
                     output_owner = std::rand() % this->n_parties_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->n_parties_);
@@ -119,7 +119,7 @@ TEST_P(BMRTest, InputOutput) {
 
 TEST_P(BMRTest, INV) {
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::srand(std::time(nullptr));
+  std::srand(0);
   const std::size_t input_owner = std::rand() % this->n_parties_,
                     output_owner = std::rand() % this->n_parties_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->n_parties_);
@@ -175,7 +175,7 @@ TEST_P(BMRTest, INV) {
 
 TEST_P(BMRTest, XOR) {
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::srand(std::time(nullptr));
+  std::srand(0);
   const std::size_t output_owner = std::rand() % this->n_parties_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->n_parties_);
   for (auto &bv_v : global_input) {
@@ -277,7 +277,7 @@ TEST_P(BMRHeavyTest, AND) {
   EXPECT_NE(n_simd_, 0);
 
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::srand(std::time(nullptr));
+  std::srand(0);
   const std::size_t output_owner = std::rand() % n_parties_;
   std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(n_parties_);
   for (auto &bv_v : global_input) {
@@ -418,7 +418,7 @@ TEST_P(BMRHeavyTest, OR) {
 
 TEST_P(BMRHeavyTest, MUX) {
   constexpr auto BMR = MOTION::MPCProtocol::BMR;
-  std::srand(std::time(nullptr));
+  std::srand(0);
   const std::size_t in1_owner = std::rand() % this->n_parties_,
                     in2_owner = std::rand() % this->n_parties_,
                     sel_bit_owner = std::rand() % this->n_parties_,

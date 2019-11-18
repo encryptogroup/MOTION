@@ -49,7 +49,7 @@ TEST(ObliviousTransfer, BaseOT) {
         std::vector<std::thread> t(num_parties);
 
         struct base_ots_t {
-          std::array<std::array<std::byte, 16>, 128> messages_c_, messages0_, messages1_;
+          std::array<std::array<std::byte, 16>, 128> messages_c_, messages_0_, messages_1_;
           ENCRYPTO::BitVector<> c;
         };
         std::vector<std::vector<base_ots_t>> base_ots(num_parties);
@@ -84,13 +84,13 @@ TEST(ObliviousTransfer, BaseOT) {
               const auto &base_ots_snd = ds->GetBaseOTsData()->GetSenderData();
               assert((*base_ots_snd.is_ready_condition_)());
 
-              for (auto k = 0ull; k < bo.messages0_.size(); ++k) {
+              for (auto k = 0ull; k < bo.messages_0_.size(); ++k) {
                 std::copy(base_ots_snd.messages_0_.at(k).begin(),
-                          base_ots_snd.messages_0_.at(k).end(), bo.messages0_.at(k).begin());
+                          base_ots_snd.messages_0_.at(k).end(), bo.messages_0_.at(k).begin());
               }
-              for (auto k = 0ull; k < bo.messages1_.size(); ++k) {
+              for (auto k = 0ull; k < bo.messages_1_.size(); ++k) {
                 std::copy(base_ots_snd.messages_1_.at(k).begin(),
-                          base_ots_snd.messages_1_.at(k).end(), bo.messages1_.at(k).begin());
+                          base_ots_snd.messages_1_.at(k).end(), bo.messages_1_.at(k).begin());
               }
             }
           });
@@ -110,15 +110,15 @@ TEST(ObliviousTransfer, BaseOT) {
 
             for (auto k = 0u; k < base_ots_a.messages_c_.size(); ++k) {
               if (base_ots_a.c.Get(k)) {
-                ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages1_.at(k));
+                ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages_1_.at(k));
               } else {
-                ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages0_.at(k));
+                ASSERT_EQ(base_ots_a.messages_c_.at(k), base_ots_b.messages_0_.at(k));
               }
 
               if (base_ots_b.c.Get(k)) {
-                ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages1_.at(k));
+                ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages_1_.at(k));
               } else {
-                ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages0_.at(k));
+                ASSERT_EQ(base_ots_b.messages_c_.at(k), base_ots_a.messages_0_.at(k));
               }
             }
           }
@@ -134,13 +134,13 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
   constexpr std::size_t num_ots{10};
   for (auto num_parties : num_parties_list) {
     try {
-      std::random_device rd("/dev/urandom");
+      std::mt19937_64 r(0);
       std::uniform_int_distribution<std::size_t> dist_bitlen(1, 1000);
       std::uniform_int_distribution<std::size_t> dist_batch_size(1, 10);
       std::array<std::size_t, num_ots> bitlen, ots_in_batch;
       for (auto i = 0ull; i < bitlen.size(); ++i) {
-        bitlen.at(i) = dist_bitlen(rd);
-        ots_in_batch.at(i) = dist_batch_size(rd);
+        bitlen.at(i) = dist_bitlen(r);
+        ots_in_batch.at(i) = dist_batch_size(r);
       }
 
       bitlen.at(bitlen.size() - 1) = 1;
@@ -223,13 +223,13 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
   constexpr std::size_t num_ots{10};
   for (auto num_parties : num_parties_list) {
     try {
-      std::random_device rd("/dev/urandom");
+      std::mt19937_64 r(0);
       std::uniform_int_distribution<std::size_t> dist_bitlen(1, 1000);
       std::uniform_int_distribution<std::size_t> dist_batch_size(1, 10);
       std::array<std::size_t, num_ots> bitlen, ots_in_batch;
       for (auto i = 0ull; i < bitlen.size(); ++i) {
-        bitlen.at(i) = dist_bitlen(rd);
-        ots_in_batch.at(i) = dist_batch_size(rd);
+        bitlen.at(i) = dist_bitlen(r);
+        ots_in_batch.at(i) = dist_batch_size(r);
       }
 
       bitlen.at(bitlen.size() - 1) = 1;
@@ -335,13 +335,13 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
   constexpr std::size_t num_ots{10};
   for (auto num_parties : num_parties_list) {
     try {
-      std::random_device rd("/dev/urandom");
+      std::mt19937_64 r(0);
       std::uniform_int_distribution<std::size_t> dist_bitlen(1, 1000);
       std::uniform_int_distribution<std::size_t> dist_batch_size(1, 10);
       std::array<std::size_t, num_ots> bitlen, ots_in_batch;
       for (auto i = 0ull; i < bitlen.size(); ++i) {
-        bitlen.at(i) = dist_bitlen(rd);
-        ots_in_batch.at(i) = dist_batch_size(rd);
+        bitlen.at(i) = dist_bitlen(r);
+        ots_in_batch.at(i) = dist_batch_size(r);
       }
 
       bitlen.at(bitlen.size() - 1) = 1;
@@ -466,13 +466,13 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
   constexpr std::array<std::size_t, 5> bitlens{8, 16, 32, 64, 128};
   for (auto num_parties : num_parties_list) {
     try {
-      std::random_device rd("/dev/urandom");
+      std::mt19937_64 r(0);
       std::uniform_int_distribution<std::size_t> dist_bitlen(0, bitlens.size() - 1);
       std::uniform_int_distribution<std::size_t> dist_batch_size(1, 10);
       std::array<std::size_t, num_ots> bitlen, ots_in_batch;
       for (auto i = 0ull; i < bitlen.size(); ++i) {
-        bitlen.at(i) = bitlens.at(dist_bitlen(rd));
-        ots_in_batch.at(i) = dist_batch_size(rd);
+        bitlen.at(i) = bitlens.at(dist_bitlen(r));
+        ots_in_batch.at(i) = dist_batch_size(r);
       }
 
       std::vector<MOTION::PartyPtr> motion_parties(
@@ -617,4 +617,4 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
     }
   }
 }  // namespace
-}
+}  // namespace
