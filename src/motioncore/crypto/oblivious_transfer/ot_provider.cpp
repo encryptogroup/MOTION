@@ -862,7 +862,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
     default:
       throw std::runtime_error("Unknown OT protocol");
   }
-  
+
   auto &&e = std::pair(i, ot);
   data_storage_->GetOTExtensionData()->GetReceiverData().real_choices_->Resize(total_ots_count_,
                                                                                false);
