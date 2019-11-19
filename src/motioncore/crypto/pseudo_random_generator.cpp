@@ -89,6 +89,7 @@ std::vector<std::byte> PRG::FixedKeyAES(const std::byte *x, const std::uint64_t 
   for (j = 0; j < num; ++j) {
     reinterpret_cast<uint128_t *>(output.data())[j] ^=
         reinterpret_cast<const uint128_t *>(aes_x.data())[j];
+    reinterpret_cast<uint64_t *>(output.data())[2 * j] ^= i + j;
   }
 
   return output;
@@ -102,7 +103,7 @@ std::vector<std::byte> PRG::FixedKeyAES(const std::byte *x, const uint128_t i) {
   auto output = Encrypt(aes_x.data(), AES_BLOCK_SIZE);
 
   *reinterpret_cast<uint128_t *>(output.data()) ^=
-      *reinterpret_cast<const uint128_t *>(aes_x.data());
+      *reinterpret_cast<const uint128_t *>(aes_x.data()) ^ i;
 
   return output;
 }
