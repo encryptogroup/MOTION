@@ -31,7 +31,7 @@
 
 #include "omp.h"
 
-#include "utility/helpers.h"
+#include "helpers.h"
 
 namespace ENCRYPTO {
 void BitMatrix::Transpose() {

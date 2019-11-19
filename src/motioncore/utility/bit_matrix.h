@@ -26,7 +26,6 @@
 
 #include "bit_vector.h"
 
-#include <emmintrin.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <cassert>
