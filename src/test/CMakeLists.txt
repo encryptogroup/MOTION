@@ -13,6 +13,7 @@ add_executable(motiontest
         test_ot.cpp
         test_party.cpp
         test_reusable_future.cpp
+        test_rng.cpp
         test_sb.cpp
         test_sp.cpp
         )

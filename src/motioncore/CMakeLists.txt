@@ -25,6 +25,7 @@ add_library(motion
         crypto/oblivious_transfer/ot_provider.cpp
         crypto/pseudo_random_generator.cpp
         crypto/sharing_randomness_generator.cpp
+        crypto/random/aes128_ctr_rng.cpp
         data_storage/base_ot_data.cpp
         data_storage/bmr_data.cpp
         data_storage/data_storage.cpp
