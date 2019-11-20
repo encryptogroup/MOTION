@@ -30,8 +30,12 @@ constexpr std::size_t aes_block_size = 16;
 constexpr std::size_t aes_round_keys_size_128 = 176;
 constexpr std::size_t aes_num_round_keys_128 = 11;
 
-// expand the round_keys
-// assume first round key == aes key is already placed at the start of the buffer
+// expand the round_keys with the assumptions:
+// * first round key == aes key is already placed at the start of the buffer
+// * round_keys is 16B aligned
 void aesni_key_expansion_128(void* round_keys);
+
+// generate num_blocks of random bytes using AES in counter mode
+// * round_keys and output are 16B aligned
 void aesni_ctr_stream_blocks_128(void* round_keys, std::uint64_t* counter, void* output,
                                  std::size_t num_blocks);
