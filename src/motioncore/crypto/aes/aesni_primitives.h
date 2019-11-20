@@ -39,3 +39,7 @@ void aesni_key_expansion_128(void* round_keys);
 // * round_keys and output are 16B aligned
 void aesni_ctr_stream_blocks_128(const void* round_keys, std::uint64_t* counter, void* output,
                                  std::size_t num_blocks);
+
+// computes the fixed-key contruction from https://eprint.iacr.org/2019/074 on four input blocks inplace
+// * round_keys and output are 16B aligned
+void aesni_fixed_key_batch_4(const void* round_keys, void* input, __uint128_t tweak);

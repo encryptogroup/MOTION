@@ -152,3 +152,48 @@ void aesni_ctr_stream_blocks_128(const void* round_keys_in, std::uint64_t* count
   // write the new counter back
   *counter_in = counter;
 }
+
+void aesni_fixed_key_batch_4(const void* round_keys_in, void* input, __uint128_t tweak) {
+  alignas(16) std::array<__m128i, aes_num_round_keys_128> round_keys;
+  alignas(16) std::array<__m128i, 4> wb_1;
+  alignas(16) std::array<__m128i, 4> wb_2;
+
+  // copy the round keys onto the stack
+  // -> compiler will put them into registers
+  std::copy(reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size)),
+            reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size)) +
+                aes_num_round_keys_128,
+            round_keys.data());
+  auto input_ptr = reinterpret_cast<__m128i*>(input);
+  auto tweak_ptr = reinterpret_cast<__m128i*>(&tweak);
+
+  // compute wb_1 <- \pi(x)
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_xor_si128(input_ptr[j], round_keys[0]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[1]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[2]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[3]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[4]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[5]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[6]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[7]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[8]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[9]);
+  for (std::size_t j = 0; j < 4; ++j) wb_1[j] = _mm_aesenclast_si128(wb_1[j], round_keys[10]);
+
+  // compute wb_2 <- \pi(\pi(x) ^ i)
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_xor_si128(wb_1[j], *tweak_ptr);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_xor_si128(wb_2[j], round_keys[0]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[1]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[2]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[3]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[4]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[5]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[6]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[7]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[8]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[9]);
+  for (std::size_t j = 0; j < 4; ++j) wb_2[j] = _mm_aesenclast_si128(wb_2[j], round_keys[10]);
+
+  // store \pi(\pi(x) ^ i) ^ \pi(x)
+  for (std::size_t j = 0; j < 4; ++j) input_ptr[j] = _mm_xor_si128(wb_2[j], wb_1[j]);
+}
