@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include "bit_vector.h"
+#include "crypto/random/aes128_ctr_rng.h"
 
 namespace ENCRYPTO {
 
@@ -896,23 +897,13 @@ BitVector<Allocator> BitVector<Allocator>::RandomSeeded(const std::size_t size,
 }
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::Random(const std::size_t size) noexcept {
-  std::random_device rd;
-  std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
-  std::uniform_int_distribution<std::uint64_t> dist_bool(0, 1);
+BitVector<Allocator> BitVector<Allocator>::Random(const std::size_t bit_size) noexcept {
+  auto& rng = AES128_CTR_RNG::get_thread_instance();
+  auto byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size);
 
-  BitVector bv(size);
-  auto ptr = reinterpret_cast<std::uint64_t*>(bv.data_vector_.data());
-
-  std::size_t i;
-
-  for (i = 0ull; i + 64 <= size; i += 64) {
-    *(ptr + (i / 64)) = dist(rd);
-  }
-
-  for (; i < size; ++i) {
-    bv.Set(dist_bool(rd) == true, i);
-  }
+  BitVector bv(bit_size);
+  rng.random_bytes(bv.data_vector_.data(), byte_size);
+  bv.TruncateToFit();
 
   return bv;
 }
