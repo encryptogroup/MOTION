@@ -37,5 +37,5 @@ void aesni_key_expansion_128(void* round_keys);
 
 // generate num_blocks of random bytes using AES in counter mode
 // * round_keys and output are 16B aligned
-void aesni_ctr_stream_blocks_128(void* round_keys, std::uint64_t* counter, void* output,
+void aesni_ctr_stream_blocks_128(const void* round_keys, std::uint64_t* counter, void* output,
                                  std::size_t num_blocks);

@@ -89,8 +89,8 @@ void aesni_key_expansion_128(void* round_keys_in) {
   // movdqa 0xa0[rdi], xmm1
 }
 
-void aesni_ctr_stream_blocks_128(void* round_keys_in, std::uint64_t* counter_in, void* output_in,
-                                 std::size_t num_blocks) {
+void aesni_ctr_stream_blocks_128(const void* round_keys_in, std::uint64_t* counter_in,
+                                 void* output_in, std::size_t num_blocks) {
   alignas(16) std::array<__m128i, aes_num_round_keys_128> round_keys;
   alignas(16) std::array<__m128i, 4> wb;
   auto wb_as_uint64s = reinterpret_cast<std::uint64_t*>(wb.data());
@@ -112,8 +112,9 @@ void aesni_ctr_stream_blocks_128(void* round_keys_in, std::uint64_t* counter_in,
   // since the aesenc instructions have a latency of 4
   auto batch_blocks = num_blocks & (~0b11);
   for (size_t i = 0; i < batch_blocks; i += 4) {
-    std::fill(reinterpret_cast<std::byte*>(wb.data()), reinterpret_cast<std::byte*>(wb.data() + 4), std::byte(0x00));
-    for (std::size_t j = 0; j < 4; ++j) wb_as_uint64s[2*j] = counter + j;
+    std::fill(reinterpret_cast<std::byte*>(wb.data()), reinterpret_cast<std::byte*>(wb.data() + 4),
+              std::byte(0x00));
+    for (std::size_t j = 0; j < 4; ++j) wb_as_uint64s[2 * j] = counter + j;
     for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_xor_si128(wb[j], round_keys[0]);
     for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[1]);
     for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[2]);
