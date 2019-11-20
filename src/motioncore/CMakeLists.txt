@@ -14,6 +14,7 @@ add_library(motion
         communication/ot_extension_message.cpp
         communication/output_message.cpp
         communication/shared_bits_message.cpp
+        crypto/aes/aesni_primitives.cpp
         crypto/base_ots/base_ot_provider.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/blake2b.cpp

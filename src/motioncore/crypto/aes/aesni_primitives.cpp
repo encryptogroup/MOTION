@@ -1,0 +1,153 @@
+// MIT License
+//
+// Copyright (c) 2018-2019 Lennart Braun
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+#include <immintrin.h>
+#include <algorithm>
+#include <array>
+#include "aesni_primitives.h"
+
+template <int round_constant>
+static __m128i aes_key_expand(__m128i xmm1) {
+  // aeskeygenassist xmm3, xmm1, \rcon
+  __m128i xmm3 = _mm_aeskeygenassist_si128(xmm1, round_constant);
+  // pshufd xmm3, xmm3, 0xff
+  xmm3 = _mm_shuffle_epi32(xmm3, 0xff);
+  // movdqa xmm2, xmm1
+  __m128i xmm2 = xmm1;
+  // pslldq xmm2, 4
+  xmm2 = _mm_slli_si128(xmm2, 4);
+  // pxor xmm1, xmm2
+  xmm1 = _mm_xor_si128(xmm1, xmm2);
+  // pslldq xmm2, 4
+  xmm2 = _mm_slli_si128(xmm2, 4);
+  // pxor xmm1, xmm2
+  xmm1 = _mm_xor_si128(xmm1, xmm2);
+  // pslldq xmm2, 4
+  xmm2 = _mm_slli_si128(xmm2, 4);
+  // pxor xmm1, xmm2
+  xmm1 = _mm_xor_si128(xmm1, xmm2);
+  // pxor xmm1, xmm3
+  xmm1 = _mm_xor_si128(xmm1, xmm3);
+  return xmm1;
+}
+
+// expand the round_keys
+// assume first round key == aes key is already placed at the start of the buffer
+void aesni_key_expansion_128(void* round_keys_in) {
+  __m128i* round_keys =
+      reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size));
+  // movdqa xmm1, [rsi]
+  // movdqa [rdi], xmm1
+  round_keys[1] = aes_key_expand<0x01>(round_keys[0]);
+  // aes_key_expand 0x01
+  // movdqa 0x10[rdi], xmm1
+  round_keys[2] = aes_key_expand<0x02>(round_keys[1]);
+  // aes_key_expand 0x02
+  // movdqa 0x20[rdi], xmm1
+  round_keys[3] = aes_key_expand<0x04>(round_keys[2]);
+  // aes_key_expand 0x04
+  // movdqa 0x30[rdi], xmm1
+  round_keys[4] = aes_key_expand<0x08>(round_keys[3]);
+  // aes_key_expand 0x08
+  // movdqa 0x40[rdi], xmm1
+  round_keys[5] = aes_key_expand<0x10>(round_keys[4]);
+  // aes_key_expand 0x10
+  // movdqa 0x50[rdi], xmm1
+  round_keys[6] = aes_key_expand<0x20>(round_keys[5]);
+  // aes_key_expand 0x20
+  // movdqa 0x60[rdi], xmm1
+  round_keys[7] = aes_key_expand<0x40>(round_keys[6]);
+  // aes_key_expand 0x40
+  // movdqa 0x70[rdi], xmm1
+  round_keys[8] = aes_key_expand<0x80>(round_keys[7]);
+  // aes_key_expand 0x80
+  // movdqa 0x80[rdi], xmm1
+  round_keys[9] = aes_key_expand<0x1b>(round_keys[8]);
+  // aes_key_expand 0x1b
+  // movdqa 0x90[rdi], xmm1
+  round_keys[10] = aes_key_expand<0x36>(round_keys[9]);
+  // aes_key_expand 0x36
+  // movdqa 0xa0[rdi], xmm1
+}
+
+void aesni_ctr_stream_blocks_128(void* round_keys_in, std::uint64_t* counter_in, void* output_in,
+                                 std::size_t num_blocks) {
+  alignas(16) std::array<__m128i, aes_num_round_keys_128> round_keys;
+  alignas(16) std::array<__m128i, 4> wb;
+  auto wb_as_uint64s = reinterpret_cast<std::uint64_t*>(wb.data());
+  auto counter = *counter_in;
+
+  // we assume the output buffer is aligned
+  auto output = reinterpret_cast<__m128i*>(__builtin_assume_aligned(output_in, aes_block_size));
+
+  // copy the round keys onto the stack
+  // -> compiler will put them into registers
+  std::copy(reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size)),
+            reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size)) +
+                aes_num_round_keys_128,
+            round_keys.data());
+
+  // prepare the counters
+
+  // do as many blocks as possible in 4er batches
+  // since the aesenc instructions have a latency of 4
+  auto batch_blocks = num_blocks & (~0b11);
+  for (size_t i = 0; i < batch_blocks; i += 4) {
+    std::fill(reinterpret_cast<std::byte*>(wb.data()), reinterpret_cast<std::byte*>(wb.data() + 4), std::byte(0x00));
+    for (std::size_t j = 0; j < 4; ++j) wb_as_uint64s[2*j] = counter + j;
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_xor_si128(wb[j], round_keys[0]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[1]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[2]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[3]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[4]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[5]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[6]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[7]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[8]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[9]);
+    for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenclast_si128(wb[j], round_keys[10]);
+    for (std::size_t j = 0; j < 4; ++j) output[i + j] = wb[j];
+    counter += 4;
+  }
+
+  // do the remaining blocks
+  for (size_t i = batch_blocks; i < num_blocks; ++i) {
+    wb_as_uint64s[0] = counter;
+    wb_as_uint64s[1] = 0;
+    wb[0] = _mm_xor_si128(wb[0], round_keys[0]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[1]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[2]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[3]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[4]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[5]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[6]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[7]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[8]);
+    wb[0] = _mm_aesenc_si128(wb[0], round_keys[9]);
+    wb[0] = _mm_aesenclast_si128(wb[0], round_keys[10]);
+    output[i] = wb[0];
+    ++counter;
+  }
+
+  // write the new counter back
+  *counter_in = counter;
+}
