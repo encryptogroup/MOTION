@@ -14,16 +14,16 @@ add_library(motion
         communication/ot_extension_message.cpp
         communication/output_message.cpp
         communication/shared_bits_message.cpp
-        crypto/sharing_randomness_generator.cpp
-        crypto/blake2b.cpp
-        crypto/pseudo_random_generator.cpp
         crypto/base_ots/base_ot_provider.cpp
         crypto/base_ots/ot_hl17.cpp
+        crypto/blake2b.cpp
         crypto/curve25519/mycurve25519.cpp
         crypto/multiplication_triple/mt_provider.cpp
         crypto/multiplication_triple/sb_provider.cpp
         crypto/multiplication_triple/sp_provider.cpp
         crypto/oblivious_transfer/ot_provider.cpp
+        crypto/pseudo_random_generator.cpp
+        crypto/sharing_randomness_generator.cpp
         data_storage/base_ot_data.cpp
         data_storage/bmr_data.cpp
         data_storage/data_storage.cpp
