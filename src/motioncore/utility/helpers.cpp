@@ -65,8 +65,4 @@ std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
   assert(divisor != 0);
   return 1 + ((dividend - 1) / divisor);
 }
-
-namespace Convert {
-std::size_t BitsToBytes(std::size_t bits) { return (bits + 7) / 8; }
-}  // namespace Convert
 }

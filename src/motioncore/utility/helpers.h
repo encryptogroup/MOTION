@@ -321,6 +321,8 @@ inline bool Dimensions(const std::vector<std::vector<T>> &v) {
 std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor);
 
 namespace Convert {
-std::size_t BitsToBytes(std::size_t bits);
+
+inline std::size_t BitsToBytes(const std::size_t bits) { return (bits + 7) / 8; }
+
 }  // namespace Convert
 }  // namespace MOTION::Helpers
