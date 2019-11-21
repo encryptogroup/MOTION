@@ -50,6 +50,11 @@ constexpr std::byte TRUNCATION_BIT_MASK[] = {
     std::byte(0b10000000), std::byte(0b11000000), std::byte(0b11100000), std::byte(0b111110000),
     std::byte(0b11111000), std::byte(0b11111100), std::byte(0b11111110), std::byte(0b11111111)};
 
+class BitSpan;
+
+using std_alloc = std::allocator<std::byte>;
+using aligned_alloc = boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>;
+
 template <typename Allocator = std::allocator<std::byte>>
 class BitVector {
   template <typename Allocator2>
@@ -106,32 +111,42 @@ class BitVector {
 
   // Initialize from std::vector content, performs length check
   template <typename Allocator2>
-  BitVector(const std::vector<std::byte, Allocator2>& data, std::size_t n_bits);
+  explicit BitVector(const std::vector<std::byte, Allocator2>& data, std::size_t n_bits);
 
   // Initialize from std::vector rvalue (requires same allocator), performs length check
-  BitVector(std::vector<std::byte, Allocator>&& data, std::size_t n_bits);
+  explicit BitVector(std::vector<std::byte, Allocator>&& data, std::size_t n_bits);
 
   // Initialize from a std::vector<bool>, inefficient!
-  BitVector(const std::vector<bool>& data, std::size_t n_bits);
+  explicit BitVector(const std::vector<bool>& data, std::size_t n_bits);
 
   bool Empty() { return bit_size_ == 0; }
 
   /// \brief In-place bit-wise invert
   void Invert();
 
+  constexpr bool IsAligned() const noexcept { return std::is_same_v<Allocator, aligned_alloc>; }
+
   BitVector operator~() const;
 
   template <typename Allocator2>
   bool operator!=(const BitVector<Allocator2>& other) const noexcept;
 
+  bool operator!=(const BitSpan& bvv) const noexcept;
+
   template <typename Allocator2>
   BitVector operator&(const BitVector<Allocator2>& other) const noexcept;
+
+  BitVector operator&(const BitSpan& bvv) const noexcept;
 
   template <typename Allocator2>
   BitVector operator^(const BitVector<Allocator2>& other) const noexcept;
 
+  BitVector operator^(const BitSpan& bvv) const noexcept;
+
   template <typename Allocator2>
   BitVector operator|(const BitVector<Allocator2>& other) const noexcept;
+
+  BitVector operator|(const BitSpan& bvv) const noexcept;
 
   bool operator[](std::size_t pos) const { return Get(pos); }
 
@@ -155,6 +170,8 @@ class BitVector {
   template <typename Allocator2>
   bool operator==(const BitVector<Allocator2>& other) const noexcept;
 
+  bool operator==(const BitSpan& other) const noexcept;
+
   void Set(bool value) noexcept;
 
   void Set(bool value, std::size_t pos);
@@ -164,11 +181,17 @@ class BitVector {
   template <typename Allocator2>
   BitVector& operator&=(const BitVector<Allocator2>& other) noexcept;
 
+  BitVector& operator&=(const BitSpan& other) noexcept;
+
   template <typename Allocator2>
   BitVector& operator^=(const BitVector<Allocator2>& other) noexcept;
 
+  BitVector& operator^=(const BitSpan& other) noexcept;
+
   template <typename Allocator2>
   BitVector& operator|=(const BitVector<Allocator2>& other) noexcept;
+
+  BitVector& operator|=(const BitSpan& other) noexcept;
 
   void Resize(std::size_t n_bits, bool zero_fill = false) noexcept;
 
@@ -177,6 +200,12 @@ class BitVector {
   void Append(const BitVector<Allocator>& other) noexcept;
 
   void Append(BitVector&& other) noexcept;
+
+  void Append(const BitSpan& bs);
+
+  void Append(BitSpan&& bs);
+
+  void Append(const std::byte* ptr, const std::size_t append_bit_size) noexcept;
 
   void Copy(const std::size_t dest_from, const std::size_t dest_to, const BitVector& other);
 
@@ -188,7 +217,9 @@ class BitVector {
 
   void Clear() noexcept;
 
-  static BitVector Random(std::size_t size) noexcept;
+  static BitVector Random(const std::size_t size) noexcept;
+
+  static BitVector RandomSeeded(const std::size_t size, const std::size_t seed = 0) noexcept;
 
   static bool ANDReduceBitVector(const BitVector& vector);
 
@@ -220,6 +251,10 @@ class BitVector {
   std::size_t bit_size_;
 
   void TruncateToFit() noexcept;
+
+  void BoundsCheckEquality(const std::size_t bit_size) const;
+
+  void BoundsCheckInRange(const std::size_t bit_size) const;
 };
 
 template <typename Allocator>
@@ -317,6 +352,138 @@ std::vector<T> ToVectorOutput(std::vector<BitVector<Allocator>> v) {
   return v_t;
 }
 
-using AlignedBitVector =
-    BitVector<boost::alignment::aligned_allocator<std::byte, MOTION::MOTION_ALIGNMENT>>;
+using AlignedBitVector = BitVector<aligned_alloc>;
+
+/// \brief provides a read-write BitVector API over a raw buffer, e.g., std::byte *.
+/// The underlying buffer is not owned by the BitSpan, in contrast to BitVector.
+/// Assumes that the buffer starts at leftmost bit of the underlying buffer.
+/// Alternatively, non-owning non-resizeable BitVector
+
+class BitSpan {
+ public:
+  BitSpan() = default;
+
+  ~BitSpan() = default;
+
+  BitSpan(std::byte* ptr, std::size_t bit_size, bool aligned = false);
+
+  template <typename T>
+  BitSpan(T* ptr, std::size_t bit_size, bool aligned = false);
+
+  BitSpan(const BitSpan& other);
+
+  BitSpan(BitSpan&& other);
+
+  template <typename BitVectorT>
+  BitSpan(BitVectorT& bv)
+      : ptr_(bv.GetMutableData().data()), bit_size_(bv.GetSize()), aligned_(bv.IsAligned()) {}
+
+  BitSpan& operator=(const BitSpan& other);
+
+  BitSpan& operator=(BitSpan&& other);
+
+  template <typename BitVectorT>
+  BitSpan& operator=(BitVectorT& bv) {
+    ptr_ = bv.GetMutableData().data();
+    bit_size_ = bv.GetSize();
+    aligned_ = bv.IsAligned();
+    return *this;
+  }
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT As() const {
+    return BitVectorT(ptr_, bit_size_);
+  }
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT Subset(const std::size_t from, const std::size_t to) const;
+
+  bool Empty() const noexcept { return bit_size_; }
+
+  void Invert();
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator~() const {
+    BitVectorT result(ptr_, bit_size_);
+    result.Invert();
+    return result;
+  }
+
+  template <typename BitVectorT = AlignedBitVector>
+  bool operator==(const BitVectorT& bv) const;
+
+  bool operator==(const BitSpan& bvv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator&(const BitVectorT& bv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator&(const BitSpan& bvv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator|(const BitVectorT& bv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator|(const BitSpan& bvv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator^(const BitVectorT& bv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitVectorT operator^(const BitSpan& bvv) const;
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitSpan& operator&=(const BitVectorT& bv);
+
+  BitSpan& operator&=(const BitSpan& bvv);
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitSpan& operator|=(const BitVectorT& bv);
+
+  BitSpan& operator|=(const BitSpan& bvv);
+
+  template <typename BitVectorT = AlignedBitVector>
+  BitSpan& operator^=(const BitVectorT& bv);
+
+  BitSpan& operator^=(const BitSpan& bvv);
+
+  bool Get(const std::size_t pos) const;
+
+  bool operator[](const std::size_t pos) const { return Get(pos); }
+
+  void Set(const bool value);
+
+  void Set(const bool value, const std::size_t pos);
+
+  const std::byte* GetData() const noexcept { return ptr_; }
+
+  std::byte* GetMutableData() noexcept { return ptr_; }
+
+  std::size_t GetSize() const noexcept { return bit_size_; }
+
+  std::string AsString() const noexcept;
+
+  bool IsAligned() const noexcept { return aligned_; }
+
+  template <typename BitVectorT>
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorT& other);
+
+  template <typename BitVectorT>
+  void Copy(const std::size_t dest_from, BitVectorT& other);
+
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan& other);
+
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan&& other);
+
+  void Copy(const std::size_t dest_from, BitSpan& other);
+
+  void Copy(const std::size_t dest_from, BitSpan&& other);
+
+ private:
+  std::byte* ptr_;
+  std::size_t bit_size_;
+  bool aligned_;
+};
+
+std::ostream& operator<<(std::ostream& os, const BitSpan& bar);
 }  // namespace ENCRYPTO
