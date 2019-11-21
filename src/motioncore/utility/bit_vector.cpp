@@ -1145,7 +1145,7 @@ void BitVector<Allocator>::TruncateToFit() noexcept {
   }
 }
 template <typename Allocator>
-void BitVector<Allocator>::BoundsCheckEquality(const std::size_t bit_size) const {
+void BitVector<Allocator>::BoundsCheckEquality([[maybe_unused]] const std::size_t bit_size) const {
   if constexpr (MOTION::MOTION_DEBUG) {
     if (bit_size != bit_size)
       throw std::logic_error(
@@ -1154,7 +1154,7 @@ void BitVector<Allocator>::BoundsCheckEquality(const std::size_t bit_size) const
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::BoundsCheckInRange(const std::size_t bit_size) const {
+void BitVector<Allocator>::BoundsCheckInRange([[maybe_unused]] const std::size_t bit_size) const {
   if constexpr (MOTION::MOTION_DEBUG) {
     if (bit_size != bit_size)
       throw std::out_of_range(fmt::format("Trying to access {} from {}", bit_size, bit_size_));

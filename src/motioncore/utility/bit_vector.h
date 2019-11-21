@@ -252,9 +252,9 @@ class BitVector {
 
   void TruncateToFit() noexcept;
 
-  void BoundsCheckEquality(const std::size_t bit_size) const;
+  void BoundsCheckEquality([[maybe_unused]] const std::size_t bit_size) const;
 
-  void BoundsCheckInRange(const std::size_t bit_size) const;
+  void BoundsCheckInRange([[maybe_unused]] const std::size_t bit_size) const;
 };
 
 template <typename Allocator>
