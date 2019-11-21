@@ -67,12 +67,6 @@ std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
 }
 
 namespace Convert {
-std::size_t BitsToBytes(std::size_t bits) {
-  if ((bits & 0x07u) > 0u) {
-    return (bits >> 3) + 1;
-  } else {
-    return bits >> 3;
-  }
-}
+std::size_t BitsToBytes(std::size_t bits) { return (bits + 7) / 8; }
 }  // namespace Convert
 }
