@@ -452,7 +452,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     assert(wire_b);
 
     std::vector<T> output;
-    output = Helpers::AddVectors(wire_a->GetValues(), wire_b->GetValues());
+    output = Helpers::RestrictAddVectors(wire_a->GetValues(), wire_b->GetValues());
 
     auto arithmetic_wire =
         std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(output_wires_.at(0));
@@ -631,22 +631,20 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
       assert(x);
       d_->GetMutableValues() = std::vector<T>(mts.a.begin() + mt_offset_,
                                               mts.a.begin() + mt_offset_ + x->GetNumOfSIMDValues());
-      auto &d_v = d_->GetMutableValues();
-      const auto &x_v = x->GetValues();
-      for (auto i = 0ull; i < d_v.size(); ++i) {
-        d_v.at(i) += x_v.at(i);
-      }
+      T *__restrict__ d_v = d_->GetMutableValues().data();
+      const T *__restrict__ x_v = x->GetValues().data();
+      const auto num_simd{x->GetNumOfSIMDValues()};
+
+      std::transform(x_v, x_v + num_simd, d_v, d_v, [](const T &a, const T &b) { return a + b; });
       d_->SetOnlineFinished();
 
       const auto y = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
       assert(y);
       e_->GetMutableValues() = std::vector<T>(mts.b.begin() + mt_offset_,
                                               mts.b.begin() + mt_offset_ + x->GetNumOfSIMDValues());
-      auto &e_v = e_->GetMutableValues();
-      const auto &y_v = y->GetValues();
-      for (auto i = 0ull; i < e_v.size(); ++i) {
-        e_v.at(i) += y_v.at(i);
-      }
+      T *__restrict__ e_v = e_->GetMutableValues().data();
+      const T *__restrict__ y_v = y->GetValues().data();
+      std::transform(y_v, y_v + num_simd, e_v, e_v, [](const T &a, const T &b) { return a + b; });
       e_->SetOnlineFinished();
     }
 
@@ -675,19 +673,19 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
         std::vector<T>(mts.c.begin() + mt_offset_,
                        mts.c.begin() + mt_offset_ + parent_a_.at(0)->GetNumOfSIMDValues());
 
-    const auto &d = d_w->GetValues();
-    const auto &s_x = x_i_w->GetValues();
-    const auto &e = e_w->GetValues();
-    const auto &s_y = y_i_w->GetValues();
+    const T *__restrict__ d{d_w->GetValues().data()};
+    const T *__restrict__ s_x{x_i_w->GetValues().data()};
+    const T *__restrict__ e{e_w->GetValues().data()};
+    const T *__restrict__ s_y{y_i_w->GetValues().data()};
+    T *__restrict__ out_ptr{out->GetMutableValues().data()};
 
     if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
-        out->GetMutableValues().at(i) +=
-            (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i)) - (e.at(i) * d.at(i));
+        out_ptr[i] += (d[i] * s_y[i]) + (e[i] * s_x[i]) - (e[i] * d[i]);
       }
     } else {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
-        out->GetMutableValues().at(i) += (d.at(i) * s_y.at(i)) + (e.at(i) * s_x.at(i));
+        out_ptr[i] += (d[i] * s_y[i]) + (e[i] * s_x[i]);
       }
     }
 
@@ -775,11 +773,10 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
       assert(x);
       d_->GetMutableValues() = std::vector<T>(sps.a.begin() + sp_offset_,
                                               sps.a.begin() + sp_offset_ + x->GetNumOfSIMDValues());
-      auto &d_v = d_->GetMutableValues();
-      const auto &x_v = x->GetValues();
-      for (auto i = 0ull; i < d_v.size(); ++i) {
-        d_v.at(i) += x_v.at(i);
-      }
+      const auto num_simd{d_->GetNumOfSIMDValues()};
+      T *__restrict__ d_v{d_->GetMutableValues().data()};
+      const T *__restrict__ x_v{x->GetValues().data()};
+      std::transform(x_v, x_v + num_simd, d_v, d_v, [](const T &a, const T &b) { return a + b; });
       d_->SetOnlineFinished();
     }
 
@@ -801,16 +798,16 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
         std::vector<T>(sps.c.begin() + sp_offset_,
                        sps.c.begin() + sp_offset_ + parent_.at(0)->GetNumOfSIMDValues());
 
-    const auto &d = d_w->GetValues();
-    const auto &s_x = x_i_w->GetValues();
-
+    const T *__restrict__ d{d_w->GetValues().data()};
+    const T *__restrict__ s_x{x_i_w->GetValues().data()};
+    T *__restrict__ out_ptr{out->GetMutableValues().data()};
     if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
-        out->GetMutableValues().at(i) += 2 * (d.at(i) * s_x.at(i)) - (d.at(i) * d.at(i));
+        out_ptr[i] += 2 * (d[i] * s_x[i]) - (d[i] * d[i]);
       }
     } else {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
-        out->GetMutableValues().at(i) += 2 * (d.at(i) * s_x.at(i));
+        out_ptr[i] += 2 * (d[i] * s_x[i]);
       }
     }
 
