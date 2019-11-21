@@ -77,7 +77,7 @@ inline void WaitFor(ENCRYPTO::Condition &condition) {
 }
 
 template <typename T>
-inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
+inline std::vector<T> AddVectors(std::vector<std::vector<T>> &vectors) {
   if (vectors.size() == 0) {
     return {};
   }  // if empty input vector
@@ -87,7 +87,6 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
   for (auto i = 1ull; i < vectors.size(); ++i) {
     auto &v = vectors.at(i);
     assert(v.size() == result.size());  // expect the vectors to be of the same size
-#pragma omp simd
     for (auto j = 0ull; j < result.size(); ++j) {
       result.at(j) += v.at(j);  // TODO: implement using AVX2 and AVX512
     }
@@ -96,7 +95,12 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>> vectors) {
 }
 
 template <typename T>
-inline std::vector<T> AddVectors(std::vector<T> a, std::vector<T> b) {
+inline std::vector<T> AddVectors(std::vector<std::vector<T>> &&vectors) {
+  return AddVectors(vectors);
+}
+
+template <typename T>
+inline std::vector<T> AddVectors(const std::vector<T> &a, const std::vector<T> &b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -110,7 +114,37 @@ inline std::vector<T> AddVectors(std::vector<T> a, std::vector<T> b) {
 }
 
 template <typename T>
-inline std::vector<T> SubVectors(std::vector<T> a, std::vector<T> b) {
+inline std::vector<T> RestrictAddVectors(const std::vector<T> &a, const std::vector<T> &b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result(a.size());
+  const T *__restrict__ a_ptr{a.data()};
+  const T *__restrict__ b_ptr{b.data()};
+  T *__restrict__ r_ptr{result.data()};
+  std::transform(a_ptr, a_ptr + a.size(), b_ptr, r_ptr,
+                 [](const T &a_var, const T &b_var) { return a_var + b_var; });
+  return result;
+}
+
+template <typename T>
+inline std::vector<T> RestrictSubVectors(const std::vector<T> &a, const std::vector<T> &b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result(a.size());
+  const T *__restrict__ a_ptr{a.data()};
+  const T *__restrict__ b_ptr{b.data()};
+  T *__restrict__ r_ptr{result.data()};
+  std::transform(a_ptr, a_ptr + a.size(), b_ptr, r_ptr,
+                 [](const T &a_var, const T &b_var) { return a_var - b_var; });
+  return result;
+}
+
+template <typename T>
+inline std::vector<T> SubVectors(const std::vector<T> &a, const std::vector<T> &b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
