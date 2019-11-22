@@ -170,7 +170,7 @@ class BitVector {
   template <typename Allocator2>
   bool operator==(const BitVector<Allocator2>& other) const noexcept;
 
-  bool operator==(const BitSpan& other) const noexcept;
+  bool operator==(const BitSpan& bs) const noexcept;
 
   void Set(bool value) noexcept;
 
@@ -181,17 +181,17 @@ class BitVector {
   template <typename Allocator2>
   BitVector& operator&=(const BitVector<Allocator2>& other) noexcept;
 
-  BitVector& operator&=(const BitSpan& other) noexcept;
+  BitVector& operator&=(const BitSpan& bs) noexcept;
 
   template <typename Allocator2>
   BitVector& operator^=(const BitVector<Allocator2>& other) noexcept;
 
-  BitVector& operator^=(const BitSpan& other) noexcept;
+  BitVector& operator^=(const BitSpan& bs) noexcept;
 
   template <typename Allocator2>
   BitVector& operator|=(const BitVector<Allocator2>& other) noexcept;
 
-  BitVector& operator|=(const BitSpan& other) noexcept;
+  BitVector& operator|=(const BitSpan& bs) noexcept;
 
   void Resize(std::size_t num_bits, bool zero_fill = false) noexcept;
 
