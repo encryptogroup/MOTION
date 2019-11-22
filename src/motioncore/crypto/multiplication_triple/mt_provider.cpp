@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include "mt_provider.h"
+
 #include "statistics/run_time_stats.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
@@ -56,7 +57,8 @@ const BinaryMTVector& MTProvider::GetBinaryAll() noexcept {
 }
 
 MTProvider::MTProvider(const std::size_t my_id) : my_id_(my_id) {
-  finished_condition_ = std::make_shared<ENCRYPTO::Condition>([this]() { return finished_.load(); });
+  finished_condition_ =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return finished_.load(); });
 }
 
 MTProviderFromOTs::MTProviderFromOTs(
@@ -155,6 +157,7 @@ static void register_helper_bool(
     auto ot_r = ot_provider->RegisterReceive(1, batch_size, XCOT);
 
     std::vector<ENCRYPTO::BitVector<>> v_s;
+    v_s.reserve(batch_size);
     for (auto k = 0ull; k < batch_size; ++k) {
       v_s.emplace_back(1, bit_mts.a[mt_id + k]);
     }
@@ -182,6 +185,7 @@ static void register_helper(
     const auto batch_size = std::min(max_batch_size, num_mts - mt_id);
     auto ot_s = ot_provider->RegisterSend(bit_size, batch_size * bit_size, ACOT);
     std::vector<ENCRYPTO::BitVector<>> v_s;
+    v_s.reserve(batch_size);
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
         const T input = mts.a.at(mt_id + k) << bit_i;
@@ -192,6 +196,7 @@ static void register_helper(
 
     auto ot_r = ot_provider->RegisterReceive(bit_size, batch_size * bit_size, ACOT);
     ENCRYPTO::BitVector<> choices;
+    choices.Reserve(Helpers::Convert::BitsToBytes(batch_size * bit_size));
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
         const bool choice = ((mts.b.at(mt_id + k) >> bit_i) & 1u) == 1;
@@ -267,9 +272,10 @@ static void parse_helper(
     const auto& out_r = ot_r->GetOutputs();
     for (auto j = 0ull; j < batch_size; ++j) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
-        mts.c.at(mt_id + j) +=
-            *reinterpret_cast<const T*>(out_r.at(j * bit_size + bit_i).GetData().data()) -
-            *reinterpret_cast<const T*>(out_s.at(j * bit_size + bit_i).GetData().data());
+        mts.c.at(mt_id + j) += *reinterpret_cast<const T* __restrict__>(
+                                   out_r.at(j * bit_size + bit_i).GetData().data()) -
+                               *reinterpret_cast<const T* __restrict__>(
+                                   out_s.at(j * bit_size + bit_i).GetData().data());
       }
     }
     ots_snd.pop_front();

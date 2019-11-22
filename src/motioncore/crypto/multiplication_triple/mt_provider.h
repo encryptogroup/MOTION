@@ -189,7 +189,8 @@ class MTProviderFromOTs final : public MTProvider {
   std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> ots_rcv_;
   std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> ots_snd_;
 
-  const std::size_t max_batch_size_{10'000};
+  // divisible by 128
+  static inline constexpr std::size_t max_batch_size_{16'384};
 
   Logger& logger_;
   Statistics::RunTimeStats& run_time_stats_;
