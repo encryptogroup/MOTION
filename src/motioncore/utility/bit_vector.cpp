@@ -609,11 +609,11 @@ template BitVector<std_alloc>& BitVector<std_alloc>::operator|=(const BitSpan& b
 template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator|=(const BitSpan& bs) noexcept;
 
 template <typename Allocator>
-void BitVector<Allocator>::Resize(std::size_t n_bits, bool zero_fill) noexcept {
-  if (bit_size_ == n_bits) {
+void BitVector<Allocator>::Resize(std::size_t num_bits, bool zero_fill) noexcept {
+  if (bit_size_ == num_bits) {
     return;
   }
-  bit_size_ = n_bits;
+  bit_size_ = num_bits;
   const auto byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size_);
   if (zero_fill) {
     constexpr std::byte zero_byte = std::byte();

@@ -193,7 +193,9 @@ class BitVector {
 
   BitVector& operator|=(const BitSpan& other) noexcept;
 
-  void Resize(std::size_t n_bits, bool zero_fill = false) noexcept;
+  void Resize(std::size_t num_bits, bool zero_fill = false) noexcept;
+
+  void Reserve(std::size_t num_bytes) { data_vector_.reserve(num_bytes); }
 
   void Append(bool bit) noexcept;
 
