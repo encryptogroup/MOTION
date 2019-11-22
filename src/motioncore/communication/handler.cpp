@@ -50,7 +50,7 @@ std::vector<std::uint8_t> u32tou8(std::uint32_t v) {
   return result;
 }
 
-void u32tou8(std::uint32_t v, std::uint8_t* result) {
+void u32tou8(std::uint32_t v, std::uint8_t *result) {
   for (auto i = 0u; i < sizeof(std::uint32_t); ++i) {
     result[i] = (v >> i * 8) & 0xFF;
   }
@@ -110,8 +110,10 @@ void Handler::SendMessage(flatbuffers::FlatBufferBuilder &&message) {
   std::vector<std::uint8_t> buffer(message_raw_pointer,
                                    message_raw_pointer + message_detached.size());
 
-  logger_->LogTrace(fmt::format("{}: Have put a {}-byte message to send queue", handler_info_,
-                                message_detached.size()));
+  if constexpr (MOTION_VERBOSE_DEBUG) {
+    logger_->LogTrace(fmt::format("{}: Have put a {}-byte message to send queue", handler_info_,
+                                  message_detached.size()));
+  }
   lqueue_send_->enqueue(std::move(buffer));
 }
 
@@ -129,8 +131,10 @@ void Handler::TerminateCommunication() {
                                    message.GetBufferPointer() + message.GetSize());
   lqueue_send_->enqueue(std::move(buffer));
 
-  logger_->LogTrace(
-      fmt::format("{}: Put a termination message message to send queue", handler_info_));
+  if constexpr (MOTION_VERBOSE_DEBUG) {
+    logger_->LogTrace(
+        fmt::format("{}: Put a termination message message to send queue", handler_info_));
+  }
 
   SentTerminationMessage();
 }
@@ -285,11 +289,11 @@ std::uint32_t Handler::ParseHeader() {
   std::uint32_t size = u8tou32(message_size_buffer);
 
   if (size > 0) {
-    if constexpr(MOTION_VERBOSE_DEBUG) {
+    if constexpr (MOTION_VERBOSE_DEBUG) {
       std::string s;
       for (auto i = 0u; i < 4; ++i) {
         s.append(fmt::format("{0:#x} ", reinterpret_cast<std::uint8_t *>(&size)[i]));
-      };
+      }
       GetLogger()->LogTrace(
           fmt::format("{}: Got a new message from the socket and have read the "
                       "header (size: {}), header: {}",
