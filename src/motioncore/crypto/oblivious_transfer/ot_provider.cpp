@@ -58,7 +58,7 @@ void OTProviderFromOTExtension::SendSetup() {
     prgs_var_key.SetKey(base_ots_rcv.messages_c_.at(i).data());
     prgs_var_key.SetOffset(base_ots_rcv.consumed_offset_);
     auto row(prgs_var_key.Encrypt(byte_size));
-    v.at(i) = AlignedBitVector(std::move(row), bit_size);
+    v[i] = AlignedBitVector(std::move(row), bit_size_padded);
   }
 
   while (!(*ot_ext_snd.received_u_condition_)() || !ot_ext_snd.received_u_ids_.empty()) {
@@ -73,8 +73,8 @@ void OTProviderFromOTExtension::SendSetup() {
     if (u_id != std::numeric_limits<std::size_t>::max()) {
       if (base_ots_rcv.c_[u_id]) {
         const auto &u = ot_ext_snd.u_.at(u_id);
-        assert(u.GetSize() == v.at(u_id).GetSize());
-        v.at(u_id) ^= u;
+        ENCRYPTO::BitSpan bs(v[u_id].GetMutableData().data(), bit_size);
+        bs ^= u;
       }
     } else {
       ot_ext_snd.received_u_condition_->WaitFor(std::chrono::milliseconds(1));
@@ -82,31 +82,26 @@ void OTProviderFromOTExtension::SendSetup() {
   }
   ot_ext_snd.u_ = {};
 
-  // transpose matrix V
-  if (bit_size_padded != bit_size) {
-    for (i = 0u; i < v.size(); ++i) {
-      v.at(i).Resize(bit_size_padded, true);
-    }
-  }
   std::array<std::byte *, kappa> ptrs;
   for (i = 0u; i < ptrs.size(); ++i) {
-    ptrs.at(i) = v.at(i).GetMutableData().data();
+    ptrs[i] = v[i].GetMutableData().data();
   }
   BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
 
   for (i = 0; i < ot_ext_snd.bitlengths_.size(); ++i) {
-    auto &out0 = ot_ext_snd.y0_.at(i);
-    auto &out1 = ot_ext_snd.y1_.at(i);
-    const auto bitlen = ot_ext_snd.bitlengths_.at(i);
+    auto &out0 = ot_ext_snd.y0_[i];
+    auto &out1 = ot_ext_snd.y1_[i];
+    const auto bitlen = ot_ext_snd.bitlengths_[i];
 
     const auto row_i = i % kappa;
     const auto blk_offset = ((kappa / 8) * (i / kappa));
-    const auto V_row = ptrs.at(row_i) + blk_offset;
+    const auto V_row = reinterpret_cast<const std::byte *>(
+        __builtin_assume_aligned(ptrs.at(row_i) + blk_offset, MOTION::MOTION_ALIGNMENT));
 
     if (bitlen <= kappa) {
       out0 = BitVector<>(prgs_fixed_key.FixedKeyAES(V_row, i), bitlen);
 
-      auto out1_in = base_ots_rcv.c_ ^ BitVector<>(V_row, kappa);
+      auto out1_in = base_ots_rcv.c_ ^ AlignedBitVector(V_row, kappa);
       out1 = BitVector<>(prgs_fixed_key.FixedKeyAES(out1_in.GetData().data(), i), bitlen);
     } else {
       auto seed0 = prgs_fixed_key.FixedKeyAES(V_row, i);
@@ -114,7 +109,7 @@ void OTProviderFromOTExtension::SendSetup() {
       out0 =
           BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
 
-      auto out1_in = base_ots_rcv.c_ ^ BitVector<>(V_row, kappa);
+      auto out1_in = base_ots_rcv.c_ ^ AlignedBitVector(V_row, kappa);
       auto seed1 = prgs_fixed_key.FixedKeyAES(out1_in.GetData().data(), i);
       prgs_var_key.SetKey(seed1.data());
       out1 =
@@ -227,10 +222,14 @@ const std::vector<BitVector<>> &OTVectorSender::GetOutputs() {
   WaitSetup();
   const auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
   if (outputs_.empty()) {
+    outputs_.reserve(num_ots_);
     for (auto i = 0ull; i < num_ots_; ++i) {
-      auto bv = ot_ext_snd.y0_.at(ot_id_ + i);
+      ENCRYPTO::BitVector bv;
+      bv.Reserve(
+          MOTION::Helpers::Convert::BitsToBytes(ot_ext_snd.y0_.at(ot_id_ + i).GetSize() * 2));
+      bv.Append(ot_ext_snd.y0_.at(ot_id_ + i));
       bv.Append(ot_ext_snd.y1_.at(ot_id_ + i));
-      outputs_.push_back(std::move(bv));
+      outputs_.emplace_back(std::move(bv));
     }
   }
   return outputs_;
@@ -359,15 +358,18 @@ const std::vector<BitVector<>> &COTVectorSender::GetOutputs() {
   const auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
   ot_ext_snd.received_correction_offsets_cond_.at(ot_id_)->Wait();
   if (outputs_.empty()) {
+    outputs_.reserve(num_ots_);
     std::unique_lock lock(ot_ext_snd.corrections_mutex_);
     const auto corrections = ot_ext_snd.corrections_.Subset(ot_id_, ot_id_ + num_ots_);
     lock.unlock();
     for (auto i = 0ull; i < num_ots_; ++i) {
       BitVector<> bv;
+      bv.Reserve(
+          MOTION::Helpers::Convert::BitsToBytes(ot_ext_snd.y1_.at(ot_id_ + i).GetSize() * 2));
       if (corrections[i]) {
-        bv = ot_ext_snd.y1_.at(ot_id_ + i);
+        bv.Append(ot_ext_snd.y1_.at(ot_id_ + i));
       } else {
-        bv = ot_ext_snd.y0_.at(ot_id_ + i);
+        bv.Append(ot_ext_snd.y0_.at(ot_id_ + i));
       }
       if (p_ == OTProtocol::ACOT) {
         if (corrections[i]) {
@@ -418,6 +420,10 @@ void COTVectorSender::SendMessages() {
   WaitSetup();
   auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
   BitVector<> buffer;
+  std::size_t ot_batch_bit_size = 0;
+  for (auto i = 0ull; i < num_ots_; ++i)
+    ot_batch_bit_size += ot_ext_snd.y0_.at(ot_id_ + i).GetSize();
+  buffer.Reserve(MOTION::Helpers::Convert::BitsToBytes(ot_batch_bit_size));
   for (auto i = 0ull; i < num_ots_; ++i) {
     if (p_ == OTProtocol::ACOT) {
       BitVector bv = ot_ext_snd.y0_.at(ot_id_ + i);
@@ -647,6 +653,7 @@ const std::vector<BitVector<>> &COTVectorReceiver::GetOutputs() {
   ot_ext_rcv.output_conds_.at(ot_id_)->Wait();
 
   if (messages_.empty()) {
+    messages_.reserve(num_ots_);
     for (auto i = 0ull; i < num_ots_; ++i) {
       if (ot_ext_rcv.outputs_.at(ot_id_ + i).GetSize() > 0) {
         messages_.emplace_back(std::move(ot_ext_rcv.outputs_.at(ot_id_ + i)));
