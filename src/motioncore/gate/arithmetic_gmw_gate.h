@@ -76,7 +76,10 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
 
     gate_id_ = GetRegister().NextGateId();
     arithmetic_sharing_id_ = GetRegister().NextArithmeticSharingId(input_.size());
-    GetLogger().LogTrace(fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+    if constexpr (MOTION_VERBOSE_DEBUG) {
+      GetLogger().LogTrace(
+          fmt::format("Created an ArithmeticInputGate with global id {}", gate_id_));
+    }
     output_wires_ = {std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<MOTION::Wires::ArithmeticWire<T>>(input_, backend_))};
     for (auto &w : output_wires_) {
@@ -168,7 +171,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
     assert(my_wire);
     my_wire->GetMutableValues() = std::move(result);
 
-    GetLogger().LogTrace(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
+    GetLogger().LogDebug(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister().IncrementEvaluatedGatesCounter();
   }
