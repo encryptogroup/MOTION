@@ -29,16 +29,17 @@
 #include <random>
 
 #include "condition.h"
+#include "crypto/random/aes128_ctr_rng.h"
 #include "typedefs.h"
 
 namespace MOTION::Helpers {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 std::vector<T> RandomVector(std::size_t length) {
-  std::random_device rd;
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
+  auto& rng = AES128_CTR_RNG::get_thread_instance();
+  const auto byte_size = sizeof(T) * length;
   std::vector<T> vec(length);
-  std::for_each(vec.begin(), vec.end(), [&](auto &a) { a = dist(rd); });
+  rng.random_bytes(reinterpret_cast<std::byte*>(vec.data()), byte_size);
   return vec;
 }
 
