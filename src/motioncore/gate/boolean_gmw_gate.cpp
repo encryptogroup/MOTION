@@ -224,7 +224,7 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   // create output wires
   output_wires_.reserve(num_wires);
   for (size_t i = 0; i < num_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+    auto &w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
         std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
     GetRegister().RegisterNextWire(w);
   }
@@ -418,7 +418,7 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   // create output wires
   output_wires_.reserve(num_wires);
   for (size_t i = 0; i < num_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+    auto &w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
         std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
     GetRegister().RegisterNextWire(w);
   }
@@ -506,7 +506,7 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) : OneGate(parent->GetBack
   // create output wires
   output_wires_.reserve(num_wires);
   for (size_t i = 0; i < num_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+    auto &w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
         std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
     GetRegister().RegisterNextWire(w);
   }
@@ -612,7 +612,7 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   // create output wires
   output_wires_.reserve(num_wires);
   for (size_t i = 0; i < num_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+    auto &w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
         std::make_shared<Wires::GMWWire>(num_simd_values, backend_)));
     GetRegister().RegisterNextWire(w);
   }
@@ -774,7 +774,7 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   output_wires_.reserve(num_wires);
   ENCRYPTO::BitVector dummy_bv(num_simd_values);
   for (size_t i = 0; i < num_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+    auto &w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
         std::make_shared<Wires::GMWWire>(dummy_bv, backend_)));
     GetRegister().RegisterNextWire(w);
   }
@@ -827,8 +827,11 @@ void GMWMUXGate::EvaluateOnline() {
   const auto my_id = GetConfig().GetMyId();
 
   std::vector<ENCRYPTO::BitVector<>> xored_v;
+  xored_v.reserve(num_simd);
   for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
     ENCRYPTO::BitVector<> a, b;
+    a.Reserve(MOTION::Helpers::Convert::BitsToBytes(num_bits));
+    b.Reserve(MOTION::Helpers::Convert::BitsToBytes(num_bits));
     for (auto bit_i = 0ull; bit_i < num_bits; ++bit_i) {
       auto wire_a = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_a_.at(bit_i));
       auto wire_b = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_b_.at(bit_i));
@@ -861,7 +864,8 @@ void GMWMUXGate::EvaluateOnline() {
     const auto &ot_s = ot_sender_.at(other_pid)->GetOutputs();
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       xored_v.at(simd_i) ^= ot_r.at(simd_i);
-      xored_v.at(simd_i) ^= ot_s.at(simd_i).Subset(0, num_bits);
+      ENCRYPTO::BitSpan bs(const_cast<std::byte*>(ot_s.at(simd_i).GetData().data()), num_bits);
+      xored_v.at(simd_i) ^= bs;
     }
   }
 
