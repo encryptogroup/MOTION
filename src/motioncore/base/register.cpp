@@ -32,6 +32,7 @@
 #include "configuration.h"
 #include "gate/gate.h"
 #include "utility/condition.h"
+#include "utility/constants.h"
 #include "utility/logger.h"
 #include "wire/wire.h"
 
@@ -109,9 +110,9 @@ void Register::RegisterNextInputGate(MOTION::Gates::GatePtr gate) {
 void Register::AddToActiveQueue(std::size_t gate_id) {
   std::scoped_lock lock(active_queue_mutex_);
   active_gates_.push(gate_id);
-  logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
-  // std::cerr << fmt::format("Party#{} added gate #{} to the active queue\n", config_->GetMyId(),
-  //                        gate_id);
+  if constexpr (MOTION_VERBOSE_DEBUG) {
+    logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
+  }
 }
 
 void Register::ClearActiveQueue() {

@@ -46,9 +46,6 @@ using LoggerPtr = std::shared_ptr<Logger>;
 class Configuration;
 using ConfigurationPtr = std::shared_ptr<Configuration>;
 
-class OT_HL17;
-using OT_HL17_Ptr = std::shared_ptr<OT_HL17>;
-
 namespace Gates {
 namespace Interfaces {
 class Gate;
