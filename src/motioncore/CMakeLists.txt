@@ -44,6 +44,7 @@ add_library(motion
         statistics/run_time_stats.cpp
         utility/bit_matrix.cpp
         utility/bit_vector.cpp
+        utility/block.cpp
         utility/condition.cpp
         utility/fiber_thread_pool/fiber_thread_pool.cpp
         utility/fiber_thread_pool/pooled_work_stealing.cpp
