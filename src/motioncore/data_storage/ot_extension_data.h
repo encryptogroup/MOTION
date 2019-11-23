@@ -55,6 +55,8 @@ struct OTExtensionReceiverData {
   OTExtensionReceiverData();
   ~OTExtensionReceiverData() = default;
 
+  // matrix of the OT extension scheme
+  // XXX: can't we delete this after setup?
   std::shared_ptr<ENCRYPTO::BitMatrix> T_;
 
   // if many OTs are received in batches, it is not necessary to store all of the flags
@@ -64,23 +66,38 @@ struct OTExtensionReceiverData {
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>> output_conds_;
   std::mutex received_outputs_mutex_;
 
+  // how many messages need to be sent from sender to receiver?
+  // GOT -> 2
+  // COT -> 1
+  // ROT -> 0 (not in map)
   std::unordered_map<std::size_t, std::size_t> num_messages_;
   std::mutex num_messages_mutex_;
+
+  // is an OT batch of XOR correlated OT?
   std::unordered_set<std::size_t> xor_correlation_;
+
+  // bit length of every OT
   std::vector<std::size_t> bitlengths_;
 
+  // real choices for every OT?
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> real_choices_cond_;
+
+  // have we already set the choices for this OT batch?
   std::unordered_set<std::size_t> set_real_choices_;
   std::mutex real_choices_mutex_;
 
+  // random choices from OT precomputation
   std::unique_ptr<ENCRYPTO::AlignedBitVector> random_choices_;
 
+  // how many ots are in each batch?
   std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
 
+  // flag and condition variable: is setup is done?
   std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
   std::atomic<bool> setup_finished_{false};
 
+  // XXX: unused
   std::atomic<std::size_t> consumed_offset_{0};
 };
 
@@ -88,13 +105,17 @@ struct OTExtensionSenderData {
   OTExtensionSenderData();
   ~OTExtensionSenderData() = default;
 
+  // width of the bit matrix
   std::atomic<std::size_t> bit_size_{0};
+
   /// receiver's mask that are needed to construct matrix @param V_
   std::array<ENCRYPTO::AlignedBitVector, 128> u_;
   std::queue<std::size_t> received_u_ids_;
   std::size_t num_u_received_{0};
   std::unique_ptr<ENCRYPTO::Condition> received_u_condition_;
 
+  // matrix of the OT extension scheme
+  // XXX: can't we delete this after setup?
   std::shared_ptr<ENCRYPTO::BitMatrix> V_;
 
   // offset, num_ots
@@ -108,13 +129,18 @@ struct OTExtensionSenderData {
   ENCRYPTO::BitVector<> corrections_;
   mutable std::mutex corrections_mutex_;
 
-  // output buffer
+  // random sender outputs
+  // XXX: why not aligned?
   std::vector<ENCRYPTO::BitVector<>> y0_, y1_;
+
+  // bit length of every OT
   std::vector<std::size_t> bitlengths_;
 
+  // flag and condition variable: is setup is done?
   std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
   std::atomic<bool> setup_finished_{false};
 
+  // XXX: unused
   std::atomic<std::size_t> consumed_offset_{0};
 };
 

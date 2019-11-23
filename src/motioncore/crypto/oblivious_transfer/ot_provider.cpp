@@ -37,30 +37,58 @@
 
 namespace ENCRYPTO::ObliviousTransfer {
 void OTProviderFromOTExtension::SendSetup() {
+  // security parameter
   constexpr std::size_t kappa = 128;
-  const std::size_t bit_size = sender_provider_.GetNumOTs();
-  if (bit_size == 0) return;
 
-  std::size_t i;
-  auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
-  ot_ext_snd.bit_size_ = bit_size;
-  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size);
-  const auto bit_size_padded = bit_size + kappa - (bit_size % kappa);
+  // storage for sender and base OT receiver data
   const auto &base_ots_rcv = data_storage_->GetBaseOTsData()->GetReceiverData();
+  auto &ot_ext_snd = data_storage_->GetOTExtensionData()->GetSenderData();
 
-  PRG prgs_fixed_key, prgs_var_key;
+  // number of OTs after extension
+  // == width of the bit matrix
+  const std::size_t bit_size = sender_provider_.GetNumOTs();
+  if (bit_size == 0) return;  // no OTs needed
+  ot_ext_snd.bit_size_ = bit_size;
+
+  // XXX: index variable?
+  std::size_t i;
+
+  // bit size of the matrix rounded to bytes
+  // XXX: maybe round to blocks?
+  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size);
+
+  // bit size rounded to blocks
+  const auto bit_size_padded = bit_size + kappa - (bit_size % kappa);
+
+  // PRG we use with the fixed-key AES function
+  PRG prgs_fixed_key;
   const auto key = data_storage_->GetFixedKeyAESKey().GetData().data();
   prgs_fixed_key.SetKey(key);
 
+  // PRG which is used to expand the keys we got from the base OTs
+  PRG prgs_var_key;
+
+  // vector containing the matrix rows
+  // XXX: note that rows/columns are swapped compared to the ALSZ paper
   std::vector<AlignedBitVector> v(kappa);
 
+  // fill the rows of the matrix
   for (i = 0; i < kappa; ++i) {
+    // use the key we got from the base OTs as seed
     prgs_var_key.SetKey(base_ots_rcv.messages_c_.at(i).data());
+    // change the offset in the output stream since we might have already used
+    // the same base OTs previously
     prgs_var_key.SetOffset(base_ots_rcv.consumed_offset_);
+    // expand the seed such that it fills one row of the matrix
     auto row(prgs_var_key.Encrypt(byte_size));
     v[i] = AlignedBitVector(std::move(row), bit_size_padded);
   }
 
+  // receive the vectors u one by one from the receiver
+  // and xor them to the expanded keys if the corresponding selection bit is 1
+  // XXX: why is this done in such a weird way?
+  // * why one by one? to prevend large messages?
+  // * why the thing with the u_ids? can the vectors be transmitted in the wrong order?
   while (!(*ot_ext_snd.received_u_condition_)() || !ot_ext_snd.received_u_ids_.empty()) {
     std::size_t u_id = std::numeric_limits<std::size_t>::max();
     {
@@ -80,30 +108,46 @@ void OTProviderFromOTExtension::SendSetup() {
       ot_ext_snd.received_u_condition_->WaitFor(std::chrono::milliseconds(1));
     }
   }
+  // delete the allocated memory
   ot_ext_snd.u_ = {};
 
+  // array with pointers to each row of the matrix
   std::array<std::byte *, kappa> ptrs;
   for (i = 0u; i < ptrs.size(); ++i) {
     ptrs[i] = v[i].GetMutableData().data();
   }
+
+  // transpose the bit matrix
+  // XXX: figure out how the result looks like
   BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
 
+  // for each (extended) OT i
   for (i = 0; i < ot_ext_snd.bitlengths_.size(); ++i) {
+    // here we want to store the sender's outputs
+    // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
     auto &out0 = ot_ext_snd.y0_[i];
     auto &out1 = ot_ext_snd.y1_[i];
+
+    // bit length of the OT
     const auto bitlen = ot_ext_snd.bitlengths_[i];
 
+    // in which of the above "rows" can we find the block
     const auto row_i = i % kappa;
+    // where in the "row" do we have to look for the block
     const auto blk_offset = ((kappa / 8) * (i / kappa));
     const auto V_row = reinterpret_cast<const std::byte *>(
         __builtin_assume_aligned(ptrs.at(row_i) + blk_offset, MOTION::MOTION_ALIGNMENT));
 
+    // compute the sender outputs
     if (bitlen <= kappa) {
+      // the bit length is smaller than 128 bit
       out0 = BitVector<>(prgs_fixed_key.FixedKeyAES(V_row, i), bitlen);
 
       auto out1_in = base_ots_rcv.c_ ^ AlignedBitVector(V_row, kappa);
       out1 = BitVector<>(prgs_fixed_key.FixedKeyAES(out1_in.GetData().data(), i), bitlen);
     } else {
+      // string OT with bit length > 128 bit
+      // -> do seed compression and send later only 128 bit seeds
       auto seed0 = prgs_fixed_key.FixedKeyAES(V_row, i);
       prgs_var_key.SetKey(seed0.data());
       out0 =
@@ -117,6 +161,7 @@ void OTProviderFromOTExtension::SendSetup() {
     }
   }
 
+  // we are done with the setup for the sender side
   {
     std::scoped_lock(ot_ext_snd.setup_finished_cond_->GetMutex());
     ot_ext_snd.setup_finished_ = true;
@@ -125,42 +170,65 @@ void OTProviderFromOTExtension::SendSetup() {
 }
 
 void OTProviderFromOTExtension::ReceiveSetup() {
+  // some index variables
   std::size_t i = 0, j = 0;
+  // security parameter and number of base OTs
   constexpr std::size_t kappa = 128;
+  // number of OTs and width of the bit matrix
   const std::size_t bit_size = receiver_provider_.GetNumOTs();
-  if (bit_size == 0) return;
+  if (bit_size == 0) return; // nothing to do
 
-  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size);
+  // rounded up to a multiple of the security parameter
   const auto bit_size_padded = bit_size + kappa - (bit_size % kappa);
 
+  // convert to bytes
+  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size);
+  // XXX: if byte_size is 0 then bit_size was also zero (or an overflow happened
   if (byte_size == 0) {
     return;
   }
+  // storage for receiver and base OT sender data
   const auto &base_ots_snd = data_storage_->GetBaseOTsData()->GetSenderData();
   auto &ot_ext_rcv = data_storage_->GetOTExtensionData()->GetReceiverData();
+
+  // make random choices (this is precomputation, real inputs are not known yet)
   ot_ext_rcv.random_choices_ =
       std::make_unique<AlignedBitVector>(AlignedBitVector::Random(bit_size));
 
+  // create matrix with kappa rows
   std::vector<AlignedBitVector> v(kappa);
-  PRG prgs_fixed_key, prgs_var_key;
+
+  // PRG we use with the fixed-key AES function
+  PRG prgs_fixed_key;
   const auto key = data_storage_->GetFixedKeyAESKey().GetData().data();
   prgs_fixed_key.SetKey(key);
 
+  // PRG which is used to expand the keys we got from the base OTs
+  PRG prgs_var_key;
+
+  // fill the rows of the matrix
   for (i = 0; i < kappa; ++i) {
+    // generate rows of the matrix using the corresponding 0 key
     // T[j] = PRG(s_{j,0})
     prgs_var_key.SetKey(base_ots_snd.messages_0_.at(i).data());
+    // change the offset in the output stream since we might have already used
+    // the same base OTs previously
     prgs_var_key.SetOffset(base_ots_snd.consumed_offset_);
+    // expand the seed such that it fills one row of the matrix
     auto row(prgs_var_key.Encrypt(byte_size));
     v.at(i) = AlignedBitVector(std::move(row), bit_size);
+    // take a copy of the row and XOR it with our choices
     auto u = v.at(i);
     // u_j = T[j] XOR r
     u ^= *ot_ext_rcv.random_choices_;
 
+    // now mask the result with random stream expanded from the 1 key
     // u_j = u_j XOR PRG(s_{j,1})
     prgs_var_key.SetKey(base_ots_snd.messages_1_.at(i).data());
     prgs_var_key.SetOffset(base_ots_snd.consumed_offset_);
     u ^= AlignedBitVector(prgs_var_key.Encrypt(byte_size), bit_size);
 
+    // send this row
     Send_(MOTION::Communication::BuildOTExtensionMessageReceiverMasks(u.GetData().data(),
                                                                       u.GetData().size(), i));
   }
