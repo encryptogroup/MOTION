@@ -22,8 +22,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <thread>
 #include "ot_extension_data.h"
+
+#include <thread>
+
 #include "utility/condition.h"
 #include "utility/fiber_condition.h"
 
@@ -47,11 +49,7 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
   switch (type) {
     case OTExtensionDataType::rcv_masks: {
       {
-        while (sender_data_.bit_size_ == 0) {
-          // FIXME: bit_size_ is accessed without synchronization while we wait
-          // for another thread to set its value. This is a data race.
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
-        }
+        while (sender_data_.bit_size_ == 0) std::this_thread::yield();
         std::scoped_lock lock(sender_data_.received_u_condition_->GetMutex());
         sender_data_.u_.at(i) = ENCRYPTO::AlignedBitVector(message, sender_data_.bit_size_);
         sender_data_.num_u_received_++;
@@ -99,22 +97,29 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
         }
 
         const auto batch_size = bs_it->second;
-        while (receiver_data_.num_messages_.find(i) == receiver_data_.num_messages_.end()) {
-          // FIXME: num_messages_ is accessed without synchronization while we
-          // wait for another thread to set its value. This is a data race.
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
-        }
+        bool success{false};
+        do {
+          {
+            std::scoped_lock lock(receiver_data_.num_messages_mutex_);
+            success = receiver_data_.num_messages_.find(i) != receiver_data_.num_messages_.end();
+          }
+          if (!success) std::this_thread::yield();
+        } while (!success);
+
         const auto n = receiver_data_.num_messages_.at(i);
 
         ENCRYPTO::BitVector<> message_bv(message, batch_size * bitlen * n);
 
-        while (receiver_data_.real_choices_cond_.find(i) ==
-               receiver_data_.real_choices_cond_.end()) {
-          // FIXME: real_choices_cond is accessed without synchronization while
-          // we wait for another thread to set its value. This is a data race.
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
-        }
-        MOTION::Helpers::WaitFor(*receiver_data_.real_choices_cond_.at(i));
+        success = false;
+        do {
+          {
+            std::scoped_lock lock(receiver_data_.real_choices_mutex_);
+            success = receiver_data_.real_choices_cond_.find(i) !=
+                      receiver_data_.real_choices_cond_.end();
+          }
+          if (!success) std::this_thread::yield();
+        } while (!success);
+        receiver_data_.real_choices_cond_.at(i)->Wait();
 
         for (auto j = 0ull; j < batch_size; ++j) {
           if (n == 2) {

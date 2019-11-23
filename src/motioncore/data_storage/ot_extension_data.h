@@ -33,6 +33,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+
 #include "utility/bit_matrix.h"
 #include "utility/bit_vector.h"
 
@@ -64,6 +65,7 @@ struct OTExtensionReceiverData {
   std::mutex received_outputs_mutex_;
 
   std::unordered_map<std::size_t, std::size_t> num_messages_;
+  std::mutex num_messages_mutex_;
   std::unordered_set<std::size_t> xor_correlation_;
   std::vector<std::size_t> bitlengths_;
 
@@ -86,7 +88,7 @@ struct OTExtensionSenderData {
   OTExtensionSenderData();
   ~OTExtensionSenderData() = default;
 
-  std::size_t bit_size_{0};
+  std::atomic<std::size_t> bit_size_{0};
   /// receiver's mask that are needed to construct matrix @param V_
   std::array<ENCRYPTO::AlignedBitVector, 128> u_;
   std::queue<std::size_t> received_u_ids_;
