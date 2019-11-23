@@ -1272,7 +1272,7 @@ BitVectorT BitSpan::operator&(const BitVectorT& bv) const {
   assert(bit_size_ == bv.GetSize());
   const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
   BitVectorT result;
-  if constexpr (bv.IsAligned()) {
+  if constexpr (BitVectorT::IsAligned()) {
     result = BitVectorT(ptr_, bit_size_);
     AlignedANDImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {  // we do not want an AlignedBitVector as output
@@ -1316,7 +1316,7 @@ BitVectorT BitSpan::operator|(const BitVectorT& bv) const {
   assert(bit_size_ == bv.GetSize());
   const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
   BitVectorT result;
-  if constexpr (bv.IsAligned()) {
+  if constexpr (BitVectorT::IsAligned()) {
     result = BitVectorT(ptr_, bit_size_);
     AlignedORImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {
@@ -1360,7 +1360,7 @@ BitVectorT BitSpan::operator^(const BitVectorT& bv) const {
   assert(bit_size_ == bv.GetSize());
   const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
   BitVectorT result;
-  if constexpr (bv.IsAligned()) {
+  if constexpr (BitVectorT::IsAligned()) {
     result = BitVectorT(ptr_, bit_size_);
     AlignedXORImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {
@@ -1403,7 +1403,7 @@ template <typename BitVectorT>
 BitSpan& BitSpan::operator&=(const BitVectorT& bv) {
   assert(bit_size_ == bv.GetSize());
   const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if constexpr (bv.IsAligned()) {
+  if constexpr (BitVectorT::IsAligned()) {
     if (aligned_)
       AlignedANDImpl(bv.GetData().data(), ptr_, byte_size);
     else
@@ -1430,7 +1430,7 @@ template <typename BitVectorT>
 BitSpan& BitSpan::operator|=(const BitVectorT& bv) {
   assert(bit_size_ == bv.GetSize());
   const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if constexpr (bv.IsAligned()) {
+  if constexpr (BitVectorT::IsAligned()) {
     if (aligned_)
       AlignedORImpl(bv.GetData().data(), ptr_, byte_size);
     else
@@ -1457,7 +1457,7 @@ template <typename BitVectorT>
 BitSpan& BitSpan::operator^=(const BitVectorT& bv) {
   assert(bit_size_ == bv.GetSize());
   const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if constexpr (bv.IsAligned()) {
+  if constexpr (BitVectorT::IsAligned()) {
     if (aligned_)
       AlignedXORImpl(bv.GetData().data(), ptr_, byte_size);
     else

@@ -124,7 +124,7 @@ class BitVector {
   /// \brief In-place bit-wise invert
   void Invert();
 
-  constexpr bool IsAligned() const noexcept { return std::is_same_v<Allocator, aligned_alloc>; }
+  static constexpr bool IsAligned() noexcept { return std::is_same_v<Allocator, aligned_alloc>; }
 
   BitVector operator~() const;
 
