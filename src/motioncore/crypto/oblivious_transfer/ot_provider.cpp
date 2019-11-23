@@ -530,6 +530,8 @@ GOTVectorReceiver::GOTVectorReceiver(
     const std::shared_ptr<MOTION::DataStorage> &data_storage,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : OTVectorReceiver(ot_id, num_ots, bitlen, OTProtocol::GOT, data_storage, Send) {
+  auto &m{data_storage_->GetOTExtensionData()->GetReceiverData().num_messages_mutex_};
+  std::scoped_lock lock(m);
   data_storage_->GetOTExtensionData()->GetReceiverData().num_messages_.emplace(ot_id_, 2);
 }
 
@@ -601,7 +603,10 @@ COTVectorReceiver::COTVectorReceiver(
         "Invalid parameter bitlen={}, only 8, 16, 32, 64, or 128 are allowed in ACOT", bitlen_));
   }
   auto &ot_ext_rcv = data_storage_->GetOTExtensionData()->GetReceiverData();
-  ot_ext_rcv.num_messages_.emplace(ot_id_, 1);
+  {
+    std::scoped_lock lock(ot_ext_rcv.num_messages_mutex_);
+    ot_ext_rcv.num_messages_.emplace(ot_id_, 1);
+  }
   if (p == OTProtocol::XCOT) {
     ot_ext_rcv.xor_correlation_.emplace(ot_id_);
   }
@@ -819,6 +824,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
                              return ot_ext_rcv.set_real_choices_.find(i) !=
                                     ot_ext_rcv.set_real_choices_.end();
                            }));
+      std::scoped_lock lock(ot_ext_rcv.real_choices_mutex_);
       ot_ext_rcv.real_choices_cond_.insert(std::move(e));
     }
   }

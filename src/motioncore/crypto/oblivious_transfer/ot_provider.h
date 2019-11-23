@@ -119,6 +119,11 @@ class COTVectorSender final : public OTVectorSender {
   const std::vector<BitVector<>> &GetOutputs() final;
 
   void SendMessages() final;
+
+  void Truncate(std::size_t num_last_bits);
+
+ private:
+  std::size_t num_truncated_bits_{0};
 };
 
 class ROTVectorSender final : public OTVectorSender {
