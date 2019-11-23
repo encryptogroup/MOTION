@@ -246,6 +246,7 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper &other) const {
       std::vector<Shares::ShareWrapper> out;
       std::size_t offset{0};
       const auto inner_bitlen{result->GetBitLength()};
+      out.reserve(std::ceil(std::log2(inner_bitlen)));
       const auto split = result.Split();
       for (auto i = 1ull; i <= inner_bitlen; i *= 2) {
         if ((inner_bitlen & i) == i) {
@@ -379,6 +380,7 @@ ShareWrapper ShareWrapper::ArithmeticGMWToBMR() const {
                                                  ENCRYPTO::BitVector<>(my_input.at(0).GetSize()));
 
   std::vector<SecureUnsignedInteger> shares;
+  shares.reserve(backend.GetConfig()->GetNumOfParties());
   for (auto party_id = 0ull; party_id < backend.GetConfig()->GetNumOfParties(); ++party_id) {
     if (party_id == backend.GetConfig()->GetMyId())
       shares.emplace_back(backend.BMRInput(party_id, my_input));
@@ -499,8 +501,11 @@ ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper> &v) {
   raw_v.reserve(v.size());
   for (const auto &s : v) raw_v.emplace_back(*s);
 
+  std::size_t bit_size_wires{0};
+  for (const auto &s : v) bit_size_wires += s->GetBitLength();
+
   std::vector<Wires::WirePtr> wires;
-  wires.reserve(v.size());
+  wires.reserve(bit_size_wires);
   for (const auto &s : v)
     for (const auto &w : s->GetWires()) wires.emplace_back(w);
   switch (v.at(0)->GetProtocol()) {
@@ -548,6 +553,7 @@ ShareWrapper ShareWrapper::Evaluate(const ENCRYPTO::AlgorithmDescription &algo) 
 
   auto wires_tmp{Split()};
   std::vector<std::shared_ptr<ShareWrapper>> wires;
+  wires.reserve(wires_tmp.size());
   for (const auto &w : wires_tmp) wires.emplace_back(std::make_shared<ShareWrapper>(w.Get()));
 
   wires.resize(algo.n_wires_, nullptr);
@@ -587,6 +593,7 @@ ShareWrapper ShareWrapper::Evaluate(const ENCRYPTO::AlgorithmDescription &algo) 
   }
 
   std::vector<ShareWrapper> out;
+  out.reserve(wires.size() - algo.n_output_wires_);
   for (auto i = wires.size() - algo.n_output_wires_; i < wires.size(); i++) {
     out.emplace_back(*wires.at(i));
   }
