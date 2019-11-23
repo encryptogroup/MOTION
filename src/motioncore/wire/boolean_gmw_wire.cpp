@@ -38,7 +38,7 @@ GMWWire::GMWWire(const ENCRYPTO::BitVector<> &values, Backend &backend, bool is_
     : BooleanWire(backend, values.GetSize(), is_constant), values_(values) {}
 
 GMWWire::GMWWire(bool value, Backend &backend, bool is_constant)
-    : BooleanWire(backend, 1, is_constant), values_(value) {
+    : BooleanWire(backend, 1, is_constant) {
   values_.Append(value);
 }
 
