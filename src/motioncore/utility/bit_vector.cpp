@@ -325,10 +325,6 @@ BitVector<Allocator> BitVector<Allocator>::operator&(const BitSpan& bs) const no
   return bs & *this;
 }
 
-template BitVector<std_alloc> BitVector<std_alloc>::operator&(const BitSpan& bs) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator&(const BitSpan& bs) const
-    noexcept;
-
 template <typename Allocator1>
 template <typename Allocator2>
 BitVector<Allocator1> BitVector<Allocator1>::operator^(const BitVector<Allocator2>& other) const
@@ -352,10 +348,6 @@ BitVector<Allocator> BitVector<Allocator>::operator^(const BitSpan& bs) const no
   return bs ^ *this;
 }
 
-template BitVector<std_alloc> BitVector<std_alloc>::operator^(const BitSpan& bs) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator^(const BitSpan& bs) const
-    noexcept;
-
 template <typename Allocator1>
 template <typename Allocator2>
 BitVector<Allocator1> BitVector<Allocator1>::operator|(const BitVector<Allocator2>& other) const
@@ -378,10 +370,6 @@ template <typename Allocator>
 BitVector<Allocator> BitVector<Allocator>::operator|(const BitSpan& bs) const noexcept {
   return bs | *this;
 }
-
-template BitVector<std_alloc> BitVector<std_alloc>::operator|(const BitSpan& bs) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator|(const BitSpan& bs) const
-    noexcept;
 
 template <typename Allocator>
 BitVector<Allocator>& BitVector<Allocator>::operator=(const BitVector<Allocator>& other) noexcept {
@@ -520,9 +508,6 @@ BitVector<Allocator>& BitVector<Allocator>::operator&=(const BitSpan& bs) noexce
   return *this;
 }
 
-template BitVector<std_alloc>& BitVector<std_alloc>::operator&=(const BitSpan& bs) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator&=(const BitSpan& bs) noexcept;
-
 template <typename Allocator1>
 template <typename Allocator2>
 BitVector<Allocator1>& BitVector<Allocator1>::operator^=(
@@ -557,9 +542,6 @@ BitVector<Allocator>& BitVector<Allocator>::operator^=(const BitSpan& bs) noexce
     XORImpl(bs.GetData(), data_vector_.data(), byte_size);
   return *this;
 }
-
-template BitVector<std_alloc>& BitVector<std_alloc>::operator^=(const BitSpan& bs) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator^=(const BitSpan& bs) noexcept;
 
 template <typename Allocator1>
 template <typename Allocator2>
@@ -604,9 +586,6 @@ BitVector<Allocator>& BitVector<Allocator>::operator|=(const BitSpan& bs) noexce
     ORImpl(bs.GetData(), data_vector_.data(), byte_size);
   return *this;
 }
-
-template BitVector<std_alloc>& BitVector<std_alloc>::operator|=(const BitSpan& bs) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator|=(const BitSpan& bs) noexcept;
 
 template <typename Allocator>
 void BitVector<Allocator>::Resize(std::size_t num_bits, bool zero_fill) noexcept {
