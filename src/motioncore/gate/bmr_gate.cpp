@@ -751,7 +751,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
     for (auto pid = 0ull; pid < num_parties; ++pid) {
       if (pid == my_id) continue;
-      s_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterSend(1, batch_size_3, XCOT);
+      s_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterSendXCOTBit(batch_size_3);
       s_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterSendFixedXCOT128(batch_size_3);
       r_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterReceive(1, batch_size_3, XCOT);
       r_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterReceiveFixedXCOT128(batch_size_3);
@@ -892,8 +892,6 @@ void BMRANDGate::EvaluateSetup() {
 
       auto &r_ot_1{r_ots_1_.at(party_id).at(wire_i)};
       auto &s_ot_1{s_ots_1_.at(party_id).at(wire_i)};
-      std::vector<ENCRYPTO::BitVector<>> s_v;
-      s_v.reserve(a_bv.GetSize());
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
         GetLogger().LogTrace(fmt::format(
@@ -904,7 +902,6 @@ void BMRANDGate::EvaluateSetup() {
             bmr_b->GetPermutationBits().AsString(), choices.at(party_id).at(wire_i).AsString()));
       }
       // compute C-OTs for the real value, ie, b = (lambda_u ^ alpha) * (lambda_v ^ beta)
-      for (auto j = 0ull; j < a_bv.GetSize(); ++j) s_v.emplace_back(a_bv[j]);
 
       r_ot_1->WaitSetup();
       s_ot_1->WaitSetup();
@@ -912,7 +909,7 @@ void BMRANDGate::EvaluateSetup() {
       r_ot_1->SetChoices(b_bv);
       r_ot_1->SendCorrections();
 
-      s_ot_1->SetInputs(s_v);
+      s_ot_1->SetCorrelations(a_bv);
       s_ot_1->SendMessages();
     }
   }
@@ -933,20 +930,18 @@ void BMRANDGate::EvaluateSetup() {
 
       assert(r_ot_1->ChoicesAreSet());
       const auto &r = r_ot_1->GetOutputs();
-      const auto &s = s_ot_1->GetOutputs();
+      s_ot_1->ComputeOutputs();
+      const auto &s_bv = s_ot_1->GetOutputs();
 
-      ENCRYPTO::BitVector<> r_bv, s_bv;
+      ENCRYPTO::BitVector<> r_bv;
       for (auto i = 0ull; i < r.size(); ++i) {
         r_bv.Append(r.at(i)[0]);
-        s_bv.Append(s.at(i).Subset(0, 1)[0]);
       }
       choices.at(party_id).at(wire_i) = r_bv ^ s_bv;
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
         const auto &r_bv_check = r_ot_1->GetChoices();
-        const auto &s_v_check = s_ot_1->GetInputs();
-        ENCRYPTO::BitVector<> s_bv_check;
-        for (auto i = 0ull; i < s_v_check.size(); ++i) s_bv_check.Append(s_v_check.at(i));
+        const auto &s_bv_check = s_ot_1->GetCorrelations();
         GetLogger().LogTrace(fmt::format(
             "Gate#{} (BMR AND gate) Party#{}-#{} bit-C-OTs wire_i {} bits from C-OTs r {} s {} "
             "result {} (r {} s {})\n",
