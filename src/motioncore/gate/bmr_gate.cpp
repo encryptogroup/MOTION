@@ -26,10 +26,12 @@
 
 #include "base/backend.h"
 #include "communication/bmr_message.h"
+#include "crypto/oblivious_transfer/correlated_ot.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/pseudo_random_generator.h"
 #include "data_storage/bmr_data.h"
 #include "data_storage/data_storage.h"
+#include "utility/block.h"
 #include "wire/bmr_wire.h"
 #include "wire/boolean_gmw_wire.h"
 
@@ -750,7 +752,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     for (auto pid = 0ull; pid < num_parties; ++pid) {
       if (pid == my_id) continue;
       s_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterSend(1, batch_size_3, XCOT);
-      s_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterSend(kappa, batch_size_3, XCOT);
+      s_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterSendFixedXCOT128(batch_size_3);
       r_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterReceive(1, batch_size_3, XCOT);
       r_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterReceive(kappa, batch_size_3, XCOT);
     }
@@ -847,8 +849,7 @@ void BMRANDGate::EvaluateSetup() {
   std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(
       num_parties, std::vector<ENCRYPTO::BitVector<>>(output_wires_.size()));
 
-  const std::vector<ENCRYPTO::BitVector<>> R_for_OTs(
-      batch_size_3, ENCRYPTO::BitVector<>(R.GetData().data(), kappa));
+  const auto R_for_OTs = ENCRYPTO::block128_t::make_from_memory(R.GetData().data());
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger().LogTrace(
@@ -985,7 +986,7 @@ void BMRANDGate::EvaluateSetup() {
       r_ots_kappa_.at(party_id).at(wire_i)->SetChoices(aggregated_choices.at(wire_i));
       r_ots_kappa_.at(party_id).at(wire_i)->SendCorrections();
 
-      s_ots_kappa_.at(party_id).at(wire_i)->SetInputs(R_for_OTs);
+      s_ots_kappa_.at(party_id).at(wire_i)->SetCorrelation(R_for_OTs);
       s_ots_kappa_.at(party_id).at(wire_i)->SendMessages();
     }
   }
@@ -1104,10 +1105,12 @@ void BMRANDGate::EvaluateSetup() {
           for (auto p_j = 0ull; p_j < num_parties; ++p_j) {
             if (p_j == my_id) continue;
 
+            s_ots_kappa_.at(p_j).at(wire_i)->ComputeOutputs();
             const auto &s_out = s_ots_kappa_.at(p_j).at(wire_i)->GetOutputs();
-            const auto R_00 = s_out.at(simd_i * 3).Subset(0, kappa);
-            const auto R_01 = s_out.at(simd_i * 3 + 1).Subset(0, kappa);
-            const auto R_10 = s_out.at(simd_i * 3 + 2).Subset(0, kappa);
+            assert(s_out.size() == n_simd * 3);
+            const auto R_00 = ENCRYPTO::BitVector(s_out[simd_i * 3].data(), kappa);
+            const auto R_01 = ENCRYPTO::BitVector(s_out[simd_i * 3 + 1].data(), kappa);
+            const auto R_10 = ENCRYPTO::BitVector(s_out[simd_i * 3 + 2].data(), kappa);
 
             shared_R.at(0) ^= R_00;
             shared_R.at(1) ^= R_01;
