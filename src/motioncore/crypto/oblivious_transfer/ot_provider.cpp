@@ -854,6 +854,20 @@ std::shared_ptr<FixedXCOT128VectorSender> OTProviderSender::RegisterFixedXCOT128
   return ot;
 }
 
+std::shared_ptr<XCOTBitVectorSender> OTProviderSender::RegisterXCOTBits(
+    const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
+  const auto i = total_ots_count_;
+  total_ots_count_ += num_ots;
+  auto ot = std::make_shared<XCOTBitVectorSender>(i, num_ots, data_storage_, Send);
+  if constexpr (MOTION::MOTION_DEBUG) {
+    assert(data_storage_->GetID() >= 0);
+    const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+    data_storage_->GetLogger()->LogDebug(fmt::format(
+        "Party#{}: registered {} parallel {}-bit sender XCOTBits", party_id, num_ots, 1));
+  }
+  return ot;
+}
+
 void OTProviderSender::Clear() {
   data_storage_->GetBaseOTsData()->GetSenderData().consumed_offset_ += total_ots_count_;
   total_ots_count_ = 0;
@@ -975,6 +989,20 @@ std::shared_ptr<FixedXCOT128VectorReceiver> OTProviderReceiver::RegisterFixedXCO
     const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
     data_storage_->GetLogger()->LogDebug(fmt::format(
         "Party#{}: registered {} parallel {}-bit receiver FixedXCOT128s", party_id, num_ots, 128));
+  }
+  return ot;
+}
+
+std::shared_ptr<XCOTBitVectorReceiver> OTProviderReceiver::RegisterXCOTBits(
+    const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
+  const auto i = total_ots_count_;
+  total_ots_count_ += num_ots;
+  auto ot = std::make_shared<XCOTBitVectorReceiver>(i, num_ots, data_storage_, Send);
+  if constexpr (MOTION::MOTION_DEBUG) {
+    assert(data_storage_->GetID() >= 0);
+    const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+    data_storage_->GetLogger()->LogDebug(fmt::format(
+        "Party#{}: registered {} parallel {}-bit receiver XCOTBits", party_id, num_ots, 1));
   }
   return ot;
 }

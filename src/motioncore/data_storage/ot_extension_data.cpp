@@ -104,6 +104,17 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
           }
           promise_it->second.set_value(ENCRYPTO::block128_vector(batch_size, message));
           return;
+        } else if (receiver_data_.xcot_1_ot_.count(i) == 1) {
+          // XXX: new implementation, don't do the work here
+          auto promise_it = receiver_data_.xcot_1_ot_message_promises_.find(i);
+          if (promise_it == receiver_data_.xcot_1_ot_message_promises_.end()) {
+            throw std::runtime_error(
+                fmt::format("Could not find promise for XCOTBitSenderMessage for OT#{} "
+                            "OTExtensionDataType::snd_messages",
+                            i));
+          }
+          promise_it->second.set_value(ENCRYPTO::BitVector<>(message, batch_size));
+          return;
         }
 
         auto it_c = receiver_data_.output_conds_.find(i);
@@ -223,6 +234,19 @@ OTExtensionData::RegisterForXCOT128SenderMessage(const std::size_t ot_id) {
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for XCOT128SenderMessage for OT#{}", ot_id));
+  }
+  return fut;
+}
+
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
+OTExtensionData::RegisterForXCOTBitSenderMessage(const std::size_t ot_id) {
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
+  auto fut = promise.get_future();
+  auto [it, success] =
+      receiver_data_.xcot_1_ot_message_promises_.insert({ot_id, std::move(promise)});
+  if (!success) {
+    throw std::runtime_error(
+        fmt::format("tried to register twice for XCOTBitSenderMessage for OT#{}", ot_id));
   }
   return fut;
 }

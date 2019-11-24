@@ -89,6 +89,9 @@ struct OTExtensionReceiverData {
   std::unordered_set<std::size_t> fixed_xcot_128_ot_;
   std::unordered_map<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>
       xcot_128_ot_message_promises_;
+  std::unordered_set<std::size_t> xcot_1_ot_;
+  std::unordered_map<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>
+      xcot_1_ot_message_promises_;
 
   // have we already set the choices for this OT batch?
   std::unordered_set<std::size_t> set_real_choices_;
@@ -154,6 +157,8 @@ struct OTExtensionSenderData {
 struct OTExtensionData {
   [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
   RegisterForXCOT128SenderMessage(std::size_t ot_id);
+  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
+  RegisterForXCOTBitSenderMessage(std::size_t ot_id);
   void MessageReceived(const std::uint8_t* message, const OTExtensionDataType type,
                        const std::size_t ot_id = 0);
 

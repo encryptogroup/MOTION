@@ -134,5 +134,75 @@ class FixedXCOT128VectorReceiver : public BasicCOTReceiver {
   bool outputs_computed_ = false;
 };
 
+// sender implementation of batched xor-correlated bit ots
+class XCOTBitVectorSender : public BasicCOTSender {
+ public:
+  XCOTBitVectorSender(std::size_t ot_id, std::size_t num_ots,
+                      const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // set the correlations for the OTs in this batch
+  void SetCorrelations(BitVector<> &&correlations) {
+    assert(correlations.GetSize() == num_ots_);
+    correlations_ = std::move(correlations);
+  }
+  void SetCorrelations(const BitVector<> &correlations) {
+    assert(correlations.GetSize() == num_ots_);
+    correlations_ = correlations;
+  }
+
+  // get the correlations for the OTs in this batch
+  const BitVector<> &GetCorrelations() const { return correlations_; }
+
+  // compute the sender's outputs
+  void ComputeOutputs();
+
+  // get the sender's outputs
+  BitVector<> &GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // the correlation vector
+  BitVector<> correlations_;
+
+  // the "0 output" for the sender (the "1 output" can be computed by applying the correlation)
+  BitVector<> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched xor-correlated bit ots
+class XCOTBitVectorReceiver : public BasicCOTReceiver {
+ public:
+  XCOTBitVectorReceiver(std::size_t ot_id, std::size_t num_ots,
+                        const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                        const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  BitVector<> &GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+ private:
+  // future for the sender's message
+  ReusableFiberFuture<BitVector<>> sender_message_future_;
+
+  // the output for the receiver
+  BitVector<> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
 }  // namespace ObliviousTransfer
 }  // namespace ENCRYPTO
