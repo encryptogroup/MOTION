@@ -119,7 +119,7 @@ class BitVector {
   // Initialize from a std::vector<bool>, inefficient!
   explicit BitVector(const std::vector<bool>& data, std::size_t n_bits);
 
-  bool Empty() { return bit_size_ == 0; }
+  bool Empty() const { return bit_size_ == 0; }
 
   /// \brief In-place bit-wise invert
   void Invert();
