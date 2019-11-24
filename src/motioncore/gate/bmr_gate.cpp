@@ -754,7 +754,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
       s_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterSend(1, batch_size_3, XCOT);
       s_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterSendFixedXCOT128(batch_size_3);
       r_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterReceive(1, batch_size_3, XCOT);
-      r_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterReceive(kappa, batch_size_3, XCOT);
+      r_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterReceiveFixedXCOT128(batch_size_3);
     }
   }
 
@@ -1125,10 +1125,12 @@ void BMRANDGate::EvaluateSetup() {
           }
         } else {
           assert(r_ots_kappa_.at(p_i).at(wire_i)->ChoicesAreSet());
+          r_ots_kappa_.at(p_i).at(wire_i)->ComputeOutputs();
           const auto &r_out = r_ots_kappa_.at(p_i).at(wire_i)->GetOutputs();
-          const auto &R_00{r_out.at(simd_i * 3)};
-          const auto &R_01{r_out.at(simd_i * 3 + 1)};
-          const auto &R_10{r_out.at(simd_i * 3 + 2)};
+          assert(r_out.size() == n_simd * 3);
+          const auto R_00 = ENCRYPTO::BitVector(r_out[simd_i * 3].data(), kappa);
+          const auto R_01 = ENCRYPTO::BitVector(r_out[simd_i * 3 + 1].data(), kappa);
+          const auto R_10 = ENCRYPTO::BitVector(r_out[simd_i * 3 + 2].data(), kappa);
 
           shared_R.at(0) ^= R_00;
           shared_R.at(1) ^= R_01;

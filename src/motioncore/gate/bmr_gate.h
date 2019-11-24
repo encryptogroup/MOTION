@@ -36,6 +36,7 @@ namespace ENCRYPTO::ObliviousTransfer {
 class OTVectorSender;
 class OTVectorReceiver;
 class FixedXCOT128VectorSender;
+class FixedXCOT128VectorReceiver;
 }  // namespace ENCRYPTO::ObliviousTransfer
 
 namespace MOTION::Gates::BMR {
@@ -156,7 +157,8 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>> s_ots_1_;
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorSender>>>
       s_ots_kappa_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> r_ots_1_,
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> r_ots_1_;
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorReceiver>>>
       r_ots_kappa_;
 
   std::vector<boost::fibers::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_garbled_rows_;
