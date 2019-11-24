@@ -36,11 +36,13 @@
 
 #include "utility/bit_matrix.h"
 #include "utility/bit_vector.h"
+#include "utility/block.h"
+#include "utility/reusable_future.h"
 
 namespace ENCRYPTO {
 class Condition;
 class FiberCondition;
-}
+}  // namespace ENCRYPTO
 
 namespace MOTION {
 
@@ -82,6 +84,11 @@ struct OTExtensionReceiverData {
   // real choices for every OT?
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> real_choices_cond_;
+
+  // is the new implementation used? (XXX: should be removed at a later point in time)
+  std::unordered_set<std::size_t> fixed_xcot_128_ot_;
+  std::unordered_map<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>
+      xcot_128_ot_message_promises_;
 
   // have we already set the choices for this OT batch?
   std::unordered_set<std::size_t> set_real_choices_;
@@ -145,6 +152,8 @@ struct OTExtensionSenderData {
 };
 
 struct OTExtensionData {
+  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
+  RegisterForXCOT128SenderMessage(std::size_t ot_id);
   void MessageReceived(const std::uint8_t* message, const OTExtensionDataType type,
                        const std::size_t ot_id = 0);
 

@@ -46,8 +46,12 @@ enum OTProtocol : uint {
   ROT = 1,   // random OT
   XCOT = 2,  // XOR-correlated OT
   ACOT = 3,  // additively-correlated OT
-  invalid_OT = 4
+  invalid_OT = 4,
+  FixedXCOT128 = 5
 };
+
+class FixedXCOT128VectorSender;
+class FixedXCOT128VectorReceiver;
 
 class OTVector {
  public:
@@ -240,6 +244,9 @@ class OTProviderSender {
   std::shared_ptr<OTVectorSender> &RegisterOTs(
       const std::size_t bitlen, const std::size_t num_ots, const OTProtocol p,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  std::shared_ptr<FixedXCOT128VectorSender> RegisterFixedXCOT128s(
+      const std::size_t num_ots,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   auto GetNumOTs() const { return total_ots_count_; }
 
@@ -270,6 +277,9 @@ class OTProviderReceiver {
 
   std::shared_ptr<OTVectorReceiver> &RegisterOTs(
       const std::size_t bitlen, const std::size_t num_ots, const OTProtocol p,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  std::shared_ptr<FixedXCOT128VectorReceiver> RegisterFixedXCOT128s(
+      const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   std::size_t GetNumOTs() const { return total_ots_count_; }
@@ -302,6 +312,11 @@ class OTProvider {
     return sender_provider_.RegisterOTs(bitlen, num_ots, p, Send_);
   }
 
+  [[nodiscard]] std::shared_ptr<FixedXCOT128VectorSender> RegisterSendFixedXCOT128(
+      const std::size_t num_ots = 1) {
+    return sender_provider_.RegisterFixedXCOT128s(num_ots, Send_);
+  }
+
   /// @param bitlen Bit-length of the messages
   /// @param num_ots Number of OTs
   /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
@@ -310,6 +325,11 @@ class OTProvider {
                                                                    const std::size_t num_ots = 1,
                                                                    const OTProtocol p = GOT) {
     return receiver_provider_.RegisterOTs(bitlen, num_ots, p, Send_);
+  }
+
+  [[nodiscard]] std::shared_ptr<FixedXCOT128VectorReceiver> RegisterReceiveFixedXCOT128(
+      const std::size_t num_ots = 1) {
+    return receiver_provider_.RegisterFixedXCOT128s(num_ots, Send_);
   }
 
   [[nodiscard]] std::size_t GetNumOTsReceiver() const { return receiver_provider_.GetNumOTs(); }
@@ -370,4 +390,4 @@ class OTProviderFromMultipleThirdParties : public OTProvider {
 };
 
 }  // namespace ObliviousTransfer
-}
+}  // namespace ENCRYPTO

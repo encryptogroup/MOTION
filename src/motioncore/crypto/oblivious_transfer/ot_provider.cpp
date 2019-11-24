@@ -25,6 +25,7 @@
 #include "ot_provider.h"
 
 #include "communication/ot_extension_message.h"
+#include "correlated_ot.h"
 #include "crypto/pseudo_random_generator.h"
 #include "data_storage/base_ot_data.h"
 #include "data_storage/data_storage.h"
@@ -176,7 +177,7 @@ void OTProviderFromOTExtension::ReceiveSetup() {
   constexpr std::size_t kappa = 128;
   // number of OTs and width of the bit matrix
   const std::size_t bit_size = receiver_provider_.GetNumOTs();
-  if (bit_size == 0) return; // nothing to do
+  if (bit_size == 0) return;  // nothing to do
 
   // rounded up to a multiple of the security parameter
   const auto bit_size_padded = bit_size + kappa - (bit_size % kappa);
@@ -839,6 +840,20 @@ std::shared_ptr<OTVectorSender> &OTProviderSender::RegisterOTs(
   return sender_data_.insert(std::pair(i, ot)).first->second;
 }
 
+std::shared_ptr<FixedXCOT128VectorSender> OTProviderSender::RegisterFixedXCOT128s(
+    const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
+  const auto i = total_ots_count_;
+  total_ots_count_ += num_ots;
+  auto ot = std::make_shared<FixedXCOT128VectorSender>(i, num_ots, data_storage_, Send);
+  if constexpr (MOTION::MOTION_DEBUG) {
+    assert(data_storage_->GetID() >= 0);
+    const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+    data_storage_->GetLogger()->LogDebug(fmt::format(
+        "Party#{}: registered {} parallel {}-bit sender FixedXCOT128s", party_id, num_ots, 128));
+  }
+  return ot;
+}
+
 void OTProviderSender::Clear() {
   data_storage_->GetBaseOTsData()->GetSenderData().consumed_offset_ += total_ots_count_;
   total_ots_count_ = 0;
@@ -948,6 +963,20 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
   data_storage_->GetOTExtensionData()->GetReceiverData().real_choices_->Resize(total_ots_count_,
                                                                                false);
   return receiver_data_.insert(std::move(e)).first->second;
+}
+
+std::shared_ptr<FixedXCOT128VectorReceiver> OTProviderReceiver::RegisterFixedXCOT128s(
+    const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
+  const auto i = total_ots_count_;
+  total_ots_count_ += num_ots;
+  auto ot = std::make_shared<FixedXCOT128VectorReceiver>(i, num_ots, data_storage_, Send);
+  if constexpr (MOTION::MOTION_DEBUG) {
+    assert(data_storage_->GetID() >= 0);
+    const auto party_id = static_cast<std::size_t>(data_storage_->GetID());
+    data_storage_->GetLogger()->LogDebug(fmt::format(
+        "Party#{}: registered {} parallel {}-bit receiver FixedXCOT128s", party_id, num_ots, 128));
+  }
+  return ot;
 }
 
 void OTProviderReceiver::Clear() {

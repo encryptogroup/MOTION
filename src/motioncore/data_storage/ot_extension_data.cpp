@@ -26,6 +26,7 @@
 
 #include <thread>
 
+#include "utility/block.h"
 #include "utility/condition.h"
 #include "utility/fiber_condition.h"
 
@@ -83,20 +84,34 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
       {
         MOTION::Helpers::WaitFor(*receiver_data_.setup_finished_cond_);
 
-        auto it_c = receiver_data_.output_conds_.find(i);
-        if (it_c == receiver_data_.output_conds_.end()) {
-          throw std::runtime_error(fmt::format(
-              "Could not find Condition for OT#{} OTExtensionDataType::snd_messages", i));
-        }
-
         const auto bitlen = receiver_data_.bitlengths_.at(i);
         const auto bs_it = receiver_data_.num_ots_in_batch_.find(i);
         if (bs_it == receiver_data_.num_ots_in_batch_.end()) {
           throw std::runtime_error(fmt::format(
               "Could not find batch size for OT#{} OTExtensionDataType::snd_messages", i));
         }
-
         const auto batch_size = bs_it->second;
+
+        if (receiver_data_.fixed_xcot_128_ot_.count(i) == 1) {
+          // XXX: new implementation, don't do the work here, just put the
+          // message into the future
+          auto promise_it = receiver_data_.xcot_128_ot_message_promises_.find(i);
+          if (promise_it == receiver_data_.xcot_128_ot_message_promises_.end()) {
+            throw std::runtime_error(
+                fmt::format("Could not find promise for XCOT128SenderMessage for OT#{} "
+                            "OTExtensionDataType::snd_messages",
+                            i));
+          }
+          promise_it->second.set_value(ENCRYPTO::block128_vector(batch_size, message));
+          return;
+        }
+
+        auto it_c = receiver_data_.output_conds_.find(i);
+        if (it_c == receiver_data_.output_conds_.end()) {
+          throw std::runtime_error(fmt::format(
+              "Could not find Condition for OT#{} OTExtensionDataType::snd_messages", i));
+        }
+
         bool success{false};
         do {
           {
@@ -197,6 +212,19 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
           OTExtensionDataType::OTExtension_invalid_data_type));
     }
   }
+}
+
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
+OTExtensionData::RegisterForXCOT128SenderMessage(const std::size_t ot_id) {
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
+  auto fut = promise.get_future();
+  auto [it, success] =
+      receiver_data_.xcot_128_ot_message_promises_.insert({ot_id, std::move(promise)});
+  if (!success) {
+    throw std::runtime_error(
+        fmt::format("tried to register twice for XCOT128SenderMessage for OT#{}", ot_id));
+  }
+  return fut;
 }
 
 }  // namespace MOTION
