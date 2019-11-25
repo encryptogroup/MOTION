@@ -25,5 +25,7 @@
 #pragma once
 
 #include "base/party.h"
+#include "statistics/run_time_stats.h"
 
-void EvaluateProtocol(MOTION::PartyPtr & party, std::size_t num_simd, MOTION::MPCProtocol protocol);
+MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
+                                                  MOTION::MPCProtocol protocol);

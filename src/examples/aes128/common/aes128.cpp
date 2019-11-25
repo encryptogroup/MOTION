@@ -26,10 +26,12 @@
 
 #include "algorithm/algorithm_description.h"
 #include "share/share_wrapper.h"
+#include "statistics/analysis.h"
 #include "statistics/run_time_stats.h"
 #include "utility/config.h"
 
-void EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd, MOTION::MPCProtocol protocol) {
+MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
+                                                  MOTION::MPCProtocol protocol) {
   // TODO tests
   std::vector<ENCRYPTO::BitVector<>> tmp(256, ENCRYPTO::BitVector<>(num_simd));
   MOTION::Shares::ShareWrapper input{protocol == MOTION::MPCProtocol::BooleanGMW
@@ -41,5 +43,5 @@ void EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd, MOTION::MPC
   party->Run();
   party->Finish();
   const auto& stats = party->GetBackend()->GetRunTimeStats();
-  std::cout << stats.back().print_human_readable() << std::endl;
+  return stats.front();
 }

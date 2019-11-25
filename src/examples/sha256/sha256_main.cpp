@@ -34,6 +34,7 @@
 
 #include "base/party.h"
 #include "common/sha256.h"
+#include "statistics/analysis.h"
 
 namespace po = boost::program_options;
 
@@ -49,20 +50,29 @@ int main(int ac, char* av[]) {
     // if help flag is set - print allowed command line arguments and exit
     if (help_flag) return 1;
 
-    MOTION::PartyPtr party{CreateParty(vm)};
-    // establish communication channels with other parties
-    party->Connect();
-
     const auto num_simd{vm["num-simd"].as<std::size_t>()};
+    const auto num_repetitions{vm["repetitions"].as<std::size_t>()};
     MOTION::MPCProtocol protocol;
     const std::string protocol_str{vm["protocol"].as<std::string>()};
+    MOTION::Statistics::AccumulatedRunTimeStats accumulated_stats;
 
-    if (protocol_str == "BMR")
-      EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
-    else if (protocol_str == "GMW" || protocol_str == "BooleanGMW")
-      EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW);
-    else
-      throw std::invalid_argument("Only GMW or BMR is allowed");
+    for (std::size_t i = 0; i < num_repetitions; ++i) {
+      MOTION::PartyPtr party{CreateParty(vm)};
+      // establish communication channels with other parties
+      party->Connect();
+
+      if (protocol_str == "BMR") {
+        auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
+        accumulated_stats.add(stats);
+      } else if (protocol_str == "GMW" || protocol_str == "BooleanGMW") {
+        auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW);
+        accumulated_stats.add(stats);
+      } else {
+        throw std::invalid_argument("Only GMW or BMR is allowed");
+      }
+    }
+
+    std::cout << accumulated_stats.print_human_readable() << std::endl;
 
   } catch (std::runtime_error& e) {
     std::cerr << e.what() << "\n";
@@ -94,7 +104,8 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
       ("other-parties", po::value<std::vector<std::string>>()->multitoken(), "(other party id, IP, port, my role), e.g., --other-parties 1,127.0.0.1,7777")
       ("num-simd", po::value<std::size_t>()->default_value(1), "number of SIMD values for SHA256 evaluation")
       ("protocol", po::value<std::string>()->default_value("BMR"), "Boolean MPC protocol (BMR or GMW)")
-      ("online-after-setup", po::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)");
+      ("online-after-setup", po::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)")
+      ("repetitions", po::value<std::size_t>()->default_value(1), "number of repetitions");
   // clang-format on
 
   po::variables_map vm;
