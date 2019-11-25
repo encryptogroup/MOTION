@@ -136,7 +136,7 @@ class MTProvider {
   void WaitFinished() { MOTION::Helpers::WaitFor(*finished_condition_); }
 
  protected:
-  MTProvider(const std::size_t my_id);
+  MTProvider(std::size_t my_id, std::size_t num_parties);
   MTProvider() = delete;
 
   std::size_t num_bit_mts_{0}, num_mts_8_{0}, num_mts_16_{0}, num_mts_32_{0}, num_mts_64_{0};
@@ -149,6 +149,7 @@ class MTProvider {
   IntegerMTVector<std::uint64_t> mts64_;
 
   const std::size_t my_id_;
+  const std::size_t num_parties_;
 
   std::atomic<bool> finished_{false};
   std::shared_ptr<ENCRYPTO::Condition> finished_condition_;

@@ -56,7 +56,8 @@ const BinaryMTVector& MTProvider::GetBinaryAll() noexcept {
   return bit_mts_;
 }
 
-MTProvider::MTProvider(const std::size_t my_id) : my_id_(my_id) {
+MTProvider::MTProvider(const std::size_t my_id, const std::size_t num_parties)
+    : my_id_(my_id), num_parties_(num_parties) {
   finished_condition_ =
       std::make_shared<ENCRYPTO::Condition>([this]() { return finished_.load(); });
 }
@@ -64,10 +65,10 @@ MTProvider::MTProvider(const std::size_t my_id) : my_id_(my_id) {
 MTProviderFromOTs::MTProviderFromOTs(
     std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
     const std::size_t my_id, Logger& logger, Statistics::RunTimeStats& run_time_stats)
-    : MTProvider(my_id),
+    : MTProvider(my_id, ot_providers.size()),
       ot_providers_(ot_providers),
-      ots_rcv_(ot_providers_.size()),
-      ots_snd_(ot_providers_.size()),
+      ots_rcv_(num_parties_),
+      ots_snd_(num_parties_),
       logger_(logger),
       run_time_stats_(run_time_stats) {}
 
@@ -101,7 +102,7 @@ void MTProviderFromOTs::Setup() {
   run_time_stats_.record_start<Statistics::RunTimeStats::StatID::mt_setup>();
 
 #pragma omp parallel for
-  for (auto i = 0ull; i < ot_providers_.size(); ++i) {
+  for (auto i = 0ull; i < num_parties_; ++i) {
     if (i == my_id_) {
       continue;
     }
@@ -219,8 +220,8 @@ void MTProviderFromOTs::RegisterOTs() {
   generate_random_triples<std::uint32_t>(mts32_, num_mts_32_);
   generate_random_triples<std::uint64_t>(mts64_, num_mts_64_);
 
-#pragma omp parallel for num_threads(ot_providers_.size())
-  for (auto i = 0ull; i < ot_providers_.size(); ++i) {
+#pragma omp parallel for num_threads(num_parties_)
+  for (auto i = 0ull; i < num_parties_; ++i) {
     if (i == my_id_) {
       continue;
     }
@@ -285,7 +286,7 @@ static void parse_helper(
 }
 
 void MTProviderFromOTs::ParseOutputs() {
-  for (auto i = 0ull; i < ot_providers_.size(); ++i) {
+  for (auto i = 0ull; i < num_parties_; ++i) {
     if (i == my_id_) {
       continue;
     }
