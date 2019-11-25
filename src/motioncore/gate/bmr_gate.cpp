@@ -742,7 +742,6 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   r_ots_kappa_.resize(GetConfig().GetNumOfParties());
   for (auto &v : r_ots_kappa_) v.resize(output_wires_.size());
 
-  constexpr auto XCOT{ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT};
   const auto n_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto batch_size_full{n_simd * 4};
   const auto batch_size_3{n_simd * 3};
@@ -753,7 +752,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
       if (pid == my_id) continue;
       s_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterSendXCOTBit(batch_size_3);
       s_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterSendFixedXCOT128(batch_size_3);
-      r_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterReceive(1, batch_size_3, XCOT);
+      r_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterReceiveXCOTBit(batch_size_3);
       r_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterReceiveFixedXCOT128(batch_size_3);
     }
   }
@@ -832,7 +831,7 @@ void BMRANDGate::EvaluateSetup() {
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
   const auto batch_size_full{n_simd * 4};
-  const auto batch_size_3{n_simd * 3};
+  [[maybe_unused]] const auto batch_size_3{n_simd * 3};
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
@@ -929,14 +928,11 @@ void BMRANDGate::EvaluateSetup() {
       auto &s_ot_1{s_ots_1_.at(party_id).at(wire_i)};
 
       assert(r_ot_1->ChoicesAreSet());
-      const auto &r = r_ot_1->GetOutputs();
+      r_ot_1->ComputeOutputs();
+      const auto &r_bv = r_ot_1->GetOutputs();
       s_ot_1->ComputeOutputs();
       const auto &s_bv = s_ot_1->GetOutputs();
 
-      ENCRYPTO::BitVector<> r_bv;
-      for (auto i = 0ull; i < r.size(); ++i) {
-        r_bv.Append(r.at(i)[0]);
-      }
       choices.at(party_id).at(wire_i) = r_bv ^ s_bv;
 
       if constexpr (MOTION_VERBOSE_DEBUG) {

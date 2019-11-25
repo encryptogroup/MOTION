@@ -38,6 +38,7 @@ class OTVectorReceiver;
 class FixedXCOT128VectorSender;
 class FixedXCOT128VectorReceiver;
 class XCOTBitVectorSender;
+class XCOTBitVectorReceiver;
 }  // namespace ENCRYPTO::ObliviousTransfer
 
 namespace MOTION::Gates::BMR {
@@ -158,7 +159,7 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorSender>>> s_ots_1_;
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorSender>>>
       s_ots_kappa_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> r_ots_1_;
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorReceiver>>> r_ots_1_;
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorReceiver>>>
       r_ots_kappa_;
 
