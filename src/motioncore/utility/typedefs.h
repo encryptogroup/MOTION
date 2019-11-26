@@ -33,9 +33,9 @@ enum PrimitiveOperationType : std::uint8_t {
   MUX = 2,  // for Boolean circuit only
   INV = 3,  // for Boolean circuit only
   OR = 4,   // for Boolean circuit only
-  ADD = 4,  // for arithmetic circuit only
-  MUL = 5,  // for arithmetic circuit only
-  INVALID = 6
+  ADD = 5,  // for arithmetic circuit only
+  MUL = 6,  // for arithmetic circuit only
+  INVALID = 7
 };
 
 enum IntegerOperationType : unsigned int {
