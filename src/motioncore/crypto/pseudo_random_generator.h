@@ -44,6 +44,8 @@ class PRG {
 
   void SetKey(const std::byte *key);
 
+  bool ContainsKey() { return contains_key_; }
+
   std::size_t SetOffset(std::size_t new_offset) {
     std::swap(offset_, new_offset);
     return new_offset;
@@ -69,7 +71,7 @@ class PRG {
   EVP_CIPHER_CTX_PTR ctx_ = MakeCipherCtx();
 
   std::array<std::uint8_t, AES_BLOCK_SIZE> key_;
-
+  bool contains_key_{false};
   std::size_t offset_{0};
 };
 }

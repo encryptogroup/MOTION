@@ -33,6 +33,7 @@ void PRG::SetKey(const std::uint8_t *key) {
                               reinterpret_cast<const unsigned char *>(key_.data()), nullptr)) {
     throw(std::runtime_error(fmt::format("Could not re-initialize EVP context")));
   }
+  contains_key_ = true;
 }
 
 void PRG::SetKey(const std::byte *key) { SetKey(reinterpret_cast<const std::uint8_t *>(key)); }
