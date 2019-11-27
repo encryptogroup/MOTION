@@ -25,6 +25,7 @@
 #pragma once
 
 #include <tuple>
+#include <type_traits>
 
 namespace ENCRYPTO {
 enum PrimitiveOperationType : std::uint8_t {
