@@ -206,6 +206,7 @@ void GMWToBMRGate::EvaluateOnline() {
   }
 
   const auto num_simd{output_wires_.at(0)->GetNumOfSIMDValues()};
+  const auto num_wires{output_wires_.size()};
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
   const auto &R = GetConfig().GetBMRRandomOffset();
@@ -262,30 +263,39 @@ void GMWToBMRGate::EvaluateOnline() {
     backend_.Send(i, Communication::BuildBMRInput1Message(gate_id_, payload_pub_keys));
   }
 
+  auto pk_index = [num_parties](auto simd_i, auto party_i) {
+    return simd_i * num_parties + party_i;
+  };
+
   // parse published keys
-  for (auto i = 0ull; i < num_parties; ++i) {
-    if (i == GetConfig().GetMyId()) {
-      for (auto j = 0ull; j < output_wires_.size(); ++j) {
-        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
+  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+    if (party_i == my_id) {
+      for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
-        for (auto k = 0ull; k < num_simd; ++k) {
-          if (wire->GetPublicValues()[k])
-            wire->GetMutablePublicKeys().at(i).at(k) =
-                ENCRYPTO::BitVector<>((wire->GetSecretKeys().at(k) ^ R).data(), kappa);
+        for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+          if (wire->GetPublicValues()[simd_k])
+            wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
+                wire->GetSecretKeys().at(simd_k) ^ R;
           else
-            wire->GetMutablePublicKeys().at(i).at(k) =
-                ENCRYPTO::BitVector<>(wire->GetSecretKeys().at(k).data(), kappa);
+            wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
+                wire->GetSecretKeys().at(simd_k);
         }
       }
     } else {
-      buffer = received_public_keys_.at(i).get();
+      buffer = received_public_keys_.at(party_i).get();
       assert(num_simd > 0u);
-      for (auto j = 0ull; j < output_wires_.size(); ++j) {
-        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
+      for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
-        for (auto k = 0ull; k < num_simd; ++k) {
-          wire->GetMutablePublicKeys().at(i).at(k) =
-              buffer.Subset((j * num_simd + k) * kappa, (j * num_simd + k + 1) * kappa);
+        for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+          wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
+              ENCRYPTO::block128_t::make_from_memory(
+                  buffer
+                      .Subset((wire_j * num_simd + simd_k) * kappa,
+                              (wire_j * num_simd + simd_k + 1) * kappa)
+                      .GetData()
+                      .data());
         }
       }
     }

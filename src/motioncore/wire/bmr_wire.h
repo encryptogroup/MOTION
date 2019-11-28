@@ -93,8 +93,8 @@ class BMRWire : public BooleanWire {
 
   ENCRYPTO::block128_vector secret_0_keys_;
 
-  // for each party for each bit
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> public_keys_;
+  // for each simd value, for each party
+  ENCRYPTO::block128_vector public_keys_;
 
   std::atomic<bool> setup_ready_{false};
   std::unique_ptr<ENCRYPTO::FiberCondition> setup_ready_cond_;

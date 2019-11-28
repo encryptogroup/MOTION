@@ -55,8 +55,7 @@ BMRWire::BMRWire(bool value, Backend& backend, bool is_constant)
 
 void BMRWire::InitializationHelperBMR() {
   const auto num_parties = backend_.GetConfig()->GetNumOfParties();
-  public_keys_.resize(num_parties);
-  for (auto i = 0ull; i < public_keys_.size(); ++i) public_keys_.at(i).resize(n_simd_);
+  public_keys_.resize(n_simd_ * num_parties);
 
   setup_ready_cond_ =
       std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_ready_.load(); });

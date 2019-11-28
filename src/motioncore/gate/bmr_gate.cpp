@@ -158,6 +158,9 @@ void BMRInputGate::EvaluateOnline() {
 
   const auto &R = GetConfig().GetBMRRandomOffset();
   const auto my_id = GetConfig().GetMyId();
+  const auto num_parties = GetConfig().GetNumOfParties();
+  const auto num_simd = output_wires_.at(0)->GetNumOfSIMDValues();
+  const auto num_wires = output_wires_.size();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
   ENCRYPTO::BitVector<> buffer;
   // XXX: ^ maybe we can already reserve enough space here since we call append
@@ -198,7 +201,7 @@ void BMRInputGate::EvaluateOnline() {
   // in a loop
 
   // fill the buffer with the keys corresponding to the public values
-  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+  for (auto i = 0ull; i < num_wires; ++i) {
     auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
     assert(wire);
     const auto &keys_0 = wire->GetSecretKeys();
@@ -214,37 +217,46 @@ void BMRInputGate::EvaluateOnline() {
   const std::vector<std::uint8_t> payload(
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
-  for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
-    if (i == GetConfig().GetMyId()) continue;
-    backend_.Send(i, Communication::BuildBMRInput1Message(gate_id_, payload));
+  for (auto party_i = 0ull; party_i < GetConfig().GetNumOfParties(); ++party_i) {
+    if (party_i == my_id) continue;
+    backend_.Send(party_i, Communication::BuildBMRInput1Message(gate_id_, payload));
   }
 
+  auto pk_index = [num_parties](auto simd_i, auto party_i) {
+    return simd_i * num_parties + party_i;
+  };
+
   // receive the published keys from the other parties
-  for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
-    if (i == GetConfig().GetMyId()) {
+  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+    if (party_i == my_id) {
       // XXX: we could move the correct secret key into the vector of public keys
       // since we should not need it anymore
-      for (auto j = 0ull; j < output_wires_.size(); ++j) {
-        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
+      for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
-        for (auto k = 0ull; k < wire->GetNumOfSIMDValues(); ++k) {
-          if (wire->GetPublicValues()[k])
-            wire->GetMutablePublicKeys().at(i).at(k) =
-                ENCRYPTO::BitVector<>((wire->GetSecretKeys().at(k) ^ R).data(), kappa);
+        for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+          if (wire->GetPublicValues()[simd_k])
+            wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
+                wire->GetSecretKeys().at(simd_k) ^ R;
           else
-            wire->GetMutablePublicKeys().at(i).at(k) =
-                ENCRYPTO::BitVector<>(wire->GetSecretKeys().at(k).data(), kappa);
+            wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
+                wire->GetSecretKeys().at(simd_k);
         }
       }
     } else {
-      buffer = received_public_keys_.at(i).get();
+      buffer = received_public_keys_.at(party_i).get();
       assert(bits_ > 0u);
-      for (auto j = 0ull; j < output_wires_.size(); ++j) {
-        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
+      for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+        auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
-        for (auto k = 0ull; k < wire->GetNumOfSIMDValues(); ++k) {
-          wire->GetMutablePublicKeys().at(i).at(k) =
-              buffer.Subset((j * bits_ + k) * kappa, (j * bits_ + k + 1) * kappa);
+        for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+          wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
+              ENCRYPTO::block128_t::make_from_memory(
+                  buffer
+                      .Subset((wire_j * bits_ + simd_k) * kappa,
+                              (wire_j * bits_ + simd_k + 1) * kappa)
+                      .GetData()
+                      .data());
         }
       }
     }
@@ -252,14 +264,14 @@ void BMRInputGate::EvaluateOnline() {
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s(fmt::format("Evaluated a BMR input gate #{} and got as result: ", gate_id_));
-    for (auto i = 0ull; i < output_wires_.size(); ++i) {
-      auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
+    for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
+      auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i));
+      const auto &pks = wire->GetPublicKeys();
       std::string keys;
-      assert(MOTION::Helpers::Compare::Dimensions(wire->GetPublicKeys()));
-      for (auto j = 0ull; j < GetConfig().GetNumOfParties(); ++j) {
-        keys.append(std::to_string(j) + std::string(" "));
-        for (const auto &key : wire->GetPublicKeys().at(j)) {
-          keys.append(key.AsString() + " ");
+      for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
+        keys.append(std::to_string(party_j) + std::string(" "));
+        for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+          keys.append(pks.at(pk_index(simd_k, party_j)).as_string() + " ");
         }
       }
       if (!keys.empty()) keys.erase(keys.size() - 1);
@@ -510,16 +522,8 @@ void BMRXORGate::EvaluateOnline() {
     wire_a->GetIsReadyCondition()->Wait();
     wire_b->GetIsReadyCondition()->Wait();
 
-    auto &out = bmr_out->GetMutablePublicKeys();
-    const auto &a = wire_a->GetPublicKeys();
-    const auto &b = wire_b->GetPublicKeys();
-
     // perform freeXOR evaluation
-    for (auto k = 0ull; k < out.size(); ++k) {
-      for (auto j = 0ull; j < out.at(k).size(); ++j) {
-        out.at(k).at(j) = a.at(k).at(j) ^ b.at(k).at(j);
-      }
-    }
+    bmr_out->GetMutablePublicKeys() = wire_a->GetPublicKeys() ^ wire_b->GetPublicKeys();
     bmr_out->GetMutablePublicValues() = wire_a->GetPublicValues() ^ wire_b->GetPublicValues();
   }
 
@@ -629,12 +633,8 @@ void BMRINVGate::EvaluateOnline() {
     bmr_in->GetIsReadyCondition()->Wait();
 
     // just copy the public values and keys from the parent wire
-    for (auto j = 0ull; j < bmr_out->GetNumOfSIMDValues(); ++j) {
-      for (auto k = 0ull; k < GetConfig().GetNumOfParties(); ++k) {
-        bmr_out->GetMutablePublicKeys().at(k).at(j) = (bmr_in->GetPublicKeys().at(k).at(j));
-      }
-      bmr_out->GetMutablePublicValues() = bmr_in->GetPublicValues();
-    }
+    bmr_out->GetMutablePublicKeys() = bmr_in->GetPublicKeys();
+    bmr_out->GetMutablePublicValues() = bmr_in->GetPublicValues();
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -1171,6 +1171,10 @@ void BMRANDGate::EvaluateOnline() {
   const auto num_simd = output_wires_.at(0)->GetNumOfSIMDValues();
   const auto &R = GetConfig().GetBMRRandomOffset();
 
+  auto pk_index = [num_parties](auto simd_i, auto party_i) {
+    return simd_i * num_parties + party_i;
+  };
+
   if constexpr (MOTION_VERBOSE_DEBUG) {
     for (auto i = 0ull; i < garbled_rows_.size(); ++i) {
       for (auto j = 0ull; j < garbled_rows_.at(i).size(); ++j) {
@@ -1207,19 +1211,19 @@ void BMRANDGate::EvaluateOnline() {
                              wire_b->GetPublicValues().AsString()));
       }
       for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-        const ENCRYPTO::BitVector<> &key_a = wire_a->GetPublicKeys().at(party_i).at(simd_i);
-        const ENCRYPTO::BitVector<> &key_b = wire_b->GetPublicKeys().at(party_i).at(simd_i);
+        const auto &key_a = wire_a->GetPublicKeys().at(pk_index(simd_i, party_i));
+        const auto &key_b = wire_b->GetPublicKeys().at(pk_index(simd_i, party_i));
         for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
           uint128_t plaintext{party_j};
           plaintext <<= 64;
           plaintext += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
-          ENCRYPTO::BitVector<> mask_a(prg.FixedKeyAES(key_a.GetData().data(), plaintext), kappa);
-          ENCRYPTO::BitVector<> mask_b(prg.FixedKeyAES(key_b.GetData().data(), plaintext), kappa);
+          ENCRYPTO::BitVector<> mask_a(prg.FixedKeyAES(key_a.data(), plaintext), kappa);
+          ENCRYPTO::BitVector<> mask_b(prg.FixedKeyAES(key_b.data(), plaintext), kappa);
           masks.at(party_j) ^= mask_a;
           masks.at(party_j) ^= mask_b;
           if constexpr (MOTION_VERBOSE_DEBUG) {
             s.append(fmt::format("\nParty#{} key for #{} key_a {} ({}) key_b {} ({})", party_i,
-                                 party_j, key_a.AsString(), mask_a.AsString(), key_b.AsString(),
+                                 party_j, key_a.as_string(), mask_a.AsString(), key_b.as_string(),
                                  mask_b.AsString()));
           }
         }
@@ -1238,13 +1242,11 @@ void BMRANDGate::EvaluateOnline() {
               garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset).as_string(),
               masks.at(party_i).AsString()));
         }
-        bmr_out->GetMutablePublicKeys().at(party_i).at(simd_i) = ENCRYPTO::BitVector<>(
-            (garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset) ^
-             masks.at(party_i))
-                .data(),
-            kappa);
+        bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
+            garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset) ^
+            masks.at(party_i);
         if constexpr (MOTION_VERBOSE_DEBUG) {
-          s.append(bmr_out->GetPublicKeys().at(party_i).at(simd_i).AsString());
+          s.append(bmr_out->GetPublicKeys().at(pk_index(simd_i, party_i)).as_string());
         }
       }
       if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -1257,11 +1259,11 @@ void BMRANDGate::EvaluateOnline() {
     }  // for each simd
 
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-      const bool neq = bmr_out->GetPublicKeys().at(my_id).at(simd_i) !=
-                       ENCRYPTO::BitVector<>(bmr_out->GetSecretKeys().at(simd_i).data(), kappa);
+      const bool neq = bmr_out->GetPublicKeys().at(pk_index(simd_i, my_id)) !=
+                       bmr_out->GetSecretKeys().at(simd_i);
       if (neq)
-        assert(bmr_out->GetPublicKeys().at(GetConfig().GetMyId()).at(simd_i) ==
-               ENCRYPTO::BitVector<>((bmr_out->GetSecretKeys().at(simd_i) ^ R).data(), kappa));
+        assert(bmr_out->GetPublicKeys().at(pk_index(simd_i, my_id)) ==
+               (bmr_out->GetSecretKeys().at(simd_i) ^ R));
       bmr_out->GetMutablePublicValues().Set(neq, simd_i);
     }
     if constexpr (MOTION_VERBOSE_DEBUG) {
