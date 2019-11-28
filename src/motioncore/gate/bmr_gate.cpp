@@ -716,6 +716,13 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
 
   gate_id_ = GetRegister().NextGateId();
 
+  const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
+  const auto num_wires{parent_a_.size()};
+  const auto batch_size_full{num_simd * 4};
+  const auto batch_size_3{num_simd * 3};
+  const auto my_id{GetConfig().GetMyId()};
+  const auto num_parties{GetConfig().GetNumOfParties()};
+
   for (auto &wire : parent_a_) {
     RegisterWaitingFor(wire->GetWireId());
     wire->RegisterWaitingGate(gate_id_);
@@ -726,49 +733,44 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     wire->RegisterWaitingGate(gate_id_);
   }
 
-  output_wires_.resize(parent_a_.size());
-  const ENCRYPTO::BitVector tmp_bv(a->GetNumOfSIMDValues());
+  output_wires_.resize(num_wires);
+  const ENCRYPTO::BitVector tmp_bv(num_simd);
   for (auto &w : output_wires_) {
     w = std::make_shared<Wires::BMRWire>(tmp_bv, backend_);
     GetRegister().RegisterNextWire(w);
   }
 
-  s_ots_1_.resize(GetConfig().GetNumOfParties());
-  for (auto &v : s_ots_1_) v.resize(output_wires_.size());
-  s_ots_kappa_.resize(GetConfig().GetNumOfParties());
-  for (auto &v : s_ots_kappa_) v.resize(output_wires_.size());
-  r_ots_1_.resize(GetConfig().GetNumOfParties());
-  for (auto &v : r_ots_1_) v.resize(output_wires_.size());
-  r_ots_kappa_.resize(GetConfig().GetNumOfParties());
-  for (auto &v : r_ots_kappa_) v.resize(output_wires_.size());
-
-  const auto n_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
-  const auto batch_size_full{n_simd * 4};
-  const auto batch_size_3{n_simd * 3};
-  const auto my_id{GetConfig().GetMyId()};
-  const auto num_parties{GetConfig().GetNumOfParties()};
-  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+  s_ots_1_.resize(num_parties);
+  for (auto &v : s_ots_1_) v.resize(num_wires);
+  s_ots_kappa_.resize(num_parties);
+  for (auto &v : s_ots_kappa_) v.resize(num_wires);
+  r_ots_1_.resize(num_parties);
+  for (auto &v : r_ots_1_) v.resize(num_wires);
+  r_ots_kappa_.resize(num_parties);
+  for (auto &v : r_ots_kappa_) v.resize(num_wires);
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     for (auto pid = 0ull; pid < num_parties; ++pid) {
       if (pid == my_id) continue;
-      s_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterSendXCOTBit(batch_size_3);
-      s_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterSendFixedXCOT128(batch_size_3);
-      r_ots_1_.at(pid).at(i) = GetOTProvider(pid).RegisterReceiveXCOTBit(batch_size_3);
-      r_ots_kappa_.at(pid).at(i) = GetOTProvider(pid).RegisterReceiveFixedXCOT128(batch_size_3);
+      s_ots_1_.at(pid).at(wire_i) = GetOTProvider(pid).RegisterSendXCOTBit(batch_size_3);
+      s_ots_kappa_.at(pid).at(wire_i) = GetOTProvider(pid).RegisterSendFixedXCOT128(batch_size_3);
+      r_ots_1_.at(pid).at(wire_i) = GetOTProvider(pid).RegisterReceiveXCOTBit(batch_size_3);
+      r_ots_kappa_.at(pid).at(wire_i) =
+          GetOTProvider(pid).RegisterReceiveFixedXCOT128(batch_size_3);
     }
   }
 
-  garbled_rows_.resize(GetConfig().GetNumOfParties());
+  garbled_rows_.resize(num_parties);
   for (auto &vv : garbled_rows_) {
-    vv.resize(output_wires_.size());
+    vv.resize(num_wires);
     for (auto &v : vv) {
       v.resize(batch_size_full);
       for (auto &bv : v) bv = ENCRYPTO::BitVector<>(kappa);
     }
   }
-  received_garbled_rows_.resize(GetConfig().GetNumOfParties());
+  received_garbled_rows_.resize(num_parties);
 
-  for (auto party_id = 0ull; party_id < GetConfig().GetNumOfParties(); ++party_id) {
-    if (party_id == GetConfig().GetMyId()) continue;
+  for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
+    if (party_id == my_id) continue;
     auto &data = GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData();
     auto elem =
         data->garbled_rows_
@@ -777,7 +779,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
                                boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>())
             .first;
     auto &bitlen = std::get<0>(elem->second);
-    bitlen = output_wires_.size() * batch_size_full * kappa * num_parties;
+    bitlen = num_wires * batch_size_full * kappa * num_parties;
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -790,13 +792,14 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
 
 void BMRANDGate::GenerateRandomness() {
   const auto &R{GetConfig().GetBMRRandomOffset()};
-  const auto n_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
+  const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
+  const auto num_wires{output_wires_.size()};
   const auto my_id{GetConfig().GetMyId()};
-  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
-    bmr_out->GetMutablePermutationBits() = ENCRYPTO::BitVector<>::Random(n_simd);
-    for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+    bmr_out->GetMutablePermutationBits() = ENCRYPTO::BitVector<>::Random(num_simd);
+    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       auto &key_0{std::get<0>(bmr_out->GetMutableSecretKeys()).at(simd_i)};
       auto &key_1{std::get<1>(bmr_out->GetMutableSecretKeys()).at(simd_i)};
       key_0 = ENCRYPTO::BitVector<>::Random(kappa);
@@ -827,11 +830,12 @@ void BMRANDGate::EvaluateSetup() {
         fmt::format("Start evaluating setup phase of BMR AND Gate with id#{}", gate_id_));
   }
   const auto &R{GetConfig().GetBMRRandomOffset()};
-  const auto n_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
+  const auto num_wires{parent_a_.size()};
+  const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
-  const auto batch_size_full{n_simd * 4};
-  [[maybe_unused]] const auto batch_size_3{n_simd * 3};
+  const auto batch_size_full{num_simd * 4};
+  [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
@@ -841,12 +845,12 @@ void BMRANDGate::EvaluateSetup() {
   }
 
   std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> r_out(
-      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(output_wires_.size()));
+      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(num_wires));
   std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> s_out(
-      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(output_wires_.size()));
+      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(num_wires));
 
   std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(
-      num_parties, std::vector<ENCRYPTO::BitVector<>>(output_wires_.size()));
+      num_parties, std::vector<ENCRYPTO::BitVector<>>(num_wires));
 
   const auto R_for_OTs = ENCRYPTO::block128_t::make_from_memory(R.GetData().data());
 
@@ -859,7 +863,7 @@ void BMRANDGate::EvaluateSetup() {
 
   // 1-bit OTs
 
-  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
     const auto bmr_b{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i))};
@@ -872,7 +876,7 @@ void BMRANDGate::EvaluateSetup() {
                            GetConfig().GetMyId()};
 
     ENCRYPTO::BitVector<> a_bv, b_bv;
-    for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       const bool a = bmr_a->GetPermutationBits()[simd_i];
       const bool b = bmr_b->GetPermutationBits()[simd_i];
       a_bv.Append(a);
@@ -915,7 +919,7 @@ void BMRANDGate::EvaluateSetup() {
 
   // kappa-bit OTs
 
-  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
     const auto bmr_b{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i))};
@@ -948,9 +952,9 @@ void BMRANDGate::EvaluateSetup() {
     }
   }
 
-  std::vector<ENCRYPTO::BitVector<>> aggregated_choices(output_wires_.size());
+  std::vector<ENCRYPTO::BitVector<>> aggregated_choices(num_wires);
 
-  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
 
@@ -988,7 +992,7 @@ void BMRANDGate::EvaluateSetup() {
   // Compute garbled rows
   // First, set rows to PRG outputs XOR key
 
-  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
     const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
@@ -996,14 +1000,14 @@ void BMRANDGate::EvaluateSetup() {
     assert(bmr_a);
     assert(bmr_b);
 
-    for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       const auto &key_a_0{std::get<0>(bmr_a->GetSecretKeys()).at(simd_i)};
       const auto &key_a_1{std::get<1>(bmr_a->GetSecretKeys()).at(simd_i)};
       const auto &key_b_0{std::get<0>(bmr_b->GetSecretKeys()).at(simd_i)};
       const auto &key_b_1{std::get<1>(bmr_b->GetSecretKeys()).at(simd_i)};
 
-      for (auto p_i = 0ull; p_i < num_parties; ++p_i) {
-        uint128_t plaintext{p_i};
+      for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+        uint128_t plaintext{party_i};
         plaintext <<= 64;
         plaintext += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
 
@@ -1020,11 +1024,11 @@ void BMRANDGate::EvaluateSetup() {
               mask_b_1.AsString()));
         }
 
-        auto &garbled_row_00{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4)};
-        auto &garbled_row_01{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4 + 1)};
-        auto &garbled_row_10{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4 + 2)};
-        auto &garbled_row_11{garbled_rows_.at(p_i).at(wire_i).at(simd_i * 4 + 3)};
-        if (p_i == GetConfig().GetMyId()) {
+        auto &garbled_row_00{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4)};
+        auto &garbled_row_01{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 1)};
+        auto &garbled_row_10{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 2)};
+        auto &garbled_row_11{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 3)};
+        if (party_i == my_id) {
           const auto &key_w_0{std::get<0>(bmr_out->GetSecretKeys()).at(simd_i)};
           garbled_row_00 = mask_a_0 ^ mask_b_0 ^ key_w_0;
           garbled_row_01 = mask_a_0 ^ mask_b_1 ^ key_w_0;
@@ -1036,22 +1040,22 @@ void BMRANDGate::EvaluateSetup() {
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
-                    gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
+                    gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
                     key_w_0.AsString(), garbled_row_00.AsString()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_1 {} = {}\n",
-                    gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
+                    gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
                     key_w_0.AsString(), garbled_row_01.AsString()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
-                    gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
+                    gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
                     key_w_0.AsString(), garbled_row_10.AsString()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 {} XOR "
                     "key_w_1 {} XOR R {} = {}\n",
-                    gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
+                    gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
                     key_w_0.AsString(), R.AsString(), garbled_row_11.AsString()));
           }
         } else {
@@ -1063,19 +1067,19 @@ void BMRANDGate::EvaluateSetup() {
             GetLogger().LogTrace(
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 "
                             "{} = {}\n",
-                            gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
+                            gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
                             garbled_row_00.AsString()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_1 "
                             "{} = {}\n",
-                            gate_id_, p_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
+                            gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
                             garbled_row_01.AsString()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_1 {} XOR mask_b_0 "
                             "{} = {}\n",
-                            gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
+                            gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
                             garbled_row_10.AsString()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 "
                             "{} = {}\n",
-                            gate_id_, p_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
+                            gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
                             garbled_row_11.AsString()));
           }
         }
@@ -1083,7 +1087,7 @@ void BMRANDGate::EvaluateSetup() {
         std::array<ENCRYPTO::AlignedBitVector, 3> shared_R;
         const ENCRYPTO::AlignedBitVector zero_bv(kappa);
 
-        if (p_i == my_id) {
+        if (party_i == my_id) {
           shared_R.at(0) = aggregated_choices.at(wire_i)[simd_i * 3] ? R : zero_bv;
           shared_R.at(1) = aggregated_choices.at(wire_i)[simd_i * 3 + 1] ? R : zero_bv;
           shared_R.at(2) = aggregated_choices.at(wire_i)[simd_i * 3 + 2] ? R : zero_bv;
@@ -1092,13 +1096,13 @@ void BMRANDGate::EvaluateSetup() {
         }
 
         // R's from C-OTs
-        if (p_i == my_id) {
-          for (auto p_j = 0ull; p_j < num_parties; ++p_j) {
-            if (p_j == my_id) continue;
+        if (party_i == my_id) {
+          for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
+            if (party_j == my_id) continue;
 
-            s_ots_kappa_.at(p_j).at(wire_i)->ComputeOutputs();
-            const auto &s_out = s_ots_kappa_.at(p_j).at(wire_i)->GetOutputs();
-            assert(s_out.size() == n_simd * 3);
+            s_ots_kappa_.at(party_j).at(wire_i)->ComputeOutputs();
+            const auto &s_out = s_ots_kappa_.at(party_j).at(wire_i)->GetOutputs();
+            assert(s_out.size() == num_simd * 3);
             const auto R_00 = ENCRYPTO::BitVector(s_out[simd_i * 3].data(), kappa);
             const auto R_01 = ENCRYPTO::BitVector(s_out[simd_i * 3 + 1].data(), kappa);
             const auto R_10 = ENCRYPTO::BitVector(s_out[simd_i * 3 + 2].data(), kappa);
@@ -1111,14 +1115,14 @@ void BMRANDGate::EvaluateSetup() {
               GetLogger().LogTrace(fmt::format(
                   "Gate#{} (BMR AND gate) Me#{}: Party#{} received R's \n00 ({}) \n01 ({}) \n10 "
                   "({})\n",
-                  gate_id_, my_id, p_i, R_00.AsString(), R_01.AsString(), R_10.AsString()));
+                  gate_id_, my_id, party_i, R_00.AsString(), R_01.AsString(), R_10.AsString()));
             }
           }
         } else {
-          assert(r_ots_kappa_.at(p_i).at(wire_i)->ChoicesAreSet());
-          r_ots_kappa_.at(p_i).at(wire_i)->ComputeOutputs();
-          const auto &r_out = r_ots_kappa_.at(p_i).at(wire_i)->GetOutputs();
-          assert(r_out.size() == n_simd * 3);
+          assert(r_ots_kappa_.at(party_i).at(wire_i)->ChoicesAreSet());
+          r_ots_kappa_.at(party_i).at(wire_i)->ComputeOutputs();
+          const auto &r_out = r_ots_kappa_.at(party_i).at(wire_i)->GetOutputs();
+          assert(r_out.size() == num_simd * 3);
           const auto R_00 = ENCRYPTO::BitVector(r_out[simd_i * 3].data(), kappa);
           const auto R_01 = ENCRYPTO::BitVector(r_out[simd_i * 3 + 1].data(), kappa);
           const auto R_10 = ENCRYPTO::BitVector(r_out[simd_i * 3 + 2].data(), kappa);
@@ -1132,7 +1136,7 @@ void BMRANDGate::EvaluateSetup() {
           GetLogger().LogTrace(
               fmt::format("Gate#{} (BMR AND gate) Me#{}: Shared R's \n00 ({}) \n01 ({}) \n10 "
                           "({})\n",
-                          gate_id_, my_id, p_i, shared_R.at(0).AsString(),
+                          gate_id_, my_id, party_i, shared_R.at(0).AsString(),
                           shared_R.at(1).AsString(), shared_R.at(2).AsString()));
         }
         garbled_row_00 ^= shared_R.at(0);
@@ -1179,22 +1183,22 @@ void BMRANDGate::EvaluateSetup() {
   }
 
   {
-    for (auto pid_i = 0ull; pid_i < num_parties; ++pid_i) {
-      if (pid_i == GetConfig().GetMyId()) continue;
-      auto gr = received_garbled_rows_.at(pid_i).get();
-      for (auto pid_j = 0ull; pid_j < num_parties; ++pid_j) {
-        for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
-          for (auto simd_i = 0ull; simd_i < n_simd; ++simd_i) {
+    for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+      if (party_i == my_id) continue;
+      auto gr = received_garbled_rows_.at(party_i).get();
+      for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
+        for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
+          for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
             for (auto gr_i = 0; gr_i < 4; ++gr_i) {
               // party offset
-              const std::size_t offset_p = pid_j * (batch_size_full * kappa * output_wires_.size());
+              const std::size_t offset_p = party_j * (batch_size_full * kappa * num_wires);
               // wire offset
               const std::size_t offset_w = wire_i * batch_size_full * kappa;
               // simd_offset
               const std::size_t offset_s = simd_i * 4 * kappa;
               // complete offset
               const std::size_t offset = offset_p + offset_w + offset_s + gr_i * kappa;
-              garbled_rows_.at(pid_j).at(wire_i).at(simd_i * 4 + gr_i) ^=
+              garbled_rows_.at(party_j).at(wire_i).at(simd_i * 4 + gr_i) ^=
                   gr->Subset(offset, offset + kappa);
             }
           }
@@ -1216,6 +1220,8 @@ void BMRANDGate::EvaluateOnline() {
   WaitSetup();
 
   const auto num_parties = GetConfig().GetNumOfParties();
+  const auto num_wires = output_wires_.size();
+  const auto num_simd = output_wires_.at(0)->GetNumOfSIMDValues();
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
     for (auto i = 0ull; i < garbled_rows_.size(); ++i) {
@@ -1229,7 +1235,7 @@ void BMRANDGate::EvaluateOnline() {
     }
   }
 
-  for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i));
     assert(bmr_out);
     const auto wire_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i));
@@ -1243,7 +1249,7 @@ void BMRANDGate::EvaluateOnline() {
     ENCRYPTO::PRG prg;
     prg.SetKey(GetConfig().GetFixedAESKey().GetData().data());
 
-    for (auto simd_i = 0ull; simd_i < bmr_out->GetNumOfSIMDValues(); ++simd_i) {
+    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       std::vector<ENCRYPTO::BitVector<>> masks(num_parties, ENCRYPTO::BitVector<>(kappa));
       [[maybe_unused]] std::string s;
       if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -1300,7 +1306,7 @@ void BMRANDGate::EvaluateOnline() {
       }
     }
 
-    for (auto simd_i = 0ull; simd_i < bmr_out->GetNumOfSIMDValues(); ++simd_i) {
+    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       const bool neq = bmr_out->GetMutablePublicKeys().at(GetConfig().GetMyId()).at(simd_i) !=
                        std::get<0>(bmr_out->GetSecretKeys()).at(simd_i);
       if (neq)
