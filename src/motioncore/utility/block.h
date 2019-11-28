@@ -26,7 +26,6 @@
 #include <array>
 #include <boost/align/aligned_allocator.hpp>
 #include <vector>
-#include "bit_vector.h"
 #include "config.h"
 
 namespace ENCRYPTO {
@@ -105,21 +104,6 @@ struct block128_t {
   block128_t operator^(const std::byte* __restrict__ other) const {
     block128_t result = *this;
     result ^= other;
-    return result;
-  }
-
-  // xor this block with a BitVector
-  // XXX: for transition of BMR
-  template <typename Allocator>
-  block128_t& operator^=(const BitVector<Allocator>& bv) {
-    auto k0 = reinterpret_cast<std::byte*>(__builtin_assume_aligned(byte_array.data(), alignment));
-    std::transform(k0, k0 + 16, bv.GetData().data(), k0, [](auto a, auto b) { return a ^ b; });
-    return *this;
-  }
-  template <typename Allocator>
-  block128_t operator^(const BitVector<Allocator>& bv) const {
-    block128_t result = *this;
-    result ^= bv;
     return result;
   }
 
