@@ -1093,34 +1093,39 @@ void BMRANDGate::EvaluateSetup() {
     }  // for each simd
   }    // for each wire
 
-  ENCRYPTO::BitVector<> buffer;
+  ENCRYPTO::block128_vector send_message_buffer(num_parties * num_wires * num_simd * 4);
+  std::size_t buffer_index = 0;
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s{fmt::format("Me#{}: ", my_id)};
-    for (auto i = 0ull; i < garbled_rows_.size(); ++i) {
-      s.append(fmt::format("\nParty #{}: ", i));
-      for (auto j = 0ull; j < garbled_rows_.at(i).size(); ++j) {
-        s.append(fmt::format(" Wire #{}: ", j));
-        for (auto k = 0ull; k < garbled_rows_.at(i).at(j).size(); ++k) {
+    assert(garbled_rows_.size() == num_parties);
+    for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+      s.append(fmt::format("\nParty #{}: ", party_i));
+      assert(garbled_rows_.at(party_i).size() == num_wires);
+      for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+        s.append(fmt::format(" Wire #{}: ", wire_j));
+        assert(garbled_rows_.at(party_i).at(wire_j).size() == 4 * num_simd);
+        for (auto k = 0ull; k < garbled_rows_.at(party_i).at(wire_j).size(); ++k) {
           s.append(fmt::format("\nSIMD #{}: ", k));
-          buffer.Append(ENCRYPTO::BitVector<>(garbled_rows_.at(i).at(j).at(k).data(), kappa));
-          s.append(fmt::format(" garbled rows {} ", garbled_rows_.at(i).at(j).at(k).as_string()));
+          send_message_buffer.at(buffer_index++) = garbled_rows_.at(party_i).at(wire_j).at(k);
+          s.append(fmt::format(" garbled rows {} ", garbled_rows_.at(party_i).at(wire_j).at(k).as_string()));
         }
       }
     }
     s.append("\n");
     GetLogger().LogTrace(s);
   } else {
-    for (auto i = 0ull; i < garbled_rows_.size(); ++i) {
-      for (auto j = 0ull; j < garbled_rows_.at(i).size(); ++j) {
-        for (auto k = 0ull; k < garbled_rows_.at(i).at(j).size(); ++k) {
-          buffer.Append(garbled_rows_.at(i).at(j).at(k));
+    for (auto party_i = 0ull; party_i < garbled_rows_.size(); ++party_i) {
+      for (auto wire_j = 0ull; wire_j < garbled_rows_.at(party_i).size(); ++wire_j) {
+        for (auto k = 0ull; k < garbled_rows_.at(party_i).at(wire_j).size(); ++k) {
+          send_message_buffer.at(buffer_index++) = garbled_rows_.at(party_i).at(wire_j).at(k);
         }
       }
     }
   }
+
   const std::vector<std::uint8_t> buffer_u8(
-      reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
-      reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
+      reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()),
+      reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()) + send_message_buffer.byte_size());
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
