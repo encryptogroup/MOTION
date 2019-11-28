@@ -711,7 +711,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     }
   }
 
-  garbled_rows_new_.resize(num_wires, ENCRYPTO::block128_vector(num_simd * 4 * num_parties));
+  garbled_tables_.resize(num_wires * num_simd * 4 * num_parties);
 
   // store futures for the (partial) garbled tables we will receive during garbling
   received_garbled_rows_.resize(num_parties);
@@ -775,8 +775,8 @@ void BMRANDGate::EvaluateSetup() {
   const auto num_parties{GetConfig().GetNumOfParties()};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
-  auto gt_index = [num_parties](auto simd_i, auto row_i, auto party_i) {
-    return simd_i * (4 * num_parties) + row_i * num_parties + party_i;
+  auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i, auto party_i) {
+    return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties + party_i;
   };
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -961,10 +961,10 @@ void BMRANDGate::EvaluateSetup() {
         // XXX: for transition
         const auto zero_block = ENCRYPTO::block128_t::make_zero();
 
-        auto &garbled_row_00{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 0, party_i))};
-        auto &garbled_row_01{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 1, party_i))};
-        auto &garbled_row_10{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 2, party_i))};
-        auto &garbled_row_11{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 3, party_i))};
+        auto &garbled_row_00{garbled_tables_.at(gt_index(wire_i, simd_i, 0, party_i))};
+        auto &garbled_row_01{garbled_tables_.at(gt_index(wire_i, simd_i, 1, party_i))};
+        auto &garbled_row_10{garbled_tables_.at(gt_index(wire_i, simd_i, 2, party_i))};
+        auto &garbled_row_11{garbled_tables_.at(gt_index(wire_i, simd_i, 3, party_i))};
         if (party_i == my_id) {
           const auto &key_w_0{bmr_out->GetSecretKeys().at(simd_i)};
           garbled_row_00 = zero_block ^ mask_a_0 ^ mask_b_0 ^ key_w_0;
@@ -1089,10 +1089,9 @@ void BMRANDGate::EvaluateSetup() {
   std::size_t buffer_index = 0;
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s{fmt::format("Me#{}: ", my_id)};
-    assert(garbled_rows_new_.size() == num_wires);
+    assert(garbled_tables_.size() == num_wires * num_simd * 4 * num_parties);
     for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
       s.append(fmt::format(" Wire #{}: ", wire_j));
-      assert(garbled_rows_new_.at(wire_j).size() == num_simd * 4 * num_parties);
       for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
         s.append(fmt::format("\nSIMD #{}: ", simd_k));
         for (auto row_l = 0ull; row_l < 4; ++row_l) {
@@ -1100,10 +1099,10 @@ void BMRANDGate::EvaluateSetup() {
           for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
             s.append(fmt::format("\nParty #{}: ", party_i));
             send_message_buffer.at(buffer_index++) =
-                garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
+                garbled_tables_.at(gt_index(wire_j, simd_k, row_l, party_i));
             s.append(fmt::format(
                 " garbled rows {} ",
-                garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i)).as_string()));
+                garbled_tables_.at(gt_index(wire_j, simd_k, row_l, party_i)).as_string()));
           }
         }
       }
@@ -1116,7 +1115,7 @@ void BMRANDGate::EvaluateSetup() {
         for (auto row_l = 0ull; row_l < 4; ++row_l) {
           for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
             send_message_buffer.at(buffer_index++) =
-                garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
+                garbled_tables_.at(gt_index(wire_j, simd_k, row_l, party_i));
           }
         }
       }
@@ -1143,7 +1142,7 @@ void BMRANDGate::EvaluateSetup() {
         for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
           for (auto gr_i = 0; gr_i < 4; ++gr_i) {
             for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
-              garbled_rows_new_.at(wire_i).at(gt_index(simd_i, gr_i, party_j)) ^=
+              garbled_tables_.at(gt_index(wire_i, simd_i, gr_i, party_j)) ^=
                   gr.at(buffer_index++);
             }
           }
@@ -1174,8 +1173,8 @@ void BMRANDGate::EvaluateOnline() {
     return simd_i * num_parties + party_i;
   };
 
-  auto gt_index = [num_parties](auto simd_i, auto row_i, auto party_i) {
-    return simd_i * (4 * num_parties) + row_i * num_parties + party_i;
+  auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i, auto party_i) {
+    return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties + party_i;
   };
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -1186,7 +1185,7 @@ void BMRANDGate::EvaluateOnline() {
             GetLogger().LogTrace(fmt::format(
                 "Party#{}: reconstructed gr for Party#{} Wire#{} SIMD#{} Row#{}: {}\n", my_id,
                 party_i, wire_i, simd_j, row_l,
-                garbled_rows_new_.at(wire_i).at(gt_index(simd_j, row_l, party_i)).as_string()));
+                garbled_tables_.at(gt_index(wire_i, simd_j, row_l, party_i)).as_string()));
           }
         }
       }
@@ -1247,13 +1246,13 @@ void BMRANDGate::EvaluateOnline() {
               "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
               "xor mask {} = ",
               party_i, alpha, beta, alpha_beta_offset,
-              garbled_rows_new_.at(wire_i)
-                  .at(gt_index(simd_i, alpha_beta_offset, party_i))
+              garbled_tables_
+                  .at(gt_index(wire_i, simd_i, alpha_beta_offset, party_i))
                   .as_string(),
               masks.at(party_i).as_string()));
         }
         bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
-            garbled_rows_new_.at(wire_i).at(gt_index(simd_i, alpha_beta_offset, party_i)) ^
+            garbled_tables_.at(gt_index(wire_i, simd_i, alpha_beta_offset, party_i)) ^
             masks.at(party_i);
         if constexpr (MOTION_VERBOSE_DEBUG) {
           s.append(bmr_out->GetPublicKeys().at(pk_index(simd_i, party_i)).as_string());
