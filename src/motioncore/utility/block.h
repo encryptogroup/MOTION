@@ -77,6 +77,10 @@ struct block128_t {
     return result;
   }
 
+  bool operator==(const block128_t& other) const { return byte_array == other.byte_array; }
+
+  bool operator!=(const block128_t& other) const { return byte_array != other.byte_array; }
+
   // xor this block with a *different* one
   block128_t& operator^=(const block128_t& __restrict__ other) {
     auto k0 = reinterpret_cast<std::byte*>(__builtin_assume_aligned(byte_array.data(), alignment));
@@ -160,7 +164,13 @@ struct block128_vector {
   ~block128_vector() = default;
 
   // create zero-filled vector of size elements
-  static block128_vector make_zero(std::size_t size);
+  static block128_vector make_zero(std::size_t size) {
+    auto result = block128_vector(size);
+    auto start = reinterpret_cast<std::byte* __restrict__>(
+        __builtin_assume_aligned(result.data(), alignment));
+    std::fill(start, start + result.byte_size(), std::byte(0x00));
+    return result;
+  }
 
   // create vector of size elements filled with random data
   static block128_vector make_random(std::size_t size);
@@ -176,9 +186,39 @@ struct block128_vector {
     return *this;
   }
 
+  // xor the blocks in this vector with the blocks in a *different* one of same size
+  block128_vector& operator^=(const block128_vector& __restrict__ other) {
+    assert(size() == other.size());
+    auto k0 = reinterpret_cast<std::byte* __restrict__>(
+        __builtin_assume_aligned(block_vector.data(), alignment));
+    auto k1 = reinterpret_cast<const std::byte* __restrict__>(
+        __builtin_assume_aligned(other.block_vector.data(), alignment));
+    std::transform(k0, k0 + 16 * size(), k1, k0, [](auto a, auto b) { return a ^ b; });
+    return *this;
+  }
+  block128_vector operator^(const block128_vector& __restrict__ other) const {
+    assert(size() == other.size());
+    block128_vector result(size());
+    auto k0 = reinterpret_cast<const std::byte* __restrict__>(
+        __builtin_assume_aligned(block_vector.data(), alignment));
+    auto k1 = reinterpret_cast<const std::byte* __restrict__>(
+        __builtin_assume_aligned(other.block_vector.data(), alignment));
+    auto kout = reinterpret_cast<std::byte* __restrict__>(
+        __builtin_assume_aligned(result.block_vector.data(), alignment));
+    std::transform(k0, k0 + 16 * size(), k1, kout, [](auto a, auto b) { return a ^ b; });
+    return result;
+  }
+
+  // set this vector to random
+  void set_to_random();
+
   // subscript operator
   block128_t& operator[](std::size_t index) { return block_vector[index]; };
   const block128_t& operator[](std::size_t index) const { return block_vector[index]; };
+
+  // at access operator
+  block128_t& at(std::size_t index) { return block_vector.at(index); };
+  const block128_t& at(std::size_t index) const { return block_vector.at(index); };
 
   // get pointer to the first block
   block128_t* data() { return block_vector.data(); }
@@ -207,6 +247,8 @@ struct block128_vector {
   // underlying vector of blocks
   std::vector<block128_t, boost::alignment::aligned_allocator<block128_t, MOTION::MOTION_ALIGNMENT>>
       block_vector;
+
+  static constexpr std::size_t alignment = MOTION::MOTION_ALIGNMENT;
 };
 
 }  // namespace ENCRYPTO

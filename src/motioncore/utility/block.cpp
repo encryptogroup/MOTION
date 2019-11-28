@@ -43,4 +43,9 @@ std::string block128_t::as_string() const {
   return result;
 }
 
+void block128_vector::set_to_random() {
+  auto& rng = AES128_CTR_RNG::get_thread_instance();
+  rng.random_blocks_aligned(reinterpret_cast<std::byte*>(block_vector.data()), block_vector.size());
+}
+
 }  // namespace ENCRYPTO
