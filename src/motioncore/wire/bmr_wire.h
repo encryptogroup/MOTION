@@ -80,7 +80,7 @@ class BMRWire : public BooleanWire {
     setup_ready_cond_->NotifyAll();
   }
 
-  auto &GetSetupReadyCondition() { return setup_ready_cond_; }
+  const auto &GetSetupReadyCondition() const { return setup_ready_cond_; }
 
  protected:
   void DynamicClear() final { setup_ready_ = false; }
