@@ -39,14 +39,68 @@ enum PrimitiveOperationType : std::uint8_t {
   INVALID = 7
 };
 
+inline std::string ToString(PrimitiveOperationType t) {
+  switch (t) {
+    case PrimitiveOperationType::XOR: {
+      return "XOR";
+    }
+    case PrimitiveOperationType::AND: {
+      return "AND";
+    }
+    case PrimitiveOperationType::MUX: {
+      return "MUX";
+    }
+    case PrimitiveOperationType::INV: {
+      return "INV";
+    }
+    case PrimitiveOperationType::OR: {
+      return "OR";
+    }
+    case PrimitiveOperationType::ADD: {
+      return "ADD";
+    }
+    case PrimitiveOperationType::MUL: {
+      return "MUL";
+    }
+    default:
+      throw std::invalid_argument("Invalid PrimitiveOperationType");
+  }
+}
+
 enum IntegerOperationType : unsigned int {
   INT_ADD = 0,
   INT_DIV = 1,
   INT_GT = 2,
   INT_EQ = 3,
   INT_MUL = 4,
-  INT_SUB = 5
+  INT_SUB = 5,
+  INT_INVALID = 6
 };
+
+inline std::string ToString(IntegerOperationType p) {
+  switch (p) {
+    case IntegerOperationType::INT_ADD: {
+      return "INT_ADD";
+    }
+    case IntegerOperationType::INT_DIV: {
+      return "INT_DIV";
+    }
+    case IntegerOperationType::INT_GT: {
+      return "INT_GT";
+    }
+    case IntegerOperationType::INT_EQ: {
+      return "INT_EQ";
+    }
+    case IntegerOperationType::INT_MUL: {
+      return "INT_MUL";
+    }
+    case IntegerOperationType::INT_SUB: {
+      return "INT_SUB";
+    }
+    default:
+      throw std::invalid_argument("Invalid IntegerOperationType");
+  }
+}
 }  // namespace ENCRYPTO
 
 // TODO: put MOTION namespace into ENCRYPTO namespace
@@ -70,6 +124,22 @@ enum MPCProtocol : unsigned int {
   BMR = 2,
   InvalidProtocol = 3  // for checking whether the value is valid
 };
+
+inline std::string ToString(MPCProtocol p) {
+  switch (p) {
+    case MPCProtocol::ArithmeticGMW: {
+      return "ArithmeticGMW";
+    }
+    case MPCProtocol::BMR: {
+      return "BMR";
+    }
+    case MPCProtocol::BooleanGMW: {
+      return "BooleanGMW";
+    }
+    default:
+      throw std::invalid_argument("Invalid MPCProtocol");
+  }
+}
 
 enum CircuitType : unsigned int {
   ArithmeticCircuitType = 0,
