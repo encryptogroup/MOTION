@@ -1211,22 +1211,23 @@ void BMRANDGate::EvaluateOnline() {
         }
       }
 
+      // compute index of the correct row in the garbled table
+      const bool alpha = wire_a->GetPublicValues()[simd_i],
+                 beta = wire_b->GetPublicValues()[simd_i];
+      const std::size_t row_index =
+          static_cast<std::size_t>(alpha) * 2 + static_cast<std::size_t>(beta);
+
       for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-        const bool alpha = wire_a->GetPublicValues()[simd_i],
-                   beta = wire_b->GetPublicValues()[simd_i];
-        const std::size_t alpha_beta_offset =
-            static_cast<std::size_t>(alpha) * 2 + static_cast<std::size_t>(beta);
         if constexpr (MOTION_VERBOSE_DEBUG) {
           s.append(fmt::format(
               "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
               "xor mask {} = ",
-              party_i, alpha, beta, alpha_beta_offset,
-              garbled_tables_.at(gt_index(wire_i, simd_i, alpha_beta_offset, party_i)).as_string(),
+              party_i, alpha, beta, row_index,
+              garbled_tables_.at(gt_index(wire_i, simd_i, row_index, party_i)).as_string(),
               masks.at(party_i).as_string()));
         }
         bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
-            garbled_tables_.at(gt_index(wire_i, simd_i, alpha_beta_offset, party_i)) ^
-            masks.at(party_i);
+            garbled_tables_.at(gt_index(wire_i, simd_i, row_index, party_i)) ^ masks.at(party_i);
         if constexpr (MOTION_VERBOSE_DEBUG) {
           s.append(bmr_out->GetPublicKeys().at(pk_index(simd_i, party_i)).as_string());
         }
