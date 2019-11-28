@@ -800,9 +800,6 @@ void BMRANDGate::EvaluateSetup() {
   const auto batch_size_full{num_simd * 4};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(
-      num_parties, std::vector<ENCRYPTO::BitVector<>>(num_wires));
-
   const auto R_for_OTs = ENCRYPTO::block128_t::make_from_memory(R.GetData().data());
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -810,9 +807,14 @@ void BMRANDGate::EvaluateSetup() {
         fmt::format("Gate#{} (BMR AND gate) Party#{} R {}\n", gate_id_, my_id, R.AsString()));
   }
 
+  // generate random keys and masking bits for the outgoing wires
   GenerateRandomness();
 
   // 1-bit OTs
+
+  // structure: parties X wires X choice bits
+  std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(
+      num_parties, std::vector<ENCRYPTO::BitVector<>>(num_wires));
 
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
@@ -823,10 +825,15 @@ void BMRANDGate::EvaluateSetup() {
     assert(bmr_b);
     bmr_a->GetSetupReadyCondition()->Wait();
     bmr_b->GetSetupReadyCondition()->Wait();
-    const bool permutation{(bmr_out->GetWireId() % GetConfig().GetNumOfParties()) ==
-                           GetConfig().GetMyId()};
+
+    // XXX: Why are we doing three bit-COTs? One would be enough.
+
+    // select one of the parties to invert the permutation bits
+    const bool permutation{(bmr_out->GetWireId() % num_parties) ==
+                           my_id};
 
     ENCRYPTO::BitVector<> a_bv, b_bv;
+    // XXX: ^reserve memory here
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       const bool a = bmr_a->GetPermutationBits()[simd_i];
       const bool b = bmr_b->GetPermutationBits()[simd_i];
@@ -836,7 +843,7 @@ void BMRANDGate::EvaluateSetup() {
       b_bv.Append(b);
       b_bv.Append(b != permutation);
       b_bv.Append(b);
-    }
+    }  // for each simd
 
     for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
       if (party_id == my_id) {
@@ -865,8 +872,8 @@ void BMRANDGate::EvaluateSetup() {
 
       s_ot_1->SetCorrelations(a_bv);
       s_ot_1->SendMessages();
-    }
-  }
+    }  // for each party
+  }  // for each wire
 
   // kappa-bit OTs
 
@@ -900,8 +907,8 @@ void BMRANDGate::EvaluateSetup() {
             choices.at(party_id).at(wire_i).AsString(), r_bv_check.AsString(),
             s_bv_check.AsString()));
       }
-    }
-  }
+    }  // for each party
+  }  // for each wire
 
   std::vector<ENCRYPTO::BitVector<>> aggregated_choices(num_wires);
 
@@ -935,7 +942,7 @@ void BMRANDGate::EvaluateSetup() {
       s_ots_kappa_.at(party_id).at(wire_i)->SetCorrelation(R_for_OTs);
       s_ots_kappa_.at(party_id).at(wire_i)->SendMessages();
     }
-  }
+  }  // for each wire
 
   ENCRYPTO::PRG prg;
   prg.SetKey(GetConfig().GetFixedAESKey().GetData().data());
@@ -1095,8 +1102,8 @@ void BMRANDGate::EvaluateSetup() {
         garbled_row_10 ^= shared_R.at(2);
         garbled_row_11 ^= shared_R.at(0) ^ shared_R.at(1) ^ shared_R.at(2);
       }
-    }
-  }
+    }  // for each simd
+  }  // for each wire
 
   ENCRYPTO::BitVector<> buffer;
   if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -1255,7 +1262,7 @@ void BMRANDGate::EvaluateOnline() {
                              std::get<1>(bmr_out->GetSecretKeys()).at(simd_i).AsString()));
         GetLogger().LogTrace(s);
       }
-    }
+    }  // for each simd
 
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       const bool neq = bmr_out->GetMutablePublicKeys().at(GetConfig().GetMyId()).at(simd_i) !=
@@ -1270,7 +1277,7 @@ void BMRANDGate::EvaluateOnline() {
                                        GetConfig().GetMyId(), wire_i,
                                        bmr_out->GetPublicValues().AsString()));
     }
-  }
+  }  // for each wire
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger().LogTrace(fmt::format("Evaluated BMR AND Gate with id#{}", gate_id_));
