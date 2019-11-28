@@ -103,7 +103,7 @@ void GMWInputGate::EvaluateSetup() {
     auto &rand_generator =
         config.GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
 
-    Helpers::WaitFor(*rand_generator->GetInitializedCondition());
+    rand_generator->GetInitializedCondition()->Wait();
   }
   SetSetupIsReady();
   GetRegister().IncrementEvaluatedGateSetupsCounter();

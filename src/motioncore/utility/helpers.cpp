@@ -31,12 +31,6 @@
 
 namespace MOTION::Helpers {
 
-void WaitFor(const bool &condition) {
-  while (!condition) {
-    std::this_thread::sleep_for(std::chrono::microseconds(100));
-  }
-}
-
 namespace Print {
 std::string ToString(MPCProtocol p) {
   std::string result;

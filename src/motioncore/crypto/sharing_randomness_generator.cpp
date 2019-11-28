@@ -74,7 +74,7 @@ ENCRYPTO::BitVector<> SharingRandomnessGenerator::GetBits(const std::size_t gate
   }
 
   while (!initialized_) {
-    initialized_condition_->WaitFor(std::chrono::milliseconds(1));
+    initialized_condition_->Wait();
   }
 
   constexpr std::size_t BITS_IN_CIPHERTEXT = AES_BLOCK_SIZE * 8;

@@ -82,7 +82,7 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
     }
     case OTExtensionDataType::snd_messages: {
       {
-        MOTION::Helpers::WaitFor(*receiver_data_.setup_finished_cond_);
+        receiver_data_.setup_finished_cond_->Wait();
 
         const auto bitlen = receiver_data_.bitlengths_.at(i);
         const auto bs_it = receiver_data_.num_ots_in_batch_.find(i);

@@ -63,7 +63,7 @@ void Gate::SetOnlineIsReady() {
   online_is_ready_cond_->NotifyAll();
 }
 
-void Gate::WaitSetup() { Helpers::WaitFor(*setup_is_ready_cond_); }
+void Gate::WaitSetup() { setup_is_ready_cond_->Wait(); }
 
 void Gate::WaitOnline() { online_is_ready_cond_->Wait(); }
 

@@ -69,14 +69,6 @@ inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &bu
   return result;
 }
 
-void WaitFor(const bool &condition);
-
-inline void WaitFor(ENCRYPTO::Condition &condition) {
-  while (!condition()) {
-    condition.WaitFor(std::chrono::milliseconds(1));
-  }
-}
-
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>> &vectors) {
   if (vectors.size() == 0) {

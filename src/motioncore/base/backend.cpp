@@ -521,10 +521,7 @@ void Backend::GenerateFixedKeyAESKey() {
       continue;
     }
     auto &data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
-    auto &cond = data_storage->GetReceivedHelloMessageCondition();
-    while (!(*cond)()) {
-      cond->WaitFor(std::chrono::milliseconds(1));
-    }
+    data_storage->GetReceivedHelloMessageCondition()->Wait();
     auto other_key_ptr = data_storage->GetReceivedHelloMessage()->fixed_key_aes_seed()->data();
     ENCRYPTO::AlignedBitVector other_key(other_key_ptr, 128);
     key ^= other_key;

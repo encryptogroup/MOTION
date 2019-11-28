@@ -81,9 +81,7 @@ class SharingRandomnessGenerator {
   //----------------------------------------------
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   T GetUnsigned(const std::size_t gate_id) {
-    while (!initialized_) {
-      initialized_condition_->WaitFor(std::chrono::milliseconds(1));
-    }
+    initialized_condition_->Wait();
 
     std::byte input[AES_BLOCK_SIZE];
 
@@ -112,9 +110,7 @@ class SharingRandomnessGenerator {
       return {};  // return an empty vector if num_of_gates is zero
     }
 
-    while (!initialized_) {
-      initialized_condition_->WaitFor(std::chrono::milliseconds(1));
-    }
+    initialized_condition_->Wait();
 
     // Pre-initialize output vector
     std::vector<T> results;

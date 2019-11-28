@@ -146,7 +146,7 @@ void Handler::WaitForConnectionEnd() {
       continue_communication_ = false;
       logger_->LogInfo(fmt::format("{}: terminated.", handler_info_));
     } else {
-      std::this_thread::sleep_for(std::chrono::microseconds(100));
+      std::this_thread::yield();
     }
   }
 }
@@ -206,7 +206,7 @@ void Handler::ActAsReceiver() {
     std::thread thread_rcv([this]() {
       while (ContinueCommunication()) {
         if (GetSocket()->available() == 0) {
-          std::this_thread::sleep_for(std::chrono::microseconds(100));
+          std::this_thread::yield();
           continue;
         }
 
@@ -401,7 +401,7 @@ void Handler::Sync() {
   lqueue_send_->enqueue(std::move(buffer));
 
   auto sync_condition = context->GetDataStorage()->GetSyncCondition();
-  Helpers::WaitFor(*sync_condition);
+  sync_condition->Wait();
 }
 
 }  // namespace MOTION::Communication

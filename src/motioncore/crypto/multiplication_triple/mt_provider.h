@@ -133,7 +133,7 @@ class MTProvider {
   virtual void Setup() = 0;
 
   // blocking wait
-  void WaitFinished() { MOTION::Helpers::WaitFor(*finished_condition_); }
+  void WaitFinished() { finished_condition_->Wait(); }
 
  protected:
   MTProvider(std::size_t my_id, std::size_t num_parties);

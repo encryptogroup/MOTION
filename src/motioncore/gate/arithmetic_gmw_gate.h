@@ -103,10 +103,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
       auto &rand_generator = GetConfig()
                                  .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
                                  ->GetTheirRandomnessGenerator();
-
-      while (!rand_generator->IsInitialized()) {
-        rand_generator->GetInitializedCondition()->WaitFor(std::chrono::milliseconds(1));
-      }
+      rand_generator->GetInitializedCondition()->Wait();
     }
     SetSetupIsReady();
     GetRegister().IncrementEvaluatedGateSetupsCounter();
