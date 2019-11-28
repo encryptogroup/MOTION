@@ -167,7 +167,7 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorReceiver>>>
       r_ots_kappa_;
 
-  std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>> received_garbled_rows_;
+  std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_garbled_rows_;
 
   // structure: parties X wires X (simd X row)
   //

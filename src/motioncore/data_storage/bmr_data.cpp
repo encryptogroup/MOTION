@@ -48,9 +48,9 @@ void BMRData::MessageReceived(const std::uint8_t *message, const BMRDataType typ
     }
     case BMRDataType::and_gate: {
       assert(garbled_rows_promises_.find(gate_id) != garbled_rows_promises_.end());
-      std::size_t bitlen = garbled_rows_promises_.at(gate_id).first;
-      assert(bitlen % 128 == 0);
-      garbled_rows_promises_.at(gate_id).second.set_value(ENCRYPTO::BitVector<>(message, bitlen));
+      std::size_t num_blocks = garbled_rows_promises_.at(gate_id).first;
+      garbled_rows_promises_.at(gate_id).second.set_value(
+          ENCRYPTO::block128_vector(num_blocks, message));
       break;
     }
     default:
@@ -88,12 +88,12 @@ ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPu
   return future;
 }
 
-ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForGarbledRows(
-    std::size_t gate_id, std::size_t bitlen) {
-  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector> BMRData::RegisterForGarbledRows(
+    std::size_t gate_id, std::size_t num_blocks) {
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
   auto future = promise.get_future();
   auto [_, success] =
-      garbled_rows_promises_.insert({gate_id, std::make_pair(bitlen, std::move(promise))});
+      garbled_rows_promises_.insert({gate_id, std::make_pair(num_blocks, std::move(promise))});
   if (!success) {
     // XXX: write an error to the log
     return {};  // XXX: maybe throw an exception here

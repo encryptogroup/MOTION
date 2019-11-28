@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <utility>
 #include "utility/bit_vector.h"
+#include "utility/block.h"
 #include "utility/reusable_future.h"
 
 namespace ENCRYPTO {
@@ -49,7 +50,7 @@ struct BMRData {
       std::size_t gate_id, std::size_t bitlen);
   ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForInputPublicKeys(
       std::size_t gate_id, std::size_t num_blocks);
-  ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForGarbledRows(
+  ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector> RegisterForGarbledRows(
       std::size_t gate_id, std::size_t num_blocks);
 
   // bitlen and promise with the return buffer
@@ -60,7 +61,8 @@ struct BMRData {
   using keys_t = std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>;
   std::unordered_map<std::size_t, keys_t> input_public_key_promises_;
 
-  using g_rows_t = std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>;
+  using g_rows_t =
+      std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>;
   std::unordered_map<std::size_t, g_rows_t> garbled_rows_promises_;
 };
 

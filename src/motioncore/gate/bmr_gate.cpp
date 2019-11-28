@@ -729,8 +729,8 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
     auto &bmr_data = GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData();
-    received_garbled_rows_.at(party_id) = bmr_data->RegisterForGarbledRows(
-        gate_id_, num_wires * batch_size_full * kappa * num_parties);
+    received_garbled_rows_.at(party_id) =
+        bmr_data->RegisterForGarbledRows(gate_id_, num_wires * batch_size_full * num_parties);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -1107,7 +1107,8 @@ void BMRANDGate::EvaluateSetup() {
         for (auto k = 0ull; k < garbled_rows_.at(party_i).at(wire_j).size(); ++k) {
           s.append(fmt::format("\nSIMD #{}: ", k));
           send_message_buffer.at(buffer_index++) = garbled_rows_.at(party_i).at(wire_j).at(k);
-          s.append(fmt::format(" garbled rows {} ", garbled_rows_.at(party_i).at(wire_j).at(k).as_string()));
+          s.append(fmt::format(" garbled rows {} ",
+                               garbled_rows_.at(party_i).at(wire_j).at(k).as_string()));
         }
       }
     }
@@ -1125,7 +1126,8 @@ void BMRANDGate::EvaluateSetup() {
 
   const std::vector<std::uint8_t> buffer_u8(
       reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()),
-      reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()) + send_message_buffer.byte_size());
+      reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()) +
+          send_message_buffer.byte_size());
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
@@ -1142,15 +1144,14 @@ void BMRANDGate::EvaluateSetup() {
           for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
             for (auto gr_i = 0; gr_i < 4; ++gr_i) {
               // party offset
-              const std::size_t offset_p = party_j * (batch_size_full * kappa * num_wires);
+              const std::size_t offset_p = party_j * (batch_size_full * num_wires);
               // wire offset
-              const std::size_t offset_w = wire_i * batch_size_full * kappa;
+              const std::size_t offset_w = wire_i * batch_size_full;
               // simd_offset
-              const std::size_t offset_s = simd_i * 4 * kappa;
+              const std::size_t offset_s = simd_i * 4;
               // complete offset
-              const std::size_t offset = offset_p + offset_w + offset_s + gr_i * kappa;
-              garbled_rows_.at(party_j).at(wire_i).at(simd_i * 4 + gr_i) ^=
-                  gr.Subset(offset, offset + kappa);
+              const std::size_t offset = offset_p + offset_w + offset_s + gr_i;
+              garbled_rows_.at(party_j).at(wire_i).at(simd_i * 4 + gr_i) ^= gr.at(offset);
             }
           }
         }
