@@ -41,10 +41,10 @@ using SharePtr = std::shared_ptr<Share>;
 
 class ShareWrapper {
  public:
+  ShareWrapper() = default;
+
   ShareWrapper(const SharePtr &share) : share_(share) { assert(share_); }
   ShareWrapper(const ShareWrapper &sw) : share_(sw.share_) { assert(sw.share_); }
-
-  ShareWrapper() = delete;
 
   void operator=(SharePtr share) { share_ = share; }
   void operator=(const ShareWrapper &sw) { share_ = sw.share_; }
