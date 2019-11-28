@@ -736,7 +736,6 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     vv.resize(num_wires);
     for (auto &v : vv) {
       v.resize(batch_size_full);
-      for (auto &bv : v) bv = ENCRYPTO::BitVector<>(kappa);
     }
   }
 
@@ -982,16 +981,19 @@ void BMRANDGate::EvaluateSetup() {
               mask_b_1.AsString()));
         }
 
+        // XXX: for transition
+        const auto zero_block = ENCRYPTO::block128_t::make_zero();
+
         auto &garbled_row_00{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4)};
         auto &garbled_row_01{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 1)};
         auto &garbled_row_10{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 2)};
         auto &garbled_row_11{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 3)};
         if (party_i == my_id) {
           const auto &key_w_0{std::get<0>(bmr_out->GetSecretKeys()).at(simd_i)};
-          garbled_row_00 = mask_a_0 ^ mask_b_0 ^ key_w_0;
-          garbled_row_01 = mask_a_0 ^ mask_b_1 ^ key_w_0;
-          garbled_row_10 = mask_a_1 ^ mask_b_0 ^ key_w_0;
-          garbled_row_11 = mask_a_1 ^ mask_b_1 ^ key_w_0 ^ R_as_bv;
+          garbled_row_00 = zero_block ^ mask_a_0 ^ mask_b_0 ^ key_w_0;
+          garbled_row_01 = zero_block ^ mask_a_0 ^ mask_b_1 ^ key_w_0;
+          garbled_row_10 = zero_block ^ mask_a_1 ^ mask_b_0 ^ key_w_0;
+          garbled_row_11 = zero_block ^ mask_a_1 ^ mask_b_1 ^ key_w_0 ^ R_as_bv;
 
           if constexpr (MOTION_VERBOSE_DEBUG) {
             GetLogger().LogTrace(
@@ -999,46 +1001,46 @@ void BMRANDGate::EvaluateSetup() {
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
                     gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
-                    key_w_0.AsString(), garbled_row_00.AsString()) +
+                    key_w_0.AsString(), garbled_row_00.as_string()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_1 {} = {}\n",
                     gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
-                    key_w_0.AsString(), garbled_row_01.AsString()) +
+                    key_w_0.AsString(), garbled_row_01.as_string()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
                     gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
-                    key_w_0.AsString(), garbled_row_10.AsString()) +
+                    key_w_0.AsString(), garbled_row_10.as_string()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 {} XOR "
                     "key_w_1 {} XOR R {} = {}\n",
                     gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
-                    key_w_0.AsString(), R.as_string(), garbled_row_11.AsString()));
+                    key_w_0.AsString(), R.as_string(), garbled_row_11.as_string()));
           }
         } else {
-          garbled_row_00 = mask_a_0 ^ mask_b_0;
-          garbled_row_01 = mask_a_0 ^ mask_b_1;
-          garbled_row_10 = mask_a_1 ^ mask_b_0;
-          garbled_row_11 = mask_a_1 ^ mask_b_1;
+          garbled_row_00 = zero_block ^ mask_a_0 ^ mask_b_0;
+          garbled_row_01 = zero_block ^ mask_a_0 ^ mask_b_1;
+          garbled_row_10 = zero_block ^ mask_a_1 ^ mask_b_0;
+          garbled_row_11 = zero_block ^ mask_a_1 ^ mask_b_1;
           if (MOTION_VERBOSE_DEBUG) {
             GetLogger().LogTrace(
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 "
                             "{} = {}\n",
                             gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
-                            garbled_row_00.AsString()) +
+                            garbled_row_00.as_string()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_1 "
                             "{} = {}\n",
                             gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
-                            garbled_row_01.AsString()) +
+                            garbled_row_01.as_string()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_1 {} XOR mask_b_0 "
                             "{} = {}\n",
                             gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
-                            garbled_row_10.AsString()) +
+                            garbled_row_10.as_string()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 "
                             "{} = {}\n",
                             gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
-                            garbled_row_11.AsString()));
+                            garbled_row_11.as_string()));
           }
         }
 
@@ -1115,8 +1117,8 @@ void BMRANDGate::EvaluateSetup() {
         s.append(fmt::format(" Wire #{}: ", j));
         for (auto k = 0ull; k < garbled_rows_.at(i).at(j).size(); ++k) {
           s.append(fmt::format("\nSIMD #{}: ", k));
-          buffer.Append(garbled_rows_.at(i).at(j).at(k));
-          s.append(fmt::format(" garbled rows {} ", garbled_rows_.at(i).at(j).at(k).AsString()));
+          buffer.Append(ENCRYPTO::BitVector<>(garbled_rows_.at(i).at(j).at(k).data(), kappa));
+          s.append(fmt::format(" garbled rows {} ", garbled_rows_.at(i).at(j).at(k).as_string()));
         }
       }
     }
@@ -1188,7 +1190,7 @@ void BMRANDGate::EvaluateOnline() {
         for (auto k = 0ull; k < garbled_rows_.at(i).at(j).size(); ++k) {
           GetLogger().LogTrace(fmt::format(
               "Party#{}: reconstructed gr for Party#{} Wire#{} SIMD#{}: {}\n",
-              GetConfig().GetMyId(), i, j, k, garbled_rows_.at(i).at(j).at(k).AsString()));
+              GetConfig().GetMyId(), i, j, k, garbled_rows_.at(i).at(j).at(k).as_string()));
         }
       }
     }
@@ -1246,12 +1248,14 @@ void BMRANDGate::EvaluateOnline() {
               "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
               "xor mask {} = ",
               party_i, alpha, beta, alpha_beta_offset,
-              garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset).AsString(),
+              garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset).as_string(),
               masks.at(party_i).AsString()));
         }
-        bmr_out->GetMutablePublicKeys().at(party_i).at(simd_i) =
-            garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset) ^
-            masks.at(party_i);
+        bmr_out->GetMutablePublicKeys().at(party_i).at(simd_i) = ENCRYPTO::BitVector<>(
+            (garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset) ^
+             masks.at(party_i))
+                .data(),
+            kappa);
         if constexpr (MOTION_VERBOSE_DEBUG) {
           s.append(bmr_out->GetPublicKeys().at(party_i).at(simd_i).AsString());
         }

@@ -31,6 +31,7 @@
 #include "boolean_gmw_gate.h"
 #include "share/bmr_share.h"
 #include "utility/bit_vector.h"
+#include "utility/block.h"
 #include "utility/reusable_future.h"
 
 namespace ENCRYPTO::ObliviousTransfer {
@@ -167,7 +168,11 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
       r_ots_kappa_;
 
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>> received_garbled_rows_;
-  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> garbled_rows_;
+
+  // structure: parties X wires X (simd X row)
+  //
+  // XXX: Put all the stuff into a single buffer
+  std::vector<std::vector<std::vector<ENCRYPTO::block128_t>>> garbled_rows_;
 
   void GenerateRandomness();
 };
