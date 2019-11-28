@@ -108,4 +108,25 @@ std::vector<std::byte> PRG::FixedKeyAES(const std::byte *x, const uint128_t i) {
 
   return output;
 }
+
+static void encrypt_block(EVP_CIPHER_CTX *ctx, const std::byte *in, std::byte *out) {
+  int outl;
+  if (1 != EVP_EncryptUpdate(ctx, reinterpret_cast<std::uint8_t *>(out), &outl,
+                             reinterpret_cast<const std::uint8_t *>(in), AES_BLOCK_SIZE)) {
+    throw(std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
+  }
 }
+
+void PRG::FixedKeyAES(const std::byte *input, const uint128_t tweak, std::byte *output) {
+  // TODO: enforce buffer alignment, do byte-wise xor (-> better compiler optimization)
+  std::array<std::byte, AES_BLOCK_SIZE> tmp1;
+  std::array<std::byte, AES_BLOCK_SIZE> tmp2;
+  encrypt_block(ctx_.get(), input, tmp1.data());         // compute \pi(x) ...
+  std::copy(std::begin(tmp1), std::end(tmp1), output);   // ... and save it in the output
+  *reinterpret_cast<uint128_t *>(tmp1.data()) ^= tweak;  // compute \pi(x) ^ i
+  encrypt_block(ctx_.get(), tmp1.data(), tmp2.data());   // compute \pi(\pi(x) ^ i)
+  // compute \pi(\pi(x) ^ i) ^ \pi(x):
+  *reinterpret_cast<uint128_t *>(output) ^= *reinterpret_cast<const uint128_t *>(tmp2.data());
+}
+
+}  // namespace ENCRYPTO

@@ -60,6 +60,13 @@ class PRG {
 
   std::vector<std::byte> FixedKeyAES(const std::byte *x, const uint128_t i);
 
+
+  // Implementation of TMMO^\pi
+  // of https://eprint.iacr.org/2019/074
+  // with input x and tweak i
+  // input and output have to point into a buffer with AES_BLOCK_SIZE bytes
+  void FixedKeyAES(const std::byte *input, const uint128_t tweak, std::byte *output);
+
   ~PRG() = default;
 
  private:
