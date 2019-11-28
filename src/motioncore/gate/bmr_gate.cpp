@@ -768,7 +768,6 @@ void BMRANDGate::EvaluateSetup() {
         fmt::format("Start evaluating setup phase of BMR AND Gate with id#{}", gate_id_));
   }
   const auto &R{GetConfig().GetBMRRandomOffset()};
-  const auto R_as_bv = ENCRYPTO::AlignedBitVector(R.data(), kappa);
   const auto num_wires{parent_a_.size()};
   const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto my_id{GetConfig().GetMyId()};
@@ -946,21 +945,22 @@ void BMRANDGate::EvaluateSetup() {
         plaintext <<= 64;
         plaintext += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
 
-        ENCRYPTO::BitVector<> mask_a_0(prg.FixedKeyAES(key_a_0.data(), plaintext), kappa);
-        ENCRYPTO::BitVector<> mask_a_1(prg.FixedKeyAES(key_a_1.data(), plaintext), kappa);
-        ENCRYPTO::BitVector<> mask_b_0(prg.FixedKeyAES(key_b_0.data(), plaintext), kappa);
-        ENCRYPTO::BitVector<> mask_b_1(prg.FixedKeyAES(key_b_1.data(), plaintext), kappa);
+        ENCRYPTO::block128_t mask_a_0;
+        ENCRYPTO::block128_t mask_a_1;
+        ENCRYPTO::block128_t mask_b_0;
+        ENCRYPTO::block128_t mask_b_1;
+        prg.FixedKeyAES(key_a_0.data(), plaintext, mask_a_0.data());
+        prg.FixedKeyAES(key_a_1.data(), plaintext, mask_a_1.data());
+        prg.FixedKeyAES(key_b_0.data(), plaintext, mask_b_0.data());
+        prg.FixedKeyAES(key_b_1.data(), plaintext, mask_b_1.data());
 
         if constexpr (MOTION_VERBOSE_DEBUG) {
           GetLogger().LogTrace(fmt::format(
               "Gate#{} (BMR AND gate) Party#{} keys: a0 {} ({}) a1 {} ({}) b0 {} ({}) b1 {} ({})\n",
-              gate_id_, my_id, key_a_0.as_string(), mask_a_0.AsString(), key_a_1.as_string(),
-              mask_a_1.AsString(), key_b_0.as_string(), mask_b_0.AsString(), key_b_1.as_string(),
-              mask_b_1.AsString()));
+              gate_id_, my_id, key_a_0.as_string(), mask_a_0.as_string(), key_a_1.as_string(),
+              mask_a_1.as_string(), key_b_0.as_string(), mask_b_0.as_string(), key_b_1.as_string(),
+              mask_b_1.as_string()));
         }
-
-        // XXX: for transition
-        const auto zero_block = ENCRYPTO::block128_t::make_zero();
 
         auto &garbled_row_00{garbled_tables_.at(gt_index(wire_i, simd_i, 0, party_i))};
         auto &garbled_row_01{garbled_tables_.at(gt_index(wire_i, simd_i, 1, party_i))};
@@ -968,70 +968,69 @@ void BMRANDGate::EvaluateSetup() {
         auto &garbled_row_11{garbled_tables_.at(gt_index(wire_i, simd_i, 3, party_i))};
         if (party_i == my_id) {
           const auto &key_w_0{bmr_out->GetSecretKeys().at(simd_i)};
-          garbled_row_00 = zero_block ^ mask_a_0 ^ mask_b_0 ^ key_w_0;
-          garbled_row_01 = zero_block ^ mask_a_0 ^ mask_b_1 ^ key_w_0;
-          garbled_row_10 = zero_block ^ mask_a_1 ^ mask_b_0 ^ key_w_0;
-          garbled_row_11 = zero_block ^ mask_a_1 ^ mask_b_1 ^ key_w_0 ^ R_as_bv;
+          garbled_row_00 = mask_a_0 ^ mask_b_0 ^ key_w_0;
+          garbled_row_01 = mask_a_0 ^ mask_b_1 ^ key_w_0;
+          garbled_row_10 = mask_a_1 ^ mask_b_0 ^ key_w_0;
+          garbled_row_11 = mask_a_1 ^ mask_b_1 ^ key_w_0 ^ R;
 
           if constexpr (MOTION_VERBOSE_DEBUG) {
             GetLogger().LogTrace(
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
+                    gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_0.as_string(),
                     key_w_0.as_string(), garbled_row_00.as_string()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_1 {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
+                    gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_1.as_string(),
                     key_w_0.as_string(), garbled_row_01.as_string()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_0 {} XOR mask_b_0 {} XOR "
                     "key_w_0 {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
+                    gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_0.as_string(),
                     key_w_0.as_string(), garbled_row_10.as_string()) +
                 fmt::format(
                     "Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 {} XOR "
                     "key_w_1 {} XOR R {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
+                    gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_1.as_string(),
                     key_w_0.as_string(), R.as_string(), garbled_row_11.as_string()));
           }
         } else {
-          garbled_row_00 = zero_block ^ mask_a_0 ^ mask_b_0;
-          garbled_row_01 = zero_block ^ mask_a_0 ^ mask_b_1;
-          garbled_row_10 = zero_block ^ mask_a_1 ^ mask_b_0;
-          garbled_row_11 = zero_block ^ mask_a_1 ^ mask_b_1;
+          garbled_row_00 = mask_a_0 ^ mask_b_0;
+          garbled_row_01 = mask_a_0 ^ mask_b_1;
+          garbled_row_10 = mask_a_1 ^ mask_b_0;
+          garbled_row_11 = mask_a_1 ^ mask_b_1;
           if (MOTION_VERBOSE_DEBUG) {
             GetLogger().LogTrace(
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 "
                             "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_0.AsString(),
+                            gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_0.as_string(),
                             garbled_row_00.as_string()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_1 "
                             "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_0.AsString(), mask_b_1.AsString(),
+                            gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_1.as_string(),
                             garbled_row_01.as_string()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_1 {} XOR mask_b_0 "
                             "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_0.AsString(),
+                            gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_0.as_string(),
                             garbled_row_10.as_string()) +
                 fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 "
                             "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_1.AsString(), mask_b_1.AsString(),
+                            gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_1.as_string(),
                             garbled_row_11.as_string()));
           }
         }
 
-        std::array<ENCRYPTO::AlignedBitVector, 3> shared_R;
-        const ENCRYPTO::AlignedBitVector zero_bv(kappa);
+        std::array<ENCRYPTO::block128_t, 3> shared_R;
+        const auto zero_block = ENCRYPTO::block128_t::make_zero();
 
         if (party_i == my_id) {
-          const auto R_as_bv = ENCRYPTO::AlignedBitVector(R.data(), kappa);
-          shared_R.at(0) = aggregated_choices.at(wire_i)[simd_i * 3] ? R_as_bv : zero_bv;
-          shared_R.at(1) = aggregated_choices.at(wire_i)[simd_i * 3 + 1] ? R_as_bv : zero_bv;
-          shared_R.at(2) = aggregated_choices.at(wire_i)[simd_i * 3 + 2] ? R_as_bv : zero_bv;
+          shared_R.at(0) = aggregated_choices.at(wire_i)[simd_i * 3] ? R : zero_block;
+          shared_R.at(1) = aggregated_choices.at(wire_i)[simd_i * 3 + 1] ? R : zero_block;
+          shared_R.at(2) = aggregated_choices.at(wire_i)[simd_i * 3 + 2] ? R : zero_block;
         } else {
-          shared_R.at(0) = shared_R.at(1) = shared_R.at(2) = zero_bv;
+          shared_R.at(0) = shared_R.at(1) = shared_R.at(2) = zero_block;
         }
 
         // R's from C-OTs
@@ -1042,9 +1041,9 @@ void BMRANDGate::EvaluateSetup() {
             s_ots_kappa_.at(party_j).at(wire_i)->ComputeOutputs();
             const auto &s_out = s_ots_kappa_.at(party_j).at(wire_i)->GetOutputs();
             assert(s_out.size() == num_simd * 3);
-            const auto R_00 = ENCRYPTO::BitVector(s_out[simd_i * 3].data(), kappa);
-            const auto R_01 = ENCRYPTO::BitVector(s_out[simd_i * 3 + 1].data(), kappa);
-            const auto R_10 = ENCRYPTO::BitVector(s_out[simd_i * 3 + 2].data(), kappa);
+            const auto R_00 = s_out[simd_i * 3];
+            const auto R_01 = s_out[simd_i * 3 + 1];
+            const auto R_10 = s_out[simd_i * 3 + 2];
 
             shared_R.at(0) ^= R_00;
             shared_R.at(1) ^= R_01;
@@ -1054,7 +1053,7 @@ void BMRANDGate::EvaluateSetup() {
               GetLogger().LogTrace(fmt::format(
                   "Gate#{} (BMR AND gate) Me#{}: Party#{} received R's \n00 ({}) \n01 ({}) \n10 "
                   "({})\n",
-                  gate_id_, my_id, party_i, R_00.AsString(), R_01.AsString(), R_10.AsString()));
+                  gate_id_, my_id, party_i, R_00.as_string(), R_01.as_string(), R_10.as_string()));
             }
           }
         } else {
@@ -1062,9 +1061,9 @@ void BMRANDGate::EvaluateSetup() {
           r_ots_kappa_.at(party_i).at(wire_i)->ComputeOutputs();
           const auto &r_out = r_ots_kappa_.at(party_i).at(wire_i)->GetOutputs();
           assert(r_out.size() == num_simd * 3);
-          const auto R_00 = ENCRYPTO::BitVector(r_out[simd_i * 3].data(), kappa);
-          const auto R_01 = ENCRYPTO::BitVector(r_out[simd_i * 3 + 1].data(), kappa);
-          const auto R_10 = ENCRYPTO::BitVector(r_out[simd_i * 3 + 2].data(), kappa);
+          const auto R_00 = r_out[simd_i * 3];
+          const auto R_01 = r_out[simd_i * 3 + 1];
+          const auto R_10 = r_out[simd_i * 3 + 2];
 
           shared_R.at(0) ^= R_00;
           shared_R.at(1) ^= R_01;
@@ -1075,8 +1074,8 @@ void BMRANDGate::EvaluateSetup() {
           GetLogger().LogTrace(
               fmt::format("Gate#{} (BMR AND gate) Me#{}: Shared R's \n00 ({}) \n01 ({}) \n10 "
                           "({})\n",
-                          gate_id_, my_id, party_i, shared_R.at(0).AsString(),
-                          shared_R.at(1).AsString(), shared_R.at(2).AsString()));
+                          gate_id_, my_id, party_i, shared_R.at(0).as_string(),
+                          shared_R.at(1).as_string(), shared_R.at(2).as_string()));
         }
         garbled_row_00 ^= shared_R.at(0);
         garbled_row_01 ^= shared_R.at(1);
