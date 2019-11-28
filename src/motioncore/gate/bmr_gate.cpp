@@ -1202,7 +1202,7 @@ void BMRANDGate::EvaluateOnline() {
     prg.SetKey(GetConfig().GetFixedAESKey().GetData().data());
 
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-      std::vector<ENCRYPTO::BitVector<>> masks(num_parties, ENCRYPTO::BitVector<>(kappa));
+      auto masks = ENCRYPTO::block128_vector::make_zero(num_parties);
       [[maybe_unused]] std::string s;
       if constexpr (MOTION_VERBOSE_DEBUG) {
         s.append(
@@ -1217,14 +1217,16 @@ void BMRANDGate::EvaluateOnline() {
           uint128_t plaintext{party_j};
           plaintext <<= 64;
           plaintext += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
-          ENCRYPTO::BitVector<> mask_a(prg.FixedKeyAES(key_a.data(), plaintext), kappa);
-          ENCRYPTO::BitVector<> mask_b(prg.FixedKeyAES(key_b.data(), plaintext), kappa);
+          ENCRYPTO::block128_t mask_a;
+          ENCRYPTO::block128_t mask_b;
+          prg.FixedKeyAES(key_a.data(), plaintext, mask_a.data());
+          prg.FixedKeyAES(key_b.data(), plaintext, mask_b.data());
           masks.at(party_j) ^= mask_a;
           masks.at(party_j) ^= mask_b;
           if constexpr (MOTION_VERBOSE_DEBUG) {
             s.append(fmt::format("\nParty#{} key for #{} key_a {} ({}) key_b {} ({})", party_i,
-                                 party_j, key_a.as_string(), mask_a.AsString(), key_b.as_string(),
-                                 mask_b.AsString()));
+                                 party_j, key_a.as_string(), mask_a.as_string(), key_b.as_string(),
+                                 mask_b.as_string()));
           }
         }
       }
@@ -1240,7 +1242,7 @@ void BMRANDGate::EvaluateOnline() {
               "xor mask {} = ",
               party_i, alpha, beta, alpha_beta_offset,
               garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset).as_string(),
-              masks.at(party_i).AsString()));
+              masks.at(party_i).as_string()));
         }
         bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
             garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset) ^
