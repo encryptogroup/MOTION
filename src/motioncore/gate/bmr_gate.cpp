@@ -776,7 +776,8 @@ void BMRANDGate::EvaluateSetup() {
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
   auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i, auto party_i) {
-    return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties + party_i;
+    return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties +
+           party_i;
   };
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -1085,8 +1086,6 @@ void BMRANDGate::EvaluateSetup() {
     }  // for each simd
   }    // for each wire
 
-  ENCRYPTO::block128_vector send_message_buffer(num_parties * num_wires * num_simd * 4);
-  std::size_t buffer_index = 0;
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s{fmt::format("Me#{}: ", my_id)};
     assert(garbled_tables_.size() == num_wires * num_simd * 4 * num_parties);
@@ -1098,8 +1097,6 @@ void BMRANDGate::EvaluateSetup() {
           s.append(fmt::format("\nRow #{}: ", row_l));
           for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
             s.append(fmt::format("\nParty #{}: ", party_i));
-            send_message_buffer.at(buffer_index++) =
-                garbled_tables_.at(gt_index(wire_j, simd_k, row_l, party_i));
             s.append(fmt::format(
                 " garbled rows {} ",
                 garbled_tables_.at(gt_index(wire_j, simd_k, row_l, party_i)).as_string()));
@@ -1109,23 +1106,11 @@ void BMRANDGate::EvaluateSetup() {
     }
     s.append("\n");
     GetLogger().LogTrace(s);
-  } else {
-    for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
-      for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
-        for (auto row_l = 0ull; row_l < 4; ++row_l) {
-          for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-            send_message_buffer.at(buffer_index++) =
-                garbled_tables_.at(gt_index(wire_j, simd_k, row_l, party_i));
-          }
-        }
-      }
-    }
   }
 
   const std::vector<std::uint8_t> buffer_u8(
-      reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()),
-      reinterpret_cast<const std::uint8_t *>(send_message_buffer.data()) +
-          send_message_buffer.byte_size());
+      reinterpret_cast<const std::uint8_t *>(garbled_tables_.data()),
+      reinterpret_cast<const std::uint8_t *>(garbled_tables_.data()) + garbled_tables_.byte_size());
 
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
@@ -1142,8 +1127,7 @@ void BMRANDGate::EvaluateSetup() {
         for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
           for (auto gr_i = 0; gr_i < 4; ++gr_i) {
             for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
-              garbled_tables_.at(gt_index(wire_i, simd_i, gr_i, party_j)) ^=
-                  gr.at(buffer_index++);
+              garbled_tables_.at(gt_index(wire_i, simd_i, gr_i, party_j)) ^= gr.at(buffer_index++);
             }
           }
         }
@@ -1174,7 +1158,8 @@ void BMRANDGate::EvaluateOnline() {
   };
 
   auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i, auto party_i) {
-    return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties + party_i;
+    return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties +
+           party_i;
   };
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
@@ -1246,9 +1231,7 @@ void BMRANDGate::EvaluateOnline() {
               "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
               "xor mask {} = ",
               party_i, alpha, beta, alpha_beta_offset,
-              garbled_tables_
-                  .at(gt_index(wire_i, simd_i, alpha_beta_offset, party_i))
-                  .as_string(),
+              garbled_tables_.at(gt_index(wire_i, simd_i, alpha_beta_offset, party_i)).as_string(),
               masks.at(party_i).as_string()));
         }
         bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
