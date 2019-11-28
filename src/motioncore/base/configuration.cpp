@@ -38,7 +38,7 @@ namespace MOTION {
 Configuration::Configuration(const std::vector<Communication::ContextPtr> &contexts, std::size_t id)
     : my_id_(id),
       fixed_key_aes_key_my_part_(ENCRYPTO::AlignedBitVector::Random(kappa)),
-      BMR_random_offset_(ENCRYPTO::AlignedBitVector::Random(kappa)),
+      BMR_random_offset_(ENCRYPTO::block128_t::make_random()),
       num_threads_(std::max(std::thread::hardware_concurrency(), 8u)) {
   communication_contexts_.resize(contexts.size() + 1, nullptr);
   if constexpr (MOTION_VERBOSE_DEBUG) {

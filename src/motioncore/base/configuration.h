@@ -30,6 +30,7 @@
 #include <vector>
 
 #include "utility/bit_vector.h"
+#include "utility/block.h"
 
 namespace MOTION {
 
@@ -100,7 +101,7 @@ class Configuration {
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
   const ENCRYPTO::AlignedBitVector fixed_key_aes_key_my_part_;
   ENCRYPTO::AlignedBitVector fixed_key_aes_key_complete_;
-  const ENCRYPTO::AlignedBitVector BMR_random_offset_;
+  const ENCRYPTO::block128_t BMR_random_offset_;
   bool fixed_key_aes_key_is_ready_ = false;
 
   bool logging_enabled_ = true;

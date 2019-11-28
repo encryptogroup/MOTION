@@ -62,9 +62,10 @@ void BMRWire::InitializationHelperBMR() {
 
 void BMRWire::GenerateRandomPrivateKeys() {
   const auto& R{backend_.GetConfig()->GetBMRRandomOffset()};
+  const auto R_as_bv = ENCRYPTO::AlignedBitVector(R.data(), kappa);
   for (auto i = 0ull; i < n_simd_; ++i) {
     std::get<0>(secret_keys_).at(i) = ENCRYPTO::BitVector<>::Random(kappa);
-    std::get<1>(secret_keys_).at(i) = std::get<0>(secret_keys_).at(i) ^ R;
+    std::get<1>(secret_keys_).at(i) = std::get<0>(secret_keys_).at(i) ^ R_as_bv;
   }
 }
 
