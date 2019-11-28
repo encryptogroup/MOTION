@@ -756,21 +756,19 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
 }
 
 void BMRANDGate::GenerateRandomness() {
-  const auto &R{GetConfig().GetBMRRandomOffset()};
-  const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto num_wires{output_wires_.size()};
-  const auto my_id{GetConfig().GetMyId()};
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
-    bmr_out->GetMutablePermutationBits() = ENCRYPTO::BitVector<>::Random(num_simd);
-    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-      auto &key_0{std::get<0>(bmr_out->GetMutableSecretKeys()).at(simd_i)};
-      auto &key_1{std::get<1>(bmr_out->GetMutableSecretKeys()).at(simd_i)};
-      key_0 = ENCRYPTO::BitVector<>::Random(kappa);
-      key_1 = key_0 ^ R;
+    bmr_out->GenerateRandomPermutationBits();
+    bmr_out->GenerateRandomPrivateKeys();
+    if constexpr (MOTION_VERBOSE_DEBUG) {
+      const auto my_id{GetConfig().GetMyId()};
+      const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
+      for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
+        const auto &key_0{std::get<0>(bmr_out->GetMutableSecretKeys()).at(simd_i)};
+        const auto &key_1{std::get<1>(bmr_out->GetMutableSecretKeys()).at(simd_i)};
 
-      if constexpr (MOTION_VERBOSE_DEBUG) {
         const auto bmr_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i));
         const auto bmr_b = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i));
         assert(bmr_a);
