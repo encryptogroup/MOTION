@@ -210,28 +210,28 @@ void BMRInputGate::EvaluateOnline() {
   // the public values are now set for each bit
   // now we need to publish the corresponding keys
 
-  buffer.Clear();
-  // XXX: ^ maybe we can already reserve enough space here since we call append
-  // in a loop
-
-  // fill the buffer with the keys corresponding to the public values
-  for (auto i = 0ull; i < num_wires; ++i) {
-    auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
+  // fill the buffer with our keys corresponding to the public values
+  ENCRYPTO::block128_vector my_keys_buffer(num_wires * num_simd);
+  for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
+    const auto wire = std::dynamic_pointer_cast<const Wires::BMRWire>(output_wires_.at(wire_i));
     assert(wire);
-    const auto &keys_0 = wire->GetSecretKeys();
-    for (auto j = 0ull; j < wire->GetNumOfSIMDValues(); ++j) {
-      if (wire->GetPublicValues()[j])
-        buffer.Append(ENCRYPTO::BitVector<>((keys_0.at(j) ^ R).data(), kappa));
-      else
-        buffer.Append(ENCRYPTO::BitVector<>(keys_0.at(j).data(), kappa));
+    const auto &keys = wire->GetSecretKeys();
+    // copy the "0 keys" into the buffer
+    std::copy(std::begin(keys), std::end(keys), std::begin(my_keys_buffer) + wire_i * num_simd);
+    const auto &public_values = wire->GetPublicValues();
+    for (auto simd_j = 0ull; simd_j < num_simd; ++simd_j) {
+      // xor the offset on a key if the corresponding public value is 1
+      if (public_values[simd_j]) {
+        my_keys_buffer.at(wire_i * num_simd + simd_j) ^= R;
+      }
     }
   }
 
   // send the selected keys to all other parties
   const std::vector<std::uint8_t> payload(
-      reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
-      reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
-  for (auto party_i = 0ull; party_i < GetConfig().GetNumOfParties(); ++party_i) {
+      reinterpret_cast<const std::uint8_t *>(my_keys_buffer.data()),
+      reinterpret_cast<const std::uint8_t *>(my_keys_buffer.data()) + my_keys_buffer.byte_size());
+  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
     if (party_i == my_id) continue;
     backend_.Send(party_i, Communication::BuildBMRInput1Message(gate_id_, payload));
   }
@@ -242,31 +242,30 @@ void BMRInputGate::EvaluateOnline() {
   };
 
   // receive the published keys from the other parties
+  // and construct the active super keys for the output wires
   for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
     if (party_i == my_id) {
-      // XXX: we could move the correct secret key into the vector of public keys
-      // since we should not need it anymore
+      // our case: we can copy the keys we have already prepared above in
+      // my_keys_buffer to the right positions
       for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
+        auto &public_keys = wire->GetMutablePublicKeys();
         for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
-          if (wire->GetPublicValues()[simd_k])
-            wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
-                wire->GetSecretKeys().at(simd_k) ^ R;
-          else
-            wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
-                wire->GetSecretKeys().at(simd_k);
+          public_keys.at(pk_index(simd_k, my_id)) = my_keys_buffer.at(wire_j * num_simd + simd_k);
         }
       }
     } else {
-      auto key_buffer = received_public_keys_.at(party_i).get();
-      assert(bits_ > 0u);
+      // other party: we copy the received keys to the right position
+      auto received_keys_buffer = received_public_keys_.at(party_i).get();
+      assert(received_keys_buffer.size() == num_wires * num_simd);
       for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
+        auto &public_keys = wire->GetMutablePublicKeys();
         for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
-          wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
-              key_buffer.at(wire_j * bits_ + simd_k);
+          public_keys.at(pk_index(simd_k, party_i)) =
+              received_keys_buffer.at(wire_j * num_simd + simd_k);
         }
       }
     }
@@ -276,12 +275,12 @@ void BMRInputGate::EvaluateOnline() {
     std::string s(fmt::format("Evaluated a BMR input gate #{} and got as result: ", gate_id_));
     for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
       auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i));
-      const auto &pks = wire->GetPublicKeys();
+      const auto &public_keys = wire->GetPublicKeys();
       std::string keys;
       for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
         keys.append(std::to_string(party_j) + std::string(" "));
         for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
-          keys.append(pks.at(pk_index(simd_k, party_j)).as_string() + " ");
+          keys.append(public_keys.at(pk_index(simd_k, party_j)).as_string() + " ");
         }
       }
       if (!keys.empty()) keys.erase(keys.size() - 1);
@@ -289,6 +288,10 @@ void BMRInputGate::EvaluateOnline() {
                            wire->GetPublicValues().AsString(), keys));
     }
     GetLogger().LogTrace(s);
+  }
+  if constexpr (MOTION_DEBUG) {
+    GetLogger().LogDebug(
+        fmt::format("Finished evaluating online phase of BMR Input Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
   GetRegister().IncrementEvaluatedGatesCounter();
