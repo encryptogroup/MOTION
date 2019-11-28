@@ -251,7 +251,7 @@ void BMRInputGate::EvaluateOnline() {
         assert(wire);
         for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
           wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
-            key_buffer.at(wire_j * bits_ + simd_k);
+              key_buffer.at(wire_j * bits_ + simd_k);
         }
       }
     }
@@ -711,10 +711,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     }
   }
 
-  garbled_rows_new_.resize(num_wires);
-  for (auto &vv : garbled_rows_new_) {
-    vv.resize(num_simd * 4 * num_parties);
-  }
+  garbled_rows_new_.resize(num_wires, ENCRYPTO::block128_vector(num_simd * 4 * num_parties));
 
   // store futures for the (partial) garbled tables we will receive during garbling
   received_garbled_rows_.resize(num_parties);
@@ -778,8 +775,7 @@ void BMRANDGate::EvaluateSetup() {
   const auto num_parties{GetConfig().GetNumOfParties()};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
-
-  auto gt_index = [num_parties] (auto simd_i, auto row_i, auto party_i) {
+  auto gt_index = [num_parties](auto simd_i, auto row_i, auto party_i) {
     return simd_i * (4 * num_parties) + row_i * num_parties + party_i;
   };
 
@@ -1103,9 +1099,11 @@ void BMRANDGate::EvaluateSetup() {
           s.append(fmt::format("\nRow #{}: ", row_l));
           for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
             s.append(fmt::format("\nParty #{}: ", party_i));
-            send_message_buffer.at(buffer_index++) = garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
-            s.append(fmt::format(" garbled rows {} ",
-                                 garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i)).as_string()));
+            send_message_buffer.at(buffer_index++) =
+                garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
+            s.append(fmt::format(
+                " garbled rows {} ",
+                garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i)).as_string()));
           }
         }
       }
@@ -1117,7 +1115,8 @@ void BMRANDGate::EvaluateSetup() {
       for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
         for (auto row_l = 0ull; row_l < 4; ++row_l) {
           for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-            send_message_buffer.at(buffer_index++) = garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
+            send_message_buffer.at(buffer_index++) =
+                garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
           }
         }
       }
@@ -1144,7 +1143,8 @@ void BMRANDGate::EvaluateSetup() {
         for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
           for (auto gr_i = 0; gr_i < 4; ++gr_i) {
             for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
-              garbled_rows_new_.at(wire_i).at(gt_index(simd_i, gr_i, party_j)) ^= gr.at(buffer_index++);
+              garbled_rows_new_.at(wire_i).at(gt_index(simd_i, gr_i, party_j)) ^=
+                  gr.at(buffer_index++);
             }
           }
         }
@@ -1174,7 +1174,7 @@ void BMRANDGate::EvaluateOnline() {
     return simd_i * num_parties + party_i;
   };
 
-  auto gt_index = [num_parties] (auto simd_i, auto row_i, auto party_i) {
+  auto gt_index = [num_parties](auto simd_i, auto row_i, auto party_i) {
     return simd_i * (4 * num_parties) + row_i * num_parties + party_i;
   };
 
@@ -1184,8 +1184,9 @@ void BMRANDGate::EvaluateOnline() {
         for (auto row_l = 0ull; row_l < 4; ++row_l) {
           for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
             GetLogger().LogTrace(fmt::format(
-                "Party#{}: reconstructed gr for Party#{} Wire#{} SIMD#{} Row#{}: {}\n",
-                my_id, party_i, wire_i, simd_j, row_l, garbled_rows_new_.at(wire_i).at(gt_index(simd_j, row_l, party_i)).as_string()));
+                "Party#{}: reconstructed gr for Party#{} Wire#{} SIMD#{} Row#{}: {}\n", my_id,
+                party_i, wire_i, simd_j, row_l,
+                garbled_rows_new_.at(wire_i).at(gt_index(simd_j, row_l, party_i)).as_string()));
           }
         }
       }
@@ -1246,7 +1247,9 @@ void BMRANDGate::EvaluateOnline() {
               "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
               "xor mask {} = ",
               party_i, alpha, beta, alpha_beta_offset,
-              garbled_rows_new_.at(wire_i).at(gt_index(simd_i, alpha_beta_offset, party_i)).as_string(),
+              garbled_rows_new_.at(wire_i)
+                  .at(gt_index(simd_i, alpha_beta_offset, party_i))
+                  .as_string(),
               masks.at(party_i).as_string()));
         }
         bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =

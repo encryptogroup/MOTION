@@ -175,7 +175,7 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   // std::vector<std::vector<std::vector<ENCRYPTO::block128_t>>> garbled_rows_;
   //
   // structure: wires X (simd X (row X parties))
-  std::vector<std::vector<ENCRYPTO::block128_t>> garbled_rows_new_;
+  std::vector<ENCRYPTO::block128_vector> garbled_rows_new_;
 
   void GenerateRandomness();
 };
