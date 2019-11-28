@@ -172,7 +172,10 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   // structure: parties X wires X (simd X row)
   //
   // XXX: Put all the stuff into a single buffer
-  std::vector<std::vector<std::vector<ENCRYPTO::block128_t>>> garbled_rows_;
+  // std::vector<std::vector<std::vector<ENCRYPTO::block128_t>>> garbled_rows_;
+  //
+  // structure: wires X (simd X (row X parties))
+  std::vector<std::vector<ENCRYPTO::block128_t>> garbled_rows_new_;
 
   void GenerateRandomness();
 };

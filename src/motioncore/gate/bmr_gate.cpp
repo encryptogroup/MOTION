@@ -711,12 +711,9 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
     }
   }
 
-  garbled_rows_.resize(num_parties);
-  for (auto &vv : garbled_rows_) {
-    vv.resize(num_wires);
-    for (auto &v : vv) {
-      v.resize(batch_size_full);
-    }
+  garbled_rows_new_.resize(num_wires);
+  for (auto &vv : garbled_rows_new_) {
+    vv.resize(num_simd * 4 * num_parties);
   }
 
   // store futures for the (partial) garbled tables we will receive during garbling
@@ -779,8 +776,12 @@ void BMRANDGate::EvaluateSetup() {
   const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
-  const auto batch_size_full{num_simd * 4};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
+
+
+  auto gt_index = [num_parties] (auto simd_i, auto row_i, auto party_i) {
+    return simd_i * (4 * num_parties) + row_i * num_parties + party_i;
+  };
 
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger().LogTrace(
@@ -964,10 +965,10 @@ void BMRANDGate::EvaluateSetup() {
         // XXX: for transition
         const auto zero_block = ENCRYPTO::block128_t::make_zero();
 
-        auto &garbled_row_00{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4)};
-        auto &garbled_row_01{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 1)};
-        auto &garbled_row_10{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 2)};
-        auto &garbled_row_11{garbled_rows_.at(party_i).at(wire_i).at(simd_i * 4 + 3)};
+        auto &garbled_row_00{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 0, party_i))};
+        auto &garbled_row_01{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 1, party_i))};
+        auto &garbled_row_10{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 2, party_i))};
+        auto &garbled_row_11{garbled_rows_new_.at(wire_i).at(gt_index(simd_i, 3, party_i))};
         if (party_i == my_id) {
           const auto &key_w_0{bmr_out->GetSecretKeys().at(simd_i)};
           garbled_row_00 = zero_block ^ mask_a_0 ^ mask_b_0 ^ key_w_0;
@@ -1092,28 +1093,32 @@ void BMRANDGate::EvaluateSetup() {
   std::size_t buffer_index = 0;
   if constexpr (MOTION_VERBOSE_DEBUG) {
     std::string s{fmt::format("Me#{}: ", my_id)};
-    assert(garbled_rows_.size() == num_parties);
-    for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-      s.append(fmt::format("\nParty #{}: ", party_i));
-      assert(garbled_rows_.at(party_i).size() == num_wires);
-      for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
-        s.append(fmt::format(" Wire #{}: ", wire_j));
-        assert(garbled_rows_.at(party_i).at(wire_j).size() == 4 * num_simd);
-        for (auto k = 0ull; k < garbled_rows_.at(party_i).at(wire_j).size(); ++k) {
-          s.append(fmt::format("\nSIMD #{}: ", k));
-          send_message_buffer.at(buffer_index++) = garbled_rows_.at(party_i).at(wire_j).at(k);
-          s.append(fmt::format(" garbled rows {} ",
-                               garbled_rows_.at(party_i).at(wire_j).at(k).as_string()));
+    assert(garbled_rows_new_.size() == num_wires);
+    for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+      s.append(fmt::format(" Wire #{}: ", wire_j));
+      assert(garbled_rows_new_.at(wire_j).size() == num_simd * 4 * num_parties);
+      for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+        s.append(fmt::format("\nSIMD #{}: ", simd_k));
+        for (auto row_l = 0ull; row_l < 4; ++row_l) {
+          s.append(fmt::format("\nRow #{}: ", row_l));
+          for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+            s.append(fmt::format("\nParty #{}: ", party_i));
+            send_message_buffer.at(buffer_index++) = garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
+            s.append(fmt::format(" garbled rows {} ",
+                                 garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i)).as_string()));
+          }
         }
       }
     }
     s.append("\n");
     GetLogger().LogTrace(s);
   } else {
-    for (auto party_i = 0ull; party_i < garbled_rows_.size(); ++party_i) {
-      for (auto wire_j = 0ull; wire_j < garbled_rows_.at(party_i).size(); ++wire_j) {
-        for (auto k = 0ull; k < garbled_rows_.at(party_i).at(wire_j).size(); ++k) {
-          send_message_buffer.at(buffer_index++) = garbled_rows_.at(party_i).at(wire_j).at(k);
+    for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
+      for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
+        for (auto row_l = 0ull; row_l < 4; ++row_l) {
+          for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+            send_message_buffer.at(buffer_index++) = garbled_rows_new_.at(wire_j).at(gt_index(simd_k, row_l, party_i));
+          }
         }
       }
     }
@@ -1134,19 +1139,12 @@ void BMRANDGate::EvaluateSetup() {
     for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
       if (party_i == my_id) continue;
       auto gr = received_garbled_rows_.at(party_i).get();
-      for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
-        for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
-          for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-            for (auto gr_i = 0; gr_i < 4; ++gr_i) {
-              // party offset
-              const std::size_t offset_p = party_j * (batch_size_full * num_wires);
-              // wire offset
-              const std::size_t offset_w = wire_i * batch_size_full;
-              // simd_offset
-              const std::size_t offset_s = simd_i * 4;
-              // complete offset
-              const std::size_t offset = offset_p + offset_w + offset_s + gr_i;
-              garbled_rows_.at(party_j).at(wire_i).at(simd_i * 4 + gr_i) ^= gr.at(offset);
+      std::size_t buffer_index = 0;
+      for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
+        for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
+          for (auto gr_i = 0; gr_i < 4; ++gr_i) {
+            for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
+              garbled_rows_new_.at(wire_i).at(gt_index(simd_i, gr_i, party_j)) ^= gr.at(buffer_index++);
             }
           }
         }
@@ -1176,13 +1174,19 @@ void BMRANDGate::EvaluateOnline() {
     return simd_i * num_parties + party_i;
   };
 
+  auto gt_index = [num_parties] (auto simd_i, auto row_i, auto party_i) {
+    return simd_i * (4 * num_parties) + row_i * num_parties + party_i;
+  };
+
   if constexpr (MOTION_VERBOSE_DEBUG) {
-    for (auto i = 0ull; i < garbled_rows_.size(); ++i) {
-      for (auto j = 0ull; j < garbled_rows_.at(i).size(); ++j) {
-        for (auto k = 0ull; k < garbled_rows_.at(i).at(j).size(); ++k) {
-          GetLogger().LogTrace(fmt::format(
-              "Party#{}: reconstructed gr for Party#{} Wire#{} SIMD#{}: {}\n",
-              GetConfig().GetMyId(), i, j, k, garbled_rows_.at(i).at(j).at(k).as_string()));
+    for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
+      for (auto simd_j = 0ull; simd_j < num_simd; ++simd_j) {
+        for (auto row_l = 0ull; row_l < 4; ++row_l) {
+          for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+            GetLogger().LogTrace(fmt::format(
+                "Party#{}: reconstructed gr for Party#{} Wire#{} SIMD#{} Row#{}: {}\n",
+                my_id, party_i, wire_i, simd_j, row_l, garbled_rows_new_.at(wire_i).at(gt_index(simd_j, row_l, party_i)).as_string()));
+          }
         }
       }
     }
@@ -1242,11 +1246,11 @@ void BMRANDGate::EvaluateOnline() {
               "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
               "xor mask {} = ",
               party_i, alpha, beta, alpha_beta_offset,
-              garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset).as_string(),
+              garbled_rows_new_.at(wire_i).at(gt_index(simd_i, alpha_beta_offset, party_i)).as_string(),
               masks.at(party_i).as_string()));
         }
         bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
-            garbled_rows_.at(party_i).at(wire_i).at(4 * simd_i + alpha_beta_offset) ^
+            garbled_rows_new_.at(wire_i).at(gt_index(simd_i, alpha_beta_offset, party_i)) ^
             masks.at(party_i);
         if constexpr (MOTION_VERBOSE_DEBUG) {
           s.append(bmr_out->GetPublicKeys().at(pk_index(simd_i, party_i)).as_string());
