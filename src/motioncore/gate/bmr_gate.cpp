@@ -1122,16 +1122,7 @@ void BMRANDGate::EvaluateSetup() {
     for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
       if (party_i == my_id) continue;
       auto gr = received_garbled_rows_.at(party_i).get();
-      std::size_t buffer_index = 0;
-      for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
-        for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-          for (auto gr_i = 0; gr_i < 4; ++gr_i) {
-            for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
-              garbled_tables_.at(gt_index(wire_i, simd_i, gr_i, party_j)) ^= gr.at(buffer_index++);
-            }
-          }
-        }
-      }
+      garbled_tables_ ^= gr;
     }
   }
 
