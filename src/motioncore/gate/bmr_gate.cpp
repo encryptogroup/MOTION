@@ -87,22 +87,16 @@ void BMRInputGate::InitializationHelper() {
                          .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
                          ->GetDataStorage()
                          ->GetBMRData();
-    auto [elem_it, _] = bmr_data->input_public_values_.emplace(
-        static_cast<std::size_t>(gate_id_),
-        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
-    auto &bitlen = std::get<0>(elem_it->second);
-    bitlen = bits_ * input_.size();
+    received_public_values_ =
+        bmr_data->RegisterForInputPublicValues(gate_id_, bits_ * input_.size());
   }
 
   // prepare for receiving the *public/active keys* of the other parties
-  for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
-    if (my_id == i) continue;
-    auto &bmr_data = GetConfig().GetCommunicationContext(i)->GetDataStorage()->GetBMRData();
-    auto [elem_it, _] = bmr_data->input_public_keys_.emplace(
-        static_cast<std::size_t>(gate_id_),
-        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
-    auto &bitlen = std::get<0>(elem_it->second);
-    bitlen = bits_ * input_.size() * kappa;  // each key is of length kappa
+  for (auto party_i = 0ull; party_i < GetConfig().GetNumOfParties(); ++party_i) {
+    if (my_id == party_i) continue;
+    auto &bmr_data = GetConfig().GetCommunicationContext(party_i)->GetDataStorage()->GetBMRData();
+    received_public_keys_.at(party_i) =
+        bmr_data->RegisterForInputPublicKeys(gate_id_, bits_ * input_.size() * kappa);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -115,30 +109,6 @@ void BMRInputGate::InitializationHelper() {
 void BMRInputGate::EvaluateSetup() {
   auto &config = GetConfig();
   const auto my_id = config.GetMyId();
-  const auto num_of_parties = config.GetNumOfParties();
-
-  // if this is someone else's input, prepare for receiving the *public values*
-  // (if it is our's then we would compute it ourselves)
-  // XXX: this could be merged with creating the promise (above in InitializationHelper)
-  if (my_id != static_cast<std::size_t>(input_owner_id_)) {
-    received_public_values_ =
-        config.GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
-            ->GetDataStorage()
-            ->GetBMRData()
-            ->input_public_values_.at(static_cast<std::size_t>(gate_id_))
-            .second.get_future();
-  }
-
-  // prepare for receiving the *public/active keys* of the other parties
-  // XXX: this could be merged with creating the promise (above in InitializationHelper)
-  for (auto i = 0ull; i < num_of_parties; ++i) {
-    if (my_id == i) continue;
-    received_public_keys_.at(i) = config.GetCommunicationContext(i)
-                                      ->GetDataStorage()
-                                      ->GetBMRData()
-                                      ->input_public_keys_.at(static_cast<std::size_t>(gate_id_))
-                                      .second.get_future();
-  }
 
   // create keys etc. for all the wires
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
@@ -210,7 +180,7 @@ void BMRInputGate::EvaluateOnline() {
   }
   // otherwise receive the public values from the party that provides the input
   else {
-    buffer = std::move(*received_public_values_.get());
+    buffer = received_public_values_.get();
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
       assert(wire);
@@ -265,7 +235,7 @@ void BMRInputGate::EvaluateOnline() {
         }
       }
     } else {
-      buffer = std::move(*received_public_keys_.at(i).get());
+      buffer = received_public_keys_.at(i).get();
       assert(bits_ > 0u);
       for (auto j = 0ull; j < output_wires_.size(); ++j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
@@ -767,19 +737,14 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
       for (auto &bv : v) bv = ENCRYPTO::BitVector<>(kappa);
     }
   }
-  received_garbled_rows_.resize(num_parties);
 
+  // store futures for the (partial) garbled tables we will receive during garbling
+  received_garbled_rows_.resize(num_parties);
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
-    auto &data = GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData();
-    auto elem =
-        data->garbled_rows_
-            .emplace(gate_id_,
-                     std::pair<std::size_t,
-                               boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>())
-            .first;
-    auto &bitlen = std::get<0>(elem->second);
-    bitlen = num_wires * batch_size_full * kappa * num_parties;
+    auto &bmr_data = GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData();
+    received_garbled_rows_.at(party_id) = bmr_data->RegisterForGarbledRows(
+        gate_id_, num_wires * batch_size_full * kappa * num_parties);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -836,13 +801,6 @@ void BMRANDGate::EvaluateSetup() {
   const auto num_parties{GetConfig().GetNumOfParties()};
   const auto batch_size_full{num_simd * 4};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
-
-  for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
-    if (party_id == my_id) continue;
-    auto &bmr_data = GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData();
-    received_garbled_rows_.at(party_id) =
-        bmr_data->garbled_rows_.at(static_cast<std::size_t>(gate_id_)).second.get_future();
-  }
 
   std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> r_out(
       num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(num_wires));
@@ -1199,7 +1157,7 @@ void BMRANDGate::EvaluateSetup() {
               // complete offset
               const std::size_t offset = offset_p + offset_w + offset_s + gr_i * kappa;
               garbled_rows_.at(party_j).at(wire_i).at(simd_i * 4 + gr_i) ^=
-                  gr->Subset(offset, offset + kappa);
+                  gr.Subset(offset, offset + kappa);
             }
           }
         }

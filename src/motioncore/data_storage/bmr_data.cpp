@@ -28,29 +28,29 @@
 namespace MOTION {
 
 void BMRData::MessageReceived(const std::uint8_t *message, const BMRDataType type,
-                              const std::size_t i) {
+                              const std::size_t gate_id) {
+  // XXX: maybe check that the message has the right size
   switch (type) {
     case BMRDataType::input_step_0: {
-      assert(input_public_values_.find(i) != input_public_values_.end());
-      std::size_t bitlen = input_public_values_.at(i).first;
-      input_public_values_.at(i).second.set_value(
-          std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
+      assert(input_public_value_promises_.find(gate_id) != input_public_value_promises_.end());
+      std::size_t bitlen = input_public_value_promises_.at(gate_id).first;
+      input_public_value_promises_.at(gate_id).second.set_value(
+          ENCRYPTO::BitVector<>(message, bitlen));
       break;
     }
     case BMRDataType::input_step_1: {
-      assert(input_public_keys_.find(i) != input_public_keys_.end());
-      std::size_t bitlen = input_public_keys_.at(i).first;
+      assert(input_public_key_promises_.find(gate_id) != input_public_key_promises_.end());
+      std::size_t bitlen = input_public_key_promises_.at(gate_id).first;
       assert(bitlen % 128 == 0);
-      input_public_keys_.at(i).second.set_value(
-          std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
+      input_public_key_promises_.at(gate_id).second.set_value(
+          ENCRYPTO::BitVector<>(message, bitlen));
       break;
     }
     case BMRDataType::and_gate: {
-      assert(garbled_rows_.find(i) != garbled_rows_.end());
-      std::size_t bitlen = garbled_rows_.at(i).first;
+      assert(garbled_rows_promises_.find(gate_id) != garbled_rows_promises_.end());
+      std::size_t bitlen = garbled_rows_promises_.at(gate_id).first;
       assert(bitlen % 128 == 0);
-      garbled_rows_.at(i).second.set_value(
-          std::make_unique<ENCRYPTO::BitVector<>>(message, bitlen));
+      garbled_rows_promises_.at(gate_id).second.set_value(ENCRYPTO::BitVector<>(message, bitlen));
       break;
     }
     default:
@@ -58,13 +58,48 @@ void BMRData::MessageReceived(const std::uint8_t *message, const BMRDataType typ
   }
 }
 
-void BMRData::Clear() {
-  for (auto &e : input_public_values_) {
-    e.second.second = decltype(e.second.second)();
+void BMRData::Clear() {}
+
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPublicValues(
+    std::size_t gate_id, std::size_t num_blocks) {
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
+  auto future = promise.get_future();
+  auto [_, success] = input_public_value_promises_.insert(
+      {gate_id, std::make_pair(num_blocks, std::move(promise))});
+  if (!success) {
+    // XXX: write an error to the log
+    return {};  // XXX: maybe throw an exception here
   }
-  for (auto &e : input_public_keys_) {
-    e.second.second = decltype(e.second.second)();
+  // XXX: write a note to the log
+  return future;
+}
+
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPublicKeys(
+    std::size_t gate_id, std::size_t num_blocks) {
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
+  auto future = promise.get_future();
+  auto [_, success] =
+      input_public_key_promises_.insert({gate_id, std::make_pair(num_blocks, std::move(promise))});
+  if (!success) {
+    // XXX: write an error to the log
+    return {};  // XXX: maybe throw an exception here
   }
+  // XXX: write a note to the log
+  return future;
+}
+
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForGarbledRows(
+    std::size_t gate_id, std::size_t bitlen) {
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
+  auto future = promise.get_future();
+  auto [_, success] =
+      garbled_rows_promises_.insert({gate_id, std::make_pair(bitlen, std::move(promise))});
+  if (!success) {
+    // XXX: write an error to the log
+    return {};  // XXX: maybe throw an exception here
+  }
+  // XXX: write a note to the log
+  return future;
 }
 
 }  // namespace MOTION

@@ -26,9 +26,8 @@
 
 #include "gate.h"
 
-#include <boost/fiber/future.hpp>
-
 #include "utility/bit_vector.h"
+#include "utility/reusable_future.h"
 
 namespace MOTION {
 
@@ -83,9 +82,8 @@ class GMWToBMRGate final : public Gates::Interfaces::OneGate {
   GMWToBMRGate(const Gate &) = delete;
 
  private:
-  std::vector<boost::fibers::future<std::unique_ptr<ENCRYPTO::BitVector<>>>>
-      received_public_values_;
-  std::vector<boost::fibers::future<std::unique_ptr<ENCRYPTO::BitVector<>>>> received_public_keys_;
+  std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>> received_public_values_;
+  std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>> received_public_keys_;
 };
 
 }  // namespace Gates::Conversion

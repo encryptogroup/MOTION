@@ -58,7 +58,7 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) : OneGate(parent->Get
   auto num_wires = parent_.size();
   output_wires_.reserve(num_wires);
   for (size_t i = 0; i < num_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
+    auto &w = output_wires_.emplace_back(std::static_pointer_cast<Wires::Wire>(
         std::make_shared<Wires::GMWWire>(parent->GetNumOfSIMDValues(), backend_)));
     GetRegister().RegisterNextWire(w);
   }
@@ -155,23 +155,16 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->Get
   assert(gate_id_ >= 0);
   const auto my_id{GetConfig().GetMyId()};
 
-  for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
-    if (my_id == i) continue;
+  for (auto party_i = 0ull; party_i < GetConfig().GetNumOfParties(); ++party_i) {
+    if (my_id == party_i) continue;
     auto &data_storage =
-        GetConfig().GetCommunicationContext(static_cast<std::size_t>(i))->GetDataStorage();
+        GetConfig().GetCommunicationContext(static_cast<std::size_t>(party_i))->GetDataStorage();
     auto &bmr_data = data_storage->GetBMRData();
 
-    auto [it_pub_vals, _] = bmr_data->input_public_values_.emplace(
-        static_cast<std::size_t>(gate_id_),
-        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
-    auto &bitlen_pub_values{std::get<0>(it_pub_vals->second)};
-    bitlen_pub_values = num_simd * output_wires_.size();
-
-    auto [it_pub_keys, __] = bmr_data->input_public_keys_.emplace(
-        gate_id_,
-        std::pair<std::size_t, boost::fibers::promise<std::unique_ptr<ENCRYPTO::BitVector<>>>>());
-    auto &bitlen_pub_keys = std::get<0>(it_pub_keys->second);
-    bitlen_pub_keys = bitlen_pub_values * kappa;
+    received_public_values_.at(party_i) =
+        bmr_data->RegisterForInputPublicValues(gate_id_, num_simd * output_wires_.size());
+    received_public_keys_.at(party_i) =
+        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd * output_wires_.size() * kappa);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -188,20 +181,6 @@ void GMWToBMRGate::EvaluateSetup() {
   if constexpr (MOTION_DEBUG) {
     GetLogger().LogDebug(fmt::format(
         "Start evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
-  }
-
-  const auto my_id{GetConfig().GetMyId()};
-  const auto num_parties{GetConfig().GetNumOfParties()};
-
-  for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
-    if (party_id == my_id) continue;
-    const auto &bmr_data{
-        GetConfig().GetCommunicationContext(party_id)->GetDataStorage()->GetBMRData()};
-
-    received_public_values_.at(party_id) =
-        bmr_data->input_public_values_.at(static_cast<std::size_t>(gate_id_)).second.get_future();
-    received_public_keys_.at(party_id) =
-        bmr_data->input_public_keys_.at(static_cast<std::size_t>(gate_id_)).second.get_future();
   }
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
@@ -252,7 +231,7 @@ void GMWToBMRGate::EvaluateOnline() {
   // receive masked values if not my input
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     if (party_id == my_id) continue;
-    buffer = std::move(*received_public_values_.at(party_id).get());
+    buffer = received_public_values_.at(party_id).get();
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
       assert(bmr_out);
@@ -298,7 +277,7 @@ void GMWToBMRGate::EvaluateOnline() {
         }
       }
     } else {
-      buffer = std::move(*received_public_keys_.at(i).get());
+      buffer = received_public_keys_.at(i).get();
       assert(num_simd > 0u);
       for (auto j = 0ull; j < output_wires_.size(); ++j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(j));
