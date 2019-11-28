@@ -144,9 +144,10 @@ const Communication::HelloMessage *DataStorage::GetSentHelloMessage() {
 void DataStorage::Reset() {
   Clear();
   output_message_promises_.clear();
+  bmr_data_->Reset();
 }
 
-void DataStorage::Clear() { bmr_data_->Clear(); }
+void DataStorage::Clear() { }
 
 void DataStorage::SetReceivedSyncState(const std::size_t state) {
   {

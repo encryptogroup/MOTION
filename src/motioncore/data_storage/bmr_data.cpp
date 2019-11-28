@@ -40,15 +40,14 @@ void BMRData::MessageReceived(const std::uint8_t *message, const BMRDataType typ
     }
     case BMRDataType::input_step_1: {
       assert(input_public_key_promises_.find(gate_id) != input_public_key_promises_.end());
-      std::size_t bitlen = input_public_key_promises_.at(gate_id).first;
-      assert(bitlen % 128 == 0);
+      auto num_blocks = input_public_key_promises_.at(gate_id).first;
       input_public_key_promises_.at(gate_id).second.set_value(
-          ENCRYPTO::BitVector<>(message, bitlen));
+          ENCRYPTO::block128_vector(num_blocks, message));
       break;
     }
     case BMRDataType::and_gate: {
       assert(garbled_rows_promises_.find(gate_id) != garbled_rows_promises_.end());
-      std::size_t num_blocks = garbled_rows_promises_.at(gate_id).first;
+      auto num_blocks = garbled_rows_promises_.at(gate_id).first;
       garbled_rows_promises_.at(gate_id).second.set_value(
           ENCRYPTO::block128_vector(num_blocks, message));
       break;
@@ -58,7 +57,11 @@ void BMRData::MessageReceived(const std::uint8_t *message, const BMRDataType typ
   }
 }
 
-void BMRData::Clear() {}
+void BMRData::Reset() {
+  input_public_value_promises_.clear();
+  input_public_key_promises_.clear();
+  garbled_rows_promises_.clear();
+}
 
 ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPublicValues(
     std::size_t gate_id, std::size_t num_blocks) {
@@ -74,9 +77,9 @@ ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPu
   return future;
 }
 
-ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPublicKeys(
+ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector> BMRData::RegisterForInputPublicKeys(
     std::size_t gate_id, std::size_t num_blocks) {
-  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
+  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
   auto future = promise.get_future();
   auto [_, success] =
       input_public_key_promises_.insert({gate_id, std::make_pair(num_blocks, std::move(promise))});
@@ -89,11 +92,11 @@ ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> BMRData::RegisterForInputPu
 }
 
 ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector> BMRData::RegisterForGarbledRows(
-    std::size_t gate_id, std::size_t num_blocks) {
+    std::size_t gate_id, std::size_t bitlen) {
   ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
   auto future = promise.get_future();
   auto [_, success] =
-      garbled_rows_promises_.insert({gate_id, std::make_pair(num_blocks, std::move(promise))});
+      garbled_rows_promises_.insert({gate_id, std::make_pair(bitlen, std::move(promise))});
   if (!success) {
     // XXX: write an error to the log
     return {};  // XXX: maybe throw an exception here

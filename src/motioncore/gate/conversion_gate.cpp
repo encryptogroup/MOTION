@@ -164,7 +164,7 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->Get
     received_public_values_.at(party_i) =
         bmr_data->RegisterForInputPublicValues(gate_id_, num_simd * output_wires_.size());
     received_public_keys_.at(party_i) =
-        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd * output_wires_.size() * kappa);
+        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd * output_wires_.size());
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -283,19 +283,14 @@ void GMWToBMRGate::EvaluateOnline() {
         }
       }
     } else {
-      buffer = received_public_keys_.at(party_i).get();
+      auto key_buffer = received_public_keys_.at(party_i).get();
       assert(num_simd > 0u);
       for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
         for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
           wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
-              ENCRYPTO::block128_t::make_from_memory(
-                  buffer
-                      .Subset((wire_j * num_simd + simd_k) * kappa,
-                              (wire_j * num_simd + simd_k + 1) * kappa)
-                      .GetData()
-                      .data());
+            key_buffer.at(wire_j * num_simd + simd_k);
         }
       }
     }

@@ -42,25 +42,26 @@ namespace MOTION {
 enum BMRDataType : uint { input_step_0 = 0, input_step_1 = 1, and_gate = 2 };
 
 struct BMRData {
-  void MessageReceived(const std::uint8_t* message, const BMRDataType type,
-                       const std::size_t gate_id);
-  void Clear();
+  void MessageReceived(const std::uint8_t* message, const BMRDataType type, const std::size_t i);
+  void Reset();
 
   ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForInputPublicValues(
       std::size_t gate_id, std::size_t bitlen);
-  ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForInputPublicKeys(
+  ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector> RegisterForInputPublicKeys(
       std::size_t gate_id, std::size_t num_blocks);
   ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector> RegisterForGarbledRows(
       std::size_t gate_id, std::size_t num_blocks);
 
-  // bitlen and promise with the return buffer
+  // gate_id -> bit size X promise with public values
   using in_pub_val_t =
       std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>;
   std::unordered_map<std::size_t, in_pub_val_t> input_public_value_promises_;
 
-  using keys_t = std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>;
+  // gate_id -> block size X promise with keys
+  using keys_t = std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>;
   std::unordered_map<std::size_t, keys_t> input_public_key_promises_;
 
+  // gate_id -> block size X promise with partial garbled rows
   using g_rows_t =
       std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>;
   std::unordered_map<std::size_t, g_rows_t> garbled_rows_promises_;

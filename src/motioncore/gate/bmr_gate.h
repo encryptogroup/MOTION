@@ -70,7 +70,7 @@ class BMRInputGate final : public Gates::Interfaces::InputGate {
   std::vector<ENCRYPTO::BitVector<>> input_;
   std::size_t bits_;  ///< Number of parallel values on wires
   ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> received_public_values_;
-  std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>> received_public_keys_;
+  std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_public_keys_;
 };
 
 constexpr std::size_t ALL = std::numeric_limits<std::int64_t>::max();

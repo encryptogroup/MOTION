@@ -96,7 +96,7 @@ void BMRInputGate::InitializationHelper() {
     if (my_id == party_i) continue;
     auto &bmr_data = GetConfig().GetCommunicationContext(party_i)->GetDataStorage()->GetBMRData();
     received_public_keys_.at(party_i) =
-        bmr_data->RegisterForInputPublicKeys(gate_id_, bits_ * input_.size() * kappa);
+        bmr_data->RegisterForInputPublicKeys(gate_id_, bits_ * input_.size());
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -244,19 +244,14 @@ void BMRInputGate::EvaluateOnline() {
         }
       }
     } else {
-      buffer = received_public_keys_.at(party_i).get();
+      auto key_buffer = received_public_keys_.at(party_i).get();
       assert(bits_ > 0u);
       for (auto wire_j = 0ull; wire_j < num_wires; ++wire_j) {
         auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_j));
         assert(wire);
         for (auto simd_k = 0ull; simd_k < num_simd; ++simd_k) {
           wire->GetMutablePublicKeys().at(pk_index(simd_k, party_i)) =
-              ENCRYPTO::block128_t::make_from_memory(
-                  buffer
-                      .Subset((wire_j * bits_ + simd_k) * kappa,
-                              (wire_j * bits_ + simd_k + 1) * kappa)
-                      .GetData()
-                      .data());
+            key_buffer.at(wire_j * bits_ + simd_k);
         }
       }
     }
