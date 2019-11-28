@@ -800,11 +800,6 @@ void BMRANDGate::EvaluateSetup() {
   const auto batch_size_full{num_simd * 4};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
-  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> r_out(
-      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(num_wires));
-  std::vector<std::vector<std::vector<ENCRYPTO::BitVector<>>>> s_out(
-      num_parties, std::vector<std::vector<ENCRYPTO::BitVector<>>>(num_wires));
-
   std::vector<std::vector<ENCRYPTO::BitVector<>>> choices(
       num_parties, std::vector<ENCRYPTO::BitVector<>>(num_wires));
 
