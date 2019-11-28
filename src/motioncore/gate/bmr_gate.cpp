@@ -222,7 +222,7 @@ void BMRInputGate::EvaluateOnline() {
     backend_.Send(party_i, Communication::BuildBMRInput1Message(gate_id_, payload));
   }
 
-  auto pk_index = [num_parties](auto simd_i, auto party_i) {
+  const auto pk_index = [num_parties](auto simd_i, auto party_i) {
     return simd_i * num_parties + party_i;
   };
 
@@ -774,7 +774,8 @@ void BMRANDGate::EvaluateSetup() {
   const auto num_parties{GetConfig().GetNumOfParties()};
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
-  auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i, auto party_i) {
+  const auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i,
+                                                auto party_i) {
     return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties +
            party_i;
   };
@@ -1143,11 +1144,12 @@ void BMRANDGate::EvaluateOnline() {
   const auto num_simd = output_wires_.at(0)->GetNumOfSIMDValues();
   const auto &R = GetConfig().GetBMRRandomOffset();
 
-  auto pk_index = [num_parties](auto simd_i, auto party_i) {
+  const auto pk_index = [num_parties](auto simd_i, auto party_i) {
     return simd_i * num_parties + party_i;
   };
 
-  auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i, auto party_i) {
+  const auto gt_index = [num_simd, num_parties](auto wire_i, auto simd_i, auto row_i,
+                                                auto party_i) {
     return wire_i * num_simd * 4 * num_parties + simd_i * (4 * num_parties) + row_i * num_parties +
            party_i;
   };
