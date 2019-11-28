@@ -401,7 +401,7 @@ void BMROutputGate::EvaluateOnline() {
 
   auto &wires = gmw_out_share_->GetMutableWires();
   for (i = 0; i < wires.size(); ++i) {
-    const auto bmr_wire = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
+    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
     bmr_wire->GetIsReadyCondition()->Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires.at(i));
     assert(bmr_wire);
@@ -412,7 +412,7 @@ void BMROutputGate::EvaluateOnline() {
   }
 
   for (i = 0; i < output_wires_.size(); ++i) {
-    const auto bmr_wire = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
+    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(out_->GetOutputWires().at(i));
     // wait until the GMWOutputGate is evaluated
     gmw_wire->GetIsReadyCondition()->Wait();
@@ -497,8 +497,8 @@ void BMRXORGate::EvaluateSetup() {
 
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
-    auto bmr_a = std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(i));
-    auto bmr_b = std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(i));
+    const auto bmr_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(i));
+    const auto bmr_b = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(i));
     assert(bmr_out);
     assert(bmr_a);
     assert(bmr_b);
@@ -535,8 +535,8 @@ void BMRXORGate::EvaluateOnline() {
   }
 
   for (auto i = 0ull; i < parent_a_.size(); ++i) {
-    auto wire_a = std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(i));
-    auto wire_b = std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(i));
+    const auto wire_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(i));
+    const auto wire_b = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(i));
     assert(wire_a);
     assert(wire_b);
 
@@ -624,7 +624,7 @@ void BMRINVGate::EvaluateSetup() {
 
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
-    auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
+    const auto bmr_in = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
     assert(bmr_out);
     assert(bmr_in);
     bmr_in->GetSetupReadyCondition()->Wait();
@@ -663,7 +663,7 @@ void BMRINVGate::EvaluateOnline() {
   }
 
   for (auto i = 0ull; i < parent_.size(); ++i) {
-    auto bmr_in = std::dynamic_pointer_cast<Wires::BMRWire>(parent_.at(i));
+    const auto bmr_in = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
     assert(bmr_in);
 
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
@@ -803,8 +803,8 @@ void BMRANDGate::GenerateRandomness() {
       key_1 = key_0 ^ R;
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
-        auto bmr_a = std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i));
-        auto bmr_b = std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i));
+        const auto bmr_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i));
+        const auto bmr_b = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i));
         assert(bmr_a);
         assert(bmr_b);
         bmr_a->GetSetupReadyCondition()->Wait();
@@ -861,8 +861,8 @@ void BMRANDGate::EvaluateSetup() {
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
-    auto bmr_a{std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i))};
-    auto bmr_b{std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i))};
+    const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
+    const auto bmr_b{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i))};
     assert(bmr_out);
     assert(bmr_a);
     assert(bmr_b);
@@ -917,8 +917,8 @@ void BMRANDGate::EvaluateSetup() {
 
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
-    auto bmr_a{std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i))};
-    auto bmr_b{std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i))};
+    const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
+    const auto bmr_b{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i))};
     assert(bmr_out);
     assert(bmr_a);
     assert(bmr_b);
@@ -991,8 +991,8 @@ void BMRANDGate::EvaluateSetup() {
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
-    const auto bmr_a{std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i))};
-    const auto bmr_b{std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i))};
+    const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
+    const auto bmr_b{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i))};
     assert(bmr_a);
     assert(bmr_b);
 
@@ -1232,8 +1232,8 @@ void BMRANDGate::EvaluateOnline() {
   for (auto wire_i = 0ull; wire_i < output_wires_.size(); ++wire_i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i));
     assert(bmr_out);
-    auto wire_a = std::dynamic_pointer_cast<Wires::BMRWire>(parent_a_.at(wire_i));
-    auto wire_b = std::dynamic_pointer_cast<Wires::BMRWire>(parent_b_.at(wire_i));
+    const auto wire_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i));
+    const auto wire_b = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i));
     assert(wire_a);
     assert(wire_b);
 
