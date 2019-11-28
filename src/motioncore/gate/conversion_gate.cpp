@@ -208,6 +208,7 @@ void GMWToBMRGate::EvaluateOnline() {
   const auto num_simd{output_wires_.at(0)->GetNumOfSIMDValues()};
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
+  const auto &R = GetConfig().GetBMRRandomOffset();
   ENCRYPTO::BitVector<> buffer;
 
   // mask and publish inputs
@@ -243,14 +244,12 @@ void GMWToBMRGate::EvaluateOnline() {
   // rearrange keys corresponding to the public values into one buffer
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
     auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
-    const auto &keys = wire->GetSecretKeys();
-    const auto &keys_0 = std::get<0>(keys);
-    const auto &keys_1 = std::get<1>(keys);
+    const auto &keys_0 = wire->GetSecretKeys();
     for (auto j = 0ull; j < num_simd; ++j) {
       if (wire->GetPublicValues()[j])
-        buffer.Append(keys_1.at(j));
+        buffer.Append(ENCRYPTO::BitVector<>((keys_0.at(j) ^ R).data(), kappa));
       else
-        buffer.Append(keys_0.at(j));
+        buffer.Append(ENCRYPTO::BitVector<>(keys_0.at(j).data(), kappa));
     }
   }
 
@@ -271,9 +270,11 @@ void GMWToBMRGate::EvaluateOnline() {
         assert(wire);
         for (auto k = 0ull; k < num_simd; ++k) {
           if (wire->GetPublicValues()[k])
-            wire->GetMutablePublicKeys().at(i).at(k) = std::get<1>(wire->GetSecretKeys()).at(k);
+            wire->GetMutablePublicKeys().at(i).at(k) =
+                ENCRYPTO::BitVector<>((wire->GetSecretKeys().at(k) ^ R).data(), kappa);
           else
-            wire->GetMutablePublicKeys().at(i).at(k) = std::get<0>(wire->GetSecretKeys()).at(k);
+            wire->GetMutablePublicKeys().at(i).at(k) =
+                ENCRYPTO::BitVector<>(wire->GetSecretKeys().at(k).data(), kappa);
         }
       }
     } else {

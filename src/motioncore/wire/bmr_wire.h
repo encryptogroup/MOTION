@@ -27,8 +27,8 @@
 #include "wire.h"
 
 #include "utility/bit_vector.h"
+#include "utility/block.h"
 #include "utility/fiber_condition.h"
-
 
 namespace MOTION::Wires {
 
@@ -60,9 +60,9 @@ class BMRWire : public BooleanWire {
 
   ENCRYPTO::BitVector<> &GetMutablePermutationBits() { return shared_permutation_bits_; }
 
-  const auto &GetSecretKeys() const { return secret_keys_; }
+  const auto &GetSecretKeys() const { return secret_0_keys_; }
 
-  auto &GetMutableSecretKeys() { return secret_keys_; }
+  auto &GetMutableSecretKeys() { return secret_0_keys_; }
 
   const auto &GetPublicKeys() const { return public_keys_; }
 
@@ -91,9 +91,7 @@ class BMRWire : public BooleanWire {
   // also store the cleartext values in public_values_ if the wire is the outp
   ENCRYPTO::BitVector<> public_values_, shared_permutation_bits_;
 
-  std::pair<std::vector<ENCRYPTO::BitVector<>>, std::vector<ENCRYPTO::BitVector<>>> secret_keys_;
-  // XXX: ^ it should be sufficient to store one of those as we have the global
-  // offset for freeXOR
+  ENCRYPTO::block128_vector secret_0_keys_;
 
   // for each party for each bit
   std::vector<std::vector<ENCRYPTO::BitVector<>>> public_keys_;

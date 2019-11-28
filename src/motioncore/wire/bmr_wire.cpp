@@ -30,29 +30,31 @@
 namespace MOTION::Wires {
 
 BMRWire::BMRWire(const std::size_t n_simd, Backend& backend, bool is_constant)
-    : BooleanWire(backend, n_simd, is_constant) {
+    : BooleanWire(backend, n_simd, is_constant), secret_0_keys_(n_simd) {
   InitializationHelperBMR();
 }
 
 BMRWire::BMRWire(ENCRYPTO::BitVector<>&& values, Backend& backend, bool is_constant)
-    : BooleanWire(backend, values.GetSize(), is_constant), public_values_(std::move(values)) {
+    : BooleanWire(backend, values.GetSize(), is_constant),
+      public_values_(std::move(values)),
+      secret_0_keys_(values.GetSize()) {
   InitializationHelperBMR();
 }
 
 BMRWire::BMRWire(const ENCRYPTO::BitVector<>& values, Backend& backend, bool is_constant)
-    : BooleanWire(backend, values.GetSize(), is_constant), public_values_(values) {
+    : BooleanWire(backend, values.GetSize(), is_constant),
+      public_values_(values),
+      secret_0_keys_(values.GetSize()) {
   InitializationHelperBMR();
 }
 
 BMRWire::BMRWire(bool value, Backend& backend, bool is_constant)
-    : BooleanWire(backend, 1, is_constant), public_values_(value) {
+    : BooleanWire(backend, 1, is_constant), public_values_(value), secret_0_keys_(1) {
   InitializationHelperBMR();
 }
 
 void BMRWire::InitializationHelperBMR() {
   const auto num_parties = backend_.GetConfig()->GetNumOfParties();
-  std::get<0>(secret_keys_).resize(n_simd_);
-  std::get<1>(secret_keys_).resize(n_simd_);
   public_keys_.resize(num_parties);
   for (auto i = 0ull; i < public_keys_.size(); ++i) public_keys_.at(i).resize(n_simd_);
 
@@ -63,10 +65,7 @@ void BMRWire::InitializationHelperBMR() {
 void BMRWire::GenerateRandomPrivateKeys() {
   const auto& R{backend_.GetConfig()->GetBMRRandomOffset()};
   const auto R_as_bv = ENCRYPTO::AlignedBitVector(R.data(), kappa);
-  for (auto i = 0ull; i < n_simd_; ++i) {
-    std::get<0>(secret_keys_).at(i) = ENCRYPTO::BitVector<>::Random(kappa);
-    std::get<1>(secret_keys_).at(i) = std::get<0>(secret_keys_).at(i) ^ R_as_bv;
-  }
+  secret_0_keys_.set_to_random();
 }
 
 void BMRWire::GenerateRandomPermutationBits() {
