@@ -93,10 +93,7 @@ int main(int ac, char* av[]) {
   // if help flag is set - print allowed command line arguments and exit
   if (help_flag) return 1;
 
-  const auto num_simd{vm["num-simd"].as<std::size_t>()};
   const auto num_repetitions{vm["repetitions"].as<std::size_t>()};
-  MOTION::MPCProtocol protocol;
-  const std::string protocol_str{vm["protocol"].as<std::string>()};
 
   std::vector<Combination> combinations;
 
