@@ -169,13 +169,8 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
 
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_garbled_rows_;
 
-  // structure: parties X wires X (simd X row)
-  //
-  // XXX: Put all the stuff into a single buffer
-  // std::vector<std::vector<std::vector<ENCRYPTO::block128_t>>> garbled_rows_;
-  //
-  // structure: wires X (simd X (row X parties))
-  // std::vector<ENCRYPTO::block128_vector> garbled_rows_new_;
+  // buffer to store all garbled tables for all wires
+  // structure: wires X (simd X (row_00 || row_01 || row_10 || row_11))
   ENCRYPTO::block128_vector garbled_tables_;
 
   void GenerateRandomness();

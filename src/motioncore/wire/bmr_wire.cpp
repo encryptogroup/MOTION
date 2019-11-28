@@ -61,11 +61,7 @@ void BMRWire::InitializationHelperBMR() {
       std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_ready_.load(); });
 }
 
-void BMRWire::GenerateRandomPrivateKeys() {
-  const auto& R{backend_.GetConfig()->GetBMRRandomOffset()};
-  const auto R_as_bv = ENCRYPTO::AlignedBitVector(R.data(), kappa);
-  secret_0_keys_.set_to_random();
-}
+void BMRWire::GenerateRandomPrivateKeys() { secret_0_keys_.set_to_random(); }
 
 void BMRWire::GenerateRandomPermutationBits() {
   shared_permutation_bits_ = ENCRYPTO::BitVector<>::Random(n_simd_);

@@ -91,9 +91,11 @@ class BMRWire : public BooleanWire {
   // also store the cleartext values in public_values_ if the wire is the outp
   ENCRYPTO::BitVector<> public_values_, shared_permutation_bits_;
 
+  // store one of the secret keys since we have the global offset for free XOR
   ENCRYPTO::block128_vector secret_0_keys_;
 
-  // for each simd value, for each party
+  // buffer for the super keys corresponding to each simd value
+  // structure: simd X (k_1 || k_2 || ... || k_n)
   ENCRYPTO::block128_vector public_keys_;
 
   std::atomic<bool> setup_ready_{false};
