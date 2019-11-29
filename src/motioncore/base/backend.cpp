@@ -495,7 +495,10 @@ void Backend::Sync() {
 }
 
 void Backend::ComputeBaseOTs() {
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::base_ots>();
   base_ot_provider_->ComputeBaseOTs();
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::base_ots>();
+
   base_ots_finished_ = true;
 }
 
@@ -545,13 +548,9 @@ void Backend::OTExtensionSetup() {
     return;
   }
 
-  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::base_ots>();
-
   if (!base_ots_finished_) {
     ComputeBaseOTs();
   }
-
-  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::base_ots>();
 
   if (!GetConfig()->IsFixedKeyAESKeyReady()) GenerateFixedKeyAESKey();
 
