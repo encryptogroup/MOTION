@@ -41,8 +41,8 @@ Wire::Wire(Backend &backend, std::size_t num_simd, bool is_constant)
       is_constant_(is_constant),
       is_done_condition_(
           std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); })) {
-        InitializationHelper();
-      }
+  InitializationHelper();
+}
 
 Wire::~Wire() { assert(wire_id_ >= 0); }
 

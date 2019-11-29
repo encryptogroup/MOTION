@@ -111,11 +111,11 @@ class Wire {
 
   static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
 
-  void InitializationHelper();
-
   virtual void DynamicClear(){};
 
  private:
+  void InitializationHelper();
+
   std::mutex mutex_;
 };
 

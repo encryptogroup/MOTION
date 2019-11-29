@@ -27,9 +27,7 @@
 namespace MOTION::Wires {
 
 GMWWire::GMWWire(std::size_t num_simd, Backend &backend, bool is_constant)
-    : BooleanWire(backend, num_simd, is_constant) {
-  InitializationHelper();
-}
+    : BooleanWire(backend, num_simd, is_constant) {}
 
 GMWWire::GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant)
     : BooleanWire(backend, values.GetSize(), is_constant), values_(std::move(values)) {}
