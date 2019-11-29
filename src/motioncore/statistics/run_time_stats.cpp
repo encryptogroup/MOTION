@@ -55,6 +55,7 @@ std::string RunTimeStats::print_human_readable() const {
      << fmt::format("SP Setup            {:{}.3f} ms\n", at(ms, StatID::sp_setup), width)
      << fmt::format("SB Presetup         {:{}.3f} ms\n", at(ms, StatID::sb_presetup), width)
      << fmt::format("SB Setup            {:{}.3f} ms\n", at(ms, StatID::sb_setup), width)
+     << fmt::format("Base OTs            {:{}.3f} ms\n", at(ms, StatID::base_ots), width)
      << fmt::format("OT Extension Setup  {:{}.3f} ms\n", at(ms, StatID::ot_extension_setup), width)
      << fmt::format("-------------------------\n")
      << fmt::format("Preprocessing Total {:{}.3f} ms\n", at(ms, StatID::preprocessing), width)

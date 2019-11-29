@@ -46,6 +46,7 @@ struct RunTimeStats {
     gates_setup,
     gates_online,
     evaluate,
+    base_ots,
     MAX  // maximal value of this Enum, use as size
   };
 

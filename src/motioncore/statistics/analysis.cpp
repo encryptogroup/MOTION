@@ -20,10 +20,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "analysis.h"
 #include <fmt/format.h>
 #include <cmath>
 #include <sstream>
-#include "analysis.h"
 
 namespace MOTION {
 namespace Statistics {
@@ -78,6 +78,7 @@ std::string AccumulatedRunTimeStats::print_human_readable() const {
      << format_line("SP Setup", unit, at(accumulators_, StatID::sp_setup), field_width)
      << format_line("SB Presetup", unit, at(accumulators_, StatID::sb_presetup), field_width)
      << format_line("SB Setup", unit, at(accumulators_, StatID::sb_setup), field_width)
+     << format_line("Base OTs", unit, at(accumulators_, StatID::base_ots), field_width)
      << format_line("OT Extension Setup", unit, at(accumulators_, StatID::ot_extension_setup),
                     field_width)
      << "---------------------------------------------------------------------------\n"
