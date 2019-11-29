@@ -81,28 +81,18 @@ void OTProviderFromOTExtension::SendSetup() {
 
   // receive the vectors u one by one from the receiver
   // and xor them to the expanded keys if the corresponding selection bit is 1
-  // XXX: why is this done in such a weird way?
-  // * why one by one? to prevend large messages?
-  // * why the thing with the u_ids? can the vectors be transmitted in the wrong order?
-  while (!(*ot_ext_snd.received_u_condition_)() || !ot_ext_snd.received_u_ids_.empty()) {
-    std::size_t u_id = std::numeric_limits<std::size_t>::max();
-    {
-      std::scoped_lock lock(ot_ext_snd.received_u_condition_->GetMutex());
-      if (!ot_ext_snd.received_u_ids_.empty()) {
-        u_id = ot_ext_snd.received_u_ids_.front();
-        ot_ext_snd.received_u_ids_.pop();
-      }
-    }
-    if (u_id != std::numeric_limits<std::size_t>::max()) {
-      if (base_ots_rcv.c_[u_id]) {
-        const auto &u = ot_ext_snd.u_.at(u_id);
-        ENCRYPTO::BitSpan bs(v[u_id].GetMutableData().data(), bit_size);
-        bs ^= u;
-      }
-    } else {
-      ot_ext_snd.received_u_condition_->WaitFor(std::chrono::milliseconds(1));
+  // transmitted one by one to prevent waiting for finishing all messages to start sending
+  // the vectors can be transmitted in the wrong order
+
+  for (auto it = ot_ext_snd.u_futures_.begin(); it < ot_ext_snd.u_futures_.end(); ++it) {
+    const std::size_t u_id{it->get()};
+    if (base_ots_rcv.c_[u_id]) {
+      const auto &u = ot_ext_snd.u_[u_id];
+      ENCRYPTO::BitSpan bs(v[u_id].GetMutableData().data(), bit_size, true);
+      bs ^= u;
     }
   }
+
   // delete the allocated memory
   ot_ext_snd.u_ = {};
 
@@ -167,7 +157,7 @@ void OTProviderFromOTExtension::SendSetup() {
     ot_ext_snd.setup_finished_ = true;
   }
   ot_ext_snd.setup_finished_cond_->NotifyAll();
-}
+}  // namespace ENCRYPTO::ObliviousTransfer
 
 void OTProviderFromOTExtension::ReceiveSetup() {
   // some index variables
@@ -878,8 +868,6 @@ void OTProviderSender::Clear() {
     std::scoped_lock lock(ot_ext_snd.corrections_mutex_);
     ot_ext_snd.received_correction_offsets_.clear();
   }
-
-  ot_ext_snd.num_u_received_ = 0;
 }
 
 void OTProviderSender::Reset() {

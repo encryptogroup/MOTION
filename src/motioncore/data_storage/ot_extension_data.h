@@ -120,10 +120,12 @@ struct OTExtensionSenderData {
 
   /// receiver's mask that are needed to construct matrix @param V_
   std::array<ENCRYPTO::AlignedBitVector, 128> u_;
-  std::queue<std::size_t> received_u_ids_;
-  std::size_t num_u_received_{0};
-  std::unique_ptr<ENCRYPTO::Condition> received_u_condition_;
 
+
+  std::array<ENCRYPTO::ReusablePromise<std::size_t>, 128> u_promises_;
+  std::array<ENCRYPTO::ReusableFuture<std::size_t>, 128> u_futures_;
+  std::mutex u_mutex_;
+  std::size_t num_received_u_{0};
   // matrix of the OT extension scheme
   // XXX: can't we delete this after setup?
   std::shared_ptr<ENCRYPTO::BitMatrix> V_;

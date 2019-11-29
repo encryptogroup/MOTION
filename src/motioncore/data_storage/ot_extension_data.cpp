@@ -38,11 +38,10 @@ OTExtensionReceiverData::OTExtensionReceiverData() {
 }
 
 OTExtensionSenderData::OTExtensionSenderData() {
-  received_u_condition_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return num_u_received_ == u_.size(); });
-
   setup_finished_cond_ =
       std::make_unique<ENCRYPTO::Condition>([this]() { return setup_finished_.load(); });
+
+  for (std::size_t i = 0; i < u_promises_.size(); ++i) u_futures_[i] = u_promises_[i].get_future();
 }
 
 void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExtensionDataType type,
@@ -51,28 +50,23 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
     case OTExtensionDataType::rcv_masks: {
       {
         while (sender_data_.bit_size_ == 0) std::this_thread::yield();
-        std::scoped_lock lock(sender_data_.received_u_condition_->GetMutex());
-        sender_data_.u_.at(i) = ENCRYPTO::AlignedBitVector(message, sender_data_.bit_size_);
-        sender_data_.num_u_received_++;
-        sender_data_.received_u_ids_.push(i);
+        std::scoped_lock lock(sender_data_.u_mutex_);
+        sender_data_.u_[i] = ENCRYPTO::AlignedBitVector(message, sender_data_.bit_size_);
+        sender_data_.u_promises_[sender_data_.num_received_u_].set_value(i);
+
+        // set to 0 after Clear()
+        sender_data_.num_received_u_++;
       }
 
-      sender_data_.received_u_condition_->NotifyAll();
       break;
     }
     case OTExtensionDataType::rcv_corrections: {
       auto cond = sender_data_.received_correction_offsets_cond_.find(i);
-      if (cond == sender_data_.received_correction_offsets_cond_.end()) {
-        throw std::runtime_error(fmt::format(
-            "Could not find Condition for OT#{} OTExtensionDataType::rcv_corrections", i));
-      }
+      assert(cond != sender_data_.received_correction_offsets_cond_.end());
       {
         std::scoped_lock lock(cond->second->GetMutex(), sender_data_.corrections_mutex_);
         auto num_ots = sender_data_.num_ots_in_batch_.find(i);
-        if (num_ots == sender_data_.num_ots_in_batch_.end()) {
-          throw std::runtime_error(fmt::format(
-              "Could not find num_ots for OT#{} OTExtensionDataType::rcv_corrections", i));
-        }
+        assert(num_ots != sender_data_.num_ots_in_batch_.end());
         ENCRYPTO::BitVector<> local_corrections(message, num_ots->second);
         sender_data_.corrections_.Copy(i, i + num_ots->second, local_corrections);
         sender_data_.received_correction_offsets_.emplace(i);
@@ -86,42 +80,26 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
 
         const auto bitlen = receiver_data_.bitlengths_.at(i);
         const auto bs_it = receiver_data_.num_ots_in_batch_.find(i);
-        if (bs_it == receiver_data_.num_ots_in_batch_.end()) {
-          throw std::runtime_error(fmt::format(
-              "Could not find batch size for OT#{} OTExtensionDataType::snd_messages", i));
-        }
+        assert(bs_it != receiver_data_.num_ots_in_batch_.end());
         const auto batch_size = bs_it->second;
 
         if (receiver_data_.fixed_xcot_128_ot_.count(i) == 1) {
           // XXX: new implementation, don't do the work here, just put the
           // message into the future
           auto promise_it = receiver_data_.xcot_128_ot_message_promises_.find(i);
-          if (promise_it == receiver_data_.xcot_128_ot_message_promises_.end()) {
-            throw std::runtime_error(
-                fmt::format("Could not find promise for XCOT128SenderMessage for OT#{} "
-                            "OTExtensionDataType::snd_messages",
-                            i));
-          }
+          assert(promise_it != receiver_data_.xcot_128_ot_message_promises_.end());
           promise_it->second.set_value(ENCRYPTO::block128_vector(batch_size, message));
           return;
         } else if (receiver_data_.xcot_1_ot_.count(i) == 1) {
           // XXX: new implementation, don't do the work here
           auto promise_it = receiver_data_.xcot_1_ot_message_promises_.find(i);
-          if (promise_it == receiver_data_.xcot_1_ot_message_promises_.end()) {
-            throw std::runtime_error(
-                fmt::format("Could not find promise for XCOTBitSenderMessage for OT#{} "
-                            "OTExtensionDataType::snd_messages",
-                            i));
-          }
+          assert(promise_it != receiver_data_.xcot_1_ot_message_promises_.end());
           promise_it->second.set_value(ENCRYPTO::BitVector<>(message, batch_size));
           return;
         }
 
         auto it_c = receiver_data_.output_conds_.find(i);
-        if (it_c == receiver_data_.output_conds_.end()) {
-          throw std::runtime_error(fmt::format(
-              "Could not find Condition for OT#{} OTExtensionDataType::snd_messages", i));
-        }
+        assert(it_c != receiver_data_.output_conds_.end());
 
         bool success{false};
         do {
