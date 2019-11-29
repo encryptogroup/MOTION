@@ -228,7 +228,7 @@ void Backend::EvaluateSequential() {
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_setup>();
 
   // evaluate all the gates
-  for (auto& gate : register_->GetGates()) {
+  for (auto &gate : register_->GetGates()) {
     fpool_setup.post([&] { gate->EvaluateSetup(); });
   }
 
@@ -250,7 +250,7 @@ void Backend::EvaluateSequential() {
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_online>();
 
   // evaluate all the gates
-  for (auto& gate : register_->GetGates()) {
+  for (auto &gate : register_->GetGates()) {
     fpool_online.post([&] { gate->EvaluateOnline(); });
   }
 
@@ -283,10 +283,12 @@ void Backend::EvaluateParallel() {
   ENCRYPTO::FiberThreadPool fpool(0, config_->GetNumOfParties());
 
   // evaluate all the gates
-  for (auto& gate : register_->GetGates()) {
-    fpool.post([&] { gate->EvaluateSetup();
-        // XXX: maybe insert a 'yield' here?
-        gate->EvaluateOnline(); });
+  for (auto &gate : register_->GetGates()) {
+    fpool.post([&] {
+      gate->EvaluateSetup();
+      // XXX: maybe insert a 'yield' here?
+      gate->EvaluateOnline();
+    });
   }
 
   f_preprocessing.get();
@@ -543,13 +545,15 @@ void Backend::OTExtensionSetup() {
     return;
   }
 
-  if (!GetConfig()->IsFixedKeyAESKeyReady()) {
-    GenerateFixedKeyAESKey();
-  }
+  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::base_ots>();
 
   if (!base_ots_finished_) {
     ComputeBaseOTs();
   }
+
+  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::base_ots>();
+
+  if (!GetConfig()->IsFixedKeyAESKeyReady()) GenerateFixedKeyAESKey();
 
   if constexpr (MOTION_DEBUG) {
     register_->GetLogger()->LogDebug("Start computing setup for OTExtensions");
