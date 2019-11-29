@@ -96,8 +96,8 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
     case ENCRYPTO::PrimitiveOperationType::MUX: {
       const std::vector<ENCRYPTO::BitVector<>> tmp_s(1, ENCRYPTO::BitVector<>(num_simd));
       MOTION::Shares::ShareWrapper sel{protocol == MOTION::MPCProtocol::BooleanGMW
-                                           ? party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0)
-                                           : party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0)};
+                                           ? party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_s, 0)
+                                           : party->IN<MOTION::MPCProtocol::BMR>(tmp_s, 0)};
       sel.MUX(a, b);
       break;
     }
