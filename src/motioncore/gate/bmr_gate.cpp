@@ -688,7 +688,6 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
 
   const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto num_wires{parent_a_.size()};
-  const auto batch_size_3{num_simd * 3};
   const auto my_id{GetConfig().GetMyId()};
   const auto num_parties{GetConfig().GetNumOfParties()};
   const auto size_of_all_garbled_tables = num_wires * num_simd * 4 * num_parties;
@@ -721,12 +720,14 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
       if (party_j == my_id) continue;
-      s_ots_1_.at(party_j).at(wire_i) = GetOTProvider(party_j).RegisterSendXCOTBit(batch_size_3);
+      // we need 1 bit C-OT and ...
+      s_ots_1_.at(party_j).at(wire_i) = GetOTProvider(party_j).RegisterSendXCOTBit(num_simd);
+      r_ots_1_.at(party_j).at(wire_i) = GetOTProvider(party_j).RegisterReceiveXCOTBit(num_simd);
+      // ... 3 string C-OTs per gate (in each direction)
       s_ots_kappa_.at(party_j).at(wire_i) =
-          GetOTProvider(party_j).RegisterSendFixedXCOT128(batch_size_3);
-      r_ots_1_.at(party_j).at(wire_i) = GetOTProvider(party_j).RegisterReceiveXCOTBit(batch_size_3);
+          GetOTProvider(party_j).RegisterSendFixedXCOT128(3 * num_simd);
       r_ots_kappa_.at(party_j).at(wire_i) =
-          GetOTProvider(party_j).RegisterReceiveFixedXCOT128(batch_size_3);
+          GetOTProvider(party_j).RegisterReceiveFixedXCOT128(3 * num_simd);
     }
   }
 
@@ -825,27 +826,12 @@ void BMRANDGate::EvaluateSetup() {
     bmr_a->GetSetupReadyCondition()->Wait();
     bmr_b->GetSetupReadyCondition()->Wait();
 
-    // XXX: Why are we doing three bit-COTs? One would be enough.
-
-    // select one of the parties to invert the permutation bits
-    const bool permutation{(bmr_out->GetWireId() % num_parties) == my_id};
-
-    ENCRYPTO::BitVector<> a_bv, b_bv;
-    // XXX: ^reserve memory here
-    for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-      const bool a = bmr_a->GetPermutationBits()[simd_i];
-      const bool b = bmr_b->GetPermutationBits()[simd_i];
-      a_bv.Append(a);
-      a_bv.Append(a);
-      a_bv.Append(a != permutation);
-      b_bv.Append(b);
-      b_bv.Append(b != permutation);
-      b_bv.Append(b);
-    }  // for each simd
+    const ENCRYPTO::BitVector<>& a_perm_bits = bmr_a->GetPermutationBits();
+    const ENCRYPTO::BitVector<>& b_perm_bits = bmr_b->GetPermutationBits();
 
     for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
       if (party_i == my_id) {
-        choices.at(party_i).at(wire_i) = a_bv & b_bv;
+        choices.at(party_i).at(wire_i) = a_perm_bits & b_perm_bits;
         continue;
       }
 
@@ -854,10 +840,9 @@ void BMRANDGate::EvaluateSetup() {
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
         GetLogger().LogTrace(fmt::format(
-            "Gate#{} (BMR AND gate)  Party#{}-#{} bit-C-OTs wire_i {} perm_bits {} bits_a {} from "
-            "{} bits_b {} from {} a&b {}\n",
+            "Gate#{} (BMR AND gate)  Party#{}-#{} bit-C-OTs wire_i {} perm_bits {} bits_a {} bits_b {} a&b {}\n",
             gate_id_, my_id, party_i, wire_i, bmr_out->GetPermutationBits().AsString(),
-            a_bv.AsString(), bmr_a->GetPermutationBits().AsString(), b_bv.AsString(),
+            bmr_a->GetPermutationBits().AsString(),
             bmr_b->GetPermutationBits().AsString(), choices.at(party_i).at(wire_i).AsString()));
       }
       // compute C-OTs for the real value, ie, b = (lambda_u ^ alpha) * (lambda_v ^ beta)
@@ -865,10 +850,10 @@ void BMRANDGate::EvaluateSetup() {
       r_ot_1->WaitSetup();
       s_ot_1->WaitSetup();
 
-      r_ot_1->SetChoices(b_bv);
+      r_ot_1->SetChoices(b_perm_bits);
       r_ot_1->SendCorrections();
 
-      s_ot_1->SetCorrelations(a_bv);
+      s_ot_1->SetCorrelations(a_perm_bits);
       s_ot_1->SendMessages();
     }  // for each party
   }    // for each wire
@@ -908,26 +893,33 @@ void BMRANDGate::EvaluateSetup() {
     }  // for each party
   }    // for each wire
 
+  // choices contain now shares of \lambda_{uv}^i
+
   std::vector<ENCRYPTO::BitVector<>> aggregated_choices(num_wires);
 
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
+    const auto bmr_a{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i))};
+    const auto bmr_b{std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i))};
     assert(bmr_out);
+    assert(bmr_a);
+    assert(bmr_b);
 
-    assert(choices.at(0).at(wire_i).GetSize() == batch_size_3);
-    aggregated_choices.at(wire_i) = choices.at(0).at(wire_i);
-    for (auto party_i = 1ull; party_i < num_parties; ++party_i) {
-      assert(choices.at(party_i).at(wire_i).GetSize() == batch_size_3);
-      aggregated_choices.at(wire_i) ^= choices.at(party_i).at(wire_i);
-    }
-    {
-      ENCRYPTO::BitVector<> perm_bits_out;
-      for (auto bit_i = 0ull; bit_i < bmr_out->GetPermutationBits().GetSize(); ++bit_i) {
-        perm_bits_out.Append(bmr_out->GetPermutationBits()[bit_i]);
-        perm_bits_out.Append(bmr_out->GetPermutationBits()[bit_i]);
-        perm_bits_out.Append(bmr_out->GetPermutationBits()[bit_i]);
+    const auto &out_perm_bits = bmr_out->GetPermutationBits();
+    const auto &a_perm_bits = bmr_a->GetPermutationBits();
+    const auto &b_perm_bits = bmr_b->GetPermutationBits();
+
+    assert(choices.at(0).at(wire_i).GetSize() == num_simd);
+    auto &agg_choices_fw = aggregated_choices.at(wire_i);
+    agg_choices_fw = ENCRYPTO::BitVector<>(3 * num_simd, false);
+    for (auto bit_i = 0ull; bit_i < num_simd; ++bit_i) {
+      bool bit_val = out_perm_bits.Get(bit_i);  // \lambda_w^i
+      for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
+        bit_val ^= choices.at(party_i).at(wire_i).Get(bit_i);  // \lambda_uv^i
       }
-      aggregated_choices.at(wire_i) ^= perm_bits_out;
+      agg_choices_fw.Set(bit_val, bit_i * 3);
+      agg_choices_fw.Set(bit_val ^ a_perm_bits[bit_i], bit_i * 3 + 1);
+      agg_choices_fw.Set(bit_val ^ b_perm_bits[bit_i], bit_i * 3 + 2);
     }
 
     for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
