@@ -32,6 +32,8 @@ class GMWShare final : public BooleanShare {
  public:
   GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires);
 
+  GMWShare(std::vector<MOTION::Wires::WirePtr> &&wires);
+
   const std::vector<Wires::WirePtr> &GetWires() const noexcept final { return wires_; }
 
   std::vector<Wires::WirePtr> &GetMutableWires() noexcept final { return wires_; }
