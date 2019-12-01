@@ -55,7 +55,7 @@ class Register;
 using RegisterPtr = std::shared_ptr<Register>;
 
 namespace Statistics {
-  struct RunTimeStats;
+struct RunTimeStats;
 }
 
 namespace Shares {
@@ -281,6 +281,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
   auto &GetSBProvider() { return sb_provider_; };
 
   const auto &GetRunTimeStats() const { return run_time_stats_; }
+
+  auto &GetMutableRunTimeStats() { return run_time_stats_; }
 
  private:
   std::list<Statistics::RunTimeStats> run_time_stats_;
