@@ -32,7 +32,7 @@ class Logger;
 
 class SecureUnsignedInteger {
  public:
-  SecureUnsignedInteger() = delete;
+  SecureUnsignedInteger() = default;
 
   SecureUnsignedInteger(const SecureUnsignedInteger& other)
       : SecureUnsignedInteger(*other.share_) {}
