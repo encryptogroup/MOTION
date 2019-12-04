@@ -91,7 +91,7 @@ std::vector<Combination> GenerateAllCombinations() {
 int main(int ac, char* av[]) {
   auto [vm, help_flag] = ParseProgramOptions(ac, av);
   // if help flag is set - print allowed command line arguments and exit
-  if (help_flag) return 1;
+  if (help_flag) return EXIT_SUCCESS;
 
   const auto num_repetitions{vm["repetitions"].as<std::size_t>()};
 
@@ -116,7 +116,7 @@ int main(int ac, char* av[]) {
                              comb.bit_size_, comb.num_simd_);
     std::cout << accumulated_stats.print_human_readable() << std::endl;
   }
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 bool CheckPartyArgumentSyntax(const std::string& p) {

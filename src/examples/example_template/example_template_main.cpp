@@ -46,14 +46,14 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm);
 int main(int ac, char* av[]) {
   auto [vm, help_flag] = ParseProgramOptions(ac, av);
   // if help flag is set - print allowed command line arguments and exit
-  if (help_flag) return 1;
+  if (help_flag) return EXIT_SUCCESS;
 
   MOTION::PartyPtr party{CreateParty(vm)};
   // establish communication channels with other parties
   party->Connect();
 
   EvaluateProtocol(party);
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 bool CheckPartyArgumentSyntax(const std::string& p) {

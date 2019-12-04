@@ -48,7 +48,7 @@ int main(int ac, char* av[]) {
   try {
     auto [vm, help_flag] = ParseProgramOptions(ac, av);
     // if help flag is set - print allowed command line arguments and exit
-    if (help_flag) return 1;
+    if (help_flag) return EXIT_SUCCESS;
 
     const auto num_simd{vm["num-simd"].as<std::size_t>()};
     const auto num_repetitions{vm["repetitions"].as<std::size_t>()};
@@ -76,9 +76,9 @@ int main(int ac, char* av[]) {
 
   } catch (std::runtime_error& e) {
     std::cerr << e.what() << "\n";
-    return 1;
+    return EXIT_FAILURE;
   }
-  return 0;
+  return EXIT_SUCCESS;
 }
 
 bool CheckPartyArgumentSyntax(const std::string& p) {
