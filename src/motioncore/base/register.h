@@ -161,6 +161,11 @@ class Register {
 
   std::atomic<std::size_t> evaluated_gates_ = 0;
   std::atomic<std::size_t> evaluated_gate_setups_ = 0;
+  // flags which should be changed to true as soon as the counters above reach
+  // gates_.size(); need to be protected using the mutexes from the conditions below
+  bool gates_setup_done_flag_ = false;
+  bool gates_online_done_flag_ = false;
+  // conditions which enable waiting for the above flags to change to true
   std::shared_ptr<ENCRYPTO::Condition> gates_setup_done_condition_;
   std::shared_ptr<ENCRYPTO::Condition> gates_online_done_condition_;
 

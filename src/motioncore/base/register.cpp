@@ -43,10 +43,10 @@ Register::Register(ConfigurationPtr &config) : config_(config) {
       std::make_shared<MOTION::Logger>(config_->GetMyId(), config_->GetLoggingSeverityLevel());
   logger_->SetEnabled(config_->GetLoggingEnabled());
 
-  gates_setup_done_condition_ = std::make_shared<ENCRYPTO::Condition>(
-      [this]() { return evaluated_gate_setups_ == gates_.size(); });
+  gates_setup_done_condition_ =
+      std::make_shared<ENCRYPTO::Condition>([this]() { return gates_setup_done_flag_; });
   gates_online_done_condition_ =
-      std::make_shared<ENCRYPTO::Condition>([this]() { return evaluated_gates_ == gates_.size(); });
+      std::make_shared<ENCRYPTO::Condition>([this]() { return gates_online_done_flag_; });
 }
 
 Register::~Register() {
@@ -135,12 +135,24 @@ std::int64_t Register::GetNextGateFromActiveQueue() {
 
 void Register::IncrementEvaluatedGateSetupsCounter() {
   auto no_evaluated_gate_setups = ++evaluated_gate_setups_;
-  if (no_evaluated_gate_setups == gates_.size()) gates_setup_done_condition_->NotifyAll();
+  if (no_evaluated_gate_setups == gates_.size()) {
+    {
+      std::scoped_lock lock(gates_setup_done_condition_->GetMutex());
+      gates_setup_done_flag_ = true;
+    }
+    gates_setup_done_condition_->NotifyAll();
+  }
 }
 
 void Register::IncrementEvaluatedGatesCounter() {
   auto no_evaluated_gates = ++evaluated_gates_;
-  if (no_evaluated_gates == gates_.size()) gates_online_done_condition_->NotifyAll();
+  if (no_evaluated_gates == gates_.size()) {
+    {
+      std::scoped_lock lock(gates_online_done_condition_->GetMutex());
+      gates_online_done_flag_ = true;
+    }
+    gates_online_done_condition_->NotifyAll();
+  }
 }
 
 void Register::Reset() {
@@ -164,6 +176,8 @@ void Register::Reset() {
 
   evaluated_gate_setups_ = 0;
   evaluated_gates_ = 0;
+  gates_setup_done_flag_ = false;
+  gates_online_done_flag_ = false;
 
   for (auto i = 0ull; i < communication_handlers_.size(); ++i) {
     if (GetConfig()->GetMyId() == i) {
@@ -191,6 +205,8 @@ void Register::Clear() {
 
   evaluated_gate_setups_ = 0;
   evaluated_gates_ = 0;
+  gates_setup_done_flag_ = false;
+  gates_online_done_flag_ = false;
 
   for (auto i = 0ull; i < communication_handlers_.size(); ++i) {
     if (GetConfig()->GetMyId() == i) {
