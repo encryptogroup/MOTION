@@ -26,6 +26,8 @@
 #include <thread>
 #include <vector>
 
+#include <boost/fiber/fiber.hpp>
+
 namespace boost {
 namespace fibers {
 template <typename T>
@@ -44,9 +46,12 @@ class FiberThreadPool {
   // Create a thread pool with given number of workers
   // - num_workers
   //   if 0 then the value of std::thread::hardware_concurrency() is used
+  //   else it must be at least 2
+  // - num_tasks
+  //   number of tasks that are to be expected
   // - suspend_scheduler
   //   suspend if there is no work to be done
-  FiberThreadPool(std::size_t num_workers, bool suspend_scheduler = true);
+  FiberThreadPool(std::size_t num_workers, std::size_t num_tasks=0, bool suspend_scheduler = true);
 
   // Destructor, calls join() if necessary
   ~FiberThreadPool();
@@ -60,6 +65,10 @@ class FiberThreadPool {
   // you call this method.
   void join();
 
+  // Join all the fibers that were created.
+  // No new fibers must be created during this call.
+  void join_fibers();
+
  private:
   void create_threads();
 
@@ -69,6 +78,7 @@ class FiberThreadPool {
   std::unique_ptr<boost::fibers::buffered_channel<task_t>> task_queue_;
   std::vector<std::thread> worker_threads_;
   std::shared_ptr<pool_ctx> pool_ctx_;
+  std::vector<std::vector<boost::fibers::fiber>> fibers_;
 };
 
 }  // namespace ENCRYPTO

@@ -18,6 +18,7 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+#include <algorithm>
 #include <fmt/format.h>
 #include <boost/fiber/buffered_channel.hpp>
 #include <boost/fiber/channel_op_status.hpp>
@@ -32,7 +33,7 @@
 
 namespace ENCRYPTO {
 
-FiberThreadPool::FiberThreadPool(std::size_t num_workers, bool suspend_scheduler)
+FiberThreadPool::FiberThreadPool(std::size_t num_workers, std::size_t num_tasks, bool suspend_scheduler)
     : num_workers_(num_workers),
       running_(false),
       suspend_scheduler_(suspend_scheduler),
@@ -44,6 +45,15 @@ FiberThreadPool::FiberThreadPool(std::size_t num_workers, bool suspend_scheduler
     num_workers_ = std::thread::hardware_concurrency();
   }
 
+  // reserve storage to store the fiber objects
+  fibers_ = std::vector<std::vector<boost::fibers::fiber>>(num_workers_);
+  if (num_tasks > 0) {
+    for (auto& v : fibers_) {
+      v.reserve(num_tasks / num_workers_ + std::min(num_tasks, std::size_t(1000)));
+    }
+  }
+
+  // create the worker threads
   create_threads();
 }
 
@@ -55,7 +65,8 @@ FiberThreadPool::~FiberThreadPool() {
 
 // This function is executed in the worker thread
 static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
-                        boost::fibers::buffered_channel<FiberThreadPool::task_t>& task_queue) {
+                        boost::fibers::buffered_channel<FiberThreadPool::task_t>& task_queue,
+                        std::vector<boost::fibers::fiber>& fibers) {
   // register this thread with the pool
   boost::fibers::use_scheduling_algorithm<pooled_work_stealing>(pool_ctx);
 
@@ -64,12 +75,8 @@ static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
   // try to get new tasks from the queue until the channel is closed and empty,
   // which is the signal to therminate the pool
   while (task_queue.pop(task) != boost::fibers::channel_op_status::closed) {
-    // create a fiber from the task we retrieved
-    boost::fibers::fiber new_fiber(task);
-
-    // detach the new fiber from the current one s.t. the `new_fiber` object
-    // can be safely destroyed
-    new_fiber.detach();
+    // create a fiber from the task we retrieved and store its handle
+    fibers.emplace_back(task);
 
     // give another fiber the chance to run
     boost::this_fiber::yield();
@@ -86,7 +93,8 @@ void FiberThreadPool::create_threads() {
   // create the worker threads
   worker_threads_.reserve(num_workers_);
   for (std::size_t i = 0; i < num_workers_; ++i) {
-    auto& t = worker_threads_.emplace_back(worker_fctn, pool_ctx_, std::ref(*task_queue_));
+    auto& t = worker_threads_.emplace_back(worker_fctn, pool_ctx_, std::ref(*task_queue_),
+                                           std::ref(fibers_.at(i)));
 
     if constexpr (MOTION::MOTION_DEBUG) {
       thread_set_name(t, fmt::format("pool-worker-{}", i));
@@ -96,9 +104,19 @@ void FiberThreadPool::create_threads() {
 }
 
 void FiberThreadPool::join() {
+  join_fibers();
   task_queue_->close();
   std::for_each(worker_threads_.begin(), worker_threads_.end(), [](auto& t) { t.join(); });
   running_ = false;
+}
+
+void FiberThreadPool::join_fibers() {
+  for (auto& v : fibers_) {
+    for (auto& fiber : v) {
+      fiber.join();
+    }
+    v.clear();
+  }
 }
 
 void FiberThreadPool::post(std::function<void()> fctn) {

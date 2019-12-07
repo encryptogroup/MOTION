@@ -219,47 +219,41 @@ void Backend::EvaluateSequential() {
   register_->GetLogger()->LogInfo(
       "Start evaluating the circuit gates sequentially (online after all finished setup)");
 
-  // setup phase: -------------------------------------------------------
-
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool_setup(0);
+  ENCRYPTO::FiberThreadPool fpool(0, 2 * register_->GetTotalNumOfGates());
 
+  // ------------------------------ setup phase ------------------------------
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_setup>();
 
-  // evaluate all the gates
+  // evaluate the setup phase of all the gates
   for (auto &gate : register_->GetGates()) {
-    fpool_setup.post([&] { gate->EvaluateSetup(); });
+    fpool.post([&] {
+        gate->EvaluateSetup();
+      });
   }
-
-  // we have to wait until all gates are evaluated before we close the pool
   register_->GetGatesSetupDoneCondition()->Wait();
+  assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
 
   run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::gates_setup>();
 
-  fpool_setup.join();
-
-  assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
-
-  // online phase: ------------------------------------------------------
-
-  // create a pool with std::thread::hardware_concurrency() no. of threads
-  // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool_online(0);
-
+  // ------------------------------ online phase ------------------------------
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_online>();
 
-  // evaluate all the gates
+  // evaluate the online phase of all the gates
   for (auto &gate : register_->GetGates()) {
-    fpool_online.post([&] { gate->EvaluateOnline(); });
+    fpool.post([&] {
+        gate->EvaluateOnline();
+      });
   }
-
-  // we have to wait until all gates are evaluated before we close the pool
   register_->GetGatesOnlineDoneCondition()->Wait();
+  assert(register_->GetNumOfEvaluatedGates() == register_->GetTotalNumOfGates());
 
   run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::gates_online>();
 
-  fpool_online.join();
+  // --------------------------------------------------------------------------
+
+  fpool.join();
 
   // XXX: since we never pop elements from the active queue, clear it manually for now
   // otherwise there will be complains that it is not empty upon repeated execution
@@ -280,7 +274,7 @@ void Backend::EvaluateParallel() {
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool(0);
+  ENCRYPTO::FiberThreadPool fpool(0, register_->GetTotalNumOfGates());
 
   // evaluate all the gates
   for (auto &gate : register_->GetGates()) {
