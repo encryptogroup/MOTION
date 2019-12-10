@@ -39,25 +39,41 @@ namespace detail {
 
 // smallest square root of a mod 2^k
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-T sqrt(std::size_t k, T a) {
+T sqrt(size_t k, T a) {
   assert(k >= 3);
   assert(a % 8 == 1);
 
   if (a == 1) return 1;
 
-  std::set<T> roots = {1, 3, 5, 7};
-  std::set<T> new_roots = {};
+  std::array<T, 8> roots = {1, 3, 5, 7, 0, 0, 0, 0};
+  std::array<T, 8> new_roots = {0};
   for (std::size_t j = 4; j < k + 1; ++j) {
-    for (auto r : roots) {
+    for (std::size_t l = 0; l < 4; ++l) {
+      T r = roots[l];
       T i = ((r * r - a) >> (j - 1)) & 1;
       T nr = (r + (i << (j - 2))) & ((T(1) << j) - 1);
-      new_roots.insert(nr);
-      new_roots.insert((T(1) << j) - nr);
+      new_roots[l] = nr;
+      new_roots[l + 4] = (T(1) << j) - nr;
     }
-    roots.swap(new_roots);
-    new_roots.clear();
+
+    for (std::size_t l = 0; l < 8; ++l) {
+      T nr = new_roots[l];
+      for (size_t m = 0; m < 8; ++m) {
+        if (roots[m] == 0) {
+          roots[m] = nr;
+          break;
+        } else if (roots[m] == nr) {
+          break;
+        }
+      }
+    }
+    std::swap(roots, new_roots);
   }
-  return *roots.begin();
+  T minimum = roots[0];
+  for (std::size_t l = 1; l < 4; ++l) {
+    if (roots[l] < minimum) minimum = roots[l];
+  }
+  return minimum;
 }
 
 // inversion of a mod 2^k
