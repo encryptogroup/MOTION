@@ -223,7 +223,7 @@ void Backend::EvaluateSequential() {
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool_setup(0, config_->GetNumOfParties());
+  ENCRYPTO::FiberThreadPool fpool_setup(0);
 
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_setup>();
 
@@ -245,7 +245,7 @@ void Backend::EvaluateSequential() {
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool_online(0, config_->GetNumOfParties());
+  ENCRYPTO::FiberThreadPool fpool_online(0);
 
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_online>();
 
@@ -280,7 +280,7 @@ void Backend::EvaluateParallel() {
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool(0, config_->GetNumOfParties());
+  ENCRYPTO::FiberThreadPool fpool(0);
 
   // evaluate all the gates
   for (auto &gate : register_->GetGates()) {
