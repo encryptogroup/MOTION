@@ -49,6 +49,12 @@ struct AlgorithmDescription {
 
   static AlgorithmDescription FromBristol(std::ifstream& stream);
 
+  static AlgorithmDescription FromABY(const std::string& path);
+
+  static AlgorithmDescription FromABY(std::string&& path);
+
+  static AlgorithmDescription FromABY(std::ifstream& stream);
+
   std::size_t n_output_wires_{0}, n_input_wires_parent_a_{0}, n_wires_{0}, n_gates_{0};
   std::optional<std::size_t> n_input_wires_parent_b_{std::nullopt};
   std::vector<PrimitiveOperation> gates_;

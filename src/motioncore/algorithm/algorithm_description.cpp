@@ -99,7 +99,7 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
       line_v.emplace_back(std::move(str));
     }
 
-    if(line_v.empty()) continue;
+    if (line_v.empty()) continue;
     const auto& type = line_v.at(line_v.size() - 1);
     PrimitiveOperation op;
     if (type == std::string("XOR") || type == std::string("AND") || type == std::string("ADD") ||
@@ -140,4 +140,150 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
   return algo;
 }
 
+AlgorithmDescription AlgorithmDescription::FromABY(const std::string& path) {
+  std::ifstream fs(path);
+  return FromBristol(fs);
+}
+
+AlgorithmDescription AlgorithmDescription::FromABY(std::string&& path) {
+  std::ifstream fs(path);
+  return FromBristol(fs);
+}
+
+AlgorithmDescription AlgorithmDescription::FromABY(std::ifstream& stream) {
+  AlgorithmDescription algo;
+  assert(stream.is_open());
+  assert(stream.good());
+  std::string str;
+  int INVALID_VALUE = 999999999;
+  int const_0 = INVALID_VALUE, const_1 = INVALID_VALUE;
+  do {
+    std::getline(stream, str);
+    switch (str[0]) {
+      case '#':  // comment
+        break;
+      case '\n':  // empty line
+        break;
+      case '0':  // constant 0
+        const_0 = std::stoi(str.substr(1, str.size() - 1));
+        break;
+      case '1':  // constant 1
+        const_1 = std::stoi(str.substr(1, str.size() - 1));
+        break;
+      case 'C':  // client's inputs
+      {
+        std::stringstream ss(str);
+        std::string val;
+        std::getline(ss, val, ' ');
+        assert(val == "C");
+        while (std::getline(ss, val, ' ')) ++algo.n_input_wires_parent_a_;
+        break;
+      }
+      case 'S':  // server's inputs
+      {
+        std::stringstream ss(str);
+        std::string val;
+        std::getline(ss, val, ' ');
+        assert(val == "S");
+        while (std::getline(ss, val, ' ')) ++algo.n_input_wires_parent_a_;
+        break;
+      }
+      default:
+        throw std::logic_error(std::string("Invalid first symbol ") + str[0]);
+    }
+  } while (str != "#Gates");
+  std::vector<std::string> line_v;
+
+  assert(const_0 != INVALID_VALUE);
+  assert(const_1 != INVALID_VALUE);
+
+  // read gates
+  do {
+    std::getline(stream, str);
+    if(str.size() <= 1) continue;
+    switch(str[0]){
+      case 'A': // AND gate, `A 101 102 103` denotes 103 = 101 AND 102
+        // AND with const_1 is the same gate
+        // AND with const_0 is illegal for now
+        break;
+      case 'I': // INV gate, `I 101 102` denotes that 102 = NOT 101
+        break;
+      case 'M': // MUX gate, `M 101 102 103 104` denotes 104 = 103 ? 102 : 101
+        break;
+      case 'X': // XOR gate, `X 101 102 103` denotes 103 = 101 XOR 102
+      // XOR with const_1 is an INV gate
+      // XOR with const_0 is the same gate
+        break;
+      default:
+        throw std::logic_error(std::string("Invalid first symbol ") + str[0]);
+    }
+    std::stringstream ss(str);
+    while (std::getline(ss, str, ' ')) {
+      line_v.emplace_back(std::move(str));
+      str.clear();
+    }
+    algo.n_input_wires_parent_a_ = std::stoull(line_v.at(0));
+    if (line_v.size() == 2) {
+      algo.n_output_wires_ = std::stoull(line_v.at(1));
+    } else if (line_v.size() == 3) {
+      algo.n_input_wires_parent_b_ = std::stoull(line_v.at(1));
+      algo.n_output_wires_ = std::stoull(line_v.at(2));
+    } else {
+      throw std::runtime_error(
+          std::string("Unexpected number of values: " + std::to_string(line_v.size()) + "\n"));
+    }
+    str.clear();
+    line_v.clear();
+  } while (str != "\n");
+
+  assert(str.empty());
+
+  // read output IDs
+  while (std::getline(stream, str)) {
+    std::stringstream ss(str);
+    // split line
+    while (std::getline(ss, str, ' ')) {
+      line_v.emplace_back(std::move(str));
+    }
+
+    if (line_v.empty()) continue;
+    const auto& type = line_v.at(line_v.size() - 1);
+    PrimitiveOperation op;
+    if (type == std::string("XOR") || type == std::string("AND") || type == std::string("ADD") ||
+        type == std::string("MUL") || type == std::string("OR")) {
+      assert(line_v.size() == 6);
+      if (type == std::string("XOR"))
+        op.type_ = PrimitiveOperationType::XOR;
+      else if (type == std::string("AND"))
+        op.type_ = PrimitiveOperationType::AND;
+      else if (type == std::string("ADD"))
+        op.type_ = PrimitiveOperationType::ADD;
+      else if (type == std::string("MUL"))
+        op.type_ = PrimitiveOperationType::MUL;
+      else if (type == std::string("OR"))
+        op.type_ = PrimitiveOperationType::OR;
+      op.parent_a_ = std::stoull(line_v.at(2));
+      op.parent_b_ = std::stoull(line_v.at(3));
+      op.output_wire_ = std::stoull(line_v.at(4));
+    } else if (type == std::string("MUX")) {
+      assert(line_v.size() == 7);
+      op.type_ = PrimitiveOperationType::MUX;
+      op.parent_a_ = std::stoull(line_v.at(2));
+      op.parent_b_ = std::stoull(line_v.at(3));
+      op.selection_bit_ = std::stoull(line_v.at(4));
+      op.output_wire_ = std::stoull(line_v.at(5));
+    } else if (type == std::string("INV")) {
+      assert(line_v.size() == 5);
+      op.type_ = PrimitiveOperationType::INV;
+      op.parent_a_ = std::stoull(line_v.at(2));
+      op.output_wire_ = std::stoull(line_v.at(3));
+    } else {
+      throw std::runtime_error("Unknown operation type: " + line_v.at(line_v.size() - 1) + "\n");
+    }
+    algo.gates_.emplace_back(op);
+    str.clear();
+    line_v.clear();
+  }
+  return algo;
+}  // namespace ENCRYPTO
 }
