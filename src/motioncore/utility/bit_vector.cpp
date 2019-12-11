@@ -394,7 +394,7 @@ template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator=(
 template <typename Allocator>
 BitVector<Allocator>& BitVector<Allocator>::operator=(BitVector<Allocator>&& other) noexcept {
   bit_size_ = other.GetSize();
-  data_vector_ = std::move(other.GetData());
+  data_vector_ = std::move(other.data_vector_);
   return *this;
 }
 

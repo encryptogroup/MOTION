@@ -110,47 +110,49 @@ void OTProviderFromOTExtension::SendSetup() {
 
   // transpose the bit matrix
   // XXX: figure out how the result looks like
-  BitMatrix::TransposeAndEncrypt(ptrs, ot_ext_snd.y0_, ot_ext_snd.y1_, base_ots_rcv.c_,
-                                 prg_fixed_key, bit_size_padded, ot_ext_snd.bitlengths_);
-/*
-  for (i = 0; i < ot_ext_snd.bitlengths_.size(); ++i) {
-    // here we want to store the sender's outputs
-    // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
-    auto &out0 = ot_ext_snd.y0_[i];
-    auto &out1 = ot_ext_snd.y1_[i];
+  BitMatrix::SenderTransposeAndEncrypt(ptrs, ot_ext_snd.y0_, ot_ext_snd.y1_, base_ots_rcv.c_,
+                                       prg_fixed_key, bit_size_padded, ot_ext_snd.bitlengths_);
+  /*
+    for (i = 0; i < ot_ext_snd.bitlengths_.size(); ++i) {
+      // here we want to store the sender's outputs
+      // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
+      auto &out0 = ot_ext_snd.y0_[i];
+      auto &out1 = ot_ext_snd.y1_[i];
 
-    // bit length of the OT
-    const auto bitlen = ot_ext_snd.bitlengths_[i];
+      // bit length of the OT
+      const auto bitlen = ot_ext_snd.bitlengths_[i];
 
-    // in which of the above "rows" can we find the block
-    const auto row_i = i % kappa;
-    // where in the "row" do we have to look for the block
-    const auto blk_offset = ((kappa / 8) * (i / kappa));
-    auto V_row = reinterpret_cast<std::byte *>(
-        __builtin_assume_aligned(ptrs.at(row_i) + blk_offset, MOTION::MOTION_ALIGNMENT));
+      // in which of the above "rows" can we find the block
+      const auto row_i = i % kappa;
+      // where in the "row" do we have to look for the block
+      const auto blk_offset = ((kappa / 8) * (i / kappa));
+      auto V_row = reinterpret_cast<std::byte *>(
+          __builtin_assume_aligned(ptrs.at(row_i) + blk_offset, MOTION::MOTION_ALIGNMENT));
 
-    // compute the sender outputs
-    if (bitlen <= kappa) {
-      // the bit length is smaller than 128 bit
-      out0 = BitVector<>(prg_fixed_key.FixedKeyAES(V_row, i), bitlen);
+      // compute the sender outputs
+      if (bitlen <= kappa) {
+        // the bit length is smaller than 128 bit
+        out0 = BitVector<>(prg_fixed_key.FixedKeyAES(V_row, i), bitlen);
 
-      auto out1_in = base_ots_rcv.c_ ^ BitSpan(V_row, kappa, true);
-      out1 = BitVector<>(prg_fixed_key.FixedKeyAES(out1_in.GetData().data(), i), bitlen);
-    } else {
-      // string OT with bit length > 128 bit
-      // -> do seed compression and send later only 128 bit seeds
-      auto seed0 = prg_fixed_key.FixedKeyAES(V_row, i);
-      prgs_var_key.SetKey(seed0.data());
-      out0 =
-          BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+        auto out1_in = base_ots_rcv.c_ ^ BitSpan(V_row, kappa, true);
+        out1 = BitVector<>(prg_fixed_key.FixedKeyAES(out1_in.GetData().data(), i), bitlen);
+      } else {
+        // string OT with bit length > 128 bit
+        // -> do seed compression and send later only 128 bit seeds
+        auto seed0 = prg_fixed_key.FixedKeyAES(V_row, i);
+        prgs_var_key.SetKey(seed0.data());
+        out0 =
+            BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)),
+    bitlen);
 
-      auto out1_in = base_ots_rcv.c_ ^ BitSpan(V_row, kappa, true);
-      auto seed1 = prg_fixed_key.FixedKeyAES(out1_in.GetData().data(), i);
-      prgs_var_key.SetKey(seed1.data());
-      out1 =
-          BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
-    }
-  }*/
+        auto out1_in = base_ots_rcv.c_ ^ BitSpan(V_row, kappa, true);
+        auto seed1 = prg_fixed_key.FixedKeyAES(out1_in.GetData().data(), i);
+        prgs_var_key.SetKey(seed1.data());
+        out1 =
+            BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)),
+    bitlen);
+      }
+    }*/
 
   // we are done with the setup for the sender side
   {
@@ -228,13 +230,15 @@ void OTProviderFromOTExtension::ReceiveSetup() {
     }
   }
 
-  std::array<std::byte *, kappa> ptrs;
+  std::array<const std::byte *, kappa> ptrs;
   for (j = 0; j < ptrs.size(); ++j) {
     ptrs.at(j) = v.at(j).GetMutableData().data();
   }
 
   prg_fixed_key.SetKey(fixed_key_aes_key);
-  BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
+  BitMatrix::ReceiverTransposeAndEncrypt(ptrs, ot_ext_rcv.outputs_, prg_fixed_key, bit_size_padded,
+                                         ot_ext_rcv.bitlengths_);
+  /*BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
   for (i = 0; i < ot_ext_rcv.outputs_.size(); ++i) {
     const auto row_i = i % kappa;
     const auto blk_offset = ((kappa / 8) * (i / kappa));
@@ -252,7 +256,7 @@ void OTProviderFromOTExtension::ReceiveSetup() {
       prg_var_key.SetKey(seed.data());
       out = BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
     }
-  }
+  }*/
 
   {
     std::scoped_lock(ot_ext_rcv.setup_finished_cond_->GetMutex());

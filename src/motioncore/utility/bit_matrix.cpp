@@ -483,15 +483,24 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, st
   // }
 }
 
-void BitMatrix::TransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
-                                    std::vector<BitVector<>>& y0, std::vector<BitVector<>>& y1,
-                                    const BitVector<> choices, PRG& prg_fixed_key,
-                                    const std::size_t ncols,
-                                    const std::vector<std::size_t>& bitlengths) {
+void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
+                                          std::vector<BitVector<>>& y0,
+                                          std::vector<BitVector<>>& y1, const BitVector<> choices,
+                                          PRG& prg_fixed_key, const std::size_t ncols,
+                                          const std::vector<std::size_t>& bitlengths) {
   constexpr std::size_t kappa{128}, nrows{128};
 #define INP(r, c)                                     \
   reinterpret_cast<const std::uint8_t* __restrict__>( \
       __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
+  assert(y0.size() == y1.size());
+
+  const std::size_t original_size{y0.size()}, difference{ncols - original_size};
+  if (difference) {
+    y0.resize(ncols);
+    y1.resize(ncols);
+  }
+
+  for (auto& bv : y0) bv = BitVector(std::vector<std::byte>(kappa / 8), kappa);
 
   std::uint64_t r{0}, c{0};
   int i{0};
@@ -561,7 +570,7 @@ void BitMatrix::TransposeAndEncrypt(const std::array<const std::byte*, 128>& mat
       }
     }
     // XXX
-    for (c_old = 0; c_old < c; ++c_old) {
+    for (; c_old < c && c_old < original_size; ++c_old) {
       // here we want to store the sender's outputs
       // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
       auto& out0 = y0[c_old];
@@ -569,8 +578,6 @@ void BitMatrix::TransposeAndEncrypt(const std::array<const std::byte*, 128>& mat
 
       // bit length of the OT
       const auto bitlen = bitlengths[c_old];
-      auto row = reinterpret_cast<std::byte*>(
-          __builtin_assume_aligned(y0[c_old].GetMutableData().data(), MOTION::MOTION_ALIGNMENT));
 
       out1 = choices ^ out0;
       // compute the sender outputs
@@ -581,6 +588,8 @@ void BitMatrix::TransposeAndEncrypt(const std::array<const std::byte*, 128>& mat
       } else {
         // string OT with bit length > 128 bit
         // -> do seed compression and send later only 128 bit seeds
+        auto row = reinterpret_cast<std::byte*>(
+            __builtin_assume_aligned(y0[c_old].GetMutableData().data(), MOTION::MOTION_ALIGNMENT));
         const auto seed0 = prg_fixed_key.FixedKeyAES(row, c_old);
         prg_var_key.SetKey(seed0.data());
         out0 =
@@ -590,6 +599,109 @@ void BitMatrix::TransposeAndEncrypt(const std::array<const std::byte*, 128>& mat
         out1 =
             BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
       }
+    }
+  }
+#endif
+}
+
+void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
+                                            std::vector<BitVector<>>& out, PRG& prg_fixed_key,
+                                            const std::size_t ncols,
+                                            const std::vector<std::size_t>& bitlengths) {
+  constexpr std::size_t kappa{128}, nrows{128};
+#define INP(r, c)                                     \
+  reinterpret_cast<const std::uint8_t* __restrict__>( \
+      __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
+
+  const std::size_t original_size{out.size()}, difference{ncols - original_size};
+  if (difference) {
+    out.resize(ncols);
+  }
+
+  for (auto& bv : out) bv = BitVector(std::vector<std::byte>(kappa / 8), kappa);
+
+  std::uint64_t r{0}, c{0};
+  int i{0};
+
+  assert(nrows % 8 == 0 && ncols % 8 == 0);
+
+//#define MOTION_AVX2
+#if defined(MOTION_AVX512)
+  // TODO: not tested yet
+  __m512i vec;
+  for (rr = 0; rr <= nrows - 32; rr += 8) {
+    for (cc = 0; cc < ncols; cc += 64) {
+      vec = _mm512_set_epi8(
+          INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
+          INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
+          INP(rr + 50, cc), INP(rr + 51, cc), INP(rr + 52, cc), INP(rr + 53, cc), INP(rr + 54, cc),
+          INP(rr + 55, cc), INP(rr + 39, cc), INP(rr + 40, cc), INP(rr + 41, cc), INP(rr + 42, cc),
+          INP(rr + 43, cc), INP(rr + 44, cc), INP(rr + 45, cc), INP(rr + 46, cc), INP(rr + 32, cc),
+          INP(rr + 33, cc), INP(rr + 34, cc), INP(rr + 35, cc), INP(rr + 36, cc), INP(rr + 37, cc),
+          INP(rr + 38, cc), INP(rr + 39, cc), INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc),
+          INP(rr + 27, cc), INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
+          INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc), INP(rr + 20, cc),
+          INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc), INP(rr + 8, cc), INP(rr + 9, cc),
+          INP(rr + 10, cc), INP(rr + 11, cc), INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc),
+          INP(rr + 15, cc), INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
+          INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
+        OUT(cc + i, rr) = _mm512_movepi64_mask(vec);
+      }
+    }
+  }
+#elif defined(MOTION_AVX2)
+  __m256i vec;
+  for (rr = 0; rr <= nrows - 32; rr += 32) {
+    for (cc = 0; cc < ncols; cc += 8) {
+      vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
+                            INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
+                            INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
+                            INP(rr + 20, cc), INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc),
+                            INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
+                            INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
+                            INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
+                            INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
+        *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
+        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
+        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+      }
+    }
+  }
+#else
+  __m128i vec;
+  PRG prg_var_key;
+  // process 128x128 blocks
+  while (c < ncols) {
+    auto c_old{c};
+    for (r = 0; r <= nrows - 16; r += 16) {
+      for (c = 0; c == 0 || (c % 128 != 0); c += 8) {
+        vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
+                           INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
+                           INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
+                           INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
+        for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
+          *reinterpret_cast<std::uint16_t* __restrict__>(out[c + i].GetMutableData().data() +
+                                                         r / 8) = _mm_movemask_epi8(vec);
+        }
+      }
+    }
+    // XXX
+    for (; c_old < c && c_old < original_size; ++c_old) {
+        auto &o = out[c_old];
+
+        //std::unique_lock lock(bitlengths_mutex_);
+        const std::size_t bitlen = bitlengths[c_old];
+        //lock.unlock();
+
+        if (bitlen <= kappa) {
+          o = BitVector<>(prg_fixed_key.FixedKeyAES(o.GetData().data(), c_old), bitlen);
+        } else {
+          auto seed = prg_fixed_key.FixedKeyAES(o.GetData().data(), c_old);
+          prg_var_key.SetKey(seed.data());
+          o = BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+        }
     }
   }
 #endif
