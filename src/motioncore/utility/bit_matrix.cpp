@@ -558,7 +558,7 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
   while (c < ncols) {
     auto c_old{c};
     for (r = 0; r <= nrows - 16; r += 16) {
-      for (c = 0; c == 0 || (c % 128 != 0); c += 8) {
+      for (c = c_old; c == c_old || (c % 128 != 0); c += 8) {
         vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
                            INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
                            INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
@@ -571,8 +571,6 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
     }
     // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
-      // here we want to store the sender's outputs
-      // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
       auto& out0 = y0[c_old];
       auto& out1 = y1[c_old];
 
@@ -676,7 +674,7 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
   while (c < ncols) {
     auto c_old{c};
     for (r = 0; r <= nrows - 16; r += 16) {
-      for (c = 0; c == 0 || (c % 128 != 0); c += 8) {
+      for (c = c_old; c == c_old || (c % 128 != 0); c += 8) {
         vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
                            INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
                            INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
@@ -690,10 +688,7 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
     // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
         auto &o = out[c_old];
-
-        //std::unique_lock lock(bitlengths_mutex_);
         const std::size_t bitlen = bitlengths[c_old];
-        //lock.unlock();
 
         if (bitlen <= kappa) {
           o = BitVector<>(prg_fixed_key.FixedKeyAES(o.GetData().data(), c_old), bitlen);
