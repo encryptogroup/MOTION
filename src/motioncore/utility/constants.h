@@ -57,4 +57,11 @@ constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max
 // symmetric security parameter
 constexpr std::size_t kappa{128};
 
+// stack size for fibers
+constexpr std::size_t MOTION_FIBER_STACK_SIZE{14 * 1024};
+
+// use an allocator for fiber stacks that inserts a guard page at the end of
+// the stack space resulting in a SIGSEGV if a stack overflow happens
+constexpr bool MOTION_FIBER_STACK_PROTECTION{false};
+
 }  // namespace MOTION

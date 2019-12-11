@@ -20,6 +20,8 @@
 
 #include <fmt/format.h>
 #include <algorithm>
+#include <boost/context/fixedsize_stack.hpp>
+#include <boost/context/protected_fixedsize_stack.hpp>
 #include <boost/fiber/barrier.hpp>
 #include <boost/fiber/buffered_channel.hpp>
 #include <boost/fiber/channel_op_status.hpp>
@@ -76,11 +78,18 @@ static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
 
   FiberThreadPool::task_t task;
 
+  // allocator the the fibers' stacks
+  using stack_allocator_t = std::conditional_t<MOTION::MOTION_FIBER_STACK_PROTECTION,
+                                               boost::context::protected_fixedsize_stack,
+                                               boost::context::fixedsize_stack>;
+  stack_allocator_t stack_allocator(
+      std::max(MOTION::MOTION_FIBER_STACK_SIZE, stack_allocator_t::traits_type::minimum_size()));
+
   // try to get new tasks from the queue until the channel is closed and empty,
   // which is the signal to therminate the pool
   while (task_queue.pop(task) != boost::fibers::channel_op_status::closed) {
     // create a fiber from the task we retrieved and store its handle
-    fiber_channel.push(task);
+    fiber_channel.push(boost::fibers::fiber(std::allocator_arg_t{}, stack_allocator, task));
 
     // give another fiber the chance to run
     boost::this_fiber::yield();
