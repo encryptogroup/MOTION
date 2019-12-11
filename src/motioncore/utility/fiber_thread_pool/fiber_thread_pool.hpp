@@ -26,13 +26,12 @@
 #include <thread>
 #include <vector>
 
-#include <boost/fiber/fiber.hpp>
-
 namespace boost {
 namespace fibers {
+class barrier;
 template <typename T>
 class buffered_channel;
-}
+}  // namespace fibers
 }  // namespace boost
 
 struct pool_ctx;
@@ -51,7 +50,8 @@ class FiberThreadPool {
   //   number of tasks that are to be expected
   // - suspend_scheduler
   //   suspend if there is no work to be done
-  FiberThreadPool(std::size_t num_workers, std::size_t num_tasks=0, bool suspend_scheduler = true);
+  FiberThreadPool(std::size_t num_workers, std::size_t num_tasks = 0,
+                  bool suspend_scheduler = true);
 
   // Destructor, calls join() if necessary
   ~FiberThreadPool();
@@ -76,9 +76,9 @@ class FiberThreadPool {
   bool running_;
   bool suspend_scheduler_;
   std::unique_ptr<boost::fibers::buffered_channel<task_t>> task_queue_;
+  std::unique_ptr<boost::fibers::barrier> worker_barrier_;
   std::vector<std::thread> worker_threads_;
   std::shared_ptr<pool_ctx> pool_ctx_;
-  std::vector<std::vector<boost::fibers::fiber>> fibers_;
 };
 
 }  // namespace ENCRYPTO
