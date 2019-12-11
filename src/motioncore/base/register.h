@@ -24,7 +24,7 @@
 
 #pragma once
 
-#include <utility/condition.h>
+#include <utility/fiber_condition.h>
 #include <atomic>
 #include <memory>
 #include <mutex>
@@ -133,11 +133,11 @@ class Register {
 
   void Clear();
 
-  std::shared_ptr<ENCRYPTO::Condition> GetGatesSetupDoneCondition() {
+  std::shared_ptr<ENCRYPTO::FiberCondition> GetGatesSetupDoneCondition() {
     return gates_setup_done_condition_;
   };
 
-  std::shared_ptr<ENCRYPTO::Condition> GetGatesOnlineDoneCondition() {
+  std::shared_ptr<ENCRYPTO::FiberCondition> GetGatesOnlineDoneCondition() {
     return gates_online_done_condition_;
   };
 
@@ -161,8 +161,10 @@ class Register {
 
   std::atomic<std::size_t> evaluated_gates_ = 0;
   std::atomic<std::size_t> evaluated_gate_setups_ = 0;
-  std::shared_ptr<ENCRYPTO::Condition> gates_setup_done_condition_;
-  std::shared_ptr<ENCRYPTO::Condition> gates_online_done_condition_;
+  bool gates_setup_done_flag_ = false;
+  bool gates_online_done_flag_ = false;
+  std::shared_ptr<ENCRYPTO::FiberCondition> gates_setup_done_condition_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> gates_online_done_condition_;
 
   ConfigurationPtr config_;
   LoggerPtr logger_;
