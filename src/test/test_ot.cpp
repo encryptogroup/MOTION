@@ -26,6 +26,7 @@
 
 #include "test_constants.h"
 
+#include "base/backend.h"
 #include "base/party.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "data_storage/base_ot_data.h"
@@ -182,7 +183,7 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              motion_parties.at(i)->Run(2);
+              motion_parties.at(i)->GetBackend()->OTExtensionSetup();
               motion_parties.at(i)->Finish();
             });
       }
@@ -286,7 +287,7 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
               }
             }
           }
-          motion_parties.at(i)->Run(2);
+          motion_parties.at(i)->GetBackend()->OTExtensionSetup();
 
           for (auto j = 0u; j < motion_parties.size(); ++j) {
             if (i != j) {
@@ -403,7 +404,7 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              motion_parties.at(i)->Run(2);
+              motion_parties.at(i)->GetBackend()->OTExtensionSetup();
               for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
                   for (auto k = 0ull; k < num_ots; ++k) {
@@ -533,7 +534,7 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
                   }
                 }
               }
-              motion_parties.at(i)->Run(2);
+              motion_parties.at(i)->GetBackend()->OTExtensionSetup();
 
               for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
