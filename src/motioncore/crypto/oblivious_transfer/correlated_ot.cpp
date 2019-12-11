@@ -132,7 +132,7 @@ FixedXCOT128VectorReceiver::FixedXCOT128VectorReceiver(
   auto &ot_ext_rcv = data_storage_->GetOTExtensionData()->GetReceiverData();
 
   ot_ext_rcv.outputs_.resize(ot_id + num_ots);
-  ot_ext_rcv.bitlengths_.resize(ot_id + num_ots, 128);
+  ot_ext_rcv.bitlengths_.resize(ot_id + num_ots, std::atomic<std::size_t>{128});
   ot_ext_rcv.num_ots_in_batch_.emplace(ot_id, num_ots);
 
   ot_ext_rcv.fixed_xcot_128_ot_.emplace(ot_id);

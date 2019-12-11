@@ -97,21 +97,22 @@ void OTProviderFromOTExtension::SendSetup() {
   ot_ext_snd.u_ = {};
 
   // array with pointers to each row of the matrix
-  std::array<std::byte *, kappa> ptrs;
+  std::array<const std::byte *, kappa> ptrs;
   for (i = 0u; i < ptrs.size(); ++i) {
-    ptrs[i] = v[i].GetMutableData().data();
+    ptrs[i] = v[i].GetData().data();
   }
-
-  // transpose the bit matrix
-  // XXX: figure out how the result looks like
-  BitMatrix::TransposeUsingBitSlicing(ptrs, bit_size_padded);
 
   const auto fixed_key_aes_key = data_storage_->GetFixedKeyAESKey().GetData().data();
 
   // for each (extended) OT i
   PRG prg_fixed_key;
-  if (!prg_fixed_key.ContainsKey()) prg_fixed_key.SetKey(fixed_key_aes_key);
+  prg_fixed_key.SetKey(fixed_key_aes_key);
 
+  // transpose the bit matrix
+  // XXX: figure out how the result looks like
+  BitMatrix::TransposeAndEncrypt(ptrs, ot_ext_snd.y0_, ot_ext_snd.y1_, base_ots_rcv.c_,
+                                 prg_fixed_key, bit_size_padded, ot_ext_snd.bitlengths_);
+/*
   for (i = 0; i < ot_ext_snd.bitlengths_.size(); ++i) {
     // here we want to store the sender's outputs
     // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
@@ -125,7 +126,7 @@ void OTProviderFromOTExtension::SendSetup() {
     const auto row_i = i % kappa;
     // where in the "row" do we have to look for the block
     const auto blk_offset = ((kappa / 8) * (i / kappa));
-    const auto V_row = reinterpret_cast<const std::byte *>(
+    auto V_row = reinterpret_cast<std::byte *>(
         __builtin_assume_aligned(ptrs.at(row_i) + blk_offset, MOTION::MOTION_ALIGNMENT));
 
     // compute the sender outputs
@@ -133,7 +134,7 @@ void OTProviderFromOTExtension::SendSetup() {
       // the bit length is smaller than 128 bit
       out0 = BitVector<>(prg_fixed_key.FixedKeyAES(V_row, i), bitlen);
 
-      auto out1_in = base_ots_rcv.c_ ^ AlignedBitVector(V_row, kappa);
+      auto out1_in = base_ots_rcv.c_ ^ BitSpan(V_row, kappa, true);
       out1 = BitVector<>(prg_fixed_key.FixedKeyAES(out1_in.GetData().data(), i), bitlen);
     } else {
       // string OT with bit length > 128 bit
@@ -143,13 +144,13 @@ void OTProviderFromOTExtension::SendSetup() {
       out0 =
           BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
 
-      auto out1_in = base_ots_rcv.c_ ^ AlignedBitVector(V_row, kappa);
+      auto out1_in = base_ots_rcv.c_ ^ BitSpan(V_row, kappa, true);
       auto seed1 = prg_fixed_key.FixedKeyAES(out1_in.GetData().data(), i);
       prgs_var_key.SetKey(seed1.data());
       out1 =
           BitVector<>(prgs_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
     }
-  }
+  }*/
 
   // we are done with the setup for the sender side
   {
@@ -239,7 +240,11 @@ void OTProviderFromOTExtension::ReceiveSetup() {
     const auto blk_offset = ((kappa / 8) * (i / kappa));
     const auto T_row = ptrs.at(row_i) + blk_offset;
     auto &out = ot_ext_rcv.outputs_.at(i);
-    const auto bitlen = ot_ext_rcv.bitlengths_.at(i);
+
+    std::unique_lock lock(ot_ext_rcv.bitlengths_mutex_);
+    const std::size_t bitlen = ot_ext_rcv.bitlengths_.at(i);
+    lock.unlock();
+
     if (bitlen <= kappa) {
       out = BitVector<>(prg_fixed_key.FixedKeyAES(T_row, i), bitlen);
     } else {
@@ -886,7 +891,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::GetOTs(std::size_t offset
 std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
     const std::size_t bitlen, const std::size_t num_ots, const OTProtocol p,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
-  const auto i = total_ots_count_;
+  const std::size_t i = total_ots_count_;
   total_ots_count_ += num_ots;
 
   auto &ot_ext_rcv = data_storage_->GetOTExtensionData()->GetReceiverData();
@@ -966,7 +971,7 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
 
 std::shared_ptr<FixedXCOT128VectorReceiver> OTProviderReceiver::RegisterFixedXCOT128s(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
-  const auto i = total_ots_count_;
+  const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
   auto ot = std::make_shared<FixedXCOT128VectorReceiver>(i, num_ots, data_storage_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
@@ -980,7 +985,7 @@ std::shared_ptr<FixedXCOT128VectorReceiver> OTProviderReceiver::RegisterFixedXCO
 
 std::shared_ptr<XCOTBitVectorReceiver> OTProviderReceiver::RegisterXCOTBits(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
-  const auto i = total_ots_count_;
+  const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
   auto ot = std::make_shared<XCOTBitVectorReceiver>(i, num_ots, data_storage_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {

@@ -299,7 +299,7 @@ class OTProviderReceiver {
  private:
   std::unordered_map<std::size_t, std::shared_ptr<OTVectorReceiver>> receiver_data_;
 
-  std::size_t total_ots_count_{0};
+  std::atomic<std::size_t> total_ots_count_{0};
 
   std::shared_ptr<MOTION::DataStorage> data_storage_;
 };

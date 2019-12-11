@@ -32,6 +32,7 @@
 #include <memory>
 
 namespace ENCRYPTO {
+class PRG;
 
 class BitMatrix {
  public:
@@ -117,6 +118,11 @@ class BitMatrix {
 
   static void TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
                                        std::size_t num_columns);
+
+  static void TransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
+                                  std::vector<BitVector<>>& y0, std::vector<BitVector<>>& y1,
+                                  const BitVector<> choices,PRG & prg_fixed_key, const std::size_t num_columns,
+                                  const std::vector<std::size_t>& bitlengths);
 
   bool operator==(const BitMatrix& other);
 
