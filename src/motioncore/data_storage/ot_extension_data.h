@@ -78,6 +78,7 @@ struct OTExtensionReceiverData {
   // is an OT batch of XOR correlated OT?
   std::unordered_set<std::size_t> xor_correlation_;
 
+  std::mutex bitlengths_mutex_;
   // bit length of every OT
   std::vector<std::size_t> bitlengths_;
 

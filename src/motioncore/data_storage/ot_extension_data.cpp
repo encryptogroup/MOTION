@@ -78,7 +78,10 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
       {
         receiver_data_.setup_finished_cond_->Wait();
 
+        std::unique_lock lock(receiver_data_.bitlengths_mutex_);
         const auto bitlen = receiver_data_.bitlengths_.at(i);
+        lock.unlock();
+
         const auto bs_it = receiver_data_.num_ots_in_batch_.find(i);
         assert(bs_it != receiver_data_.num_ots_in_batch_.end());
         const auto batch_size = bs_it->second;

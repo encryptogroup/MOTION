@@ -107,6 +107,7 @@ void DataStorage::SetReceivedOutputMessage(std::vector<std::uint8_t> &&output_me
 }
 
 void DataStorage::SetReceivedHelloMessage(std::vector<std::uint8_t> &&hello_message) {
+  assert(received_hello_message_.empty());
   {
     std::scoped_lock<std::mutex> lock(rcv_hello_msg_cond_->GetMutex());
     received_hello_message_ = std::move(hello_message);
