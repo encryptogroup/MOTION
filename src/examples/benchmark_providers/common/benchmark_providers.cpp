@@ -28,8 +28,10 @@
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/multiplication_triple/sb_provider.h"
 #include "crypto/multiplication_triple/sp_provider.h"
+#include "crypto/oblivious_transfer/correlated_ot.h"
 #include "statistics/analysis.h"
 #include "statistics/run_time_stats.h"
+#include "utility/block.h"
 #include "utility/config.h"
 
 MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std::size_t batch_size,
@@ -43,7 +45,8 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
   std::shared_ptr<MOTION::SPProvider> sp_provider{backend->GetSPProvider()};
   std::shared_ptr<MOTION::MTProvider> mt_provider{backend->GetMTProvider()};
 
-  std::list<MOTION::Statistics::RunTimeStats>& stats = party->GetBackend()->GetMutableRunTimeStats();
+  std::list<MOTION::Statistics::RunTimeStats>& stats =
+      party->GetBackend()->GetMutableRunTimeStats();
   stats.back().record_start<MOTION::Statistics::RunTimeStats::StatID::evaluate>();
 
   switch (provider) {
@@ -89,7 +92,8 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             auto ot{ot_provider->RegisterSend(8, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
             ot->SetInputs(std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(8)));
-            ot->SendMessages();}
+            ot->SendMessages();
+          }
           break;
         case 16:
           if (my_id == 0) {
@@ -103,7 +107,8 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             auto ot{ot_provider->RegisterSend(16, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
             ot->SetInputs(
-                std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(16)));        ot->SendMessages();
+                std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(16)));
+            ot->SendMessages();
           }
           break;
         case 32:
@@ -160,19 +165,35 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
       break;
     }
     case Provider::XCOT: {
-      if (my_id == 0) {
-        auto ot{
-            ot_provider->RegisterReceive(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::XCOT)};
-        ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
-        backend->OTExtensionSetup();
-        ot->SendCorrections();
-        ot->GetOutputs();
+      if (bit_size == 128) {
+        if (my_id == 0) {
+          auto ot{ot_provider->RegisterReceiveFixedXCOT128(batch_size)};
+          ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
+          backend->OTExtensionSetup();
+          ot->SendCorrections();
+          ot->GetOutputs();
+        } else {
+          auto ot{ot_provider->RegisterSendFixedXCOT128(batch_size)};
+          backend->OTExtensionSetup();
+          const auto b{ENCRYPTO::block128_t::make_random()};
+          ot->SetCorrelation(b);
+          ot->SendMessages();
+        }
+      } else if (bit_size == 1) {
+        if (my_id == 0) {
+          auto ot{ot_provider->RegisterReceiveXCOTBit(batch_size)};
+          ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
+          backend->OTExtensionSetup();
+          ot->SendCorrections();
+          ot->GetOutputs();
+        } else {
+          auto ot{ot_provider->RegisterSendXCOTBit(batch_size)};
+          backend->OTExtensionSetup();
+          ot->SetCorrelations(ENCRYPTO::BitVector<>(batch_size));
+          ot->SendMessages();
+        }
       } else {
-        auto ot{ot_provider->RegisterSend(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::XCOT)};
-        backend->OTExtensionSetup();
-        ot->SetInputs(
-            std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(bit_size)));
-        ot->SendMessages();
+        throw std::invalid_argument("Only 1 and 128 bits are supported for XCOTs in benchmarks");
       }
       break;
     }
