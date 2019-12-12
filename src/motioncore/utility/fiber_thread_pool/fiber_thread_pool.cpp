@@ -33,16 +33,14 @@
 
 namespace ENCRYPTO {
 
-FiberThreadPool::FiberThreadPool(std::size_t num_workers, std::size_t num_tasks, bool suspend_scheduler)
-    : num_workers_(num_workers),
+FiberThreadPool::FiberThreadPool(std::size_t num_workers, std::size_t num_tasks,
+                                 bool suspend_scheduler)
+    : num_workers_(num_workers > 0 ? num_workers : std::thread::hardware_concurrency()),
       running_(false),
       suspend_scheduler_(suspend_scheduler),
       task_queue_(std::make_unique<boost::fibers::buffered_channel<task_t>>(64)) {
   if (num_workers_ == 1) {
     throw std::invalid_argument("FiberThreadPool needs at least two worker threads");
-  }
-  if (num_workers_ == 0) {
-    num_workers_ = std::thread::hardware_concurrency();
   }
 
   // reserve storage to store the fiber objects
