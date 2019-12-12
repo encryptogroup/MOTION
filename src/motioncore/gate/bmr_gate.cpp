@@ -399,7 +399,7 @@ void BMROutputGate::EvaluateOnline() {
   auto &wires = gmw_out_share_->GetMutableWires();
   for (i = 0; i < wires.size(); ++i) {
     const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
-    bmr_wire->GetIsReadyCondition()->Wait();
+    bmr_wire->GetIsReadyCondition().Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires.at(i));
     assert(bmr_wire);
     assert(gmw_wire);
@@ -412,7 +412,7 @@ void BMROutputGate::EvaluateOnline() {
     const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(out_->GetOutputWires().at(i));
     // wait until the GMWOutputGate is evaluated
-    gmw_wire->GetIsReadyCondition()->Wait();
+    gmw_wire->GetIsReadyCondition().Wait();
     assert(bmr_wire);
     assert(gmw_wire);
     assert(bmr_wire->GetPublicValues().GetSize() == gmw_wire->GetValues().GetSize());
@@ -532,8 +532,8 @@ void BMRXORGate::EvaluateOnline() {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
     assert(bmr_out);
 
-    wire_a->GetIsReadyCondition()->Wait();
-    wire_b->GetIsReadyCondition()->Wait();
+    wire_a->GetIsReadyCondition().Wait();
+    wire_b->GetIsReadyCondition().Wait();
 
     // perform freeXOR evaluation
     bmr_out->GetMutablePublicKeys() = wire_a->GetPublicKeys() ^ wire_b->GetPublicKeys();
@@ -643,7 +643,7 @@ void BMRINVGate::EvaluateOnline() {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
     assert(bmr_out);
 
-    bmr_in->GetIsReadyCondition()->Wait();
+    bmr_in->GetIsReadyCondition().Wait();
 
     // just copy the public values and keys from the parent wire
     bmr_out->GetMutablePublicKeys() = bmr_in->GetPublicKeys();
@@ -1198,8 +1198,8 @@ void BMRANDGate::EvaluateOnline() {
     assert(wire_a);
     assert(wire_b);
 
-    wire_a->GetIsReadyCondition()->Wait();
-    wire_b->GetIsReadyCondition()->Wait();
+    wire_a->GetIsReadyCondition().Wait();
+    wire_b->GetIsReadyCondition().Wait();
 
     ENCRYPTO::PRG prg;
     prg.SetKey(GetConfig().GetFixedAESKey().GetData().data());

@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -39,8 +39,7 @@ Wire::Wire(Backend &backend, std::size_t num_simd, bool is_constant)
     : backend_(backend),
       n_simd_(num_simd),
       is_constant_(is_constant),
-      is_done_condition_(
-          std::make_shared<ENCRYPTO::FiberCondition>([this]() { return IsReady().load(); })) {
+      is_done_condition_([this]() { return IsReady().load(); }) {
   InitializationHelper();
 }
 
@@ -58,10 +57,10 @@ void Wire::SetOnlineFinished() {
         fmt::format("Marking wire #{} as \"online phase ready\" twice", wire_id_)));
   }
   {
-    std::scoped_lock lock(is_done_condition_->GetMutex());
+    std::scoped_lock lock(is_done_condition_.GetMutex());
     is_done_ = true;
   }
-  is_done_condition_->NotifyAll();
+  is_done_condition_.NotifyAll();
 
   for (auto gate_id : waiting_gate_ids_) {
     Wire::SignalReadyToDependency(gate_id, backend_);

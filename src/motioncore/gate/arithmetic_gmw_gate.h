@@ -307,7 +307,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     auto arithmetic_wire = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_.at(0));
     assert(arithmetic_wire);
     // wait for parent wire to obtain a value
-    arithmetic_wire->GetIsReadyCondition()->Wait();
+    arithmetic_wire->GetIsReadyCondition().Wait();
     // initialize output with local share
     auto output = arithmetic_wire->GetValues();
 
@@ -442,8 +442,8 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     WaitSetup();
     assert(setup_is_ready_);
 
-    parent_a_.at(0)->GetIsReadyCondition()->Wait();
-    parent_b_.at(0)->GetIsReadyCondition()->Wait();
+    parent_a_.at(0)->GetIsReadyCondition().Wait();
+    parent_b_.at(0)->GetIsReadyCondition().Wait();
 
     auto wire_a = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
     auto wire_b = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
@@ -525,8 +525,8 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     WaitSetup();
     assert(setup_is_ready_);
 
-    parent_a_.at(0)->GetIsReadyCondition()->Wait();
-    parent_b_.at(0)->GetIsReadyCondition()->Wait();
+    parent_a_.at(0)->GetIsReadyCondition().Wait();
+    parent_b_.at(0)->GetIsReadyCondition().Wait();
 
     auto wire_a = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
     auto wire_b = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_b_.at(0));
@@ -620,8 +620,8 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
   void EvaluateOnline() final {
     WaitSetup();
     assert(setup_is_ready_);
-    parent_a_.at(0)->GetIsReadyCondition()->Wait();
-    parent_b_.at(0)->GetIsReadyCondition()->Wait();
+    parent_a_.at(0)->GetIsReadyCondition().Wait();
+    parent_b_.at(0)->GetIsReadyCondition().Wait();
 
     auto &mt_provider = GetMTProvider();
     mt_provider.WaitFinished();
@@ -654,8 +654,8 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     const auto &d_clear = d_out_->GetOutputWires().at(0);
     const auto &e_clear = e_out_->GetOutputWires().at(0);
 
-    d_clear->GetIsReadyCondition()->Wait();
-    e_clear->GetIsReadyCondition()->Wait();
+    d_clear->GetIsReadyCondition().Wait();
+    e_clear->GetIsReadyCondition().Wait();
 
     const auto d_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(d_clear);
     const auto x_i_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_a_.at(0));
@@ -763,7 +763,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
   void EvaluateOnline() final {
     WaitSetup();
     assert(setup_is_ready_);
-    parent_.at(0)->GetIsReadyCondition()->Wait();
+    parent_.at(0)->GetIsReadyCondition().Wait();
 
     auto &sp_provider = GetSPProvider();
     sp_provider.WaitFinished();
@@ -784,7 +784,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
 
     const auto &d_clear = d_out_->GetOutputWires().at(0);
 
-    d_clear->GetIsReadyCondition()->Wait();
+    d_clear->GetIsReadyCondition().Wait();
 
     const auto d_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(d_clear);
     const auto x_i_w = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_.at(0));

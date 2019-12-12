@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -31,6 +31,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "utility/fiber_condition.h"
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
@@ -66,7 +67,7 @@ class Wire {
 
   const std::atomic<bool>& IsReady() const noexcept;
 
-  std::shared_ptr<ENCRYPTO::FiberCondition> GetIsReadyCondition() const noexcept {
+  const ENCRYPTO::FiberCondition& GetIsReadyCondition() const noexcept {
     return is_done_condition_;
   }
 
@@ -101,7 +102,7 @@ class Wire {
   // gates will wait for wires to be evaluated to proceed with their evaluation
   std::atomic<bool> is_done_ = false;
 
-  std::shared_ptr<ENCRYPTO::FiberCondition> is_done_condition_;
+  ENCRYPTO::FiberCondition is_done_condition_;
 
   std::int64_t wire_id_ = -1;
 

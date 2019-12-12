@@ -277,7 +277,7 @@ void GMWOutputGate::EvaluateOnline() {
     // wait for parent wire to obtain a value
     auto gmw_wire = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_.at(i));
     assert(gmw_wire);
-    gmw_wire->GetIsReadyCondition()->Wait();
+    gmw_wire->GetIsReadyCondition().Wait();
     // initialize output with local share
     output.emplace_back(gmw_wire->GetValues());
   }
@@ -441,11 +441,11 @@ void GMWXORGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
   for (auto &wire : parent_a_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   for (auto &wire : parent_b_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   for (auto i = 0ull; i < parent_a_.size(); ++i) {
@@ -533,7 +533,7 @@ void GMWINVGate::EvaluateOnline() {
   for (auto i = 0ull; i < parent_.size(); ++i) {
     auto wire = std::dynamic_pointer_cast<const Wires::GMWWire>(parent_.at(i));
     assert(wire);
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(gmw_wire);
     const bool inv = (wire->GetWireId() % GetConfig().GetNumOfParties()) == GetConfig().GetMyId();
@@ -637,11 +637,11 @@ void GMWANDGate::EvaluateSetup() {
 void GMWANDGate::EvaluateOnline() {
   WaitSetup();
   for (auto &wire : parent_a_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   for (auto &wire : parent_b_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   auto &mt_provider = GetMTProvider();
@@ -679,10 +679,10 @@ void GMWANDGate::EvaluateOnline() {
   const auto &e_clear = e_out_->GetOutputWires();
 
   for (auto &wire : d_clear) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
   for (auto &wire : e_clear) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   for (auto i = 0ull; i < d_clear.size(); ++i) {
@@ -810,15 +810,15 @@ void GMWMUXGate::EvaluateSetup() {
 void GMWMUXGate::EvaluateOnline() {
   WaitSetup();
   for (auto &wire : parent_a_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   for (auto &wire : parent_b_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   for (auto &wire : parent_c_) {
-    wire->GetIsReadyCondition()->Wait();
+    wire->GetIsReadyCondition().Wait();
   }
 
   const auto num_bits = parent_a_.size();

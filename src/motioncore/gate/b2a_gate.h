@@ -115,7 +115,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
 
     // wait for the parent wires to obtain their values
     for (const auto& wire : parent_) {
-      wire->GetIsReadyCondition()->Wait();
+      wire->GetIsReadyCondition().Wait();
     }
 
     // wait for the SBProvider to finish
