@@ -30,11 +30,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "utility/fiber_condition.h"
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
-class Condition;
-class FiberCondition;
 namespace ObliviousTransfer {
 class OTProvider;
 }
@@ -90,11 +89,11 @@ class Gate {
 
   void SetOnlineIsReady();
 
-  void WaitSetup();
+  void WaitSetup() const;
 
-  void WaitOnline();
+  void WaitOnline() const;
 
-  bool SetupIsReady() { return setup_is_ready_; }
+  bool SetupIsReady() const { return setup_is_ready_; }
 
   std::int64_t GetID() const { return gate_id_; }
 
@@ -113,8 +112,8 @@ class Gate {
 
   std::atomic<bool> added_to_active_queue = false;
 
-  std::shared_ptr<ENCRYPTO::Condition> setup_is_ready_cond_;
-  std::shared_ptr<ENCRYPTO::FiberCondition> online_is_ready_cond_;
+  ENCRYPTO::FiberCondition setup_is_ready_cond_;
+  ENCRYPTO::FiberCondition online_is_ready_cond_;
 
   std::atomic<std::size_t> num_ready_dependencies_ = 0;
 

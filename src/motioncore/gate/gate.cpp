@@ -45,10 +45,10 @@ void Gate::SignalDependencyIsReady() {
 
 void Gate::SetSetupIsReady() {
   {
-    std::scoped_lock lock(setup_is_ready_cond_->GetMutex());
+    std::scoped_lock lock(setup_is_ready_cond_.GetMutex());
     setup_is_ready_ = true;
   }
-  setup_is_ready_cond_->NotifyAll();
+  setup_is_ready_cond_.NotifyAll();
 }
 
 void Gate::SetOnlineIsReady() {
@@ -57,15 +57,15 @@ void Gate::SetOnlineIsReady() {
     wire->SetOnlineFinished();
   }
   {
-    std::scoped_lock lock(online_is_ready_cond_->GetMutex());
+    std::scoped_lock lock(online_is_ready_cond_.GetMutex());
     online_is_ready_ = true;
   }
-  online_is_ready_cond_->NotifyAll();
+  online_is_ready_cond_.NotifyAll();
 }
 
-void Gate::WaitSetup() { setup_is_ready_cond_->Wait(); }
+void Gate::WaitSetup() const { setup_is_ready_cond_.Wait(); }
 
-void Gate::WaitOnline() { online_is_ready_cond_->Wait(); }
+void Gate::WaitOnline() const { online_is_ready_cond_.Wait(); }
 
 void Gate::IfReadyAddToProcessingQueue() {
   std::scoped_lock lock(mutex_);
@@ -82,12 +82,10 @@ void Gate::Clear() {
   num_ready_dependencies_ = 0;
 }
 
-Gate::Gate(Backend& backend) : backend_(backend) {
-  online_is_ready_cond_ =
-      std::make_shared<ENCRYPTO::FiberCondition>([this]() { return online_is_ready_.load(); });
-  setup_is_ready_cond_ =
-      std::make_shared<ENCRYPTO::Condition>([this]() { return setup_is_ready_.load(); });
-}
+Gate::Gate(Backend& backend)
+    : backend_(backend),
+      setup_is_ready_cond_([this] { return setup_is_ready_.load(); }),
+      online_is_ready_cond_([this] { return online_is_ready_.load(); }) {}
 
 Register& Gate::GetRegister() { return *backend_.GetRegister(); }
 
