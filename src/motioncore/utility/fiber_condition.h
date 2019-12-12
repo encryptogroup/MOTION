@@ -45,13 +45,13 @@ class FiberCondition {
   //   return condition_function_();
   // }
 
-  void Wait() {
+  void Wait() const {
     std::unique_lock<decltype(mutex_)> lock(mutex_);
     condition_variable_.wait(lock, condition_function_);
   }
 
   template <typename Tick, typename Period>
-  bool WaitFor(std::chrono::duration<Tick, Period> duration) {
+  bool WaitFor(std::chrono::duration<Tick, Period> duration) const {
     std::unique_lock<decltype(mutex_)> lock(mutex_);
     condition_variable_.wait_for(lock, duration, condition_function_);
     return condition_function_();
@@ -66,8 +66,8 @@ class FiberCondition {
   boost::fibers::mutex &GetMutex() noexcept { return mutex_; }
 
  private:
-  boost::fibers::condition_variable condition_variable_;
-  boost::fibers::mutex mutex_;
+  mutable boost::fibers::condition_variable condition_variable_;
+  mutable boost::fibers::mutex mutex_;
   const std::function<bool()> condition_function_;
 };
 
