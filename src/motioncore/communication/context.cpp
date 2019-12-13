@@ -86,8 +86,14 @@ Context::Context(Role role, std::size_t id, BoostSocketPtr &boost_socket)
 // close the socket
 Context::~Context() {
   if (is_connected_ || boost_party_socket_->is_open()) {
-    boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
-    boost_party_socket_->close();
+    try {
+      boost_party_socket_->shutdown(boost::asio::ip::tcp::socket::shutdown_both);
+      boost_party_socket_->close();
+    } catch (boost::system::system_error &e) {
+      if (logger_) {
+        logger_->LogError(fmt::format("error occurred during Context destruction: {}", e.what()));
+      }
+    }
   }
 }
 
