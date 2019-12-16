@@ -26,9 +26,10 @@ find_package(Boost ${REQUIRED_BOOST_VERSION}
         COMPONENTS
         context
         fiber
+        filesystem
         log
         log_setup
-        filesystem
+        program_options
         system
         thread)
 set(Boost_USE_STATIC_LIBS ON)
