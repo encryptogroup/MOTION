@@ -79,7 +79,6 @@ GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires)
       assert(num_simd == gmw_wire_next->GetNumOfSIMDValues());
     }
   }
-  bits_ = wires.at(0)->GetBitLength();
 }
 
 GMWShare::GMWShare(std::vector<MOTION::Wires::WirePtr> &&wires) : GMWShare(wires) {}

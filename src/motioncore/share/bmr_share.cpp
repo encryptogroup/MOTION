@@ -60,6 +60,7 @@ BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires)
           std::runtime_error("Trying to create a BMR share from wires "
                              "of different sharing type"));
     }
+    assert(wire->GetBitLength() == 1);
   }
 
   wires_ = wires;
@@ -77,7 +78,6 @@ BMRShare::BMRShare(const std::vector<MOTION::Wires::WirePtr> &wires)
       assert(size == bmr_wire_next->GetNumOfSIMDValues());
     }
   }
-  bits_ = wires.at(0)->GetBitLength();
 }
 
 std::size_t BMRShare::GetNumOfSIMDValues() const noexcept {

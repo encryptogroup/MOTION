@@ -73,7 +73,6 @@ ConstantBooleanShare::ConstantBooleanShare(const std::vector<MOTION::Wires::Wire
       assert(num_simd == const_bool_wire_next->GetNumOfSIMDValues());
     }
   }
-  bits_ = wires.at(0)->GetBitLength();
 }
 
 ConstantBooleanShare::ConstantBooleanShare(std::vector<MOTION::Wires::WirePtr> &&wires)

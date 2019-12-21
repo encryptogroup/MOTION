@@ -89,8 +89,6 @@ class BooleanShare : public Share {
 
  protected:
   BooleanShare(Backend &backend) : Share(backend) {}
-
-  std::size_t bits_;
 };
 
 using BooleanSharePtr = std::shared_ptr<BooleanShare>;
