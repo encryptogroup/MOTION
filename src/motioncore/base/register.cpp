@@ -133,9 +133,9 @@ std::int64_t Register::GetNextGateFromActiveQueue() {
   }
 }
 
-void Register::IncrementEvaluatedGateSetupsCounter() {
-  auto no_evaluated_gate_setups = ++evaluated_gate_setups_;
-  if (no_evaluated_gate_setups == gates_.size()) {
+void Register::IncrementEvaluatedGatesSetupCounter() {
+  auto num_evaluated_gates_setup = ++evaluated_gates_setup_;
+  if (num_evaluated_gates_setup == gates_.size()) {
     {
       std::scoped_lock lock(gates_setup_done_condition_->GetMutex());
       gates_setup_done_flag_ = true;
@@ -144,9 +144,9 @@ void Register::IncrementEvaluatedGateSetupsCounter() {
   }
 }
 
-void Register::IncrementEvaluatedGatesCounter() {
-  auto no_evaluated_gates = ++evaluated_gates_;
-  if (no_evaluated_gates == gates_.size()) {
+void Register::IncrementEvaluatedGatesOnlineCounter() {
+  auto num_evaluated_gates_setup = ++evaluated_gates_online_;
+  if (num_evaluated_gates_setup == gates_.size()) {
     {
       std::scoped_lock lock(gates_online_done_condition_->GetMutex());
       gates_online_done_flag_ = true;
@@ -156,12 +156,12 @@ void Register::IncrementEvaluatedGatesCounter() {
 }
 
 void Register::Reset() {
-  if (evaluated_gates_ != gates_.size()) {
+  if (evaluated_gates_online_ != gates_.size()) {
     throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
 
   assert(active_gates_.empty());
-  assert(evaluated_gates_ == gates_.size());
+  assert(evaluated_gates_online_ == gates_.size());
   if (!gates_.empty()) {
     gate_id_offset_ = global_gate_id_;
   }
@@ -174,8 +174,8 @@ void Register::Reset() {
   gates_.clear();
   input_gates_.clear();
 
-  evaluated_gate_setups_ = 0;
-  evaluated_gates_ = 0;
+  evaluated_gates_setup_ = 0;
+  evaluated_gates_online_ = 0;
   gates_setup_done_flag_ = false;
   gates_online_done_flag_ = false;
 
@@ -190,11 +190,11 @@ void Register::Reset() {
 }
 
 void Register::Clear() {
-  if (evaluated_gates_ != gates_.size()) {
+  if (evaluated_gates_online_ != gates_.size()) {
     throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
   assert(active_gates_.empty());
-  assert(evaluated_gates_ == gates_.size());
+  assert(evaluated_gates_online_ == gates_.size());
   for (auto &gate : gates_) {
     gate->Clear();
   }
@@ -203,8 +203,8 @@ void Register::Clear() {
     wire->Clear();
   }
 
-  evaluated_gate_setups_ = 0;
-  evaluated_gates_ = 0;
+  evaluated_gates_setup_ = 0;
+  evaluated_gates_online_ = 0;
   gates_setup_done_flag_ = false;
   gates_online_done_flag_ = false;
 

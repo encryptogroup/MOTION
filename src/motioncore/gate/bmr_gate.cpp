@@ -159,7 +159,7 @@ void BMRInputGate::EvaluateSetup() {
         fmt::format("Finished evaluating setup phase of BMR Input Gate with id#{}", gate_id_));
   }
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BMRInputGate::EvaluateOnline() {
@@ -294,7 +294,7 @@ void BMRInputGate::EvaluateOnline() {
         fmt::format("Finished evaluating online phase of BMR Input Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::BMRSharePtr BMRInputGate::GetOutputAsBMRShare() const {
@@ -382,7 +382,7 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
 
 void BMROutputGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BMROutputGate::EvaluateOnline() {
@@ -430,7 +430,7 @@ void BMROutputGate::EvaluateOnline() {
   }
 
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::BMRSharePtr BMROutputGate::GetOutputAsBMRShare() const {
@@ -513,7 +513,7 @@ void BMRXORGate::EvaluateSetup() {
         fmt::format("Finished evaluating setup phase of BMR XOR Gate with id#{}", gate_id_));
   }
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BMRXORGate::EvaluateOnline() {
@@ -545,7 +545,7 @@ void BMRXORGate::EvaluateOnline() {
         fmt::format("Finished evaluating online phase of BMR XOR Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::BMRSharePtr BMRXORGate::GetOutputAsBMRShare() const {
@@ -626,7 +626,7 @@ void BMRINVGate::EvaluateSetup() {
         fmt::format("Finished evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BMRINVGate::EvaluateOnline() {
@@ -655,7 +655,7 @@ void BMRINVGate::EvaluateOnline() {
         fmt::format("Finished evaluating online phase of BMR INV Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::BMRSharePtr BMRINVGate::GetOutputAsBMRShare() const {
@@ -1146,7 +1146,7 @@ void BMRANDGate::EvaluateSetup() {
         fmt::format("Finished evaluating setup phase of BMR AND Gate with id#{}", gate_id_));
   }
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BMRANDGate::EvaluateOnline() {
@@ -1288,7 +1288,7 @@ void BMRANDGate::EvaluateOnline() {
     GetLogger().LogTrace(fmt::format("Evaluated BMR AND Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::BMRSharePtr BMRANDGate::GetOutputAsBMRShare() const {

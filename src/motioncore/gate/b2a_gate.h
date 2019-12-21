@@ -106,7 +106,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -170,7 +170,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
 
     GetLogger().LogDebug(fmt::format("Evaluated B2AGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   const Shares::ArithmeticSharePtr<T> GetOutputAsArithmeticShare() const {

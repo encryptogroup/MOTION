@@ -75,7 +75,7 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) : OneGate(parent->Get
 
 void BMRToGMWGate::EvaluateSetup() {
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BMRToGMWGate::EvaluateOnline() {
@@ -110,7 +110,7 @@ void BMRToGMWGate::EvaluateOnline() {
         "Finished evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::GMWSharePtr BMRToGMWGate::GetOutputAsGMWShare() const {
@@ -195,7 +195,7 @@ void GMWToBMRGate::EvaluateSetup() {
         "Finished evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
   SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGateSetupsCounter();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void GMWToBMRGate::EvaluateOnline() {
@@ -307,7 +307,7 @@ void GMWToBMRGate::EvaluateOnline() {
         "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
   SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesCounter();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const Shares::BMRSharePtr GMWToBMRGate::GetOutputAsBMRShare() const {

@@ -65,13 +65,13 @@ class ConstantBooleanInputGate : public Gate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
     WaitSetup();
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   MOTION::Shares::SharePtr GetOutputAsShare() const;
@@ -107,13 +107,13 @@ class ConstantArithmeticInputGate : public Gate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   };
 
   void EvaluateOnline() final {
     WaitSetup();
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   };
 
   MOTION::Shares::SharePtr GetOutputAsShare() const;
@@ -167,7 +167,7 @@ class ConstantArithmeticAdditionGate final : public MOTION::Gates::Interfaces::T
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -199,7 +199,7 @@ class ConstantArithmeticAdditionGate final : public MOTION::Gates::Interfaces::T
 
     GetLogger().LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -265,7 +265,7 @@ class ConstantArithmeticMultiplicationGate final : public MOTION::Gates::Interfa
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -292,7 +292,7 @@ class ConstantArithmeticMultiplicationGate final : public MOTION::Gates::Interfa
 
     GetLogger().LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the

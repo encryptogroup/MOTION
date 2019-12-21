@@ -119,13 +119,13 @@ class Register {
 
   std::int64_t GetNextGateFromActiveQueue();
 
-  void IncrementEvaluatedGateSetupsCounter();
+  void IncrementEvaluatedGatesSetupCounter();
 
-  void IncrementEvaluatedGatesCounter();
+  void IncrementEvaluatedGatesOnlineCounter();
 
-  std::size_t GetNumOfEvaluatedGateSetups() const { return evaluated_gate_setups_; }
+  std::size_t GetNumOfEvaluatedGateSetups() const { return evaluated_gates_setup_; }
 
-  std::size_t GetNumOfEvaluatedGates() const { return evaluated_gates_; }
+  std::size_t GetNumOfEvaluatedGates() const { return evaluated_gates_online_; }
 
   std::size_t GetTotalNumOfGates() const { return global_gate_id_ - gate_id_offset_; }
 
@@ -159,8 +159,8 @@ class Register {
   std::size_t global_arithmetic_gmw_sharing_id_ = 0, global_boolean_gmw_sharing_id_ = 0;
   std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
-  std::atomic<std::size_t> evaluated_gates_ = 0;
-  std::atomic<std::size_t> evaluated_gate_setups_ = 0;
+  std::atomic<std::size_t> evaluated_gates_online_ = 0;
+  std::atomic<std::size_t> evaluated_gates_setup_ = 0;
   // flags which should be changed to true as soon as the counters above reach
   // gates_.size(); need to be protected using the mutexes from the conditions below
   bool gates_setup_done_flag_ = false;

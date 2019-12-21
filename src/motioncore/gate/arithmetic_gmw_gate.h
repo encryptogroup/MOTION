@@ -106,7 +106,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
       rand_generator->GetInitializedCondition()->Wait();
     }
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   // non-interactive input sharing based on distributed in advance randomness
@@ -170,7 +170,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
 
     GetLogger().LogDebug(fmt::format("Evaluated ArithmeticInputGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -290,7 +290,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -383,7 +383,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
       GetLogger().LogDebug(fmt::format("Evaluated ArithmeticOutputGate with id#{}", gate_id_));
     }
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
  protected:
@@ -435,7 +435,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -460,7 +460,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
 
     GetLogger().LogDebug(fmt::format("Evaluated ArithmeticAdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -518,7 +518,7 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -542,7 +542,7 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
 
     GetLogger().LogDebug(fmt::format("Evaluated ArithmeticSubtractionGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -614,7 +614,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -692,7 +692,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     GetLogger().LogDebug(
         fmt::format("Evaluated ArithmeticMultiplicationGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the
@@ -757,7 +757,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
 
   void EvaluateSetup() final {
     SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGateSetupsCounter();
+    GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
 
   void EvaluateOnline() final {
@@ -813,7 +813,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
 
     GetLogger().LogDebug(fmt::format("Evaluated ArithmeticSquareGate with id#{}", gate_id_));
     SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesCounter();
+    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
 
   // perhaps, we should return a copy of the pointer and not move it for the

@@ -127,6 +127,7 @@ class Gate {
   SPProvider& GetSPProvider();
   SBProvider& GetSBProvider();
   ENCRYPTO::ObliviousTransfer::OTProvider& GetOTProvider(const std::size_t i);
+  bool own_output_wires_{true};
 
  private:
   void IfReadyAddToProcessingQueue();

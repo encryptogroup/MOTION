@@ -52,9 +52,11 @@ void Gate::SetSetupIsReady() {
 }
 
 void Gate::SetOnlineIsReady() {
-  for (auto& wire : output_wires_) {
-    assert(wire);
-    wire->SetOnlineFinished();
+  if(own_output_wires_) {
+    for (auto& wire : output_wires_) {
+      assert(wire);
+      wire->SetOnlineFinished();
+    }
   }
   {
     std::scoped_lock lock(online_is_ready_cond_.GetMutex());
