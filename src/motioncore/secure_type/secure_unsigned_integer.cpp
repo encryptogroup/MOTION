@@ -42,7 +42,7 @@ SecureUnsignedInteger::SecureUnsignedInteger(Shares::SharePtr&& other)
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
 SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
+  if (share_->Get()->GetCircuitType() == CircuitType::Arithmetic) {
     // use primitive operation in arithmetic GMW
     return *share_ + *other.share_;
   } else {  // BooleanCircuitType
