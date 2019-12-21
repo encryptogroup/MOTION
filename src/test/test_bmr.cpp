@@ -97,7 +97,7 @@ TEST_P(BMRTest, InputOutput) {
         EXPECT_EQ(s_in->GetBitLength(), this->n_wires_);
         auto s_out = s_in.Out(output_owner);
 
-        motion_parties.at(party_id)->Run(2);
+        motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
           for (auto i = 0ull; i < n_wires_; ++i) {
@@ -153,7 +153,7 @@ TEST_P(BMRTest, INV) {
         s_in = ~s_in;
         auto s_out = s_in.Out(output_owner);
 
-        motion_parties.at(party_id)->Run(2);
+        motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
           for (auto i = 0ull; i < n_wires_; ++i) {
@@ -215,7 +215,7 @@ TEST_P(BMRTest, XOR) {
 
             auto s_out = s_xor.Out(output_owner);
 
-            motion_parties.at(party_id)->Run(2);
+            motion_parties.at(party_id)->Run();
 
             if (party_id == output_owner) {
               for (auto j = 0ull; j < this->n_wires_; ++j) {
@@ -342,7 +342,6 @@ TEST_P(BMRHeavyTest, AND) {
     std::cerr << e.what() << std::endl;
   }
 }
-
 
 TEST_P(BMRHeavyTest, OR) {
   EXPECT_NE(n_parties_, 0);
