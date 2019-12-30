@@ -34,10 +34,13 @@
 #include "gate/b2a_gate.h"
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
+#include "gate/constant_gate.h"
 #include "gate/conversion_gate.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "share/arithmetic_gmw_share.h"
 #include "share/boolean_gmw_share.h"
+#include "share/constant_share.h"
+#include "wire/constant_wire.h"
 
 namespace MOTION::Shares {
 using SharePtr = std::shared_ptr<Share>;
@@ -141,9 +144,10 @@ ShareWrapper ShareWrapper::operator|(const ShareWrapper &other) const {
 ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
-  assert(share_->GetProtocol() == other->GetProtocol());
+  assert(share_->GetCircuitType() == other->GetCircuitType());
   assert(share_->GetBitLength() == other->GetBitLength());
-  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW &&
+      other->GetProtocol() != MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
   }
@@ -164,9 +168,10 @@ ShareWrapper ShareWrapper::operator+(const ShareWrapper &other) const {
 ShareWrapper ShareWrapper::operator-(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
-  assert(share_->GetProtocol() == other->GetProtocol());
+  assert(share_->GetCircuitType() == other->GetCircuitType());
   assert(share_->GetBitLength() == other->GetBitLength());
-  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW &&
+      other->GetProtocol() != MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
   }
@@ -187,10 +192,11 @@ ShareWrapper ShareWrapper::operator-(const ShareWrapper &other) const {
 ShareWrapper ShareWrapper::operator*(const ShareWrapper &other) const {
   assert(*other);
   assert(share_);
-  assert(share_->GetProtocol() == other->GetProtocol());
+  assert(share_->GetCircuitType() == other->GetCircuitType());
   assert(share_->GetBitLength() == other->GetBitLength());
   assert(share_->GetNumOfSIMDValues() == other->GetNumOfSIMDValues());
-  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW) {
+  if (share_->GetProtocol() != MPCProtocol::ArithmeticGMW &&
+      other->GetProtocol() != MPCProtocol::ArithmeticGMW) {
     throw std::runtime_error(
         "Arithmetic primitive operations are only supported for arithmetic GMW shares");
   }
@@ -603,21 +609,42 @@ ShareWrapper ShareWrapper::Evaluate(const ENCRYPTO::AlgorithmDescription &algo) 
 
 template <typename T>
 ShareWrapper ShareWrapper::Add(SharePtr share, SharePtr other) const {
-  auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
-  assert(this_a);
-  auto this_wire_a = this_a->GetArithmeticWire();
+  if (!share->IsConstant() && !other->IsConstant()) {
+    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
+    assert(this_a);
+    auto this_wire_a = this_a->GetArithmeticWire();
 
-  auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
-  assert(other_a);
-  auto other_wire_a = other_a->GetArithmeticWire();
+    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
+    assert(other_a);
+    auto other_wire_a = other_a->GetArithmeticWire();
 
-  auto addition_gate =
-      std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(this_wire_a, other_wire_a);
-  auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
-  share_->GetRegister()->RegisterNextGate(addition_gate_cast);
-  auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
+    auto addition_gate =
+        std::make_shared<Gates::Arithmetic::ArithmeticAdditionGate<T>>(this_wire_a, other_wire_a);
+    auto addition_gate_cast = std::static_pointer_cast<Gates::Interfaces::Gate>(addition_gate);
+    share_->GetRegister()->RegisterNextGate(addition_gate_cast);
+    auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
 
-  return ShareWrapper(res);
+    return ShareWrapper(res);
+  } else {
+    assert(!(share->IsConstant() && other->IsConstant()));
+    auto cwire_orig = share;
+    auto ncwire_orig = other;
+    if (ncwire_orig->IsConstant()) std::swap(cwire_orig, ncwire_orig);
+    assert(cwire_orig->IsConstant() && !ncwire_orig->IsConstant());
+
+    auto cwire =
+        std::dynamic_pointer_cast<Wires::ConstantArithmeticWire<T>>(cwire_orig->GetWires()[0]);
+    assert(cwire);
+    auto ncwire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(ncwire_orig->GetWires()[0]);
+    assert(ncwire);
+
+    auto addition_gate =
+        std::make_shared<Gates::Arithmetic::ConstantArithmeticAdditionGate<T>>(ncwire, cwire);
+    share_->GetRegister()->RegisterNextGate(addition_gate);
+    auto res = std::static_pointer_cast<Shares::Share>(addition_gate->GetOutputAsArithmeticShare());
+
+    return ShareWrapper(res);
+  }
 }
 
 template ShareWrapper ShareWrapper::Add<std::uint8_t>(SharePtr share, SharePtr other) const;
@@ -652,23 +679,43 @@ template ShareWrapper ShareWrapper::Sub<std::uint64_t>(SharePtr share, SharePtr 
 
 template <typename T>
 ShareWrapper ShareWrapper::Mul(SharePtr share, SharePtr other) const {
-  auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
-  assert(this_a);
-  auto this_wire_a = this_a->GetArithmeticWire();
+  if (!share->IsConstant() && !other->IsConstant()) {
+    auto this_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(share);
+    assert(this_a);
+    auto this_wire_a = this_a->GetArithmeticWire();
 
-  auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
-  assert(other_a);
-  auto other_wire_a = other_a->GetArithmeticWire();
+    auto other_a = std::dynamic_pointer_cast<ArithmeticShare<T>>(other);
+    assert(other_a);
+    auto other_wire_a = other_a->GetArithmeticWire();
 
-  auto multiplication_gate = std::make_shared<Gates::Arithmetic::ArithmeticMultiplicationGate<T>>(
-      this_wire_a, other_wire_a);
-  auto multiplication_gate_cast =
-      std::static_pointer_cast<Gates::Interfaces::Gate>(multiplication_gate);
-  share_->GetRegister()->RegisterNextGate(multiplication_gate_cast);
-  auto res =
-      std::static_pointer_cast<Shares::Share>(multiplication_gate->GetOutputAsArithmeticShare());
+    auto multiplication_gate = std::make_shared<Gates::Arithmetic::ArithmeticMultiplicationGate<T>>(
+        this_wire_a, other_wire_a);
+    share_->GetRegister()->RegisterNextGate(multiplication_gate);
+    auto res =
+        std::static_pointer_cast<Shares::Share>(multiplication_gate->GetOutputAsArithmeticShare());
 
-  return ShareWrapper(res);
+    return ShareWrapper(res);
+  } else {
+    assert(!(share->IsConstant() && other->IsConstant()));
+    auto cwire_orig = share;
+    auto ncwire_orig = other;
+    if (ncwire_orig->IsConstant()) std::swap(cwire_orig, ncwire_orig);
+    assert(cwire_orig->IsConstant() && !ncwire_orig->IsConstant());
+
+    auto cwire =
+        std::dynamic_pointer_cast<Wires::ConstantArithmeticWire<T>>(cwire_orig->GetWires()[0]);
+    assert(cwire);
+    auto ncwire = std::dynamic_pointer_cast<Wires::ArithmeticWire<T>>(ncwire_orig->GetWires()[0]);
+    assert(ncwire);
+
+    auto multiplication_gate =
+        std::make_shared<Gates::Arithmetic::ConstantArithmeticMultiplicationGate<T>>(ncwire, cwire);
+    share_->GetRegister()->RegisterNextGate(multiplication_gate);
+    auto res =
+        std::static_pointer_cast<Shares::Share>(multiplication_gate->GetOutputAsArithmeticShare());
+
+    return ShareWrapper(res);
+  }
 }
 
 template <typename T>
