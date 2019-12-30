@@ -60,9 +60,16 @@ class Party {
   ConfigurationPtr GetConfiguration() { return config_; }
 
   template <MPCProtocol P>
-  Shares::SharePtr IN(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t party_id) {
+  Shares::SharePtr IN(const std::vector<ENCRYPTO::BitVector<>> &input,
+                      std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MPCProtocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticConstant);
     switch (P) {
+      case MPCProtocol::BooleanConstant: {
+        // TODO implement
+        static_assert(P != MPCProtocol::BooleanConstant, "Not implemented yet");
+        // return backend_->BooleanGMWInput(party_id, input);
+      }
       case MPCProtocol::BooleanGMW: {
         return backend_->BooleanGMWInput(party_id, input);
       }
@@ -77,9 +84,16 @@ class Party {
   }
 
   template <MPCProtocol P>
-  Shares::SharePtr IN(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t party_id) {
+  Shares::SharePtr IN(std::vector<ENCRYPTO::BitVector<>> &&input,
+                      std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MPCProtocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticConstant);
     switch (P) {
+      case MPCProtocol::BooleanConstant: {
+        // TODO implement
+        static_assert(P != MPCProtocol::BooleanConstant, "Not implemented yet");
+        // return backend_->BooleanGMWInput(party_id, input);
+      }
       case MPCProtocol::BooleanGMW: {
         return backend_->BooleanGMWInput(party_id, std::move(input));
       }
@@ -94,9 +108,16 @@ class Party {
   }
 
   template <MPCProtocol P>
-  Shares::SharePtr IN(const ENCRYPTO::BitVector<> &input, std::size_t party_id) {
+  Shares::SharePtr IN(const ENCRYPTO::BitVector<> &input,
+                      std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MPCProtocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticConstant);
     switch (P) {
+      case MPCProtocol::BooleanConstant: {
+        // TODO implement
+        static_assert(P != MPCProtocol::BooleanConstant, "Not implemented yet");
+        // return backend_->BooleanGMWInput(party_id, input);
+      }
       case MPCProtocol::BooleanGMW: {
         return backend_->BooleanGMWInput(party_id, input);
       }
@@ -111,9 +132,16 @@ class Party {
   }
 
   template <MPCProtocol P>
-  Shares::SharePtr IN(ENCRYPTO::BitVector<> &&input, std::size_t party_id) {
+  Shares::SharePtr IN(ENCRYPTO::BitVector<> &&input,
+                      std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MPCProtocol::ArithmeticGMW);
+    static_assert(P != MPCProtocol::ArithmeticConstant);
     switch (P) {
+      case MPCProtocol::BooleanConstant: {
+        // TODO implement
+        static_assert(P != MPCProtocol::BooleanConstant, "Not implemented yet");
+        // return backend_->BooleanGMWInput(party_id, input);
+      }
       case MPCProtocol::BooleanGMW: {
         return backend_->BooleanGMWInput(party_id, std::move(input));
       }
@@ -129,19 +157,24 @@ class Party {
 
   template <MPCProtocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr IN(const std::vector<T> &input, std::size_t party_id) {
+  Shares::SharePtr IN(const std::vector<T> &input,
+                      std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     switch (P) {
+      case MPCProtocol::ArithmeticConstant: {
+        return backend_->ConstantArithmeticGMWInput(input);
+      }
       case MPCProtocol::ArithmeticGMW: {
         return backend_->ArithmeticGMWInput(party_id, input);
       }
       case MPCProtocol::BooleanGMW: {
-        throw(std::runtime_error(
-            fmt::format("Non-binary types have to be converted to BitVectors in BMR, "
-                        "consider using TODO function for the input")));
+        throw std::runtime_error(
+            "Non-binary types have to be converted to BitVectors in BooleanGMW, "
+            "consider using TODO function for the input");
       }
       case MPCProtocol::BMR: {
-        static_assert(P != MPCProtocol::BMR, "BMR protocol is not implemented yet");
-        // TODO
+        throw std::runtime_error(
+            "Non-binary types have to be converted to BitVectors in BMR, "
+            "consider using TODO function for the input");
       }
       default: {
         throw(std::runtime_error(
@@ -152,8 +185,12 @@ class Party {
 
   template <MPCProtocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr IN(std::vector<T> &&input, std::size_t party_id) {
+  Shares::SharePtr IN(std::vector<T> &&input,
+                      std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     switch (P) {
+      case MPCProtocol::ArithmeticConstant: {
+        return backend_->ConstantArithmeticGMWInput(std::move(input));
+      }
       case MPCProtocol::ArithmeticGMW: {
         return backend_->ArithmeticGMWInput(party_id, std::move(input));
       }
@@ -176,9 +213,8 @@ class Party {
 
   template <MPCProtocol P, typename T = std::uint8_t,
             typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  Shares::SharePtr IN(T input, std::size_t party_id) {
+  Shares::SharePtr IN(T input, std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     if constexpr (std::is_same_v<T, bool>) {
-      static_assert(P != MPCProtocol::ArithmeticGMW, "Invalid input");
       if constexpr (P == MPCProtocol::BooleanGMW)
         return backend_->BooleanGMWInput(party_id, input);
       else

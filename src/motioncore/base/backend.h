@@ -29,6 +29,7 @@
 #include <flatbuffers/flatbuffers.h>
 
 #include "gate/arithmetic_gmw_gate.h"
+#include "gate/constant_gate.h"
 
 static_assert(FLATBUFFERS_LITTLEENDIAN);
 
@@ -161,6 +162,27 @@ class Backend : public std::enable_shared_from_this<Backend> {
   Shares::SharePtr BMRInput(std::size_t party_id, std::vector<ENCRYPTO::BitVector<>> &&input);
 
   Shares::SharePtr BMROutput(const Shares::SharePtr &parent, std::size_t output_owner);
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ConstantArithmeticGMWInput(T input = 0) {
+    return ConstantArithmeticGMWInput({input});
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ConstantArithmeticGMWInput(const std::vector<T> &input_vector) {
+    auto in_gate =
+        std::make_shared<Gates::Arithmetic::ConstantArithmeticInputGate<T>>(input_vector, *this);
+    RegisterGate(in_gate);
+    return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsShare());
+  }
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  Shares::SharePtr ConstantArithmeticGMWInput(std::vector<T> &&input_vector) {
+    auto in_gate = std::make_shared<Gates::Arithmetic::ConstantArithmeticInputGate<T>>(
+        std::move(input_vector), *this);
+    RegisterGate(in_gate);
+    return std::static_pointer_cast<Shares::Share>(in_gate->GetOutputAsShare());
+  }
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   Shares::SharePtr ArithmeticGMWInput(std::size_t party_id, T input = 0) {
