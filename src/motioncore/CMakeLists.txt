@@ -34,11 +34,13 @@ add_library(motion
         data_storage/shared_bits_data.cpp
         gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp
+        gate/constant_gate.cpp
         gate/conversion_gate.cpp
         gate/gate.cpp
         secure_type/secure_unsigned_integer.cpp
         share/bmr_share.cpp
         share/boolean_gmw_share.cpp
+        share/constant_share.cpp
         share/share.cpp
         share/share_wrapper.cpp
         statistics/analysis.cpp
@@ -53,6 +55,7 @@ add_library(motion
         utility/logger.cpp
         utility/thread.cpp
         wire/bmr_wire.cpp
+        wire/constant_wire.cpp
         wire/boolean_gmw_wire.cpp
         wire/wire.cpp
         )
