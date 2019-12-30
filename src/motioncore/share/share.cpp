@@ -24,10 +24,15 @@
 
 #include "share.h"
 
-#include <fmt/format.h>
-
 #include "base/backend.h"
 
 namespace MOTION::Shares {
 std::shared_ptr<Register> Share::GetRegister() { return backend_.GetRegister(); }
+
+bool Share::IsConstant() const noexcept {
+  for (auto &w : wires_) {
+    if (!w->IsConstant()) return false;
+  }
+  return true;
+}
 }  // namespace MOTION::Shares

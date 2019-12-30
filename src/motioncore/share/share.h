@@ -73,6 +73,8 @@ class Share : public std::enable_shared_from_this<Share> {
 
   static std::shared_ptr<Share> Join(const std::vector<std::shared_ptr<Share>> &v);
 
+  bool IsConstant() const noexcept;
+
  protected:
   Share(Backend &backend) : backend_(backend) {}
 
