@@ -102,7 +102,7 @@ class ArithmeticShare final : public Shares::Share {
   }
 
   CircuitType GetCircuitType() const noexcept final {
-    assert(wires_.at(0)->GetCircuitType() == BooleanCircuitType);
+    assert(wires_.at(0)->GetCircuitType() == ArithmeticCircuitType);
     return wires_.at(0)->GetCircuitType();
   }
 
@@ -144,41 +144,4 @@ class ArithmeticShare final : public Shares::Share {
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 using ArithmeticSharePtr = std::shared_ptr<ArithmeticShare<T>>;
-
-/*
- * Allow only unsigned integers for Arithmetic shares.
- */
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticConstantShare : public Share {
- public:
-  ArithmeticConstantShare(T input, Backend &backend) : Share(backend), values_({input}) {}
-
-  ArithmeticConstantShare(std::vector<T> &input, Backend &backend)
-      : Share(backend), values_(input) {}
-
-  ArithmeticConstantShare(std::vector<T> &&input, Backend &backend)
-      : Share(backend), values_(std::move(input)) {}
-
-  ~ArithmeticConstantShare() override = default;
-
-  std::size_t GetNumOfSIMDValues() const noexcept final { return values_.size(); };
-
-  MPCProtocol GetProtocol() const noexcept final { return ArithmeticGMW; }
-
-  const std::vector<T> &GetValue() const { return values_; }
-
-  ArithmeticConstantShare() = delete;
-
-  ArithmeticConstantShare(ArithmeticConstantShare &) = delete;
-
-  std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
-
- protected:
-  std::vector<T> values_;
-
- private:
-};
-
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using ArithmeticConstantSharePtr = std::shared_ptr<ArithmeticConstantShare<T>>;
 }  // namespace MOTION::Shares
