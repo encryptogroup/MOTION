@@ -194,6 +194,117 @@ TEST(ArithmeticGMW, Addition_1_1K_SIMD_2_3_4_5_10_parties) {
   }
 }
 
+TEST(ArithmeticGMW, ConstantAddition_1_1K_SIMD_2_3_4_5_10_parties) {
+  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
+  constexpr auto ACONST = MOTION::MPCProtocol::ArithmeticConstant;
+  std::srand(std::time(nullptr));
+  auto template_test = [](auto template_var) {
+    using T = decltype(template_var);
+    const std::vector<T> _zero_v_1K(1000, 0);
+    for (auto num_parties : num_parties_list) {
+      std::size_t output_owner = std::rand() % num_parties;
+      std::vector<T> in_1 = RandomVector<T>(num_parties), const_in_1 = RandomVector<T>(1),
+                     const_in_1K = RandomVector<T>(1000);
+      std::vector<std::vector<T>> in_1K(num_parties);
+      for (auto &v : in_1K) {
+        v = RandomVector<T>(1000);
+      }
+      try {
+        std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : motion_parties) {
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+        }
+#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(motion_parties.size())
+        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+          std::vector<MOTION::Shares::ShareWrapper> s_in_1, s_in_1K;
+          for (auto j = 0u; j < num_parties; ++j) {
+            // If my input - real input, otherwise a dummy 0 (-vector).
+            // Should not make any difference, just for consistency...
+            const T my_in_1 = party_id == j ? in_1.at(j) : 0;
+            const std::vector<T> &my_in_1K = party_id == j ? in_1K.at(j) : _zero_v_1K;
+
+            s_in_1.push_back(motion_parties.at(party_id)->IN<AGMW>(my_in_1, j));
+            s_in_1K.push_back(motion_parties.at(party_id)->IN<AGMW>(my_in_1K, j));
+          }
+
+          MOTION::Shares::ShareWrapper s_const_in_1 =
+              motion_parties.at(party_id)->IN<ACONST>(const_in_1);
+          MOTION::Shares::ShareWrapper s_const_in_1K =
+              motion_parties.at(party_id)->IN<ACONST>(const_in_1K);
+
+          auto s_add_1 = s_in_1.at(0) + s_in_1.at(1);
+          auto s_add_1K = s_in_1K.at(0) + s_in_1K.at(1);
+
+          for (auto j = 2u; j < num_parties; ++j) {
+            s_add_1 += s_in_1.at(j);
+            s_add_1K += s_in_1K.at(j);
+          }
+
+          s_add_1 += s_const_in_1;
+          s_add_1K += s_const_in_1K;
+
+          auto s_out_1 = s_add_1.Out(output_owner);
+          auto s_out_1K = s_add_1K.Out(output_owner);
+
+          auto s_out_1_all = s_add_1.Out();
+          auto s_out_1K_all = s_add_1K.Out();
+
+          motion_parties.at(party_id)->Run(2);
+
+          if (party_id == output_owner) {
+            auto wire_1 = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1K->GetWires().at(0));
+
+            T circuit_result_1 = wire_1->GetValues().at(0);
+            T expected_result_1 = Helpers::SumReduction(in_1) + const_in_1.at(0);
+            EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> &circuit_result_1K = {wire_1K->GetValues()};
+            const auto tmp_result{Helpers::RowSumReduction(in_1K)};
+            const auto expected_result_1K{Helpers::AddVectors(const_in_1K, tmp_result)};
+            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
+              EXPECT_EQ(circuit_result_1K, expected_result_1K);
+            }
+          }
+
+          {
+            auto wire_1 = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1_all->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1K_all->GetWires().at(0));
+
+            T circuit_result_1 = wire_1->GetValues().at(0);
+            T expected_result_1 = Helpers::SumReduction(in_1) + const_in_1.at(0);
+            EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> &circuit_result_1K = {wire_1K->GetValues()};
+            const auto tmp_result{Helpers::RowSumReduction(in_1K)};
+            const auto expected_result_1K{Helpers::AddVectors(const_in_1K, tmp_result)};
+            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
+              EXPECT_EQ(circuit_result_1K, expected_result_1K);
+            }
+          }
+          motion_parties.at(party_id)->Finish();
+        }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
+  };
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
+    // lambdas don't support templates, but only auto types. So, let's try to trick them.
+    template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint16_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
+  }
+}
+
 TEST(ArithmeticGMW, Subtraction_1_1K_SIMD_2_3_4_5_10_parties) {
   constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
   std::srand(std::time(nullptr));
@@ -357,6 +468,118 @@ TEST(ArithmeticGMW, Multiplication_1_100_SIMD_2_3_parties) {
             const std::vector<T> expected_result_100 = std::move(Helpers::RowMulReduction(in_100));
             for (auto i = 0u; i < circuit_result_100.size(); ++i) {
               EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
+            }
+          }
+          motion_parties.at(party_id)->Finish();
+        }
+      } catch (std::exception &e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
+  };
+  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
+    // lambdas don't support templates, but only auto types. So, let's try to trick them.
+    template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint16_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
+  }
+}
+
+
+TEST(ArithmeticGMW, ConstantMultiplication_1_1K_SIMD_2_3_4_5_10_parties) {
+  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
+  constexpr auto ACONST = MOTION::MPCProtocol::ArithmeticConstant;
+  std::srand(std::time(nullptr));
+  auto template_test = [](auto template_var) {
+    using T = decltype(template_var);
+    const std::vector<T> _zero_v_1K(1000, 0);
+    for (auto num_parties : num_parties_list) {
+      std::size_t output_owner = std::rand() % num_parties;
+      std::vector<T> in_1 = RandomVector<T>(num_parties), const_in_1 = RandomVector<T>(1),
+          const_in_1K = RandomVector<T>(1000);
+      std::vector<std::vector<T>> in_1K(num_parties);
+      for (auto &v : in_1K) {
+        v = RandomVector<T>(1000);
+      }
+      try {
+        std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
+        for (auto &p : motion_parties) {
+          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
+          p->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+        }
+#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(motion_parties.size())
+        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+          std::vector<MOTION::Shares::ShareWrapper> s_in_1, s_in_1K;
+          for (auto j = 0u; j < num_parties; ++j) {
+            // If my input - real input, otherwise a dummy 0 (-vector).
+            // Should not make any difference, just for consistency...
+            const T my_in_1 = party_id == j ? in_1.at(j) : 0;
+            const std::vector<T> &my_in_1K = party_id == j ? in_1K.at(j) : _zero_v_1K;
+
+            s_in_1.push_back(motion_parties.at(party_id)->IN<AGMW>(my_in_1, j));
+            s_in_1K.push_back(motion_parties.at(party_id)->IN<AGMW>(my_in_1K, j));
+          }
+
+          MOTION::Shares::ShareWrapper s_const_in_1 =
+              motion_parties.at(party_id)->IN<ACONST>(const_in_1);
+          MOTION::Shares::ShareWrapper s_const_in_1K =
+              motion_parties.at(party_id)->IN<ACONST>(const_in_1K);
+
+          auto s_add_1 = s_in_1.at(0) + s_in_1.at(1);
+          auto s_add_1K = s_in_1K.at(0) + s_in_1K.at(1);
+
+          for (auto j = 2u; j < num_parties; ++j) {
+            s_add_1 += s_in_1.at(j);
+            s_add_1K += s_in_1K.at(j);
+          }
+
+          s_add_1 *= s_const_in_1;
+          s_add_1K *= s_const_in_1K;
+
+          auto s_out_1 = s_add_1.Out(output_owner);
+          auto s_out_1K = s_add_1K.Out(output_owner);
+
+          auto s_out_1_all = s_add_1.Out();
+          auto s_out_1K_all = s_add_1K.Out();
+
+          motion_parties.at(party_id)->Run(2);
+
+          if (party_id == output_owner) {
+            auto wire_1 = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1K->GetWires().at(0));
+
+            T circuit_result_1 = wire_1->GetValues().at(0);
+            T expected_result_1 = Helpers::SumReduction(in_1) * const_in_1.at(0);
+            EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> &circuit_result_1K = {wire_1K->GetValues()};
+            const auto tmp_result{Helpers::RowSumReduction(in_1K)};
+            const auto expected_result_1K{Helpers::MultiplyVectors(const_in_1K, tmp_result)};
+            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
+              EXPECT_EQ(circuit_result_1K, expected_result_1K);
+            }
+          }
+
+          {
+            auto wire_1 = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1_all->GetWires().at(0));
+            auto wire_1K = std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(
+                s_out_1K_all->GetWires().at(0));
+
+            T circuit_result_1 = wire_1->GetValues().at(0);
+            T expected_result_1 = Helpers::SumReduction(in_1) * const_in_1.at(0);
+            EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> &circuit_result_1K = {wire_1K->GetValues()};
+            const auto tmp_result{Helpers::RowSumReduction(in_1K)};
+            const auto expected_result_1K{Helpers::MultiplyVectors(const_in_1K, tmp_result)};
+            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
+              EXPECT_EQ(circuit_result_1K, expected_result_1K);
             }
           }
           motion_parties.at(party_id)->Finish();
