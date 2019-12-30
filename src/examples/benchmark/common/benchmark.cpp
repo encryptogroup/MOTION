@@ -58,19 +58,19 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
           break;
         }
         case 16u: {
-          std::vector<std::uint8_t> tmp_arith(num_simd);
+          std::vector<std::uint16_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
         }
         case 32u: {
-          std::vector<std::uint8_t> tmp_arith(num_simd);
+          std::vector<std::uint32_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
         }
         case 64u: {
-          std::vector<std::uint8_t> tmp_arith(num_simd);
+          std::vector<std::uint64_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
