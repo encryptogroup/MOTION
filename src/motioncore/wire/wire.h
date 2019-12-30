@@ -71,8 +71,6 @@ class Wire {
     return is_done_condition_;
   }
 
-  bool IsConstant() const { return is_constant_; }
-
   std::size_t GetWireId() const { return static_cast<std::size_t>(wire_id_); }
 
   Backend& GetBackend() const { return backend_; }
@@ -86,6 +84,8 @@ class Wire {
     DynamicClear();
   }
 
+  virtual bool IsConstant() const noexcept = 0;
+
   Wire(const Wire&) = delete;
 
  protected:
@@ -93,10 +93,6 @@ class Wire {
 
   /// Number of values that are _logically_ processed in parallel
   std::size_t n_simd_ = 0;
-
-  // flagging variables as constants is useful, since this allows for tricks,
-  // such as non-interactive multiplication by a constant in (arithmetic) GMW
-  std::atomic<bool> is_constant_ = false;
 
   // is ready flag is needed for callbacks, i.e.,
   // gates will wait for wires to be evaluated to proceed with their evaluation
@@ -108,7 +104,7 @@ class Wire {
 
   std::unordered_set<std::size_t> waiting_gate_ids_;
 
-  Wire(Backend& backend, std::size_t num_simd, bool is_constant);
+  Wire(Backend& backend, std::size_t num_simd);
 
   static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
 
@@ -128,13 +124,10 @@ class BooleanWire : public Wire {
 
   CircuitType GetCircuitType() const final { return CircuitType::BooleanCircuitType; }
 
-  MPCProtocol GetProtocol() const override = 0;
-
   BooleanWire(BooleanWire&) = delete;
 
  protected:
-  BooleanWire(Backend& backend, std::size_t num_simd, bool is_constant)
-      : Wire(backend, num_simd, is_constant) {}
+  BooleanWire(Backend& backend, std::size_t num_simd) : Wire(backend, num_simd) {}
 };
 
 using BooleanWirePtr = std::shared_ptr<BooleanWire>;

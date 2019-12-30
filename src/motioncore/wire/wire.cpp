@@ -35,10 +35,9 @@ namespace MOTION::Wires {
 
 std::size_t Wire::GetNumOfSIMDValues() const { return n_simd_; }
 
-Wire::Wire(Backend &backend, std::size_t num_simd, bool is_constant)
+Wire::Wire(Backend &backend, std::size_t num_simd)
     : backend_(backend),
       n_simd_(num_simd),
-      is_constant_(is_constant),
       is_done_condition_([this]() { return IsReady().load(); }) {
   InitializationHelper();
 }
@@ -68,11 +67,7 @@ void Wire::SetOnlineFinished() {
 }
 
 const std::atomic<bool> &Wire::IsReady() const noexcept {
-  if (is_constant_) {
-    return is_constant_;
-  } else {
     return is_done_;
-  }
 }
 
 std::string Wire::PrintIds(const std::vector<std::shared_ptr<Wires::Wire>> &wires) {
