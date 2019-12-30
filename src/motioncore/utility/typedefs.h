@@ -155,7 +155,9 @@ enum MPCProtocol : unsigned int {
   ArithmeticGMW = 0,
   BooleanGMW = 1,
   BMR = 2,
-  InvalidProtocol = 3  // for checking whether the value is valid
+  ArithmeticConstant = 3,
+  BooleanConstant = 4,
+  InvalidProtocol = 5  // for checking whether the value is valid
 };
 
 inline std::string ToString(MPCProtocol p) {
