@@ -34,13 +34,13 @@ namespace MOTION::Wires {
 
 class BMRWire : public BooleanWire {
  public:
-  BMRWire(const std::size_t n_simd, Backend &backend, bool is_constant = false);
+  BMRWire(const std::size_t n_simd, Backend &backend);
 
-  BMRWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant = false);
+  BMRWire(ENCRYPTO::BitVector<> &&values, Backend &backend);
 
-  BMRWire(const ENCRYPTO::BitVector<> &values, Backend &backend, bool is_constant = false);
+  BMRWire(const ENCRYPTO::BitVector<> &values, Backend &backend);
 
-  BMRWire(bool value, Backend &backend, bool is_constant = false);
+  BMRWire(bool value, Backend &backend);
 
   ~BMRWire() final = default;
 
@@ -81,6 +81,8 @@ class BMRWire : public BooleanWire {
   }
 
   const auto &GetSetupReadyCondition() const { return setup_ready_cond_; }
+
+  bool IsConstant() const noexcept final { return false; }
 
  protected:
   void DynamicClear() final { setup_ready_ = false; }

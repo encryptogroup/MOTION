@@ -32,20 +32,15 @@ namespace MOTION::Wires {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class ArithmeticWire : public Wire {
  public:
-  ArithmeticWire(Backend &backend, std::size_t num_simd, bool is_constant = false)
-      : Wire(backend, num_simd, is_constant) {
-  }
+  ArithmeticWire(Backend &backend, std::size_t num_simd) : Wire(backend, num_simd) {}
 
-  ArithmeticWire(std::vector<T> &&values, Backend &backend, bool is_constant = false)
-      : Wire(backend, values.size(), is_constant), values_(std::move(values)) {
-  }
+  ArithmeticWire(std::vector<T> &&values, Backend &backend)
+      : Wire(backend, values.size()), values_(std::move(values)) {}
 
-  ArithmeticWire(const std::vector<T> &values, Backend &backend, bool is_constant = false)
-      : Wire(backend, values.size(), is_constant), values_(values) {
-  }
+  ArithmeticWire(const std::vector<T> &values, Backend &backend)
+      : Wire(backend, values.size()), values_(values) {}
 
-  ArithmeticWire(T t, Backend &backend, bool is_constant = false) : Wire(backend, 1, is_constant), values_({t}) {
-  }
+  ArithmeticWire(T t, Backend &backend) : Wire(backend, 1), values_({t}) {}
 
   ~ArithmeticWire() final = default;
 
@@ -58,6 +53,8 @@ class ArithmeticWire : public Wire {
   std::vector<T> &GetMutableValues() { return values_; }
 
   std::size_t GetBitLength() const final { return sizeof(T) * 8; }
+
+  bool IsConstant() const noexcept final { return false; }
 
  private:
   std::vector<T> values_;

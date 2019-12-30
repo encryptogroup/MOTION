@@ -29,27 +29,27 @@
 
 namespace MOTION::Wires {
 
-BMRWire::BMRWire(const std::size_t n_simd, Backend& backend, bool is_constant)
-    : BooleanWire(backend, n_simd, is_constant), secret_0_keys_(n_simd) {
+BMRWire::BMRWire(const std::size_t n_simd, Backend& backend)
+    : BooleanWire(backend, n_simd), secret_0_keys_(n_simd) {
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(ENCRYPTO::BitVector<>&& values, Backend& backend, bool is_constant)
-    : BooleanWire(backend, values.GetSize(), is_constant),
+BMRWire::BMRWire(ENCRYPTO::BitVector<>&& values, Backend& backend)
+    : BooleanWire(backend, values.GetSize()),
       public_values_(std::move(values)),
       secret_0_keys_(values.GetSize()) {
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(const ENCRYPTO::BitVector<>& values, Backend& backend, bool is_constant)
-    : BooleanWire(backend, values.GetSize(), is_constant),
+BMRWire::BMRWire(const ENCRYPTO::BitVector<>& values, Backend& backend)
+    : BooleanWire(backend, values.GetSize()),
       public_values_(values),
       secret_0_keys_(values.GetSize()) {
   InitializationHelperBMR();
 }
 
-BMRWire::BMRWire(bool value, Backend& backend, bool is_constant)
-    : BooleanWire(backend, 1, is_constant), public_values_(value), secret_0_keys_(1) {
+BMRWire::BMRWire(bool value, Backend& backend)
+    : BooleanWire(backend, 1), public_values_(value), secret_0_keys_(1) {
   InitializationHelperBMR();
 }
 

@@ -36,13 +36,13 @@ namespace MOTION::Wires {
 
 class GMWWire : public BooleanWire {
  public:
-  GMWWire(size_t num_simd, Backend &backend, bool is_constant = false);
+  GMWWire(size_t num_simd, Backend &backend);
 
-  GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend, bool is_constant = false);
+  GMWWire(ENCRYPTO::BitVector<> &&values, Backend &backend);
 
-  GMWWire(const ENCRYPTO::BitVector<> &values, Backend &backend, bool is_constant = false);
+  GMWWire(const ENCRYPTO::BitVector<> &values, Backend &backend);
 
-  GMWWire(bool value, Backend &backend, bool is_constant = false);
+  GMWWire(bool value, Backend &backend);
 
   ~GMWWire() final = default;
 
@@ -57,6 +57,8 @@ class GMWWire : public BooleanWire {
   const ENCRYPTO::BitVector<> &GetValues() const { return values_; }
 
   ENCRYPTO::BitVector<> &GetMutableValues() { return values_; }
+
+  bool IsConstant() const noexcept final { return false; }
 
  private:
   ENCRYPTO::BitVector<> values_;
