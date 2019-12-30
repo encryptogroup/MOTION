@@ -122,6 +122,21 @@ inline std::vector<T> RestrictAddVectors(const std::vector<T> &a, const std::vec
 }
 
 template <typename T>
+inline std::vector<T> RestrictMulVectors(const std::vector<T> &a, const std::vector<T> &b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result(a.size());
+  const T *__restrict__ a_ptr{a.data()};
+  const T *__restrict__ b_ptr{b.data()};
+  T *__restrict__ r_ptr{result.data()};
+  std::transform(a_ptr, a_ptr + a.size(), b_ptr, r_ptr,
+                 [](const T &a_var, const T &b_var) { return a_var * b_var; });
+  return result;
+}
+
+template <typename T>
 inline std::vector<T> RestrictSubVectors(const std::vector<T> &a, const std::vector<T> &b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
