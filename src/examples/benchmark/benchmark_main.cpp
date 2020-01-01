@@ -60,29 +60,36 @@ struct Combination {
 
 std::vector<Combination> GenerateAllCombinations() {
   const std::array arithmetic_bit_sizes = {8, 16, 32, 64};
-  const std::array boolean_bit_sizes = {1, 1000};
-  const std::array nums_simd = {1, 1000};
+  const std::array boolean_bit_sizes = {1000};
+  const std::array nums_simd = {1000};
 
   using T = ENCRYPTO::PrimitiveOperationType;
-  const std::array boolean_op_types = {T::XOR, T::AND, T::MUX, T::INV};
-  const std::array arithmetic_op_types = {T::ADD, T::MUL};
+  const std::array boolean_op_types = {T::IN, T::OUT, T::XOR, T::AND, T::MUX, T::INV};
+  const std::array arithmetic_op_types = {T::IN, T::OUT, T::ADD, T::MUL};
 
   std::vector<Combination> combinations;
 
   for (const auto bit_size : boolean_bit_sizes) {
-    for (const auto op_type : boolean_op_types) {
-      for (const auto num_simd : nums_simd) {
+    for (const auto num_simd : nums_simd) {
+      for (const auto op_type : boolean_op_types) {
         combinations.emplace_back(bit_size, MOTION::MPCProtocol::BooleanGMW, op_type, num_simd);
         combinations.emplace_back(bit_size, MOTION::MPCProtocol::BMR, op_type, num_simd);
       }
+
+      combinations.emplace_back(bit_size, MOTION::MPCProtocol::BooleanGMW, T::B2Y, num_simd);
+      combinations.emplace_back(bit_size, MOTION::MPCProtocol::BMR, T::Y2B, num_simd);
     }
   }
 
   for (const auto bit_size : arithmetic_bit_sizes) {
-    for (const auto op_type : arithmetic_op_types) {
-      for (const auto num_simd : nums_simd) {
+    for (const auto num_simd : nums_simd) {
+      for (const auto op_type : arithmetic_op_types) {
         combinations.emplace_back(bit_size, MOTION::MPCProtocol::ArithmeticGMW, op_type, num_simd);
       }
+      combinations.emplace_back(bit_size, MOTION::MPCProtocol::BooleanGMW, T::B2A, num_simd);
+      combinations.emplace_back(bit_size, MOTION::MPCProtocol::BMR, T::Y2A, num_simd);
+      combinations.emplace_back(bit_size, MOTION::MPCProtocol::ArithmeticGMW, T::A2B, num_simd);
+      combinations.emplace_back(bit_size, MOTION::MPCProtocol::ArithmeticGMW, T::A2Y, num_simd);
     }
   }
   return combinations;

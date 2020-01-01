@@ -38,15 +38,24 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
 
   MOTION::Shares::ShareWrapper a, b;
 
+  const bool two_shares_needed = !(op_type == ENCRYPTO::PrimitiveOperationType::IN ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::OUT ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::A2B ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::A2Y ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::B2A ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::B2Y ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::Y2A ||
+                                   op_type == ENCRYPTO::PrimitiveOperationType::Y2B);
+
   switch (protocol) {
     case MOTION::MPCProtocol::BooleanGMW: {
       a = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
-      b = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
+      if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
       break;
     }
     case MOTION::MPCProtocol::BMR: {
       a = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
-      b = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
+      if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
       break;
     }
     case MOTION::MPCProtocol::ArithmeticGMW: {
@@ -54,25 +63,25 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
         case 8u: {
           std::vector<std::uint8_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
         }
         case 16u: {
           std::vector<std::uint16_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
         }
         case 32u: {
           std::vector<std::uint32_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
         }
         case 64u: {
           std::vector<std::uint64_t> tmp_arith(num_simd);
           a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
           break;
         }
         default:
@@ -115,6 +124,39 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
     }
     case ENCRYPTO::PrimitiveOperationType::MUL: {
       a* b;
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::IN: {
+      // always done
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::OUT: {
+      a.Out();
+      break;
+    }
+    // conversions
+    case ENCRYPTO::PrimitiveOperationType::A2B: {
+      a.Convert<MOTION::MPCProtocol::BooleanGMW>();
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::A2Y: {
+      a.Convert<MOTION::MPCProtocol::BMR>();
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::B2A: {
+      a.Convert<MOTION::MPCProtocol::ArithmeticGMW>();
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::B2Y: {
+      a.Convert<MOTION::MPCProtocol::BMR>();
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::Y2A: {
+      a.Convert<MOTION::MPCProtocol::ArithmeticGMW>();
+      break;
+    }
+    case ENCRYPTO::PrimitiveOperationType::Y2B: {
+      a.Convert<MOTION::MPCProtocol::BooleanGMW>();
       break;
     }
     default:
