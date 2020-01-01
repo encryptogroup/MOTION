@@ -29,14 +29,23 @@
 
 namespace ENCRYPTO {
 enum PrimitiveOperationType : std::uint8_t {
-  XOR = 0,  // for Boolean circuit only
-  AND = 1,  // for Boolean circuit only
-  MUX = 2,  // for Boolean circuit only
-  INV = 3,  // for Boolean circuit only
-  OR = 4,   // for Boolean circuit only
-  ADD = 5,  // for arithmetic circuit only
-  MUL = 6,  // for arithmetic circuit only
-  INVALID = 7
+  IN = 0,
+  OUT = 1,
+  XOR = 2,  // for Boolean circuit only
+  AND = 3,  // for Boolean circuit only
+  MUX = 4,  // for Boolean circuit only
+  INV = 5,  // for Boolean circuit only
+  OR = 6,   // for Boolean circuit only
+  ADD = 7,  // for arithmetic circuit only
+  MUL = 8,  // for arithmetic circuit only
+  // conversions
+  A2B = 9,  // for arithmetic GMW only
+  A2Y = 10, // for arithmetic GMW only
+  B2A = 11, // for GMW only
+  B2Y = 12, // for GMW only
+  Y2A = 13, // for BMR only
+  Y2B = 14, // for BMR only
+  INVALID_PrimitiveOperationType = 15
 };
 
 inline std::string ToString(PrimitiveOperationType t) {
@@ -61,6 +70,30 @@ inline std::string ToString(PrimitiveOperationType t) {
     }
     case PrimitiveOperationType::MUL: {
       return "MUL";
+    }
+    case PrimitiveOperationType::IN: {
+      return "IN";
+    }
+    case PrimitiveOperationType::OUT: {
+      return "OUT";
+    }
+    case PrimitiveOperationType::A2B: {
+      return "A2B";
+    }
+    case PrimitiveOperationType::A2Y: {
+      return "A2Y";
+    }
+    case PrimitiveOperationType::B2A: {
+      return "B2A";
+    }
+    case PrimitiveOperationType::B2Y: {
+      return "B2Y";
+    }
+    case PrimitiveOperationType::Y2A: {
+      return "Y2A";
+    }
+    case PrimitiveOperationType::Y2B: {
+      return "Y2B";
     }
     default:
       throw std::invalid_argument("Invalid PrimitiveOperationType");
