@@ -25,10 +25,75 @@
 #include "benchmark.h"
 
 #include "algorithm/algorithm_description.h"
+#include "base/backend.h"
+#include "base/register.h"
+#include "share/arithmetic_gmw_share.h"
+#include "share/bmr_share.h"
+#include "share/boolean_gmw_share.h"
 #include "share/share_wrapper.h"
 #include "statistics/analysis.h"
 #include "statistics/run_time_stats.h"
+#include "utility/block.h"
 #include "utility/config.h"
+#include "wire/arithmetic_gmw_wire.h"
+#include "wire/bmr_wire.h"
+#include "wire/boolean_gmw_wire.h"
+
+template <typename T>
+MOTION::Shares::ShareWrapper DummyArithmeticGMWShare(MOTION::PartyPtr& party, std::size_t bit_size,
+                                                     std::size_t num_simd) {
+  std::vector<MOTION::Wires::WirePtr> wires(1);
+  const std::vector<T> dummy_in(num_simd, 0);
+
+  MOTION::BackendPtr backend{party->GetBackend()};
+  MOTION::RegisterPtr reg{backend->GetRegister()};
+
+  wires[0] = std::make_shared<MOTION::Wires::ArithmeticWire<T>>(dummy_in, *backend);
+  reg->RegisterNextWire(wires[0]);
+  wires[0]->SetOnlineFinished();
+
+  return MOTION::Shares::ShareWrapper(std::make_shared<MOTION::Shares::ArithmeticShare<T>>(wires));
+}
+
+MOTION::Shares::ShareWrapper DummyBMRShare(MOTION::PartyPtr& party, std::size_t num_wires,
+                                           std::size_t num_simd) {
+  std::vector<MOTION::Wires::WirePtr> wires(num_wires);
+  const ENCRYPTO::BitVector<> dummy_in(num_simd);
+
+  MOTION::BackendPtr backend{party->GetBackend()};
+  MOTION::RegisterPtr reg{backend->GetRegister()};
+
+  for (auto& w : wires) {
+    auto bmr_wire{std::make_shared<MOTION::Wires::BMRWire>(dummy_in, *backend)};
+    w = bmr_wire;
+    reg->RegisterNextWire(bmr_wire);
+    bmr_wire->GetMutablePublicKeys() =
+        ENCRYPTO::block128_vector::make_zero(backend->GetConfig()->GetNumOfParties() * num_simd);
+    bmr_wire->GetMutableSecretKeys() = ENCRYPTO::block128_vector::make_zero(num_simd);
+    bmr_wire->GetMutablePermutationBits() = ENCRYPTO::BitVector<>(num_simd);
+    bmr_wire->SetSetupIsReady();
+    bmr_wire->SetOnlineFinished();
+  }
+
+  return MOTION::Shares::ShareWrapper(std::make_shared<MOTION::Shares::BMRShare>(wires));
+}
+
+MOTION::Shares::ShareWrapper DummyBooleanGMWShare(MOTION::PartyPtr& party, std::size_t num_wires,
+                                                  std::size_t num_simd) {
+  std::vector<MOTION::Wires::WirePtr> wires(num_wires);
+  const ENCRYPTO::BitVector<> dummy_in(num_simd);
+
+  MOTION::BackendPtr backend{party->GetBackend()};
+  MOTION::RegisterPtr reg{backend->GetRegister()};
+
+  for (auto& w : wires) {
+    w = std::make_shared<MOTION::Wires::GMWWire>(dummy_in, *backend);
+    reg->RegisterNextWire(w);
+    w->SetOnlineFinished();
+  }
+
+  return MOTION::Shares::ShareWrapper(std::make_shared<MOTION::Shares::GMWShare>(wires));
+}
 
 MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
                                                   std::size_t bit_size,
@@ -38,50 +103,37 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
 
   MOTION::Shares::ShareWrapper a, b;
 
-  const bool two_shares_needed = !(op_type == ENCRYPTO::PrimitiveOperationType::IN ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::OUT ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::A2B ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::A2Y ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::B2A ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::B2Y ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::Y2A ||
-                                   op_type == ENCRYPTO::PrimitiveOperationType::Y2B);
-
   switch (protocol) {
     case MOTION::MPCProtocol::BooleanGMW: {
-      a = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
-      if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
+      a = DummyBooleanGMWShare(party, bit_size, num_simd);
+      b = DummyBooleanGMWShare(party, bit_size, num_simd);
       break;
     }
     case MOTION::MPCProtocol::BMR: {
-      a = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
-      if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
+      a = DummyBMRShare(party, bit_size, num_simd);
+      b = DummyBMRShare(party, bit_size, num_simd);
       break;
     }
     case MOTION::MPCProtocol::ArithmeticGMW: {
       switch (bit_size) {
         case 8u: {
-          std::vector<std::uint8_t> tmp_arith(num_simd);
-          a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          a = DummyArithmeticGMWShare<std::uint8_t>(party, bit_size, num_simd);
+          b = DummyArithmeticGMWShare<std::uint8_t>(party, bit_size, num_simd);
           break;
         }
         case 16u: {
-          std::vector<std::uint16_t> tmp_arith(num_simd);
-          a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          a = DummyArithmeticGMWShare<std::uint16_t>(party, bit_size, num_simd);
+          b = DummyArithmeticGMWShare<std::uint16_t>(party, bit_size, num_simd);
           break;
         }
         case 32u: {
-          std::vector<std::uint32_t> tmp_arith(num_simd);
-          a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          a = DummyArithmeticGMWShare<std::uint32_t>(party, bit_size, num_simd);
+          b = DummyArithmeticGMWShare<std::uint32_t>(party, bit_size, num_simd);
           break;
         }
         case 64u: {
-          std::vector<std::uint64_t> tmp_arith(num_simd);
-          a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
-          if (two_shares_needed) b = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+          a = DummyArithmeticGMWShare<std::uint64_t>(party, bit_size, num_simd);
+          b = DummyArithmeticGMWShare<std::uint64_t>(party, bit_size, num_simd);
           break;
         }
         default:
@@ -105,8 +157,8 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
     case ENCRYPTO::PrimitiveOperationType::MUX: {
       const std::vector<ENCRYPTO::BitVector<>> tmp_s(1, ENCRYPTO::BitVector<>(num_simd));
       MOTION::Shares::ShareWrapper sel{protocol == MOTION::MPCProtocol::BooleanGMW
-                                           ? party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_s, 0)
-                                           : party->IN<MOTION::MPCProtocol::BMR>(tmp_s, 0)};
+                                           ? DummyBooleanGMWShare(party, 1, num_simd)
+                                           : DummyBMRShare(party, 1, num_simd)};
       sel.MUX(a, b);
       break;
     }
@@ -127,7 +179,37 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
       break;
     }
     case ENCRYPTO::PrimitiveOperationType::IN: {
-      // always done
+      if (protocol == MOTION::MPCProtocol::BooleanGMW)
+        a = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
+      else if (protocol == MOTION::MPCProtocol::BMR)
+        a = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
+      else if (protocol == MOTION::MPCProtocol::ArithmeticGMW) {
+        switch (bit_size) {
+          case 8: {
+            std::vector<std::uint8_t> tmp_arith(num_simd);
+            a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+            break;
+          }
+          case 16: {
+            std::vector<std::uint16_t> tmp_arith(num_simd);
+            a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+            break;
+          }
+          case 32: {
+            std::vector<std::uint32_t> tmp_arith(num_simd);
+            a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+            break;
+          }
+          case 64: {
+            std::vector<std::uint64_t> tmp_arith(num_simd);
+            a = party->IN<MOTION::MPCProtocol::ArithmeticGMW>(tmp_arith, 0);
+            break;
+          }
+          default:
+            throw std::invalid_argument("Unknown bit size");
+        }
+      } else
+        throw std::invalid_argument("Unknown protocol");
       break;
     }
     case ENCRYPTO::PrimitiveOperationType::OUT: {
