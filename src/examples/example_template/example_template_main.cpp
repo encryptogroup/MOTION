@@ -56,10 +56,20 @@ int main(int ac, char* av[]) {
   return EXIT_SUCCESS;
 }
 
+const std::regex party_argument_re("(\\d+),(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}),(\\d{1,5})");
+
 bool CheckPartyArgumentSyntax(const std::string& p) {
   // other party's id, IP address, and port
-  const std::regex re("\\d+,\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3},\\d{1,5}");
-  return std::regex_match(p, re);
+  return std::regex_match(p, party_argument_re);
+}
+
+std::tuple<std::size_t, std::string, std::uint16_t> ParsePartyArgument(const std::string& p) {
+  std::smatch match;
+  std::regex_match(p, match, party_argument_re);
+  auto id = boost::lexical_cast<std::size_t>(match[1]);
+  auto host = match[2];
+  auto port = boost::lexical_cast<std::uint16_t>(match[3]);
+  return {id, host, port};
 }
 
 // <variables map, help flag>
@@ -135,29 +145,16 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
   // create communication contexts for other parties
   std::vector<MOTION::Communication::ContextPtr> contexts(num_parties, nullptr);
   for (const auto& party_str : parties_str) {
-    const auto comma1{party_str.find_first_of(',')};
-    const auto comma2{party_str.find_last_of(',')};
-    assert(std::abs<long long int>(static_cast<std::uint64_t>(comma1) - comma2) >= 2);
-
-    const auto other_id{boost::lexical_cast<std::size_t>(party_str.substr(0, comma1))};
+    const auto [other_id, host, port] = ParsePartyArgument(party_str);
     if (other_id >= num_parties) {
       throw std::runtime_error(
           fmt::format("Other party's id needs to be in the range [0, #parties - 1], current id "
                       "is {} and #parties is {}",
                       other_id, num_parties));
-    } else if (contexts.at(other_id)) {
-      throw std::runtime_error(
-          fmt::format("Other party ids must be unique, id {} is not unique", other_id));
     }
-
     const auto role{other_id < my_id ? MOTION::Role::Client : MOTION::Role::Server};
-
-    const std::uint16_t port{
-        boost::lexical_cast<std::uint16_t>(party_str.substr(comma2 + 1, party_str.size()))};
-    const std::string ip{party_str.substr(comma1 + 1, comma2 - 2)};
-
-    contexts.emplace(contexts.begin() + other_id, std::make_shared<MOTION::Communication::Context>(
-        ip, port, role, other_id));
+    contexts.emplace_back(
+        std::make_shared<MOTION::Communication::Context>(host, port, role, other_id));
   }
   // create config for my party
   auto config{std::make_shared<MOTION::Configuration>(std::move(contexts), my_id)};
