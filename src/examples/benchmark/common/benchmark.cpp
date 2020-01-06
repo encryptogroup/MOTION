@@ -178,6 +178,10 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
       a* b;
       break;
     }
+    case ENCRYPTO::PrimitiveOperationType::SQR: {
+      a* a;
+      break;
+    }
     case ENCRYPTO::PrimitiveOperationType::IN: {
       if (protocol == MOTION::MPCProtocol::BooleanGMW)
         a = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
