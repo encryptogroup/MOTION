@@ -72,6 +72,9 @@ inline std::string ToString(PrimitiveOperationType t) {
     case PrimitiveOperationType::MUL: {
       return "MUL";
     }
+    case PrimitiveOperationType::SQR: {
+      return "SQR";
+    }
     case PrimitiveOperationType::IN: {
       return "IN";
     }
