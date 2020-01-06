@@ -312,14 +312,14 @@ ShareWrapper ShareWrapper::MUX(const ShareWrapper &a, const ShareWrapper &b) con
 
 template <typename MOTION::MPCProtocol p>
 ShareWrapper ShareWrapper::Convert() const {
-  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
-  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
-  constexpr auto BMR = MOTION::MPCProtocol::BMR;
+  constexpr auto AGMW = MPCProtocol::ArithmeticGMW;
+  constexpr auto BGMW = MPCProtocol::BooleanGMW;
+  constexpr auto BMR = MPCProtocol::BMR;
   if (share_->GetProtocol() == p) {
     throw std::runtime_error("Trying to convert share to MPCProtocol it is already in");
   }
 
-  assert(share_->GetProtocol() < MOTION::MPCProtocol::InvalidProtocol);
+  assert(share_->GetProtocol() < MPCProtocol::Invalid);
 
   if constexpr (p == AGMW) {
     if (share_->GetProtocol() == BGMW) {  // BGMW -> AGMW
