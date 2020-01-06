@@ -46,7 +46,7 @@ BMRToGMWGate::BMRToGMWGate(const Shares::SharePtr &parent) : OneGate(parent->Get
   for ([[maybe_unused]] const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
 
   requires_online_interaction_ = false;
-  gate_type_ = GateType::NonInteractiveGate;
+  gate_type_ = GateType::NonInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   for (auto &wire : parent_) {
@@ -135,7 +135,7 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->Get
     assert(wire->GetProtocol() == MPCProtocol::BooleanGMW);
 
   requires_online_interaction_ = false;
-  gate_type_ = GateType::NonInteractiveGate;
+  gate_type_ = GateType::NonInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   for (auto &wire : parent_) {

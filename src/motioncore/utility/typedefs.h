@@ -28,24 +28,25 @@
 #include <type_traits>
 
 namespace ENCRYPTO {
-enum PrimitiveOperationType : std::uint8_t {
-  IN = 0,
-  OUT = 1,
-  XOR = 2,  // for Boolean circuit only
-  AND = 3,  // for Boolean circuit only
-  MUX = 4,  // for Boolean circuit only
-  INV = 5,  // for Boolean circuit only
-  OR = 6,   // for Boolean circuit only
-  ADD = 7,  // for arithmetic circuit only
-  MUL = 8,  // for arithmetic circuit only
+enum class PrimitiveOperationType : std::uint8_t {
+  IN,
+  OUT,
+  XOR,  // for Boolean circuit only
+  AND,  // for Boolean circuit only
+  MUX,  // for Boolean circuit only
+  INV,  // for Boolean circuit only
+  OR,   // for Boolean circuit only
+  ADD,  // for arithmetic circuit only
+  MUL,  // for arithmetic circuit only
+  SQR,  // for arithmetic circuit only
   // conversions
-  A2B = 9,  // for arithmetic GMW only
-  A2Y = 10, // for arithmetic GMW only
-  B2A = 11, // for GMW only
-  B2Y = 12, // for GMW only
-  Y2A = 13, // for BMR only
-  Y2B = 14, // for BMR only
-  INVALID_PrimitiveOperationType = 15
+  A2B,  // for arithmetic GMW only
+  A2Y,  // for arithmetic GMW only
+  B2A,  // for GMW only
+  B2Y,  // for GMW only
+  Y2A,  // for BMR only
+  Y2B,  // for BMR only
+  INVALID
 };
 
 inline std::string ToString(PrimitiveOperationType t) {
@@ -100,34 +101,26 @@ inline std::string ToString(PrimitiveOperationType t) {
   }
 }
 
-enum IntegerOperationType : unsigned int {
-  INT_ADD = 0,
-  INT_DIV = 1,
-  INT_GT = 2,
-  INT_EQ = 3,
-  INT_MUL = 4,
-  INT_SUB = 5,
-  INT_INVALID = 6
-};
+enum class IntegerOperationType : unsigned int { ADD, DIV, GT, EQ, MUL, SUB, INVALID };
 
 inline std::string ToString(IntegerOperationType p) {
   switch (p) {
-    case IntegerOperationType::INT_ADD: {
+    case IntegerOperationType::ADD: {
       return "INT_ADD";
     }
-    case IntegerOperationType::INT_DIV: {
+    case IntegerOperationType::DIV: {
       return "INT_DIV";
     }
-    case IntegerOperationType::INT_GT: {
+    case IntegerOperationType::GT: {
       return "INT_GT";
     }
-    case IntegerOperationType::INT_EQ: {
+    case IntegerOperationType::EQ: {
       return "INT_EQ";
     }
-    case IntegerOperationType::INT_MUL: {
+    case IntegerOperationType::MUL: {
       return "INT_MUL";
     }
-    case IntegerOperationType::INT_SUB: {
+    case IntegerOperationType::SUB: {
       return "INT_SUB";
     }
     default:
@@ -151,13 +144,13 @@ namespace Arithmetic = Gates::Arithmetic;
 namespace Boolean = Gates::Boolean;
 namespace Conversion = Gates::Conversion;
 
-enum MPCProtocol : unsigned int {
-  ArithmeticGMW = 0,
-  BooleanGMW = 1,
-  BMR = 2,
-  ArithmeticConstant = 3,
-  BooleanConstant = 4,
-  InvalidProtocol = 5  // for checking whether the value is valid
+enum class MPCProtocol : unsigned int {
+  ArithmeticGMW,
+  BooleanGMW,
+  BMR,
+  ArithmeticConstant,
+  BooleanConstant,
+  Invalid  // for checking whether the value is valid
 };
 
 inline std::string ToString(MPCProtocol p) {
@@ -176,24 +169,19 @@ inline std::string ToString(MPCProtocol p) {
   }
 }
 
-enum CircuitType : unsigned int {
-  ArithmeticCircuitType = 0,
-  BooleanCircuitType = 1,
-  InvalidCircuitType = 2  // for checking whether the value is valid
+enum class CircuitType : unsigned int {
+  Arithmetic,
+  Boolean,
+  Invalid  // for checking whether the value is valid
 };
 
-enum Role : unsigned int {
-  Server = 0,
-  Client = 1,
-  InvalidRole = 2  // for checking whether the value is valid
+enum class Role : unsigned int {
+  Server,
+  Client,
+  Invalid  // for checking whether the value is valid
 };
 
-enum GateType : unsigned int {
-  InputGate = 0,
-  InteractiveGate = 1,
-  NonInteractiveGate = 2,
-  InvalidGate = 3
-};
+enum class GateType : unsigned int { Input = 0, Interactive = 1, NonInteractive = 2, Invalid = 3 };
 
 }  // namespace MOTION
 

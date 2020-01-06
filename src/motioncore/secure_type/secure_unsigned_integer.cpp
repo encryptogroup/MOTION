@@ -42,7 +42,7 @@ SecureUnsignedInteger::SecureUnsignedInteger(Shares::SharePtr&& other)
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
 SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
     // use primitive operation in arithmetic GMW
     return *share_ + *other.share_;
   } else {  // BooleanCircuitType
@@ -50,10 +50,10 @@ SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteg
     std::shared_ptr<ENCRYPTO::AlgorithmDescription> add_algo;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_ADD, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::ADD, bitlen, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_ADD, bitlen, "_depth");
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::ADD, bitlen, "_depth");
 
     if ((add_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
@@ -74,7 +74,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteg
 }
 
 SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
     // use primitive operation in arithmetic GMW
     return *share_ - *other.share_;
   } else {  // BooleanCircuitType
@@ -82,10 +82,10 @@ SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteg
     std::shared_ptr<ENCRYPTO::AlgorithmDescription> sub_algo;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_SUB, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::SUB, bitlen, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_SUB, bitlen, "_depth");
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::SUB, bitlen, "_depth");
 
     if ((sub_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
@@ -106,7 +106,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteg
 }
 
 SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
     // use primitive operation in arithmetic GMW
     return *share_ * *other.share_;
   } else {  // BooleanCircuitType
@@ -114,10 +114,10 @@ SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteg
     std::shared_ptr<ENCRYPTO::AlgorithmDescription> mul_algo;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_MUL, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::MUL, bitlen, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_MUL, bitlen, "_depth");
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::MUL, bitlen, "_depth");
 
     if ((mul_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
@@ -138,7 +138,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteg
 }
 
 SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer division is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
@@ -146,10 +146,10 @@ SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteg
     std::shared_ptr<ENCRYPTO::AlgorithmDescription> div_algo;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_DIV, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::DIV, bitlen, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_DIV, bitlen, "_depth");
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::DIV, bitlen, "_depth");
 
     if ((div_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
@@ -170,7 +170,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteg
 }
 
 Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
@@ -178,10 +178,10 @@ Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedIntege
     std::shared_ptr<ENCRYPTO::AlgorithmDescription> gt_algo;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_GT, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::GT, bitlen, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::INT_GT, bitlen, "_depth");
+      path = ConstructPath(ENCRYPTO::IntegerOperationType::GT, bitlen, "_depth");
 
     if ((gt_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (MOTION_DEBUG) {
@@ -202,7 +202,7 @@ Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedIntege
 }
 
 Shares::ShareWrapper SecureUnsignedInteger::operator==(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::BooleanCircuitType) {
+  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
@@ -222,27 +222,27 @@ std::string SecureUnsignedInteger::ConstructPath(const ENCRYPTO::IntegerOperatio
                                                  std::string suffix) const {
   std::string type_str;
   switch (type) {
-    case ENCRYPTO::IntegerOperationType::INT_ADD: {
+    case ENCRYPTO::IntegerOperationType::ADD: {
       type_str = "add";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_DIV: {
+    case ENCRYPTO::IntegerOperationType::DIV: {
       type_str = "div";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_GT: {
+    case ENCRYPTO::IntegerOperationType::GT: {
       type_str = "gt";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_EQ: {
+    case ENCRYPTO::IntegerOperationType::EQ: {
       type_str = "eq";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_MUL: {
+    case ENCRYPTO::IntegerOperationType::MUL: {
       type_str = "mul";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_SUB: {
+    case ENCRYPTO::IntegerOperationType::SUB: {
       type_str = "sub";
       break;
     }

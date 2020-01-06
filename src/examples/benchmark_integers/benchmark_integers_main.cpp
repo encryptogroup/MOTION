@@ -63,8 +63,7 @@ std::vector<Combination> GenerateAllCombinations() {
   const std::array nums_simd = {1000};
 
   using T = ENCRYPTO::IntegerOperationType;
-  const std::array op_types = {T::INT_ADD, T::INT_MUL, T::INT_DIV,
-                               T::INT_EQ,  T::INT_GT,  T::INT_SUB};
+  const std::array op_types = {T::ADD, T::MUL, T::DIV, T::EQ, T::GT, T::SUB};
 
   std::vector<Combination> combinations;
 

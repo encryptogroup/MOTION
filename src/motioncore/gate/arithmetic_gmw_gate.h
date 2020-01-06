@@ -235,7 +235,7 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
 
     output_owner_ = output_owner;
     requires_online_interaction_ = true;
-    gate_type_ = GateType::InteractiveGate;
+    gate_type_ = GateType::Interactive;
     gate_id_ = GetRegister().NextGateId();
     is_my_output_ = my_id == static_cast<std::size_t>(output_owner_) ||
                     static_cast<std::size_t>(output_owner_) == ALL;
@@ -407,7 +407,7 @@ class ArithmeticAdditionGate final : public MOTION::Gates::Interfaces::TwoGate {
     assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
     requires_online_interaction_ = false;
-    gate_type_ = GateType::NonInteractiveGate;
+    gate_type_ = GateType::NonInteractive;
 
     gate_id_ = GetRegister().NextGateId();
 
@@ -490,7 +490,7 @@ class ArithmeticSubtractionGate final : public MOTION::Gates::Interfaces::TwoGat
     assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
     requires_online_interaction_ = false;
-    gate_type_ = GateType::NonInteractiveGate;
+    gate_type_ = GateType::NonInteractive;
 
     gate_id_ = GetRegister().NextGateId();
 
@@ -572,7 +572,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     assert(parent_a_.at(0)->GetNumOfSIMDValues() == parent_b_.at(0)->GetNumOfSIMDValues());
 
     requires_online_interaction_ = true;
-    gate_type_ = GateType::InteractiveGate;
+    gate_type_ = GateType::Interactive;
 
     d_ = std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues());
     GetRegister().RegisterNextWire(d_);
@@ -723,7 +723,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     parent_ = {std::static_pointer_cast<MOTION::Wires::Wire>(a)};
 
     requires_online_interaction_ = true;
-    gate_type_ = GateType::InteractiveGate;
+    gate_type_ = GateType::Interactive;
 
     d_ = std::make_shared<Wires::ArithmeticWire<T>>(backend_, a->GetNumOfSIMDValues());
     GetRegister().RegisterNextWire(d_);

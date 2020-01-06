@@ -105,7 +105,7 @@ class Gate {
   std::int64_t gate_id_ = -1;
   std::unordered_set<std::size_t> wire_dependencies_;
 
-  GateType gate_type_ = InvalidGate;
+  GateType gate_type_ = GateType::Invalid;
   std::atomic<bool> setup_is_ready_ = false;
   std::atomic<bool> online_is_ready_ = false;
   std::atomic<bool> requires_online_interaction_ = false;
@@ -173,7 +173,7 @@ class InputGate : public OneGate {
  protected:
   ~InputGate() override = default;
 
-  InputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::InputGate; }
+  InputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::Input; }
 
   InputGate(InputGate&) = delete;
 
@@ -198,7 +198,7 @@ class OutputGate : public OneGate {
 
   OutputGate(OutputGate&) = delete;
 
-  OutputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::InteractiveGate; }
+  OutputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::Interactive; }
 
  protected:
   std::int64_t output_owner_ = -1;

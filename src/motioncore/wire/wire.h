@@ -122,7 +122,7 @@ class BooleanWire : public Wire {
  public:
   ~BooleanWire() override = default;
 
-  CircuitType GetCircuitType() const final { return CircuitType::BooleanCircuitType; }
+  CircuitType GetCircuitType() const final { return CircuitType::Boolean; }
 
   BooleanWire(BooleanWire&) = delete;
 

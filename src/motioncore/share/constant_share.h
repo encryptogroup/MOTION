@@ -101,12 +101,12 @@ class ConstantArithmeticShare : public Share {
   };
 
   MPCProtocol GetProtocol() const noexcept final {
-    assert(wires_.at(0)->GetProtocol() == ArithmeticConstant);
+    assert(wires_.at(0)->GetProtocol() == MPCProtocol::ArithmeticConstant);
     return wires_.at(0)->GetProtocol();
   }
 
   CircuitType GetCircuitType() const noexcept final {
-    assert(wires_.at(0)->GetCircuitType() == ArithmeticCircuitType);
+    assert(wires_.at(0)->GetCircuitType() == CircuitType::Arithmetic);
     return wires_.at(0)->GetCircuitType();
   }
 
@@ -152,7 +152,7 @@ class ConstantArithmeticShare : public Share {
     assert(arithmetic_wire);
     assert(arithmetic_wire->IsConstant());
     assert(arithmetic_wire->GetProtocol() == MPCProtocol::ArithmeticConstant);
-    assert(arithmetic_wire->GetCircuitType() == CircuitType::ArithmeticCircuitType);
+    assert(arithmetic_wire->GetCircuitType() == CircuitType::Arithmetic);
   };
 };
 

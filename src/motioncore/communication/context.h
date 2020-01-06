@@ -106,7 +106,7 @@ class Context {
 
   std::string ip_;
   std::uint16_t port_ = 0;
-  Role role_ = Role::InvalidRole;
+  Role role_ = Role::Invalid;
   std::int64_t id_ = -1;
 
   int party_socket_ = -2;

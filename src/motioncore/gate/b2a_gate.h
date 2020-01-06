@@ -57,7 +57,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     }
 
     requires_online_interaction_ = true;
-    gate_type_ = GateType::InteractiveGate;
+    gate_type_ = GateType::Interactive;
 
     // create the output wire
     output_wires_.emplace_back(std::make_shared<Wires::ArithmeticWire<T>>(backend_, num_simd));

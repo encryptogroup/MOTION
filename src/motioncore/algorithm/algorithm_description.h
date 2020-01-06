@@ -33,7 +33,7 @@
 namespace ENCRYPTO {
 
 struct PrimitiveOperation {
-  PrimitiveOperationType type_{INVALID_PrimitiveOperationType};
+  PrimitiveOperationType type_{PrimitiveOperationType::INVALID};
   std::size_t parent_a_{0};
   std::optional<std::size_t> parent_b_{std::nullopt};
   std::optional<std::size_t> selection_bit_{std::nullopt};

@@ -45,7 +45,7 @@ class ConstantArithmeticWire : public Wire {
 
   MPCProtocol GetProtocol() const final { return MPCProtocol::ArithmeticConstant; }
 
-  CircuitType GetCircuitType() const final { return CircuitType::ArithmeticCircuitType; }
+  CircuitType GetCircuitType() const final { return CircuitType::Arithmetic; }
 
   const std::vector<T> &GetValues() const { return values_; }
 

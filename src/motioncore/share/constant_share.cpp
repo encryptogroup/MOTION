@@ -37,9 +37,9 @@ MPCProtocol ConstantBooleanShare::GetProtocol() const noexcept {
 CircuitType ConstantBooleanShare::GetCircuitType() const noexcept {
   if constexpr (MOTION_DEBUG) {
     for ([[maybe_unused]] const auto &wire : wires_)
-      assert(wire->GetCircuitType() == BooleanCircuitType);
+      assert(wire->GetCircuitType() == CircuitType::Boolean);
   }
-  return BooleanCircuitType;
+  return CircuitType::Boolean;
 }
 
 ConstantBooleanShare::ConstantBooleanShare(const std::vector<MOTION::Wires::WirePtr> &wires)

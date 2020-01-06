@@ -97,12 +97,12 @@ class ArithmeticShare final : public Shares::Share {
   };
 
   MPCProtocol GetProtocol() const noexcept final {
-    assert(wires_.at(0)->GetProtocol() == ArithmeticGMW);
+    assert(wires_.at(0)->GetProtocol() == MPCProtocol::ArithmeticGMW);
     return wires_.at(0)->GetProtocol();
   }
 
   CircuitType GetCircuitType() const noexcept final {
-    assert(wires_.at(0)->GetCircuitType() == ArithmeticCircuitType);
+    assert(wires_.at(0)->GetCircuitType() == CircuitType::Arithmetic);
     return wires_.at(0)->GetCircuitType();
   }
 

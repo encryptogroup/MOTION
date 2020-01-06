@@ -55,27 +55,27 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
   }
 
   switch (op_type) {
-    case ENCRYPTO::IntegerOperationType::INT_SUB: {
+    case ENCRYPTO::IntegerOperationType::SUB: {
       a - b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_GT: {
+    case ENCRYPTO::IntegerOperationType::GT: {
       a > b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_DIV: {
+    case ENCRYPTO::IntegerOperationType::DIV: {
       a / b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_MUL: {
-      a * b;
+    case ENCRYPTO::IntegerOperationType::MUL: {
+      a* b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_ADD: {
+    case ENCRYPTO::IntegerOperationType::ADD: {
       a + b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::INT_EQ: {
+    case ENCRYPTO::IntegerOperationType::EQ: {
       a == b;
       break;
     }

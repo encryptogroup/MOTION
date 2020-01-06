@@ -140,7 +140,7 @@ class ConstantArithmeticAdditionGate final : public MOTION::Gates::Interfaces::T
     assert(!parent_a_.at(0)->IsConstant() && parent_b_.at(0)->IsConstant());
 
     requires_online_interaction_ = false;
-    gate_type_ = GateType::NonInteractiveGate;
+    gate_type_ = GateType::NonInteractive;
 
     gate_id_ = GetRegister().NextGateId();
 
@@ -238,7 +238,7 @@ class ConstantArithmeticMultiplicationGate final : public MOTION::Gates::Interfa
     assert(!parent_a_.at(0)->IsConstant() && parent_b_.at(0)->IsConstant());
 
     requires_online_interaction_ = false;
-    gate_type_ = GateType::NonInteractiveGate;
+    gate_type_ = GateType::NonInteractive;
 
     gate_id_ = GetRegister().NextGateId();
 

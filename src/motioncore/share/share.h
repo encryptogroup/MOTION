@@ -38,9 +38,6 @@ class Backend;  // forward declaration
 using BackendPtr = std::shared_ptr<Backend>;
 
 class Register;
-
-enum MPCProtocol : unsigned int;
-enum CircuitType : unsigned int;
 }  // namespace MOTION
 
 namespace MOTION::Shares {

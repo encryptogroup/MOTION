@@ -36,17 +36,18 @@ namespace MOTION::Shares {
 
 MPCProtocol GMWShare::GetProtocol() const noexcept {
   if constexpr (MOTION_DEBUG) {
-    for ([[maybe_unused]] const auto &wire : wires_) assert(wire->GetProtocol() == BooleanGMW);
+    for ([[maybe_unused]] const auto &wire : wires_)
+      assert(wire->GetProtocol() == MPCProtocol::BooleanGMW);
   }
-  return BooleanGMW;
+  return MPCProtocol::BooleanGMW;
 }
 
 CircuitType GMWShare::GetCircuitType() const noexcept {
   if constexpr (MOTION_DEBUG) {
     for ([[maybe_unused]] const auto &wire : wires_)
-      assert(wire->GetCircuitType() == BooleanCircuitType);
+      assert(wire->GetCircuitType() == CircuitType::Boolean);
   }
-  return BooleanCircuitType;
+  return CircuitType::Boolean;
 }
 
 GMWShare::GMWShare(const std::vector<MOTION::Wires::WirePtr> &wires)

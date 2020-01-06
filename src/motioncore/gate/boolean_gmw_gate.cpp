@@ -211,7 +211,7 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
 
   output_owner_ = output_owner;
   requires_online_interaction_ = true;
-  gate_type_ = GateType::InteractiveGate;
+  gate_type_ = GateType::Interactive;
   gate_id_ = GetRegister().NextGateId();
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == ALL;
@@ -397,7 +397,7 @@ GMWXORGate::GMWXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   assert(parent_a_.at(0)->GetBitLength() > 0);
 
   requires_online_interaction_ = false;
-  gate_type_ = GateType::NonInteractiveGate;
+  gate_type_ = GateType::NonInteractive;
 
   auto &_register = GetRegister();
   gate_id_ = _register.NextGateId();
@@ -490,7 +490,7 @@ GMWINVGate::GMWINVGate(const Shares::SharePtr &parent) : OneGate(parent->GetBack
   assert(parent_.at(0)->GetBitLength() > 0);
 
   requires_online_interaction_ = false;
-  gate_type_ = GateType::NonInteractiveGate;
+  gate_type_ = GateType::NonInteractive;
 
   auto &_register = GetRegister();
   gate_id_ = _register.NextGateId();
@@ -572,7 +572,7 @@ GMWANDGate::GMWANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   auto num_simd_values = a->GetNumOfSIMDValues();
 
   requires_online_interaction_ = true;
-  gate_type_ = GateType::InteractiveGate;
+  gate_type_ = GateType::Interactive;
 
   std::vector<Wires::WirePtr> dummy_wires_e(num_wires), dummy_wires_d(num_wires);
 
@@ -746,7 +746,7 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
   assert(parent_a_.at(0)->GetBitLength() > 0);
 
   requires_online_interaction_ = true;
-  gate_type_ = GateType::InteractiveGate;
+  gate_type_ = GateType::Interactive;
 
   auto &_register = GetRegister();
   gate_id_ = _register.NextGateId();

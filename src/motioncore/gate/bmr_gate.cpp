@@ -328,7 +328,7 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
   output_owner_ = output_owner;
   output_.resize(parent_.size());
   requires_online_interaction_ = true;
-  gate_type_ = GateType::InteractiveGate;
+  gate_type_ = GateType::Interactive;
 
   if (output_owner >= GetConfig().GetNumOfParties() && output_owner != ALL) {
     throw std::runtime_error(
@@ -457,7 +457,7 @@ BMRXORGate::BMRXORGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   assert(parent_a_.at(0)->GetProtocol() == MPCProtocol::BMR);
 
   requires_online_interaction_ = false;
-  gate_type_ = GateType::NonInteractiveGate;
+  gate_type_ = GateType::NonInteractive;
 
   gate_id_ = GetRegister().NextGateId();
 
@@ -568,7 +568,7 @@ BMRINVGate::BMRINVGate(const Shares::SharePtr &parent) : OneGate(parent->GetBack
   for ([[maybe_unused]] const auto &wire : parent_) assert(wire->GetProtocol() == MPCProtocol::BMR);
 
   requires_online_interaction_ = false;
-  gate_type_ = GateType::NonInteractiveGate;
+  gate_type_ = GateType::NonInteractive;
 
   gate_id_ = GetRegister().NextGateId();
 
@@ -682,7 +682,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   assert(parent_a_.at(0)->GetProtocol() == MPCProtocol::BMR);
 
   requires_online_interaction_ = true;
-  gate_type_ = GateType::InteractiveGate;
+  gate_type_ = GateType::Interactive;
 
   gate_id_ = GetRegister().NextGateId();
 
