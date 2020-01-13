@@ -438,7 +438,7 @@ void BMROutputGate::EvaluateOnline() {
       // wait until the GMWOutputGate is evaluated
       assert(in_wire);
       assert(gmw_wire);
-      gmw_wire->GetIsReadyCondition()->Wait();
+      gmw_wire->GetIsReadyCondition().Wait();
       assert(in_wire->GetPublicValues().GetSize() == gmw_wire->GetValues().GetSize());
       // compute the real values as XOR of the public values from the BMRWire
       // with the reconstructed permutation bits from the GMWWire

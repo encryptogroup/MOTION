@@ -402,7 +402,7 @@ void AGMWToBMRGate::EvaluateOnline() {
   }
 
   const auto bitlen = parent_[0]->GetBitLength();
-  parent_[0]->GetIsReadyCondition()->Wait();
+  parent_[0]->GetIsReadyCondition().Wait();
 
   switch (bitlen) {
     case 8: {
