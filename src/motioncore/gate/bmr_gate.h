@@ -47,6 +47,9 @@ namespace MOTION::Gates::BMR {
 
 class BMRInputGate final : public Gates::Interfaces::InputGate {
  public:
+  BMRInputGate(std::size_t num_simd, std::size_t bit_size, std::size_t input_owner_id,
+               Backend &backend);
+
   BMRInputGate(const std::vector<ENCRYPTO::BitVector<>> &input, std::size_t input_owner_id,
                Backend &backend);
 
@@ -65,12 +68,15 @@ class BMRInputGate final : public Gates::Interfaces::InputGate {
 
   const Shares::SharePtr GetOutputAsShare() const;
 
+  auto &GetInputPromise() { return input_promise_; }
+
  protected:
-  /// two-dimensional vector for storing the raw inputs
-  std::vector<ENCRYPTO::BitVector<>> input_;
-  std::size_t bits_;  ///< Number of parallel values on wires
+  std::size_t num_simd_{0};  ///< Number of parallel values on wires
+  std::size_t bit_size_{0};  ///< Number of wires
   ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> received_public_values_;
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_public_keys_;
+  ENCRYPTO::ReusableFiberFuture<std::vector<ENCRYPTO::BitVector<>>> input_future_;
+  ENCRYPTO::ReusableFiberPromise<std::vector<ENCRYPTO::BitVector<>>> input_promise_;
 };
 
 constexpr std::size_t ALL = std::numeric_limits<std::int64_t>::max();

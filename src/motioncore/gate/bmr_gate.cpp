@@ -37,21 +37,37 @@
 
 namespace MOTION::Gates::BMR {
 
+BMRInputGate::BMRInputGate(std::size_t num_simd, std::size_t bit_size, std::size_t input_owner_id,
+                           Backend &backend)
+    : InputGate(backend), num_simd_(num_simd), bit_size_(bit_size) {
+  input_future_ = input_promise_.get_future();
+  assert(num_simd_ != 0);
+  assert(bit_size_ != 0);
+  input_owner_id_ = input_owner_id;
+  InitializationHelper();
+}
+
 BMRInputGate::BMRInputGate(const std::vector<ENCRYPTO::BitVector<>> &input,
                            std::size_t input_owner_id, Backend &backend)
-    : InputGate(backend), input_(input) {
-  assert(!input_.empty());
+    : InputGate(backend) {
+  input_future_ = input_promise_.get_future();
+  assert(!input.empty());
   input_owner_id_ = input_owner_id;
-  bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
+  bit_size_ = input.size();
+  num_simd_ = input.at(0).GetSize();
+  input_promise_.set_value(input);
   InitializationHelper();
 }
 
 BMRInputGate::BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size_t input_owner_id,
                            Backend &backend)
-    : InputGate(backend), input_(std::move(input)) {
-  assert(!input_.empty());
+    : InputGate(backend) {
+  input_future_ = input_promise_.get_future();
+  assert(!input.empty());
   input_owner_id_ = input_owner_id;
-  bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
+  bit_size_ = input.size();
+  num_simd_ = input.at(0).GetSize();
+  input_promise_.set_value(std::move(input));
   InitializationHelper();
 }
 
@@ -63,20 +79,13 @@ void BMRInputGate::InitializationHelper() {
 
   gate_id_ = GetRegister().NextGateId();
 
-  assert(input_.size() > 0u);           // assert >=1 wire
-  assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
-  // assert SIMD lengths of all wires are equal
-  assert(ENCRYPTO::BitVector<>::EqualSizeDimensions(input_));
-
-  output_wires_.reserve(input_.size());
-  for (auto &v : input_)
-    output_wires_.push_back(std::make_shared<Wires::BMRWire>(v.GetSize(), backend_));
+  output_wires_.reserve(bit_size_);
+  for (std::size_t i = 0; i < bit_size_; ++i)
+    output_wires_.emplace_back(std::make_shared<Wires::BMRWire>(num_simd_, backend_));
 
   for (auto &w : output_wires_) GetRegister().RegisterNextWire(w);
 
   const auto num_parties = GetConfig().GetNumOfParties();
-  const auto num_simd = bits_;
-  const auto num_wires = input_.size();
   const auto my_id = GetConfig().GetMyId();
 
   assert(input_owner_id_ >= 0);
@@ -90,7 +99,7 @@ void BMRInputGate::InitializationHelper() {
                          ->GetDataStorage()
                          ->GetBMRData();
     received_public_values_ =
-        bmr_data->RegisterForInputPublicValues(gate_id_, bits_ * input_.size());
+        bmr_data->RegisterForInputPublicValues(gate_id_, num_simd_ * bit_size_);
   }
 
   // prepare for receiving the *public/active keys* of the other parties
@@ -99,7 +108,7 @@ void BMRInputGate::InitializationHelper() {
     if (my_id == party_i) continue;
     auto &bmr_data = GetConfig().GetCommunicationContext(party_i)->GetDataStorage()->GetBMRData();
     received_public_keys_.at(party_i) =
-        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd * num_wires);
+        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd_ * bit_size_);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -148,10 +157,9 @@ void BMRInputGate::EvaluateSetup() {
       if (!keys_1.empty()) keys_1.erase(keys_1.size() - 1);
 
       GetLogger().LogTrace(
-          fmt::format("Created a BMR wire #{} with real values {} permutation bits {}, keys 0 {}, "
+          fmt::format("Created a BMR wire #{} with permutation bits {}, keys 0 {}, "
                       "and keys 1 {}",
-                      wire->GetWireId(), input_.at(i).AsString(),
-                      wire->GetPermutationBits().AsString(), keys_0, keys_1));
+                      wire->GetWireId(), wire->GetPermutationBits().AsString(), keys_0, keys_1));
     }
   }
   if constexpr (MOTION_DEBUG) {
@@ -177,16 +185,21 @@ void BMRInputGate::EvaluateOnline() {
   const auto num_wires = output_wires_.size();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
   ENCRYPTO::BitVector<> buffer;
-  // XXX: ^ maybe we can already reserve enough space here since we call append
-  // in a loop
+  buffer.Reserve(MOTION::Helpers::Convert::BitsToBytes(bit_size_));
 
   // if this is our input, set the public values by masking our real inputs
   // with the random permutation bits
   if (my_input) {
+    auto input = input_future_.get();
+    assert(input.size() > 0u);           // assert >=1 wire
+    assert(input.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
+    // assert SIMD lengths of all wires are equal
+    assert(ENCRYPTO::BitVector<>::EqualSizeDimensions(input));
+
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
       assert(wire);
-      wire->GetMutablePublicValues() = input_.at(i) ^ wire->GetPermutationBits();
+      wire->GetMutablePublicValues() = input.at(i) ^ wire->GetPermutationBits();
       buffer.Append(wire->GetPublicValues());
     }
     const std::vector<std::uint8_t> payload(
@@ -203,7 +216,7 @@ void BMRInputGate::EvaluateOnline() {
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
       assert(wire);
-      wire->GetMutablePublicValues() = buffer.Subset(i * bits_, (i + 1) * bits_);
+      wire->GetMutablePublicValues() = buffer.Subset(i * num_simd_, (i + 1) * num_simd_);
     }
   }
 
@@ -293,6 +306,14 @@ void BMRInputGate::EvaluateOnline() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating online phase of BMR Input Gate with id#{}", gate_id_));
   }
+
+  for (auto &wire : output_wires_) {
+    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(wire);
+    assert(bmr_wire);
+    assert(!bmr_wire->GetPermutationBits().Empty());
+  }
+
+  assert(!online_is_ready_);
   SetOnlineIsReady();
   GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
@@ -319,7 +340,7 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
                     sharing_type));
   }
 
-  if (parent->GetWires().size() == 0) {
+  if (parent->GetWires().empty()) {
     throw std::runtime_error("Trying to construct an output gate with no wires");
   }
 
@@ -340,16 +361,17 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
   // the permutation bits are shared in the same way as usual Boolean GMW
   // shares, we use a GMWOutputGate to perform the reconstruction.
 
-  std::vector<Wires::WirePtr> dummy_wires(parent_.size());
+  std::vector<Wires::WirePtr> gmw_wires(parent_.size());
   const ENCRYPTO::BitVector<> dummy_bv(parent_.at(0)->GetNumOfSIMDValues());
+  assert(!dummy_bv.Empty());
 
-  for (auto &w : dummy_wires) {
+  for (auto &w : gmw_wires) {
     w = std::make_shared<Wires::GMWWire>(dummy_bv, backend_);
     GetRegister().RegisterNextWire(w);
   }
 
-  gmw_out_share_ = std::make_shared<Shares::GMWShare>(dummy_wires);
-  out_ = std::make_shared<MOTION::Gates::GMW::GMWOutputGate>(gmw_out_share_);
+  gmw_out_share_ = std::make_shared<Shares::GMWShare>(gmw_wires);
+  out_ = std::make_shared<MOTION::Gates::GMW::GMWOutputGate>(gmw_out_share_, output_owner_);
   GetRegister().RegisterNextGate(out_);
 
   gate_id_ = GetRegister().NextGateId();
@@ -363,14 +385,13 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == ALL;
 
+  assert(!output_.empty());
   for (auto &bv : output_) {
     output_wires_.push_back(std::static_pointer_cast<MOTION::Wires::Wire>(
         std::make_shared<Wires::BMRWire>(bv, backend_)));
   }
 
-  for (auto &wire : output_wires_) {
-    GetRegister().RegisterNextWire(wire);
-  }
+  for (auto &wire : output_wires_) GetRegister().RegisterNextWire(wire);
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info =
@@ -400,28 +421,32 @@ void BMROutputGate::EvaluateOnline() {
   for (i = 0; i < wires.size(); ++i) {
     const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
     bmr_wire->GetIsReadyCondition().Wait();
+    bmr_wire->GetSetupReadyCondition()->Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(wires.at(i));
     assert(bmr_wire);
     assert(gmw_wire);
+    assert(!bmr_wire->GetPermutationBits().Empty());
     // take the permutation bits from the BMRWire and use them as GMW shares
     gmw_wire->GetMutableValues() = bmr_wire->GetPermutationBits();
     gmw_wire->SetOnlineFinished();
   }
 
-  for (i = 0; i < output_wires_.size(); ++i) {
-    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
-    auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(out_->GetOutputWires().at(i));
-    // wait until the GMWOutputGate is evaluated
-    gmw_wire->GetIsReadyCondition().Wait();
-    assert(bmr_wire);
-    assert(gmw_wire);
-    assert(bmr_wire->GetPublicValues().GetSize() == gmw_wire->GetValues().GetSize());
-    // compute the real values as XOR of the public values from the BMRWire
-    // with the reconstructed permutation bits from the GMWWire
-    output_.at(i) = bmr_wire->GetPublicValues() ^ gmw_wire->GetValues();
-    auto wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
-    assert(wire);
-    wire->GetMutablePublicValues() = output_.at(i);
+  if (is_my_output_) {
+    for (i = 0; i < output_wires_.size(); ++i) {
+      const auto in_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_.at(i));
+      auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(out_->GetOutputWires().at(i));
+      // wait until the GMWOutputGate is evaluated
+      assert(in_wire);
+      assert(gmw_wire);
+      gmw_wire->GetIsReadyCondition()->Wait();
+      assert(in_wire->GetPublicValues().GetSize() == gmw_wire->GetValues().GetSize());
+      // compute the real values as XOR of the public values from the BMRWire
+      // with the reconstructed permutation bits from the GMWWire
+      output_.at(i) = in_wire->GetPublicValues() ^ gmw_wire->GetValues();
+      auto out_wire = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
+      assert(out_wire);
+      out_wire->GetMutablePublicValues() = output_.at(i);
+    }
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -544,6 +569,15 @@ void BMRXORGate::EvaluateOnline() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating online phase of BMR XOR Gate with id#{}", gate_id_));
   }
+
+  for (auto &wire : output_wires_) {
+    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(wire);
+    assert(bmr_wire);
+    assert(!bmr_wire->GetPermutationBits().Empty());
+  }
+
+  assert(!online_is_ready_);
+
   SetOnlineIsReady();
   GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
@@ -654,6 +688,15 @@ void BMRINVGate::EvaluateOnline() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating online phase of BMR INV Gate with id#{}", gate_id_));
   }
+
+  for (auto &wire : output_wires_) {
+    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(wire);
+    assert(bmr_wire);
+    assert(!bmr_wire->GetPermutationBits().Empty());
+  }
+
+  assert(!online_is_ready_);
+
   SetOnlineIsReady();
   GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
@@ -826,8 +869,8 @@ void BMRANDGate::EvaluateSetup() {
     bmr_a->GetSetupReadyCondition()->Wait();
     bmr_b->GetSetupReadyCondition()->Wait();
 
-    const ENCRYPTO::BitVector<>& a_perm_bits = bmr_a->GetPermutationBits();
-    const ENCRYPTO::BitVector<>& b_perm_bits = bmr_b->GetPermutationBits();
+    const ENCRYPTO::BitVector<> &a_perm_bits = bmr_a->GetPermutationBits();
+    const ENCRYPTO::BitVector<> &b_perm_bits = bmr_b->GetPermutationBits();
 
     for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
       if (party_i == my_id) {
@@ -840,10 +883,11 @@ void BMRANDGate::EvaluateSetup() {
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
         GetLogger().LogTrace(fmt::format(
-            "Gate#{} (BMR AND gate)  Party#{}-#{} bit-C-OTs wire_i {} perm_bits {} bits_a {} bits_b {} a&b {}\n",
+            "Gate#{} (BMR AND gate)  Party#{}-#{} bit-C-OTs wire_i {} perm_bits {} bits_a {} "
+            "bits_b {} a&b {}\n",
             gate_id_, my_id, party_i, wire_i, bmr_out->GetPermutationBits().AsString(),
-            bmr_a->GetPermutationBits().AsString(),
-            bmr_b->GetPermutationBits().AsString(), choices.at(party_i).at(wire_i).AsString()));
+            bmr_a->GetPermutationBits().AsString(), bmr_b->GetPermutationBits().AsString(),
+            choices.at(party_i).at(wire_i).AsString()));
       }
       // compute C-OTs for the real value, ie, b = (lambda_u ^ alpha) * (lambda_v ^ beta)
 
@@ -1287,6 +1331,15 @@ void BMRANDGate::EvaluateOnline() {
   if constexpr (MOTION_VERBOSE_DEBUG) {
     GetLogger().LogTrace(fmt::format("Evaluated BMR AND Gate with id#{}", gate_id_));
   }
+
+  for (auto &wire : output_wires_) {
+    const auto bmr_wire = std::dynamic_pointer_cast<const Wires::BMRWire>(wire);
+    assert(bmr_wire);
+    assert(!bmr_wire->GetPermutationBits().Empty());
+  }
+
+  assert(!online_is_ready_);
+
   SetOnlineIsReady();
   GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
