@@ -33,6 +33,7 @@
 #include "fiber_thread_pool.hpp"
 #include "pooled_work_stealing.hpp"
 #include "utility/constants.h"
+#include "utility/locked_fiber_queue.h"
 #include "utility/thread.h"
 
 namespace ENCRYPTO {
@@ -64,12 +65,12 @@ FiberThreadPool::~FiberThreadPool() {
 static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
                         boost::fibers::buffered_channel<FiberThreadPool::task_t>& task_queue,
                         boost::fibers::barrier& barrier) {
-  auto fiber_channel = boost::fibers::buffered_channel<boost::fibers::fiber>(64);
+  LockedFiberQueue<boost::fibers::fiber> cleanup_channel;
 
   // start cleanup thread for joining the created fibers
-  auto cleanup_fut = boost::fibers::async([&fiber_channel] {
-    for (auto& f : fiber_channel) {
-      f.join();
+  auto cleanup_fut = boost::fibers::async([&cleanup_channel] {
+    while (auto f = cleanup_channel.dequeue()) {
+      f->join();
     }
   });
 
@@ -89,14 +90,14 @@ static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
   // which is the signal to therminate the pool
   while (task_queue.pop(task) != boost::fibers::channel_op_status::closed) {
     // create a fiber from the task we retrieved and store its handle
-    fiber_channel.push(boost::fibers::fiber(std::allocator_arg_t{}, stack_allocator, task));
+    cleanup_channel.enqueue(boost::fibers::fiber(std::allocator_arg_t{}, stack_allocator, task));
 
     // give another fiber the chance to run
     boost::this_fiber::yield();
   }
 
   // wait for all created fibers to be joined
-  fiber_channel.close();
+  cleanup_channel.close();
   cleanup_fut.get();
   barrier.wait();
 }
