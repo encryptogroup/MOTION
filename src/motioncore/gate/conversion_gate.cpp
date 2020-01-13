@@ -29,8 +29,11 @@
 #include "base/backend.h"
 #include "communication/bmr_message.h"
 #include "data_storage/bmr_data.h"
+#include "gate/bmr_gate.h"
+#include "secure_type/secure_unsigned_integer.h"
 #include "share/bmr_share.h"
 #include "share/boolean_gmw_share.h"
+#include "utility/bit_vector.h"
 #include "utility/constants.h"
 #include "utility/fiber_condition.h"
 #include "wire/bmr_wire.h"
@@ -317,6 +320,134 @@ const Shares::BMRSharePtr GMWToBMRGate::GetOutputAsBMRShare() const {
 }
 
 const Shares::SharePtr GMWToBMRGate::GetOutputAsShare() const {
+  auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsBMRShare());
+  assert(result);
+  return result;
+}
+
+AGMWToBMRGate::AGMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->GetBackend()) {
+  parent_ = parent->GetWires();
+
+  assert(parent_.size() == 1);
+  assert(parent_[0]->GetBitLength() > 0);
+  for ([[maybe_unused]] const auto &wire : parent_)
+    assert(wire->GetProtocol() == MPCProtocol::ArithmeticGMW);
+
+  requires_online_interaction_ = true;
+  gate_type_ = GateType::Interactive;
+  gate_id_ = GetRegister().NextGateId();
+
+  // AGMWToBMRGate does not own its output wires, since these are the output wires of the last
+  // BMR addition circuit. Thus, Gate::SetOnlineReady should not mark the output wires online-ready.
+  own_output_wires_ = false;
+
+  for (auto &wire : parent_) {
+    RegisterWaitingFor(wire->GetWireId());
+    wire->RegisterWaitingGate(gate_id_);
+  }
+
+  assert(gate_id_ >= 0);
+  const auto my_id{GetConfig().GetMyId()};
+  const auto bitlen{parent_[0]->GetBitLength()};
+  const auto num_simd{parent_[0]->GetNumOfSIMDValues()};
+
+  std::vector<SecureUnsignedInteger> shares;
+  shares.reserve(GetConfig().GetNumOfParties());
+  // each party re-shares its arithmetic GMW share in BMR
+  for (auto party_id = 0ull; party_id < GetConfig().GetNumOfParties(); ++party_id) {
+    const auto in_gate =
+        std::make_shared<MOTION::Gates::BMR::BMRInputGate>(num_simd, bitlen, party_id, backend_);
+    GetRegister().RegisterNextInputGate(in_gate);
+    // the party owning the share takes the input promise to assign its input when the parent wires
+    // are online-ready
+    if (party_id == my_id) input_promise_ = &in_gate->GetInputPromise();
+
+    shares.emplace_back(Shares::ShareWrapper(in_gate->GetOutputAsShare()));
+  }
+
+  // securely compute the sum of the arithmetic GMW shares to get a valid BMR share
+  auto result{shares[0]};
+  for (auto share_i = 1ull; share_i < shares.size(); ++share_i) result += shares[share_i];
+
+  // the sum of the shares is a valid BMR share, which output wires are the output wires of the
+  // AGMW to BMR conversion gate
+  output_wires_ = result.Get()->GetWires();
+
+  if constexpr (MOTION_DEBUG) {
+    auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
+    for (const auto &wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
+    gate_info.append(" output wires: ");
+    for (const auto &wire : output_wires_) gate_info.append(fmt::format("{} ", wire->GetWireId()));
+    GetLogger().LogDebug(
+        fmt::format("Created a Arithmetic GMW to BMR conversion gate with following properties: {}",
+                    gate_info));
+  }
+}
+
+void AGMWToBMRGate::EvaluateSetup() {
+  if constexpr (MOTION_DEBUG) {
+    GetLogger().LogDebug(fmt::format(
+        "Nothing to do in the setup phase of Arithmetic GMW to BMR Gate with id#{}", gate_id_));
+  }
+
+  SetSetupIsReady();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
+}
+
+void AGMWToBMRGate::EvaluateOnline() {
+  WaitSetup();
+  if constexpr (MOTION_DEBUG) {
+    GetLogger().LogDebug(fmt::format(
+        "Start evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
+  }
+
+  const auto bitlen = parent_[0]->GetBitLength();
+  parent_[0]->GetIsReadyCondition()->Wait();
+
+  switch (bitlen) {
+    case 8: {
+      auto w{std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<std::uint8_t>>(parent_[0])};
+      assert(w);
+      input_promise_->set_value(ENCRYPTO::ToInput(w->GetValues()));
+      break;
+    }
+    case 16: {
+      auto w{std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<std::uint16_t>>(parent_[0])};
+      assert(w);
+      input_promise_->set_value(ENCRYPTO::ToInput(w->GetValues()));
+      break;
+    }
+    case 32: {
+      auto w{std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<std::uint32_t>>(parent_[0])};
+      assert(w);
+      input_promise_->set_value(ENCRYPTO::ToInput(w->GetValues()));
+      break;
+    }
+    case 64: {
+      auto w{std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<std::uint64_t>>(parent_[0])};
+      assert(w);
+      input_promise_->set_value(ENCRYPTO::ToInput(w->GetValues()));
+      break;
+    }
+    default:
+      throw std::logic_error(fmt::format("Illegal bitlength: {}", bitlen));
+  }
+
+  if constexpr (MOTION_DEBUG) {
+    GetLogger().LogDebug(fmt::format(
+        "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
+  }
+  SetOnlineIsReady();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
+}
+
+const Shares::BMRSharePtr AGMWToBMRGate::GetOutputAsBMRShare() const {
+  auto result = std::make_shared<Shares::BMRShare>(output_wires_);
+  assert(result);
+  return result;
+}
+
+const Shares::SharePtr AGMWToBMRGate::GetOutputAsShare() const {
   auto result = std::static_pointer_cast<Shares::Share>(GetOutputAsBMRShare());
   assert(result);
   return result;

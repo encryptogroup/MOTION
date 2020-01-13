@@ -36,6 +36,8 @@ namespace Shares {
 class Share;
 using SharePtr = std::shared_ptr<Shares::Share>;
 
+class ShareWrapper;
+
 class GMWShare;
 using GMWSharePtr = std::shared_ptr<Shares::GMWShare>;
 
@@ -85,6 +87,28 @@ class GMWToBMRGate final : public Gates::Interfaces::OneGate {
  private:
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>> received_public_values_;
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_public_keys_;
+};
+
+class AGMWToBMRGate final : public Gates::Interfaces::OneGate {
+ public:
+  AGMWToBMRGate(const Shares::SharePtr &parent);
+
+  ~AGMWToBMRGate() final = default;
+
+  void EvaluateSetup() final;
+
+  void EvaluateOnline() final;
+
+  const Shares::BMRSharePtr GetOutputAsBMRShare() const;
+
+  const Shares::SharePtr GetOutputAsShare() const;
+
+  AGMWToBMRGate() = delete;
+
+  AGMWToBMRGate(const Gate &) = delete;
+
+ private:
+  ENCRYPTO::ReusableFiberPromise<std::vector<ENCRYPTO::BitVector<>>> * input_promise_;
 };
 
 }  // namespace Gates::Conversion

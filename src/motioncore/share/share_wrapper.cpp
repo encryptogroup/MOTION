@@ -350,54 +350,9 @@ template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BooleanGMW>() c
 template ShareWrapper ShareWrapper::Convert<MOTION::MPCProtocol::BMR>() const;
 
 ShareWrapper ShareWrapper::ArithmeticGMWToBMR() const {
-  const auto bitlen{share_->GetBitLength()};
-  auto wire{share_->GetWires().at(0)};
-  auto &backend = share_->GetBackend();
-  std::vector<ENCRYPTO::BitVector<>> my_input;
-  switch (bitlen) {
-    case 8u: {
-      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint8_t>>(wire)};
-      assert(agmw_wire);
-      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
-      break;
-    }
-    case 16u: {
-      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint16_t>>(wire)};
-      assert(agmw_wire);
-      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
-      break;
-    }
-    case 32u: {
-      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint32_t>>(wire)};
-      assert(agmw_wire);
-      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
-      break;
-    }
-    case 64u: {
-      auto agmw_wire{std::dynamic_pointer_cast<Wires::ArithmeticWire<std::uint64_t>>(wire)};
-      assert(agmw_wire);
-      my_input = ENCRYPTO::ToInput(agmw_wire->GetValues());
-      break;
-    }
-    default:
-      throw std::runtime_error(fmt::format("Invalid bitlength {}", bitlen));
-  }
-  std::vector<ENCRYPTO::BitVector<>> dummy_input(my_input.size(),
-                                                 ENCRYPTO::BitVector<>(my_input.at(0).GetSize()));
-
-  std::vector<SecureUnsignedInteger> shares;
-  shares.reserve(backend.GetConfig()->GetNumOfParties());
-  for (auto party_id = 0ull; party_id < backend.GetConfig()->GetNumOfParties(); ++party_id) {
-    if (party_id == backend.GetConfig()->GetMyId())
-      shares.emplace_back(backend.BMRInput(party_id, my_input));
-    else
-      shares.emplace_back(backend.BMRInput(party_id, dummy_input));
-  }
-
-  auto result{shares.at(0)};
-  for (auto share_i = 0ull; share_i < shares.size(); ++share_i) result += shares.at(share_i);
-
-  return result.Get();
+  auto agmw_to_bmr_gate{std::make_shared<Gates::Conversion::AGMWToBMRGate>(share_)};
+  share_->GetRegister()->RegisterNextGate(agmw_to_bmr_gate);
+  return ShareWrapper(agmw_to_bmr_gate->GetOutputAsShare());
 }
 
 ShareWrapper ShareWrapper::BooleanGMWToArithmeticGMW() const {
