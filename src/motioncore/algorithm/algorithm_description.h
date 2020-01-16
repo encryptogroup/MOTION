@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -48,6 +48,12 @@ struct AlgorithmDescription {
   static AlgorithmDescription FromBristol(std::string&& path);
 
   static AlgorithmDescription FromBristol(std::ifstream& stream);
+
+  static AlgorithmDescription FromBristolFashion(const std::string& path);
+
+  static AlgorithmDescription FromBristolFashion(std::string&& path);
+
+  static AlgorithmDescription FromBristolFashion(std::ifstream& stream);
 
   static AlgorithmDescription FromABY(const std::string& path);
 

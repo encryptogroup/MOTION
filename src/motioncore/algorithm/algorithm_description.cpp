@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -25,7 +25,12 @@
 #include "algorithm_description.h"
 
 #include <fstream>
+#include <regex>
 #include <sstream>
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/lexical_cast.hpp>
+#include <fmt/format.h>
 
 namespace ENCRYPTO {
 
@@ -137,6 +142,126 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
     str.clear();
     line_v.clear();
   }
+  return algo;
+}
+
+AlgorithmDescription AlgorithmDescription::FromBristolFashion(const std::string& path) {
+  std::ifstream fs(path);
+  return FromBristolFashion(fs);
+}
+
+AlgorithmDescription AlgorithmDescription::FromBristolFashion(std::string&& path) {
+  std::ifstream fs(path);
+  return FromBristolFashion(fs);
+}
+
+AlgorithmDescription AlgorithmDescription::FromBristolFashion(std::ifstream& stream) {
+  AlgorithmDescription algo;
+  assert(stream.is_open());
+  assert(stream.good());
+
+  const static std::regex line_two_numbers_re("^\\s*(\\d+)\\s+(\\d+)\\s*$");
+  const static std::regex line_three_numbers_re("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s*$");
+  const static std::regex line_gate_re("^\\s*(1|2)\\s+(1)\\s+(\\d+)\\s+(\\d+\\s+)?(\\d+)\\s+(XOR|AND|INV)\\s*$");
+  const static std::regex line_whitespace_re("^\\s*$");
+
+  std::string line;
+  std::smatch match;
+
+  // first line
+  std::getline(stream, line);
+  if (!std::regex_match(line, match, line_two_numbers_re)) {
+    throw std::runtime_error("Cannot parse Bristol Fashion file at line 1");
+  }
+  algo.n_gates_ = boost::lexical_cast<std::size_t>(match[1]);
+  algo.n_wires_ = boost::lexical_cast<std::size_t>(match[2]);
+
+  // second line
+  std::getline(stream, line);
+  if (std::regex_match(line, match, line_two_numbers_re)) {
+    auto n = boost::lexical_cast<std::size_t>(match[1]);
+    if (n != 1) {
+      throw std::runtime_error("Malformed Bristol Fashion format at line 2");
+    }
+    algo.n_input_wires_parent_a_ = boost::lexical_cast<std::size_t>(match[2]);
+  } else if (std::regex_match(line, match, line_three_numbers_re)) {
+    auto n = boost::lexical_cast<std::size_t>(match[1]);
+    if (n != 2) {
+      throw std::runtime_error("Malformed Bristol Fashion format at line 2");
+    }
+    algo.n_input_wires_parent_a_ = boost::lexical_cast<std::size_t>(match[2]);
+    algo.n_input_wires_parent_b_ = boost::lexical_cast<std::size_t>(match[3]);
+  } else {
+    throw std::runtime_error(
+        "Cannot parse Bristol Fashion file at line 2 (maybe unsupported number of input values)");
+  }
+
+  // third line
+  std::getline(stream, line);
+  if (std::regex_match(line, match, line_two_numbers_re)) {
+    auto n = boost::lexical_cast<std::size_t>(match[1]);
+    if (n != 1) {
+      throw std::runtime_error("Malformed Bristol Fashion format at line 3");
+    }
+    algo.n_output_wires_ = boost::lexical_cast<std::size_t>(match[2]);
+  } else {
+    throw std::runtime_error(
+        "Cannot parse Bristol Fashion file at line 3 (maybe unsupported number of output values)");
+  }
+
+  // consume empty line
+  std::getline(stream, line);
+  assert(line.empty());
+
+  std::size_t line_no = 4;
+
+  // read gates
+  while (std::getline(stream, line)) {
+    ++line_no;
+    if (line.empty() || std::regex_match(line, line_whitespace_re)) {
+      continue;
+    }
+
+    if (!std::regex_match(line, match, line_gate_re)) {
+      throw std::runtime_error(
+          fmt::format("Cannot parse Bristol Fashion file at line {}", line_no));
+    }
+
+    using namespace std::string_literals;
+
+    auto num_inputs = boost::lexical_cast<std::size_t>(match[1]);
+    const auto& operation = match[6];
+    PrimitiveOperation op;
+
+    if (operation == "XOR"s) {
+      if (num_inputs != 2) {
+        throw std::runtime_error(fmt::format(
+            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_no));
+      }
+      op.type_ = PrimitiveOperationType::XOR;
+    } else if (operation == "AND"s) {
+      if (num_inputs != 2) {
+        throw std::runtime_error(fmt::format(
+            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_no));
+      }
+      op.type_ = PrimitiveOperationType::AND;
+    } else if (operation == "INV"s) {
+      if (num_inputs != 1) {
+        throw std::runtime_error(fmt::format(
+            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_no));
+      }
+      op.type_ = PrimitiveOperationType::INV;
+    }
+    op.output_wire_ = boost::lexical_cast<std::size_t>(match[5]);
+    op.parent_a_ = boost::lexical_cast<std::size_t>(match[3]);
+    if (num_inputs == 2) {
+      std::string input_b = match[4];
+      boost::algorithm::trim(input_b);
+      op.parent_b_ = boost::lexical_cast<std::size_t>(input_b);
+    }
+    algo.gates_.emplace_back(std::move(op));
+  }
+
   return algo;
 }
 
