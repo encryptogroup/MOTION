@@ -32,12 +32,12 @@
 MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
                                                   MOTION::MPCProtocol protocol) {
   // TODO tests
-  std::vector<ENCRYPTO::BitVector<>> tmp(512, ENCRYPTO::BitVector<>(num_simd));
+  std::vector<ENCRYPTO::BitVector<>> tmp(512 + 256, ENCRYPTO::BitVector<>(num_simd));
   MOTION::Shares::ShareWrapper input{protocol == MOTION::MPCProtocol::BooleanGMW
                                          ? party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp, 0)
                                          : party->IN<MOTION::MPCProtocol::BMR>(tmp, 0)};
   const auto algo_path{std::string(MOTION::MOTION_ROOT_DIR) + "/circuits/advanced/sha_256.bristol"};
-  const auto sha_algo{ENCRYPTO::AlgorithmDescription::FromBristol(algo_path)};
+  const auto sha_algo{ENCRYPTO::AlgorithmDescription::FromBristolFashion(algo_path)};
   const auto result{input.Evaluate(sha_algo)};
   party->Run();
   party->Finish();
