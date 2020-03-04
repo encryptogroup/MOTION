@@ -140,7 +140,7 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
   auto message_type = message->message_type();
 
   switch (message_type) {
-    case MessageType_HelloMessage: {
+    case MessageType::HelloMessage: {
       auto seed_vector = GetHelloMessage(message->payload()->data())->input_sharing_seed();
       if (seed_vector != nullptr && seed_vector->size() > 0) {
         const std::uint8_t *seed = seed_vector->data();
@@ -157,74 +157,74 @@ void Context::ParseMessage(std::vector<std::uint8_t> &&raw_message) {
       }
       data_storage_->SetReceivedHelloMessage(std::move(raw_message));
     } break;
-    case MessageType_OutputMessage: {
+    case MessageType::OutputMessage: {
       data_storage_->SetReceivedOutputMessage(std::move(raw_message));
     } break;
-    case MessageType_TerminationMessage: {
+    case MessageType::TerminationMessage: {
       //
     } break;
-    case MessageType_SynchronizationMessage: {
+    case MessageType::SynchronizationMessage: {
       const std::size_t sync_state =
           *reinterpret_cast<const uint64_t *>(message->payload()->data());
       data_storage_->SetReceivedSyncState(sync_state);
     } break;
-    case MessageType_BaseROTMessageReceiver: {
+    case MessageType::BaseROTMessageReceiver: {
       auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
       auto ot_data = GetBaseROTMessage(message->payload()->data())->buffer()->data();
       data_storage_->GetBaseOTsData()->MessageReceived(ot_data, BaseOTsDataType::HL17_R, ot_id);
       break;
     }
-    case MessageType_BaseROTMessageSender: {
+    case MessageType::BaseROTMessageSender: {
       auto ot_id = GetBaseROTMessage(message->payload()->data())->base_ot_id();
       auto ot_data = GetBaseROTMessage(message->payload()->data())->buffer()->data();
       data_storage_->GetBaseOTsData()->MessageReceived(ot_data, BaseOTsDataType::HL17_S, ot_id);
       break;
     }
-    case MessageType_OTExtensionReceiverMasks: {
+    case MessageType::OTExtensionReceiverMasks: {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
       data_storage_->GetOTExtensionData()->MessageReceived(ot_data, OTExtensionDataType::rcv_masks,
                                                            i);
       break;
     }
-    case MessageType_OTExtensionReceiverCorrections: {
+    case MessageType::OTExtensionReceiverCorrections: {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
       data_storage_->GetOTExtensionData()->MessageReceived(ot_data,
                                                            OTExtensionDataType::rcv_corrections, i);
       break;
     }
-    case MessageType_OTExtensionSender: {
+    case MessageType::OTExtensionSender: {
       auto i = GetOTExtensionMessage(message->payload()->data())->i();
       auto ot_data = GetOTExtensionMessage(message->payload()->data())->buffer()->data();
       data_storage_->GetOTExtensionData()->MessageReceived(ot_data,
                                                            OTExtensionDataType::snd_messages, i);
       break;
     }
-    case MessageType_BMRInputGate0: {
+    case MessageType::BMRInputGate0: {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
       data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::input_step_0, id);
       break;
     }
-    case MessageType_BMRInputGate1: {
+    case MessageType::BMRInputGate1: {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
       data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::input_step_1, id);
       break;
     }
-    case MessageType_BMRANDGate: {
+    case MessageType::BMRANDGate: {
       auto id = GetBMRMessage(message->payload()->data())->gate_id();
       auto bmr_data = GetBMRMessage(message->payload()->data())->payload()->data();
       data_storage_->GetBMRData()->MessageReceived(bmr_data, BMRDataType::and_gate, id);
       break;
     }
-    case MessageType_SharedBitsMask: {
+    case MessageType::SharedBitsMask: {
       auto sb_msg_payload = GetSharedBitsMessage(message->payload()->data())->payload();
       data_storage_->GetSharedBitsData().MessageReceived(SharedBitsMessageType::mask_message, sb_msg_payload->data(), sb_msg_payload->size());
       break;
     }
-    case MessageType_SharedBitsReconstruct: {
+    case MessageType::SharedBitsReconstruct: {
       auto sb_msg_payload = GetSharedBitsMessage(message->payload()->data())->payload();
       data_storage_->GetSharedBitsData().MessageReceived(SharedBitsMessageType::reconstruct_message, sb_msg_payload->data(), sb_msg_payload->size());
       break;

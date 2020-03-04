@@ -45,32 +45,32 @@ flatbuffers::FlatBufferBuilder BuildBMRMessage(const std::size_t id,
 
 flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload) {
-  return BuildBMRMessage(id, payload, MessageType_BMRInputGate0);
+  return BuildBMRMessage(id, payload, MessageType::BMRInputGate0);
 }
 
 flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload) {
-  return BuildBMRMessage(id, std::move(payload), MessageType_BMRInputGate0);
+  return BuildBMRMessage(id, std::move(payload), MessageType::BMRInputGate0);
 }
 
 flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload) {
-  return BuildBMRMessage(id, payload, MessageType_BMRInputGate1);
+  return BuildBMRMessage(id, payload, MessageType::BMRInputGate1);
 }
 
 flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload) {
-  return BuildBMRMessage(id, std::move(payload), MessageType_BMRInputGate1);
+  return BuildBMRMessage(id, std::move(payload), MessageType::BMRInputGate1);
 }
 
 flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload) {
-  return BuildBMRMessage(id, payload, MessageType_BMRANDGate);
+  return BuildBMRMessage(id, payload, MessageType::BMRANDGate);
 }
 
 flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload) {
-  return BuildBMRMessage(id, std::move(payload), MessageType_BMRANDGate);
+  return BuildBMRMessage(id, std::move(payload), MessageType::BMRANDGate);
 }
 
 }  // namespace MOTION::Communication

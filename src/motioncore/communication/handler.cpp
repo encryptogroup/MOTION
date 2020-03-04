@@ -101,7 +101,7 @@ Handler::~Handler() {
 void Handler::SendMessage(flatbuffers::FlatBufferBuilder &&message) {
   auto message_detached = message.Release();
   auto message_raw_pointer = message_detached.data();
-  if (GetMessage(message_raw_pointer)->message_type() == MessageType_HelloMessage) {
+  if (GetMessage(message_raw_pointer)->message_type() == MessageType::HelloMessage) {
     auto shared_ptr_context = context_.lock();
     assert(shared_ptr_context);
     shared_ptr_context->GetDataStorage()->SetSentHelloMessage(message_raw_pointer,
@@ -126,7 +126,7 @@ const BoostSocketPtr Handler::GetSocket() {
 }
 
 void Handler::TerminateCommunication() {
-  auto message = BuildMessage(MessageType_TerminationMessage, nullptr);
+  auto message = BuildMessage(MessageType::TerminationMessage, nullptr);
   std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
                                    message.GetBufferPointer() + message.GetSize());
   lqueue_send_->enqueue(std::move(buffer));
@@ -228,7 +228,7 @@ void Handler::ActAsReceiver() {
 
         bytes_received_ += size + sizeof(uint32_t);
 
-        if (message->message_type() == MessageType_TerminationMessage) {
+        if (message->message_type() == MessageType::TerminationMessage) {
           ReceivedTerminationMessage();
           if constexpr (MOTION_VERBOSE_DEBUG) {
             GetLogger()->LogTrace(
@@ -395,7 +395,7 @@ void Handler::Sync() {
   std::uint64_t new_state = context->GetDataStorage()->IncrementMySyncState();
   std::vector<std::uint8_t> v(8);
   *(reinterpret_cast<std::uint64_t *>(v.data())) = new_state;
-  auto message = BuildMessage(MessageType_SynchronizationMessage, &v);
+  auto message = BuildMessage(MessageType::SynchronizationMessage, &v);
   std::vector<std::uint8_t> buffer(message.GetBufferPointer(),
                                    message.GetBufferPointer() + message.GetSize());
   lqueue_send_->enqueue(std::move(buffer));

@@ -35,7 +35,8 @@ flatbuffers::FlatBufferBuilder BuildOTExtensionMessageSender(const std::byte *bu
                                      reinterpret_cast<const std::uint8_t *>(buffer) + size);
   auto root = CreateOTExtensionMessageDirect(builder, i, &v_buffer);
   FinishOTExtensionMessageBuffer(builder, root);
-  return BuildMessage(MessageType_OTExtensionSender, builder.GetBufferPointer(), builder.GetSize());
+  return BuildMessage(MessageType::OTExtensionSender, builder.GetBufferPointer(),
+                      builder.GetSize());
 }
 
 flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverMasks(const std::byte *buffer,
@@ -46,7 +47,7 @@ flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverMasks(const std::b
                                      reinterpret_cast<const std::uint8_t *>(buffer) + size);
   auto root = CreateOTExtensionMessageDirect(builder, i, &v_buffer);
   FinishOTExtensionMessageBuffer(builder, root);
-  return BuildMessage(MessageType_OTExtensionReceiverMasks, builder.GetBufferPointer(),
+  return BuildMessage(MessageType::OTExtensionReceiverMasks, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
@@ -58,7 +59,7 @@ flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverCorrections(const 
                                      reinterpret_cast<const std::uint8_t *>(buffer) + size);
   auto root = CreateOTExtensionMessageDirect(builder, i, &v_buffer);
   FinishOTExtensionMessageBuffer(builder, root);
-  return BuildMessage(MessageType_OTExtensionReceiverCorrections, builder.GetBufferPointer(),
+  return BuildMessage(MessageType::OTExtensionReceiverCorrections, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 

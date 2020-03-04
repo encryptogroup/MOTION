@@ -10,7 +10,7 @@ foreach (FILE ${FBS_NAMES})
     set(THIS_H "${THIS_H}_generated.h")
     if ((NOT ${FBS_INCLUDE_PREFIX}/${THIS_H}) OR (${THIS_FBS} IS_NEWER_THAN ${FBS_INCLUDE_PREFIX}/${THIS_H}))
         add_custom_command(OUTPUT "${FBS_INCLUDE_PREFIX}/${THIS_H}"
-                COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp -o ${FBS_INCLUDE_PREFIX} ${THIS_FBS}
+                COMMAND ${FLATBUFFERS_FLATC_EXECUTABLE} --cpp --scoped-enums -o ${FBS_INCLUDE_PREFIX} ${THIS_FBS}
                 DEPENDS ${THIS_FBS})
     endif ()
     list(APPEND GENERATED_FILES "${FBS_INCLUDE_PREFIX}/${THIS_H}")

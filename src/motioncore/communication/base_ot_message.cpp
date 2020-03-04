@@ -35,7 +35,7 @@ flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::byte *buffer, st
                                      reinterpret_cast<std::uint8_t *>(buffer) + size);
   auto root = CreateBaseROTMessageDirect(builder, ot_id, &v_buffer);
   FinishBaseROTMessageBuffer(builder, root);
-  return BuildMessage(MessageType_BaseROTMessageReceiver, builder.GetBufferPointer(),
+  return BuildMessage(MessageType::BaseROTMessageReceiver, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
@@ -46,7 +46,7 @@ flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::byte *buffer, std:
                                      reinterpret_cast<std::uint8_t *>(buffer) + size);
   auto root = CreateBaseROTMessageDirect(builder, ot_id, &v_buffer);
   FinishBaseROTMessageBuffer(builder, root);
-  return BuildMessage(MessageType_BaseROTMessageSender, builder.GetBufferPointer(),
+  return BuildMessage(MessageType::BaseROTMessageSender, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 }  // namespace MOTION::Communication

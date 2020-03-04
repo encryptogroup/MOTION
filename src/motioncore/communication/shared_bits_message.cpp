@@ -32,7 +32,7 @@ flatbuffers::FlatBufferBuilder BuildSharedBitsMaskMessage(const std::vector<std:
   flatbuffers::FlatBufferBuilder builder(buffer.size());
   auto root = CreateSharedBitsMessageDirect(builder, &buffer);
   FinishSharedBitsMessageBuffer(builder, root);
-  return BuildMessage(MessageType_SharedBitsMask, builder.GetBufferPointer(), builder.GetSize());
+  return BuildMessage(MessageType::SharedBitsMask, builder.GetBufferPointer(), builder.GetSize());
 }
 
 flatbuffers::FlatBufferBuilder BuildSharedBitsReconstructMessage(
@@ -40,7 +40,7 @@ flatbuffers::FlatBufferBuilder BuildSharedBitsReconstructMessage(
   flatbuffers::FlatBufferBuilder builder(buffer.size());
   auto root = CreateSharedBitsMessageDirect(builder, &buffer);
   FinishSharedBitsMessageBuffer(builder, root);
-  return BuildMessage(MessageType_SharedBitsReconstruct, builder.GetBufferPointer(),
+  return BuildMessage(MessageType::SharedBitsReconstruct, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
