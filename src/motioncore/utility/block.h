@@ -173,7 +173,11 @@ struct block128_vector {
   }
 
   // create vector of size elements filled with random data
-  static block128_vector make_random(std::size_t size);
+  static block128_vector make_random(std::size_t size) {
+    block128_vector result(size);
+    result.set_to_random();
+    return result;
+  }
 
   // copy assignment
   block128_vector& operator=(const block128_vector& other) {
