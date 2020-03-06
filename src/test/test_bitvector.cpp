@@ -44,6 +44,38 @@ TEST(BitVector, Constructors) {
   }
 }
 
+TEST(BitVector, Random) {
+  {
+    std::vector<ENCRYPTO::BitVector<>> bvs;
+    std::generate_n(std::back_inserter(bvs), 100, [] { return ENCRYPTO::BitVector<>::Random(1); });
+    auto all_size_1 =
+        std::all_of(std::begin(bvs), std::end(bvs), [](auto bv) { return bv.GetSize() == 1; });
+    EXPECT_TRUE(all_size_1);
+    // all bits should be zero with very low probability
+    auto all_zeros =
+        std::all_of(std::begin(bvs), std::end(bvs), [](auto bv) { return bv.Get(0) == 0; });
+    EXPECT_FALSE(all_zeros);
+  }
+  {
+    auto bv = ENCRYPTO::BitVector<>::Random(120);
+    EXPECT_EQ(bv.GetSize(), 120);
+    auto v = bv.GetData();
+    // all bits should be zero with very low probability
+    bool all_zeros =
+        std::all_of(std::begin(v), std::end(v), [](auto byte) { return byte == std::byte(0x00); });
+    EXPECT_FALSE(all_zeros);
+  }
+  {
+    auto bv = ENCRYPTO::BitVector<>::Random(128);
+    EXPECT_EQ(bv.GetSize(), 128);
+    auto v = bv.GetData();
+    // all bits should be zero with very low probability
+    bool all_zeros =
+        std::all_of(std::begin(v), std::end(v), [](auto byte) { return byte == std::byte(0x00); });
+    EXPECT_FALSE(all_zeros);
+  }
+}
+
 TEST(BitVector, OutOfBoundsException) {
   std::mt19937_64 e(0);
   for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
