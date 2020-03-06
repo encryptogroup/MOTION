@@ -70,7 +70,7 @@ void AES128_CTR_RNG::random_blocks(std::byte* output, std::size_t num_blocks) {
 
 void AES128_CTR_RNG::random_bytes(std::byte* output, std::size_t num_bytes) {
   std::size_t num_blocks = num_bytes / aes_block_size;
-  std::size_t remaining_bytes = num_bytes & aes_block_size;
+  std::size_t remaining_bytes = num_bytes % aes_block_size;
   random_blocks(output, num_blocks);
   std::array<std::byte, aes_block_size> extra_block;
   aesni_ctr_stream_single_block_128_unaligned(state_->round_keys.data(), &state_->counter,
