@@ -5,7 +5,9 @@ add_executable(motiontest
         test_bitmatrix.cpp
         test_bitvector.cpp
         test_bmr.cpp
+        test_communication_layer.cpp
         test_conversions.cpp
+        test_dummy_transport.cpp
         test_integer_operations.cpp
         test_misc.cpp
         test_motion_main.cpp
@@ -16,6 +18,7 @@ add_executable(motiontest
         test_rng.cpp
         test_sb.cpp
         test_sp.cpp
+        test_tcp_transport.cpp
         )
 
 target_compile_features(motiontest PRIVATE cxx_std_17)

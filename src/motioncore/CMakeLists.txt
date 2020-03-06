@@ -7,13 +7,18 @@ add_library(motion
         base/register.cpp
         communication/base_ot_message.cpp
         communication/bmr_message.cpp
+        communication/communication_layer.cpp
         communication/context.cpp
+        communication/dummy_transport.cpp
         communication/handler.cpp
         communication/hello_message.cpp
         communication/message.cpp
         communication/ot_extension_message.cpp
         communication/output_message.cpp
         communication/shared_bits_message.cpp
+        communication/sync_handler.cpp
+        communication/tcp_transport.cpp
+        communication/transport.cpp
         crypto/aes/aesni_primitives.cpp
         crypto/base_ots/base_ot_provider.cpp
         crypto/base_ots/ot_hl17.cpp
