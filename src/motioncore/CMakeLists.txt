@@ -114,6 +114,12 @@ target_compile_options(motion PRIVATE
         ${MOTION_VECT_COST_MODEL_GCC_FLAG}
         )
 
+# Prevent undefined references to `__log2_finite' and `__exp2_finite' when
+# compiling with clang.
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(motion PRIVATE -fno-builtin)
+endif ()
+
 set(MOTION_ALIGNMENT 16)
 if (MOTION_USE_AVX)
     # at least AVX
