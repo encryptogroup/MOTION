@@ -33,8 +33,7 @@
 
 namespace MOTION {
 
-class DataStorage;
-using DataStoragePtr = std::shared_ptr<DataStorage>;
+struct BaseOTsData;
 
 /**
  * A random OT implementation based on the protocol by Hauck and Loss (2017).
@@ -42,7 +41,7 @@ using DataStoragePtr = std::shared_ptr<DataStorage>;
  */
 class OT_HL17 final : public RandomOT {
  public:
-  OT_HL17(std::function<void(flatbuffers::FlatBufferBuilder&&)> send, DataStoragePtr& data_storage);
+  OT_HL17(std::function<void(flatbuffers::FlatBufferBuilder&&)> send, BaseOTsData& data_storage);
 
   /**
    * Send/receive for a single random OT.
@@ -67,7 +66,7 @@ class OT_HL17 final : public RandomOT {
  private:
   std::function<void(flatbuffers::FlatBufferBuilder&&)> Send_;
 
-  DataStoragePtr data_storage_;
+  BaseOTsData& base_ots_data_;
 
   // public:  // for testing
   struct Sender_State {

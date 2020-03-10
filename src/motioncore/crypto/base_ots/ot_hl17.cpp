@@ -31,13 +31,12 @@
 #include "communication/base_ot_message.h"
 #include "crypto/blake2b.h"
 #include "data_storage/base_ot_data.h"
-#include "data_storage/data_storage.h"
 
 namespace MOTION {
 
 OT_HL17::OT_HL17(std::function<void(flatbuffers::FlatBufferBuilder&&)> send,
-                 DataStoragePtr& data_storage)
-    : Send_(send), data_storage_(data_storage) {}
+                 BaseOTsData& base_ots_data)
+    : Send_(send), base_ots_data_(base_ots_data) {}
 
 // Notation
 // * Group GG
@@ -201,7 +200,7 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::
     states.emplace_back(i);
   }
 
-  auto& base_ots_snd = data_storage_->GetBaseOTsData()->GetSenderData();
+  auto& base_ots_snd = base_ots_data_.GetSenderData();
 
   std::vector<std::array<std::byte, curve25519_ge_byte_size>> msgs_s0(number_ots);
   std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> output(number_ots);
@@ -227,7 +226,7 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OT_HL17::
 
 std::vector<std::vector<std::byte>> OT_HL17::recv(const ENCRYPTO::BitVector<>& choices) {
   const auto number_ots = choices.GetSize();
-  auto& base_ots_rcv = data_storage_->GetBaseOTsData()->GetReceiverData();
+  auto& base_ots_rcv = base_ots_data_.GetReceiverData();
   std::vector<Receiver_State> states;
   for (std::size_t i = 0; i < number_ots; ++i) {
     states.emplace_back(i);

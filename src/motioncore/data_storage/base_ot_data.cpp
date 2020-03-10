@@ -23,30 +23,30 @@
 // SOFTWARE.
 
 #include "base_ot_data.h"
-#include "utility/condition.h"
+#include "utility/fiber_condition.h"
 
 namespace MOTION {
 
 BaseOTsReceiverData::BaseOTsReceiverData() : received_S_(128, false) {
   for (auto i = 0; i < 128; ++i) {
     received_S_condition_.emplace_back(
-        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_S_.at(i); }));
+        std::make_unique<ENCRYPTO::FiberCondition>([this, i]() { return received_S_.at(i); }));
   }
   S_.resize(128);
 
   is_ready_condition_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_.load(); });
+      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return is_ready_.load(); });
 }
 
 BaseOTsSenderData::BaseOTsSenderData() : received_R_(128, false) {
   for (auto i = 0; i < 128; ++i) {
     received_R_condition_.emplace_back(
-        std::make_unique<ENCRYPTO::Condition>([this, i]() { return received_R_.at(i); }));
+        std::make_unique<ENCRYPTO::FiberCondition>([this, i]() { return received_R_.at(i); }));
   }
   R_.resize(128);
 
   is_ready_condition_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return is_ready_.load(); });
+      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return is_ready_.load(); });
 }
 
 void BaseOTsData::MessageReceived(const std::uint8_t *message, const BaseOTsDataType type,

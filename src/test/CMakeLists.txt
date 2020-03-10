@@ -1,6 +1,7 @@
 add_executable(motiontest
         test_aesni.cpp
         test_agmw.cpp
+        test_base_ot.cpp
         test_bgmw.cpp
         test_bitmatrix.cpp
         test_bitvector.cpp

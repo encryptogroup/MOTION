@@ -27,10 +27,15 @@
 #include <array>
 #include <cstddef>
 
+#include "data_storage/base_ot_data.h"
 #include "utility/bit_vector.h"
 #include "utility/constants.h"
 
 namespace MOTION {
+
+namespace Communication {
+class CommunicationLayer;
+}
 
 class Configuration;
 class Logger;
@@ -50,17 +55,21 @@ struct ReceiverMsgs {
 
 class BaseOTProvider {
  public:
-  BaseOTProvider(Configuration&, Logger&, Register&);
-  ~BaseOTProvider() = default;
+  BaseOTProvider(Communication::CommunicationLayer&, Logger&);
+  ~BaseOTProvider();
   void ComputeBaseOTs();
   void ImportBaseOTs(std::size_t party_id, const ReceiverMsgs& msgs);
   void ImportBaseOTs(std::size_t party_id, const SenderMsgs& msgs);
   std::pair<ReceiverMsgs, SenderMsgs> ExportBaseOTs(std::size_t party_id);
+  BaseOTsData& get_base_ots_data(std::size_t party_id) { return data_.at(party_id); }
+  const BaseOTsData& get_base_ots_data(std::size_t party_id) const { return data_.at(party_id); }
 
  private:
-  Configuration& config_;
+  Communication::CommunicationLayer& communication_layer_;
+  std::size_t num_parties_;
+  std::size_t my_id_;
+  std::vector<BaseOTsData> data_;
   Logger& logger_;
-  Register& register_;
   bool finished_;
 
   Logger& GetLogger();

@@ -33,7 +33,7 @@
 #include "utility/bit_vector.h"
 
 namespace ENCRYPTO {
-class Condition;
+class FiberCondition;
 }
 
 namespace MOTION {
@@ -49,13 +49,13 @@ struct BaseOTsReceiverData {
 
   std::vector<std::array<std::byte, 32>> S_;
   boost::container::vector<bool> received_S_;
-  std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_S_condition_;
+  std::vector<std::unique_ptr<ENCRYPTO::FiberCondition>> received_S_condition_;
 
   // number of used rows;
   std::size_t consumed_offset_{0};
 
   std::atomic<bool> is_ready_{false};
-  std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
+  std::unique_ptr<ENCRYPTO::FiberCondition> is_ready_condition_;
 };
 
 struct BaseOTsSenderData {
@@ -67,12 +67,12 @@ struct BaseOTsSenderData {
 
   std::vector<std::array<std::byte, 32>> R_;
   boost::container::vector<bool> received_R_;
-  std::vector<std::unique_ptr<ENCRYPTO::Condition>> received_R_condition_;
+  std::vector<std::unique_ptr<ENCRYPTO::FiberCondition>> received_R_condition_;
 
   // number of used rows;
   std::size_t consumed_offset_{0};
 
-  std::unique_ptr<ENCRYPTO::Condition> is_ready_condition_;
+  std::unique_ptr<ENCRYPTO::FiberCondition> is_ready_condition_;
   std::atomic<bool> is_ready_{false};
 };
 
