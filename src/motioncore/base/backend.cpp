@@ -24,6 +24,7 @@
 
 #include "backend.h"
 
+#include <boost/log/trivial.hpp>
 #include <chrono>
 #include <functional>
 #include <future>
@@ -32,17 +33,16 @@
 #include <fmt/format.h>
 #include <boost/asio/thread_pool.hpp>
 
-#include "communication/fbs_headers/hello_message_generated.h"
-#include "communication/handler.h"
-#include "communication/hello_message.h"
+#include "communication/communication_layer.h"
 #include "communication/message.h"
+#include "configuration.h"
 #include "crypto/base_ots/base_ot_provider.h"
+#include "crypto/motion_base_provider.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/multiplication_triple/sb_provider.h"
 #include "crypto/multiplication_triple/sp_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "data_storage/base_ot_data.h"
-#include "data_storage/data_storage.h"
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
 #include "register.h"
@@ -56,107 +56,40 @@ using namespace std::chrono_literals;
 
 namespace MOTION {
 
-Backend::Backend(ConfigurationPtr &config) : run_time_stats_(1), config_(config) {
-  register_ = std::make_shared<Register>(config_);
-  base_ot_provider_ =
-      std::make_unique<BaseOTProvider>(*config_, *register_->GetLogger(), *register_);
-  ot_provider_.resize(config_->GetNumOfParties(), nullptr);
+Backend::Backend(Communication::CommunicationLayer &communication_layer, ConfigurationPtr &config,
+                 std::shared_ptr<Logger> logger)
+    : run_time_stats_(1),
+      communication_layer_(communication_layer),
+      logger_(logger),
+      config_(config),
+      register_(std::make_shared<Register>(logger_)) {
+  motion_base_provider_ = std::make_unique<Crypto::MotionBaseProvider>(communication_layer_, logger_);
+  base_ot_provider_ = std::make_unique<BaseOTProvider>(communication_layer, *logger_);
 
-  auto &logger = register_->GetLogger();
+  communication_layer_.set_logger(logger_);
+  auto my_id = communication_layer_.get_my_id();
 
-  for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
-    if (i != config_->GetMyId()) {
-      assert(config_->GetCommunicationContext(i));
-    } else {
-      continue;
-    }
+  ot_provider_manager_ = std::make_unique<ENCRYPTO::ObliviousTransfer::OTProviderManager>(
+      communication_layer_, *base_ot_provider_, *motion_base_provider_, logger_);
 
-    config_->GetCommunicationContext(i)->InitializeMyRandomnessGenerator();
-    config_->GetCommunicationContext(i)->SetLogger(register_->GetLogger());
-
-    auto &data_storage = config_->GetCommunicationContext(i)->GetDataStorage();
-
-    auto send_function = [this, i](flatbuffers::FlatBufferBuilder &&message) {
-      Send(i, std::move(message));
-    };
-
-    using namespace ENCRYPTO::ObliviousTransfer;
-    ot_provider_.at(i) = std::static_pointer_cast<OTProvider>(
-        std::make_shared<OTProviderFromOTExtension>(send_function, data_storage));
-
-    if constexpr (MOTION_VERBOSE_DEBUG) {
-      auto seed = config_->GetCommunicationContext(i)->GetMyRandomnessGenerator()->GetSeed();
-      logger->LogTrace(fmt::format("Initialized my randomness generator for Party#{} with Seed: {}",
-                                   i, Helpers::Print::Hex(seed)));
-    }
-  }
-
-  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), *logger,
+  mt_provider_ = std::make_shared<MTProviderFromOTs>(ot_provider_manager_->get_providers(), my_id,
+                                                     *logger_, run_time_stats_.back());
+  sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_manager_->get_providers(), my_id,
+                                                     *logger_, run_time_stats_.back());
+  sb_provider_ = std::make_shared<SBProviderFromSPs>(communication_layer_, sp_provider_, *logger_,
                                                      run_time_stats_.back());
-  sp_provider_ = std::make_shared<SPProviderFromOTs>(ot_provider_, GetConfig()->GetMyId(), *logger,
-                                                     run_time_stats_.back());
-  sb_provider_ = std::make_shared<SBProviderFromSPs>(config_, register_, sp_provider_, *logger,
-                                                     run_time_stats_.back());
+  communication_layer_.start();
 }
 
 Backend::~Backend() = default;
 
-const LoggerPtr &Backend::GetLogger() const noexcept { return register_->GetLogger(); }
+const LoggerPtr &Backend::GetLogger() const noexcept { return logger_; }
 
 std::size_t Backend::NextGateId() const { return register_->NextGateId(); }
 
-void Backend::InitializeCommunicationHandlers() {
-  std::vector<std::future<void>> threads;
-  communication_handlers_.resize(config_->GetNumOfParties(), nullptr);
-  for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
-    if (i == config_->GetMyId()) {
-      continue;
-    }
-    threads.emplace_back(std::async(std::launch::async, [i, this]() {
-      if constexpr (MOTION_DEBUG) {
-        auto message = fmt::format(
-            "Party #{} created CommHandler for Party #{} with end ip {}, local "
-            "port {} and remote port {}",
-            config_->GetMyId(), i, config_->GetCommunicationContext(i)->GetIp(),
-            config_->GetCommunicationContext(i)->GetSocket()->local_endpoint().port(),
-            config_->GetCommunicationContext(i)->GetSocket()->remote_endpoint().port());
-        register_->GetLogger()->LogDebug(message);
-      }
-
-      communication_handlers_.at(i) = std::make_shared<Communication::Handler>(
-          config_->GetCommunicationContext(i), register_->GetLogger());
-    }));
-  }
-  for (auto &t : threads) t.get();
-  register_->RegisterCommunicationHandlers(communication_handlers_);
-}
-
-void Backend::SendHelloToOthers() {
-  register_->GetLogger()->LogInfo("Send hello message to other parties");
-  auto fixed_key_aes_key = ENCRYPTO::BitVector<>::Random(128);
-  auto aes_ptr =
-      reinterpret_cast<const std::uint8_t *>(GetConfig()->GetMyFixedAESKeyShare().GetData().data());
-  std::vector<std::uint8_t> aes_fixed_key(aes_ptr, aes_ptr + 16);
-  for (auto destination_id = 0u; destination_id < config_->GetNumOfParties(); ++destination_id) {
-    if (destination_id == config_->GetMyId()) {
-      continue;
-    }
-    std::vector<std::uint8_t> seed;
-    if (share_inputs_) {
-      seed =
-          config_->GetCommunicationContext(destination_id)->GetMyRandomnessGenerator()->GetSeed();
-    }
-
-    auto seed_ptr = share_inputs_ ? &seed : nullptr;
-    auto hello_message = MOTION::Communication::BuildHelloMessage(
-        config_->GetMyId(), destination_id, config_->GetNumOfParties(), seed_ptr, &aes_fixed_key,
-        config_->GetOnlineAfterSetup(), MOTION::MOTION_VERSION);
-    Send(destination_id, std::move(hello_message));
-  }
-}
-
+// TODO: remove this method
 void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message) {
-  register_->Send(party_id, std::move(message));
+  communication_layer_.send_message(party_id, std::move(message));
 }
 
 void Backend::RegisterInputGate(const Gates::Interfaces::InputGatePtr &input_gate) {
@@ -168,18 +101,24 @@ void Backend::RegisterGate(const Gates::Interfaces::GatePtr &gate) {
   register_->RegisterNextGate(gate);
 }
 
+// TODO: move this to OTProvider(Wrapper)
 bool Backend::NeedOTs() {
-  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
-    if (i == GetConfig()->GetMyId()) continue;
-    if (GetOTProvider(i)->GetNumOTsReceiver() > 0 || GetOTProvider(i)->GetNumOTsSender() > 0)
+  auto &ot_providers = ot_provider_manager_->get_providers();
+  for (auto party_id = 0ull; party_id < communication_layer_.get_num_parties(); ++party_id) {
+    if (party_id == communication_layer_.get_my_id()) continue;
+    if (ot_providers.at(party_id)->GetNumOTsReceiver() > 0 ||
+        ot_providers.at(party_id)->GetNumOTsSender() > 0)
       return true;
   }
   return false;
 }
 
 void Backend::RunPreprocessing() {
-  register_->GetLogger()->LogInfo("Start preprocessing");
+  logger_->LogInfo("Start preprocessing");
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::preprocessing>();
+
+  // TODO: should this be measured?
+  motion_base_provider_->setup();
 
   // SB needs SP
   // SP needs OT
@@ -216,7 +155,7 @@ void Backend::EvaluateSequential() {
 
   RunPreprocessing();
 
-  register_->GetLogger()->LogInfo(
+  logger_->LogInfo(
       "Start evaluating the circuit gates sequentially (online after all finished setup)");
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
@@ -228,9 +167,7 @@ void Backend::EvaluateSequential() {
 
   // evaluate the setup phase of all the gates
   for (auto &gate : register_->GetGates()) {
-    fpool.post([&] {
-        gate->EvaluateSetup();
-      });
+    fpool.post([&] { gate->EvaluateSetup(); });
   }
   register_->GetGatesSetupDoneCondition()->Wait();
   assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
@@ -242,9 +179,7 @@ void Backend::EvaluateSequential() {
 
   // evaluate the online phase of all the gates
   for (auto &gate : register_->GetGates()) {
-    fpool.post([&] {
-        gate->EvaluateOnline();
-      });
+    fpool.post([&] { gate->EvaluateOnline(); });
   }
   register_->GetGatesOnlineDoneCondition()->Wait();
   assert(register_->GetNumOfEvaluatedGates() == register_->GetTotalNumOfGates());
@@ -264,7 +199,7 @@ void Backend::EvaluateSequential() {
 }
 
 void Backend::EvaluateParallel() {
-  register_->GetLogger()->LogInfo(
+  logger_->LogInfo(
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::evaluate>();
@@ -299,42 +234,12 @@ void Backend::EvaluateParallel() {
   run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::evaluate>();
 }
 
-void Backend::TerminateCommunication() {
-  for (auto party_id = 0u; party_id < communication_handlers_.size(); ++party_id) {
-    if (GetConfig()->GetMyId() != party_id) {
-      assert(communication_handlers_.at(party_id));
-      communication_handlers_.at(party_id)->TerminateCommunication();
-    }
-  }
-}
-
-void Backend::WaitForConnectionEnd() {
-  for (auto &handler : communication_handlers_) {
-    if (handler) handler->WaitForConnectionEnd();
-  }
-}
-
 const Gates::Interfaces::GatePtr &Backend::GetGate(std::size_t gate_id) const {
   return register_->GetGate(gate_id);
 }
 
 const std::vector<Gates::Interfaces::GatePtr> &Backend::GetInputGates() const {
   return register_->GetInputGates();
-}
-
-void Backend::VerifyHelloMessages() {
-  bool success = true;
-  for (auto &handler : communication_handlers_) {
-    if (handler) {
-      success &= handler->VerifyHelloMessage();
-    }
-  }
-
-  if (!success) {
-    register_->GetLogger()->LogError("Hello message verification failed");
-  } else {
-    register_->GetLogger()->LogInfo("Successfully verified hello messages");
-  }
 }
 
 void Backend::Reset() { register_->Reset(); }
@@ -479,14 +384,7 @@ Shares::SharePtr Backend::BMROutput(const Shares::SharePtr &parent, std::size_t 
   return std::static_pointer_cast<Shares::Share>(out_gate->GetOutputAsShare());
 }
 
-void Backend::Sync() {
-  for (auto i = 0u; i < config_->GetNumOfParties(); ++i) {
-    if (i == config_->GetMyId()) {
-      continue;
-    }
-    communication_handlers_.at(i)->Sync();
-  }
-}
+void Backend::Sync() { communication_layer_.sync(); }
 
 void Backend::ComputeBaseOTs() {
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::base_ots>();
@@ -508,33 +406,7 @@ std::pair<ReceiverMsgs, SenderMsgs> Backend::ExportBaseOTs(std::size_t i) {
   return base_ot_provider_->ExportBaseOTs(i);
 }
 
-void Backend::GenerateFixedKeyAESKey() {
-  if (GetConfig()->IsFixedKeyAESKeyReady()) {
-    return;
-  }
-
-  auto &key = GetConfig()->GetMutableFixedKeyAESKey();
-  key = GetConfig()->GetMyFixedAESKeyShare();
-  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
-    if (i == GetConfig()->GetMyId()) {
-      continue;
-    }
-    auto &data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
-    data_storage->GetReceivedHelloMessageCondition()->Wait();
-    auto other_key_ptr = data_storage->GetReceivedHelloMessage()->fixed_key_aes_seed()->data();
-    ENCRYPTO::AlignedBitVector other_key(other_key_ptr, 128);
-    key ^= other_key;
-  }
-  GetConfig()->SetFixedKeyAESKeyReady();
-  for (auto i = 0ull; i < GetConfig()->GetNumOfParties(); ++i) {
-    if (i == GetConfig()->GetMyId()) {
-      continue;
-    }
-    auto data_storage = GetConfig()->GetContexts().at(i)->GetDataStorage();
-    data_storage->SetFixedKeyAESKey(key);
-  }
-}
-
+// TODO: move to OTProvider(Wrapper)
 void Backend::OTExtensionSetup() {
   require_base_ots_ = true;
 
@@ -546,25 +418,25 @@ void Backend::OTExtensionSetup() {
     ComputeBaseOTs();
   }
 
-  if (!GetConfig()->IsFixedKeyAESKeyReady()) GenerateFixedKeyAESKey();
+  motion_base_provider_->setup();
 
   if constexpr (MOTION_DEBUG) {
-    register_->GetLogger()->LogDebug("Start computing setup for OTExtensions");
+    logger_->LogDebug("Start computing setup for OTExtensions");
   }
 
   run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::ot_extension_setup>();
 
   std::vector<std::future<void>> task_futures;
-  task_futures.reserve(2 * (config_->GetNumOfParties() - 1));
+  task_futures.reserve(2 * (communication_layer_.get_num_parties() - 1));
 
-  for (auto i = 0ull; i < config_->GetNumOfParties(); ++i) {
-    if (i == config_->GetMyId()) {
+  for (auto i = 0ull; i < communication_layer_.get_num_parties(); ++i) {
+    if (i == communication_layer_.get_my_id()) {
       continue;
     }
-    task_futures.emplace_back(
-        std::async(std::launch::async, [this, i] { ot_provider_.at(i)->SendSetup(); }));
-    task_futures.emplace_back(
-        std::async(std::launch::async, [this, i] { ot_provider_.at(i)->ReceiveSetup(); }));
+    task_futures.emplace_back(std::async(
+        std::launch::async, [this, i] { ot_provider_manager_->get_provider(i).SendSetup(); }));
+    task_futures.emplace_back(std::async(
+        std::launch::async, [this, i] { ot_provider_manager_->get_provider(i).ReceiveSetup(); }));
   }
 
   std::for_each(task_futures.begin(), task_futures.end(), [](auto &f) { f.get(); });
@@ -573,7 +445,12 @@ void Backend::OTExtensionSetup() {
   run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::ot_extension_setup>();
 
   if constexpr (MOTION_DEBUG) {
-    register_->GetLogger()->LogDebug("Finished setup for OTExtensions");
+    logger_->LogDebug("Finished setup for OTExtensions");
   }
 }
+
+ENCRYPTO::ObliviousTransfer::OTProvider &Backend::GetOTProvider(std::size_t party_id) {
+  return ot_provider_manager_->get_provider(party_id);
+}
+
 }  // namespace MOTION

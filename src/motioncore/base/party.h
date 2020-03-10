@@ -29,15 +29,16 @@
 #include <vector>
 
 #include "base/backend.h"
+#include "base/configuration.h"
 #include "utility/typedefs.h"
 
 namespace MOTION {
 
 class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
 
-class Configuration;
-using ConfigurationPtr = std::shared_ptr<Configuration>;
+namespace Communication{
+  class CommunicationLayer;
+}
 
 class Party {
  public:
@@ -46,18 +47,15 @@ class Party {
   // Let's make only Configuration be copyable
   Party(Party &party) = delete;
 
-  Party(std::vector<Communication::ContextPtr> &parties, std::size_t my_id);
-
-  Party(std::vector<Communication::ContextPtr> &&parties, std::size_t my_id);
-
-  Party(std::initializer_list<Communication::ContextPtr> &&list_parties, std::size_t my_id);
-
-  Party(ConfigurationPtr &configuration)
-      : config_(configuration), backend_(std::make_shared<Backend>(config_)) {}
+  Party(std::unique_ptr<Communication::CommunicationLayer> parties);
 
   ~Party();
 
   ConfigurationPtr GetConfiguration() { return config_; }
+
+  Communication::CommunicationLayer& get_communication_layer() {
+    return *communication_layer_;
+  }
 
   template <MPCProtocol P>
   Shares::SharePtr IN(const std::vector<ENCRYPTO::BitVector<>> &input,
@@ -232,13 +230,6 @@ class Party {
 
   Shares::SharePtr AND(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
-  std::size_t GetNumOfParties() { return config_->GetNumOfParties(); }
-
-  /// \brief Establishes connections between the parties.
-  void Connect();
-
-  bool IsConnected() { return connected_.load(); }
-
   /// \brief Evaluates the constructed gates a predefined number of times.
   /// This is realized via repeatedly calling Party::Clear() after each evaluation.
   /// If Connect() was not called yet, it is called automatically at the beginning of this method.
@@ -252,7 +243,7 @@ class Party {
   /// can be executed again.
   void Clear();
 
-  const auto &GetLogger() { return backend_->GetLogger(); }
+  const auto &GetLogger() { return logger_; }
 
   /// \brief Sends a termination message to all of the connected parties.
   /// In case a TCP connection is used, this will internally be interpreted as a signal to
@@ -269,7 +260,9 @@ class Party {
   auto &GetBackend() { return backend_; }
 
  private:
+  std::unique_ptr<Communication::CommunicationLayer> communication_layer_;
   ConfigurationPtr config_;
+  std::shared_ptr<Logger> logger_;
   BackendPtr backend_;
   std::atomic<bool> finished_ = false;
   std::atomic<bool> connected_ = false;

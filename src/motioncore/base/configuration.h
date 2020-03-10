@@ -25,50 +25,19 @@
 #pragma once
 
 #include <boost/log/trivial.hpp>
-
 #include <memory>
-#include <vector>
-
-#include "utility/bit_vector.h"
-#include "utility/block.h"
 
 namespace MOTION {
 
-namespace Communication {
-class Context;
-using ContextPtr = std::shared_ptr<Context>;
-}  // namespace Communication
-
 class Configuration {
  public:
-  Configuration() = delete;
-
-  Configuration(const std::vector<Communication::ContextPtr> &contexts, std::size_t id);
-
-  Configuration(std::vector<Communication::ContextPtr> &&contexts, std::size_t id)
-      : Configuration(contexts, id) {}
-
-  Configuration(const std::initializer_list<Communication::ContextPtr> &contexts, std::size_t id)
-      : Configuration(std::vector(contexts), id) {}
-
-  Configuration(std::initializer_list<Communication::ContextPtr> &&contexts, std::size_t id)
-      : Configuration(std::vector(std::move(contexts)), id) {}
+  Configuration(std::size_t my_id, std::size_t num_parties);
 
   ~Configuration() = default;
 
   std::size_t GetNumOfThreads() const noexcept { return num_threads_; }
 
   void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
-
-  std::vector<Communication::ContextPtr> &GetContexts() noexcept { return communication_contexts_; }
-
-  std::size_t GetNumOfParties() const noexcept { return communication_contexts_.size(); }
-
-  Communication::ContextPtr &GetCommunicationContext(uint i) {
-    return communication_contexts_.at(i);
-  }
-
-  std::size_t GetMyId() const noexcept { return my_id_; }
 
   void SetLoggingSeverityLevel(boost::log::trivial::severity_level severity_level) {
     severity_level_ = severity_level;
@@ -82,27 +51,19 @@ class Configuration {
 
   bool GetLoggingEnabled() const noexcept { return logging_enabled_; }
 
+  std::size_t GetMyId() const { return my_id_; }
+
+  std::size_t GetNumOfParties() const { return num_parties_; }
+
   boost::log::trivial::severity_level GetLoggingSeverityLevel() const noexcept {
     return severity_level_;
   }
 
-  const auto &GetMyFixedAESKeyShare() const noexcept { return fixed_key_aes_key_my_part_; }
-  const auto &GetFixedAESKey() const noexcept { return fixed_key_aes_key_complete_; }
-  bool IsFixedKeyAESKeyReady() const noexcept { return fixed_key_aes_key_is_ready_; }
-
-  auto &GetMutableFixedKeyAESKey() { return fixed_key_aes_key_complete_; }
-  void SetFixedKeyAESKeyReady() { fixed_key_aes_key_is_ready_ = true; }
-
-  const auto &GetBMRRandomOffset() { return BMR_random_offset_; }
-
  private:
-  std::int64_t my_id_ = -1;
-  std::vector<Communication::ContextPtr> communication_contexts_;
+  std::size_t my_id_;
+  std::size_t num_parties_;
+
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
-  const ENCRYPTO::AlignedBitVector fixed_key_aes_key_my_part_;
-  ENCRYPTO::AlignedBitVector fixed_key_aes_key_complete_;
-  const ENCRYPTO::block128_t BMR_random_offset_;
-  bool fixed_key_aes_key_is_ready_ = false;
 
   bool logging_enabled_ = true;
 

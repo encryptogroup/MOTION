@@ -35,9 +35,13 @@ static_assert(FLATBUFFERS_LITTLEENDIAN);
 
 namespace ENCRYPTO::ObliviousTransfer {
 class OTProvider;
-}
+class OTProviderManager;
+}  // namespace ENCRYPTO::ObliviousTransfer
 
 namespace MOTION {
+namespace Crypto {
+class MotionBaseProvider;
+}
 class MTProvider;
 class SPProvider;
 class SBProvider;
@@ -73,15 +77,14 @@ using InputGatePtr = std::shared_ptr<InputGate>;
 }  // namespace Gates::Interfaces
 
 namespace Communication {
-class Handler;
-using HandlerPtr = std::shared_ptr<Handler>;
+class CommunicationLayer;
 }  // namespace Communication
 
 class Backend : public std::enable_shared_from_this<Backend> {
  public:
   Backend() = delete;
 
-  Backend(ConfigurationPtr &config);
+  Backend(Communication::CommunicationLayer &communication_layer, ConfigurationPtr &config, std::shared_ptr<Logger> logger);
 
   ~Backend();
 
@@ -92,12 +95,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   const RegisterPtr &GetRegister() const noexcept { return register_; }
 
   std::size_t NextGateId() const;
-
-  void InitializeCommunicationHandlers();
-
-  void SendHelloToOthers();
-
-  void VerifyHelloMessages();
 
   void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message);
 
@@ -110,10 +107,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   void EvaluateSequential();
 
   void EvaluateParallel();
-
-  void TerminateCommunication();
-
-  void WaitForConnectionEnd();
 
   const Gates::Interfaces::GatePtr &GetGate(std::size_t gate_id) const;
 
@@ -288,13 +281,15 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   std::pair<ReceiverMsgs, SenderMsgs> ExportBaseOTs(std::size_t i);
 
-  void GenerateFixedKeyAESKey();
-
   void OTExtensionSetup();
+
+  Communication::CommunicationLayer &get_communication_layer() { return communication_layer_; };
+
+  Crypto::MotionBaseProvider &get_motion_base_provider() { return *motion_base_provider_; };
 
   auto &GetBaseOTProvider() { return base_ot_provider_; };
 
-  auto &GetOTProvider(const std::size_t i) { return ot_provider_.at(i); };
+  ENCRYPTO::ObliviousTransfer::OTProvider &GetOTProvider(std::size_t party_id);
 
   auto &GetMTProvider() { return mt_provider_; };
 
@@ -309,12 +304,14 @@ class Backend : public std::enable_shared_from_this<Backend> {
  private:
   std::list<Statistics::RunTimeStats> run_time_stats_;
 
+  Communication::CommunicationLayer &communication_layer_;
+  std::shared_ptr<Logger> logger_;
   ConfigurationPtr config_;
   RegisterPtr register_;
 
-  std::vector<Communication::HandlerPtr> communication_handlers_;
+  std::unique_ptr<Crypto::MotionBaseProvider> motion_base_provider_;
   std::unique_ptr<BaseOTProvider> base_ot_provider_;
-  std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>> ot_provider_;
+  std::unique_ptr<ENCRYPTO::ObliviousTransfer::OTProviderManager> ot_provider_manager_;
   std::shared_ptr<MTProvider> mt_provider_;
   std::shared_ptr<SPProvider> sp_provider_;
   std::shared_ptr<SBProvider> sb_provider_;

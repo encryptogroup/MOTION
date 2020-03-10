@@ -102,7 +102,7 @@ SPProvider& Gate::GetSPProvider() { return *backend_.GetSPProvider(); }
 SBProvider& Gate::GetSBProvider() { return *backend_.GetSBProvider(); }
 
 ENCRYPTO::ObliviousTransfer::OTProvider& Gate::GetOTProvider(const std::size_t i) {
-  return *backend_.GetOTProvider(i);
+  return backend_.GetOTProvider(i);
 }
 
 }  // namespace MOTION::Gates::Interfaces

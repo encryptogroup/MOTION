@@ -24,16 +24,15 @@
 
 #pragma once
 
-#include <utility/condition.h>
 #include <atomic>
 #include <memory>
 #include <mutex>
 #include <queue>
-
-#include <flatbuffers/flatbuffers.h>
+#include <unordered_map>
 
 namespace ENCRYPTO {
 struct AlgorithmDescription;
+class FiberCondition;
 }
 
 namespace MOTION {
@@ -41,10 +40,6 @@ namespace MOTION {
 // >> forward declarations
 
 class Logger;
-using LoggerPtr = std::shared_ptr<Logger>;
-
-class Configuration;
-using ConfigurationPtr = std::shared_ptr<Configuration>;
 
 namespace Gates {
 namespace Interfaces {
@@ -59,22 +54,15 @@ class Wire;
 using WirePtr = std::shared_ptr<Wire>;
 }  // namespace Wires
 
-namespace Communication {
-class Handler;
-using HandlerPtr = std::shared_ptr<Handler>;
-}  // namespace Communication
-
 // forward declarations <<
 
 class Register {
  public:
-  Register() = delete;
-
-  Register(const Register &) = delete;
-
-  Register(ConfigurationPtr &config);
+  Register(std::shared_ptr<Logger> logger);
 
   ~Register();
+
+  std::shared_ptr<Logger> GetLogger() { return logger_; }
 
   std::size_t NextGateId() noexcept;
 
@@ -83,15 +71,6 @@ class Register {
   std::size_t NextArithmeticSharingId(std::size_t num_of_parallel_values);
 
   std::size_t NextBooleanGMWSharingId(std::size_t num_of_parallel_values);
-
-  const LoggerPtr &GetLogger() const noexcept;
-
-  const ConfigurationPtr &GetConfig() const noexcept;
-
-  void RegisterCommunicationHandlers(
-      std::vector<Communication::HandlerPtr> &communication_handlers);
-
-  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder &&message);
 
   void RegisterNextGate(Gates::GatePtr gate);
 
@@ -133,11 +112,11 @@ class Register {
 
   void Clear();
 
-  std::shared_ptr<ENCRYPTO::Condition> GetGatesSetupDoneCondition() {
+  std::shared_ptr<ENCRYPTO::FiberCondition> GetGatesSetupDoneCondition() {
     return gates_setup_done_condition_;
   };
 
-  std::shared_ptr<ENCRYPTO::Condition> GetGatesOnlineDoneCondition() {
+  std::shared_ptr<ENCRYPTO::FiberCondition> GetGatesOnlineDoneCondition() {
     return gates_online_done_condition_;
   };
 
@@ -154,6 +133,8 @@ class Register {
       const std::string &path);
 
  private:
+  std::shared_ptr<Logger> logger_;
+
   // don't need atomic here, since only the master thread has access to these
   std::size_t global_gate_id_ = 0, global_wire_id_ = 0;
   std::size_t global_arithmetic_gmw_sharing_id_ = 0, global_boolean_gmw_sharing_id_ = 0;
@@ -166,11 +147,8 @@ class Register {
   bool gates_setup_done_flag_ = false;
   bool gates_online_done_flag_ = false;
   // conditions which enable waiting for the above flags to change to true
-  std::shared_ptr<ENCRYPTO::Condition> gates_setup_done_condition_;
-  std::shared_ptr<ENCRYPTO::Condition> gates_online_done_condition_;
-
-  ConfigurationPtr config_;
-  LoggerPtr logger_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> gates_setup_done_condition_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> gates_online_done_condition_;
 
   std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
@@ -179,9 +157,6 @@ class Register {
   std::vector<Gates::GatePtr> gates_;
 
   std::vector<Wires::WirePtr> wires_;
-
-  std::vector<std::weak_ptr<Communication::Handler>> communication_handlers_;
-  std::mutex comm_handler_mutex_;
 
   std::unordered_map<std::string, std::shared_ptr<ENCRYPTO::AlgorithmDescription>> cached_algos_;
   std::mutex cached_algos_mutex_;
