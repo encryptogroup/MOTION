@@ -34,12 +34,12 @@ namespace MOTION {
 
 OTExtensionReceiverData::OTExtensionReceiverData() {
   setup_finished_cond_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return setup_finished_.load(); });
+      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_finished_.load(); });
 }
 
 OTExtensionSenderData::OTExtensionSenderData() {
   setup_finished_cond_ =
-      std::make_unique<ENCRYPTO::Condition>([this]() { return setup_finished_.load(); });
+      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_finished_.load(); });
 
   for (std::size_t i = 0; i < u_promises_.size(); ++i) u_futures_[i] = u_promises_[i].get_future();
 }
@@ -207,11 +207,11 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExten
 }
 
 ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
-OTExtensionData::RegisterForXCOT128SenderMessage(const std::size_t ot_id) {
+OTExtensionReceiverData::RegisterForXCOT128SenderMessage(const std::size_t ot_id) {
   ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
   auto fut = promise.get_future();
   auto [it, success] =
-      receiver_data_.xcot_128_ot_message_promises_.insert({ot_id, std::move(promise)});
+      xcot_128_ot_message_promises_.insert({ot_id, std::move(promise)});
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for XCOT128SenderMessage for OT#{}", ot_id));
@@ -220,11 +220,11 @@ OTExtensionData::RegisterForXCOT128SenderMessage(const std::size_t ot_id) {
 }
 
 ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
-OTExtensionData::RegisterForXCOTBitSenderMessage(const std::size_t ot_id) {
+OTExtensionReceiverData::RegisterForXCOTBitSenderMessage(const std::size_t ot_id) {
   ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
   auto fut = promise.get_future();
   auto [it, success] =
-      receiver_data_.xcot_1_ot_message_promises_.insert({ot_id, std::move(promise)});
+      xcot_1_ot_message_promises_.insert({ot_id, std::move(promise)});
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for XCOTBitSenderMessage for OT#{}", ot_id));

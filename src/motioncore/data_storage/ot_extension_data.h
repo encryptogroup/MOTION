@@ -40,7 +40,6 @@
 #include "utility/reusable_future.h"
 
 namespace ENCRYPTO {
-class Condition;
 class FiberCondition;
 }  // namespace ENCRYPTO
 
@@ -56,6 +55,11 @@ enum OTExtensionDataType : uint {
 struct OTExtensionReceiverData {
   OTExtensionReceiverData();
   ~OTExtensionReceiverData() = default;
+
+  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
+  RegisterForXCOT128SenderMessage(std::size_t ot_id);
+  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
+  RegisterForXCOTBitSenderMessage(std::size_t ot_id);
 
   // matrix of the OT extension scheme
   // XXX: can't we delete this after setup?
@@ -84,7 +88,7 @@ struct OTExtensionReceiverData {
 
   // real choices for every OT?
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::Condition>> real_choices_cond_;
+  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>> real_choices_cond_;
 
   // is the new implementation used? (XXX: should be removed at a later point in time)
   std::unordered_set<std::size_t> fixed_xcot_128_ot_;
@@ -105,7 +109,7 @@ struct OTExtensionReceiverData {
   std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
 
   // flag and condition variable: is setup is done?
-  std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
+  std::unique_ptr<ENCRYPTO::FiberCondition> setup_finished_cond_;
   std::atomic<bool> setup_finished_{false};
 
   // XXX: unused
@@ -150,7 +154,7 @@ struct OTExtensionSenderData {
   std::vector<std::size_t> bitlengths_;
 
   // flag and condition variable: is setup is done?
-  std::unique_ptr<ENCRYPTO::Condition> setup_finished_cond_;
+  std::unique_ptr<ENCRYPTO::FiberCondition> setup_finished_cond_;
   std::atomic<bool> setup_finished_{false};
 
   // XXX: unused
@@ -158,10 +162,6 @@ struct OTExtensionSenderData {
 };
 
 struct OTExtensionData {
-  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
-  RegisterForXCOT128SenderMessage(std::size_t ot_id);
-  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
-  RegisterForXCOTBitSenderMessage(std::size_t ot_id);
   void MessageReceived(const std::uint8_t* message, const OTExtensionDataType type,
                        const std::size_t ot_id = 0);
 

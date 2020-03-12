@@ -34,8 +34,23 @@
 #include "utility/bit_vector.h"
 
 namespace MOTION {
-class DataStorage;
+
+class BaseOTProvider;
+struct BaseOTsData;
+struct OTExtensionData;
+struct OTExtensionReceiverData;
+struct OTExtensionSenderData;
+class Logger;
+
+namespace Communication {
+class CommunicationLayer;
 }
+
+namespace Crypto {
+class MotionBaseProvider;
+}
+
+}  // namespace MOTION
 
 namespace ENCRYPTO {
 
@@ -67,13 +82,11 @@ class OTVector {
 
  protected:
   OTVector(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-           const OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
-           const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+           const OTProtocol p, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   const std::size_t ot_id_, num_ots_, bitlen_;
   const OTProtocol p_;
 
-  std::shared_ptr<MOTION::DataStorage> data_storage_;
   std::function<void(flatbuffers::FlatBufferBuilder &&)> Send_;
 };
 
@@ -91,18 +104,19 @@ class OTVectorSender : public OTVector {
 
  protected:
   OTVectorSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                 const OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                 const OTProtocol p, MOTION::OTExtensionSenderData &data,
                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
 
+  MOTION::OTExtensionSenderData &data_;
   std::vector<BitVector<>> inputs_, outputs_;
 };
 
 class GOTVectorSender final : public OTVectorSender {
  public:
   GOTVectorSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                  const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                  MOTION::OTExtensionSenderData &data,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -116,7 +130,7 @@ class GOTVectorSender final : public OTVectorSender {
 class COTVectorSender final : public OTVectorSender {
  public:
   COTVectorSender(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen,
-                  OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                  OTProtocol p, MOTION::OTExtensionSenderData &data,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -136,7 +150,7 @@ class COTVectorSender final : public OTVectorSender {
 class ROTVectorSender final : public OTVectorSender {
  public:
   ROTVectorSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                  const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                  MOTION::OTExtensionSenderData &data,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetInputs(std::vector<BitVector<>> &&v) final;
@@ -164,11 +178,12 @@ class OTVectorReceiver : public OTVector {
 
  protected:
   OTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                   const OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                   const OTProtocol p, MOTION::OTExtensionReceiverData &data,
                    std::function<void(flatbuffers::FlatBufferBuilder &&)> Send);
 
   void Reserve(const std::size_t id, const std::size_t num_ots, const std::size_t bitlen);
 
+  MOTION::OTExtensionReceiverData &data_;
   BitVector<> choices_;
   std::atomic<bool> choices_flag_{false};
   std::vector<BitVector<>> messages_;
@@ -177,7 +192,7 @@ class OTVectorReceiver : public OTVector {
 class GOTVectorReceiver final : public OTVectorReceiver {
  public:
   GOTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                    const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                    MOTION::OTExtensionReceiverData &data,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetChoices(BitVector<> &&v) final;
@@ -197,7 +212,7 @@ class GOTVectorReceiver final : public OTVectorReceiver {
 class COTVectorReceiver final : public OTVectorReceiver {
  public:
   COTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                    OTProtocol p, const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                    OTProtocol p, MOTION::OTExtensionReceiverData &data,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SendCorrections() final;
@@ -217,7 +232,7 @@ class COTVectorReceiver final : public OTVectorReceiver {
 class ROTVectorReceiver final : public OTVectorReceiver {
  public:
   ROTVectorReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                    const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                    MOTION::OTExtensionReceiverData &data,
                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   void SetChoices(const BitVector<> &v) final;
@@ -233,10 +248,9 @@ class ROTVectorReceiver final : public OTVectorReceiver {
 
 class OTProviderSender {
  public:
-  OTProviderSender() = default;
-
-  OTProviderSender(const std::shared_ptr<MOTION::DataStorage> &data_storage)
-      : data_storage_(data_storage) {}
+  OTProviderSender(MOTION::OTExtensionSenderData &data, std::size_t party_id,
+                   std::shared_ptr<MOTION::Logger> logger)
+      : data_(data), party_id_(party_id), logger_(std::move(logger)) {}
 
   ~OTProviderSender() = default;
 
@@ -265,15 +279,18 @@ class OTProviderSender {
 
   std::size_t total_ots_count_{0};
 
-  std::shared_ptr<MOTION::DataStorage> data_storage_;
+  MOTION::OTExtensionSenderData &data_;
+
+  std::size_t party_id_;
+
+  std::shared_ptr<MOTION::Logger> logger_;
 };
 
 class OTProviderReceiver {
  public:
-  OTProviderReceiver() = default;
-
-  OTProviderReceiver(const std::shared_ptr<MOTION::DataStorage> &data_storage)
-      : data_storage_(data_storage) {}
+  OTProviderReceiver(MOTION::OTExtensionReceiverData &data, std::size_t party_id,
+                     std::shared_ptr<MOTION::Logger> logger)
+      : data_(data), party_id_(party_id), logger_(std::move(logger)) {}
 
   ~OTProviderReceiver() = default;
 
@@ -301,7 +318,11 @@ class OTProviderReceiver {
 
   std::atomic<std::size_t> total_ots_count_{0};
 
-  std::shared_ptr<MOTION::DataStorage> data_storage_;
+  MOTION::OTExtensionReceiverData &data_;
+
+  std::size_t party_id_;
+
+  std::shared_ptr<MOTION::Logger> logger_;
 };
 
 // OTProvider encapsulates both sender and receiver interfaces for simplicity
@@ -358,6 +379,8 @@ class OTProvider {
   virtual void SendSetup() = 0;
   virtual void ReceiveSetup() = 0;
 
+  void WaitSetup() const;
+
   void Clear() {
     receiver_provider_.Clear();
     sender_provider_.Clear();
@@ -369,15 +392,12 @@ class OTProvider {
   }
 
  protected:
-  OTProvider(const std::shared_ptr<MOTION::DataStorage> &data_storage,
-             std::function<void(flatbuffers::FlatBufferBuilder &&)> Send)
-      : data_storage_(data_storage),
-        Send_(Send),
-        receiver_provider_(OTProviderReceiver(data_storage_)),
-        sender_provider_(OTProviderSender(data_storage_)) {}
+  OTProvider(std::function<void(flatbuffers::FlatBufferBuilder &&)> Send,
+             MOTION::OTExtensionData &data, std::size_t party_id,
+             std::shared_ptr<MOTION::Logger> logger);
 
-  std::shared_ptr<MOTION::DataStorage> data_storage_;
   std::function<void(flatbuffers::FlatBufferBuilder &&)> Send_;
+  MOTION::OTExtensionData &data_;
   OTProviderReceiver receiver_provider_;
   OTProviderSender sender_provider_;
 };
@@ -397,7 +417,13 @@ class OTProviderFromOTExtension final : public OTProvider {
   void ReceiveSetup() final;
 
   OTProviderFromOTExtension(std::function<void(flatbuffers::FlatBufferBuilder &&)> Send,
-                            const std::shared_ptr<MOTION::DataStorage> &data_storage);
+                            MOTION::OTExtensionData &data, const MOTION::BaseOTsData &base_ot_data,
+                            MOTION::Crypto::MotionBaseProvider &, std::size_t party_id,
+                            std::shared_ptr<MOTION::Logger> logger);
+
+ private:
+  const MOTION::BaseOTsData &base_ot_data_;
+  MOTION::Crypto::MotionBaseProvider &motion_base_provider_;
 };
 
 class OTProviderFromThirdParty : public OTProvider {
@@ -406,6 +432,22 @@ class OTProviderFromThirdParty : public OTProvider {
 
 class OTProviderFromMultipleThirdParties : public OTProvider {
   // TODO
+};
+
+class OTProviderManager {
+ public:
+  OTProviderManager(MOTION::Communication::CommunicationLayer &, const MOTION::BaseOTProvider &,
+                    MOTION::Crypto::MotionBaseProvider &, std::shared_ptr<MOTION::Logger> logger);
+  ~OTProviderManager();
+
+  std::vector<std::unique_ptr<OTProvider>> &get_providers() { return providers_; }
+  OTProvider &get_provider(std::size_t party_id) { return *providers_.at(party_id); }
+
+ private:
+  MOTION::Communication::CommunicationLayer &communication_layer_;
+  std::size_t num_parties_;
+  std::vector<std::unique_ptr<OTProvider>> providers_;
+  std::vector<std::unique_ptr<MOTION::OTExtensionData>> data_;
 };
 
 }  // namespace ObliviousTransfer

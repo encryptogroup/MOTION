@@ -28,6 +28,7 @@
 
 #include "base/backend.h"
 #include "base/party.h"
+#include "crypto/motion_base_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "data_storage/base_ot_data.h"
 
@@ -77,16 +78,17 @@ TEST(ObliviousTransfer, Random1oo2OTsFromOTExtension) {
       for (auto i = 0u; i < motion_parties.size(); ++i) {
         t.at(i) = std::thread(
             [&bitlen, &ots_in_batch, &sender_ot, &receiver_ot, &motion_parties, i, num_parties]() {
+              motion_parties.at(i)->GetBackend()->get_motion_base_provider().setup();
               for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
                   auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
-                                                  ENCRYPTO::ObliviousTransfer::OTProtocol::ROT));
+                        ot_provider.RegisterSend(bitlen.at(k), ots_in_batch.at(k),
+                                                 ENCRYPTO::ObliviousTransfer::OTProtocol::ROT));
                     receiver_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterReceive(bitlen.at(k), ots_in_batch.at(k),
-                                                     ENCRYPTO::ObliviousTransfer::OTProtocol::ROT));
+                        ot_provider.RegisterReceive(bitlen.at(k), ots_in_batch.at(k),
+                                                    ENCRYPTO::ObliviousTransfer::OTProtocol::ROT));
                   }
                 }
               }
@@ -183,14 +185,15 @@ TEST(ObliviousTransfer, General1oo2OTsFromOTExtension) {
       for (auto i = 0u; i < motion_parties.size(); ++i) {
         t.at(i) = std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch,
                                &sender_ot, &receiver_ot, &motion_parties, i, num_parties]() {
+          motion_parties.at(i)->GetBackend()->get_motion_base_provider().setup();
           for (auto j = 0u; j < motion_parties.size(); ++j) {
             if (i != j) {
               auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
               for (auto k = 0ull; k < num_ots; ++k) {
                 sender_ot.at(i).at(j).push_back(
-                    ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k)));
+                    ot_provider.RegisterSend(bitlen.at(k), ots_in_batch.at(k)));
                 receiver_ot.at(i).at(j).push_back(
-                    ot_provider->RegisterReceive(bitlen.at(k), ots_in_batch.at(k)));
+                    ot_provider.RegisterReceive(bitlen.at(k), ots_in_batch.at(k)));
               }
             }
           }
@@ -298,16 +301,17 @@ TEST(ObliviousTransfer, XORCorrelated1oo2OTsFromOTExtension) {
         t.at(i) =
             std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch, &sender_ot,
                          &sender_out, &receiver_ot, &motion_parties, i, num_parties]() {
+              motion_parties.at(i)->GetBackend()->get_motion_base_provider().setup();
               for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
                   auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
-                                                  ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT));
-                    receiver_ot.at(i).at(j).push_back(ot_provider->RegisterReceive(
-                        bitlen.at(k), ots_in_batch.at(k),
-                        ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT));
+                        ot_provider.RegisterSend(bitlen.at(k), ots_in_batch.at(k),
+                                                 ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT));
+                    receiver_ot.at(i).at(j).push_back(
+                        ot_provider.RegisterReceive(bitlen.at(k), ots_in_batch.at(k),
+                                                    ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT));
                   }
                 }
               }
@@ -428,16 +432,17 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
         t.at(i) =
             std::thread([&sender_msgs, &receiver_msgs, &choices, &bitlen, &ots_in_batch, &sender_ot,
                          &sender_out, &receiver_ot, &motion_parties, i, num_parties]() {
+              motion_parties.at(i)->GetBackend()->get_motion_base_provider().setup();
               for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
                   auto &ot_provider = motion_parties.at(i)->GetBackend()->GetOTProvider(j);
                   for (auto k = 0ull; k < num_ots; ++k) {
                     sender_ot.at(i).at(j).push_back(
-                        ot_provider->RegisterSend(bitlen.at(k), ots_in_batch.at(k),
-                                                  ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
-                    receiver_ot.at(i).at(j).push_back(ot_provider->RegisterReceive(
-                        bitlen.at(k), ots_in_batch.at(k),
-                        ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
+                        ot_provider.RegisterSend(bitlen.at(k), ots_in_batch.at(k),
+                                                 ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
+                    receiver_ot.at(i).at(j).push_back(
+                        ot_provider.RegisterReceive(bitlen.at(k), ots_in_batch.at(k),
+                                                    ENCRYPTO::ObliviousTransfer::OTProtocol::ACOT));
                   }
                 }
               }
@@ -445,16 +450,16 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OTsFromOTExtension) {
 
               for (auto j = 0u; j < motion_parties.size(); ++j) {
                 if (i != j) {
-#pragma omp parallel sections
+// #pragma omp parallel sections
                   {
-#pragma omp section
+// #pragma omp section
                     {
                       for (auto k = 0ull; k < num_ots; ++k) {
                         receiver_ot.at(i).at(j).at(k)->SetChoices(choices.at(i).at(j).at(k));
                         receiver_ot.at(i).at(j).at(k)->SendCorrections();
                       }
                     }
-#pragma omp section
+// #pragma omp section
                     {
                       for (auto k = 0ull; k < num_ots; ++k) {
                         sender_ot.at(i).at(j).at(k)->SetInputs(sender_msgs.at(i).at(j).at(k));

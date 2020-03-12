@@ -38,8 +38,14 @@ class BasicCOTSender : public OTVector {
   void WaitSetup() const;
 
  protected:
-  // use the same constructor as the parent class
-  using OTVector::OTVector;
+  BasicCOTSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
+                 const OTProtocol p,
+                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                 MOTION::OTExtensionSenderData &data)
+      : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {}
+
+  // reference to data storage
+  MOTION::OTExtensionSenderData &data_;
 };
 
 // base class capturing the common things among the receiver implementations
@@ -62,8 +68,14 @@ class BasicCOTReceiver : public OTVector {
   void SendCorrections();
 
  protected:
-  // use the same constructor as the parent class
-  using OTVector::OTVector;
+  BasicCOTReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
+                   const OTProtocol p,
+                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                   MOTION::OTExtensionReceiverData &data)
+      : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {}
+
+  // reference to data storage
+  MOTION::OTExtensionReceiverData &data_;
 
   // input of the receiver, the choices
   BitVector<> choices_;
@@ -77,7 +89,7 @@ class BasicCOTReceiver : public OTVector {
 class FixedXCOT128VectorSender : public BasicCOTSender {
  public:
   FixedXCOT128VectorSender(std::size_t ot_id, std::size_t num_ots,
-                           const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                           MOTION::OTExtensionSenderData &data,
                            const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // set the *single* correlation for all OTs in this batch
@@ -111,7 +123,7 @@ class FixedXCOT128VectorSender : public BasicCOTSender {
 class FixedXCOT128VectorReceiver : public BasicCOTReceiver {
  public:
   FixedXCOT128VectorReceiver(std::size_t ot_id, std::size_t num_ots,
-                             const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                             MOTION::OTExtensionReceiverData &data,
                              const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // compute the receiver's outputs
@@ -138,7 +150,7 @@ class FixedXCOT128VectorReceiver : public BasicCOTReceiver {
 class XCOTBitVectorSender : public BasicCOTSender {
  public:
   XCOTBitVectorSender(std::size_t ot_id, std::size_t num_ots,
-                      const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                      MOTION::OTExtensionSenderData &data,
                       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // set the correlations for the OTs in this batch
@@ -181,7 +193,7 @@ class XCOTBitVectorSender : public BasicCOTSender {
 class XCOTBitVectorReceiver : public BasicCOTReceiver {
  public:
   XCOTBitVectorReceiver(std::size_t ot_id, std::size_t num_ots,
-                        const std::shared_ptr<MOTION::DataStorage> &data_storage,
+                        MOTION::OTExtensionReceiverData &data,
                         const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // compute the receiver's outputs
