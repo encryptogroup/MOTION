@@ -35,11 +35,11 @@ bool SPProvider::NeedSPs() const noexcept {
 }
 
 SPProvider::SPProvider(const std::size_t my_id) : my_id_(my_id) {
-  finished_condition_ = std::make_shared<ENCRYPTO::Condition>([this]() { return finished_; });
+  finished_condition_ = std::make_shared<ENCRYPTO::FiberCondition>([this]() { return finished_; });
 }
 
 SPProviderFromOTs::SPProviderFromOTs(
-    std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
+    std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
     const std::size_t my_id, Logger& logger, Statistics::RunTimeStats& run_time_stats)
     : SPProvider(my_id),
       ot_providers_(ot_providers),
@@ -113,7 +113,7 @@ static void generate_random_pairs(SPVector<T>& sps, std::size_t num_sps) {
 
 template <typename T>
 static void register_helper_send(
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>& ot_provider,
+    ENCRYPTO::ObliviousTransfer::OTProvider& ot_provider,
     std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>& ots_snd,
     std::size_t max_batch_size, const SPVector<T>& sps, std::size_t num_sps) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
@@ -121,7 +121,7 @@ static void register_helper_send(
 
   for (std::size_t sp_id = 0; sp_id < num_sps;) {
     const auto batch_size = std::min(max_batch_size, num_sps - sp_id);
-    auto ot_s = ot_provider->RegisterSend(bit_size, batch_size * bit_size, ACOT);
+    auto ot_s = ot_provider.RegisterSend(bit_size, batch_size * bit_size, ACOT);
     std::vector<ENCRYPTO::BitVector<>> v_s;
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
@@ -137,7 +137,7 @@ static void register_helper_send(
 
 template <typename T>
 static void register_helper_recv(
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>& ot_provider,
+    ENCRYPTO::ObliviousTransfer::OTProvider& ot_provider,
     std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>& ots_rcv,
     std::size_t max_batch_size, const SPVector<T>& sps, std::size_t num_sps) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
@@ -145,7 +145,7 @@ static void register_helper_recv(
 
   for (std::size_t sp_id = 0; sp_id < num_sps;) {
     const auto batch_size = std::min(max_batch_size, num_sps - sp_id);
-    auto ot_r = ot_provider->RegisterReceive(bit_size, batch_size * bit_size, ACOT);
+    auto ot_r = ot_provider.RegisterReceive(bit_size, batch_size * bit_size, ACOT);
     ENCRYPTO::BitVector<> choices;
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
@@ -173,26 +173,26 @@ void SPProviderFromOTs::RegisterOTs() {
     }
 
     if (i < my_id_) {
-      register_helper_send<std::uint8_t>(ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
+      register_helper_send<std::uint8_t>(*ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
                                          sps_8_, num_sps_8_);
-      register_helper_send<std::uint16_t>(ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
+      register_helper_send<std::uint16_t>(*ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
                                           sps_16_, num_sps_16_);
-      register_helper_send<std::uint32_t>(ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
+      register_helper_send<std::uint32_t>(*ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
                                           sps_32_, num_sps_32_);
-      register_helper_send<std::uint64_t>(ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
+      register_helper_send<std::uint64_t>(*ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
                                           sps_64_, num_sps_64_);
-      register_helper_send<__uint128_t>(ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
+      register_helper_send<__uint128_t>(*ot_providers_.at(i), ots_snd_.at(i), max_batch_size_,
                                           sps_128_, num_sps_128_);
     } else if (i > my_id_) {
-      register_helper_recv<std::uint8_t>(ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
+      register_helper_recv<std::uint8_t>(*ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
                                          sps_8_, num_sps_8_);
-      register_helper_recv<std::uint16_t>(ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
+      register_helper_recv<std::uint16_t>(*ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
                                           sps_16_, num_sps_16_);
-      register_helper_recv<std::uint32_t>(ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
+      register_helper_recv<std::uint32_t>(*ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
                                           sps_32_, num_sps_32_);
-      register_helper_recv<std::uint64_t>(ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
+      register_helper_recv<std::uint64_t>(*ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
                                           sps_64_, num_sps_64_);
-      register_helper_recv<__uint128_t>(ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
+      register_helper_recv<__uint128_t>(*ot_providers_.at(i), ots_rcv_.at(i), max_batch_size_,
                                           sps_128_, num_sps_128_);
     }
   }

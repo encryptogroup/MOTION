@@ -60,11 +60,11 @@ const BinaryMTVector& MTProvider::GetBinaryAll() noexcept {
 MTProvider::MTProvider(const std::size_t my_id, const std::size_t num_parties)
     : my_id_(my_id), num_parties_(num_parties) {
   finished_condition_ =
-      std::make_shared<ENCRYPTO::Condition>([this]() { return finished_.load(); });
+      std::make_shared<ENCRYPTO::FiberCondition>([this]() { return finished_.load(); });
 }
 
 MTProviderFromOTs::MTProviderFromOTs(
-    std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
+    std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
     const std::size_t my_id, Logger& logger, Statistics::RunTimeStats& run_time_stats)
     : MTProvider(my_id, ot_providers.size()),
       ot_providers_(ot_providers),
@@ -155,12 +155,12 @@ static void generate_random_triples(IntegerMTVector<T>& mts, std::size_t num_mts
 }
 
 static void register_helper_bool(
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>& ot_provider,
+    ENCRYPTO::ObliviousTransfer::OTProvider& ot_provider,
     std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorSender>& ots_snd,
     std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorReceiver>& ots_rcv,
     const BinaryMTVector& bit_mts, std::size_t num_bit_mts) {
-  ots_snd = ot_provider->RegisterSendXCOTBit(num_bit_mts);
-  ots_rcv = ot_provider->RegisterReceiveXCOTBit(num_bit_mts);
+  ots_snd = ot_provider.RegisterSendXCOTBit(num_bit_mts);
+  ots_rcv = ot_provider.RegisterReceiveXCOTBit(num_bit_mts);
 
   ots_snd->SetCorrelations(bit_mts.a);
   ots_rcv->SetChoices(bit_mts.b);
@@ -168,7 +168,7 @@ static void register_helper_bool(
 
 template <typename T>
 static void register_helper(
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>& ot_provider,
+    ENCRYPTO::ObliviousTransfer::OTProvider& ot_provider,
     std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorSender>>& ots_snd,
     std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>& ots_rcv,
     std::size_t max_batch_size, const IntegerMTVector<T>& mts, std::size_t num_mts) {
@@ -177,7 +177,7 @@ static void register_helper(
 
   for (std::size_t mt_id = 0; mt_id < num_mts;) {
     const auto batch_size = std::min(max_batch_size, num_mts - mt_id);
-    auto ot_s = ot_provider->RegisterSend(bit_size, batch_size * bit_size, ACOT);
+    auto ot_s = ot_provider.RegisterSend(bit_size, batch_size * bit_size, ACOT);
     std::vector<ENCRYPTO::BitVector<>> v_s;
     v_s.reserve(batch_size);
     for (auto k = 0ull; k < batch_size; ++k) {
@@ -188,7 +188,7 @@ static void register_helper(
     }
     ot_s->SetInputs(std::move(v_s));
 
-    auto ot_r = ot_provider->RegisterReceive(bit_size, batch_size * bit_size, ACOT);
+    auto ot_r = ot_provider.RegisterReceive(bit_size, batch_size * bit_size, ACOT);
     ENCRYPTO::BitVector<> choices;
     choices.Reserve(Helpers::Convert::BitsToBytes(batch_size * bit_size));
     for (auto k = 0ull; k < batch_size; ++k) {
@@ -222,16 +222,16 @@ void MTProviderFromOTs::RegisterOTs() {
     }
 
     if (num_bit_mts_ > 0) {
-      register_helper_bool(ot_providers_.at(i), bit_ots_snd_.at(i), bit_ots_rcv_.at(i), bit_mts_,
+      register_helper_bool(*ot_providers_.at(i), bit_ots_snd_.at(i), bit_ots_rcv_.at(i), bit_mts_,
                            num_bit_mts_);
     }
-    register_helper<std::uint8_t>(ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
+    register_helper<std::uint8_t>(*ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
                                   max_batch_size_, mts8_, num_mts_8_);
-    register_helper<std::uint16_t>(ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
+    register_helper<std::uint16_t>(*ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
                                    max_batch_size_, mts16_, num_mts_16_);
-    register_helper<std::uint32_t>(ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
+    register_helper<std::uint32_t>(*ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
                                    max_batch_size_, mts32_, num_mts_32_);
-    register_helper<std::uint64_t>(ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
+    register_helper<std::uint64_t>(*ot_providers_.at(i), ots_snd_.at(i), ots_rcv_.at(i),
                                    max_batch_size_, mts64_, num_mts_64_);
   }
 }

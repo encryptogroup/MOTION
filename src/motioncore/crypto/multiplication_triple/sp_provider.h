@@ -31,7 +31,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "utility/condition.h"
+#include "utility/fiber_condition.h"
 
 namespace ENCRYPTO {
 namespace ObliviousTransfer {
@@ -158,7 +158,7 @@ class SPProvider {
   const std::size_t my_id_;
 
   bool finished_ = false;
-  std::shared_ptr<ENCRYPTO::Condition> finished_condition_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> finished_condition_;
 
  private:
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -175,7 +175,7 @@ class SPProvider {
 class SPProviderFromOTs final : public SPProvider {
  public:
   SPProviderFromOTs(
-      std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
+      std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers,
       const std::size_t my_id, Logger& logger, Statistics::RunTimeStats& run_time_stats);
 
   void PreSetup() final;
@@ -188,7 +188,7 @@ class SPProviderFromOTs final : public SPProvider {
 
   void ParseOutputs();
 
-  std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers_;
+  std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::OTProvider>>& ot_providers_;
 
   // use alternating party roles for load balancing
   std::vector<std::list<std::shared_ptr<ENCRYPTO::ObliviousTransfer::OTVectorReceiver>>> ots_rcv_;
