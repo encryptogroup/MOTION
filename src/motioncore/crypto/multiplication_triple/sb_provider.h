@@ -29,19 +29,22 @@
 #include <type_traits>
 #include <vector>
 
-#include "utility/condition.h"
+#include "utility/fiber_condition.h"
 #include "utility/reusable_future.h"
 
 namespace MOTION {
+
+namespace Communication {
+class CommunicationLayer;
+}
 
 namespace Statistics {
 struct RunTimeStats;
 }
 
-class Configuration;
 class Logger;
-class Register;
 class SPProvider;
+struct SharedBitsData;
 
 // Provider for Shared Bits (SBs),
 // sharings of a random bit 0 or 1 in Z/2^kZ
@@ -137,7 +140,7 @@ class SBProvider {
   const std::size_t my_id_;
 
   bool finished_ = false;
-  std::shared_ptr<ENCRYPTO::Condition> finished_condition_;
+  std::shared_ptr<ENCRYPTO::FiberCondition> finished_condition_;
 
  private:
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -150,9 +153,10 @@ class SBProvider {
 
 class SBProviderFromSPs final : public SBProvider {
  public:
-  SBProviderFromSPs(std::shared_ptr<Configuration> config, std::shared_ptr<Register> _register,
+  SBProviderFromSPs(Communication::CommunicationLayer& communication_layer,
                     std::shared_ptr<SPProvider> sp_provider, Logger& logger,
                     Statistics::RunTimeStats& run_time_stats);
+  ~SBProviderFromSPs();
 
   void PreSetup() final;
 
@@ -172,9 +176,10 @@ class SBProviderFromSPs final : public SBProvider {
 
   void ParseOutputs();
 
-  std::shared_ptr<Configuration> config_;
-  std::shared_ptr<Register> register_;
+  Communication::CommunicationLayer& communication_layer_;
+  std::size_t num_parties_;
   std::shared_ptr<SPProvider> sp_provider_;
+  std::vector<std::unique_ptr<SharedBitsData>> data_;
 
   std::size_t offset_sps_16_;
   std::size_t offset_sps_32_;
