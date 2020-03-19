@@ -87,7 +87,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            ot->GetOutputs();
+            (void)ot->GetOutputs();
           } else {
             auto ot{ot_provider->RegisterSend(8, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
@@ -102,7 +102,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            ot->GetOutputs();
+            (void)ot->GetOutputs();
           } else {
             auto ot{ot_provider->RegisterSend(16, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
@@ -118,7 +118,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            ot->GetOutputs();
+            (void)ot->GetOutputs();
           } else {
             auto ot{ot_provider->RegisterSend(32, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
@@ -134,7 +134,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            ot->GetOutputs();
+            (void)ot->GetOutputs();
           } else {
             auto ot{ot_provider->RegisterSend(64, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
@@ -150,7 +150,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            ot->GetOutputs();
+            (void)ot->GetOutputs();
           } else {
             auto ot{ot_provider->RegisterSend(128, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
             backend->OTExtensionSetup();
@@ -206,7 +206,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
         ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
         backend->OTExtensionSetup();
         ot->SendCorrections();
-        ot->GetOutputs();
+        (void)ot->GetOutputs();
       } else {
         auto ot{ot_provider->RegisterSend(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::GOT)};
         backend->OTExtensionSetup();
@@ -221,7 +221,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
         auto ot{
             ot_provider->RegisterReceive(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::ROT)};
         backend->OTExtensionSetup();
-        ot->GetOutputs();
+        (void)ot->GetOutputs();
       } else {
         auto ot{ot_provider->RegisterSend(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::ROT)};
         backend->OTExtensionSetup();
