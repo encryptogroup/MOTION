@@ -171,6 +171,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
           ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
           backend->OTExtensionSetup();
           ot->SendCorrections();
+          ot->ComputeOutputs();
           ot->GetOutputs();
         } else {
           auto ot{ot_provider->RegisterSendFixedXCOT128(batch_size)};
@@ -185,6 +186,7 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
           ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
           backend->OTExtensionSetup();
           ot->SendCorrections();
+          ot->ComputeOutputs();
           ot->GetOutputs();
         } else {
           auto ot{ot_provider->RegisterSendXCOTBit(batch_size)};
