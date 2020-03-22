@@ -54,6 +54,7 @@ TEST(MultiplicationTriples, Binary) {
             mt_provider->PreSetup();
             backend->OTExtensionSetup();
             mt_provider->Setup();
+            p->Finish();
           }));
         }
 
@@ -108,6 +109,7 @@ void template_test_integer() {
             mt_provider->PreSetup();
             backend->OTExtensionSetup();
             mt_provider->Setup();
+            p->Finish();
           }));
         }
         std::for_each(futs.begin(), futs.end(), [](auto &f) { f.get(); });

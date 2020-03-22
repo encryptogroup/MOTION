@@ -53,6 +53,7 @@ void template_test() {
             sp_provider->PreSetup();
             backend->OTExtensionSetup();
             sp_provider->Setup();
+            p->Finish();
           }));
         }
         std::for_each(futs.begin(), futs.end(), [](auto& f) { f.get(); });
