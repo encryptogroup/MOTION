@@ -33,4 +33,8 @@ flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
                                                    const std::vector<uint8_t> *payload);
 flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t *payload,
                                                    std::size_t size);
+
+// Give a human readable representation of MessageType values
+std::string to_string(MessageType message_type);
+
 }  // namespace MOTION::Communication

@@ -43,4 +43,42 @@ flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint
   std::vector<std::uint8_t> buffer(payload, payload + size);
   return BuildMessage(message_type, &buffer);
 }
+
+using namespace std::string_literals;
+
+std::string to_string(MessageType message_type) {
+  switch (message_type) {
+    case MessageType::HelloMessage:
+      return "MessageType::HelloMessage"s;
+    case MessageType::OutputMessage:
+      return "MessageType::OutputMessage"s;
+    case MessageType::TerminationMessage:
+      return "MessageType::TerminationMessage"s;
+    case MessageType::SynchronizationMessage:
+      return "MessageType::SynchronizationMessage"s;
+    case MessageType::BaseROTMessageSender:
+      return "MessageType::BaseROTMessageSender"s;
+    case MessageType::BaseROTMessageReceiver:
+      return "MessageType::BaseROTMessageReceiver"s;
+    case MessageType::OTExtensionReceiverMasks:
+      return "MessageType::OTExtensionReceiverMasks"s;
+    case MessageType::OTExtensionReceiverCorrections:
+      return "MessageType::OTExtensionReceiverCorrections"s;
+    case MessageType::OTExtensionSender:
+      return "MessageType::OTExtensionSender"s;
+    case MessageType::BMRInputGate0:
+      return "MessageType::BMRInputGate0"s;
+    case MessageType::BMRInputGate1:
+      return "MessageType::BMRInputGate1"s;
+    case MessageType::BMRANDGate:
+      return "MessageType::BMRANDGate"s;
+    case MessageType::SharedBitsMask:
+      return "MessageType::SharedBitsMask"s;
+    case MessageType::SharedBitsReconstruct:
+      return "MessageType::SharedBitsReconstruct"s;
+    default:
+      return "Unknown MessageType => update to_string function"s;
+  }
+}
+
 }  // namespace MOTION::Communication
