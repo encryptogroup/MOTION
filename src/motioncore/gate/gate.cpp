@@ -89,11 +89,17 @@ Gate::Gate(Backend& backend)
       setup_is_ready_cond_([this] { return setup_is_ready_.load(); }),
       online_is_ready_cond_([this] { return online_is_ready_.load(); }) {}
 
+Communication::CommunicationLayer& Gate::get_communication_layer() {
+  return backend_.get_communication_layer();
+}
+
 Register& Gate::GetRegister() { return *backend_.GetRegister(); }
 
 Configuration& Gate::GetConfig() { return *backend_.GetConfig(); }
 
 Logger& Gate::GetLogger() { return *backend_.GetLogger(); }
+
+Crypto::MotionBaseProvider& Gate::get_motion_base_provider() { return backend_.get_motion_base_provider(); }
 
 MTProvider& Gate::GetMTProvider() { return *backend_.GetMTProvider(); }
 

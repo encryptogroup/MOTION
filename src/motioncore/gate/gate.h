@@ -39,6 +39,14 @@ class OTProvider;
 }
 }  // namespace ENCRYPTO
 
+namespace MOTION::Communication {
+class CommunicationLayer;
+}
+
+namespace MOTION::Crypto {
+class MotionBaseProvider;
+}
+
 namespace MOTION::Wires {
 class Wire;
 using WirePtr = std::shared_ptr<Wire>;
@@ -123,9 +131,11 @@ class Gate {
   Register& GetRegister();
   Configuration& GetConfig();
   Logger& GetLogger();
+  Crypto::MotionBaseProvider& get_motion_base_provider();
   MTProvider& GetMTProvider();
   SPProvider& GetSPProvider();
   SBProvider& GetSBProvider();
+  Communication::CommunicationLayer& get_communication_layer();
   ENCRYPTO::ObliviousTransfer::OTProvider& GetOTProvider(const std::size_t i);
   bool own_output_wires_{true};
 
