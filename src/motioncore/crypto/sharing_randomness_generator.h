@@ -25,9 +25,9 @@
 #pragma once
 
 #include <limits>
-#include <mutex>
 #include <thread>
 #include <vector>
+#include <boost/fiber/mutex.hpp>
 
 #include <openssl/aes.h>
 #include <openssl/conf.h>
@@ -44,13 +44,13 @@ static auto &EVP_MD_CTX_free = EVP_MD_CTX_destroy;
 
 #include "pseudo_random_generator.h"
 #include "utility/bit_vector.h"
-#include "utility/condition.h"
+#include "utility/fiber_condition.h"
 #include "utility/constants.h"
 #include "utility/helpers.h"
 #include "utility/typedefs.h"
 
 namespace ENCRYPTO {
-class Condition;
+class FiberCondition;
 }
 
 namespace MOTION::Crypto {
@@ -69,7 +69,7 @@ class SharingRandomnessGenerator {
 
   bool &IsInitialized() { return initialized_; }
 
-  std::unique_ptr<ENCRYPTO::Condition> &GetInitializedCondition() noexcept {
+  std::unique_ptr<ENCRYPTO::FiberCondition> &GetInitializedCondition() noexcept {
     return initialized_condition_;
   }
 
@@ -189,8 +189,8 @@ class SharingRandomnessGenerator {
   std::size_t random_bits_offset_ = 0;
   std::size_t random_bits_used_ = 0;
 
-  std::mutex random_bits_mutex_;
+  boost::fibers::mutex random_bits_mutex_;
 
-  std::unique_ptr<ENCRYPTO::Condition> initialized_condition_;
+  std::unique_ptr<ENCRYPTO::FiberCondition> initialized_condition_;
 };
 }  // namespace MOTION::Crypto

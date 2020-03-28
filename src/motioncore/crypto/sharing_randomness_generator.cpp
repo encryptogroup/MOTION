@@ -31,7 +31,7 @@ SharingRandomnessGenerator::SharingRandomnessGenerator(std::size_t party_id)
   if (!ctx_arithmetic_ || !ctx_boolean_) {
     throw(std::runtime_error(fmt::format("Could not initialize EVP context")));
   }
-  initialized_condition_ = std::make_unique<ENCRYPTO::Condition>([this]() { return initialized_; });
+  initialized_condition_ = std::make_unique<ENCRYPTO::FiberCondition>([this]() { return initialized_; });
 }
 
 void SharingRandomnessGenerator::Initialize(
@@ -67,7 +67,7 @@ void SharingRandomnessGenerator::Initialize(
 
 ENCRYPTO::BitVector<> SharingRandomnessGenerator::GetBits(const std::size_t gate_id,
                                                           const std::size_t num_of_bits) {
-  std::scoped_lock<std::mutex> lock(random_bits_mutex_);
+  std::scoped_lock lock(random_bits_mutex_);
 
   if (num_of_bits == 0) {
     return {};  // return an empty vector if num_of_gates is zero
