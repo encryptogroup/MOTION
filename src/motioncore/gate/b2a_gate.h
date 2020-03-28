@@ -23,7 +23,6 @@
 #pragma once
 
 #include <type_traits>
-#include "base/configuration.h"
 #include "base/register.h"
 #include "boolean_gmw_gate.h"
 #include "crypto/multiplication_triple/sb_provider.h"
@@ -155,7 +154,7 @@ class GMWToArithmeticGate final : public Gates::Interfaces::OneGate {
     for (std::size_t j = 0; j < num_simd; ++j) {
       T out_val = 0;
       for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
-        if (GetConfig().GetMyId() == 0) {
+        if (get_communication_layer().get_my_id() == 0) {
           T t(ts_clear_b.at(wire_i)->GetValues().Get(j));   // the masked bit
           T r(sbs.at(sb_offset_ + wire_i * num_simd + j));  // the arithmetically shared bit
           out_val += T(t + r - 2 * t * r) << wire_i;

@@ -28,7 +28,9 @@
 
 #include "base/backend.h"
 #include "base/register.h"
+#include "communication/communication_layer.h"
 #include "communication/output_message.h"
+#include "crypto/motion_base_provider.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/sharing_randomness_generator.h"
@@ -55,12 +57,12 @@ GMWInputGate::GMWInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size
 }
 
 void GMWInputGate::InitializationHelper() {
-  auto &config = GetConfig();
+  auto &comm_layer = get_communication_layer();
   auto &_register = GetRegister();
 
-  if (static_cast<std::size_t>(input_owner_id_) >= config.GetNumOfParties()) {
+  if (static_cast<std::size_t>(input_owner_id_) >= comm_layer.get_num_parties()) {
     throw std::runtime_error(
-        fmt::format("Invalid input owner: {} of {}", input_owner_id_, config.GetNumOfParties()));
+        fmt::format("Invalid input owner: {} of {}", input_owner_id_, comm_layer.get_num_parties()));
   }
 
   gate_id_ = _register.NextGateId();
@@ -94,17 +96,7 @@ void GMWInputGate::InitializationHelper() {
 }
 
 void GMWInputGate::EvaluateSetup() {
-  auto &config = GetConfig();
-
-  if (static_cast<std::size_t>(input_owner_id_) == config.GetMyId()) {
-    // we always generate our own seeds for the input sharing before we start evaluating
-    // the circuit, hence, nothing to wait here for
-  } else {
-    auto &rand_generator =
-        config.GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
-
-    rand_generator->GetInitializedCondition()->Wait();
-  }
+  get_motion_base_provider().wait_for_setup();
   SetSetupIsReady();
   GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
@@ -113,9 +105,9 @@ void GMWInputGate::EvaluateOnline() {
   WaitSetup();
   assert(setup_is_ready_);
 
-  auto &config = GetConfig();
-  auto my_id = config.GetMyId();
-  auto num_of_parties = config.GetNumOfParties();
+  auto &comm_layer = get_communication_layer();
+  auto my_id = comm_layer.get_my_id();
+  auto num_parties = comm_layer.get_num_parties();
 
   std::vector<ENCRYPTO::BitVector<>> result(input_.size());
   auto sharing_id = boolean_sharing_id_;
@@ -123,15 +115,15 @@ void GMWInputGate::EvaluateOnline() {
     if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       result.at(i) = input_.at(i);
       auto log_string = std::string("");
-      for (auto j = 0u; j < num_of_parties; ++j) {
-        if (j == my_id) {
+      for (auto party_id = 0u; party_id < num_parties; ++party_id) {
+        if (party_id == my_id) {
           continue;
         }
-        auto &rand_generator = config.GetCommunicationContext(j)->GetMyRandomnessGenerator();
-        auto randomness = rand_generator->GetBits(sharing_id, bits_);
+        auto &rand_generator = get_motion_base_provider().get_my_randomness_generator(party_id);
+        auto randomness = rand_generator.GetBits(sharing_id, bits_);
 
         if constexpr (MOTION_VERBOSE_DEBUG) {
-          log_string.append(fmt::format("id#{}:{} ", j, randomness.AsString()));
+          log_string.append(fmt::format("id#{}:{} ", party_id, randomness.AsString()));
         }
 
         result.at(i) ^= randomness;
@@ -147,10 +139,8 @@ void GMWInputGate::EvaluateOnline() {
         GetLogger().LogTrace(s);
       }
     } else {
-      auto &rand_generator =
-          config.GetCommunicationContext(input_owner_id_)->GetTheirRandomnessGenerator();
-      auto randomness = rand_generator->GetBits(sharing_id, bits_);
-      result.at(i) = randomness;
+      auto &rand_generator = get_motion_base_provider().get_their_randomness_generator(input_owner_id_);
+      result.at(i) = rand_generator.GetBits(sharing_id, bits_);
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
         auto s = fmt::format(
@@ -198,9 +188,9 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   parent_ = parent->GetWires();
 
   // values we need repeatedly
-  auto &config = GetConfig();
-  auto my_id = config.GetMyId();
-  auto num_parties = config.GetNumOfParties();
+  auto &comm_layer = get_communication_layer();
+  auto my_id = comm_layer.get_my_id();
+  auto num_parties = comm_layer.get_num_parties();
   auto num_simd_values = parent_.at(0)->GetNumOfSIMDValues();
   auto num_wires = parent_.size();
 
@@ -232,18 +222,8 @@ GMWOutputGate::GMWOutputGate(const Shares::SharePtr &parent, std::size_t output_
   // Tell the DataStorages that we want to receive OutputMessages from the
   // other parties.
   if (is_my_output_) {
-    output_message_futures_.reserve(num_parties);
-    for (size_t i = 0; i < num_parties; ++i) {
-      if (i == my_id) {
-        // We don't send a message to ourselves.
-        // Just store an invalid future here.
-        output_message_futures_.emplace_back();
-        continue;
-      }
-      const auto &data_storage = config.GetCommunicationContext(i)->GetDataStorage();
-      // Get a future that will eventually contain the received data.
-      output_message_futures_.push_back(data_storage->RegisterForOutputMessage(gate_id_));
-    }
+    auto &mbp = get_motion_base_provider();
+    output_message_futures_ = mbp.register_for_output_messages(gate_id_);
   }
 
   if constexpr (MOTION_DEBUG) {
@@ -266,9 +246,9 @@ void GMWOutputGate::EvaluateOnline() {
   assert(setup_is_ready_);
 
   // data we need repeatedly
-  const auto &config = GetConfig();
-  const auto my_id = config.GetMyId();
-  const auto num_parties = config.GetNumOfParties();
+  auto &comm_layer = get_communication_layer();
+  auto my_id = comm_layer.get_my_id();
+  auto num_parties = comm_layer.get_num_parties();
   const auto num_wires = parent_.size();
 
   std::vector<ENCRYPTO::BitVector<>> output;
@@ -295,15 +275,12 @@ void GMWOutputGate::EvaluateOnline() {
     // we need to send shares to one other party:
     if (!is_my_output_) {
       auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payloads);
-      GetRegister().Send(output_owner_, std::move(output_message));
+      comm_layer.send_message(output_owner_, std::move(output_message));
     }
     // we need to send shares to all other parties:
     else if (output_owner_ == ALL) {
-      for (std::size_t i = 0; i < num_parties; ++i) {
-        if (i == my_id) continue;
-        auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payloads);
-        GetRegister().Send(i, std::move(output_message));
-      }
+      auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payloads);
+      comm_layer.broadcast_message(std::move(output_message));
     }
   }
 
@@ -357,8 +334,8 @@ void GMWOutputGate::EvaluateOnline() {
 
     if constexpr (MOTION_VERBOSE_DEBUG) {
       std::string shares{""};
-      for (std::size_t i = 0; i < config.GetNumOfParties(); ++i) {
-        shares.append(fmt::format("id#{}:{} ", i, shared_outputs.at(i).at(0).AsString()));
+      for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
+        shares.append(fmt::format("id#{}:{} ", party_id, shared_outputs.at(party_id).at(0).AsString()));
       }
 
       GetLogger().LogTrace(
@@ -537,7 +514,7 @@ void GMWINVGate::EvaluateOnline() {
     wire->GetIsReadyCondition().Wait();
     auto gmw_wire = std::dynamic_pointer_cast<Wires::GMWWire>(output_wires_.at(i));
     assert(gmw_wire);
-    const bool inv = (wire->GetWireId() % GetConfig().GetNumOfParties()) == GetConfig().GetMyId();
+    const bool inv = (wire->GetWireId() % get_communication_layer().get_num_parties()) == get_communication_layer().get_my_id();
     gmw_wire->GetMutableValues() = inv ? ~wire->GetValues() : wire->GetValues();
   }
 
@@ -708,7 +685,7 @@ void GMWANDGate::EvaluateOnline() {
     const auto &e = e_w->GetValues();
     const auto &y_i = y_i_w->GetValues();
 
-    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
+    if (get_communication_layer().get_my_id() == (gate_id_ % get_communication_layer().get_num_parties())) {
       out->GetMutableValues() ^= (d & y_i) ^ (e & x_i) ^ (e & d);
     } else {
       out->GetMutableValues() ^= (d & y_i) ^ (e & x_i);
@@ -780,8 +757,9 @@ GMWMUXGate::GMWMUXGate(const Shares::SharePtr &a, const Shares::SharePtr &b,
     GetRegister().RegisterNextWire(w);
   }
 
-  const auto num_parties = GetConfig().GetNumOfParties();
-  const auto my_id = GetConfig().GetMyId();
+  const auto &comm_layer = get_communication_layer();
+  const auto num_parties = comm_layer.get_num_parties();
+  const auto my_id = comm_layer.get_my_id();
   const auto num_bits = parent_a_.size();
   constexpr auto XCOT = ENCRYPTO::ObliviousTransfer::OTProtocol::XCOT;
 
@@ -824,8 +802,9 @@ void GMWMUXGate::EvaluateOnline() {
 
   const auto num_bits = parent_a_.size();
   const auto num_simd = parent_a_.at(0)->GetNumOfSIMDValues();
-  const auto num_parties = GetConfig().GetNumOfParties();
-  const auto my_id = GetConfig().GetMyId();
+  const auto &comm_layer = get_communication_layer();
+  const auto num_parties = comm_layer.get_num_parties();
+  const auto my_id = comm_layer.get_my_id();
 
   std::vector<ENCRYPTO::BitVector<>> xored_v;
   xored_v.reserve(num_simd);

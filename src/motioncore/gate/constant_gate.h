@@ -24,8 +24,8 @@
 
 #pragma once
 
-#include "base/configuration.h"
 #include "base/register.h"
+#include "communication/communication_layer.h"
 #include "gate.h"
 #include "share/arithmetic_gmw_share.h"
 #include "utility/bit_vector.h"
@@ -187,9 +187,9 @@ class ConstantArithmeticAdditionGate final : public MOTION::Gates::Interfaces::T
     assert(cwire);
 
     std::vector<T> output;
-    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties()))
+    if (get_communication_layer().get_my_id() == (gate_id_ % get_communication_layer().get_num_parties())) {
       output = Helpers::RestrictAddVectors(cwire->GetValues(), ncwire->GetValues());
-    else {
+    } else {
       output = ncwire->GetValues();
     }
 

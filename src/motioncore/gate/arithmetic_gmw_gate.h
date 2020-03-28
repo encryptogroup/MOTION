@@ -28,16 +28,15 @@
 
 #include <fmt/format.h>
 
-#include "base/configuration.h"
 #include "base/register.h"
-#include "communication/context.h"
+#include "communication/communication_layer.h"
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/fbs_headers/output_message_generated.h"
 #include "communication/output_message.h"
+#include "crypto/motion_base_provider.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/multiplication_triple/sp_provider.h"
 #include "crypto/sharing_randomness_generator.h"
-#include "data_storage/data_storage.h"
 #include "share/arithmetic_gmw_share.h"
 #include "utility/fiber_condition.h"
 #include "utility/helpers.h"
@@ -95,16 +94,7 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
   ~ArithmeticInputGate() final = default;
 
   void EvaluateSetup() final {
-    auto my_id = GetConfig().GetMyId();
-    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
-      // we always generate seeds for the input sharing
-      // before we start evaluating the circuit
-    } else {
-      auto &rand_generator = GetConfig()
-                                 .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
-                                 ->GetTheirRandomnessGenerator();
-      rand_generator->GetInitializedCondition()->Wait();
-    }
+    get_motion_base_provider().wait_for_setup();
     SetSetupIsReady();
     GetRegister().IncrementEvaluatedGatesSetupCounter();
   }
@@ -115,23 +105,23 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
     WaitSetup();
     assert(setup_is_ready_);
 
-    auto my_id = GetConfig().GetMyId();
+    auto &comm_layer = get_communication_layer();
+    auto my_id = comm_layer.get_my_id();
+    auto num_parties = comm_layer.get_num_parties();
+
     std::vector<T> result;
 
     if (static_cast<std::size_t>(input_owner_id_) == my_id) {
       result.resize(input_.size());
       auto log_string = std::string("");
-      for (auto i = 0u; i < GetConfig().GetNumOfParties(); ++i) {
-        if (i == my_id) {
+      for (auto party_id = 0u; party_id < num_parties; ++party_id) {
+        if (party_id == my_id) {
           continue;
         }
-        auto randomness =
-            std::move(GetConfig()
-                          .GetCommunicationContext(i)
-                          ->GetMyRandomnessGenerator()
-                          ->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
+        auto &rand_generator = get_motion_base_provider().get_my_randomness_generator(party_id);
+        auto randomness = rand_generator.template GetUnsigned<T>(arithmetic_sharing_id_, input_.size());
         if constexpr (MOTION_VERBOSE_DEBUG) {
-          log_string.append(fmt::format("id#{}:{} ", i, randomness.at(0)));
+          log_string.append(fmt::format("id#{}:{} ", party_id, randomness.at(0)));
         }
         for (auto j = 0u; j < result.size(); ++j) {
           result.at(j) += randomness.at(j);
@@ -149,12 +139,8 @@ class ArithmeticInputGate final : public Interfaces::InputGate {
         GetLogger().LogTrace(s);
       }
     } else {
-      auto &rand_generator = GetConfig()
-                                 .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
-                                 ->GetTheirRandomnessGenerator();
-
-      result =
-          std::move(rand_generator->template GetUnsigned<T>(arithmetic_sharing_id_, input_.size()));
+      auto &rand_generator = get_motion_base_provider().get_their_randomness_generator(input_owner_id_);
+      result = rand_generator.template GetUnsigned<T>(arithmetic_sharing_id_, input_.size());
 
       if constexpr (MOTION_VERBOSE_DEBUG) {
         auto s = fmt::format(
@@ -223,9 +209,9 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     parent_ = {parent};
 
     // values we need repeatedly
-    auto &config = GetConfig();
-    const auto my_id = config.GetMyId();
-    const auto num_parties = config.GetNumOfParties();
+    auto &comm_layer = get_communication_layer();
+    auto my_id = comm_layer.get_my_id();
+    auto num_parties = comm_layer.get_num_parties();
 
     if (static_cast<std::size_t>(output_owner) >= num_parties &&
         static_cast<std::size_t>(output_owner) != ALL) {
@@ -253,18 +239,8 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     // Tell the DataStorages that we want to receive OutputMessages from the
     // other parties.
     if (is_my_output_) {
-      output_message_futures_.reserve(num_parties);
-      for (size_t i = 0; i < num_parties; ++i) {
-        if (i == my_id) {
-          // We don't send a message to ourselves.
-          // Just store an invalid future here.
-          output_message_futures_.emplace_back();
-          continue;
-        }
-        const auto &data_storage = config.GetCommunicationContext(i)->GetDataStorage();
-        // Get a future that will eventually contain the received data.
-        output_message_futures_.push_back(data_storage->RegisterForOutputMessage(gate_id_));
-      }
+      auto &mbp = get_motion_base_provider();
+      output_message_futures_ = mbp.register_for_output_messages(gate_id_);
     }
 
     if constexpr (MOTION_DEBUG) {
@@ -299,9 +275,9 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     assert(setup_is_ready_);
 
     // data we need repeatedly
-    const auto &config = GetConfig();
-    auto my_id = config.GetMyId();
-    auto num_parties = config.GetNumOfParties();
+    auto &comm_layer = get_communication_layer();
+    auto my_id = comm_layer.get_my_id();
+    auto num_parties = comm_layer.get_num_parties();
 
     // note that arithmetic gates have only a single wire
     auto arithmetic_wire = std::dynamic_pointer_cast<const Wires::ArithmeticWire<T>>(parent_.at(0));
@@ -315,16 +291,13 @@ class ArithmeticOutputGate final : public Gates::Interfaces::OutputGate {
     if (!is_my_output_) {
       auto payload = Helpers::ToByteVector(output);
       auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payload);
-      GetRegister().Send(output_owner_, std::move(output_message));
+      comm_layer.send_message(output_owner_, std::move(output_message));
     }
     // we need to send shares to all other parties:
     else if (output_owner_ == ALL) {
       auto payload = Helpers::ToByteVector(output);
-      for (auto i = 0ull; i < num_parties; ++i) {
-        if (i == my_id) continue;
-        auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payload);
-        GetRegister().Send(i, std::move(output_message));
-      }
+      auto output_message = MOTION::Communication::BuildOutputMessage(gate_id_, payload);
+      comm_layer.broadcast_message(std::move(output_message));
     }
 
     // we receive shares from other parties
@@ -679,7 +652,7 @@ class ArithmeticMultiplicationGate final : public MOTION::Gates::Interfaces::Two
     const T *__restrict__ s_y{y_i_w->GetValues().data()};
     T *__restrict__ out_ptr{out->GetMutableValues().data()};
 
-    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
+    if (get_communication_layer().get_my_id() == (gate_id_ % get_communication_layer().get_num_parties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
         out_ptr[i] += (d[i] * s_y[i]) + (e[i] * s_x[i]) - (e[i] * d[i]);
       }
@@ -801,7 +774,7 @@ class ArithmeticSquareGate final : public MOTION::Gates::Interfaces::OneGate {
     const T *__restrict__ d{d_w->GetValues().data()};
     const T *__restrict__ s_x{x_i_w->GetValues().data()};
     T *__restrict__ out_ptr{out->GetMutableValues().data()};
-    if (GetConfig().GetMyId() == (gate_id_ % GetConfig().GetNumOfParties())) {
+    if (get_communication_layer().get_my_id() == (gate_id_ % get_communication_layer().get_num_parties())) {
       for (auto i = 0ull; i < out->GetNumOfSIMDValues(); ++i) {
         out_ptr[i] += 2 * (d[i] * s_x[i]) - (d[i] * d[i]);
       }
