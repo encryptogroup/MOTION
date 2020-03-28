@@ -37,6 +37,7 @@
 #include "communication/message.h"
 #include "configuration.h"
 #include "crypto/base_ots/base_ot_provider.h"
+#include "crypto/bmr_provider.h"
 #include "crypto/motion_base_provider.h"
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/multiplication_triple/sb_provider.h"
@@ -78,6 +79,7 @@ Backend::Backend(Communication::CommunicationLayer &communication_layer, Configu
                                                      *logger_, run_time_stats_.back());
   sb_provider_ = std::make_shared<SBProviderFromSPs>(communication_layer_, sp_provider_, *logger_,
                                                      run_time_stats_.back());
+  bmr_provider_ = std::make_unique<Crypto::BMRProvider>(communication_layer_);
   communication_layer_.start();
 }
 

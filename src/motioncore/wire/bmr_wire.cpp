@@ -54,7 +54,7 @@ BMRWire::BMRWire(bool value, Backend& backend)
 }
 
 void BMRWire::InitializationHelperBMR() {
-  const auto num_parties = backend_.GetConfig()->GetNumOfParties();
+  const auto num_parties = backend_.get_communication_layer().get_num_parties();
   public_keys_.resize(n_simd_ * num_parties);
 
   setup_ready_cond_ =

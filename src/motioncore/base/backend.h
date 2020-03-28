@@ -41,6 +41,7 @@ class OTProviderManager;
 namespace MOTION {
 namespace Crypto {
 class MotionBaseProvider;
+class BMRProvider;
 }
 class MTProvider;
 class SPProvider;
@@ -287,6 +288,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   Crypto::MotionBaseProvider &get_motion_base_provider() { return *motion_base_provider_; };
 
+  Crypto::BMRProvider &get_bmr_provider() { return *bmr_provider_; };
+
   auto &GetBaseOTProvider() { return base_ot_provider_; };
 
   ENCRYPTO::ObliviousTransfer::OTProvider &GetOTProvider(std::size_t party_id);
@@ -315,6 +318,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::shared_ptr<MTProvider> mt_provider_;
   std::shared_ptr<SPProvider> sp_provider_;
   std::shared_ptr<SBProvider> sb_provider_;
+  std::unique_ptr<Crypto::BMRProvider> bmr_provider_;
 
   bool share_inputs_{true};
   bool require_base_ots_{false};

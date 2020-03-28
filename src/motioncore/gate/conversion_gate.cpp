@@ -28,6 +28,8 @@
 
 #include "base/backend.h"
 #include "communication/bmr_message.h"
+#include "communication/communication_layer.h"
+#include "crypto/bmr_provider.h"
 #include "data_storage/bmr_data.h"
 #include "gate/bmr_gate.h"
 #include "secure_type/secure_unsigned_integer.h"
@@ -96,8 +98,9 @@ void BMRToGMWGate::EvaluateOnline() {
     assert(gmw_out);
 
     bmr_in->GetIsReadyCondition().Wait();
-    const auto my_id{GetConfig().GetMyId()};
-    const auto num_parties{GetConfig().GetNumOfParties()};
+    const auto& comm_layer = get_communication_layer();
+    const auto my_id = comm_layer.get_my_id();
+    const auto num_parties = comm_layer.get_num_parties();
     auto &v{gmw_out->GetMutableValues()};
 
     // set current gmw shared bits on wire to permutation bits of parent BMR wire
@@ -152,23 +155,11 @@ GMWToBMRGate::GMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->Get
     GetRegister().RegisterNextWire(w);
   }
 
-  received_public_values_.resize(GetConfig().GetNumOfParties());
-  received_public_keys_.resize(GetConfig().GetNumOfParties());
-
   assert(gate_id_ >= 0);
-  const auto my_id{GetConfig().GetMyId()};
 
-  for (auto party_i = 0ull; party_i < GetConfig().GetNumOfParties(); ++party_i) {
-    if (my_id == party_i) continue;
-    auto &data_storage =
-        GetConfig().GetCommunicationContext(static_cast<std::size_t>(party_i))->GetDataStorage();
-    auto &bmr_data = data_storage->GetBMRData();
-
-    received_public_values_.at(party_i) =
-        bmr_data->RegisterForInputPublicValues(gate_id_, num_simd * output_wires_.size());
-    received_public_keys_.at(party_i) =
-        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd * output_wires_.size());
-  }
+  auto& bmr_provider = backend_.get_bmr_provider();
+  received_public_keys_ = bmr_provider.register_for_input_keys(gate_id_, num_simd * output_wires_.size());
+  received_public_values_ = bmr_provider.register_for_input_public_values(gate_id_, num_simd * output_wires_.size());
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
@@ -210,9 +201,10 @@ void GMWToBMRGate::EvaluateOnline() {
 
   const auto num_simd{output_wires_.at(0)->GetNumOfSIMDValues()};
   const auto num_wires{output_wires_.size()};
-  const auto my_id{GetConfig().GetMyId()};
-  const auto num_parties{GetConfig().GetNumOfParties()};
-  const auto &R = GetConfig().GetBMRRandomOffset();
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
+  const auto &R = backend_.get_bmr_provider().get_global_offset();
   ENCRYPTO::BitVector<> buffer;
 
   // mask and publish inputs
@@ -228,10 +220,7 @@ void GMWToBMRGate::EvaluateOnline() {
   const std::vector<std::uint8_t> payload_pub_vals(
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
       reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
-  for (auto i = 0ull; i < num_parties; ++i) {
-    if (i == GetConfig().GetMyId()) continue;
-    backend_.Send(i, Communication::BuildBMRInput0Message(gate_id_, payload_pub_vals));
-  }
+  comm_layer.broadcast_message(Communication::BuildBMRInput0Message(gate_id_, payload_pub_vals));
 
   // receive masked values if not my input
   for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
@@ -265,10 +254,7 @@ void GMWToBMRGate::EvaluateOnline() {
   const std::vector<std::uint8_t> payload(
       reinterpret_cast<const std::uint8_t *>(my_keys_buffer.data()),
       reinterpret_cast<const std::uint8_t *>(my_keys_buffer.data()) + my_keys_buffer.byte_size());
-  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-    if (party_i == my_id) continue;
-    backend_.Send(party_i, Communication::BuildBMRInput1Message(gate_id_, payload));
-  }
+  comm_layer.broadcast_message(Communication::BuildBMRInput1Message(gate_id_, payload));
 
   // index function for the public/active keys stored in the wires
   const auto pk_index = [num_parties](auto simd_i, auto party_i) {
@@ -347,14 +333,16 @@ AGMWToBMRGate::AGMWToBMRGate(const Shares::SharePtr &parent) : OneGate(parent->G
   }
 
   assert(gate_id_ >= 0);
-  const auto my_id{GetConfig().GetMyId()};
+  const auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
   const auto bitlen{parent_[0]->GetBitLength()};
   const auto num_simd{parent_[0]->GetNumOfSIMDValues()};
 
   std::vector<SecureUnsignedInteger> shares;
-  shares.reserve(GetConfig().GetNumOfParties());
+  shares.reserve(num_parties);
   // each party re-shares its arithmetic GMW share in BMR
-  for (auto party_id = 0ull; party_id < GetConfig().GetNumOfParties(); ++party_id) {
+  for (auto party_id = 0ull; party_id < num_parties; ++party_id) {
     const auto in_gate =
         std::make_shared<MOTION::Gates::BMR::BMRInputGate>(num_simd, bitlen, party_id, backend_);
     GetRegister().RegisterNextInputGate(in_gate);

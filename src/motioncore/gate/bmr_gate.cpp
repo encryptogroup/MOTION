@@ -26,11 +26,13 @@
 
 #include "base/backend.h"
 #include "communication/bmr_message.h"
+#include "communication/communication_layer.h"
+#include "crypto/bmr_provider.h"
+#include "crypto/motion_base_provider.h"
 #include "crypto/oblivious_transfer/correlated_ot.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/pseudo_random_generator.h"
 #include "data_storage/bmr_data.h"
-#include "data_storage/data_storage.h"
 #include "utility/block.h"
 #include "wire/bmr_wire.h"
 #include "wire/boolean_gmw_wire.h"
@@ -72,9 +74,10 @@ BMRInputGate::BMRInputGate(std::vector<ENCRYPTO::BitVector<>> &&input, std::size
 }
 
 void BMRInputGate::InitializationHelper() {
-  if (static_cast<std::size_t>(input_owner_id_) >= GetConfig().GetNumOfParties()) {
+  auto num_parties = get_communication_layer().get_num_parties();
+  if (static_cast<std::size_t>(input_owner_id_) >= num_parties) {
     throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
-                                         GetConfig().GetNumOfParties()));
+                                         num_parties));
   }
 
   gate_id_ = GetRegister().NextGateId();
@@ -85,31 +88,21 @@ void BMRInputGate::InitializationHelper() {
 
   for (auto &w : output_wires_) GetRegister().RegisterNextWire(w);
 
-  const auto num_parties = GetConfig().GetNumOfParties();
-  const auto my_id = GetConfig().GetMyId();
+  const auto my_id = get_communication_layer().get_my_id();
 
   assert(input_owner_id_ >= 0);
   assert(gate_id_ >= 0);
 
+  auto& bmr_provider = backend_.get_bmr_provider();
+
   // if this is someone else's input, prepare for receiving the *public values*
   // (if it is our's then we would compute it ourselves)
   if (my_id != static_cast<std::size_t>(input_owner_id_)) {
-    auto &bmr_data = GetConfig()
-                         .GetCommunicationContext(static_cast<std::size_t>(input_owner_id_))
-                         ->GetDataStorage()
-                         ->GetBMRData();
-    received_public_values_ =
-        bmr_data->RegisterForInputPublicValues(gate_id_, num_simd_ * bit_size_);
+    received_public_values_ = bmr_provider.register_for_input_public_values(input_owner_id_, gate_id_, num_simd_ * bit_size_);
   }
 
   // prepare for receiving the *public/active keys* of the other parties
-  received_public_keys_.resize(num_parties);
-  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-    if (my_id == party_i) continue;
-    auto &bmr_data = GetConfig().GetCommunicationContext(party_i)->GetDataStorage()->GetBMRData();
-    received_public_keys_.at(party_i) =
-        bmr_data->RegisterForInputPublicKeys(gate_id_, num_simd_ * bit_size_);
-  }
+  received_public_keys_ = bmr_provider.register_for_input_keys(gate_id_, num_simd_ * bit_size_);
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, input owner {}", gate_id_, input_owner_id_);
@@ -124,8 +117,7 @@ void BMRInputGate::EvaluateSetup() {
         fmt::format("Start evaluating setup phase of BMR Input Gate with id#{}", gate_id_));
   }
 
-  auto &config = GetConfig();
-  const auto my_id = config.GetMyId();
+  const auto my_id = get_communication_layer().get_my_id();
 
   // create keys etc. for all the wires
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
@@ -146,7 +138,7 @@ void BMRInputGate::EvaluateSetup() {
     wire->SetSetupIsReady();
 
     if constexpr (MOTION_VERBOSE_DEBUG) {
-      const auto &R = GetConfig().GetBMRRandomOffset();
+      const auto &R = backend_.get_bmr_provider().get_global_offset();
       std::string keys_0, keys_1;
       for (const auto &key : wire->GetSecretKeys()) {
         assert(key.size() * 8 == kappa);
@@ -178,9 +170,10 @@ void BMRInputGate::EvaluateOnline() {
         fmt::format("Start evaluating online phase of BMR Input Gate with id#{}", gate_id_));
   }
 
-  const auto &R = GetConfig().GetBMRRandomOffset();
-  const auto my_id = GetConfig().GetMyId();
-  const auto num_parties = GetConfig().GetNumOfParties();
+  const auto &R = backend_.get_bmr_provider().get_global_offset();
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
   const auto num_simd = output_wires_.at(0)->GetNumOfSIMDValues();
   const auto num_wires = output_wires_.size();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
@@ -205,10 +198,7 @@ void BMRInputGate::EvaluateOnline() {
     const std::vector<std::uint8_t> payload(
         reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()),
         reinterpret_cast<const std::uint8_t *>(buffer.GetData().data()) + buffer.GetData().size());
-    for (auto i = 0ull; i < GetConfig().GetNumOfParties(); ++i) {
-      if (i == GetConfig().GetMyId()) continue;
-      backend_.Send(i, Communication::BuildBMRInput0Message(gate_id_, payload));
-    }
+    comm_layer.broadcast_message(Communication::BuildBMRInput0Message(gate_id_, payload));
   }
   // otherwise receive the public values from the party that provides the input
   else {
@@ -244,10 +234,7 @@ void BMRInputGate::EvaluateOnline() {
   const std::vector<std::uint8_t> payload(
       reinterpret_cast<const std::uint8_t *>(my_keys_buffer.data()),
       reinterpret_cast<const std::uint8_t *>(my_keys_buffer.data()) + my_keys_buffer.byte_size());
-  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-    if (party_i == my_id) continue;
-    backend_.Send(party_i, Communication::BuildBMRInput1Message(gate_id_, payload));
-  }
+  comm_layer.broadcast_message(Communication::BuildBMRInput1Message(gate_id_, payload));
 
   // index function for the public/active keys stored in the wires
   const auto pk_index = [num_parties](auto simd_i, auto party_i) {
@@ -351,9 +338,13 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
   requires_online_interaction_ = true;
   gate_type_ = GateType::Interactive;
 
-  if (output_owner >= GetConfig().GetNumOfParties() && output_owner != ALL) {
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
+
+  if (output_owner >= num_parties && output_owner != ALL) {
     throw std::runtime_error(
-        fmt::format("Invalid output owner: {} of {}", output_owner, GetConfig().GetNumOfParties()));
+        fmt::format("Invalid output owner: {} of {}", output_owner, num_parties));
   }
 
   // For BMR reconstruction, we need to recontruct the shared permutation bits
@@ -381,7 +372,6 @@ BMROutputGate::BMROutputGate(const Shares::SharePtr &parent, std::size_t output_
     wire->RegisterWaitingGate(gate_id_);    // register this gate in @param wire as waiting
   }
 
-  const auto my_id = GetConfig().GetMyId();
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == ALL;
 
@@ -634,8 +624,9 @@ void BMRINVGate::EvaluateSetup() {
         fmt::format("Start evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
 
-  const auto my_id{GetConfig().GetMyId()};
-  const auto num_parties{GetConfig().GetNumOfParties()};
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
 
   for (auto i = 0ull; i < output_wires_.size(); ++i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(i));
@@ -729,10 +720,11 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
 
   gate_id_ = GetRegister().NextGateId();
 
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
   const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
   const auto num_wires{parent_a_.size()};
-  const auto my_id{GetConfig().GetMyId()};
-  const auto num_parties{GetConfig().GetNumOfParties()};
   const auto size_of_all_garbled_tables = num_wires * num_simd * 4 * num_parties;
 
   for (auto &wire : parent_a_) {
@@ -778,13 +770,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   garbled_tables_.resize(size_of_all_garbled_tables);
 
   // store futures for the (partial) garbled tables we will receive during garbling
-  received_garbled_rows_.resize(num_parties);
-  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-    if (party_i == my_id) continue;
-    auto &bmr_data = GetConfig().GetCommunicationContext(party_i)->GetDataStorage()->GetBMRData();
-    received_garbled_rows_.at(party_i) =
-        bmr_data->RegisterForGarbledRows(gate_id_, size_of_all_garbled_tables);
-  }
+  received_garbled_rows_ = backend_.get_bmr_provider().register_for_garbled_rows(gate_id_, size_of_all_garbled_tables);
 
   if constexpr (MOTION_DEBUG) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
@@ -802,11 +788,11 @@ void BMRANDGate::GenerateRandomness() {
     bmr_out->GenerateRandomPermutationBits();
     bmr_out->GenerateRandomPrivateKeys();
     if constexpr (MOTION_VERBOSE_DEBUG) {
-      const auto my_id{GetConfig().GetMyId()};
+      const auto my_id = get_communication_layer().get_my_id();
       const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
       for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
         const auto &key_0{bmr_out->GetSecretKeys().at(simd_i)};
-        const auto &key_1{key_0 ^ GetConfig().GetBMRRandomOffset()};
+        const auto &key_1{key_0 ^ backend_.get_bmr_provider().get_global_offset()};
 
         const auto bmr_a = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_a_.at(wire_i));
         const auto bmr_b = std::dynamic_pointer_cast<const Wires::BMRWire>(parent_b_.at(wire_i));
@@ -831,11 +817,12 @@ void BMRANDGate::EvaluateSetup() {
     GetLogger().LogDebug(
         fmt::format("Start evaluating setup phase of BMR AND Gate with id#{}", gate_id_));
   }
-  const auto &R{GetConfig().GetBMRRandomOffset()};
+  const auto &R{backend_.get_bmr_provider().get_global_offset()};
   const auto num_wires{parent_a_.size()};
   const auto num_simd{parent_a_.at(0)->GetNumOfSIMDValues()};
-  const auto my_id{GetConfig().GetMyId()};
-  const auto num_parties{GetConfig().GetNumOfParties()};
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
   [[maybe_unused]] const auto batch_size_3{num_simd * 3};
 
   // index function for the buffer of garbled tables
@@ -979,7 +966,7 @@ void BMRANDGate::EvaluateSetup() {
   }  // for each wire
 
   ENCRYPTO::PRG prg;
-  prg.SetKey(GetConfig().GetFixedAESKey().GetData().data());
+  prg.SetKey(get_motion_base_provider().get_aes_fixed_key().data());
 
   // Compute garbled rows
   // First, set rows to PRG outputs XOR key
@@ -1169,12 +1156,8 @@ void BMRANDGate::EvaluateSetup() {
   const std::vector<std::uint8_t> send_message_buffer(
       reinterpret_cast<const std::uint8_t *>(garbled_tables_.data()),
       reinterpret_cast<const std::uint8_t *>(garbled_tables_.data()) + garbled_tables_.byte_size());
-
-  for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-    if (party_i == my_id) continue;
-    backend_.Send(party_i, Communication::BuildBMRANDMessage(static_cast<std::size_t>(gate_id_),
+  comm_layer.broadcast_message(Communication::BuildBMRANDMessage(static_cast<std::size_t>(gate_id_),
                                                              send_message_buffer));
-  }
 
   // finalize garbled tables
   for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
@@ -1201,11 +1184,12 @@ void BMRANDGate::EvaluateOnline() {
         fmt::format("Start evaluating online phase of BMR AND Gate with id#{}", gate_id_));
   }
 
-  const auto num_parties = GetConfig().GetNumOfParties();
-  const auto my_id = GetConfig().GetMyId();
+  auto& comm_layer = get_communication_layer();
+  const auto my_id = comm_layer.get_my_id();
+  const auto num_parties = comm_layer.get_num_parties();
   const auto num_wires = output_wires_.size();
   const auto num_simd = output_wires_.at(0)->GetNumOfSIMDValues();
-  const auto &R = GetConfig().GetBMRRandomOffset();
+  const auto &R = backend_.get_bmr_provider().get_global_offset();
 
   // index function for the public/active keys stored in the wires
   const auto pk_index = [num_parties](auto simd_i, auto party_i) {
@@ -1246,14 +1230,14 @@ void BMRANDGate::EvaluateOnline() {
     wire_b->GetIsReadyCondition().Wait();
 
     ENCRYPTO::PRG prg;
-    prg.SetKey(GetConfig().GetFixedAESKey().GetData().data());
+    prg.SetKey(get_motion_base_provider().get_aes_fixed_key().data());
 
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
       auto masks = ENCRYPTO::block128_vector::make_zero(num_parties);
       [[maybe_unused]] std::string s;
       if constexpr (MOTION_VERBOSE_DEBUG) {
         s.append(
-            fmt::format("Me#{}: wire#{} simd#{} result\n", GetConfig().GetMyId(), wire_i, simd_i));
+            fmt::format("Me#{}: wire#{} simd#{} result\n", my_id, wire_i, simd_i));
         s.append(fmt::format("Public values a {} b {} ", wire_a->GetPublicValues().AsString(),
                              wire_b->GetPublicValues().AsString()));
       }
@@ -1323,7 +1307,7 @@ void BMRANDGate::EvaluateOnline() {
     }
     if constexpr (MOTION_VERBOSE_DEBUG) {
       GetLogger().LogTrace(fmt::format("Party#{} wire#{} public values result {}\n",
-                                       GetConfig().GetMyId(), wire_i,
+                                       my_id, wire_i,
                                        bmr_out->GetPublicValues().AsString()));
     }
   }  // for each wire

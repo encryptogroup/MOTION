@@ -23,6 +23,7 @@ add_library(motion
         crypto/base_ots/base_ot_provider.cpp
         crypto/base_ots/ot_hl17.cpp
         crypto/blake2b.cpp
+        crypto/bmr_provider.cpp
         crypto/curve25519/mycurve25519.cpp
         crypto/motion_base_provider.cpp
         crypto/multiplication_triple/mt_provider.cpp
