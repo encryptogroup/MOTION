@@ -33,6 +33,8 @@
 #include <boost/program_options.hpp>
 
 #include "base/party.h"
+#include "communication/communication_layer.h"
+#include "communication/tcp_transport.h"
 #include "common/aes128.h"
 #include "statistics/analysis.h"
 
@@ -59,7 +61,6 @@ int main(int ac, char* av[]) {
     for (std::size_t i = 0; i < num_repetitions; ++i) {
       MOTION::PartyPtr party{CreateParty(vm)};
       // establish communication channels with other parties
-      party->Connect();
 
       if (protocol_str == "BMR") {
         auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
@@ -169,7 +170,7 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
 
 MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
   const auto parties_str{vm["other-parties"].as<const std::vector<std::string>>()};
-  const auto num_parties{parties_str.size() + 1};
+  const auto num_parties{parties_str.size()};
   const auto my_id{vm["my-id"].as<std::size_t>()};
   if (my_id >= num_parties) {
     throw std::runtime_error(fmt::format(
@@ -177,26 +178,25 @@ MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
         my_id, num_parties));
   }
 
-  // create communication contexts for other parties
-  std::vector<MOTION::Communication::ContextPtr> contexts;
+  MOTION::Communication::tcp_parties_config parties_config(num_parties);
+
   for (const auto& party_str : parties_str) {
-    const auto [other_id, host, port] = ParsePartyArgument(party_str);
-    if (other_id >= num_parties) {
+    const auto [party_id, host, port] = ParsePartyArgument(party_str);
+    if (party_id >= num_parties) {
       throw std::runtime_error(
-          fmt::format("Other party's id needs to be in the range [0, #parties - 1], current id "
+          fmt::format("Party's id needs to be in the range [0, #parties - 1], current id "
                       "is {} and #parties is {}",
-                      other_id, num_parties));
+                      party_id, num_parties));
     }
-    const auto role{other_id < my_id ? MOTION::Role::Client : MOTION::Role::Server};
-    contexts.emplace_back(
-        std::make_shared<MOTION::Communication::Context>(host, port, role, other_id));
+    parties_config.at(party_id) = std::make_pair(host, port);
   }
-  // create config for my party
-  auto config{std::make_shared<MOTION::Configuration>(std::move(contexts), my_id)};
+  MOTION::Communication::TCPSetupHelper helper(my_id, parties_config);
+  auto comm_layer = std::make_unique<MOTION::Communication::CommunicationLayer>(my_id, helper.setup_connections());
+  auto party = std::make_unique<MOTION::Party>(std::move(comm_layer));
+  auto config = party->GetConfiguration();
   // disable logging if the corresponding flag was set
   const auto logging{!vm.count("disable-logging")};
   config->SetLoggingEnabled(logging);
   config->SetOnlineAfterSetup(vm["online-after-setup"].as<bool>());
-  // create party object using the given config
-  return std::make_unique<MOTION::Party>(config);
+  return party;
 }
