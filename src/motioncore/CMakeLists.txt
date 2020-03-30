@@ -8,9 +8,7 @@ add_library(motion
         communication/base_ot_message.cpp
         communication/bmr_message.cpp
         communication/communication_layer.cpp
-        communication/context.cpp
         communication/dummy_transport.cpp
-        communication/handler.cpp
         communication/hello_message.cpp
         communication/message.cpp
         communication/ot_extension_message.cpp
@@ -37,7 +35,6 @@ add_library(motion
         crypto/random/aes128_ctr_rng.cpp
         data_storage/base_ot_data.cpp
         data_storage/bmr_data.cpp
-        data_storage/data_storage.cpp
         data_storage/ot_extension_data.cpp
         data_storage/shared_bits_data.cpp
         gate/bmr_gate.cpp
