@@ -28,4 +28,4 @@
 #include "statistics/run_time_stats.h"
 
 MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
-                                                  MOTION::MPCProtocol protocol);
+                                                  MOTION::MPCProtocol protocol, bool check);

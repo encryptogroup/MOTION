@@ -56,6 +56,7 @@ int main(int ac, char* av[]) {
     const auto num_repetitions{vm["repetitions"].as<std::size_t>()};
     MOTION::MPCProtocol protocol;
     const std::string protocol_str{vm["protocol"].as<std::string>()};
+    auto check = vm["check"].as<bool>();
     MOTION::Statistics::AccumulatedRunTimeStats accumulated_stats;
 
     for (std::size_t i = 0; i < num_repetitions; ++i) {
@@ -63,10 +64,10 @@ int main(int ac, char* av[]) {
       // establish communication channels with other parties
 
       if (protocol_str == "BMR") {
-        auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR);
+        auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BMR, check);
         accumulated_stats.add(stats);
       } else if (protocol_str == "GMW" || protocol_str == "BooleanGMW") {
-        auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW);
+        auto stats = EvaluateProtocol(party, num_simd, MOTION::MPCProtocol::BooleanGMW, check);
         accumulated_stats.add(stats);
       } else {
         throw std::invalid_argument("Only GMW or BMR is allowed");
@@ -116,7 +117,8 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
       ("num-simd", po::value<std::size_t>()->default_value(1), "number of SIMD values for AES evaluation")
       ("protocol", po::value<std::string>()->default_value("BMR"), "Boolean MPC protocol (BMR or GMW)")
       ("online-after-setup", po::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)")
-      ("repetitions", po::value<std::size_t>()->default_value(1), "number of repetitions");
+      ("repetitions", po::value<std::size_t>()->default_value(1), "number of repetitions")
+      ("check", po::value<bool>()->default_value(false), "check the computed values for correctness (true/1 or false/0)");
   // clang-format on
 
   po::variables_map vm;
