@@ -24,7 +24,8 @@ script:
   - cd build_debug
   - CC=/usr/bin/gcc-8 CXX=/usr/bin/g++-8 cmake -DCMAKE_BUILD_TYPE=Debug -DMOTION_BUILD_TESTS=On -j 2 ..
   - make -j 5
-  - ./bin/motiontest
+  # travis does not support IPv6 ...
+  - ./bin/motiontest --gtest_filter='-*ipv6*'
 
 notifications:
   - email: false
