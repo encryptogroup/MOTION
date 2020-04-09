@@ -32,6 +32,7 @@
 #include <thread>
 #include "fiber_thread_pool.hpp"
 #include "pooled_work_stealing.hpp"
+#include "singleton_pooled_fixedsize_stack.hpp"
 #include "utility/constants.h"
 #include "utility/locked_fiber_queue.h"
 #include "utility/thread.h"
@@ -62,6 +63,7 @@ FiberThreadPool::~FiberThreadPool() {
 }
 
 // This function is executed in the worker thread
+template <typename StackAllocator>
 static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
                         boost::fibers::buffered_channel<FiberThreadPool::task_t>& task_queue,
                         boost::fibers::barrier& barrier) {
@@ -80,11 +82,8 @@ static void worker_fctn(std::shared_ptr<pool_ctx> pool_ctx,
   FiberThreadPool::task_t task;
 
   // allocator the the fibers' stacks
-  using stack_allocator_t = std::conditional_t<MOTION::MOTION_FIBER_STACK_PROTECTION,
-                                               boost::context::protected_fixedsize_stack,
-                                               boost::context::fixedsize_stack>;
-  stack_allocator_t stack_allocator(
-      std::max(MOTION::MOTION_FIBER_STACK_SIZE, stack_allocator_t::traits_type::minimum_size()));
+  StackAllocator stack_allocator(
+      std::max(MOTION::MOTION_FIBER_STACK_SIZE, StackAllocator::traits_type::minimum_size()));
 
   // try to get new tasks from the queue until the channel is closed and empty,
   // which is the signal to therminate the pool
@@ -109,10 +108,24 @@ void FiberThreadPool::create_threads() {
   // schedulers
   pool_ctx_ = pooled_work_stealing::create_pool_ctx(num_workers_, suspend_scheduler_);
 
+  std::function<decltype(worker_fctn<boost::context::fixedsize_stack>)> worker_function;
+  switch (MOTION::MOTION_FIBER_STACK_ALLOCATOR) {
+    case MOTION::FiberStackAllocator::fixedsize:
+      worker_function = worker_fctn<boost::context::fixedsize_stack>;
+      break;
+    case MOTION::FiberStackAllocator::protected_fixedsize:
+      worker_function = worker_fctn<boost::context::protected_fixedsize_stack>;
+      break;
+    case MOTION::FiberStackAllocator::pooled_fixedsize:
+      worker_function =
+          worker_fctn<singleton_pooled_fixedsize_stack<MOTION::MOTION_FIBER_STACK_SIZE>>;
+      break;
+  }
+
   // create the worker threads
   worker_threads_.reserve(num_workers_);
   for (std::size_t i = 0; i < num_workers_; ++i) {
-    auto& t = worker_threads_.emplace_back(worker_fctn, pool_ctx_, std::ref(*task_queue_),
+    auto& t = worker_threads_.emplace_back(worker_function, pool_ctx_, std::ref(*task_queue_),
                                            std::ref(*worker_barrier_));
 
     if constexpr (MOTION::MOTION_DEBUG) {

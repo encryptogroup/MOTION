@@ -60,8 +60,17 @@ constexpr std::size_t kappa{128};
 // stack size for fibers
 constexpr std::size_t MOTION_FIBER_STACK_SIZE{14 * 1024};
 
-// use an allocator for fiber stacks that inserts a guard page at the end of
-// the stack space resulting in a SIGSEGV if a stack overflow happens
-constexpr bool MOTION_FIBER_STACK_PROTECTION{false};
+enum class FiberStackAllocator {
+  // standard allocator
+  fixedsize,
+  // allocate the stacks from a memory pool
+  pooled_fixedsize,
+  // use an allocator for fiber stacks that inserts a guard page at the end of
+  // the stack space resulting in a SIGSEGV if a stack overflow happens
+  protected_fixedsize,
+};
+
+// standard allocator for fiber stacks
+constexpr FiberStackAllocator MOTION_FIBER_STACK_ALLOCATOR{FiberStackAllocator::fixedsize};
 
 }  // namespace MOTION
