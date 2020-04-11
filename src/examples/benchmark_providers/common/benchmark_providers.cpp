@@ -83,79 +83,76 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
       switch (bit_size) {
         case 8:
           if (my_id == 0) {
-            auto ot{ot_provider.RegisterReceive(8, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterReceiveACOT<std::uint8_t>(batch_size)};
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            (void)ot->GetOutputs();
+            ot->ComputeOutputs();
+            ot->GetOutputs();
           } else {
-            auto ot{ot_provider.RegisterSend(8, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterSendACOT<std::uint8_t>(batch_size)};
             backend->OTExtensionSetup();
-            ot->SetInputs(std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(8)));
+            ot->SetCorrelations(std::vector<std::uint8_t>(batch_size, 0x42));
             ot->SendMessages();
           }
           break;
         case 16:
           if (my_id == 0) {
-            auto ot{
-                ot_provider.RegisterReceive(16, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterReceiveACOT<std::uint16_t>(batch_size)};
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            (void)ot->GetOutputs();
+            ot->ComputeOutputs();
+            ot->GetOutputs();
           } else {
-            auto ot{ot_provider.RegisterSend(16, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterSendACOT<std::uint16_t>(batch_size)};
             backend->OTExtensionSetup();
-            ot->SetInputs(
-                std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(16)));
+            ot->SetCorrelations(std::vector<std::uint16_t>(batch_size, 0x42));
             ot->SendMessages();
           }
           break;
         case 32:
           if (my_id == 0) {
-            auto ot{
-                ot_provider.RegisterReceive(32, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterReceiveACOT<std::uint32_t>(batch_size)};
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            (void)ot->GetOutputs();
+            ot->ComputeOutputs();
+            ot->GetOutputs();
           } else {
-            auto ot{ot_provider.RegisterSend(32, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterSendACOT<std::uint32_t>(batch_size)};
             backend->OTExtensionSetup();
-            ot->SetInputs(
-                std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(32)));
+            ot->SetCorrelations(std::vector<std::uint32_t>(batch_size, 0x42));
             ot->SendMessages();
           }
           break;
         case 64:
           if (my_id == 0) {
-            auto ot{
-                ot_provider.RegisterReceive(64, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterReceiveACOT<std::uint64_t>(batch_size)};
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            (void)ot->GetOutputs();
+            ot->ComputeOutputs();
+            ot->GetOutputs();
           } else {
-            auto ot{ot_provider.RegisterSend(64, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterSendACOT<std::uint64_t>(batch_size)};
             backend->OTExtensionSetup();
-            ot->SetInputs(
-                std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(64)));
+            ot->SetCorrelations(std::vector<std::uint64_t>(batch_size, 0x42));
             ot->SendMessages();
           }
           break;
         case 128:
           if (my_id == 0) {
-            auto ot{
-                ot_provider.RegisterReceive(128, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterReceiveACOT<__uint128_t>(batch_size)};
             ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
             backend->OTExtensionSetup();
             ot->SendCorrections();
-            (void)ot->GetOutputs();
+            ot->ComputeOutputs();
+            ot->GetOutputs();
           } else {
-            auto ot{ot_provider.RegisterSend(128, batch_size, ENCRYPTO::ObliviousTransfer::ACOT)};
+            auto ot{ot_provider.RegisterSendACOT<__uint128_t>(batch_size)};
             backend->OTExtensionSetup();
-            ot->SetInputs(
-                std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(128)));
+            ot->SetCorrelations(std::vector<__uint128_t>(batch_size, 0x42));
             ot->SendMessages();
           }
           break;
@@ -200,19 +197,36 @@ MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std:
       break;
     }
     case Provider::GOT: {
-      if (my_id == 0) {
-        auto ot{
-            ot_provider.RegisterReceive(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::GOT)};
-        ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
-        backend->OTExtensionSetup();
-        ot->SendCorrections();
-        (void)ot->GetOutputs();
+      if (bit_size == 128) {
+        if (my_id == 0) {
+          auto ot{ot_provider.RegisterReceiveGOT128(batch_size)};
+          ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
+          backend->OTExtensionSetup();
+          ot->SendCorrections();
+          ot->ComputeOutputs();
+          ot->GetOutputs();
+        } else {
+          auto ot{ot_provider.RegisterSendGOT128(batch_size)};
+          backend->OTExtensionSetup();
+          ot->SetInputs(ENCRYPTO::block128_vector(2 * batch_size, ENCRYPTO::block128_t::make_zero()));
+          ot->SendMessages();
+        }
+      } else if (bit_size == 1) {
+        if (my_id == 0) {
+          auto ot{ot_provider.RegisterReceiveGOTBit(batch_size)};
+          ot->SetChoices(ENCRYPTO::BitVector<>(batch_size));
+          backend->OTExtensionSetup();
+          ot->SendCorrections();
+          ot->ComputeOutputs();
+          ot->GetOutputs();
+        } else {
+          auto ot{ot_provider.RegisterSendGOTBit(batch_size)};
+          backend->OTExtensionSetup();
+          ot->SetInputs(ENCRYPTO::BitVector<>(2 * batch_size));
+          ot->SendMessages();
+        }
       } else {
-        auto ot{ot_provider.RegisterSend(bit_size, batch_size, ENCRYPTO::ObliviousTransfer::GOT)};
-        backend->OTExtensionSetup();
-        ot->SetInputs(
-            std::vector<ENCRYPTO::BitVector<>>(batch_size, ENCRYPTO::BitVector<>(bit_size * 2)));
-        ot->SendMessages();
+        throw std::invalid_argument("Only 1 and 128 bits are supported for GOTs in benchmarks");
       }
       break;
     }
