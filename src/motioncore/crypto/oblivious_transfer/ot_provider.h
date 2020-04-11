@@ -70,6 +70,10 @@ class FixedXCOT128Sender;
 class FixedXCOT128Receiver;
 class XCOTBitSender;
 class XCOTBitReceiver;
+template <typename T>
+class ACOTSender;
+template <typename T>
+class ACOTReceiver;
 
 class OTVector {
  public:
@@ -267,6 +271,10 @@ class OTProviderSender {
   std::shared_ptr<XCOTBitSender> RegisterXCOTBits(
       const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  template <typename T>
+  std::shared_ptr<ACOTSender<T>> RegisterACOT(
+      std::size_t num_ots, std::size_t vector_size,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   auto GetNumOTs() const { return total_ots_count_; }
 
@@ -306,6 +314,10 @@ class OTProviderReceiver {
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
   std::shared_ptr<XCOTBitReceiver> RegisterXCOTBits(
       const std::size_t num_ots,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  template <typename T>
+  std::shared_ptr<ACOTReceiver<T>> RegisterACOT(
+      std::size_t num_ots, std::size_t vector_size,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   std::size_t GetNumOTs() const { return total_ots_count_; }
@@ -351,6 +363,12 @@ class OTProvider {
     return sender_provider_.RegisterXCOTBits(num_ots, Send_);
   }
 
+  template <typename T>
+  [[nodiscard]] std::shared_ptr<ACOTSender<T>> RegisterSendACOT(
+      std::size_t num_ots = 1, std::size_t vector_size = 1) {
+    return sender_provider_.RegisterACOT<T>(num_ots, vector_size, Send_);
+  }
+
   /// @param bitlen Bit-length of the messages
   /// @param num_ots Number of OTs
   /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
@@ -369,6 +387,12 @@ class OTProvider {
   [[nodiscard]] std::shared_ptr<XCOTBitReceiver> RegisterReceiveXCOTBit(
       const std::size_t num_ots = 1) {
     return receiver_provider_.RegisterXCOTBits(num_ots, Send_);
+  }
+
+  template <typename T>
+  [[nodiscard]] std::shared_ptr<ACOTReceiver<T>> RegisterReceiveACOT(
+      std::size_t num_ots = 1, std::size_t vector_size = 1) {
+    return receiver_provider_.RegisterACOT<T>(num_ots, vector_size, Send_);
   }
 
   [[nodiscard]] std::size_t GetNumOTsReceiver() const { return receiver_provider_.GetNumOTs(); }

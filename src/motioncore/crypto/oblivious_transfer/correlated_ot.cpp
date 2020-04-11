@@ -242,5 +242,156 @@ void XCOTBitReceiver::ComputeOutputs() {
   outputs_computed_ = true;
 }
 
+// ---------- ACOTSender ----------
+
+template <typename T>
+ACOTSender<T>::ACOTSender(const std::size_t ot_id, const std::size_t num_ots,
+                          const std::size_t vector_size, MOTION::OTExtensionSenderData &data,
+                          const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicCOTSender(ot_id, num_ots, 8 * sizeof(T) * vector_size, ACOT, Send, data),
+      vector_size_(vector_size) {}
+
+template <typename T>
+void ACOTSender<T>::ComputeOutputs() {
+  if (outputs_computed_) {
+    // the work was already done
+    return;
+  }
+
+  // setup phase needs to be finished
+  WaitSetup();
+
+  // wait until the receiver has sent its correction bits
+  data_.received_correction_offsets_cond_.at(ot_id_)->Wait();
+
+  // make space for all the OTs
+  outputs_.resize(num_ots_ * vector_size_);
+
+  // get the corrections bits
+  std::unique_lock lock(data_.corrections_mutex_);
+  const auto corrections = data_.corrections_.Subset(ot_id_, ot_id_ + num_ots_);
+  lock.unlock();
+
+  // take one of the precomputed outputs
+  if (vector_size_ == 1) {
+    for (std::size_t ot_i = 0; ot_i < num_ots_; ++ot_i) {
+      if (corrections[ot_i]) {
+        // if the correction bit is 1, we need to swap
+        outputs_[ot_i] = *reinterpret_cast<const T *>(data_.y1_.at(ot_id_ + ot_i).GetData().data());
+      } else {
+        outputs_[ot_i] = *reinterpret_cast<const T *>(data_.y0_.at(ot_id_ + ot_i).GetData().data());
+      }
+    }
+  } else {
+    for (std::size_t ot_i = 0; ot_i < num_ots_; ++ot_i) {
+      if (corrections[ot_i]) {
+        // if the correction bit is 1, we need to swap
+        auto data_p = reinterpret_cast<const T *>(data_.y1_.at(ot_id_ + ot_i).GetData().data());
+        std::copy(data_p, data_p + vector_size_, &outputs_[ot_i * vector_size_]);
+      } else {
+        auto data_p = reinterpret_cast<const T *>(data_.y0_.at(ot_id_ + ot_i).GetData().data());
+        std::copy(data_p, data_p + vector_size_, &outputs_[ot_i * vector_size_]);
+      }
+    }
+  }
+
+  // remember that we have done this
+  outputs_computed_ = true;
+}
+
+template <typename T>
+void ACOTSender<T>::SendMessages() const {
+  auto buffer = correlations_;
+  if (vector_size_ == 1) {
+    for (std::size_t ot_i = 0; ot_i < num_ots_; ++ot_i) {
+      buffer[ot_i] += *reinterpret_cast<const T *>(data_.y0_.at(ot_id_ + ot_i).GetData().data());
+      buffer[ot_i] += *reinterpret_cast<const T *>(data_.y1_.at(ot_id_ + ot_i).GetData().data());
+    }
+  } else {
+    for (std::size_t ot_i = 0; ot_i < num_ots_; ++ot_i) {
+      auto y0_p = reinterpret_cast<const T *>(data_.y0_.at(ot_id_ + ot_i).GetData().data());
+      auto y1_p = reinterpret_cast<const T *>(data_.y1_.at(ot_id_ + ot_i).GetData().data());
+      auto b_p = &buffer[ot_i * vector_size_];
+      for (std::size_t j = 0; j < vector_size_; ++j) {
+        b_p[j] += y0_p[j] + y1_p[j];
+      }
+    }
+  }
+  assert(buffer.size() == num_ots_ * vector_size_);
+  Send_(MOTION::Communication::BuildOTExtensionMessageSender(
+      reinterpret_cast<const std::byte *>(buffer.data()), sizeof(T) * buffer.size(), ot_id_));
+}
+
+// ---------- ACOTReceiver ----------
+
+template <typename T>
+ACOTReceiver<T>::ACOTReceiver(const std::size_t ot_id, const std::size_t num_ots,
+                              const std::size_t vector_size, MOTION::OTExtensionReceiverData &data,
+                              const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicCOTReceiver(ot_id, num_ots, 8 * sizeof(T) * vector_size, ACOT, Send, data),
+      vector_size_(vector_size),
+      outputs_(num_ots * vector_size) {
+  constexpr auto int_type_to_msg_type = boost::hana::make_map(
+      boost::hana::make_pair(boost::hana::type_c<std::uint8_t>, MOTION::OTMsgType::uint8),
+      boost::hana::make_pair(boost::hana::type_c<std::uint16_t>, MOTION::OTMsgType::uint16),
+      boost::hana::make_pair(boost::hana::type_c<std::uint32_t>, MOTION::OTMsgType::uint32),
+      boost::hana::make_pair(boost::hana::type_c<std::uint64_t>, MOTION::OTMsgType::uint64),
+      boost::hana::make_pair(boost::hana::type_c<__uint128_t>, MOTION::OTMsgType::uint128));
+  data_.msg_type_.emplace(ot_id, int_type_to_msg_type[boost::hana::type_c<T>]);
+  sender_message_future_ = data_.RegisterForIntSenderMessage<T>(ot_id, num_ots * vector_size);
+}
+
+template <typename T>
+void ACOTReceiver<T>::ComputeOutputs() {
+  if (outputs_computed_) {
+    // already done
+    return;
+  }
+
+  if (!corrections_sent_) {
+    throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
+  }
+
+  auto sender_message = sender_message_future_.get();
+  assert(sender_message.size() == num_ots_ * vector_size_);
+
+  if (vector_size_ == 1) {
+    for (std::size_t ot_i = 0; ot_i < num_ots_; ++ot_i) {
+      auto ot_data_p =
+          reinterpret_cast<const T *>(data_.outputs_.at(ot_id_ + ot_i).GetData().data());
+      if (choices_[ot_i]) {
+        outputs_[ot_i] = sender_message[ot_i] - *ot_data_p;
+      } else {
+        outputs_[ot_i] = *ot_data_p;
+      }
+    }
+  } else {
+    for (std::size_t ot_i = 0; ot_i < num_ots_; ++ot_i) {
+      auto ot_data_p =
+          reinterpret_cast<const T *>(data_.outputs_.at(ot_id_ + ot_i).GetData().data());
+      if (choices_[ot_i]) {
+        std::transform(ot_data_p, ot_data_p + vector_size_, &sender_message[ot_i * vector_size_],
+                       &outputs_[ot_i * vector_size_], [](auto d, auto m) { return m - d; });
+      } else {
+        std::copy(ot_data_p, ot_data_p + vector_size_, &outputs_[ot_i * vector_size_]);
+      }
+    }
+  }
+  outputs_computed_ = true;
+}
+
+// ---------- ACOT template instantiations ----------
+
+template class ACOTSender<std::uint8_t>;
+template class ACOTSender<std::uint16_t>;
+template class ACOTSender<std::uint32_t>;
+template class ACOTSender<std::uint64_t>;
+template class ACOTSender<__uint128_t>;
+template class ACOTReceiver<std::uint8_t>;
+template class ACOTReceiver<std::uint16_t>;
+template class ACOTReceiver<std::uint32_t>;
+template class ACOTReceiver<std::uint64_t>;
+template class ACOTReceiver<__uint128_t>;
+
 }  // namespace ObliviousTransfer
 }  // namespace ENCRYPTO

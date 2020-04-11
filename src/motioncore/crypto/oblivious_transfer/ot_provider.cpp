@@ -858,6 +858,38 @@ std::shared_ptr<XCOTBitSender> OTProviderSender::RegisterXCOTBits(
   return ot;
 }
 
+template <typename T>
+std::shared_ptr<ACOTSender<T>> OTProviderSender::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
+  const auto i = total_ots_count_;
+  total_ots_count_ += num_ots;
+  auto ot = std::make_shared<ACOTSender<T>>(i, num_ots, vector_size, data_, Send);
+  if constexpr (MOTION::MOTION_DEBUG) {
+    if (logger_) {
+      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender ACOTs",
+                                    party_id_, num_ots, 8 * sizeof(T)));
+    }
+  }
+  return ot;
+}
+
+template std::shared_ptr<ACOTSender<std::uint8_t>> OTProviderSender::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTSender<std::uint16_t>> OTProviderSender::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTSender<std::uint32_t>> OTProviderSender::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTSender<std::uint64_t>> OTProviderSender::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTSender<__uint128_t>> OTProviderSender::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
 void OTProviderSender::Clear() {
   // TODO: move this
   // data_storage_->GetBaseOTsData()->GetSenderData().consumed_offset_ += total_ots_count_;
@@ -993,6 +1025,38 @@ std::shared_ptr<XCOTBitReceiver> OTProviderReceiver::RegisterXCOTBits(
   }
   return ot;
 }
+
+template <typename T>
+std::shared_ptr<ACOTReceiver<T>> OTProviderReceiver::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
+  const auto i = total_ots_count_.load();
+  total_ots_count_ += num_ots;
+  auto ot = std::make_shared<ACOTReceiver<T>>(i, num_ots, vector_size, data_, Send);
+  if constexpr (MOTION::MOTION_DEBUG) {
+    if (logger_) {
+      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ACOTs",
+                                    party_id_, num_ots, 8 * sizeof(T)));
+    }
+  }
+  return ot;
+}
+
+template std::shared_ptr<ACOTReceiver<std::uint8_t>> OTProviderReceiver::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTReceiver<std::uint16_t>> OTProviderReceiver::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTReceiver<std::uint32_t>> OTProviderReceiver::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTReceiver<std::uint64_t>> OTProviderReceiver::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+template std::shared_ptr<ACOTReceiver<__uint128_t>> OTProviderReceiver::RegisterACOT(
+    std::size_t num_ots, std::size_t vector_size,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
 void OTProviderReceiver::Clear() {
   // TODO: move this

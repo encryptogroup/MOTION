@@ -106,6 +106,61 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message,
               promise.set_value(ENCRYPTO::BitVector<>(message, size));
               return;
             } break;
+            case OTMsgType::uint8: {
+              constexpr auto type_c = boost::hana::type_c<std::uint8_t>;
+              auto& promise_map = receiver_data_.message_promises_int_[type_c];
+              auto promise_it = promise_map.find(i);
+              assert(promise_it != promise_map.end());
+              auto &[size, promise] = promise_it->second;
+              assert(size * sizeof(decltype(type_c)::type) == message_size);
+              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
+              promise.set_value(std::vector(message_p, message_p + size));
+              return;
+            } break;
+            case OTMsgType::uint16: {
+              constexpr auto type_c = boost::hana::type_c<std::uint16_t>;
+              auto& promise_map = receiver_data_.message_promises_int_[type_c];
+              auto promise_it = promise_map.find(i);
+              assert(promise_it != promise_map.end());
+              auto &[size, promise] = promise_it->second;
+              assert(size * sizeof(decltype(type_c)::type) == message_size);
+              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
+              promise.set_value(std::vector(message_p, message_p + size));
+              return;
+            } break;
+            case OTMsgType::uint32: {
+              constexpr auto type_c = boost::hana::type_c<std::uint32_t>;
+              auto& promise_map = receiver_data_.message_promises_int_[type_c];
+              auto promise_it = promise_map.find(i);
+              assert(promise_it != promise_map.end());
+              auto &[size, promise] = promise_it->second;
+              assert(size * sizeof(decltype(type_c)::type) == message_size);
+              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
+              promise.set_value(std::vector(message_p, message_p + size));
+              return;
+            } break;
+            case OTMsgType::uint64: {
+              constexpr auto type_c = boost::hana::type_c<std::uint64_t>;
+              auto& promise_map = receiver_data_.message_promises_int_[type_c];
+              auto promise_it = promise_map.find(i);
+              assert(promise_it != promise_map.end());
+              auto &[size, promise] = promise_it->second;
+              assert(size * sizeof(decltype(type_c)::type) == message_size);
+              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
+              promise.set_value(std::vector(message_p, message_p + size));
+              return;
+            } break;
+            case OTMsgType::uint128: {
+              constexpr auto type_c = boost::hana::type_c<__uint128_t>;
+              auto& promise_map = receiver_data_.message_promises_int_[type_c];
+              auto promise_it = promise_map.find(i);
+              assert(promise_it != promise_map.end());
+              auto &[size, promise] = promise_it->second;
+              assert(size * sizeof(decltype(type_c)::type) == message_size);
+              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
+              promise.set_value(std::vector(message_p, message_p + size));
+              return;
+            } break;
           }
         }
 
@@ -239,5 +294,30 @@ OTExtensionReceiverData::RegisterForBitSenderMessage(std::size_t ot_id, std::siz
   }
   return fut;
 }
+
+template <typename T>
+ENCRYPTO::ReusableFiberFuture<std::vector<T>> OTExtensionReceiverData::RegisterForIntSenderMessage(
+    std::size_t ot_id, std::size_t size) {
+  ENCRYPTO::ReusableFiberPromise<std::vector<T>> promise;
+  auto fut = promise.get_future();
+  auto [it, success] = message_promises_int_[boost::hana::type_c<T>].emplace(
+      ot_id, std::make_pair(size, std::move(promise)));
+  if (!success) {
+    throw std::runtime_error(
+        fmt::format("tried to register twice for IntSenderMessage for OT#{}", ot_id));
+  }
+  return fut;
+}
+
+template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>
+OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint16_t>>
+OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>>
+OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>
+OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ENCRYPTO::ReusableFiberFuture<std::vector<__uint128_t>>
+OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
 
 }  // namespace MOTION

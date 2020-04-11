@@ -37,6 +37,7 @@
 #include "utility/bit_matrix.h"
 #include "utility/bit_vector.h"
 #include "utility/block.h"
+#include "utility/meta.hpp"
 #include "utility/reusable_future.h"
 
 namespace ENCRYPTO {
@@ -55,6 +56,11 @@ enum OTExtensionDataType : uint {
 enum class OTMsgType {
   bit,
   block128,
+  uint8,
+  uint16,
+  uint32,
+  uint64,
+  uint128
 };
 
 struct OTExtensionReceiverData {
@@ -64,6 +70,9 @@ struct OTExtensionReceiverData {
   [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
   RegisterForBlock128SenderMessage(std::size_t ot_id, std::size_t size);
   [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForBitSenderMessage(
+      std::size_t ot_id, std::size_t size);
+  template <typename T>
+  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<std::vector<T>> RegisterForIntSenderMessage(
       std::size_t ot_id, std::size_t size);
 
   // matrix of the OT extension scheme
@@ -108,6 +117,14 @@ struct OTExtensionReceiverData {
       std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>>
       message_promises_block128_;
 
+  template <typename T>
+  using promise_map_t =
+      std::unordered_map<std::size_t,
+                         std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<std::vector<T>>>>;
+  ENCRYPTO::type_map<promise_map_t, std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t,
+                     __uint128_t>
+      message_promises_int_;
+
   // have we already set the choices for this OT batch?
   std::unordered_set<std::size_t> set_real_choices_;
   std::mutex real_choices_mutex_;
@@ -135,7 +152,6 @@ struct OTExtensionSenderData {
 
   /// receiver's mask that are needed to construct matrix @param V_
   std::array<ENCRYPTO::AlignedBitVector, 128> u_;
-
 
   std::array<ENCRYPTO::ReusablePromise<std::size_t>, 128> u_promises_;
   std::array<ENCRYPTO::ReusableFuture<std::size_t>, 128> u_futures_;

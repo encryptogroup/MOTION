@@ -26,6 +26,7 @@
 #include "utility/bit_vector.h"
 #include "utility/block.h"
 #include "utility/reusable_future.h"
+#include "utility/type_traits.hpp"
 
 namespace ENCRYPTO {
 
@@ -204,6 +205,89 @@ class XCOTBitReceiver : public BasicCOTReceiver {
 
   // the output for the receiver
   BitVector<> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+
+// sender implementation of batched additive-correlated ots
+template <typename T>  //, typename U = is_unsigned_int_t<T>>
+class ACOTSender : public BasicCOTSender {
+  using enabled_t_ = is_unsigned_int_t<T>;
+
+ public:
+  ACOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t vector_size,
+             MOTION::OTExtensionSenderData &data,
+             const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // set the correlations for the OTs in this batch
+  void SetCorrelations(std::vector<T> &&correlations) {
+    assert(correlations.size() == num_ots_ * vector_size_);
+    correlations_ = std::move(correlations);
+  }
+  void SetCorrelations(const std::vector<T> &correlations) {
+    assert(correlations.size() == num_ots_ * vector_size_);
+    correlations_ = correlations;
+  }
+
+  // get the correlations for the OTs in this batch
+  const std::vector<T> &GetCorrelations() const { return correlations_; }
+
+  // compute the sender's outputs
+  void ComputeOutputs();
+
+  // get the sender's outputs
+  std::vector<T> &GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // dimension of each sender-input/output
+  const std::size_t vector_size_;
+
+  // the correlation vector
+  std::vector<T> correlations_;
+
+  // the "0 output" for the sender (the "1 output" can be computed by applying the correlation)
+  std::vector<T> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched additive-correlated ots
+template <typename T>  //, typename = is_unsigned_int_t<T>>
+class ACOTReceiver : public BasicCOTReceiver {
+  using enabled_t_ = is_unsigned_int_t<T>;
+
+ public:
+  ACOTReceiver(std::size_t ot_id, std::size_t num_ots, std::size_t vector_size,
+               MOTION::OTExtensionReceiverData &data,
+               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  std::vector<T> &GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+ private:
+  // dimension of each sender-input/output
+  const std::size_t vector_size_;
+
+  // future for the sender's message
+  ReusableFiberFuture<std::vector<T>> sender_message_future_;
+
+  // the output for the receiver
+  std::vector<T> outputs_;
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
