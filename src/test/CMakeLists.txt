@@ -14,6 +14,7 @@ add_executable(motiontest
         test_motion_main.cpp
         test_mt.cpp
         test_ot.cpp
+        test_ot_flavors.cpp
         test_reusable_future.cpp
         test_rng.cpp
         test_sb.cpp
