@@ -1034,17 +1034,19 @@ void OTExtensionMessageHandler::received_message(std::size_t,
   auto index_i = MOTION::Communication::GetOTExtensionMessage(message->payload()->data())->i();
   auto ot_data =
       MOTION::Communication::GetOTExtensionMessage(message->payload()->data())->buffer()->data();
+  auto ot_data_size =
+      MOTION::Communication::GetOTExtensionMessage(message->payload()->data())->buffer()->size();
   switch (message_type) {
     case MOTION::Communication::MessageType::OTExtensionReceiverMasks: {
-      data_.MessageReceived(ot_data, MOTION::OTExtensionDataType::rcv_masks, index_i);
+      data_.MessageReceived(ot_data, ot_data_size, MOTION::OTExtensionDataType::rcv_masks, index_i);
       break;
     }
     case MOTION::Communication::MessageType::OTExtensionReceiverCorrections: {
-      data_.MessageReceived(ot_data, MOTION::OTExtensionDataType::rcv_corrections, index_i);
+      data_.MessageReceived(ot_data, ot_data_size, MOTION::OTExtensionDataType::rcv_corrections, index_i);
       break;
     }
     case MOTION::Communication::MessageType::OTExtensionSender: {
-      data_.MessageReceived(ot_data, MOTION::OTExtensionDataType::snd_messages, index_i);
+      data_.MessageReceived(ot_data, ot_data_size, MOTION::OTExtensionDataType::snd_messages, index_i);
       break;
     }
     default: {

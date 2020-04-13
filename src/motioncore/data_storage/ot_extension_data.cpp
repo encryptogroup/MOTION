@@ -44,8 +44,9 @@ OTExtensionSenderData::OTExtensionSenderData() {
   for (std::size_t i = 0; i < u_promises_.size(); ++i) u_futures_[i] = u_promises_[i].get_future();
 }
 
-void OTExtensionData::MessageReceived(const std::uint8_t *message, const OTExtensionDataType type,
-                                      const std::size_t i) {
+void OTExtensionData::MessageReceived(const std::uint8_t *message,
+                                      [[maybe_unused]] std::size_t message_size,
+                                      const OTExtensionDataType type, const std::size_t i) {
   switch (type) {
     case OTExtensionDataType::rcv_masks: {
       {

@@ -162,8 +162,8 @@ struct OTExtensionSenderData {
 };
 
 struct OTExtensionData {
-  void MessageReceived(const std::uint8_t* message, const OTExtensionDataType type,
-                       const std::size_t ot_id = 0);
+  void MessageReceived(const std::uint8_t* message, std::size_t message_size,
+                       const OTExtensionDataType type, const std::size_t ot_id = 0);
 
   OTExtensionReceiverData& GetReceiverData() { return receiver_data_; }
   const OTExtensionReceiverData& GetReceiverData() const { return receiver_data_; }
