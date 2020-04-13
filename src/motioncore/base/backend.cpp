@@ -65,7 +65,7 @@ Backend::Backend(Communication::CommunicationLayer &communication_layer, Configu
       config_(config),
       register_(std::make_shared<Register>(logger_)) {
   motion_base_provider_ = std::make_unique<Crypto::MotionBaseProvider>(communication_layer_, logger_);
-  base_ot_provider_ = std::make_unique<BaseOTProvider>(communication_layer, *logger_);
+  base_ot_provider_ = std::make_unique<BaseOTProvider>(communication_layer, logger_);
 
   communication_layer_.set_logger(logger_);
   auto my_id = communication_layer_.get_my_id();

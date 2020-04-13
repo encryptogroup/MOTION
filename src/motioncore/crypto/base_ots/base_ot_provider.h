@@ -55,7 +55,7 @@ struct ReceiverMsgs {
 
 class BaseOTProvider {
  public:
-  BaseOTProvider(Communication::CommunicationLayer&, Logger&);
+  BaseOTProvider(Communication::CommunicationLayer&, std::shared_ptr<Logger>);
   ~BaseOTProvider();
   void ComputeBaseOTs();
   void ImportBaseOTs(std::size_t party_id, const ReceiverMsgs& msgs);
@@ -69,7 +69,7 @@ class BaseOTProvider {
   std::size_t num_parties_;
   std::size_t my_id_;
   std::vector<BaseOTsData> data_;
-  Logger& logger_;
+  std::shared_ptr<Logger> logger_;
   bool finished_;
 
   Logger& GetLogger();

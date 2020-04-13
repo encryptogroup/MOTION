@@ -40,7 +40,8 @@ namespace MOTION {
 class BaseOTMessageHandler : public Communication::MessageHandler {
  public:
   // Create a handler object for a given party
-  BaseOTMessageHandler(std::size_t party_id, Logger &logger, BaseOTsData &base_ots_data)
+  BaseOTMessageHandler(std::size_t party_id, std::shared_ptr<Logger> logger,
+                       BaseOTsData &base_ots_data)
       : party_id_(party_id), logger_(logger), base_ots_data_(base_ots_data) {}
 
   // Method which is called on received messages.
@@ -50,7 +51,7 @@ class BaseOTMessageHandler : public Communication::MessageHandler {
 
  private:
   std::size_t party_id_;
-  Logger &logger_;
+  std::shared_ptr<Logger> logger_;
   BaseOTsData &base_ots_data_;
 };
 
@@ -73,7 +74,7 @@ void BaseOTMessageHandler::received_message(std::size_t, std::vector<std::uint8_
 // Implementation of BaseOTProvider: -------------------------------------------
 
 BaseOTProvider::BaseOTProvider(Communication::CommunicationLayer &communication_layer,
-                               Logger &logger)
+                               std::shared_ptr<Logger> logger)
     : communication_layer_(communication_layer),
       num_parties_(communication_layer.get_num_parties()),
       my_id_(communication_layer.get_my_id()),
@@ -96,7 +97,9 @@ BaseOTProvider::~BaseOTProvider() {
 
 void BaseOTProvider::ComputeBaseOTs() {
   if constexpr (MOTION_DEBUG) {
-    logger_.LogDebug("Start computing base OTs");
+    if (logger_) {
+      logger_->LogDebug("Start computing base OTs");
+    }
   }
 
   std::vector<std::future<void>> task_futures;
@@ -155,7 +158,9 @@ void BaseOTProvider::ComputeBaseOTs() {
   finished_ = true;
 
   if constexpr (MOTION_DEBUG) {
-    logger_.LogDebug("Finished computing base OTs");
+    if (logger_) {
+      logger_->LogDebug("Finished computing base OTs");
+    }
   }
 }
 
