@@ -38,11 +38,9 @@ class BasicCOTSender : public OTVector {
   void WaitSetup() const;
 
  protected:
-  BasicCOTSender(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                 const OTProtocol p,
+  BasicCOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
-                 MOTION::OTExtensionSenderData &data)
-      : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {}
+                 MOTION::OTExtensionSenderData &data);
 
   // reference to data storage
   MOTION::OTExtensionSenderData &data_;
@@ -68,11 +66,9 @@ class BasicCOTReceiver : public OTVector {
   void SendCorrections();
 
  protected:
-  BasicCOTReceiver(const std::size_t ot_id, const std::size_t num_ots, const std::size_t bitlen,
-                   const OTProtocol p,
+  BasicCOTReceiver(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
                    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
-                   MOTION::OTExtensionReceiverData &data)
-      : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {}
+                   MOTION::OTExtensionReceiverData &data);
 
   // reference to data storage
   MOTION::OTExtensionReceiverData &data_;
@@ -86,11 +82,10 @@ class BasicCOTReceiver : public OTVector {
 
 // sender implementation of batched xor-correlated 128 bit string OT with a
 // fixed correlation for all OTs
-class FixedXCOT128VectorSender : public BasicCOTSender {
+class FixedXCOT128Sender : public BasicCOTSender {
  public:
-  FixedXCOT128VectorSender(std::size_t ot_id, std::size_t num_ots,
-                           MOTION::OTExtensionSenderData &data,
-                           const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  FixedXCOT128Sender(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
+                     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // set the *single* correlation for all OTs in this batch
   void SetCorrelation(block128_t correlation) { correlation_ = correlation; }
@@ -120,11 +115,11 @@ class FixedXCOT128VectorSender : public BasicCOTSender {
 
 // receiver implementation of batched xor-correlated 128 bit string OT with a
 // fixed correlation for all OTs
-class FixedXCOT128VectorReceiver : public BasicCOTReceiver {
+class FixedXCOT128Receiver : public BasicCOTReceiver {
  public:
-  FixedXCOT128VectorReceiver(std::size_t ot_id, std::size_t num_ots,
-                             MOTION::OTExtensionReceiverData &data,
-                             const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  FixedXCOT128Receiver(std::size_t ot_id, std::size_t num_ots,
+                       MOTION::OTExtensionReceiverData &data,
+                       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -147,11 +142,10 @@ class FixedXCOT128VectorReceiver : public BasicCOTReceiver {
 };
 
 // sender implementation of batched xor-correlated bit ots
-class XCOTBitVectorSender : public BasicCOTSender {
+class XCOTBitSender : public BasicCOTSender {
  public:
-  XCOTBitVectorSender(std::size_t ot_id, std::size_t num_ots,
-                      MOTION::OTExtensionSenderData &data,
-                      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  XCOTBitSender(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
+                const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // set the correlations for the OTs in this batch
   void SetCorrelations(BitVector<> &&correlations) {
@@ -190,11 +184,10 @@ class XCOTBitVectorSender : public BasicCOTSender {
 };
 
 // receiver implementation of batched xor-correlated bit ots
-class XCOTBitVectorReceiver : public BasicCOTReceiver {
+class XCOTBitReceiver : public BasicCOTReceiver {
  public:
-  XCOTBitVectorReceiver(std::size_t ot_id, std::size_t num_ots,
-                        MOTION::OTExtensionReceiverData &data,
-                        const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  XCOTBitReceiver(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
+                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   // compute the receiver's outputs
   void ComputeOutputs();

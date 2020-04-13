@@ -37,10 +37,10 @@
 namespace ENCRYPTO::ObliviousTransfer {
 class OTVectorSender;
 class OTVectorReceiver;
-class FixedXCOT128VectorSender;
-class FixedXCOT128VectorReceiver;
-class XCOTBitVectorSender;
-class XCOTBitVectorReceiver;
+class FixedXCOT128Sender;
+class FixedXCOT128Receiver;
+class XCOTBitSender;
+class XCOTBitReceiver;
 }  // namespace ENCRYPTO::ObliviousTransfer
 
 namespace MOTION::Gates::BMR {
@@ -164,13 +164,13 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   BMRANDGate(const Gate &) = delete;
 
  private:
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorSender>>>
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitSender>>>
       s_ots_1_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorSender>>>
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128Sender>>>
       s_ots_kappa_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorReceiver>>>
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitReceiver>>>
       r_ots_1_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128VectorReceiver>>>
+  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128Receiver>>>
       r_ots_kappa_;
 
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_garbled_rows_;

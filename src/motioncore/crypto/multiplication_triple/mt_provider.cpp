@@ -156,8 +156,8 @@ static void generate_random_triples(IntegerMTVector<T>& mts, std::size_t num_mts
 
 static void register_helper_bool(
     ENCRYPTO::ObliviousTransfer::OTProvider& ot_provider,
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorSender>& ots_snd,
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorReceiver>& ots_rcv,
+    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitSender>& ots_snd,
+    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitReceiver>& ots_rcv,
     const BinaryMTVector& bit_mts, std::size_t num_bit_mts) {
   ots_snd = ot_provider.RegisterSendXCOTBit(num_bit_mts);
   ots_rcv = ot_provider.RegisterReceiveXCOTBit(num_bit_mts);
@@ -237,8 +237,8 @@ void MTProviderFromOTs::RegisterOTs() {
 }
 
 static void parse_helper_bool(
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorSender>& ots_snd,
-    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitVectorReceiver>& ots_rcv,
+    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitSender>& ots_snd,
+    std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitReceiver>& ots_rcv,
     BinaryMTVector& bit_mts) {
   ots_snd->ComputeOutputs();
   ots_rcv->ComputeOutputs();

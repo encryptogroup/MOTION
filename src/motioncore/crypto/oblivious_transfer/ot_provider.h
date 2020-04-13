@@ -66,10 +66,10 @@ enum OTProtocol : uint {
   XCOTBit = 6
 };
 
-class FixedXCOT128VectorSender;
-class FixedXCOT128VectorReceiver;
-class XCOTBitVectorSender;
-class XCOTBitVectorReceiver;
+class FixedXCOT128Sender;
+class FixedXCOT128Receiver;
+class XCOTBitSender;
+class XCOTBitReceiver;
 
 class OTVector {
  public:
@@ -261,10 +261,10 @@ class OTProviderSender {
   std::shared_ptr<OTVectorSender> &RegisterOTs(
       const std::size_t bitlen, const std::size_t num_ots, const OTProtocol p,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-  std::shared_ptr<FixedXCOT128VectorSender> RegisterFixedXCOT128s(
+  std::shared_ptr<FixedXCOT128Sender> RegisterFixedXCOT128s(
       const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-  std::shared_ptr<XCOTBitVectorSender> RegisterXCOTBits(
+  std::shared_ptr<XCOTBitSender> RegisterXCOTBits(
       const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -301,10 +301,10 @@ class OTProviderReceiver {
   std::shared_ptr<OTVectorReceiver> &RegisterOTs(
       const std::size_t bitlen, const std::size_t num_ots, const OTProtocol p,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-  std::shared_ptr<FixedXCOT128VectorReceiver> RegisterFixedXCOT128s(
+  std::shared_ptr<FixedXCOT128Receiver> RegisterFixedXCOT128s(
       const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-  std::shared_ptr<XCOTBitVectorReceiver> RegisterXCOTBits(
+  std::shared_ptr<XCOTBitReceiver> RegisterXCOTBits(
       const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
@@ -342,13 +342,12 @@ class OTProvider {
     return sender_provider_.RegisterOTs(bitlen, num_ots, p, Send_);
   }
 
-  [[nodiscard]] std::shared_ptr<FixedXCOT128VectorSender> RegisterSendFixedXCOT128(
+  [[nodiscard]] std::shared_ptr<FixedXCOT128Sender> RegisterSendFixedXCOT128(
       const std::size_t num_ots = 1) {
     return sender_provider_.RegisterFixedXCOT128s(num_ots, Send_);
   }
 
-  [[nodiscard]] std::shared_ptr<XCOTBitVectorSender> RegisterSendXCOTBit(
-      const std::size_t num_ots = 1) {
+  [[nodiscard]] std::shared_ptr<XCOTBitSender> RegisterSendXCOTBit(const std::size_t num_ots = 1) {
     return sender_provider_.RegisterXCOTBits(num_ots, Send_);
   }
 
@@ -362,12 +361,12 @@ class OTProvider {
     return receiver_provider_.RegisterOTs(bitlen, num_ots, p, Send_);
   }
 
-  [[nodiscard]] std::shared_ptr<FixedXCOT128VectorReceiver> RegisterReceiveFixedXCOT128(
+  [[nodiscard]] std::shared_ptr<FixedXCOT128Receiver> RegisterReceiveFixedXCOT128(
       const std::size_t num_ots = 1) {
     return receiver_provider_.RegisterFixedXCOT128s(num_ots, Send_);
   }
 
-  [[nodiscard]] std::shared_ptr<XCOTBitVectorReceiver> RegisterReceiveXCOTBit(
+  [[nodiscard]] std::shared_ptr<XCOTBitReceiver> RegisterReceiveXCOTBit(
       const std::size_t num_ots = 1) {
     return receiver_provider_.RegisterXCOTBits(num_ots, Send_);
   }

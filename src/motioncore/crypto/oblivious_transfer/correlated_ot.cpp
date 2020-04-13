@@ -30,9 +30,37 @@ namespace ObliviousTransfer {
 
 // ---------- BasicCOTSender ----------
 
+BasicCOTSender::BasicCOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen,
+                               OTProtocol p,
+                               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                               MOTION::OTExtensionSenderData &data)
+    : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {
+  data_.received_correction_offsets_cond_.emplace(
+      ot_id_, std::make_unique<FiberCondition>([this]() {
+        std::scoped_lock lock(data_.corrections_mutex_);
+        return data_.received_correction_offsets_.find(ot_id_) !=
+               data_.received_correction_offsets_.end();
+      }));
+  data_.y0_.resize(data_.y0_.size() + num_ots);
+  data_.y1_.resize(data_.y1_.size() + num_ots);
+  data_.bitlengths_.resize(data_.bitlengths_.size() + num_ots, bitlen);
+  data_.corrections_.Resize(data_.corrections_.GetSize() + num_ots);
+  data_.num_ots_in_batch_.emplace(ot_id, num_ots);
+}
+
 void BasicCOTSender::WaitSetup() const { data_.setup_finished_cond_->Wait(); }
 
 // ---------- BasicCOTReceiver ----------
+
+BasicCOTReceiver::BasicCOTReceiver(
+    std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
+    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+    MOTION::OTExtensionReceiverData &data)
+    : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {
+  data_.outputs_.resize(ot_id + num_ots);
+  data_.bitlengths_.resize(ot_id + num_ots, bitlen);
+  data_.num_ots_in_batch_.emplace(ot_id, num_ots);
+}
 
 void BasicCOTReceiver::WaitSetup() const { data_.setup_finished_cond_->Wait(); }
 
@@ -46,27 +74,14 @@ void BasicCOTReceiver::SendCorrections() {
   corrections_sent_ = true;
 }
 
-// ---------- FixedXCOT128VectorSender ----------
+// ---------- FixedXCOT128Sender ----------
 
-FixedXCOT128VectorSender::FixedXCOT128VectorSender(
-    const std::size_t ot_id, const std::size_t num_ots, MOTION::OTExtensionSenderData &data,
+FixedXCOT128Sender::FixedXCOT128Sender(
+    std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTSender(ot_id, num_ots, 128, FixedXCOT128, Send, data) {
-  data_.received_correction_offsets_cond_.emplace(
-      ot_id_, std::make_unique<FiberCondition>([this]() {
-        std::scoped_lock lock(data_.corrections_mutex_);
-        return data_.received_correction_offsets_.find(ot_id_) !=
-               data_.received_correction_offsets_.end();
-      }));
+    : BasicCOTSender(ot_id, num_ots, 128, FixedXCOT128, Send, data) {}
 
-  data_.y0_.resize(data_.y0_.size() + num_ots);
-  data_.y1_.resize(data_.y1_.size() + num_ots);
-  data_.bitlengths_.resize(data_.bitlengths_.size() + num_ots, 128);
-  data_.corrections_.Resize(data_.corrections_.GetSize() + num_ots);
-  data_.num_ots_in_batch_.emplace(ot_id, num_ots);
-}
-
-void FixedXCOT128VectorSender::ComputeOutputs() {
+void FixedXCOT128Sender::ComputeOutputs() {
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -99,11 +114,11 @@ void FixedXCOT128VectorSender::ComputeOutputs() {
     }
   }
 
-  // remember that the have done this
+  // remember that we have done this
   outputs_computed_ = true;
 }
 
-void FixedXCOT128VectorSender::SendMessages() const {
+void FixedXCOT128Sender::SendMessages() const {
   block128_vector buffer(num_ots_, correlation_);
   const auto &ot_ext_snd = data_;
   for (std::size_t i = 0; i < num_ots_; ++i) {
@@ -114,22 +129,17 @@ void FixedXCOT128VectorSender::SendMessages() const {
                                                              buffer.byte_size(), ot_id_));
 }
 
-// ---------- FixedXCOT128VectorReceiver ----------
+// ---------- FixedXCOT128Receiver ----------
 
-FixedXCOT128VectorReceiver::FixedXCOT128VectorReceiver(
+FixedXCOT128Receiver::FixedXCOT128Receiver(
     const std::size_t ot_id, const std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : BasicCOTReceiver(ot_id, num_ots, 128, FixedXCOT128, Send, data), outputs_(num_ots) {
-  data_.outputs_.resize(ot_id + num_ots);
-  data_.bitlengths_.resize(ot_id + num_ots, 128);
-  data_.num_ots_in_batch_.emplace(ot_id, num_ots);
-
   data_.fixed_xcot_128_ot_.emplace(ot_id);
-
   sender_message_future_ = data_.RegisterForXCOT128SenderMessage(ot_id);
 }
 
-void FixedXCOT128VectorReceiver::ComputeOutputs() {
+void FixedXCOT128Receiver::ComputeOutputs() {
   if (outputs_computed_) {
     // already done
     return;
@@ -149,27 +159,14 @@ void FixedXCOT128VectorReceiver::ComputeOutputs() {
   outputs_computed_ = true;
 }
 
-// ---------- XCOTBitVectorSender ----------
+// ---------- XCOTBitSender ----------
 
-XCOTBitVectorSender::XCOTBitVectorSender(
-    const std::size_t ot_id, const std::size_t num_ots, MOTION::OTExtensionSenderData &data,
-    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTSender(ot_id, num_ots, 1, XCOTBit, Send, data) {
-  data_.received_correction_offsets_cond_.emplace(
-      ot_id_, std::make_unique<FiberCondition>([this]() {
-        std::scoped_lock lock(data_.corrections_mutex_);
-        return data_.received_correction_offsets_.find(ot_id_) !=
-               data_.received_correction_offsets_.end();
-      }));
+XCOTBitSender::XCOTBitSender(const std::size_t ot_id, const std::size_t num_ots,
+                             MOTION::OTExtensionSenderData &data,
+                             const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicCOTSender(ot_id, num_ots, 1, XCOTBit, Send, data) {}
 
-  data_.y0_.resize(data_.y0_.size() + num_ots);
-  data_.y1_.resize(data_.y1_.size() + num_ots);
-  data_.bitlengths_.resize(data_.bitlengths_.size() + num_ots, 1);
-  data_.corrections_.Resize(data_.corrections_.GetSize() + num_ots);
-  data_.num_ots_in_batch_.emplace(ot_id, num_ots);
-}
-
-void XCOTBitVectorSender::ComputeOutputs() {
+void XCOTBitSender::ComputeOutputs() {
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -199,11 +196,11 @@ void XCOTBitVectorSender::ComputeOutputs() {
     }
   }
 
-  // remember that the have done this
+  // remember that we have done this
   outputs_computed_ = true;
 }
 
-void XCOTBitVectorSender::SendMessages() const {
+void XCOTBitSender::SendMessages() const {
   auto buffer = correlations_;
   for (std::size_t i = 0; i < num_ots_; ++i) {
     auto tmp = buffer[i];
@@ -215,22 +212,17 @@ void XCOTBitVectorSender::SendMessages() const {
                                                              buffer.GetData().size(), ot_id_));
 }
 
-// ---------- XCOTBitVectorReceiver ----------
+// ---------- XCOTBitReceiver ----------
 
-XCOTBitVectorReceiver::XCOTBitVectorReceiver(
-    const std::size_t ot_id, const std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
-    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+XCOTBitReceiver::XCOTBitReceiver(const std::size_t ot_id, const std::size_t num_ots,
+                                 MOTION::OTExtensionReceiverData &data,
+                                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : BasicCOTReceiver(ot_id, num_ots, 1, XCOTBit, Send, data), outputs_(num_ots) {
-  data_.outputs_.resize(ot_id + num_ots);
-  data_.bitlengths_.resize(ot_id + num_ots, 1);
-  data_.num_ots_in_batch_.emplace(ot_id, num_ots);
-
   data_.xcot_1_ot_.emplace(ot_id);
-
   sender_message_future_ = data_.RegisterForXCOTBitSenderMessage(ot_id);
 }
 
-void XCOTBitVectorReceiver::ComputeOutputs() {
+void XCOTBitReceiver::ComputeOutputs() {
   if (outputs_computed_) {
     // already done
     return;
