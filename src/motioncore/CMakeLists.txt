@@ -27,7 +27,7 @@ add_library(motion
         crypto/multiplication_triple/mt_provider.cpp
         crypto/multiplication_triple/sb_provider.cpp
         crypto/multiplication_triple/sp_provider.cpp
-        crypto/oblivious_transfer/correlated_ot.cpp
+        crypto/oblivious_transfer/ot_flavors.cpp
         crypto/oblivious_transfer/ot_provider.cpp
         crypto/output_message_handler.cpp
         crypto/pseudo_random_generator.cpp

@@ -63,7 +63,8 @@ enum OTProtocol : uint {
   ACOT = 3,  // additively-correlated OT
   invalid_OT = 4,
   FixedXCOT128 = 5,
-  XCOTBit = 6
+  XCOTBit = 6,
+  GOT128 = 7
 };
 
 class FixedXCOT128Sender;
@@ -74,6 +75,10 @@ template <typename T>
 class ACOTSender;
 template <typename T>
 class ACOTReceiver;
+class GOT128Sender;
+class GOT128Receiver;
+class GOTBitSender;
+class GOTBitReceiver;
 
 class OTVector {
  public:
@@ -275,6 +280,12 @@ class OTProviderSender {
   std::shared_ptr<ACOTSender<T>> RegisterACOT(
       std::size_t num_ots, std::size_t vector_size,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  std::shared_ptr<GOT128Sender> RegisterGOT128(
+      const std::size_t num_ots,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  std::shared_ptr<GOTBitSender> RegisterGOTBit(
+      const std::size_t num_ots,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   auto GetNumOTs() const { return total_ots_count_; }
 
@@ -318,6 +329,12 @@ class OTProviderReceiver {
   template <typename T>
   std::shared_ptr<ACOTReceiver<T>> RegisterACOT(
       std::size_t num_ots, std::size_t vector_size,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  std::shared_ptr<GOT128Receiver> RegisterGOT128(
+      const std::size_t num_ots,
+      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+  std::shared_ptr<GOTBitReceiver> RegisterGOTBit(
+      const std::size_t num_ots,
       const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
   std::size_t GetNumOTs() const { return total_ots_count_; }
@@ -369,6 +386,16 @@ class OTProvider {
     return sender_provider_.RegisterACOT<T>(num_ots, vector_size, Send_);
   }
 
+  [[nodiscard]] std::shared_ptr<GOT128Sender> RegisterSendGOT128(
+      const std::size_t num_ots = 1) {
+    return sender_provider_.RegisterGOT128(num_ots, Send_);
+  }
+
+  [[nodiscard]] std::shared_ptr<GOTBitSender> RegisterSendGOTBit(
+      const std::size_t num_ots = 1) {
+    return sender_provider_.RegisterGOTBit(num_ots, Send_);
+  }
+
   /// @param bitlen Bit-length of the messages
   /// @param num_ots Number of OTs
   /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
@@ -393,6 +420,16 @@ class OTProvider {
   [[nodiscard]] std::shared_ptr<ACOTReceiver<T>> RegisterReceiveACOT(
       std::size_t num_ots = 1, std::size_t vector_size = 1) {
     return receiver_provider_.RegisterACOT<T>(num_ots, vector_size, Send_);
+  }
+
+  [[nodiscard]] std::shared_ptr<GOT128Receiver> RegisterReceiveGOT128(
+      const std::size_t num_ots = 1) {
+    return receiver_provider_.RegisterGOT128(num_ots, Send_);
+  }
+
+  [[nodiscard]] std::shared_ptr<GOTBitReceiver> RegisterReceiveGOTBit(
+      const std::size_t num_ots = 1) {
+    return receiver_provider_.RegisterGOTBit(num_ots, Send_);
   }
 
   [[nodiscard]] std::size_t GetNumOTsReceiver() const { return receiver_provider_.GetNumOTs(); }

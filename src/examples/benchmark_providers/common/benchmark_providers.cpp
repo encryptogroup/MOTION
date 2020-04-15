@@ -28,7 +28,7 @@
 #include "crypto/multiplication_triple/mt_provider.h"
 #include "crypto/multiplication_triple/sb_provider.h"
 #include "crypto/multiplication_triple/sp_provider.h"
-#include "crypto/oblivious_transfer/correlated_ot.h"
+#include "crypto/oblivious_transfer/ot_flavors.h"
 #include "statistics/analysis.h"
 #include "statistics/run_time_stats.h"
 #include "utility/block.h"

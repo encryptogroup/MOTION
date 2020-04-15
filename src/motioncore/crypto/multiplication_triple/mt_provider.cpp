@@ -24,7 +24,7 @@
 
 #include "mt_provider.h"
 
-#include "crypto/oblivious_transfer/correlated_ot.h"
+#include "crypto/oblivious_transfer/ot_flavors.h"
 #include "statistics/run_time_stats.h"
 #include "utility/constants.h"
 #include "utility/logger.h"

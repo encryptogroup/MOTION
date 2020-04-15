@@ -29,7 +29,7 @@
 #include "communication/communication_layer.h"
 #include "crypto/bmr_provider.h"
 #include "crypto/motion_base_provider.h"
-#include "crypto/oblivious_transfer/correlated_ot.h"
+#include "crypto/oblivious_transfer/ot_flavors.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "crypto/pseudo_random_generator.h"
 #include "data_storage/bmr_data.h"

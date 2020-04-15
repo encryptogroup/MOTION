@@ -21,19 +21,19 @@
 // SOFTWARE.
 
 #include "communication/ot_extension_message.h"
-#include "correlated_ot.h"
 #include "data_storage/ot_extension_data.h"
+#include "ot_flavors.h"
 #include "utility/fiber_condition.h"
 
 namespace ENCRYPTO {
 namespace ObliviousTransfer {
 
-// ---------- BasicCOTSender ----------
+// ---------- BasicOTSender ----------
 
-BasicCOTSender::BasicCOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen,
-                               OTProtocol p,
-                               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
-                               MOTION::OTExtensionSenderData &data)
+BasicOTSender::BasicOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen,
+                             OTProtocol p,
+                             const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                             MOTION::OTExtensionSenderData &data)
     : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {
   data_.received_correction_offsets_cond_.emplace(
       ot_id_, std::make_unique<FiberCondition>([this]() {
@@ -48,23 +48,23 @@ BasicCOTSender::BasicCOTSender(std::size_t ot_id, std::size_t num_ots, std::size
   data_.num_ots_in_batch_.emplace(ot_id, num_ots);
 }
 
-void BasicCOTSender::WaitSetup() const { data_.setup_finished_cond_->Wait(); }
+void BasicOTSender::WaitSetup() const { data_.setup_finished_cond_->Wait(); }
 
-// ---------- BasicCOTReceiver ----------
+// ---------- BasicOTReceiver ----------
 
-BasicCOTReceiver::BasicCOTReceiver(
-    std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
-    const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
-    MOTION::OTExtensionReceiverData &data)
+BasicOTReceiver::BasicOTReceiver(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen,
+                                 OTProtocol p,
+                                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                                 MOTION::OTExtensionReceiverData &data)
     : OTVector(ot_id, num_ots, bitlen, p, Send), data_(data) {
   data_.outputs_.resize(ot_id + num_ots);
   data_.bitlengths_.resize(ot_id + num_ots, bitlen);
   data_.num_ots_in_batch_.emplace(ot_id, num_ots);
 }
 
-void BasicCOTReceiver::WaitSetup() const { data_.setup_finished_cond_->Wait(); }
+void BasicOTReceiver::WaitSetup() const { data_.setup_finished_cond_->Wait(); }
 
-void BasicCOTReceiver::SendCorrections() {
+void BasicOTReceiver::SendCorrections() {
   if (choices_.Empty()) {
     throw std::runtime_error("Choices in COT must be set before calling SendCorrections()");
   }
@@ -79,7 +79,7 @@ void BasicCOTReceiver::SendCorrections() {
 FixedXCOT128Sender::FixedXCOT128Sender(
     std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTSender(ot_id, num_ots, 128, FixedXCOT128, Send, data) {}
+    : BasicOTSender(ot_id, num_ots, 128, FixedXCOT128, Send, data) {}
 
 void FixedXCOT128Sender::ComputeOutputs() {
   if (outputs_computed_) {
@@ -134,7 +134,7 @@ void FixedXCOT128Sender::SendMessages() const {
 FixedXCOT128Receiver::FixedXCOT128Receiver(
     const std::size_t ot_id, const std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTReceiver(ot_id, num_ots, 128, FixedXCOT128, Send, data), outputs_(num_ots) {
+    : BasicOTReceiver(ot_id, num_ots, 128, FixedXCOT128, Send, data), outputs_(num_ots) {
   data_.msg_type_.emplace(ot_id, MOTION::OTMsgType::block128);
   sender_message_future_ = data_.RegisterForBlock128SenderMessage(ot_id, num_ots);
 }
@@ -164,7 +164,7 @@ void FixedXCOT128Receiver::ComputeOutputs() {
 XCOTBitSender::XCOTBitSender(const std::size_t ot_id, const std::size_t num_ots,
                              MOTION::OTExtensionSenderData &data,
                              const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTSender(ot_id, num_ots, 1, XCOTBit, Send, data) {}
+    : BasicOTSender(ot_id, num_ots, 1, XCOTBit, Send, data) {}
 
 void XCOTBitSender::ComputeOutputs() {
   if (outputs_computed_) {
@@ -217,7 +217,7 @@ void XCOTBitSender::SendMessages() const {
 XCOTBitReceiver::XCOTBitReceiver(const std::size_t ot_id, const std::size_t num_ots,
                                  MOTION::OTExtensionReceiverData &data,
                                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTReceiver(ot_id, num_ots, 1, XCOTBit, Send, data), outputs_(num_ots) {
+    : BasicOTReceiver(ot_id, num_ots, 1, XCOTBit, Send, data), outputs_(num_ots) {
   data_.msg_type_.emplace(ot_id, MOTION::OTMsgType::bit);
   sender_message_future_ = data_.RegisterForBitSenderMessage(ot_id, num_ots);
 }
@@ -248,7 +248,7 @@ template <typename T>
 ACOTSender<T>::ACOTSender(const std::size_t ot_id, const std::size_t num_ots,
                           const std::size_t vector_size, MOTION::OTExtensionSenderData &data,
                           const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTSender(ot_id, num_ots, 8 * sizeof(T) * vector_size, ACOT, Send, data),
+    : BasicOTSender(ot_id, num_ots, 8 * sizeof(T) * vector_size, ACOT, Send, data),
       vector_size_(vector_size) {}
 
 template <typename T>
@@ -328,7 +328,7 @@ template <typename T>
 ACOTReceiver<T>::ACOTReceiver(const std::size_t ot_id, const std::size_t num_ots,
                               const std::size_t vector_size, MOTION::OTExtensionReceiverData &data,
                               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
-    : BasicCOTReceiver(ot_id, num_ots, 8 * sizeof(T) * vector_size, ACOT, Send, data),
+    : BasicOTReceiver(ot_id, num_ots, 8 * sizeof(T) * vector_size, ACOT, Send, data),
       vector_size_(vector_size),
       outputs_(num_ots * vector_size) {
   constexpr auto int_type_to_msg_type = boost::hana::make_map(
@@ -392,6 +392,135 @@ template class ACOTReceiver<std::uint16_t>;
 template class ACOTReceiver<std::uint32_t>;
 template class ACOTReceiver<std::uint64_t>;
 template class ACOTReceiver<__uint128_t>;
+
+// ---------- GOT128Sender ----------
+
+GOT128Sender::GOT128Sender(std::size_t ot_id, std::size_t num_ots,
+                           MOTION::OTExtensionSenderData &data,
+                           const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicOTSender(ot_id, num_ots, 128, GOT, Send, data) {}
+
+void GOT128Sender::SendMessages() const {
+  block128_vector buffer = std::move(inputs_);
+
+  const auto &ot_ext_snd = data_;
+  ot_ext_snd.received_correction_offsets_cond_.at(ot_id_)->Wait();
+  std::unique_lock lock(ot_ext_snd.corrections_mutex_);
+  const auto corrections = ot_ext_snd.corrections_.Subset(ot_id_, ot_id_ + num_ots_);
+  lock.unlock();
+
+  for (std::size_t i = 0; i < num_ots_; ++i) {
+    if (corrections[i]) {
+      block128_t diff = buffer[2 * i] ^ buffer[2 * i + 1];
+      buffer[2 * i] ^= diff ^ ot_ext_snd.y0_.at(ot_id_ + i).GetData().data();
+      buffer[2 * i + 1] ^= diff ^ ot_ext_snd.y1_.at(ot_id_ + i).GetData().data();
+    } else {
+      buffer[2 * i] ^= ot_ext_snd.y0_.at(ot_id_ + i).GetData().data();
+      buffer[2 * i + 1] ^= ot_ext_snd.y1_.at(ot_id_ + i).GetData().data();
+    }
+  }
+  Send_(MOTION::Communication::BuildOTExtensionMessageSender(buffer.data()->data(),
+                                                             buffer.byte_size(), ot_id_));
+}
+
+// ---------- GOT128Receiver ----------
+
+GOT128Receiver::GOT128Receiver(const std::size_t ot_id, const std::size_t num_ots,
+                               MOTION::OTExtensionReceiverData &data,
+                               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicOTReceiver(ot_id, num_ots, 128, FixedXCOT128, Send, data), outputs_(num_ots) {
+  data_.msg_type_.emplace(ot_id, MOTION::OTMsgType::block128);
+  sender_message_future_ = data_.RegisterForBlock128SenderMessage(ot_id, 2 * num_ots);
+}
+
+void GOT128Receiver::ComputeOutputs() {
+  if (outputs_computed_) {
+    // already done
+    return;
+  }
+
+  if (!corrections_sent_) {
+    throw std::runtime_error("Choices in OT must be se(n)t before calling ComputeOutputs()");
+  }
+  auto sender_message = sender_message_future_.get();
+  const auto random_choices = data_.random_choices_->Subset(ot_id_, ot_id_ + num_ots_);
+
+  for (std::size_t i = 0; i < num_ots_; ++i) {
+    block128_t diff;
+    if (random_choices[i]) {
+      diff = sender_message[2 * i + 1];
+    } else {
+      diff = sender_message[2 * i];
+    }
+    outputs_[i] = diff ^ data_.outputs_.at(ot_id_ + i).GetData().data();
+  }
+  outputs_computed_ = true;
+}
+
+// ---------- GOTBitSender ----------
+
+GOTBitSender::GOTBitSender(std::size_t ot_id, std::size_t num_ots,
+                           MOTION::OTExtensionSenderData &data,
+                           const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicOTSender(ot_id, num_ots, 1, GOT, Send, data) {}
+
+void GOTBitSender::SendMessages() const {
+  auto buffer = std::move(inputs_);
+
+  const auto &ot_ext_snd = data_;
+  ot_ext_snd.received_correction_offsets_cond_.at(ot_id_)->Wait();
+  std::unique_lock lock(ot_ext_snd.corrections_mutex_);
+  const auto corrections = ot_ext_snd.corrections_.Subset(ot_id_, ot_id_ + num_ots_);
+  lock.unlock();
+
+  for (std::size_t i = 0; i < num_ots_; ++i) {
+    bool b0 = buffer.Get(2 * i);
+    bool b1 = buffer.Get(2 * i + 1);
+    if (corrections[i]) {
+      buffer.Set(b1 ^ ot_ext_snd.y0_.at(ot_id_ + i).Get(0), 2 * i);
+      buffer.Set(b0 ^ ot_ext_snd.y1_.at(ot_id_ + i).Get(0), 2 * i + 1);
+    } else {
+      buffer.Set(b0 ^ ot_ext_snd.y0_.at(ot_id_ + i).Get(0), 2 * i);
+      buffer.Set(b1 ^ ot_ext_snd.y1_.at(ot_id_ + i).Get(0), 2 * i + 1);
+    }
+  }
+  Send_(MOTION::Communication::BuildOTExtensionMessageSender(buffer.GetData().data(),
+                                                             buffer.GetData().size(), ot_id_));
+}
+
+// ---------- GOTBitReceiver ----------
+
+GOTBitReceiver::GOTBitReceiver(const std::size_t ot_id, const std::size_t num_ots,
+                               MOTION::OTExtensionReceiverData &data,
+                               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
+    : BasicOTReceiver(ot_id, num_ots, 1, GOT, Send, data), outputs_(num_ots) {
+  data_.msg_type_.emplace(ot_id, MOTION::OTMsgType::bit);
+  sender_message_future_ = data_.RegisterForBitSenderMessage(ot_id, 2 * num_ots);
+}
+
+void GOTBitReceiver::ComputeOutputs() {
+  if (outputs_computed_) {
+    // already done
+    return;
+  }
+
+  if (!corrections_sent_) {
+    throw std::runtime_error("Choices in OT must be se(n)t before calling ComputeOutputs()");
+  }
+  auto sender_message = sender_message_future_.get();
+  const auto random_choices = data_.random_choices_->Subset(ot_id_, ot_id_ + num_ots_);
+
+  for (std::size_t i = 0; i < num_ots_; ++i) {
+    bool diff;
+    if (random_choices[i]) {
+      diff = sender_message.Get(2 * i + 1);
+    } else {
+      diff = sender_message.Get(2 * i);
+    }
+    outputs_.Set(diff ^ data_.outputs_.at(ot_id_ + i).Get(0), i);
+  }
+  outputs_computed_ = true;
+}
 
 }  // namespace ObliviousTransfer
 }  // namespace ENCRYPTO

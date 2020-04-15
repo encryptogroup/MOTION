@@ -33,22 +33,22 @@ namespace ENCRYPTO {
 namespace ObliviousTransfer {
 
 // base class capturing the common things among the sender implementations
-class BasicCOTSender : public OTVector {
+class BasicOTSender : public OTVector {
  public:
   // wait that the ot extension setup has finished
   void WaitSetup() const;
 
  protected:
-  BasicCOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
-                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
-                 MOTION::OTExtensionSenderData &data);
+  BasicOTSender(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
+                const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                MOTION::OTExtensionSenderData &data);
 
   // reference to data storage
   MOTION::OTExtensionSenderData &data_;
 };
 
 // base class capturing the common things among the receiver implementations
-class BasicCOTReceiver : public OTVector {
+class BasicOTReceiver : public OTVector {
  public:
   // wait that the ot extension setup has finished
   void WaitSetup() const;
@@ -67,9 +67,9 @@ class BasicCOTReceiver : public OTVector {
   void SendCorrections();
 
  protected:
-  BasicCOTReceiver(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
-                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
-                   MOTION::OTExtensionReceiverData &data);
+  BasicOTReceiver(std::size_t ot_id, std::size_t num_ots, std::size_t bitlen, OTProtocol p,
+                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send,
+                  MOTION::OTExtensionReceiverData &data);
 
   // reference to data storage
   MOTION::OTExtensionReceiverData &data_;
@@ -83,7 +83,7 @@ class BasicCOTReceiver : public OTVector {
 
 // sender implementation of batched xor-correlated 128 bit string OT with a
 // fixed correlation for all OTs
-class FixedXCOT128Sender : public BasicCOTSender {
+class FixedXCOT128Sender : public BasicOTSender {
  public:
   FixedXCOT128Sender(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
                      const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
@@ -116,7 +116,7 @@ class FixedXCOT128Sender : public BasicCOTSender {
 
 // receiver implementation of batched xor-correlated 128 bit string OT with a
 // fixed correlation for all OTs
-class FixedXCOT128Receiver : public BasicCOTReceiver {
+class FixedXCOT128Receiver : public BasicOTReceiver {
  public:
   FixedXCOT128Receiver(std::size_t ot_id, std::size_t num_ots,
                        MOTION::OTExtensionReceiverData &data,
@@ -143,7 +143,7 @@ class FixedXCOT128Receiver : public BasicCOTReceiver {
 };
 
 // sender implementation of batched xor-correlated bit ots
-class XCOTBitSender : public BasicCOTSender {
+class XCOTBitSender : public BasicOTSender {
  public:
   XCOTBitSender(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
@@ -185,7 +185,7 @@ class XCOTBitSender : public BasicCOTSender {
 };
 
 // receiver implementation of batched xor-correlated bit ots
-class XCOTBitReceiver : public BasicCOTReceiver {
+class XCOTBitReceiver : public BasicOTReceiver {
  public:
   XCOTBitReceiver(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
                   const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
@@ -210,10 +210,9 @@ class XCOTBitReceiver : public BasicCOTReceiver {
   bool outputs_computed_ = false;
 };
 
-
 // sender implementation of batched additive-correlated ots
 template <typename T>  //, typename U = is_unsigned_int_t<T>>
-class ACOTSender : public BasicCOTSender {
+class ACOTSender : public BasicOTSender {
   using enabled_t_ = is_unsigned_int_t<T>;
 
  public:
@@ -262,7 +261,7 @@ class ACOTSender : public BasicCOTSender {
 
 // receiver implementation of batched additive-correlated ots
 template <typename T>  //, typename = is_unsigned_int_t<T>>
-class ACOTReceiver : public BasicCOTReceiver {
+class ACOTReceiver : public BasicOTReceiver {
   using enabled_t_ = is_unsigned_int_t<T>;
 
  public:
@@ -288,6 +287,100 @@ class ACOTReceiver : public BasicCOTReceiver {
 
   // the output for the receiver
   std::vector<T> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// sender implementation of batched 128 bit string OT
+class GOT128Sender : public BasicOTSender {
+ public:
+  GOT128Sender(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
+               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // set the message pairs for all OTs in this batch
+  void SetInputs(block128_vector &&inputs) { inputs_ = std::move(inputs); }
+  void SetInputs(const block128_vector &inputs) { inputs_ = inputs; }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // the sender's inputs, 2 * num_ots blocks
+  block128_vector inputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched 128 bit string OT
+class GOT128Receiver : public BasicOTReceiver {
+ public:
+  GOT128Receiver(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
+                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  const block128_vector &GetOutputs() const {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+ private:
+  // future for the sender's message
+  ReusableFiberFuture<block128_vector> sender_message_future_;
+
+  // the output for the receiver
+  block128_vector outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// sender implementation of batched 1 bit string OT
+class GOTBitSender : public BasicOTSender {
+ public:
+  GOTBitSender(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionSenderData &data,
+               const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // set the message pairs for all OTs in this batch
+  void SetInputs(BitVector<> &&inputs) { inputs_ = std::move(inputs); }
+  void SetInputs(const BitVector<> &inputs) { inputs_ = inputs; }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // the sender's inputs, 2 * num_ots blocks
+  BitVector<> inputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched 128 bit string OT
+class GOTBitReceiver : public BasicOTReceiver {
+ public:
+  GOTBitReceiver(std::size_t ot_id, std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
+                 const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  const BitVector<> &GetOutputs() const {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+ private:
+  // future for the sender's message
+  ReusableFiberFuture<BitVector<>> sender_message_future_;
+
+  // the output for the receiver
+  BitVector<> outputs_;
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
