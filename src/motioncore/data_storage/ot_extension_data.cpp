@@ -87,19 +87,26 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message,
         assert(bs_it != receiver_data_.num_ots_in_batch_.end());
         const auto batch_size = bs_it->second;
 
-        if (receiver_data_.fixed_xcot_128_ot_.count(i) == 1) {
-          // XXX: new implementation, don't do the work here, just put the
-          // message into the future
-          auto promise_it = receiver_data_.xcot_128_ot_message_promises_.find(i);
-          assert(promise_it != receiver_data_.xcot_128_ot_message_promises_.end());
-          promise_it->second.set_value(ENCRYPTO::block128_vector(batch_size, message));
-          return;
-        } else if (receiver_data_.xcot_1_ot_.count(i) == 1) {
-          // XXX: new implementation, don't do the work here
-          auto promise_it = receiver_data_.xcot_1_ot_message_promises_.find(i);
-          assert(promise_it != receiver_data_.xcot_1_ot_message_promises_.end());
-          promise_it->second.set_value(ENCRYPTO::BitVector<>(message, batch_size));
-          return;
+        auto msg_type = receiver_data_.msg_type_.find(i);
+        if (msg_type != receiver_data_.msg_type_.end()) {
+          switch (msg_type->second) {
+            case OTMsgType::block128: {
+              auto promise_it = receiver_data_.message_promises_block128_.find(i);
+              assert(promise_it != receiver_data_.message_promises_block128_.end());
+              auto &[size, promise] = promise_it->second;
+              assert(size * 16 == message_size);
+              promise.set_value(ENCRYPTO::block128_vector(size, message));
+              return;
+            } break;
+            case OTMsgType::bit: {
+              auto promise_it = receiver_data_.message_promises_bit_.find(i);
+              assert(promise_it != receiver_data_.message_promises_bit_.end());
+              auto &[size, promise] = promise_it->second;
+              assert((size + 7) / 8 == message_size);
+              promise.set_value(ENCRYPTO::BitVector<>(message, size));
+              return;
+            } break;
+          }
         }
 
         auto it_c = receiver_data_.output_conds_.find(i);
@@ -208,27 +215,27 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message,
 }
 
 ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
-OTExtensionReceiverData::RegisterForXCOT128SenderMessage(const std::size_t ot_id) {
+OTExtensionReceiverData::RegisterForBlock128SenderMessage(std::size_t ot_id, std::size_t size) {
   ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
   auto fut = promise.get_future();
   auto [it, success] =
-      xcot_128_ot_message_promises_.insert({ot_id, std::move(promise)});
+      message_promises_block128_.emplace(ot_id, std::make_pair(size, std::move(promise)));
   if (!success) {
     throw std::runtime_error(
-        fmt::format("tried to register twice for XCOT128SenderMessage for OT#{}", ot_id));
+        fmt::format("tried to register twice for Block128SenderMessage for OT#{}", ot_id));
   }
   return fut;
 }
 
 ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
-OTExtensionReceiverData::RegisterForXCOTBitSenderMessage(const std::size_t ot_id) {
+OTExtensionReceiverData::RegisterForBitSenderMessage(std::size_t ot_id, std::size_t size) {
   ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
   auto fut = promise.get_future();
   auto [it, success] =
-      xcot_1_ot_message_promises_.insert({ot_id, std::move(promise)});
+      message_promises_bit_.emplace(ot_id, std::make_pair(size, std::move(promise)));
   if (!success) {
     throw std::runtime_error(
-        fmt::format("tried to register twice for XCOTBitSenderMessage for OT#{}", ot_id));
+        fmt::format("tried to register twice for BitSenderMessage for OT#{}", ot_id));
   }
   return fut;
 }

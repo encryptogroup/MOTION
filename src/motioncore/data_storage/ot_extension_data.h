@@ -52,14 +52,19 @@ enum OTExtensionDataType : uint {
   OTExtension_invalid_data_type = 3
 };
 
+enum class OTMsgType {
+  bit,
+  block128,
+};
+
 struct OTExtensionReceiverData {
   OTExtensionReceiverData();
   ~OTExtensionReceiverData() = default;
 
   [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
-  RegisterForXCOT128SenderMessage(std::size_t ot_id);
-  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
-  RegisterForXCOTBitSenderMessage(std::size_t ot_id);
+  RegisterForBlock128SenderMessage(std::size_t ot_id, std::size_t size);
+  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForBitSenderMessage(
+      std::size_t ot_id, std::size_t size);
 
   // matrix of the OT extension scheme
   // XXX: can't we delete this after setup?
@@ -90,13 +95,18 @@ struct OTExtensionReceiverData {
   std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
   std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>> real_choices_cond_;
 
-  // is the new implementation used? (XXX: should be removed at a later point in time)
-  std::unordered_set<std::size_t> fixed_xcot_128_ot_;
-  std::unordered_map<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>
-      xcot_128_ot_message_promises_;
-  std::unordered_set<std::size_t> xcot_1_ot_;
-  std::unordered_map<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>
-      xcot_1_ot_message_promises_;
+  // store the message types of new-style OTs
+  std::unordered_map<std::size_t, OTMsgType> msg_type_;
+
+  // Promises for the sender messages
+  // ot_id -> (vector size, vector promise)
+  std::unordered_map<std::size_t,
+                     std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>>
+      message_promises_bit_;
+  std::unordered_map<
+      std::size_t,
+      std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>>
+      message_promises_block128_;
 
   // have we already set the choices for this OT batch?
   std::unordered_set<std::size_t> set_real_choices_;

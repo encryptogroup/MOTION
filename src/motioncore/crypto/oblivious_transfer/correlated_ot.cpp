@@ -135,8 +135,8 @@ FixedXCOT128Receiver::FixedXCOT128Receiver(
     const std::size_t ot_id, const std::size_t num_ots, MOTION::OTExtensionReceiverData &data,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : BasicCOTReceiver(ot_id, num_ots, 128, FixedXCOT128, Send, data), outputs_(num_ots) {
-  data_.fixed_xcot_128_ot_.emplace(ot_id);
-  sender_message_future_ = data_.RegisterForXCOT128SenderMessage(ot_id);
+  data_.msg_type_.emplace(ot_id, MOTION::OTMsgType::block128);
+  sender_message_future_ = data_.RegisterForBlock128SenderMessage(ot_id, num_ots);
 }
 
 void FixedXCOT128Receiver::ComputeOutputs() {
@@ -218,8 +218,8 @@ XCOTBitReceiver::XCOTBitReceiver(const std::size_t ot_id, const std::size_t num_
                                  MOTION::OTExtensionReceiverData &data,
                                  const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send)
     : BasicCOTReceiver(ot_id, num_ots, 1, XCOTBit, Send, data), outputs_(num_ots) {
-  data_.xcot_1_ot_.emplace(ot_id);
-  sender_message_future_ = data_.RegisterForXCOTBitSenderMessage(ot_id);
+  data_.msg_type_.emplace(ot_id, MOTION::OTMsgType::bit);
+  sender_message_future_ = data_.RegisterForBitSenderMessage(ot_id, num_ots);
 }
 
 void XCOTBitReceiver::ComputeOutputs() {
