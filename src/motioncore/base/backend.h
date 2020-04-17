@@ -60,6 +60,8 @@ using ConfigurationPtr = std::shared_ptr<Configuration>;
 class Register;
 using RegisterPtr = std::shared_ptr<Register>;
 
+class GateExecutor;
+
 namespace Statistics {
 struct RunTimeStats;
 }
@@ -311,6 +313,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::shared_ptr<Logger> logger_;
   ConfigurationPtr config_;
   RegisterPtr register_;
+  std::unique_ptr<GateExecutor> gate_executor_;
 
   std::unique_ptr<Crypto::MotionBaseProvider> motion_base_provider_;
   std::unique_ptr<BaseOTProvider> base_ot_provider_;

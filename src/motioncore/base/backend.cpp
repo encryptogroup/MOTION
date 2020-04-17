@@ -44,6 +44,7 @@
 #include "crypto/multiplication_triple/sp_provider.h"
 #include "crypto/oblivious_transfer/ot_provider.h"
 #include "data_storage/base_ot_data.h"
+#include "executor/gate_executor.h"
 #include "gate/bmr_gate.h"
 #include "gate/boolean_gmw_gate.h"
 #include "register.h"
@@ -51,7 +52,6 @@
 #include "share/boolean_gmw_share.h"
 #include "statistics/run_time_stats.h"
 #include "utility/constants.h"
-#include "utility/fiber_thread_pool/fiber_thread_pool.hpp"
 
 using namespace std::chrono_literals;
 
@@ -63,8 +63,11 @@ Backend::Backend(Communication::CommunicationLayer &communication_layer, Configu
       communication_layer_(communication_layer),
       logger_(logger),
       config_(config),
-      register_(std::make_shared<Register>(logger_)) {
-  motion_base_provider_ = std::make_unique<Crypto::MotionBaseProvider>(communication_layer_, logger_);
+      register_(std::make_shared<Register>(logger_)),
+      gate_executor_(std::make_unique<GateExecutor>(
+          *register_, [this] { RunPreprocessing(); }, logger_)) {
+  motion_base_provider_ =
+      std::make_unique<Crypto::MotionBaseProvider>(communication_layer_, logger_);
   base_ot_provider_ = std::make_unique<BaseOTProvider>(communication_layer, logger_);
 
   communication_layer_.set_logger(logger_);
@@ -153,87 +156,11 @@ void Backend::RunPreprocessing() {
 }
 
 void Backend::EvaluateSequential() {
-  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::evaluate>();
-
-  RunPreprocessing();
-
-  logger_->LogInfo(
-      "Start evaluating the circuit gates sequentially (online after all finished setup)");
-
-  // create a pool with std::thread::hardware_concurrency() no. of threads
-  // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool(0, 2 * register_->GetTotalNumOfGates());
-
-  // ------------------------------ setup phase ------------------------------
-  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_setup>();
-
-  // evaluate the setup phase of all the gates
-  for (auto &gate : register_->GetGates()) {
-    fpool.post([&] { gate->EvaluateSetup(); });
-  }
-  register_->GetGatesSetupDoneCondition()->Wait();
-  assert(register_->GetNumOfEvaluatedGateSetups() == register_->GetTotalNumOfGates());
-
-  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::gates_setup>();
-
-  // ------------------------------ online phase ------------------------------
-  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::gates_online>();
-
-  // evaluate the online phase of all the gates
-  for (auto &gate : register_->GetGates()) {
-    fpool.post([&] { gate->EvaluateOnline(); });
-  }
-  register_->GetGatesOnlineDoneCondition()->Wait();
-  assert(register_->GetNumOfEvaluatedGates() == register_->GetTotalNumOfGates());
-
-  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::gates_online>();
-
-  // --------------------------------------------------------------------------
-
-  fpool.join();
-
-  // XXX: since we never pop elements from the active queue, clear it manually for now
-  // otherwise there will be complains that it is not empty upon repeated execution
-  // -> maybe remove the active queue in the future
-  register_->ClearActiveQueue();
-
-  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::evaluate>();
+  gate_executor_->evaluate_setup_online(run_time_stats_.back());
 }
 
 void Backend::EvaluateParallel() {
-  logger_->LogInfo(
-      "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
-
-  run_time_stats_.back().record_start<Statistics::RunTimeStats::StatID::evaluate>();
-
-  // Run preprocessing setup in a separate thread
-  auto f_preprocessing = std::async(std::launch::async, [this] { RunPreprocessing(); });
-
-  // create a pool with std::thread::hardware_concurrency() no. of threads
-  // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool(0, register_->GetTotalNumOfGates());
-
-  // evaluate all the gates
-  for (auto &gate : register_->GetGates()) {
-    fpool.post([&] {
-      gate->EvaluateSetup();
-      // XXX: maybe insert a 'yield' here?
-      gate->EvaluateOnline();
-    });
-  }
-
-  f_preprocessing.get();
-
-  // we have to wait until all gates are evaluated before we close the pool
-  register_->GetGatesOnlineDoneCondition()->Wait();
-  fpool.join();
-
-  // XXX: since we never pop elements from the active queue, clear it manually for now
-  // otherwise there will be complains that it is not empty upon repeated execution
-  // -> maybe remove the active queue in the future
-  register_->ClearActiveQueue();
-
-  run_time_stats_.back().record_end<Statistics::RunTimeStats::StatID::evaluate>();
+  gate_executor_->evaluate(run_time_stats_.back());
 }
 
 const Gates::Interfaces::GatePtr &Backend::GetGate(std::size_t gate_id) const {

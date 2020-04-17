@@ -37,6 +37,7 @@ add_library(motion
         data_storage/bmr_data.cpp
         data_storage/ot_extension_data.cpp
         data_storage/shared_bits_data.cpp
+        executor/gate_executor.cpp
         gate/bmr_gate.cpp
         gate/boolean_gmw_gate.cpp
         gate/constant_gate.cpp
