@@ -57,9 +57,9 @@ class FiberCondition {
     return condition_function_();
   }
 
-  void NotifyOne() noexcept { condition_variable_.notify_one(); }
+  void NotifyOne() const noexcept { condition_variable_.notify_one(); }
 
-  void NotifyAll() noexcept { condition_variable_.notify_all(); }
+  void NotifyAll() const noexcept { condition_variable_.notify_all(); }
 
   // the variables that the condition function depends on shall only be modified under the locked
   // mutex
