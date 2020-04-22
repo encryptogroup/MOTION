@@ -195,8 +195,8 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
     auto message_type = message->message_type();
     if constexpr (MOTION_DEBUG) {
       if (logger_) {
-        logger_->LogDebug(
-            fmt::format("received message of {} from party {}", to_string(message_type), party_id));
+        logger_->LogDebug(fmt::format("received message of type {} from party {}",
+                                      EnumNameMessageType(message_type), party_id));
       }
     }
     if (message_type == MessageType::TerminationMessage) {
@@ -217,8 +217,8 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
         fbh->received_message(party_id, std::move(raw_message));
       }
       if (logger_) {
-        logger_->LogError(
-            fmt::format("dropping message of type {} from party {}", message_type, party_id));
+        logger_->LogError(fmt::format("dropping message of type {} from party {}",
+                                      EnumNameMessageType(message_type), party_id));
       }
     }
   }
@@ -290,7 +290,7 @@ void CommunicationLayer::start() {
         }
         for (auto& [type, h] : impl_->message_handlers_.at(party_id)) {
           logger_->LogDebug(fmt::format("message_handler installed for party {}, type {}", party_id,
-                                        to_string(type)));
+                                        EnumNameMessageType(type)));
         }
       }
     }
@@ -402,7 +402,7 @@ void CommunicationLayer::register_message_handler(message_handler_f handler_fact
       if constexpr (MOTION_DEBUG) {
         if (logger_) {
           logger_->LogDebug(fmt::format("registered handler for messages of type {} from party {}",
-                                        to_string(type), party_id));
+                                        EnumNameMessageType(type), party_id));
         }
       }
     }
@@ -420,8 +420,9 @@ void CommunicationLayer::deregister_message_handler(const std::vector<MessageTyp
       map.erase(type);
       if constexpr (MOTION_DEBUG) {
         if (logger_) {
-          logger_->LogDebug(fmt::format(
-              "deregistered handler for messages of type {} from party {}", type, party_id));
+          logger_->LogDebug(
+              fmt::format("deregistered handler for messages of type {} from party {}",
+                          EnumNameMessageType(type), party_id));
         }
       }
     }
