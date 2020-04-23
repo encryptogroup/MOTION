@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2018-2019 Lennart Braun
+// Copyright (c) 2018-2020 Lennart Braun
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -238,7 +238,7 @@ void aesni_ctr_stream_single_block_128_unaligned(const void* round_keys_in, std:
   _mm_storeu_si128(output_ptr, wb);
 }
 
-void aesni_fixed_key_batch_4(const void* round_keys_in, void* input, __uint128_t tweak) {
+void aesni_tmmo_batch_4(const void* round_keys_in, void* input, __uint128_t tweak) {
   alignas(16) std::array<__m128i, aes_num_round_keys_128> round_keys;
   alignas(16) std::array<__m128i, 4> wb_1;
   alignas(16) std::array<__m128i, 4> wb_2;

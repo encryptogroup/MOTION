@@ -130,7 +130,7 @@ TEST(aesni128, ctr_stream_blockwise) {
   EXPECT_EQ(output, expected_output);
 }
 
-TEST(aesni128, fixed_key_batch_4) {
+TEST(aesni128, tmmo_batch_4) {
   std::array<std::uint8_t, aes_key_size_128> key = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
                                                     0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
   alignas(aes_block_size) std::array<std::uint8_t, aes_round_keys_size_128> round_keys;
@@ -152,6 +152,6 @@ TEST(aesni128, fixed_key_batch_4) {
   __uint128_t tweak = 0xdeadbeefdeadcafe;
   tweak <<= 64;
   tweak |= 0xbeefcafecafebeef;
-  aesni_fixed_key_batch_4(round_keys.data(), output.data(), tweak);
+  aesni_tmmo_batch_4(round_keys.data(), output.data(), tweak);
   EXPECT_EQ(output, expected_output);
 }

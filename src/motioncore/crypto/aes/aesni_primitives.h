@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2018-2019 Lennart Braun
+// Copyright (c) 2018-2020 Lennart Braun
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,10 @@ void aesni_ctr_stream_blocks_128_unaligned(const void* round_keys, std::uint64_t
 void aesni_ctr_stream_single_block_128_unaligned(const void* round_keys, std::uint64_t* counter,
                                                  void* output);
 
-// computes the fixed-key contruction from https://eprint.iacr.org/2019/074 on four input blocks
-// inplace
+// Compute the fixed-key contruction TMMO^\pi from Guo et al.
+// (https://eprint.iacr.org/2019/074) on four input blocks inplace.
+//
+// TMMO^\pi(x, i) = \pi(\pi(x) ^ i) ^ \pi(x)
+//
 // * round_keys and output are 16B aligned
-void aesni_fixed_key_batch_4(const void* round_keys, void* input, __uint128_t tweak);
+void aesni_tmmo_batch_4(const void* round_keys, void* input, __uint128_t tweak);
