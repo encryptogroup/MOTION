@@ -59,6 +59,7 @@ add_library(motion
         utility/fiber_thread_pool/pooled_work_stealing.cpp
         utility/helpers.cpp
         utility/logger.cpp
+        utility/runtime_info.cpp
         utility/thread.cpp
         wire/bmr_wire.cpp
         wire/constant_wire.cpp
