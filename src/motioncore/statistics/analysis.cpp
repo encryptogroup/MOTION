@@ -21,9 +21,14 @@
 // SOFTWARE.
 
 #include "analysis.h"
-#include <fmt/format.h>
+
 #include <cmath>
 #include <sstream>
+
+#include <fmt/format.h>
+
+#include "utility/runtime_info.h"
+#include "utility/version.h"
 
 namespace MOTION {
 namespace Statistics {
@@ -67,6 +72,10 @@ std::string AccumulatedRunTimeStats::print_human_readable() const {
   std::string unit = "ms";
 
   ss << "===========================================================================\n"
+     << fmt::format("MOTION version: {} @ {}\n", get_git_version(), get_git_branch())
+     << fmt::format("invocation: {}\n", get_cmdline())
+     << fmt::format("by {}@{}, PID {}\n", get_username(), get_hostname(), get_pid())
+     << "---------------------------------------------------------------------------\n"
      << fmt::format("Run time statistics over {} iterations\n", count_)
      << "---------------------------------------------------------------------------\n"
      << fmt::format("                    {:>{}s}    {:>{}s}    {:>{}s}\n", "mean", field_width,
