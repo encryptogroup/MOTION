@@ -57,3 +57,11 @@ void aesni_ctr_stream_single_block_128_unaligned(const void* round_keys, std::ui
 //
 // * round_keys and output are 16B aligned
 void aesni_tmmo_batch_4(const void* round_keys, void* input, __uint128_t tweak);
+
+// Compute the fixed-key contruction MMO^\pi from Guo et al.
+// (https://eprint.iacr.org/2019/074).
+//
+// MMO^\pi(x) = \pi(x) ^ x
+//
+// * round_keys are 16B aligned
+void aesni_mmo_single(const void* round_keys, void* input);

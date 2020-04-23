@@ -155,3 +155,20 @@ TEST(aesni128, tmmo_batch_4) {
   aesni_tmmo_batch_4(round_keys.data(), output.data(), tweak);
   EXPECT_EQ(output, expected_output);
 }
+
+TEST(aesni128, mmo_single) {
+  std::array<std::uint8_t, aes_key_size_128> key = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+                                                    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
+  alignas(aes_block_size) std::array<std::uint8_t, aes_round_keys_size_128> round_keys;
+  std::copy(std::begin(key), std::end(key), std::begin(round_keys));
+  aesni_key_expansion_128(round_keys.data());
+
+  alignas(aes_block_size) std::array<std::uint8_t, aes_block_size> output = {
+      0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41,
+      0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41, 0x41};
+  const std::array<std::uint8_t, aes_block_size> expected_output = {
+      0x2d, 0x6b, 0x7e, 0x98, 0x7b, 0xe6, 0xf5, 0x56,
+      0x84, 0x02, 0xcc, 0x67, 0xe5, 0x20, 0xd4, 0x58};
+  aesni_mmo_single(round_keys.data(), output.data());
+  EXPECT_EQ(output, expected_output);
+}

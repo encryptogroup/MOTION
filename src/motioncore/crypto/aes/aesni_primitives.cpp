@@ -282,3 +282,27 @@ void aesni_tmmo_batch_4(const void* round_keys_in, void* input, __uint128_t twea
   // store \pi(\pi(x) ^ i) ^ \pi(x)
   for (std::size_t j = 0; j < 4; ++j) input_ptr[j] = _mm_xor_si128(wb_2[j], wb_1[j]);
 }
+
+void aesni_mmo_single(const void* round_keys_in, void* input) {
+  alignas(16) __m128i input_block;
+  alignas(16) __m128i wb_1;
+  auto input_ptr = reinterpret_cast<__m128i*>(input);
+  auto round_keys = reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size));
+
+  // load x
+  input_block = *input_ptr;
+  // compute wb_1 <- \pi(x)
+  wb_1 = _mm_xor_si128(input_block, round_keys[0]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[1]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[2]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[3]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[4]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[5]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[6]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[7]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[8]);
+  wb_1 = _mm_aesenc_si128(wb_1, round_keys[9]);
+  wb_1 = _mm_aesenclast_si128(wb_1, round_keys[10]);
+  // store \pi(x) ^ x
+  *input_ptr = _mm_xor_si128(wb_1, input_block);
+}
