@@ -69,6 +69,19 @@ add_library(motion
 add_library(MOTION::motion ALIAS motion)
 
 
+# Add version information to library
+file(TOUCH "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
+target_sources(motion PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
+add_custom_target(motion_version
+                   COMMAND "${CMAKE_COMMAND}"
+                      "-DVERSION_CPP_IN:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/utility/version.cpp.in"
+                      "-P" "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cmake"
+                   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/utility/version.cpp.in"
+                   BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/version.cpp.new"
+                   COMMENT "gather information about git repository and generating version.cpp")
+add_dependencies(motion motion_version)
+
+
 # -fvect-cost-model flag is not supported by clang(++)
 if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(MOTION_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
