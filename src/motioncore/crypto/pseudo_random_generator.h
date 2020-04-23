@@ -24,12 +24,14 @@
 
 #pragma once
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 
+#include "aes/aesni_primitives.h"
 #include "utility/helpers.h"
 
 using uint128_t = __uint128_t;
@@ -59,6 +61,7 @@ class PRG {
                                      const std::size_t num = 1);
 
   std::vector<std::byte> FixedKeyAES(const std::byte *x, const uint128_t i);
+  void MMO(std::byte *input);
 
 
   // Implementation of TMMO^\pi
@@ -70,6 +73,7 @@ class PRG {
   ~PRG() = default;
 
  private:
+  alignas(16) std::array<std::byte, aes_round_keys_size_128> round_keys_;
   using EVP_CIPHER_CTX_PTR = std::unique_ptr<EVP_CIPHER_CTX, decltype(&EVP_CIPHER_CTX_free)>;
   static constexpr auto MakeCipherCtx = []() {
     return EVP_CIPHER_CTX_PTR(EVP_CIPHER_CTX_new(), &EVP_CIPHER_CTX_free);

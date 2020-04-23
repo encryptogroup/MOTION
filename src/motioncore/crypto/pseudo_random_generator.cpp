@@ -23,6 +23,9 @@
 // SOFTWARE.
 
 #include "pseudo_random_generator.h"
+#include <cstdint>
+
+#include "aes/aesni_primitives.h"
 
 namespace ENCRYPTO {
 
@@ -33,6 +36,8 @@ void PRG::SetKey(const std::uint8_t *key) {
                               reinterpret_cast<const unsigned char *>(key_.data()), nullptr)) {
     throw(std::runtime_error(fmt::format("Could not re-initialize EVP context")));
   }
+  std::copy(key, key + aes_key_size_128, reinterpret_cast<std::uint8_t *>(round_keys_.data()));
+  aesni_key_expansion_128(round_keys_.data());
   contains_key_ = true;
 }
 
@@ -128,5 +133,7 @@ void PRG::FixedKeyAES(const std::byte *input, const uint128_t tweak, std::byte *
   // compute \pi(\pi(x) ^ i) ^ \pi(x):
   *reinterpret_cast<uint128_t *>(output) ^= *reinterpret_cast<const uint128_t *>(tmp2.data());
 }
+
+void PRG::MMO(std::byte *input) { aesni_mmo_single(round_keys_.data(), input); }
 
 }  // namespace ENCRYPTO
