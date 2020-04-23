@@ -578,22 +578,24 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
       const auto bitlen = bitlengths[c_old];
 
       out1 = choices ^ out0;
+      assert(out0.GetSize() == 128);
+      assert(out1.GetSize() == 128);
       // compute the sender outputs
       if (bitlen <= kappa) {
         // the bit length is smaller than 128 bit
-        out0 = BitVector<>(prg_fixed_key.FixedKeyAES(out0.GetData().data(), c_old), bitlen);
-        out1 = BitVector<>(prg_fixed_key.FixedKeyAES(out1.GetData().data(), c_old), bitlen);
+        prg_fixed_key.MMO(out0.GetMutableData().data());
+        prg_fixed_key.MMO(out1.GetMutableData().data());
+        out0.Resize(bitlen);
+        out1.Resize(bitlen);
       } else {
         // string OT with bit length > 128 bit
         // -> do seed compression and send later only 128 bit seeds
-        auto row = reinterpret_cast<std::byte*>(
-            __builtin_assume_aligned(y0[c_old].GetMutableData().data(), MOTION::MOTION_ALIGNMENT));
-        const auto seed0 = prg_fixed_key.FixedKeyAES(row, c_old);
-        prg_var_key.SetKey(seed0.data());
+        prg_fixed_key.MMO(out0.GetMutableData().data());
+        prg_fixed_key.MMO(out1.GetMutableData().data());
+        prg_var_key.SetKey(out0.GetData().data());
         out0 =
             BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
-        const auto seed1 = prg_fixed_key.FixedKeyAES(out1.GetData().data(), c_old);
-        prg_var_key.SetKey(seed1.data());
+        prg_var_key.SetKey(out1.GetData().data());
         out1 =
             BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
       }
@@ -688,13 +690,15 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
     // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
         auto &o = out[c_old];
+        assert(o.GetSize() == 128);
         const std::size_t bitlen = bitlengths[c_old];
 
         if (bitlen <= kappa) {
-          o = BitVector<>(prg_fixed_key.FixedKeyAES(o.GetData().data(), c_old), bitlen);
+          prg_fixed_key.MMO(o.GetMutableData().data());
+          o.Resize(bitlen);
         } else {
-          auto seed = prg_fixed_key.FixedKeyAES(o.GetData().data(), c_old);
-          prg_var_key.SetKey(seed.data());
+          prg_fixed_key.MMO(o.GetMutableData().data());
+          prg_var_key.SetKey(o.GetData().data());
           o = BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
         }
     }
