@@ -143,6 +143,8 @@ std::optional<std::vector<std::uint8_t>> TCPTransport::receive_message() {
     throw std::runtime_error(
         fmt::format("Error while reading message size socket: {} ({})", ec.message(), ec.value()));
   }
+  statistics_.num_bytes_received += message_size + sizeof(uint32_t);
+  statistics_.num_messages_received += 1;
   return message_buffer;
 }
 
