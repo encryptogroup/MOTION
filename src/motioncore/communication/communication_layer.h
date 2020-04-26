@@ -38,6 +38,7 @@ class Logger;
 namespace Communication {
 
 class MessageHandler;
+struct TransportStatistics;
 
 // Central interface for all communication related functionality
 //
@@ -85,6 +86,8 @@ class CommunicationLayer {
 
   // shutdown the communication layer
   void shutdown();
+
+  std::vector<TransportStatistics> get_transport_statistics() const noexcept;
 
   void set_logger(std::shared_ptr<Logger> logger);
 

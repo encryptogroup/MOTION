@@ -475,6 +475,18 @@ void CommunicationLayer::shutdown() {
   is_shutdown_ = true;
 }
 
+std::vector<TransportStatistics> CommunicationLayer::get_transport_statistics() const noexcept {
+  std::vector<TransportStatistics> stats;
+  stats.reserve(num_parties_);
+  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+    if (party_id == my_id_) {
+      continue;
+    }
+    stats.emplace_back(impl_->transports_.at(party_id)->get_stats());
+  }
+  return stats;
+}
+
 void CommunicationLayer::set_logger(std::shared_ptr<Logger> logger) {
   if (is_started_) {
     throw std::logic_error(
