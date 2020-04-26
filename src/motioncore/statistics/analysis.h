@@ -32,6 +32,11 @@
 #include "run_time_stats.h"
 
 namespace MOTION {
+
+namespace Communication {
+struct TransportStatistics;
+}
+
 namespace Statistics {
 
 struct AccumulatedRunTimeStats {
@@ -50,6 +55,27 @@ struct AccumulatedRunTimeStats {
   void add(const RunTimeStats& stats);
   std::string print_human_readable() const;
 };
+
+struct AccumulatedCommunicationStats {
+  using accumulator_type = boost::accumulators::accumulator_set<
+      std::size_t,
+      boost::accumulators::stats<boost::accumulators::tag::mean, boost::accumulators::tag::sum>>;
+
+  static constexpr std::size_t idx_num_messages_sent = 0;
+  static constexpr std::size_t idx_num_messages_received = 1;
+  static constexpr std::size_t idx_num_bytes_sent = 2;
+  static constexpr std::size_t idx_num_bytes_received = 3;
+
+  std::size_t count_ = 0;
+  std::array<accumulator_type, 4> accumulators_;
+
+  void add(const Communication::TransportStatistics& stats);
+  void add(const std::vector<Communication::TransportStatistics>& stats);
+  std::string print_human_readable() const;
+};
+
+std::string print_stats(const std::string& experiment_name, const AccumulatedRunTimeStats&,
+                        const AccumulatedCommunicationStats&);
 
 }  // namespace Statistics
 }  // namespace MOTION

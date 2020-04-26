@@ -27,6 +27,7 @@
 
 #include <fmt/format.h>
 
+#include "communication/transport.h"
 #include "utility/runtime_info.h"
 #include "utility/version.h"
 
@@ -71,12 +72,7 @@ std::string AccumulatedRunTimeStats::print_human_readable() const {
   std::stringstream ss;
   std::string unit = "ms";
 
-  ss << "===========================================================================\n"
-     << fmt::format("MOTION version: {} @ {}\n", get_git_version(), get_git_branch())
-     << fmt::format("invocation: {}\n", get_cmdline())
-     << fmt::format("by {}@{}, PID {}\n", get_username(), get_hostname(), get_pid())
-     << "---------------------------------------------------------------------------\n"
-     << fmt::format("Run time statistics over {} iterations\n", count_)
+  ss << fmt::format("Run time statistics over {} iterations\n", count_)
      << "---------------------------------------------------------------------------\n"
      << fmt::format("                    {:>{}s}    {:>{}s}    {:>{}s}\n", "mean", field_width,
                     "median", field_width, "stddev", field_width)
@@ -96,9 +92,61 @@ std::string AccumulatedRunTimeStats::print_human_readable() const {
      << format_line("Gates Setup", unit, at(accumulators_, StatID::gates_setup), field_width)
      << format_line("Gates Online", unit, at(accumulators_, StatID::gates_online), field_width)
      << "---------------------------------------------------------------------------\n"
-     << format_line("Circuit Evaluation", unit, at(accumulators_, StatID::evaluate), field_width)
-     << "===========================================================================\n";
+     << format_line("Circuit Evaluation", unit, at(accumulators_, StatID::evaluate), field_width);
 
+  return ss.str();
+}
+
+void AccumulatedCommunicationStats::add(const Communication::TransportStatistics& stats) {
+  accumulators_[idx_num_messages_sent](stats.num_messages_sent);
+  accumulators_[idx_num_messages_received](stats.num_messages_received);
+  accumulators_[idx_num_bytes_sent](stats.num_bytes_sent);
+  accumulators_[idx_num_bytes_received](stats.num_bytes_received);
+  ++count_;
+}
+
+void AccumulatedCommunicationStats::add(
+    const std::vector<Communication::TransportStatistics>& stats) {
+  for (const auto& s : stats) {
+    add(s);
+  }
+}
+
+std::string AccumulatedCommunicationStats::print_human_readable() const {
+  std::stringstream ss;
+  ss << "Communication with each other party:\n"
+     << fmt::format("Sent: {:0.3f} MiB in {:d} messages\n",
+                    boost::accumulators::mean(accumulators_[idx_num_bytes_sent]) / 1048576,
+                    static_cast<std::size_t>(
+                        boost::accumulators::mean(accumulators_[idx_num_messages_sent])))
+     << fmt::format("Received: {:0.3f} MiB in {:d} messages\n",
+                    boost::accumulators::mean(accumulators_[idx_num_bytes_received]) / 1048576,
+                    static_cast<std::size_t>(
+                        boost::accumulators::mean(accumulators_[idx_num_messages_received])));
+  return ss.str();
+}
+
+std::string print_motion_info() {
+  std::stringstream ss;
+  ss << fmt::format("MOTION version: {} @ {}\n", get_git_version(), get_git_branch())
+     << fmt::format("invocation: {}\n", get_cmdline())
+     << fmt::format("by {}@{}, PID {}\n", get_username(), get_hostname(), get_pid());
+  return ss.str();
+}
+
+std::string print_stats(const std::string& experiment_name,
+                        const AccumulatedRunTimeStats& exec_stats,
+                        const AccumulatedCommunicationStats& comm_stats) {
+  std::stringstream ss;
+  ss << "===========================================================================\n"
+     << experiment_name << "\n"
+     << "===========================================================================\n"
+     << print_motion_info()
+     << "===========================================================================\n"
+     << exec_stats.print_human_readable()
+     << "===========================================================================\n"
+     << comm_stats.print_human_readable()
+     << "===========================================================================\n";
   return ss.str();
 }
 
