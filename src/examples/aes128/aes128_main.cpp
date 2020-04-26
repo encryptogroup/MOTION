@@ -58,6 +58,7 @@ int main(int ac, char* av[]) {
     const std::string protocol_str{vm["protocol"].as<std::string>()};
     auto check = vm["check"].as<bool>();
     MOTION::Statistics::AccumulatedRunTimeStats accumulated_stats;
+    MOTION::Statistics::AccumulatedCommunicationStats accumulated_comm_stats;
 
     for (std::size_t i = 0; i < num_repetitions; ++i) {
       MOTION::PartyPtr party{CreateParty(vm)};
@@ -72,9 +73,13 @@ int main(int ac, char* av[]) {
       } else {
         throw std::invalid_argument("Only GMW or BMR is allowed");
       }
+      auto comm_stats = party->get_communication_layer().get_transport_statistics();
+      accumulated_comm_stats.add(comm_stats);
     }
 
-    std::cout << accumulated_stats.print_human_readable() << std::endl;
+    std::cout << MOTION::Statistics::print_stats(
+        fmt::format("AES128 with {} SIMD values in {}", num_simd, protocol_str), accumulated_stats,
+        accumulated_comm_stats);
 
   } catch (std::runtime_error& e) {
     std::cerr << e.what() << "\n";

@@ -95,17 +95,23 @@ int main(int ac, char* av[]) {
 
   for (const auto comb : combinations) {
     MOTION::Statistics::AccumulatedRunTimeStats accumulated_stats;
+    MOTION::Statistics::AccumulatedCommunicationStats accumulated_comm_stats;
     for (std::size_t i = 0; i < num_repetitions; ++i) {
       MOTION::PartyPtr party{CreateParty(vm)};
       // establish communication channels with other parties
       auto stats =
           EvaluateProtocol(party, comb.num_simd_, comb.bit_size_, comb.protocol_, comb.op_type_);
       accumulated_stats.add(stats);
+      auto comm_stats = party->get_communication_layer().get_transport_statistics();
+      accumulated_comm_stats.add(comm_stats);
     }
-    std::cout << fmt::format("Protocol {} operation {} bit size {} SIMD {}\n",
-                             MOTION::ToString(comb.protocol_), ENCRYPTO::ToString(comb.op_type_),
+    std::cout << fmt::format(MOTION::ToString(comb.protocol_), ENCRYPTO::ToString(comb.op_type_),
                              comb.bit_size_, comb.num_simd_);
-    std::cout << accumulated_stats.print_human_readable() << std::endl;
+    std::cout << MOTION::Statistics::print_stats(
+        fmt::format("Protocol {} operation {} bit size {} SIMD {}",
+                    MOTION::ToString(comb.protocol_), ENCRYPTO::ToString(comb.op_type_),
+                    comb.bit_size_, comb.num_simd_),
+        accumulated_stats, accumulated_comm_stats);
   }
   return EXIT_SUCCESS;
 }

@@ -92,14 +92,18 @@ int main(int ac, char* av[]) {
   auto chosen_combs = ots_flag ? combs_ots : combs;
   for (const auto comb : chosen_combs) {
     MOTION::Statistics::AccumulatedRunTimeStats accumulated_stats;
+    MOTION::Statistics::AccumulatedCommunicationStats accumulated_comm_stats;
     for (std::size_t i = 0; i < num_repetitions; ++i) {
       MOTION::PartyPtr party{CreateParty(vm)};
       auto stats = BenchmarkProvider(party, comb.batch_size_, comb.p_, comb.bit_size_);
       accumulated_stats.add(stats);
+      auto comm_stats = party->get_communication_layer().get_transport_statistics();
+      accumulated_comm_stats.add(comm_stats);
     }
-    std::cout << fmt::format("Provider {} bit size {} batch size {}\n", ToString(comb.p_),
-                             comb.bit_size_, comb.batch_size_);
-    std::cout << accumulated_stats.print_human_readable() << std::endl;
+    std::cout << MOTION::Statistics::print_stats(
+        fmt::format("Provider {} bit size {} batch size {}", ToString(comb.p_), comb.bit_size_,
+                    comb.batch_size_),
+        accumulated_stats, accumulated_comm_stats);
   }
   return EXIT_SUCCESS;
 }
