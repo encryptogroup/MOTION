@@ -27,6 +27,7 @@
 #include "base/backend.h"
 #include "communication/bmr_message.h"
 #include "communication/communication_layer.h"
+#include "crypto/aes/aesni_primitives.h"
 #include "crypto/bmr_provider.h"
 #include "crypto/motion_base_provider.h"
 #include "crypto/oblivious_transfer/ot_flavors.h"
@@ -768,6 +769,7 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
 
   // allocate enough space for num_wires * num_simd garbled tables
   garbled_tables_.resize(size_of_all_garbled_tables);
+  garbled_tables_.set_to_zero();
 
   // store futures for the (partial) garbled tables we will receive during garbling
   received_garbled_rows_ = backend_.get_bmr_provider().register_for_garbled_rows(gate_id_, size_of_all_garbled_tables);
@@ -965,12 +967,13 @@ void BMRANDGate::EvaluateSetup() {
     }
   }  // for each wire
 
+  // AES key expansion
   ENCRYPTO::PRG prg;
   prg.SetKey(get_motion_base_provider().get_aes_fixed_key().data());
+  const auto aes_round_keys = prg.get_round_keys();
 
   // Compute garbled rows
   // First, set rows to PRG outputs XOR key
-
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out{std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i))};
     assert(bmr_out);
@@ -985,88 +988,25 @@ void BMRANDGate::EvaluateSetup() {
       const auto &key_b_0{bmr_b->GetSecretKeys().at(simd_i)};
       const auto &key_b_1{key_b_0 ^ R};
 
+      // TODO: fix gate id computation
+      const auto gate_id = static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
+
+      aesni_bmr_dkc(aes_round_keys, key_a_0.data(), key_b_0.data(), gate_id, num_parties,
+                    &garbled_tables_[gt_index(wire_i, simd_i, 0, 0)]);
+      aesni_bmr_dkc(aes_round_keys, key_a_0.data(), key_b_1.data(), gate_id, num_parties,
+                    &garbled_tables_[gt_index(wire_i, simd_i, 1, 0)]);
+      aesni_bmr_dkc(aes_round_keys, key_a_1.data(), key_b_0.data(), gate_id, num_parties,
+                    &garbled_tables_[gt_index(wire_i, simd_i, 2, 0)]);
+      aesni_bmr_dkc(aes_round_keys, key_a_1.data(), key_b_1.data(), gate_id, num_parties,
+                    &garbled_tables_[gt_index(wire_i, simd_i, 3, 0)]);
+
+      const auto &key_w_0 = bmr_out->GetSecretKeys()[simd_i];
+      garbled_tables_[gt_index(wire_i, simd_i, 0, my_id)] ^= key_w_0;
+      garbled_tables_[gt_index(wire_i, simd_i, 1, my_id)] ^= key_w_0;
+      garbled_tables_[gt_index(wire_i, simd_i, 2, my_id)] ^= key_w_0;
+      garbled_tables_[gt_index(wire_i, simd_i, 3, my_id)] ^= key_w_0 ^ R;
+
       for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-        uint128_t tweak{party_i};
-        tweak <<= 64;
-        tweak += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
-
-        ENCRYPTO::block128_t mask_a_0;
-        ENCRYPTO::block128_t mask_a_1;
-        ENCRYPTO::block128_t mask_b_0;
-        ENCRYPTO::block128_t mask_b_1;
-        prg.FixedKeyAES(key_a_0.data(), tweak, mask_a_0.data());
-        prg.FixedKeyAES(key_a_1.data(), tweak, mask_a_1.data());
-        prg.FixedKeyAES(key_b_0.data(), tweak, mask_b_0.data());
-        prg.FixedKeyAES(key_b_1.data(), tweak, mask_b_1.data());
-
-        if constexpr (MOTION_VERBOSE_DEBUG) {
-          GetLogger().LogTrace(fmt::format(
-              "Gate#{} (BMR AND gate) Party#{} keys: a0 {} ({}) a1 {} ({}) b0 {} ({}) b1 {} ({})\n",
-              gate_id_, my_id, key_a_0.as_string(), mask_a_0.as_string(), key_a_1.as_string(),
-              mask_a_1.as_string(), key_b_0.as_string(), mask_b_0.as_string(), key_b_1.as_string(),
-              mask_b_1.as_string()));
-        }
-
-        auto &garbled_row_00{garbled_tables_.at(gt_index(wire_i, simd_i, 0, party_i))};
-        auto &garbled_row_01{garbled_tables_.at(gt_index(wire_i, simd_i, 1, party_i))};
-        auto &garbled_row_10{garbled_tables_.at(gt_index(wire_i, simd_i, 2, party_i))};
-        auto &garbled_row_11{garbled_tables_.at(gt_index(wire_i, simd_i, 3, party_i))};
-        if (party_i == my_id) {
-          const auto &key_w_0{bmr_out->GetSecretKeys().at(simd_i)};
-          garbled_row_00 = mask_a_0 ^ mask_b_0 ^ key_w_0;
-          garbled_row_01 = mask_a_0 ^ mask_b_1 ^ key_w_0;
-          garbled_row_10 = mask_a_1 ^ mask_b_0 ^ key_w_0;
-          garbled_row_11 = mask_a_1 ^ mask_b_1 ^ key_w_0 ^ R;
-
-          if constexpr (MOTION_VERBOSE_DEBUG) {
-            GetLogger().LogTrace(
-                fmt::format(
-                    "Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 {} XOR "
-                    "key_w_0 {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_0.as_string(),
-                    key_w_0.as_string(), garbled_row_00.as_string()) +
-                fmt::format(
-                    "Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_0 {} XOR "
-                    "key_w_1 {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_1.as_string(),
-                    key_w_0.as_string(), garbled_row_01.as_string()) +
-                fmt::format(
-                    "Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_0 {} XOR mask_b_0 {} XOR "
-                    "key_w_0 {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_0.as_string(),
-                    key_w_0.as_string(), garbled_row_10.as_string()) +
-                fmt::format(
-                    "Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 {} XOR "
-                    "key_w_1 {} XOR R {} = {}\n",
-                    gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_1.as_string(),
-                    key_w_0.as_string(), R.as_string(), garbled_row_11.as_string()));
-          }
-        } else {
-          garbled_row_00 = mask_a_0 ^ mask_b_0;
-          garbled_row_01 = mask_a_0 ^ mask_b_1;
-          garbled_row_10 = mask_a_1 ^ mask_b_0;
-          garbled_row_11 = mask_a_1 ^ mask_b_1;
-          if (MOTION_VERBOSE_DEBUG) {
-            GetLogger().LogTrace(
-                fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr00 mask_a_0 {} XOR mask_b_0 "
-                            "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_0.as_string(),
-                            garbled_row_00.as_string()) +
-                fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr01 mask_a_0 {} XOR mask_b_1 "
-                            "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_0.as_string(), mask_b_1.as_string(),
-                            garbled_row_01.as_string()) +
-                fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr10 mask_a_1 {} XOR mask_b_0 "
-                            "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_0.as_string(),
-                            garbled_row_10.as_string()) +
-                fmt::format("Gate#{} (BMR AND gate) Party#{} (me {}) gr11 mask_a_1 {} XOR mask_b_1 "
-                            "{} = {}\n",
-                            gate_id_, party_i, my_id, mask_a_1.as_string(), mask_b_1.as_string(),
-                            garbled_row_11.as_string()));
-          }
-        }
-
         std::array<ENCRYPTO::block128_t, 3> shared_R;
         const auto zero_block = ENCRYPTO::block128_t::make_zero();
 
@@ -1122,10 +1062,12 @@ void BMRANDGate::EvaluateSetup() {
                           gate_id_, my_id, party_i, shared_R.at(0).as_string(),
                           shared_R.at(1).as_string(), shared_R.at(2).as_string()));
         }
-        garbled_row_00 ^= shared_R.at(0);
-        garbled_row_01 ^= shared_R.at(1);
-        garbled_row_10 ^= shared_R.at(2);
-        garbled_row_11 ^= shared_R.at(0) ^ shared_R.at(1) ^ shared_R.at(2);
+
+        garbled_tables_[gt_index(wire_i, simd_i, 0, party_i)] ^= shared_R[0];
+        garbled_tables_[gt_index(wire_i, simd_i, 1, party_i)] ^= shared_R[1];
+        garbled_tables_[gt_index(wire_i, simd_i, 2, party_i)] ^= shared_R[2];
+        garbled_tables_[gt_index(wire_i, simd_i, 3, party_i)] ^=
+            shared_R[0] ^ shared_R[1] ^ shared_R[2];
       }  // for each party
     }    // for each simd
   }      // for each wire
@@ -1218,6 +1160,11 @@ void BMRANDGate::EvaluateOnline() {
     }
   }
 
+  // AES key expansion
+  ENCRYPTO::PRG prg;
+  prg.SetKey(get_motion_base_provider().get_aes_fixed_key().data());
+  const auto aes_round_keys = prg.get_round_keys();
+
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {
     auto bmr_out = std::dynamic_pointer_cast<Wires::BMRWire>(output_wires_.at(wire_i));
     assert(bmr_out);
@@ -1229,38 +1176,9 @@ void BMRANDGate::EvaluateOnline() {
     wire_a->GetIsReadyCondition().Wait();
     wire_b->GetIsReadyCondition().Wait();
 
-    ENCRYPTO::PRG prg;
-    prg.SetKey(get_motion_base_provider().get_aes_fixed_key().data());
-
     for (auto simd_i = 0ull; simd_i < num_simd; ++simd_i) {
-      auto masks = ENCRYPTO::block128_vector::make_zero(num_parties);
-      [[maybe_unused]] std::string s;
-      if constexpr (MOTION_VERBOSE_DEBUG) {
-        s.append(
-            fmt::format("Me#{}: wire#{} simd#{} result\n", my_id, wire_i, simd_i));
-        s.append(fmt::format("Public values a {} b {} ", wire_a->GetPublicValues().AsString(),
-                             wire_b->GetPublicValues().AsString()));
-      }
-      for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-        const auto &key_a = wire_a->GetPublicKeys().at(pk_index(simd_i, party_i));
-        const auto &key_b = wire_b->GetPublicKeys().at(pk_index(simd_i, party_i));
-        for (auto party_j = 0ull; party_j < num_parties; ++party_j) {
-          uint128_t tweak{party_j};
-          tweak <<= 64;
-          tweak += static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
-          ENCRYPTO::block128_t mask_a;
-          ENCRYPTO::block128_t mask_b;
-          prg.FixedKeyAES(key_a.data(), tweak, mask_a.data());
-          prg.FixedKeyAES(key_b.data(), tweak, mask_b.data());
-          masks.at(party_j) ^= mask_a;
-          masks.at(party_j) ^= mask_b;
-          if constexpr (MOTION_VERBOSE_DEBUG) {
-            s.append(fmt::format("\nParty#{} key for #{} key_a {} ({}) key_b {} ({})", party_i,
-                                 party_j, key_a.as_string(), mask_a.as_string(), key_b.as_string(),
-                                 mask_b.as_string()));
-          }
-        }
-      }
+      // TODO: fix gate id computation
+      const auto gate_id = static_cast<uint64_t>(bmr_out->GetWireId() + simd_i);
 
       // compute index of the correct row in the garbled table
       const bool alpha = wire_a->GetPublicValues()[simd_i],
@@ -1270,21 +1188,22 @@ void BMRANDGate::EvaluateOnline() {
 
       // decrypt that row of the garbled table
       for (auto party_i = 0ull; party_i < num_parties; ++party_i) {
-        if constexpr (MOTION_VERBOSE_DEBUG) {
-          s.append(fmt::format(
-              "\nParty#{} output public keys = garbled row_(alpha = {} ,beta = {}, offset = {}) {} "
-              "xor mask {} = ",
-              party_i, alpha, beta, row_index,
-              garbled_tables_.at(gt_index(wire_i, simd_i, row_index, party_i)).as_string(),
-              masks.at(party_i).as_string()));
-        }
-        bmr_out->GetMutablePublicKeys().at(pk_index(simd_i, party_i)) =
-            garbled_tables_.at(gt_index(wire_i, simd_i, row_index, party_i)) ^ masks.at(party_i);
-        if constexpr (MOTION_VERBOSE_DEBUG) {
-          s.append(bmr_out->GetPublicKeys().at(pk_index(simd_i, party_i)).as_string());
-        }
+        const auto &key_a = wire_a->GetPublicKeys().at(pk_index(simd_i, party_i));
+        const auto &key_b = wire_b->GetPublicKeys().at(pk_index(simd_i, party_i));
+        aesni_bmr_dkc(aes_round_keys, key_a.data(), key_b.data(), gate_id, num_parties,
+                      &garbled_tables_[gt_index(wire_i, simd_i, row_index, 0)]);
       }
+
+      // copy decrypted public keys to outgoing wire
+      std::copy(std::begin(garbled_tables_) + gt_index(wire_i, simd_i, row_index, 0),
+                std::begin(garbled_tables_) + gt_index(wire_i, simd_i, row_index + 1, 0),
+                std::begin(bmr_out->GetMutablePublicKeys()) + pk_index(simd_i, 0));
+
       if constexpr (MOTION_VERBOSE_DEBUG) {
+        std::string s;
+        s.append(fmt::format("Me#{}: wire#{} simd#{} result\n", my_id, wire_i, simd_i));
+        s.append(fmt::format("Public values a {} b {} ", wire_a->GetPublicValues().AsString(),
+                             wire_b->GetPublicValues().AsString()));
         s.append("\n");
         s.append(fmt::format("output skey0 {} skey1 {}\n",
                              bmr_out->GetSecretKeys().at(simd_i).as_string(),
