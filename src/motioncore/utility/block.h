@@ -213,6 +213,13 @@ struct block128_vector {
     return result;
   }
 
+  // set this vector to zero
+  void set_to_zero() {
+    auto start =
+        reinterpret_cast<std::byte* __restrict__>(__builtin_assume_aligned(data(), alignment));
+    std::fill(start, start + byte_size(), std::byte(0x00));
+  }
+
   // set this vector to random
   void set_to_random();
 
