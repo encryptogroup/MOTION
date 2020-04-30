@@ -48,6 +48,8 @@ class PRG {
 
   bool ContainsKey() { return contains_key_; }
 
+  const void* get_round_keys() const { return round_keys_.data(); }
+
   std::size_t SetOffset(std::size_t new_offset) {
     std::swap(offset_, new_offset);
     return new_offset;
