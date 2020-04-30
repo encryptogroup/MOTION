@@ -65,3 +65,17 @@ void aesni_tmmo_batch_4(const void* round_keys, void* input, __uint128_t tweak);
 //
 // * round_keys are 16B aligned
 void aesni_mmo_single(const void* round_keys, void* input);
+
+// Compute the dual-key cipher A2/D1 by Bellare et al.
+// (https://eprint.iacr.org/2013/426).
+//
+// Computes `num_parties` invocation of the DKC:
+//    E^\pi(A, B, T, _) = \pi(K) ^ K
+// where
+// - \pi is AES with the expanded key from `round_keys`
+// - K = 4A + 2B + T and with multiplication in GF(2^128)
+// - T = gate_id || party_id
+// - `party_id` ranges from 0 to num_parties - 1
+// The output is xored into `output`.
+void aesni_bmr_dkc(const void* round_keys, const void* key_a, const void* key_b,
+                   std::uint64_t gate_id, std::size_t num_parties, void* output);

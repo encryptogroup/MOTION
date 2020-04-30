@@ -306,3 +306,53 @@ void aesni_mmo_single(const void* round_keys_in, void* input) {
   // store \pi(x) ^ x
   *input_ptr = _mm_xor_si128(wb_1, input_block);
 }
+
+static __m128i aesni_mix_keys(__m128i key_a, __m128i key_b) {
+  const __m128i modulus = _mm_set_epi32(0, 0, 0, 0x87);
+  const __m128i msb_mask = _mm_set_epi32(0x80000000, 0, 0, 0);
+  __m128i mixed_keys = key_a;
+  int msb_zero = _mm_testz_si128(mixed_keys, msb_mask);
+  mixed_keys <<= 1;
+  if (!msb_zero) {
+    mixed_keys ^= modulus;
+  }
+  mixed_keys ^= key_b;
+  msb_zero = _mm_testz_si128(mixed_keys, msb_mask);
+  mixed_keys <<= 1;
+  if (!msb_zero) {
+    mixed_keys ^= modulus;
+  }
+  return mixed_keys;
+}
+
+static __m128i aesni_xor_encrypt(const __m128i* round_keys, __m128i in) {
+  __m128i wb;
+  wb = _mm_xor_si128(in, round_keys[0]);
+  wb = _mm_aesenc_si128(wb, round_keys[1]);
+  wb = _mm_aesenc_si128(wb, round_keys[2]);
+  wb = _mm_aesenc_si128(wb, round_keys[3]);
+  wb = _mm_aesenc_si128(wb, round_keys[4]);
+  wb = _mm_aesenc_si128(wb, round_keys[5]);
+  wb = _mm_aesenc_si128(wb, round_keys[6]);
+  wb = _mm_aesenc_si128(wb, round_keys[7]);
+  wb = _mm_aesenc_si128(wb, round_keys[8]);
+  wb = _mm_aesenc_si128(wb, round_keys[9]);
+  wb = _mm_aesenclast_si128(wb, round_keys[10]);
+  return wb ^ in;
+}
+
+void aesni_bmr_dkc(const void* round_keys_in, const void* key_a, const void* key_b,
+                   std::uint64_t gate_id, std::size_t num_parties, void* output_in) {
+  auto key_a_ptr =
+      reinterpret_cast<const __m128i*>(__builtin_assume_aligned(key_a, aes_block_size));
+  auto key_b_ptr =
+      reinterpret_cast<const __m128i*>(__builtin_assume_aligned(key_b, aes_block_size));
+  auto round_keys =
+      reinterpret_cast<const __m128i*>(__builtin_assume_aligned(round_keys_in, aes_block_size));
+  auto out = reinterpret_cast<__m128i*>(__builtin_assume_aligned(output_in, aes_block_size));
+  __m128i mixed_keys = aesni_mix_keys(*key_a_ptr, *key_b_ptr);
+  for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
+    __m128i tmp = mixed_keys ^ _mm_set_epi64x(gate_id, party_id);
+    out[party_id] ^= aesni_xor_encrypt(round_keys, tmp);
+  }
+}
