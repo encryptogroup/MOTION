@@ -149,7 +149,7 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
  public:
   BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b);
 
-  ~BMRANDGate() final = default;
+  ~BMRANDGate() final;
 
   void EvaluateSetup() final;
 
@@ -164,13 +164,13 @@ class BMRANDGate final : public Gates::Interfaces::TwoGate {
   BMRANDGate(const Gate &) = delete;
 
  private:
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitSender>>>
+  std::vector<std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitSender>>>
       s_ots_1_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128Sender>>>
+  std::vector<std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128Sender>>>
       s_ots_kappa_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitReceiver>>>
+  std::vector<std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::XCOTBitReceiver>>>
       r_ots_1_;
-  std::vector<std::vector<std::shared_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128Receiver>>>
+  std::vector<std::vector<std::unique_ptr<ENCRYPTO::ObliviousTransfer::FixedXCOT128Receiver>>>
       r_ots_kappa_;
 
   std::vector<ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>> received_garbled_rows_;

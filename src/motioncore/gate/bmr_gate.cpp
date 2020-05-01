@@ -782,6 +782,8 @@ BMRANDGate::BMRANDGate(const Shares::SharePtr &a, const Shares::SharePtr &b)
   }
 }
 
+BMRANDGate::~BMRANDGate() = default;
+
 void BMRANDGate::GenerateRandomness() {
   const auto num_wires{output_wires_.size()};
   for (auto wire_i = 0ull; wire_i < num_wires; ++wire_i) {

@@ -54,6 +54,77 @@ void OTProvider::WaitSetup() const {
   data_.GetSenderData().setup_finished_cond_->Wait();
 }
 
+[[nodiscard]] std::unique_ptr<FixedXCOT128Sender> OTProvider::RegisterSendFixedXCOT128(
+    std::size_t num_ots) {
+  return sender_provider_.RegisterFixedXCOT128s(num_ots, Send_);
+}
+
+[[nodiscard]] std::unique_ptr<XCOTBitSender> OTProvider::RegisterSendXCOTBit(std::size_t num_ots) {
+  return sender_provider_.RegisterXCOTBits(num_ots, Send_);
+}
+
+template <typename T>
+[[nodiscard]] std::unique_ptr<ACOTSender<T>> OTProvider::RegisterSendACOT(std::size_t num_ots,
+                                                                          std::size_t vector_size) {
+  return sender_provider_.RegisterACOT<T>(num_ots, vector_size, Send_);
+}
+
+template std::unique_ptr<ACOTSender<std::uint8_t>> OTProvider::RegisterSendACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTSender<std::uint16_t>> OTProvider::RegisterSendACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTSender<std::uint32_t>> OTProvider::RegisterSendACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTSender<std::uint64_t>> OTProvider::RegisterSendACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTSender<__uint128_t>> OTProvider::RegisterSendACOT(
+    std::size_t num_ots, std::size_t vector_size);
+
+[[nodiscard]] std::unique_ptr<GOT128Sender> OTProvider::RegisterSendGOT128(std::size_t num_ots) {
+  return sender_provider_.RegisterGOT128(num_ots, Send_);
+}
+
+[[nodiscard]] std::unique_ptr<GOTBitSender> OTProvider::RegisterSendGOTBit(std::size_t num_ots) {
+  return sender_provider_.RegisterGOTBit(num_ots, Send_);
+}
+
+[[nodiscard]] std::unique_ptr<FixedXCOT128Receiver> OTProvider::RegisterReceiveFixedXCOT128(
+    std::size_t num_ots) {
+  return receiver_provider_.RegisterFixedXCOT128s(num_ots, Send_);
+}
+
+[[nodiscard]] std::unique_ptr<XCOTBitReceiver> OTProvider::RegisterReceiveXCOTBit(
+    std::size_t num_ots) {
+  return receiver_provider_.RegisterXCOTBits(num_ots, Send_);
+}
+
+template <typename T>
+[[nodiscard]] std::unique_ptr<ACOTReceiver<T>> OTProvider::RegisterReceiveACOT(
+    std::size_t num_ots, std::size_t vector_size) {
+  return receiver_provider_.RegisterACOT<T>(num_ots, vector_size, Send_);
+}
+
+template std::unique_ptr<ACOTReceiver<std::uint8_t>> OTProvider::RegisterReceiveACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTReceiver<std::uint16_t>> OTProvider::RegisterReceiveACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTReceiver<std::uint32_t>> OTProvider::RegisterReceiveACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTReceiver<std::uint64_t>> OTProvider::RegisterReceiveACOT(
+    std::size_t num_ots, std::size_t vector_size);
+template std::unique_ptr<ACOTReceiver<__uint128_t>> OTProvider::RegisterReceiveACOT(
+    std::size_t num_ots, std::size_t vector_size);
+
+[[nodiscard]] std::unique_ptr<GOT128Receiver> OTProvider::RegisterReceiveGOT128(
+    std::size_t num_ots) {
+  return receiver_provider_.RegisterGOT128(num_ots, Send_);
+}
+
+[[nodiscard]] std::unique_ptr<GOTBitReceiver> OTProvider::RegisterReceiveGOTBit(
+    std::size_t num_ots) {
+  return receiver_provider_.RegisterGOTBit(num_ots, Send_);
+}
+
 OTProviderFromOTExtension::OTProviderFromOTExtension(
     std::function<void(flatbuffers::FlatBufferBuilder &&)> Send, MOTION::OTExtensionData &data,
     const MOTION::BaseOTsData &base_ot_data,
@@ -830,11 +901,11 @@ std::shared_ptr<OTVectorSender> &OTProviderSender::RegisterOTs(
   return sender_data_.insert(std::pair(i, ot)).first->second;
 }
 
-std::shared_ptr<FixedXCOT128Sender> OTProviderSender::RegisterFixedXCOT128s(
+std::unique_ptr<FixedXCOT128Sender> OTProviderSender::RegisterFixedXCOT128s(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_;
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<FixedXCOT128Sender>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<FixedXCOT128Sender>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender FixedXCOT128s",
@@ -844,11 +915,11 @@ std::shared_ptr<FixedXCOT128Sender> OTProviderSender::RegisterFixedXCOT128s(
   return ot;
 }
 
-std::shared_ptr<XCOTBitSender> OTProviderSender::RegisterXCOTBits(
+std::unique_ptr<XCOTBitSender> OTProviderSender::RegisterXCOTBits(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_;
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<XCOTBitSender>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<XCOTBitSender>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XCOTBits",
@@ -859,12 +930,12 @@ std::shared_ptr<XCOTBitSender> OTProviderSender::RegisterXCOTBits(
 }
 
 template <typename T>
-std::shared_ptr<ACOTSender<T>> OTProviderSender::RegisterACOT(
+std::unique_ptr<ACOTSender<T>> OTProviderSender::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_;
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<ACOTSender<T>>(i, num_ots, vector_size, data_, Send);
+  auto ot = std::make_unique<ACOTSender<T>>(i, num_ots, vector_size, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender ACOTs",
@@ -874,27 +945,27 @@ std::shared_ptr<ACOTSender<T>> OTProviderSender::RegisterACOT(
   return ot;
 }
 
-template std::shared_ptr<ACOTSender<std::uint8_t>> OTProviderSender::RegisterACOT(
+template std::unique_ptr<ACOTSender<std::uint8_t>> OTProviderSender::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTSender<std::uint16_t>> OTProviderSender::RegisterACOT(
+template std::unique_ptr<ACOTSender<std::uint16_t>> OTProviderSender::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTSender<std::uint32_t>> OTProviderSender::RegisterACOT(
+template std::unique_ptr<ACOTSender<std::uint32_t>> OTProviderSender::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTSender<std::uint64_t>> OTProviderSender::RegisterACOT(
+template std::unique_ptr<ACOTSender<std::uint64_t>> OTProviderSender::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTSender<__uint128_t>> OTProviderSender::RegisterACOT(
+template std::unique_ptr<ACOTSender<__uint128_t>> OTProviderSender::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
-std::shared_ptr<GOT128Sender> OTProviderSender::RegisterGOT128(
+std::unique_ptr<GOT128Sender> OTProviderSender::RegisterGOT128(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_;
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<GOT128Sender>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<GOT128Sender>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOT128s",
@@ -904,11 +975,11 @@ std::shared_ptr<GOT128Sender> OTProviderSender::RegisterGOT128(
   return ot;
 }
 
-std::shared_ptr<GOTBitSender> OTProviderSender::RegisterGOTBit(
+std::unique_ptr<GOTBitSender> OTProviderSender::RegisterGOTBit(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_;
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<GOTBitSender>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<GOTBitSender>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOTBits",
@@ -1025,11 +1096,11 @@ std::shared_ptr<OTVectorReceiver> &OTProviderReceiver::RegisterOTs(
   return receiver_data_.insert(std::move(e)).first->second;
 }
 
-std::shared_ptr<FixedXCOT128Receiver> OTProviderReceiver::RegisterFixedXCOT128s(
+std::unique_ptr<FixedXCOT128Receiver> OTProviderReceiver::RegisterFixedXCOT128s(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<FixedXCOT128Receiver>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<FixedXCOT128Receiver>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(
@@ -1040,11 +1111,11 @@ std::shared_ptr<FixedXCOT128Receiver> OTProviderReceiver::RegisterFixedXCOT128s(
   return ot;
 }
 
-std::shared_ptr<XCOTBitReceiver> OTProviderReceiver::RegisterXCOTBits(
+std::unique_ptr<XCOTBitReceiver> OTProviderReceiver::RegisterXCOTBits(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<XCOTBitReceiver>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<XCOTBitReceiver>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver XCOTBits",
@@ -1055,12 +1126,12 @@ std::shared_ptr<XCOTBitReceiver> OTProviderReceiver::RegisterXCOTBits(
 }
 
 template <typename T>
-std::shared_ptr<ACOTReceiver<T>> OTProviderReceiver::RegisterACOT(
+std::unique_ptr<ACOTReceiver<T>> OTProviderReceiver::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<ACOTReceiver<T>>(i, num_ots, vector_size, data_, Send);
+  auto ot = std::make_unique<ACOTReceiver<T>>(i, num_ots, vector_size, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ACOTs",
@@ -1070,27 +1141,27 @@ std::shared_ptr<ACOTReceiver<T>> OTProviderReceiver::RegisterACOT(
   return ot;
 }
 
-template std::shared_ptr<ACOTReceiver<std::uint8_t>> OTProviderReceiver::RegisterACOT(
+template std::unique_ptr<ACOTReceiver<std::uint8_t>> OTProviderReceiver::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTReceiver<std::uint16_t>> OTProviderReceiver::RegisterACOT(
+template std::unique_ptr<ACOTReceiver<std::uint16_t>> OTProviderReceiver::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTReceiver<std::uint32_t>> OTProviderReceiver::RegisterACOT(
+template std::unique_ptr<ACOTReceiver<std::uint32_t>> OTProviderReceiver::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTReceiver<std::uint64_t>> OTProviderReceiver::RegisterACOT(
+template std::unique_ptr<ACOTReceiver<std::uint64_t>> OTProviderReceiver::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
-template std::shared_ptr<ACOTReceiver<__uint128_t>> OTProviderReceiver::RegisterACOT(
+template std::unique_ptr<ACOTReceiver<__uint128_t>> OTProviderReceiver::RegisterACOT(
     std::size_t num_ots, std::size_t vector_size,
     const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send);
 
-std::shared_ptr<GOT128Receiver> OTProviderReceiver::RegisterGOT128(
+std::unique_ptr<GOT128Receiver> OTProviderReceiver::RegisterGOT128(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<GOT128Receiver>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<GOT128Receiver>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOT128s",
@@ -1100,11 +1171,11 @@ std::shared_ptr<GOT128Receiver> OTProviderReceiver::RegisterGOT128(
   return ot;
 }
 
-std::shared_ptr<GOTBitReceiver> OTProviderReceiver::RegisterGOTBit(
+std::unique_ptr<GOTBitReceiver> OTProviderReceiver::RegisterGOTBit(
     const std::size_t num_ots, const std::function<void(flatbuffers::FlatBufferBuilder &&)> &Send) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += num_ots;
-  auto ot = std::make_shared<GOTBitReceiver>(i, num_ots, data_, Send);
+  auto ot = std::make_unique<GOTBitReceiver>(i, num_ots, data_, Send);
   if constexpr (MOTION::MOTION_DEBUG) {
     if (logger_) {
       logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOTBits",
