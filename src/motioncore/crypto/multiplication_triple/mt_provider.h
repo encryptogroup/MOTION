@@ -93,12 +93,12 @@ class MTProvider {
   }
 
   // get bits [i, i+n] as vector
-  BinaryMTVector GetBinary(const std::size_t offset, const std::size_t n = 1);
+  BinaryMTVector GetBinary(const std::size_t offset, const std::size_t n = 1) const;
 
-  const BinaryMTVector& GetBinaryAll() noexcept;
+  const BinaryMTVector& GetBinaryAll() const noexcept;
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  IntegerMTVector<T> GetInteger(const std::size_t offset, const std::size_t n = 1) {
+  IntegerMTVector<T> GetInteger(const std::size_t offset, const std::size_t n = 1) const {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
       return GetInteger(mts8_, offset, n);
@@ -114,7 +114,7 @@ class MTProvider {
   }
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-  const IntegerMTVector<T>& GetIntegerAll() noexcept {
+  const IntegerMTVector<T>& GetIntegerAll() const noexcept {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
       return mts8_;
@@ -133,7 +133,7 @@ class MTProvider {
   virtual void Setup() = 0;
 
   // blocking wait
-  void WaitFinished() { finished_condition_->Wait(); }
+  void WaitFinished() const { finished_condition_->Wait(); }
 
  protected:
   MTProvider(std::size_t my_id, std::size_t num_parties);

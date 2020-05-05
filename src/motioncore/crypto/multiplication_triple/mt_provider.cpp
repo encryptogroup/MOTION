@@ -43,7 +43,7 @@ std::size_t MTProvider::RequestBinaryMTs(const std::size_t num_mts) noexcept {
 }
 
 // get bits [i, i+n] as vector
-BinaryMTVector MTProvider::GetBinary(const std::size_t offset, const std::size_t n) {
+BinaryMTVector MTProvider::GetBinary(const std::size_t offset, const std::size_t n) const {
   assert(bit_mts_.a.GetSize() == bit_mts_.b.GetSize());
   assert(bit_mts_.b.GetSize() == bit_mts_.c.GetSize());
   WaitFinished();
@@ -52,7 +52,7 @@ BinaryMTVector MTProvider::GetBinary(const std::size_t offset, const std::size_t
                         bit_mts_.c.Subset(offset, offset + n)};
 }
 
-const BinaryMTVector& MTProvider::GetBinaryAll() noexcept {
+const BinaryMTVector& MTProvider::GetBinaryAll() const noexcept {
   WaitFinished();
   return bit_mts_;
 }
