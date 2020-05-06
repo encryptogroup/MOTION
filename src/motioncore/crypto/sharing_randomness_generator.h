@@ -141,7 +141,7 @@ class SharingRandomnessGenerator {
           static_cast<T>(single_result));  // static-cast the result to the smaller ring
     }
 
-    return std::move(results);
+    return results;
   }
 
   ENCRYPTO::BitVector<> GetBits(const std::size_t gate_id, const std::size_t num_of_bits);
