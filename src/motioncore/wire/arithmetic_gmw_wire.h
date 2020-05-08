@@ -30,7 +30,7 @@ namespace MOTION::Wires {
 
 // Allow only unsigned integers for Arithmetic wires.
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-class ArithmeticWire : public Wire {
+class ArithmeticWire final : public Wire {
  public:
   ArithmeticWire(Backend &backend, std::size_t num_simd) : Wire(backend, num_simd) {}
 

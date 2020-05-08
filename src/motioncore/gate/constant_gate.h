@@ -44,7 +44,7 @@ using SharePtr = std::shared_ptr<Share>;
 namespace Gates {
 
 // constant input gates do not inherit from InputGate, since they have no owner
-class ConstantBooleanInputGate : public Gate {
+class ConstantBooleanInputGate final : public Gate {
  public:
   ConstantBooleanInputGate(bool b, Backend& backend)
       : ConstantBooleanInputGate(ENCRYPTO::BitVector<>(b), backend) {}
@@ -81,7 +81,7 @@ namespace Arithmetic {
 
 // constant input gates do not inherit from InputGate, since they have no owner
 template <typename T>
-class ConstantArithmeticInputGate : public Gate {
+class ConstantArithmeticInputGate final : public Gate {
  public:
   ConstantArithmeticInputGate(const std::vector<T>& v, Backend& backend);
 

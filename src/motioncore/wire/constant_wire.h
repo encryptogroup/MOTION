@@ -29,7 +29,7 @@
 
 namespace MOTION::Wires {
 template <typename T>
-class ConstantArithmeticWire : public Wire {
+class ConstantArithmeticWire final : public Wire {
  public:
   ConstantArithmeticWire(Backend &backend, std::size_t num_simd) : Wire(backend, num_simd) {}
 
@@ -62,7 +62,7 @@ class ConstantArithmeticWire : public Wire {
 template <typename T>
 using ConstantArithmeticWirePtr = std::shared_ptr<ConstantArithmeticWire<T>>;
 
-class ConstantBooleanWire : public BooleanWire {
+class ConstantBooleanWire final : public BooleanWire {
  public:
   ConstantBooleanWire(size_t num_simd, Backend &backend);
 

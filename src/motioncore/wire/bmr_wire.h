@@ -32,7 +32,7 @@
 
 namespace MOTION::Wires {
 
-class BMRWire : public BooleanWire {
+class BMRWire final : public BooleanWire {
  public:
   BMRWire(const std::size_t n_simd, Backend &backend);
 

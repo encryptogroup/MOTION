@@ -34,7 +34,7 @@ class Backend;
 
 namespace MOTION::Wires {
 
-class GMWWire : public BooleanWire {
+class GMWWire final : public BooleanWire {
  public:
   GMWWire(size_t num_simd, Backend &backend);
 
