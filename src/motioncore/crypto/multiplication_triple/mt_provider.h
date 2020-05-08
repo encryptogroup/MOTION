@@ -50,6 +50,8 @@ struct BinaryMTVector {
 
 class MTProvider {
  public:
+  virtual ~MTProvider() = default;
+
   bool NeedMTs() const noexcept;
 
   template <typename T>

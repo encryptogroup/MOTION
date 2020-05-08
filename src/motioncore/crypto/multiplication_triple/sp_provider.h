@@ -58,6 +58,8 @@ struct SPVector {
 // sharings of random (a, c) s.t. a^2 = c
 class SPProvider {
  public:
+  virtual ~SPProvider() = default;
+
   bool NeedSPs() const noexcept;
 
   template <typename T>
