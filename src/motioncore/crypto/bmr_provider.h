@@ -35,7 +35,7 @@ namespace Communication {
 class CommunicationLayer;
 }
 
-class BMRData;
+struct BMRData;
 
 namespace Crypto {
 
