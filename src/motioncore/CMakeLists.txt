@@ -164,7 +164,7 @@ configure_file(
 
 add_custom_target(
         motion_config ALL DEPENDS
-        "${PROJECT_SOURCE_DIR}/src/motioncore/utility/config.h.in"
+        "${MOTION_ROOT_DIR}/src/motioncore/utility/config.h.in"
 )
 
 if (MOTION_COMPILATION_TIME_DEBUGGING)
@@ -176,10 +176,10 @@ add_dependencies(motion fbs-generation motion_config)
 target_include_directories(motion PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/motioncore>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/fmt/include>
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/extern/flatbuffers/include>
+        $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/src/motioncore>
+        $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern>
+        $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/fmt/include>
+        $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/flatbuffers/include>
         ${Boost_INCLUDE_DIRS}
         )
 
