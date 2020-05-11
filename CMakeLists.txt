@@ -91,8 +91,8 @@ elseif (NOT fmt_FOUND AND NOT TARGET fmt::fmt)
     #add_subdirectory(extern/fmt)
 endif ()
 
-set(FBS_DIR_FULL_PREFIX "${PROJECT_SOURCE_DIR}/fbs")
-set(FBS_INCLUDE_PREFIX "${CMAKE_SOURCE_DIR}/src/motioncore/communication/fbs_headers")
+set(FBS_DIR_FULL_PREFIX "${MOTION_ROOT_DIR}/fbs")
+set(FBS_INCLUDE_PREFIX "${MOTION_ROOT_DIR}/src/motioncore/communication/fbs_headers")
 
 find_package(Flatbuffers QUIET)
 if (Flatbuffers_FOUND)
