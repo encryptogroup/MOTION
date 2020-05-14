@@ -880,7 +880,7 @@ TYPED_TEST(SecureUintTest, GreaterThanInGMW) {
 TYPED_TEST(SecureUintTest, GreaterThanInBMR) {
   using T = TypeParam;
   using namespace MOTION;
-  constexpr auto GMW = MOTION::MPCProtocol::BooleanGMW;
+  constexpr auto BMR = MOTION::MPCProtocol::BMR;
   std::mt19937 g(sizeof(T));
   std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max() / 2);
   auto r = std::bind(dist, g);
@@ -901,13 +901,13 @@ TYPED_TEST(SecureUintTest, GreaterThanInBMR) {
     t.emplace_back([party_id, &motion_parties, n_wires, &global_input, &dummy_input,
                     &raw_global_input]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      MOTION::SecureUnsignedInteger s_0 = party_0 ? motion_parties.at(party_id)->IN<GMW>(
+      MOTION::SecureUnsignedInteger s_0 = party_0 ? motion_parties.at(party_id)->IN<BMR>(
                                                         global_input.at(0), 0)
-                                                  : motion_parties.at(party_id)->IN<GMW>(
+                                                  : motion_parties.at(party_id)->IN<BMR>(
                                                         dummy_input, 0),
                                     s_1 = party_0
-                                              ? motion_parties.at(party_id)->IN<GMW>(dummy_input, 1)
-                                              : motion_parties.at(party_id)->IN<GMW>(
+                                              ? motion_parties.at(party_id)->IN<BMR>(dummy_input, 1)
+                                              : motion_parties.at(party_id)->IN<BMR>(
                                                     global_input.at(1), 1);
       EXPECT_EQ(s_0.Get()->GetBitLength(), n_wires);
       EXPECT_EQ(s_1.Get()->GetBitLength(), n_wires);
@@ -918,10 +918,10 @@ TYPED_TEST(SecureUintTest, GreaterThanInBMR) {
       motion_parties.at(party_id)->Run();
 
       std::vector<ENCRYPTO::BitVector<>> out;
-      auto wire_single = std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out->GetWires().at(0));
+      auto wire_single = std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(0));
       assert(wire_single);
       const bool result_check = raw_global_input.at(0) > raw_global_input.at(1);
-      const bool result = wire_single->GetValues()[0];
+      const bool result = wire_single->GetPublicValues()[0];
       EXPECT_EQ(result, result_check);
 
       motion_parties.at(party_id)->Finish();
