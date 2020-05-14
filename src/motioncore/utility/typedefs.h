@@ -24,6 +24,9 @@
 
 #pragma once
 
+#include <cstdint>
+#include <string>
+#include <stdexcept>
 #include <tuple>
 #include <type_traits>
 
