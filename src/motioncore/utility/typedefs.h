@@ -190,9 +190,3 @@ enum class Role : unsigned int {
 enum class GateType : unsigned int { Input = 0, Interactive = 1, NonInteractive = 2, Invalid = 3 };
 
 }  // namespace MOTION
-
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using MultiplicationTriple = std::tuple<T, T, T>;
-
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-using MT = MultiplicationTriple<T>;
