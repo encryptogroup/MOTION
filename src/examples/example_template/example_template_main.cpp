@@ -95,7 +95,7 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
   po::notify(vm);
 
   // argument help or no arguments (at least a config file is expected)
-  if (vm.count("help") || ac == 1) {
+  if (vm["help"].as<bool>() || ac == 1) {
     std::cout << desc << "\n";
     return std::make_pair<po::variables_map, bool>({}, true);
   }
