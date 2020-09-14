@@ -58,7 +58,7 @@ constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max
 constexpr std::size_t kappa{128};
 
 // stack size for fibers
-constexpr std::size_t MOTION_FIBER_STACK_SIZE{14 * 1024};
+constexpr std::size_t MOTION_FIBER_STACK_SIZE{32 * 1024};
 
 enum class FiberStackAllocator {
   // standard allocator
