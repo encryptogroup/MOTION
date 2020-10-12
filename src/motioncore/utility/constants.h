@@ -57,9 +57,9 @@ constexpr std::size_t AES_IV_SIZE{AES_BLOCK_SIZE_ / 2};
 
 constexpr std::size_t MESSAGE_SIZE_BYTELEN{sizeof(std::uint32_t)};
 
-// the maximum allowed message size in boost - 1
-// 2^32 - 2, approx. 4.3 GB
-constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max() - 1};
+// the maximum allowed message size in flatbuffers
+// 2^31, approx. 2 GB
+constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max() / 2};
 
 // symmetric security parameter
 constexpr std::size_t kappa{128};
