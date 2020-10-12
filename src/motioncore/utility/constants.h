@@ -36,8 +36,14 @@ namespace MOTION {
 // just in case if we all of a sudden will decide to change the name
 constexpr std::string_view FRAMEWORK_NAME{"MOTION"};
 
-constexpr auto MB{1024 * 1024};
+// abbreviation for megabytes
+constexpr std::size_t MB{1024 * 1024};
 
+// Verbose debug flag. If MOTION_DEBUG equals false, this flag will always be interpreted as false.
+// Verbose means here that MOTION will log virtually everything: not only the performed actions but
+// also the sent and received messages. One may need this, e.g., for debugging correctness of the
+// protocols to better understand what went wrong. This may be _very_ slow and need a lot of storage
+// for logs! So try to keep the code small if you need this flag for debugging.
 constexpr bool MOTION_VERBOSE_DEBUG_WISH{false};
 
 // Don't compile unnecessary code if verbose debugging is not needed
@@ -51,6 +57,7 @@ constexpr std::size_t AES_IV_SIZE{AES_BLOCK_SIZE_ / 2};
 
 constexpr std::size_t MESSAGE_SIZE_BYTELEN{sizeof(std::uint32_t)};
 
+// the maximum allowed message size in boost - 1
 // 2^32 - 2, approx. 4.3 GB
 constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max() - 1};
 
@@ -58,7 +65,10 @@ constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max
 constexpr std::size_t kappa{128};
 
 // stack size for fibers
-constexpr std::size_t MOTION_FIBER_STACK_SIZE{32 * 1024};
+// Increase the fiber stack size when in debug mode because it requires storing additional debugging
+// information, which, however, would be an unnecessary memory overhead when built in release mode,
+// thus increase the fiber stack size only in debug mode
+constexpr std::size_t MOTION_FIBER_STACK_SIZE = MOTION_DEBUG ? 32 * 1024 : 14 * 1024;
 
 enum class FiberStackAllocator {
   // standard allocator
