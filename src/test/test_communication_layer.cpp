@@ -28,122 +28,133 @@
 #include "utility/logger.h"
 
 TEST(CommunicationLayer, Dummy) {
-  std::size_t num_parties = 3;
-  auto comm_layers = MOTION::Communication::make_dummy_communication_layers(3);
-  auto& cl_alice = comm_layers.at(0);
-  auto& cl_bob = comm_layers.at(1);
-  auto& cl_charlie = comm_layers.at(2);
+  std::size_t number_of_parties = 3;
+  auto communication_layers = encrypto::motion::communication::MakeDummyCommunicationLayers(3);
+  auto& communication_layer_alice = communication_layers.at(0);
+  auto& communication_layer_bob = communication_layers.at(1);
+  auto& communication_layer_charlie = communication_layers.at(2);
 
-  auto log_alice = std::make_shared<MOTION::Logger>(0, boost::log::trivial::severity_level::trace);
-  auto log_bob = std::make_shared<MOTION::Logger>(1, boost::log::trivial::severity_level::trace);
+  auto log_alice =
+      std::make_shared<encrypto::motion::Logger>(0, boost::log::trivial::severity_level::trace);
+  auto log_bob =
+      std::make_shared<encrypto::motion::Logger>(1, boost::log::trivial::severity_level::trace);
   auto log_charlie =
-      std::make_shared<MOTION::Logger>(2, boost::log::trivial::severity_level::trace);
-  cl_alice->set_logger(log_alice);
-  cl_bob->set_logger(log_bob);
-  cl_charlie->set_logger(log_charlie);
+      std::make_shared<encrypto::motion::Logger>(2, boost::log::trivial::severity_level::trace);
+  communication_layer_alice->SetLogger(log_alice);
+  communication_layer_bob->SetLogger(log_bob);
+  communication_layer_charlie->SetLogger(log_charlie);
 
-  cl_bob->register_fallback_message_handler(
-      [](auto party_id) { return std::make_shared<MOTION::Communication::QueueHandler>(); });
-  cl_charlie->register_fallback_message_handler(
-      [](auto party_id) { return std::make_shared<MOTION::Communication::QueueHandler>(); });
-  auto& qh_bob =
-      dynamic_cast<MOTION::Communication::QueueHandler&>(cl_bob->get_fallback_message_handler(0));
-  auto& qh_charlie = dynamic_cast<MOTION::Communication::QueueHandler&>(
-      cl_charlie->get_fallback_message_handler(0));
+  communication_layer_bob->RegisterFallbackMessageHandler([](auto party_id) {
+    return std::make_shared<encrypto::motion::communication::QueueHandler>();
+  });
+  communication_layer_charlie->RegisterFallbackMessageHandler([](auto party_id) {
+    return std::make_shared<encrypto::motion::communication::QueueHandler>();
+  });
+  auto& queue_handler_bob = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
+      communication_layer_bob->GetFallbackMessageHandler(0));
+  auto& queue_handler_charlie = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
+      communication_layer_charlie->GetFallbackMessageHandler(0));
 
-  std::for_each(std::begin(comm_layers), std::end(comm_layers), [](auto& cl) { cl->start(); });
+  std::for_each(std::begin(communication_layers), std::end(communication_layers),
+                [](auto& cl) { cl->Start(); });
 
   const std::vector<std::uint8_t> message = {0xde, 0xad, 0xbe, 0xef};
 
   {
-    cl_alice->send_message(1, message);
-    auto received_message = qh_bob.get_queue().dequeue();
-    EXPECT_EQ(received_message, message);
+    communication_layer_alice->SendMessage(1, message);
+    auto ReceivedMessage = queue_handler_bob.GetQueue().dequeue();
+    EXPECT_EQ(ReceivedMessage, message);
   }
 
   {
-    std::vector<std::future<void>> futs;
-    for (auto& cl : comm_layers) {
-      futs.emplace_back(std::async(std::launch::async, [&cl] { cl->sync(); }));
+    std::vector<std::future<void>> futures;
+    for (auto& cl : communication_layers) {
+      futures.emplace_back(std::async(std::launch::async, [&cl] { cl->Synchronize(); }));
     }
-    std::for_each(std::begin(futs), std::end(futs), [](auto& f) { f.get(); });
+    std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
   }
 
   {
-    cl_alice->broadcast_message(message);
-    auto received_message_bob = qh_bob.get_queue().dequeue();
+    communication_layer_alice->BroadcastMessage(message);
+    auto received_message_bob = queue_handler_bob.GetQueue().dequeue();
     EXPECT_EQ(received_message_bob, message);
-    auto received_message_charlie = qh_charlie.get_queue().dequeue();
+    auto received_message_charlie = queue_handler_charlie.GetQueue().dequeue();
     EXPECT_EQ(received_message_charlie, message);
   }
 
   // shutdown all commmunication layers
-  std::vector<std::future<void>> futs;
-  for (auto& cl : comm_layers) {
-    futs.emplace_back(std::async(std::launch::async, [&cl] { cl->shutdown(); }));
+  std::vector<std::future<void>> futures;
+  for (auto& cl : communication_layers) {
+    futures.emplace_back(std::async(std::launch::async, [&cl] { cl->Shutdown(); }));
   }
-  std::for_each(std::begin(futs), std::end(futs), [](auto& f) { f.get(); });
+  std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
 }
 
-class CommunicationLayerTCP : public testing::TestWithParam<bool> {};
+class CommunicationLayerTcp : public testing::TestWithParam<bool> {};
 
-TEST_P(CommunicationLayerTCP, TCP) {
-  std::size_t num_parties = 3;
-  auto comm_layers = MOTION::Communication::make_local_tcp_communication_layers(3, GetParam());
-  auto& cl_alice = comm_layers.at(0);
-  auto& cl_bob = comm_layers.at(1);
-  auto& cl_charlie = comm_layers.at(2);
+TEST_P(CommunicationLayerTcp, Tcp) {
+  std::size_t number_of_parties = 3;
+  auto communication_layers =
+      encrypto::motion::communication::MakeLocalTcpCommunicationLayers(3, GetParam());
+  auto& communication_layer_alice = communication_layers.at(0);
+  auto& communication_layer_bob = communication_layers.at(1);
+  auto& communication_layer_charlie = communication_layers.at(2);
 
-  auto log_alice = std::make_shared<MOTION::Logger>(0, boost::log::trivial::severity_level::trace);
-  auto log_bob = std::make_shared<MOTION::Logger>(1, boost::log::trivial::severity_level::trace);
+  auto log_alice =
+      std::make_shared<encrypto::motion::Logger>(0, boost::log::trivial::severity_level::trace);
+  auto log_bob =
+      std::make_shared<encrypto::motion::Logger>(1, boost::log::trivial::severity_level::trace);
   auto log_charlie =
-      std::make_shared<MOTION::Logger>(2, boost::log::trivial::severity_level::trace);
-  cl_alice->set_logger(log_alice);
-  cl_bob->set_logger(log_bob);
-  cl_charlie->set_logger(log_charlie);
+      std::make_shared<encrypto::motion::Logger>(2, boost::log::trivial::severity_level::trace);
+  communication_layer_alice->SetLogger(log_alice);
+  communication_layer_bob->SetLogger(log_bob);
+  communication_layer_charlie->SetLogger(log_charlie);
 
-  cl_bob->register_fallback_message_handler(
-      [](auto party_id) { return std::make_shared<MOTION::Communication::QueueHandler>(); });
-  cl_charlie->register_fallback_message_handler(
-      [](auto party_id) { return std::make_shared<MOTION::Communication::QueueHandler>(); });
-  auto& qh_bob =
-      dynamic_cast<MOTION::Communication::QueueHandler&>(cl_bob->get_fallback_message_handler(0));
-  auto& qh_charlie = dynamic_cast<MOTION::Communication::QueueHandler&>(
-      cl_charlie->get_fallback_message_handler(0));
+  communication_layer_bob->RegisterFallbackMessageHandler([](auto party_id) {
+    return std::make_shared<encrypto::motion::communication::QueueHandler>();
+  });
+  communication_layer_charlie->RegisterFallbackMessageHandler([](auto party_id) {
+    return std::make_shared<encrypto::motion::communication::QueueHandler>();
+  });
+  auto& queue_handler_bob = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
+      communication_layer_bob->GetFallbackMessageHandler(0));
+  auto& queue_handler_charlie = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
+      communication_layer_charlie->GetFallbackMessageHandler(0));
 
-  std::for_each(std::begin(comm_layers), std::end(comm_layers), [](auto& cl) { cl->start(); });
+  std::for_each(std::begin(communication_layers), std::end(communication_layers),
+                [](auto& cl) { cl->Start(); });
 
   const std::vector<std::uint8_t> message = {0xde, 0xad, 0xbe, 0xef};
 
   {
-    cl_alice->send_message(1, message);
-    auto received_message = qh_bob.get_queue().dequeue();
-    EXPECT_EQ(received_message, message);
+    communication_layer_alice->SendMessage(1, message);
+    auto ReceivedMessage = queue_handler_bob.GetQueue().dequeue();
+    EXPECT_EQ(ReceivedMessage, message);
   }
 
   {
-    std::vector<std::future<void>> futs;
-    for (auto& cl : comm_layers) {
-      futs.emplace_back(std::async(std::launch::async, [&cl] { cl->sync(); }));
+    std::vector<std::future<void>> futures;
+    for (auto& cl : communication_layers) {
+      futures.emplace_back(std::async(std::launch::async, [&cl] { cl->Synchronize(); }));
     }
-    std::for_each(std::begin(futs), std::end(futs), [](auto& f) { f.get(); });
+    std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
   }
 
   {
-    cl_alice->broadcast_message(message);
-    auto received_message_bob = qh_bob.get_queue().dequeue();
+    communication_layer_alice->BroadcastMessage(message);
+    auto received_message_bob = queue_handler_bob.GetQueue().dequeue();
     EXPECT_EQ(received_message_bob, message);
-    auto received_message_charlie = qh_charlie.get_queue().dequeue();
+    auto received_message_charlie = queue_handler_charlie.GetQueue().dequeue();
     EXPECT_EQ(received_message_charlie, message);
   }
 
   // shutdown all commmunication layers
-  std::vector<std::future<void>> futs;
-  for (auto& cl : comm_layers) {
-    futs.emplace_back(std::async(std::launch::async, [&cl] { cl->shutdown(); }));
+  std::vector<std::future<void>> futures;
+  for (auto& cl : communication_layers) {
+    futures.emplace_back(std::async(std::launch::async, [&cl] { cl->Shutdown(); }));
   }
-  std::for_each(std::begin(futs), std::end(futs), [](auto& f) { f.get(); });
+  std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
 }
 
-INSTANTIATE_TEST_SUITE_P(CommunicationLayerTCPTests, CommunicationLayerTCP, testing::Bool(),
+INSTANTIATE_TEST_SUITE_P(CommunicationLayerTCPTests, CommunicationLayerTcp, testing::Bool(),
                          [](auto& info) { return info.param ? "ipv6" : "ipv4"; });

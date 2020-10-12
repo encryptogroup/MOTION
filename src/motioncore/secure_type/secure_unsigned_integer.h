@@ -24,9 +24,9 @@
 
 #pragma once
 
-#include "share/share_wrapper.h"
+#include "protocols/share_wrapper.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
 class Logger;
 
@@ -42,15 +42,15 @@ class SecureUnsignedInteger {
     other.share_->Get().reset();
   }
 
-  SecureUnsignedInteger(const Shares::ShareWrapper& other) : SecureUnsignedInteger(*other) {}
+  SecureUnsignedInteger(const ShareWrapper& other) : SecureUnsignedInteger(*other) {}
 
-  SecureUnsignedInteger(Shares::ShareWrapper&& other) : SecureUnsignedInteger(std::move(*other)) {
+  SecureUnsignedInteger(ShareWrapper&& other) : SecureUnsignedInteger(std::move(*other)) {
     other.Get().reset();
   }
 
-  SecureUnsignedInteger(const Shares::SharePtr& other);
+  SecureUnsignedInteger(const SharePointer& other);
 
-  SecureUnsignedInteger(Shares::SharePtr&& other);
+  SecureUnsignedInteger(SharePointer&& other);
 
   SecureUnsignedInteger& operator=(const SecureUnsignedInteger& other) {
     this->share_ = other.share_;
@@ -64,13 +64,13 @@ class SecureUnsignedInteger {
     return *this;
   }
 
-  Shares::ShareWrapper& Get() { return *share_; }
+  ShareWrapper& Get() { return *share_; }
 
-  const Shares::ShareWrapper& Get() const { return *share_; }
+  const ShareWrapper& Get() const { return *share_; }
 
-  Shares::ShareWrapper& operator->() { return *share_; }
+  ShareWrapper& operator->() { return *share_; }
 
-  const Shares::ShareWrapper& operator->() const { return *share_; }
+  const ShareWrapper& operator->() const { return *share_; }
 
   SecureUnsignedInteger operator+(const SecureUnsignedInteger& other) const;
 
@@ -100,15 +100,16 @@ class SecureUnsignedInteger {
     return *this;
   }
 
-  Shares::ShareWrapper operator>(const SecureUnsignedInteger& other) const;
+  ShareWrapper operator>(const SecureUnsignedInteger& other) const;
 
-  Shares::ShareWrapper operator==(const SecureUnsignedInteger& other) const;
+  ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
  private:
-  std::shared_ptr<Shares::ShareWrapper> share_{nullptr};
+  std::shared_ptr<ShareWrapper> share_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};
 
-  std::string ConstructPath(const ENCRYPTO::IntegerOperationType type, const std::size_t bitlen,
+  std::string ConstructPath(const IntegerOperationType type, const std::size_t bitlength,
                             std::string suffix = "") const;
-};  // namespace MOTION
-}
+};
+
+}  // namespace encrypto::motion

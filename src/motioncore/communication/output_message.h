@@ -26,9 +26,11 @@
 
 #include <flatbuffers/flatbuffers.h>
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
+
 flatbuffers::FlatBufferBuilder BuildOutputMessage(std::size_t gate_id,
                                                   std::vector<std::uint8_t> wire_payload);
 flatbuffers::FlatBufferBuilder BuildOutputMessage(
     std::size_t gate_id, std::vector<std::vector<std::uint8_t>> wire_payload);
-}  // namespace MOTION::Communication
+
+}  // namespace encrypto::motion::communication

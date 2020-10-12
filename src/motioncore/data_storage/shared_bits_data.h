@@ -28,24 +28,27 @@
 #include <vector>
 #include "utility/reusable_future.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-enum SharedBitsMessageType : std::uint8_t { mask_message = 2, reconstruct_message = 1 };
+enum SharedBitsMessageType : std::uint8_t { kMaskMessage = 2, kReconstructMessage = 1 };
 
 struct SharedBitsData {
-  void MessageReceived(const SharedBitsMessageType type, const std::uint8_t* message, const std::size_t size);
+  void MessageReceived(const SharedBitsMessageType type, const std::uint8_t* message,
+                       const std::size_t size);
   void Clear();
 
   // register to receive the masked value during squaring
-  ENCRYPTO::ReusableFuture<std::vector<std::uint8_t>> RegisterForMaskMessage(size_t expected_size);
+  ReusableFuture<std::vector<std::uint8_t>> RegisterForMaskMessage(
+      size_t expected_size);
 
   // register to receive the reconstruction messages for a^2
-  ENCRYPTO::ReusableFuture<std::vector<std::uint8_t>> RegisterForReconstructMessage(size_t expected_size);
+  ReusableFuture<std::vector<std::uint8_t>> RegisterForReconstructMessage(
+      size_t expected_size);
 
-  ENCRYPTO::ReusablePromise<std::vector<std::uint8_t>> mask_message_promise_;
-  std::size_t mask_message_expected_size_ = 0;
-  ENCRYPTO::ReusablePromise<std::vector<std::uint8_t>> reconstruct_message_promise_;
-  std::size_t reconstruct_message_expected_size_ = 0;
+  ReusablePromise<std::vector<std::uint8_t>> mask_message_promise;
+  std::size_t mask_message_expected_size = 0;
+  ReusablePromise<std::vector<std::uint8_t>> reconstruct_message_promise;
+  std::size_t reconstruct_message_expected_size = 0;
 };
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

@@ -25,7 +25,9 @@
 #pragma once
 
 #include "base/party.h"
-#include "statistics/run_time_stats.h"
+#include "statistics/run_time_statistics.h"
 
-MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
-                                                  MOTION::MPCProtocol protocol, bool check);
+encrypto::motion::RunTimeStatistics EvaluateProtocol(encrypto::motion::PartyPointer& party,
+                                                     std::size_t number_of_simd,
+                                                     encrypto::motion::MpcProtocol protocol,
+                                                     bool check);

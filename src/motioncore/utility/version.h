@@ -22,15 +22,15 @@
 
 #pragma once
 
-namespace MOTION {
+namespace encrypto::motion {
 
 // Return current the git version or N/A if not build from git.
-const char* get_git_version();
+const char* GetGitVersion();
 
 // Return current the git commit or N/A if not build from git.
-const char* get_git_commit();
+const char* GetGitCommit();
 
 // Return current the git branch or N/A if not build from git.
-const char* get_git_branch();
+const char* GetGitBranch();
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

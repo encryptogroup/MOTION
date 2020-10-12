@@ -26,33 +26,35 @@
 
 #include "communication/tcp_transport.h"
 
-class TCPTransportTest : public testing::TestWithParam<std::string> {};
+class TcpTransportTest : public testing::TestWithParam<std::string> {};
 
-TEST_P(TCPTransportTest, dummy) {
+TEST_P(TcpTransportTest, dummy) {
   auto localhost = GetParam();
-  auto transport_alice_fut = std::async(std::launch::async, [localhost] {
-    MOTION::Communication::TCPSetupHelper helper(0, {{localhost, 13337}, {localhost, 13338}});
-    auto transports = helper.setup_connections();
+  auto transport_alice_future = std::async(std::launch::async, [localhost] {
+    encrypto::motion::communication::TcpSetupHelper helper(
+        0, {{localhost, 13337}, {localhost, 13338}});
+    auto transports = helper.SetupConnections();
     return std::move(transports.at(1));
   });
-  auto transport_bob_fut = std::async(std::launch::async, [localhost] {
-    MOTION::Communication::TCPSetupHelper helper(1, {{localhost, 13337}, {localhost, 13338}});
-    auto transports = helper.setup_connections();
+  auto transport_bob_future = std::async(std::launch::async, [localhost] {
+    encrypto::motion::communication::TcpSetupHelper helper(
+        1, {{localhost, 13337}, {localhost, 13338}});
+    auto transports = helper.SetupConnections();
     return std::move(transports.at(0));
   });
-  auto transport_alice = transport_alice_fut.get();
-  auto transport_bob = transport_bob_fut.get();
+  auto transport_alice = transport_alice_future.get();
+  auto transport_bob = transport_bob_future.get();
 
   const std::vector<std::uint8_t> message = {0xde, 0xad, 0xbe, 0xef};
 
-  EXPECT_FALSE(transport_bob->available());
-  transport_alice->send_message(message);
-  EXPECT_TRUE(transport_bob->available());
-  auto received_message = transport_bob->receive_message();
-  EXPECT_FALSE(transport_bob->available());
+  EXPECT_FALSE(transport_bob->Available());
+  transport_alice->SendMessage(message);
+  EXPECT_TRUE(transport_bob->Available());
+  auto ReceivedMessage = transport_bob->ReceiveMessage();
+  EXPECT_FALSE(transport_bob->Available());
 
-  EXPECT_EQ(received_message, message);
+  EXPECT_EQ(ReceivedMessage, message);
 }
 
-INSTANTIATE_TEST_SUITE_P(TCPTransportSuite, TCPTransportTest, testing::Values("127.0.0.1", "::1"),
+INSTANTIATE_TEST_SUITE_P(TcpTransportSuite, TcpTransportTest, testing::Values("127.0.0.1", "::1"),
                          [](auto& info) { return info.param == "::1" ? "ipv6" : "ipv4"; });

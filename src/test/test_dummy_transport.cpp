@@ -24,18 +24,18 @@
 
 #include "communication/dummy_transport.h"
 
-using namespace MOTION::Communication;
+using namespace encrypto::motion::communication;
 
 TEST(DummyTransport, Dummy) {
-  auto [transport_alice, transport_bob] = DummyTransport::make_transport_pair();
+  auto [transport_alice, transport_bob] = DummyTransport::MakeTransportPair();
 
   const std::vector<std::uint8_t> message = {0xde, 0xad, 0xbe, 0xef};
 
-  EXPECT_FALSE(transport_bob->available());
-  transport_alice->send_message(message);
-  EXPECT_TRUE(transport_bob->available());
-  auto received_message = transport_bob->receive_message();
-  EXPECT_FALSE(transport_bob->available());
+  EXPECT_FALSE(transport_bob->Available());
+  transport_alice->SendMessage(message);
+  EXPECT_TRUE(transport_bob->Available());
+  auto ReceivedMessage = transport_bob->ReceiveMessage();
+  EXPECT_FALSE(transport_bob->Available());
 
-  EXPECT_EQ(received_message, message);
+  EXPECT_EQ(ReceivedMessage, message);
 }

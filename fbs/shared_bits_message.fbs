@@ -1,4 +1,4 @@
-namespace MOTION.Communication;
+namespace encrypto.motion.communication;
 
 table SharedBitsMessage {
   payload:[ubyte];

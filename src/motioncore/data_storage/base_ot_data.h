@@ -32,61 +32,59 @@
 #include <vector>
 #include "utility/bit_vector.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
+
 class FiberCondition;
-}
 
-namespace MOTION {
+enum BaseOtDataType : uint { kHL17R = 0, kHL17S = 1, kBaseOtInvalidDataType = 2 };
 
-enum BaseOTsDataType : uint { HL17_R = 0, HL17_S = 1, BaseOTs_invalid_data_type = 2 };
+struct BaseOtReceiverData {
+  BaseOtReceiverData();
+  ~BaseOtReceiverData() = default;
 
-struct BaseOTsReceiverData {
-  BaseOTsReceiverData();
-  ~BaseOTsReceiverData() = default;
+  BitVector<> c;  /// choice bits
+  std::array<std::array<std::byte, 16>, 128> messages_c;
 
-  ENCRYPTO::BitVector<> c_;  /// choice bits
-  std::array<std::array<std::byte, 16>, 128> messages_c_;
-
-  std::vector<std::array<std::byte, 32>> S_;
-  boost::container::vector<bool> received_S_;
-  std::vector<std::unique_ptr<ENCRYPTO::FiberCondition>> received_S_condition_;
+  std::vector<std::array<std::byte, 32>> S;
+  boost::container::vector<bool> received_S;
+  std::vector<std::unique_ptr<FiberCondition>> received_S_condition;
 
   // number of used rows;
-  std::size_t consumed_offset_{0};
+  std::size_t consumed_offset{0};
 
-  std::atomic<bool> is_ready_{false};
-  std::unique_ptr<ENCRYPTO::FiberCondition> is_ready_condition_;
+  std::atomic<bool> is_ready{false};
+  std::unique_ptr<FiberCondition> is_ready_condition;
 };
 
-struct BaseOTsSenderData {
-  BaseOTsSenderData();
-  ~BaseOTsSenderData() = default;
+struct BaseOtSenderData {
+  BaseOtSenderData();
+  ~BaseOtSenderData() = default;
 
-  std::array<std::array<std::byte, 16>, 128> messages_0_;
-  std::array<std::array<std::byte, 16>, 128> messages_1_;
+  std::array<std::array<std::byte, 16>, 128> messages_0;
+  std::array<std::array<std::byte, 16>, 128> messages_1;
 
-  std::vector<std::array<std::byte, 32>> R_;
-  boost::container::vector<bool> received_R_;
-  std::vector<std::unique_ptr<ENCRYPTO::FiberCondition>> received_R_condition_;
+  std::vector<std::array<std::byte, 32>> R;
+  boost::container::vector<bool> received_R;
+  std::vector<std::unique_ptr<FiberCondition>> received_R_condition;
 
   // number of used rows;
-  std::size_t consumed_offset_{0};
+  std::size_t consumed_offset{0};
 
-  std::unique_ptr<ENCRYPTO::FiberCondition> is_ready_condition_;
-  std::atomic<bool> is_ready_{false};
+  std::unique_ptr<FiberCondition> is_ready_condition;
+  std::atomic<bool> is_ready{false};
 };
 
-struct BaseOTsData {
-  void MessageReceived(const std::uint8_t* message, const BaseOTsDataType type,
+struct BaseOtData {
+  void MessageReceived(const std::uint8_t* message, const BaseOtDataType type,
                        const std::size_t ot_id = 0);
 
-  BaseOTsReceiverData& GetReceiverData() { return receiver_data_; }
-  const BaseOTsReceiverData& GetReceiverData() const { return receiver_data_; }
-  BaseOTsSenderData& GetSenderData() { return sender_data_; }
-  const BaseOTsSenderData& GetSenderData() const { return sender_data_; }
+  BaseOtReceiverData& GetReceiverData() { return receiver_data; }
+  const BaseOtReceiverData& GetReceiverData() const { return receiver_data; }
+  BaseOtSenderData& GetSenderData() { return sender_data; }
+  const BaseOtSenderData& GetSenderData() const { return sender_data; }
 
-  BaseOTsReceiverData receiver_data_;
-  BaseOTsSenderData sender_data_;
+  BaseOtReceiverData receiver_data;
+  BaseOtSenderData sender_data;
 };
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

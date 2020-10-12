@@ -29,33 +29,35 @@
 
 #include "message_handler.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
 class Logger;
 
-namespace Communication {
+}  // namespace encrypto::motion
 
-class SyncHandler : public MessageHandler {
+namespace encrypto::motion::communication {
+
+class SynchronizationHandler : public MessageHandler {
  public:
-  SyncHandler(std::size_t my_id, std::size_t num_parties, std::shared_ptr<Logger> logger)
+  SynchronizationHandler(std::size_t my_id, std::size_t number_of_parties,
+                         std::shared_ptr<Logger> logger)
       : my_id_(my_id),
-        num_parties_(num_parties),
-        sync_states_(num_parties_, 0),
+        number_of_parties_(number_of_parties),
+        synchronization_states_(number_of_parties_, 0),
         logger_(std::move(logger)) {}
-  std::uint64_t increment_my_sync_state() { return ++sync_states_.at(my_id_); }
-  void received_message(std::size_t party_id, std::vector<std::uint8_t>&& message) override;
-  void wait();
-  std::mutex& get_mutex() { return this_party_mutex_; }
+  std::uint64_t IncrementMySynchronizationState() { return ++synchronization_states_.at(my_id_); }
+  void ReceivedMessage(std::size_t party_id, std::vector<std::uint8_t>&& message) override;
+  void Wait();
+  std::mutex& GetMutex() { return this_party_mutex_; }
 
  private:
   std::size_t my_id_;
-  std::size_t num_parties_;
+  std::size_t number_of_parties_;
   std::mutex this_party_mutex_;
-  std::mutex received_sync_states_mutex_;
-  std::condition_variable sync_states_cv_;
-  std::vector<std::uint64_t> sync_states_;
+  std::mutex received_synchronization_states_mutex_;
+  std::condition_variable synchronization_states_condition_variable_;
+  std::vector<std::uint64_t> synchronization_states_;
   std::shared_ptr<Logger> logger_;
 };
 
-}  // namespace Communication
-}  // namespace MOTION
+}  // namespace encrypto::motion::communication

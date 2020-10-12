@@ -28,186 +28,189 @@
 
 #include "algorithm/algorithm_description.h"
 #include "base/register.h"
-#include "utility/logger.h"
 #include "utility/constants.h"
+#include "utility/logger.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-SecureUnsignedInteger::SecureUnsignedInteger(const Shares::SharePtr& other)
-    : share_(std::make_unique<Shares::ShareWrapper>(other)),
+SecureUnsignedInteger::SecureUnsignedInteger(const SharePointer& other)
+    : share_(std::make_unique<ShareWrapper>(other)),
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
-SecureUnsignedInteger::SecureUnsignedInteger(Shares::SharePtr&& other)
-    : share_(std::make_unique<Shares::ShareWrapper>(std::move(other))),
+SecureUnsignedInteger::SecureUnsignedInteger(SharePointer&& other)
+    : share_(std::make_unique<ShareWrapper>(std::move(other))),
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
 SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() == CircuitType::Arithmetic) {
+  if (share_->Get()->GetCircuitType() == CircuitType::kArithmetic) {
     // use primitive operation in arithmetic GMW
     return *share_ + *other.share_;
   } else {  // BooleanCircuitType
-    const auto bitlen = share_->Get()->GetBitLength();
-    std::shared_ptr<ENCRYPTO::AlgorithmDescription> add_algo;
+    const auto bitlength = share_->Get()->GetBitLength();
+    std::shared_ptr<AlgorithmDescription> addition_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::ADD, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      path = ConstructPath(IntegerOperationType::kAdd, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::ADD, bitlen, "_depth");
+      path = ConstructPath(IntegerOperationType::kAdd, bitlength, "_depth");
 
-    if ((add_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (MOTION_DEBUG) {
+    if ((addition_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+      if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
       }
     } else {
-      add_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
-          ENCRYPTO::AlgorithmDescription::FromBristol(path));
-      assert(add_algo);
-      if constexpr (MOTION_DEBUG) {
+      addition_algorithm =
+          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+      assert(addition_algorithm);
+      if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-    return SecureUnsignedInteger(s_in.Evaluate(add_algo));
+    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(share_input.Evaluate(addition_algorithm));
   }
 }
 
 SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
     return *share_ - *other.share_;
   } else {  // BooleanCircuitType
-    const auto bitlen = share_->Get()->GetBitLength();
-    std::shared_ptr<ENCRYPTO::AlgorithmDescription> sub_algo;
+    const auto bitlength = share_->Get()->GetBitLength();
+    std::shared_ptr<AlgorithmDescription> subtraction_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::SUB, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      path = ConstructPath(IntegerOperationType::kSub, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::SUB, bitlen, "_depth");
+      path = ConstructPath(IntegerOperationType::kSub, bitlength, "_depth");
 
-    if ((sub_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (MOTION_DEBUG) {
+    if ((subtraction_algorithm =
+             share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+      if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
       }
     } else {
-      sub_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
-          ENCRYPTO::AlgorithmDescription::FromBristol(path));
-      assert(sub_algo);
-      if constexpr (MOTION_DEBUG) {
+      subtraction_algorithm =
+          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+      assert(subtraction_algorithm);
+      if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-    return SecureUnsignedInteger(s_in.Evaluate(sub_algo));
+    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(share_input.Evaluate(subtraction_algorithm));
   }
 }
 
 SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
     return *share_ * *other.share_;
   } else {  // BooleanCircuitType
-    const auto bitlen = share_->Get()->GetBitLength();
-    std::shared_ptr<ENCRYPTO::AlgorithmDescription> mul_algo;
+    const auto bitlength = share_->Get()->GetBitLength();
+    std::shared_ptr<AlgorithmDescription> multiplication_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::MUL, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      path = ConstructPath(IntegerOperationType::kMul, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::MUL, bitlen, "_depth");
+      path = ConstructPath(IntegerOperationType::kMul, bitlength, "_depth");
 
-    if ((mul_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (MOTION_DEBUG) {
+    if ((multiplication_algorithm =
+             share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+      if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
       }
     } else {
-      mul_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
-          ENCRYPTO::AlgorithmDescription::FromBristol(path));
-      assert(mul_algo);
-      if constexpr (MOTION_DEBUG) {
+      multiplication_algorithm =
+          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+      assert(multiplication_algorithm);
+      if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-    return SecureUnsignedInteger(s_in.Evaluate(mul_algo));
+    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(share_input.Evaluate(multiplication_algorithm));
   }
 }
 
 SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer division is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
-    const auto bitlen = share_->Get()->GetBitLength();
-    std::shared_ptr<ENCRYPTO::AlgorithmDescription> div_algo;
+    const auto bitlength = share_->Get()->GetBitLength();
+    std::shared_ptr<AlgorithmDescription> division_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::DIV, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      path = ConstructPath(IntegerOperationType::kDiv, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::DIV, bitlen, "_depth");
+      path = ConstructPath(IntegerOperationType::kDiv, bitlength, "_depth");
 
-    if ((div_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (MOTION_DEBUG) {
+    if ((division_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+      if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
       }
     } else {
-      div_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
-          ENCRYPTO::AlgorithmDescription::FromBristol(path));
-      assert(div_algo);
-      if constexpr (MOTION_DEBUG) {
+      division_algorithm =
+          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+      assert(division_algorithm);
+      if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-    return SecureUnsignedInteger(s_in.Evaluate(div_algo));
+    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    return SecureUnsignedInteger(share_input.Evaluate(division_algorithm));
   }
 }
 
-Shares::ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
+ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
-    const auto bitlen = share_->Get()->GetBitLength();
-    std::shared_ptr<ENCRYPTO::AlgorithmDescription> gt_algo;
+    const auto bitlength = share_->Get()->GetBitLength();
+    std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MPCProtocol::BMR)  // BMR, use size-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::GT, bitlen, "_size");
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      path = ConstructPath(IntegerOperationType::kGt, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(ENCRYPTO::IntegerOperationType::GT, bitlen, "_depth");
+      path = ConstructPath(IntegerOperationType::kGt, bitlength, "_depth");
 
-    if ((gt_algo = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (MOTION_DEBUG) {
+    if ((is_greater_algorithm =
+             share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+      if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
       }
     } else {
-      gt_algo = std::make_shared<ENCRYPTO::AlgorithmDescription>(
-          ENCRYPTO::AlgorithmDescription::FromBristol(path));
-      assert(gt_algo);
-      if constexpr (MOTION_DEBUG) {
+      is_greater_algorithm =
+          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+      assert(is_greater_algorithm);
+      if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto s_in{Shares::ShareWrapper::Join({*share_, *other.share_})};
-    return s_in.Evaluate(gt_algo).Split().at(0);
+    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    return share_input.Evaluate(is_greater_algorithm).Split().at(0);
   }
 }
 
-Shares::ShareWrapper SecureUnsignedInteger::operator==(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::Boolean) {
+ShareWrapper SecureUnsignedInteger::operator==(const SecureUnsignedInteger& other) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
-    if constexpr (MOTION_DEBUG) {
-      if (other->GetProtocol() == MPCProtocol::BMR) {
+    if constexpr (kDebug) {
+      if (other->GetProtocol() == MpcProtocol::kBmr) {
         logger_->LogDebug("Creating a Boolean equality circuit in BMR");
       } else {
         logger_->LogDebug("Creating a Boolean equality circuit in GMW");
@@ -217,40 +220,40 @@ Shares::ShareWrapper SecureUnsignedInteger::operator==(const SecureUnsignedInteg
   }
 }
 
-std::string SecureUnsignedInteger::ConstructPath(const ENCRYPTO::IntegerOperationType type,
-                                                 const std::size_t bitlen,
+std::string SecureUnsignedInteger::ConstructPath(const IntegerOperationType type,
+                                                 const std::size_t bitlength,
                                                  std::string suffix) const {
-  std::string type_str;
+  std::string operation_type_string;
   switch (type) {
-    case ENCRYPTO::IntegerOperationType::ADD: {
-      type_str = "add";
+    case IntegerOperationType::kAdd: {
+      operation_type_string = "add";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::DIV: {
-      type_str = "div";
+    case IntegerOperationType::kDiv: {
+      operation_type_string = "div";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::GT: {
-      type_str = "gt";
+    case IntegerOperationType::kGt: {
+      operation_type_string = "gt";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::EQ: {
-      type_str = "eq";
+    case IntegerOperationType::kEq: {
+      operation_type_string = "eq";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::MUL: {
-      type_str = "mul";
+    case IntegerOperationType::kMul: {
+      operation_type_string = "mul";
       break;
     }
-    case ENCRYPTO::IntegerOperationType::SUB: {
-      type_str = "sub";
+    case IntegerOperationType::kSub: {
+      operation_type_string = "sub";
       break;
     }
     default:
       throw std::runtime_error(fmt::format("Invalid integer operation required: {}", type));
   }
-  return fmt::format("{}/circuits/int/int_{}{}{}.bristol", MOTION_ROOT_DIR, type_str, bitlen,
-                     suffix);
+  return fmt::format("{}/circuits/int/int_{}{}{}.bristol", kRootDir, operation_type_string,
+                     bitlength, suffix);
 }
 
-}
+}  // namespace encrypto::motion

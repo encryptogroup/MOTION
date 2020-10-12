@@ -28,20 +28,20 @@
 #include <regex>
 #include <sstream>
 
+#include <fmt/format.h>
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
-#include <fmt/format.h>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 AlgorithmDescription AlgorithmDescription::FromBristol(const std::string& path) {
-  std::ifstream fs(path);
-  return FromBristol(fs);
+  std::ifstream file_stream(path);
+  return FromBristol(file_stream);
 }
 
 AlgorithmDescription AlgorithmDescription::FromBristol(std::string&& path) {
-  std::ifstream fs(path);
-  return FromBristol(fs);
+  std::ifstream file_stream(std::move(path));
+  return FromBristol(file_stream);
 }
 
 //
@@ -62,135 +62,141 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::string&& path) {
 //
 
 AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
-  AlgorithmDescription algo;
+  AlgorithmDescription algorithm_description;
   assert(stream.is_open());
   assert(stream.good());
-  stream >> algo.n_gates_ >> algo.n_wires_;
+  stream >> algorithm_description.number_of_gates >> algorithm_description.number_of_wires;
 
-  std::vector<std::string> line_v;
-  std::string str;
-  std::getline(stream, str);  // skip \n at the end of the first line
+  std::vector<std::string> line_vector;
+  std::string line;
+  std::getline(stream, line);  // skip \n at the end of the first line
   // second line
   {
     std::string second_line;
     std::getline(stream, second_line);
     std::stringstream ss(second_line);
-    while (std::getline(ss, str, ' ')) {
-      line_v.emplace_back(std::move(str));
-      str.clear();
+    while (std::getline(ss, line, ' ')) {
+      line_vector.emplace_back(std::move(line));
+      line.clear();
     }
-    algo.n_input_wires_parent_a_ = std::stoull(line_v.at(0));
-    if (line_v.size() == 2) {
-      algo.n_output_wires_ = std::stoull(line_v.at(1));
-    } else if (line_v.size() == 3) {
-      algo.n_input_wires_parent_b_ = std::stoull(line_v.at(1));
-      algo.n_output_wires_ = std::stoull(line_v.at(2));
+    algorithm_description.number_of_input_wires_parent_a = std::stoull(line_vector.at(0));
+    if (line_vector.size() == 2) {
+      algorithm_description.number_of_output_wires = std::stoull(line_vector.at(1));
+    } else if (line_vector.size() == 3) {
+      algorithm_description.number_of_input_wires_parent_b = std::stoull(line_vector.at(1));
+      algorithm_description.number_of_output_wires = std::stoull(line_vector.at(2));
     } else {
       throw std::runtime_error(
-          std::string("Unexpected number of values: " + std::to_string(line_v.size()) + "\n"));
+          std::string("Unexpected number of values: " + std::to_string(line_vector.size()) + "\n"));
     }
-    str.clear();
-    line_v.clear();
+    line.clear();
+    line_vector.clear();
   }
 
-  std::getline(stream, str);
-  assert(str.empty());
+  std::getline(stream, line);
+  assert(line.empty());
 
   // read line
-  while (std::getline(stream, str)) {
-    std::stringstream ss(str);
+  while (std::getline(stream, line)) {
+    std::stringstream ss(line);
     // split line
-    while (std::getline(ss, str, ' ')) {
-      line_v.emplace_back(std::move(str));
+    while (std::getline(ss, line, ' ')) {
+      line_vector.emplace_back(std::move(line));
     }
 
-    if (line_v.empty()) continue;
-    const auto& type = line_v.at(line_v.size() - 1);
-    PrimitiveOperation op;
+    if (line_vector.empty()) continue;
+    const auto& type = line_vector.at(line_vector.size() - 1);
+    PrimitiveOperation primitive_operation;
     if (type == std::string("XOR") || type == std::string("AND") || type == std::string("ADD") ||
         type == std::string("MUL") || type == std::string("OR")) {
-      assert(line_v.size() == 6);
+      assert(line_vector.size() == 6);
       if (type == std::string("XOR"))
-        op.type_ = PrimitiveOperationType::XOR;
+        primitive_operation.type = PrimitiveOperationType::kXor;
       else if (type == std::string("AND"))
-        op.type_ = PrimitiveOperationType::AND;
+        primitive_operation.type = PrimitiveOperationType::kAnd;
       else if (type == std::string("ADD"))
-        op.type_ = PrimitiveOperationType::ADD;
+        primitive_operation.type = PrimitiveOperationType::kAdd;
       else if (type == std::string("MUL"))
-        op.type_ = PrimitiveOperationType::MUL;
+        primitive_operation.type = PrimitiveOperationType::kMul;
       else if (type == std::string("OR"))
-        op.type_ = PrimitiveOperationType::OR;
-      op.parent_a_ = std::stoull(line_v.at(2));
-      op.parent_b_ = std::stoull(line_v.at(3));
-      op.output_wire_ = std::stoull(line_v.at(4));
+        primitive_operation.type = PrimitiveOperationType::kOr;
+      primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      primitive_operation.parent_b = std::stoull(line_vector.at(3));
+      primitive_operation.output_wire = std::stoull(line_vector.at(4));
     } else if (type == std::string("MUX")) {
-      assert(line_v.size() == 7);
-      op.type_ = PrimitiveOperationType::MUX;
-      op.parent_a_ = std::stoull(line_v.at(2));
-      op.parent_b_ = std::stoull(line_v.at(3));
-      op.selection_bit_ = std::stoull(line_v.at(4));
-      op.output_wire_ = std::stoull(line_v.at(5));
+      assert(line_vector.size() == 7);
+      primitive_operation.type = PrimitiveOperationType::kMux;
+      primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      primitive_operation.parent_b = std::stoull(line_vector.at(3));
+      primitive_operation.selection_bit = std::stoull(line_vector.at(4));
+      primitive_operation.output_wire = std::stoull(line_vector.at(5));
     } else if (type == std::string("INV")) {
-      assert(line_v.size() == 5);
-      op.type_ = PrimitiveOperationType::INV;
-      op.parent_a_ = std::stoull(line_v.at(2));
-      op.output_wire_ = std::stoull(line_v.at(3));
+      assert(line_vector.size() == 5);
+      primitive_operation.type = PrimitiveOperationType::kInv;
+      primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      primitive_operation.output_wire = std::stoull(line_vector.at(3));
     } else {
-      throw std::runtime_error("Unknown operation type: " + line_v.at(line_v.size() - 1) + "\n");
+      throw std::runtime_error("Unknown operation type: " + line_vector.at(line_vector.size() - 1) +
+                               "\n");
     }
-    algo.gates_.emplace_back(op);
-    str.clear();
-    line_v.clear();
+    algorithm_description.gates.emplace_back(primitive_operation);
+    line.clear();
+    line_vector.clear();
   }
-  return algo;
+  return algorithm_description;
 }
 
 AlgorithmDescription AlgorithmDescription::FromBristolFashion(const std::string& path) {
-  std::ifstream fs(path);
-  return FromBristolFashion(fs);
+  std::ifstream file_stream(path);
+  return FromBristolFashion(file_stream);
 }
 
 AlgorithmDescription AlgorithmDescription::FromBristolFashion(std::string&& path) {
-  std::ifstream fs(path);
-  return FromBristolFashion(fs);
+  std::ifstream file_stream(std::move(path));
+  return FromBristolFashion(file_stream);
 }
 
 AlgorithmDescription AlgorithmDescription::FromBristolFashion(std::ifstream& stream) {
-  AlgorithmDescription algo;
+  AlgorithmDescription algorithm_description;
   assert(stream.is_open());
   assert(stream.good());
 
-  const static std::regex line_two_numbers_re("^\\s*(\\d+)\\s+(\\d+)\\s*$");
-  const static std::regex line_three_numbers_re("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s*$");
-  const static std::regex line_gate_re("^\\s*(1|2)\\s+(1)\\s+(\\d+)\\s+(\\d+\\s+)?(\\d+)\\s+(XOR|AND|INV)\\s*$");
-  const static std::regex line_whitespace_re("^\\s*$");
+  constexpr std::size_t kGateEncodingLineNumber = 4;
+  const static std::regex kLineTwoNumbersRegex("^\\s*(\\d+)\\s+(\\d+)\\s*$");
+  const static std::regex kLineThreeNumbersRegex("^\\s*(\\d+)\\s+(\\d+)\\s+(\\d+)\\s*$");
+  const static std::regex kLineGateRegex(
+      "^\\s*(1|2)\\s+(1)\\s+(\\d+)\\s+(\\d+\\s+)?(\\d+)\\s+(XOR|AND|INV)\\s*$");
+  const static std::regex kLineWhitespaceRegex("^\\s*$");
 
   std::string line;
   std::smatch match;
 
   // first line
   std::getline(stream, line);
-  if (!std::regex_match(line, match, line_two_numbers_re)) {
+  if (!std::regex_match(line, match, kLineTwoNumbersRegex)) {
     throw std::runtime_error("Cannot parse Bristol Fashion file at line 1");
   }
-  algo.n_gates_ = boost::lexical_cast<std::size_t>(match[1]);
-  algo.n_wires_ = boost::lexical_cast<std::size_t>(match[2]);
+  algorithm_description.number_of_gates = boost::lexical_cast<std::size_t>(match[1]);
+  algorithm_description.number_of_wires = boost::lexical_cast<std::size_t>(match[2]);
 
   // second line
   std::getline(stream, line);
-  if (std::regex_match(line, match, line_two_numbers_re)) {
+  if (std::regex_match(line, match, kLineTwoNumbersRegex)) {
     auto n = boost::lexical_cast<std::size_t>(match[1]);
     if (n != 1) {
       throw std::runtime_error("Malformed Bristol Fashion format at line 2");
     }
-    algo.n_input_wires_parent_a_ = boost::lexical_cast<std::size_t>(match[2]);
-  } else if (std::regex_match(line, match, line_three_numbers_re)) {
+    algorithm_description.number_of_input_wires_parent_a =
+        boost::lexical_cast<std::size_t>(match[2]);
+  } else if (std::regex_match(line, match, kLineThreeNumbersRegex)) {
     auto n = boost::lexical_cast<std::size_t>(match[1]);
     if (n != 2) {
       throw std::runtime_error("Malformed Bristol Fashion format at line 2");
     }
-    algo.n_input_wires_parent_a_ = boost::lexical_cast<std::size_t>(match[2]);
-    algo.n_input_wires_parent_b_ = boost::lexical_cast<std::size_t>(match[3]);
+    algorithm_description.number_of_input_wires_parent_a =
+        boost::lexical_cast<std::size_t>(match[2]);
+    algorithm_description.number_of_input_wires_parent_b =
+        boost::lexical_cast<std::size_t>(match[3]);
   } else {
     throw std::runtime_error(
         "Cannot parse Bristol Fashion file at line 2 (maybe unsupported number of input values)");
@@ -198,12 +204,12 @@ AlgorithmDescription AlgorithmDescription::FromBristolFashion(std::ifstream& str
 
   // third line
   std::getline(stream, line);
-  if (std::regex_match(line, match, line_two_numbers_re)) {
+  if (std::regex_match(line, match, kLineTwoNumbersRegex)) {
     auto n = boost::lexical_cast<std::size_t>(match[1]);
     if (n != 1) {
       throw std::runtime_error("Malformed Bristol Fashion format at line 3");
     }
-    algo.n_output_wires_ = boost::lexical_cast<std::size_t>(match[2]);
+    algorithm_description.number_of_output_wires = boost::lexical_cast<std::size_t>(match[2]);
   } else {
     throw std::runtime_error(
         "Cannot parse Bristol Fashion file at line 3 (maybe unsupported number of output values)");
@@ -213,202 +219,202 @@ AlgorithmDescription AlgorithmDescription::FromBristolFashion(std::ifstream& str
   std::getline(stream, line);
   assert(line.empty());
 
-  std::size_t line_no = 4;
+  std::size_t line_number = kGateEncodingLineNumber;
 
   // read gates
   while (std::getline(stream, line)) {
-    ++line_no;
-    if (line.empty() || std::regex_match(line, line_whitespace_re)) {
+    ++line_number;
+    if (line.empty() || std::regex_match(line, kLineWhitespaceRegex)) {
       continue;
     }
 
-    if (!std::regex_match(line, match, line_gate_re)) {
+    if (!std::regex_match(line, match, kLineGateRegex)) {
       throw std::runtime_error(
-          fmt::format("Cannot parse Bristol Fashion file at line {}", line_no));
+          fmt::format("Cannot parse Bristol Fashion file at line {}", line_number));
     }
 
     using namespace std::string_literals;
 
-    auto num_inputs = boost::lexical_cast<std::size_t>(match[1]);
+    auto number_of_inputs = boost::lexical_cast<std::size_t>(match[1]);
     const auto& operation = match[6];
-    PrimitiveOperation op;
+    PrimitiveOperation primitive_operation;
 
     if (operation == "XOR"s) {
-      if (num_inputs != 2) {
+      if (number_of_inputs != 2) {
         throw std::runtime_error(fmt::format(
-            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_no));
+            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_number));
       }
-      op.type_ = PrimitiveOperationType::XOR;
+      primitive_operation.type = PrimitiveOperationType::kXor;
     } else if (operation == "AND"s) {
-      if (num_inputs != 2) {
+      if (number_of_inputs != 2) {
         throw std::runtime_error(fmt::format(
-            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_no));
+            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_number));
       }
-      op.type_ = PrimitiveOperationType::AND;
+      primitive_operation.type = PrimitiveOperationType::kAnd;
     } else if (operation == "INV"s) {
-      if (num_inputs != 1) {
+      if (number_of_inputs != 1) {
         throw std::runtime_error(fmt::format(
-            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_no));
+            "Cannot parse Bristol Fashion file at line {}: invalid number of inputs", line_number));
       }
-      op.type_ = PrimitiveOperationType::INV;
+      primitive_operation.type = PrimitiveOperationType::kInv;
     }
-    op.output_wire_ = boost::lexical_cast<std::size_t>(match[5]);
-    op.parent_a_ = boost::lexical_cast<std::size_t>(match[3]);
-    if (num_inputs == 2) {
+    primitive_operation.output_wire = boost::lexical_cast<std::size_t>(match[5]);
+    primitive_operation.parent_a = boost::lexical_cast<std::size_t>(match[3]);
+    if (number_of_inputs == 2) {
       std::string input_b = match[4];
-      boost::algorithm::trim(input_b);
-      op.parent_b_ = boost::lexical_cast<std::size_t>(input_b);
+      boost::trim(input_b);
+      primitive_operation.parent_b = boost::lexical_cast<std::size_t>(input_b);
     }
-    algo.gates_.emplace_back(std::move(op));
+    algorithm_description.gates.emplace_back(std::move(primitive_operation));
   }
 
-  return algo;
+  return algorithm_description;
 }
 
-AlgorithmDescription AlgorithmDescription::FromABY(const std::string& path) {
-  std::ifstream fs(path);
-  return FromBristol(fs);
+AlgorithmDescription AlgorithmDescription::FromAby(const std::string& path) {
+  std::ifstream file_stream(path);
+  return FromBristol(file_stream);
 }
 
-AlgorithmDescription AlgorithmDescription::FromABY(std::string&& path) {
-  std::ifstream fs(path);
-  return FromBristol(fs);
+AlgorithmDescription AlgorithmDescription::FromAby(std::string&& path) {
+  std::ifstream file_stream(std::move(path));
+  return FromBristol(file_stream);
 }
 
-AlgorithmDescription AlgorithmDescription::FromABY(std::ifstream& stream) {
-  AlgorithmDescription algo;
+AlgorithmDescription AlgorithmDescription::FromAby(std::ifstream& stream) {
+  AlgorithmDescription algorithm_description;
   assert(stream.is_open());
   assert(stream.good());
-  std::string str;
-  int INVALID_VALUE = 999999999;
-  int const_0 = INVALID_VALUE, const_1 = INVALID_VALUE;
+  std::string line;
+  constexpr int kInvalidValue = 999999999;
+  int constant_input_0 = kInvalidValue, constant_input_1 = kInvalidValue;
   do {
-    std::getline(stream, str);
-    switch (str[0]) {
+    std::getline(stream, line);
+    switch (line[0]) {
       case '#':  // comment
         break;
       case '\n':  // empty line
         break;
       case '0':  // constant 0
-        const_0 = std::stoi(str.substr(1, str.size() - 1));
+        constant_input_0 = std::stoi(line.substr(1, line.size() - 1));
         break;
       case '1':  // constant 1
-        const_1 = std::stoi(str.substr(1, str.size() - 1));
+        constant_input_1 = std::stoi(line.substr(1, line.size() - 1));
         break;
-      case 'C':  // client's inputs
-      {
-        std::stringstream ss(str);
-        std::string val;
-        std::getline(ss, val, ' ');
-        assert(val == "C");
-        while (std::getline(ss, val, ' ')) ++algo.n_input_wires_parent_a_;
+      case 'C': {  // client's inputs
+        std::stringstream ss(line);
+        std::string value;
+        std::getline(ss, value, ' ');
+        assert(value == "C");
+        while (std::getline(ss, value, ' ')) ++algorithm_description.number_of_input_wires_parent_a;
         break;
       }
-      case 'S':  // server's inputs
-      {
-        std::stringstream ss(str);
-        std::string val;
-        std::getline(ss, val, ' ');
-        assert(val == "S");
-        while (std::getline(ss, val, ' ')) ++algo.n_input_wires_parent_a_;
+      case 'S': {  // server's inputs
+        std::stringstream ss(line);
+        std::string value;
+        std::getline(ss, value, ' ');
+        assert(value == "S");
+        while (std::getline(ss, value, ' ')) ++algorithm_description.number_of_input_wires_parent_a;
         break;
       }
       default:
-        throw std::logic_error(std::string("Invalid first symbol ") + str[0]);
+        throw std::logic_error(std::string("Invalid first symbol ") + line[0]);
     }
-  } while (str != "#Gates");
-  std::vector<std::string> line_v;
+  } while (line != "#Gates");
+  std::vector<std::string> line_vector;
 
-  assert(const_0 != INVALID_VALUE);
-  assert(const_1 != INVALID_VALUE);
+  assert(constant_input_0 != kInvalidValue);
+  assert(constant_input_1 != kInvalidValue);
 
   // read gates
   do {
-    std::getline(stream, str);
-    if(str.size() <= 1) continue;
-    switch(str[0]){
-      case 'A': // AND gate, `A 101 102 103` denotes 103 = 101 AND 102
-        // AND with const_1 is the same gate
-        // AND with const_0 is illegal for now
+    std::getline(stream, line);
+    if (line.size() <= 1) continue;
+    switch (line[0]) {
+      case 'A':  // AND gate, `A 101 102 103` denotes 103 = 101 AND 102
+        // AND with constant_input_1 is the same gate
+        // AND with constant_input_0 is illegal for now
         break;
-      case 'I': // INV gate, `I 101 102` denotes that 102 = NOT 101
+      case 'I':  // INV gate, `I 101 102` denotes that 102 = NOT 101
         break;
-      case 'M': // MUX gate, `M 101 102 103 104` denotes 104 = 103 ? 102 : 101
+      case 'M':  // MUX gate, `M 101 102 103 104` denotes 104 = 103 ? 102 : 101
         break;
-      case 'X': // XOR gate, `X 101 102 103` denotes 103 = 101 XOR 102
-      // XOR with const_1 is an INV gate
-      // XOR with const_0 is the same gate
+      case 'X':  // XOR gate, `X 101 102 103` denotes 103 = 101 XOR 102
+        // XOR with constant_input_1 is an INV gate
+        // XOR with constant_input_0 is the same gate
         break;
       default:
-        throw std::logic_error(std::string("Invalid first symbol ") + str[0]);
+        throw std::logic_error(std::string("Invalid first symbol ") + line[0]);
     }
-    std::stringstream ss(str);
-    while (std::getline(ss, str, ' ')) {
-      line_v.emplace_back(std::move(str));
-      str.clear();
+    std::stringstream ss(line);
+    while (std::getline(ss, line, ' ')) {
+      line_vector.emplace_back(std::move(line));
+      line.clear();
     }
-    algo.n_input_wires_parent_a_ = std::stoull(line_v.at(0));
-    if (line_v.size() == 2) {
-      algo.n_output_wires_ = std::stoull(line_v.at(1));
-    } else if (line_v.size() == 3) {
-      algo.n_input_wires_parent_b_ = std::stoull(line_v.at(1));
-      algo.n_output_wires_ = std::stoull(line_v.at(2));
+    algorithm_description.number_of_input_wires_parent_a = std::stoull(line_vector.at(0));
+    if (line_vector.size() == 2) {
+      algorithm_description.number_of_output_wires = std::stoull(line_vector.at(1));
+    } else if (line_vector.size() == 3) {
+      algorithm_description.number_of_input_wires_parent_b = std::stoull(line_vector.at(1));
+      algorithm_description.number_of_output_wires = std::stoull(line_vector.at(2));
     } else {
       throw std::runtime_error(
-          std::string("Unexpected number of values: " + std::to_string(line_v.size()) + "\n"));
+          std::string("Unexpected number of values: " + std::to_string(line_vector.size()) + "\n"));
     }
-    str.clear();
-    line_v.clear();
-  } while (str != "\n");
+    line.clear();
+    line_vector.clear();
+  } while (line != "\n");
 
-  assert(str.empty());
+  assert(line.empty());
 
   // read output IDs
-  while (std::getline(stream, str)) {
-    std::stringstream ss(str);
+  while (std::getline(stream, line)) {
+    std::stringstream ss(line);
     // split line
-    while (std::getline(ss, str, ' ')) {
-      line_v.emplace_back(std::move(str));
+    while (std::getline(ss, line, ' ')) {
+      line_vector.emplace_back(std::move(line));
     }
 
-    if (line_v.empty()) continue;
-    const auto& type = line_v.at(line_v.size() - 1);
-    PrimitiveOperation op;
+    if (line_vector.empty()) continue;
+    const auto& type = line_vector.at(line_vector.size() - 1);
+    PrimitiveOperation primitive_operation;
     if (type == std::string("XOR") || type == std::string("AND") || type == std::string("ADD") ||
         type == std::string("MUL") || type == std::string("OR")) {
-      assert(line_v.size() == 6);
+      assert(line_vector.size() == 6);
       if (type == std::string("XOR"))
-        op.type_ = PrimitiveOperationType::XOR;
+        primitive_operation.type = PrimitiveOperationType::kXor;
       else if (type == std::string("AND"))
-        op.type_ = PrimitiveOperationType::AND;
+        primitive_operation.type = PrimitiveOperationType::kAnd;
       else if (type == std::string("ADD"))
-        op.type_ = PrimitiveOperationType::ADD;
+        primitive_operation.type = PrimitiveOperationType::kAdd;
       else if (type == std::string("MUL"))
-        op.type_ = PrimitiveOperationType::MUL;
+        primitive_operation.type = PrimitiveOperationType::kMul;
       else if (type == std::string("OR"))
-        op.type_ = PrimitiveOperationType::OR;
-      op.parent_a_ = std::stoull(line_v.at(2));
-      op.parent_b_ = std::stoull(line_v.at(3));
-      op.output_wire_ = std::stoull(line_v.at(4));
+        primitive_operation.type = PrimitiveOperationType::kOr;
+      primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      primitive_operation.parent_b = std::stoull(line_vector.at(3));
+      primitive_operation.output_wire = std::stoull(line_vector.at(4));
     } else if (type == std::string("MUX")) {
-      assert(line_v.size() == 7);
-      op.type_ = PrimitiveOperationType::MUX;
-      op.parent_a_ = std::stoull(line_v.at(2));
-      op.parent_b_ = std::stoull(line_v.at(3));
-      op.selection_bit_ = std::stoull(line_v.at(4));
-      op.output_wire_ = std::stoull(line_v.at(5));
+      assert(line_vector.size() == 7);
+      primitive_operation.type = PrimitiveOperationType::kMux;
+      primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      primitive_operation.parent_b = std::stoull(line_vector.at(3));
+      primitive_operation.selection_bit = std::stoull(line_vector.at(4));
+      primitive_operation.output_wire = std::stoull(line_vector.at(5));
     } else if (type == std::string("INV")) {
-      assert(line_v.size() == 5);
-      op.type_ = PrimitiveOperationType::INV;
-      op.parent_a_ = std::stoull(line_v.at(2));
-      op.output_wire_ = std::stoull(line_v.at(3));
+      assert(line_vector.size() == 5);
+      primitive_operation.type = PrimitiveOperationType::kInv;
+      primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      primitive_operation.output_wire = std::stoull(line_vector.at(3));
     } else {
-      throw std::runtime_error("Unknown operation type: " + line_v.at(line_v.size() - 1) + "\n");
+      throw std::runtime_error("Unknown operation type: " + line_vector.at(line_vector.size() - 1) +
+                               "\n");
     }
-    algo.gates_.emplace_back(op);
-    str.clear();
-    line_v.clear();
+    algorithm_description.gates.emplace_back(primitive_operation);
+    line.clear();
+    line_vector.clear();
   }
-  return algo;
-}  // namespace ENCRYPTO
+  return algorithm_description;
 }
+
+}  // namespace encrypto::motion

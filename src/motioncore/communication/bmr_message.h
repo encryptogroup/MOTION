@@ -26,28 +26,30 @@
 
 #include <flatbuffers/flatbuffers.h>
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
+
 // publish input owner's masked inputs
-flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput0Message(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload);
 
 // publish input owner's masked inputs
-flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput0Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload);
 
 // publish the keys corresponding to the masked inputs
-flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput1Message(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload);
 
 // publish the keys corresponding to the masked inputs
-flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput1Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload);
 
 // publish the garbled rows
-flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
-                                                     const std::vector<std::uint8_t>& payload);
+flatbuffers::FlatBufferBuilder BuildBmrAndMessage(const std::size_t id,
+                                                  const std::vector<std::uint8_t>& payload);
 
 // publish the garbled rows
-flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
-                                                     std::vector<std::uint8_t>&& payload);
-}  // namespace MOTION::Communication
+flatbuffers::FlatBufferBuilder BuildBmrAndMessage(const std::size_t id,
+                                                  std::vector<std::uint8_t>&& payload);
+
+}  // namespace encrypto::motion::communication

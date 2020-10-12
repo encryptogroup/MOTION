@@ -25,22 +25,27 @@
 #include "sha256.h"
 
 #include "algorithm/algorithm_description.h"
-#include "share/share_wrapper.h"
-#include "statistics/run_time_stats.h"
+#include "protocols/share_wrapper.h"
+#include "statistics/run_time_statistics.h"
 #include "utility/config.h"
 
-MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
-                                                  MOTION::MPCProtocol protocol) {
+encrypto::motion::RunTimeStatistics EvaluateProtocol(encrypto::motion::PartyPointer& party,
+                                                     std::size_t number_of_simd,
+                                                     encrypto::motion::MpcProtocol protocol) {
   // TODO tests
-  std::vector<ENCRYPTO::BitVector<>> tmp(512 + 256, ENCRYPTO::BitVector<>(num_simd));
-  MOTION::Shares::ShareWrapper input{protocol == MOTION::MPCProtocol::BooleanGMW
-                                         ? party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp, 0)
-                                         : party->IN<MOTION::MPCProtocol::BMR>(tmp, 0)};
-  const auto algo_path{std::string(MOTION::MOTION_ROOT_DIR) + "/circuits/advanced/sha_256.bristol"};
-  const auto sha_algo{ENCRYPTO::AlgorithmDescription::FromBristolFashion(algo_path)};
-  const auto result{input.Evaluate(sha_algo)};
+  std::vector<encrypto::motion::BitVector<>> tmp(512 + 256,
+                                                 encrypto::motion::BitVector<>(number_of_simd));
+  encrypto::motion::ShareWrapper input{
+      protocol == encrypto::motion::MpcProtocol::kBooleanGmw
+          ? party->In<encrypto::motion::MpcProtocol::kBooleanGmw>(tmp, 0)
+          : party->In<encrypto::motion::MpcProtocol::kBmr>(tmp, 0)};
+  const auto kAlgorithmPath{std::string(encrypto::motion::kRootDir) +
+                            "/circuits/advanced/sha_256.bristol"};
+  const auto sha_algorithm{
+      encrypto::motion::AlgorithmDescription::FromBristolFashion(kAlgorithmPath)};
+  const auto result{input.Evaluate(sha_algorithm)};
   party->Run();
   party->Finish();
-  const auto& stats = party->GetBackend()->GetRunTimeStats();
-  return stats.front();
+  const auto& statistics = party->GetBackend()->GetRunTimeStatistics();
+  return statistics.front();
 }

@@ -31,31 +31,32 @@
 #include "utility/runtime_info.h"
 #include "utility/version.h"
 
-namespace MOTION {
-namespace Statistics {
+namespace encrypto::motion {
 
-static double compute_duration(const RunTimeStats::time_point_pair& tpp) {
-  std::chrono::duration<double, AccumulatedRunTimeStats::resolution> d = tpp.second - tpp.first;
+static double compute_duration(const RunTimeStatistics::TimePointPair& tpp) {
+  std::chrono::duration<double, AccumulatedRunTimeStatistics::Resolution> d =
+      tpp.second - tpp.first;
   return d.count();
 }
 
-void AccumulatedRunTimeStats::add(const RunTimeStats& stats) {
-  for (std::size_t i = 0; i <= static_cast<std::size_t>(RunTimeStats::StatID::MAX); ++i) {
-    accumulators_[i](compute_duration(stats.data_[i]));
+void AccumulatedRunTimeStatistics::Add(const RunTimeStatistics& statistics) {
+  for (std::size_t i = 0; i <= static_cast<std::size_t>(RunTimeStatistics::StatisticsId::kMax);
+       ++i) {
+    accumulators_[i](compute_duration(statistics.data[i]));
   }
   ++count_;
 }
 
 template <typename C>
-static typename C::value_type at(const C& container, RunTimeStats::StatID id) {
+static typename C::value_type At(const C& container, RunTimeStatistics::StatisticsId id) {
   return container.at(static_cast<std::size_t>(id));
 }
 
-using StatID = RunTimeStats::StatID;
+using StatId = RunTimeStatistics::StatisticsId;
 
-static std::string format_line(std::string name, std::string unit,
-                               AccumulatedRunTimeStats::accumulator_type accumulator,
-                               std::size_t field_width) {
+static std::string FormatLine(std::string name, std::string unit,
+                              AccumulatedRunTimeStatistics::AccumulatorType accumulator,
+                              std::size_t field_width) {
   std::stringstream ss;
   ss << fmt::format("{:19s} ", name);
   ss << fmt::format("{:{}.3f} {:s} ", boost::accumulators::mean(accumulator), field_width, unit);
@@ -67,88 +68,89 @@ static std::string format_line(std::string name, std::string unit,
   return ss.str();
 }
 
-std::string AccumulatedRunTimeStats::print_human_readable() const {
-  std::size_t field_width = 10;
+std::string AccumulatedRunTimeStatistics::PrintHumanReadable() const {
+  constexpr std::size_t kFieldWidth = 10;
   std::stringstream ss;
   std::string unit = "ms";
 
   ss << fmt::format("Run time statistics over {} iterations\n", count_)
      << "---------------------------------------------------------------------------\n"
-     << fmt::format("                    {:>{}s}    {:>{}s}    {:>{}s}\n", "mean", field_width,
-                    "median", field_width, "stddev", field_width)
+     << fmt::format("                    {:>{}s}    {:>{}s}    {:>{}s}\n", "mean", kFieldWidth,
+                    "median", kFieldWidth, "stddev", kFieldWidth)
      << "---------------------------------------------------------------------------\n"
-     << format_line("MT Presetup", unit, at(accumulators_, StatID::mt_presetup), field_width)
-     << format_line("MT Setup", unit, at(accumulators_, StatID::mt_setup), field_width)
-     << format_line("SP Presetup", unit, at(accumulators_, StatID::sp_presetup), field_width)
-     << format_line("SP Setup", unit, at(accumulators_, StatID::sp_setup), field_width)
-     << format_line("SB Presetup", unit, at(accumulators_, StatID::sb_presetup), field_width)
-     << format_line("SB Setup", unit, at(accumulators_, StatID::sb_setup), field_width)
-     << format_line("Base OTs", unit, at(accumulators_, StatID::base_ots), field_width)
-     << format_line("OT Extension Setup", unit, at(accumulators_, StatID::ot_extension_setup),
-                    field_width)
+     << FormatLine("MT Presetup", unit, At(accumulators_, StatId::kMtPresetup), kFieldWidth)
+     << FormatLine("MT Setup", unit, At(accumulators_, StatId::kMtSetup), kFieldWidth)
+     << FormatLine("SP Presetup", unit, At(accumulators_, StatId::kSpPresetup), kFieldWidth)
+     << FormatLine("SP Setup", unit, At(accumulators_, StatId::kSpSetup), kFieldWidth)
+     << FormatLine("SB Presetup", unit, At(accumulators_, StatId::kSbPresetup), kFieldWidth)
+     << FormatLine("SB Setup", unit, At(accumulators_, StatId::kSbSetup), kFieldWidth)
+     << FormatLine("Base OTs", unit, At(accumulators_, StatId::kBaseOts), kFieldWidth)
+     << FormatLine("OT Extension Setup", unit, At(accumulators_, StatId::kOtExtensionSetup),
+                   kFieldWidth)
      << "---------------------------------------------------------------------------\n"
-     << format_line("Preprocessing Total", unit, at(accumulators_, StatID::preprocessing),
-                    field_width)
-     << format_line("Gates Setup", unit, at(accumulators_, StatID::gates_setup), field_width)
-     << format_line("Gates Online", unit, at(accumulators_, StatID::gates_online), field_width)
+     << FormatLine("Preprocessing Total", unit, At(accumulators_, StatId::kPreprocessing),
+                   kFieldWidth)
+     << FormatLine("Gates Setup", unit, At(accumulators_, StatId::kGatesSetup), kFieldWidth)
+     << FormatLine("Gates Online", unit, At(accumulators_, StatId::kGatesOnline), kFieldWidth)
      << "---------------------------------------------------------------------------\n"
-     << format_line("Circuit Evaluation", unit, at(accumulators_, StatID::evaluate), field_width);
+     << FormatLine("Circuit Evaluation", unit, At(accumulators_, StatId::kEvaluate), kFieldWidth);
 
   return ss.str();
 }
 
-void AccumulatedCommunicationStats::add(const Communication::TransportStatistics& stats) {
-  accumulators_[idx_num_messages_sent](stats.num_messages_sent);
-  accumulators_[idx_num_messages_received](stats.num_messages_received);
-  accumulators_[idx_num_bytes_sent](stats.num_bytes_sent);
-  accumulators_[idx_num_bytes_received](stats.num_bytes_received);
+void AccumulatedCommunicationStatistics::Add(const communication::TransportStatistics& statistics) {
+  accumulators_[kIdxNumberOfMessagesSent](statistics.number_of_messages_sent);
+  accumulators_[kIdxNumberOfMessagesReceived](statistics.number_of_messages_received);
+  accumulators_[kIdxNumberOfBytesSent](statistics.number_of_bytes_sent);
+  accumulators_[kIdxNumberOfBytesReceived](statistics.number_of_bytes_received);
   ++count_;
 }
 
-void AccumulatedCommunicationStats::add(
-    const std::vector<Communication::TransportStatistics>& stats) {
-  for (const auto& s : stats) {
-    add(s);
+void AccumulatedCommunicationStatistics::Add(
+    const std::vector<communication::TransportStatistics>& statistics) {
+  for (const auto& s : statistics) {
+    Add(s);
   }
 }
 
-std::string AccumulatedCommunicationStats::print_human_readable() const {
+std::string AccumulatedCommunicationStatistics::PrintHumanReadable() const {
   std::stringstream ss;
+  constexpr unsigned kMiB = 1024 * 1024;
+
   ss << "Communication with each other party:\n"
      << fmt::format("Sent: {:0.3f} MiB in {:d} messages\n",
-                    boost::accumulators::mean(accumulators_[idx_num_bytes_sent]) / 1048576,
+                    boost::accumulators::mean(accumulators_[kIdxNumberOfBytesSent]) / kMiB,
                     static_cast<std::size_t>(
-                        boost::accumulators::mean(accumulators_[idx_num_messages_sent])))
+                        boost::accumulators::mean(accumulators_[kIdxNumberOfMessagesSent])))
      << fmt::format("Received: {:0.3f} MiB in {:d} messages\n",
-                    boost::accumulators::mean(accumulators_[idx_num_bytes_received]) / 1048576,
+                    boost::accumulators::mean(accumulators_[kIdxNumberOfBytesReceived]) / kMiB,
                     static_cast<std::size_t>(
-                        boost::accumulators::mean(accumulators_[idx_num_messages_received])));
+                        boost::accumulators::mean(accumulators_[kIdxNumberOfMessagesReceived])));
   return ss.str();
 }
 
-std::string print_motion_info() {
+std::string PrintMotionInfo() {
   std::stringstream ss;
-  ss << fmt::format("MOTION version: {} @ {}\n", get_git_version(), get_git_branch())
-     << fmt::format("invocation: {}\n", get_cmdline())
-     << fmt::format("by {}@{}, PID {}\n", get_username(), get_hostname(), get_pid());
+  ss << fmt::format("MOTION version: {} @ {}\n", GetGitVersion(), GetGitBranch())
+     << fmt::format("invocation: {}\n", GetCmdLine())
+     << fmt::format("by {}@{}, PID {}\n", GetUsername(), GetHostname(), GetPid());
   return ss.str();
 }
 
-std::string print_stats(const std::string& experiment_name,
-                        const AccumulatedRunTimeStats& exec_stats,
-                        const AccumulatedCommunicationStats& comm_stats) {
+std::string PrintStatistics(const std::string& experiment_name,
+                            const AccumulatedRunTimeStatistics& execution_statistics,
+                            const AccumulatedCommunicationStatistics& communication_statistics) {
   std::stringstream ss;
   ss << "===========================================================================\n"
      << experiment_name << "\n"
      << "===========================================================================\n"
-     << print_motion_info()
+     << PrintMotionInfo()
      << "===========================================================================\n"
-     << exec_stats.print_human_readable()
+     << execution_statistics.PrintHumanReadable()
      << "===========================================================================\n"
-     << comm_stats.print_human_readable()
+     << communication_statistics.PrintHumanReadable()
      << "===========================================================================\n";
   return ss.str();
 }
 
-}  // namespace Statistics
-}  // namespace MOTION
+}  // namespace encrypto::motion

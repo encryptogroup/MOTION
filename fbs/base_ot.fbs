@@ -1,8 +1,8 @@
-namespace MOTION.Communication;
+namespace encrypto.motion.communication;
 
-table BaseROTMessage {
+table BaseROtMessage {
   base_ot_id:uint64;
   buffer:[ubyte]; //store payload for each OT separately
 }
 
-root_type BaseROTMessage;
+root_type BaseROtMessage;

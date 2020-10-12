@@ -25,61 +25,61 @@
 #include "test_constants.h"
 
 #include "base/party.h"
-#include "crypto/multiplication_triple/sp_provider.h"
+#include "multiplication_triple/sp_provider.h"
 
 namespace {
 
-constexpr auto num_parties_list = {2u, 3u};
+constexpr auto kNumberOfPartiesList = {2u, 3u};
 
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-void template_test() {
-  for (auto i = 0ull; i < TEST_ITERATIONS; ++i) {
-    for (auto num_parties : {2u, 3u}) {
-      std::size_t num_sps = 100;
-
+void TemplateTest() {
+  constexpr std::size_t kNumSps = 100;
+  for (auto i = 0ull; i < kTestIterations; ++i) {
+    for (auto number_of_parties : {2u, 3u}) {
       try {
-        auto motion_parties = MOTION::GetNLocalParties(num_parties, PORT_OFFSET);
-        for (auto& p : motion_parties) {
-          p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-          p->GetBackend()->GetSPProvider()->template RequestSPs<T>(num_sps);
+        auto motion_parties =
+            encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset);
+        for (auto& party : motion_parties) {
+          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+          party->GetBackend()->GetSpProvider()->template RequestSps<T>(kNumSps);
         }
 
-        std::vector<std::future<void>> futs;
-        futs.reserve(num_parties);
-        for (auto& p : motion_parties) {
-          futs.emplace_back(std::async(std::launch::async, [&p] {
-            auto& backend = p->GetBackend();
-            auto& sp_provider = backend->GetSPProvider();
+        std::vector<std::future<void>> futures;
+        futures.reserve(number_of_parties);
+        for (auto& party : motion_parties) {
+          futures.emplace_back(std::async(std::launch::async, [&party] {
+            auto& backend = party->GetBackend();
+            auto& sp_provider = backend->GetSpProvider();
             sp_provider->PreSetup();
-            backend->OTExtensionSetup();
+            backend->OtExtensionSetup();
             sp_provider->Setup();
-            p->Finish();
+            party->Finish();
           }));
         }
-        std::for_each(futs.begin(), futs.end(), [](auto& f) { f.get(); });
+        std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });
 
-        const auto& spp_0 = motion_parties.at(0)->GetBackend()->GetSPProvider();
-        std::vector<T> a = spp_0->template GetSPsAll<T>().a;
-        std::vector<T> c = spp_0->template GetSPsAll<T>().c;
-        EXPECT_EQ(a.size(), num_sps);
-        EXPECT_EQ(c.size(), num_sps);
+        const auto& sp_provider_0 = motion_parties.at(0)->GetBackend()->GetSpProvider();
+        std::vector<T> a = sp_provider_0->template GetSpsAll<T>().a;
+        std::vector<T> c = sp_provider_0->template GetSpsAll<T>().c;
+        EXPECT_EQ(a.size(), kNumSps);
+        EXPECT_EQ(c.size(), kNumSps);
         for (std::size_t j = 1; j < motion_parties.size(); ++j) {
-          const auto& spp_j = motion_parties.at(j)->GetBackend()->GetSPProvider();
+          const auto& sp_provider_j = motion_parties.at(j)->GetBackend()->GetSpProvider();
           for (std::size_t k = 0; k < a.size(); ++k) {
-            a.at(k) += spp_j->template GetSPsAll<T>().a.at(k);
-            c.at(k) += spp_j->template GetSPsAll<T>().c.at(k);
+            a.at(k) += sp_provider_j->template GetSpsAll<T>().a.at(k);
+            c.at(k) += sp_provider_j->template GetSpsAll<T>().c.at(k);
           }
         }
         for (std::size_t k = 0; k < a.size(); ++k) {
           EXPECT_EQ(c.at(k), static_cast<T>(a.at(k) * a.at(k)));
         }
 
-        futs.clear();
+        futures.clear();
 
-        for (auto& p : motion_parties) {
-          futs.emplace_back(std::async(std::launch::async, [&p] { p->Finish(); }));
+        for (auto& party : motion_parties) {
+          futures.emplace_back(std::async(std::launch::async, [&party] { party->Finish(); }));
         }
-        std::for_each(futs.begin(), futs.end(), [](auto& f) { f.get(); });
+        std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });
 
       } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
@@ -89,11 +89,11 @@ void template_test() {
 }
 
 TEST(SquarePairs, Integer) {
-  template_test<std::uint8_t>();
-  template_test<std::uint16_t>();
-  template_test<std::uint32_t>();
-  template_test<std::uint64_t>();
-  template_test<__uint128_t>();
+  TemplateTest<std::uint8_t>();
+  TemplateTest<std::uint16_t>();
+  TemplateTest<std::uint32_t>();
+  TemplateTest<std::uint64_t>();
+  TemplateTest<__uint128_t>();
 }
 
 }  // namespace

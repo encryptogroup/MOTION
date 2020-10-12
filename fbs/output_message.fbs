@@ -1,4 +1,4 @@
-namespace MOTION.Communication;
+namespace encrypto.motion.communication;
 
 table OutputWire {
   payload:[ubyte];      // uint8 output buffer

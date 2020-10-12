@@ -25,10 +25,10 @@
 #pragma once
 
 #include "base/party.h"
-#include "statistics/run_time_stats.h"
+#include "statistics/run_time_statistics.h"
 #include "utility/typedefs.h"
 
-MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
-                                                  std::size_t bit_size,
-                                                  MOTION::MPCProtocol protocol,
-                                                  ENCRYPTO::PrimitiveOperationType op_type);
+encrypto::motion::RunTimeStatistics EvaluateProtocol(
+    encrypto::motion::PartyPointer& party, std::size_t number_of_simd, std::size_t bit_size,
+    encrypto::motion::MpcProtocol protocol,
+    encrypto::motion::PrimitiveOperationType operation_type);

@@ -28,33 +28,34 @@
 #include "base/configuration.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "crypto/oblivious_transfer/ot_provider.h"
+#include "oblivious_transfer/ot_provider.h"
 #include "utility/logger.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-Party::Party(std::unique_ptr<Communication::CommunicationLayer> communication_layer)
+Party::Party(std::unique_ptr<communication::CommunicationLayer> communication_layer)
     : communication_layer_(std::move(communication_layer)),
-      config_(std::make_shared<Configuration>(communication_layer_->get_my_id(), communication_layer_->get_num_parties())),
-      logger_(std::make_shared<Logger>(communication_layer_->get_my_id(), config_->GetLoggingSeverityLevel())),
-      backend_(std::make_shared<Backend>(*communication_layer_, config_, logger_))
-  {}
+      configuration_(std::make_shared<Configuration>(communication_layer_->GetMyId(),
+                                                     communication_layer_->GetNumberOfParties())),
+      logger_(std::make_shared<Logger>(communication_layer_->GetMyId(),
+                                       configuration_->GetLoggingSeverityLevel())),
+      backend_(std::make_shared<Backend>(*communication_layer_, configuration_, logger_)) {}
 
 Party::~Party() {
   Finish();
-  logger_->LogInfo("MOTION::Party has been deallocated");
+  logger_->LogInfo("motion::Party has been deallocated");
 }
 
-Shares::SharePtr Party::XOR(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+SharePointer Party::Xor(const SharePointer& a, const SharePointer& b) {
   assert(a);
   assert(b);
-  assert(a->GetProtocol() != MPCProtocol::ArithmeticGMW);
+  assert(a->GetProtocol() != MpcProtocol::kArithmeticGmw);
   assert(a->GetProtocol() == b->GetProtocol());
   switch (a->GetProtocol()) {
-    case MPCProtocol::BooleanGMW: {
-      return backend_->BooleanGMWXOR(a, b);
+    case MpcProtocol::kBooleanGmw: {
+      return backend_->BooleanGmwXor(a, b);
     }
-    case MPCProtocol::BMR: {
+    case MpcProtocol::kBmr: {
       throw std::runtime_error("BMR protocol is not implemented yet");
       // TODO
     }
@@ -64,22 +65,22 @@ Shares::SharePtr Party::XOR(const Shares::SharePtr &a, const Shares::SharePtr &b
   }
 }
 
-Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
+SharePointer Party::Out(SharePointer parent, std::size_t output_owner) {
   assert(parent);
   switch (parent->GetProtocol()) {
-    case MPCProtocol::ArithmeticGMW: {
+    case MpcProtocol::kArithmeticGmw: {
       switch (parent->GetBitLength()) {
         case 8u: {
-          return backend_->ArithmeticGMWOutput<std::uint8_t>(parent, output_owner);
+          return backend_->ArithmeticGmwOutput<std::uint8_t>(parent, output_owner);
         }
         case 16u: {
-          return backend_->ArithmeticGMWOutput<std::uint16_t>(parent, output_owner);
+          return backend_->ArithmeticGmwOutput<std::uint16_t>(parent, output_owner);
         }
         case 32u: {
-          return backend_->ArithmeticGMWOutput<std::uint32_t>(parent, output_owner);
+          return backend_->ArithmeticGmwOutput<std::uint32_t>(parent, output_owner);
         }
         case 64u: {
-          return backend_->ArithmeticGMWOutput<std::uint64_t>(parent, output_owner);
+          return backend_->ArithmeticGmwOutput<std::uint64_t>(parent, output_owner);
         }
         default: {
           throw(std::runtime_error(
@@ -87,10 +88,10 @@ Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
         }
       }
     }
-    case MPCProtocol::BooleanGMW: {
-      return backend_->BooleanGMWOutput(parent, output_owner);
+    case MpcProtocol::kBooleanGmw: {
+      return backend_->BooleanGmwOutput(parent, output_owner);
     }
-    case MPCProtocol::BMR: {
+    case MpcProtocol::kBmr: {
       throw(std::runtime_error("BMR output gate is not implemented yet"));
       // TODO
     }
@@ -101,26 +102,26 @@ Shares::SharePtr Party::OUT(Shares::SharePtr parent, std::size_t output_owner) {
   }
 }
 
-Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+SharePointer Party::Add(const SharePointer& a, const SharePointer& b) {
   assert(a);
   assert(b);
   assert(a->GetProtocol() == b->GetProtocol());
 
   switch (a->GetProtocol()) {
-    case MPCProtocol::ArithmeticGMW: {
+    case MpcProtocol::kArithmeticGmw: {
       assert(a->GetBitLength() == b->GetBitLength());
       switch (a->GetBitLength()) {
         case 8u: {
-          return backend_->ArithmeticGMWAddition<std::uint8_t>(a, b);
+          return backend_->ArithmeticGmwAddition<std::uint8_t>(a, b);
         }
         case 16u: {
-          return backend_->ArithmeticGMWAddition<std::uint16_t>(a, b);
+          return backend_->ArithmeticGmwAddition<std::uint16_t>(a, b);
         }
         case 32u: {
-          return backend_->ArithmeticGMWAddition<std::uint32_t>(a, b);
+          return backend_->ArithmeticGmwAddition<std::uint32_t>(a, b);
         }
         case 64u: {
-          return backend_->ArithmeticGMWAddition<std::uint64_t>(a, b);
+          return backend_->ArithmeticGmwAddition<std::uint64_t>(a, b);
         }
         default: {
           throw(std::runtime_error(
@@ -128,11 +129,11 @@ Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b
         }
       }
     }
-    case MPCProtocol::BooleanGMW: {
+    case MpcProtocol::kBooleanGmw: {
       throw(std::runtime_error("BooleanGMW addition gate is not implemented yet"));
-      // return BooleanGMWOutput(parent, output_owner);
+      // return BooleanGmwOutput(parent, output_owner);
     }
-    case MPCProtocol::BMR: {
+    case MpcProtocol::kBmr: {
       throw(std::runtime_error("BMR addition gate is not implemented yet"));
       // TODO
     }
@@ -143,16 +144,16 @@ Shares::SharePtr Party::ADD(const Shares::SharePtr &a, const Shares::SharePtr &b
   }
 }
 
-Shares::SharePtr Party::AND(const Shares::SharePtr &a, const Shares::SharePtr &b) {
+SharePointer Party::And(const SharePointer& a, const SharePointer& b) {
   assert(a);
   assert(b);
-  assert(a->GetProtocol() != MPCProtocol::ArithmeticGMW);
+  assert(a->GetProtocol() != MpcProtocol::kArithmeticGmw);
   assert(a->GetProtocol() == b->GetProtocol());
   switch (a->GetProtocol()) {
-    case MPCProtocol::BooleanGMW: {
-      return backend_->BooleanGMWAND(a, b);
+    case MpcProtocol::kBooleanGmw: {
+      return backend_->BooleanGmwAnd(a, b);
     }
-    case MPCProtocol::BMR: {
+    case MpcProtocol::kBmr: {
       throw std::runtime_error("BMR protocol is not implemented yet");
       // TODO
     }
@@ -162,26 +163,26 @@ Shares::SharePtr Party::AND(const Shares::SharePtr &a, const Shares::SharePtr &b
   }
 }
 
-void Party::Run(std::size_t repeats) {
+void Party::Run(std::size_t repetitions) {
   logger_->LogDebug("Party run");
 
   // TODO: fix check if work exists s.t. it does not require knowledge about OT
   // internals etc.
-  bool work_exists = backend_->GetRegister()->GetTotalNumOfGates() > 0;
-  for (auto party_id = 0ull; party_id < communication_layer_->get_num_parties(); ++party_id) {
-    if (party_id == communication_layer_->get_my_id()) {
+  bool work_exists = backend_->GetRegister()->GetTotalNumberOfGates() > 0;
+  for (auto party_id = 0ull; party_id < communication_layer_->GetNumberOfParties(); ++party_id) {
+    if (party_id == communication_layer_->GetMyId()) {
       continue;
     }
-    work_exists |= backend_->GetOTProvider(party_id).GetNumOTsReceiver() > 0;
-    work_exists |= backend_->GetOTProvider(party_id).GetNumOTsSender() > 0;
+    work_exists |= backend_->GetOtProvider(party_id).GetNumOtsReceiver() > 0;
+    work_exists |= backend_->GetOtProvider(party_id).GetNumOtsSender() > 0;
   }
   if (!work_exists) {
     logger_->LogInfo("Party terminate: no work to do");
     return;
   }
 
-  backend_->Sync();
-  for (auto i = 0ull; i < repeats; ++i) {
+  backend_->Synchronize();
+  for (auto i = 0ull; i < repetitions; ++i) {
     if (i > 0u) {
       Clear();
     }
@@ -191,23 +192,23 @@ void Party::Run(std::size_t repeats) {
 }
 
 void Party::Reset() {
-  backend_->Sync();
+  backend_->Synchronize();
   logger_->LogDebug("Party reset");
   backend_->Reset();
   logger_->LogDebug("Party sync");
-  backend_->Sync();
+  backend_->Synchronize();
 }
 
 void Party::Clear() {
-  backend_->Sync();
+  backend_->Synchronize();
   logger_->LogDebug("Party clear");
   backend_->Clear();
   logger_->LogDebug("Party sync");
-  backend_->Sync();
+  backend_->Synchronize();
 }
 
 void Party::EvaluateCircuit() {
-  if (config_->GetOnlineAfterSetup()) {
+  if (configuration_->GetOnlineAfterSetup()) {
     backend_->EvaluateSequential();
   } else {
     backend_->EvaluateParallel();
@@ -216,28 +217,28 @@ void Party::EvaluateCircuit() {
 
 void Party::Finish() {
   if (!finished_) {
-    communication_layer_->shutdown();
-    logger_->LogInfo(
-        fmt::format("Finished evaluating {} gates", backend_->GetRegister()->GetTotalNumOfGates()));
+    communication_layer_->Shutdown();
+    logger_->LogInfo(fmt::format("Finished evaluating {} gates",
+                                 backend_->GetRegister()->GetTotalNumberOfGates()));
     finished_ = true;
   }
 }
 
-std::vector<std::unique_ptr<Party>> GetNLocalParties(const std::size_t num_parties, std::uint16_t,
-                                                     const bool) {
-  if (num_parties < 2) {
+std::vector<std::unique_ptr<Party>> GetNumberOfLocalParties(const std::size_t number_of_parties,
+                                                            std::uint16_t, const bool) {
+  if (number_of_parties < 2) {
     throw(std::runtime_error(
-        fmt::format("Can generate only >= 2 local parties, current input: {}", num_parties)));
+        fmt::format("Can generate only >= 2 local parties, current input: {}", number_of_parties)));
   }
 
-  auto comm_layers = Communication::make_dummy_communication_layers(num_parties);
+  auto comm_layers = communication::MakeDummyCommunicationLayers(number_of_parties);
 
-  std::vector<PartyPtr> motion_parties;
-  motion_parties.reserve(num_parties);
-  for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
+  std::vector<PartyPointer> motion_parties;
+  motion_parties.reserve(number_of_parties);
+  for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
     motion_parties.emplace_back(std::make_unique<Party>(std::move(comm_layers.at(party_id))));
   }
   return motion_parties;
 }
 
-}
+}  // namespace encrypto::motion

@@ -31,11 +31,13 @@
 #include "fbs_headers/message_generated.h"
 #include "transport.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
 class Logger;
 
-namespace Communication {
+}  // namespace encrypto::motion
+
+namespace encrypto::motion::communication {
 
 class MessageHandler;
 struct TransportStatistics;
@@ -51,64 +53,65 @@ class CommunicationLayer {
                      std::shared_ptr<Logger> logger);
   ~CommunicationLayer();
 
-  std::size_t get_num_parties() const { return num_parties_; }
-  std::size_t get_my_id() const { return my_id_; }
+  std::size_t GetNumberOfParties() const { return number_of_parties_; }
+  std::size_t GetMyId() const { return my_id_; }
 
   // Start communication
-  void start();
-  void sync();
+  void Start();
+  void Synchronize();
 
   // Send a message to a specified party
-  void send_message(std::size_t party_id, std::vector<std::uint8_t>&& message);
-  void send_message(std::size_t party_id, const std::vector<std::uint8_t>& message);
-  void send_message(std::size_t party_id, std::shared_ptr<const std::vector<std::uint8_t>> message);
-  void send_message(std::size_t party_id, flatbuffers::FlatBufferBuilder&& message_builder);
+  void SendMessage(std::size_t party_id, std::vector<std::uint8_t>&& message);
+  void SendMessage(std::size_t party_id, const std::vector<std::uint8_t>& message);
+  void SendMessage(std::size_t party_id, std::shared_ptr<const std::vector<std::uint8_t>> message);
+  void SendMessage(std::size_t party_id, flatbuffers::FlatBufferBuilder&& message_builder);
 
   // Send a message to all other parties
-  void broadcast_message(std::vector<std::uint8_t>&& message);
-  void broadcast_message(const std::vector<std::uint8_t>& message);
-  void broadcast_message(std::shared_ptr<const std::vector<std::uint8_t>> message);
-  void broadcast_message(flatbuffers::FlatBufferBuilder&& message_builder);
+  void BroadcastMessage(std::vector<std::uint8_t>&& message);
+  void BroadcastMessage(const std::vector<std::uint8_t>& message);
+  void BroadcastMessage(std::shared_ptr<const std::vector<std::uint8_t>> message);
+  void BroadcastMessage(flatbuffers::FlatBufferBuilder&& message_builder);
 
   // Factory function for creating message handlers
-  using message_handler_f = std::function<std::shared_ptr<MessageHandler>(std::size_t party_id)>;
+  using MessageHandlerFunction =
+      std::function<std::shared_ptr<MessageHandler>(std::size_t party_id)>;
   // Register message handlers for given types
-  void register_message_handler(message_handler_f, const std::vector<MessageType>& message_types);
+  void RegisterMessageHandler(MessageHandlerFunction,
+                              const std::vector<MessageType>& message_types);
   // Deregister any message handler registered for the given types
-  void deregister_message_handler(const std::vector<MessageType>& message_types);
+  void DeregisterMessageHandler(const std::vector<MessageType>& message_types);
   // Return the message handler registered for the given type.
   // Throws if no handler was registered for this type.
-  MessageHandler& get_message_handler(std::size_t party_id, MessageType type);
+  MessageHandler& GetMessageHandler(std::size_t party_id, MessageType type);
 
   // Register handler to be called if no matchin handler is installed.
-  void register_fallback_message_handler(message_handler_f);
-  MessageHandler& get_fallback_message_handler(std::size_t party_id);
+  void RegisterFallbackMessageHandler(MessageHandlerFunction);
+  MessageHandler& GetFallbackMessageHandler(std::size_t party_id);
 
   // shutdown the communication layer
-  void shutdown();
+  void Shutdown();
 
-  std::vector<TransportStatistics> get_transport_statistics() const noexcept;
+  std::vector<TransportStatistics> GetTransportStatistics() const noexcept;
 
-  void set_logger(std::shared_ptr<Logger> logger);
+  void SetLogger(std::shared_ptr<Logger> logger);
 
  private:
-  struct CommunicationLayerImpl;
+  struct CommunicationLayerImplementation;
 
   std::size_t my_id_;
-  std::size_t num_parties_;
-  std::unique_ptr<CommunicationLayerImpl> impl_;
+  std::size_t number_of_parties_;
+  std::unique_ptr<CommunicationLayerImplementation> implementation_;
   bool is_started_;
   bool is_shutdown_;
   std::shared_ptr<Logger> logger_;
 };
 
 // Create a set of communication layers connected by dummy transports
-std::vector<std::unique_ptr<CommunicationLayer>> make_dummy_communication_layers(
-    std::size_t num_parties);
+std::vector<std::unique_ptr<CommunicationLayer>> MakeDummyCommunicationLayers(
+    std::size_t number_of_parties);
 
 // Create a set of communication layers connected by local TCP connections
-std::vector<std::unique_ptr<CommunicationLayer>> make_local_tcp_communication_layers(
-    std::size_t num_parties, bool ipv6 = true);
+std::vector<std::unique_ptr<CommunicationLayer>> MakeLocalTcpCommunicationLayers(
+    std::size_t number_of_parties, bool ipv6 = true);
 
-}  // namespace Communication
-}  // namespace MOTION
+}  // namespace encrypto::motion::communication

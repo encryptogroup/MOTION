@@ -25,11 +25,11 @@
 #include <flatbuffers/flatbuffers.h>
 #include "utility/constants.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
 flatbuffers::FlatBufferBuilder BuildSharedBitsMaskMessage(const std::vector<std::uint8_t>& buffer);
 
 flatbuffers::FlatBufferBuilder BuildSharedBitsReconstructMessage(
     const std::vector<std::uint8_t>& buffer);
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

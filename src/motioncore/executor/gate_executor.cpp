@@ -23,23 +23,23 @@
 #include "gate_executor.h"
 
 #include "base/register.h"
-#include "gate/gate.h"
-#include "statistics/run_time_stats.h"
+#include "protocols/gate.h"
+#include "statistics/run_time_statistics.h"
 #include "utility/fiber_thread_pool/fiber_thread_pool.hpp"
 #include "utility/logger.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-GateExecutor::GateExecutor(Register &reg, std::function<void(void)> preprocessing_fctn,
+GateExecutor::GateExecutor(Register& reg, std::function<void(void)> preprocessing_function,
                            std::shared_ptr<Logger> logger)
     : register_(reg),
-      preprocessing_fctn_(std::move(preprocessing_fctn)),
+      preprocessing_function_(std::move(preprocessing_function)),
       logger_(std::move(logger)) {}
 
-void GateExecutor::evaluate_setup_online(Statistics::RunTimeStats &stats) {
-  stats.record_start<Statistics::RunTimeStats::StatID::evaluate>();
+void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
+  statistics.RecordStart<RunTimeStatistics::StatisticsId::kEvaluate>();
 
-  preprocessing_fctn_();
+  preprocessing_function_();
 
   if (logger_) {
     logger_->LogInfo(
@@ -48,78 +48,78 @@ void GateExecutor::evaluate_setup_online(Statistics::RunTimeStats &stats) {
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool(0, 2 * register_.GetTotalNumOfGates());
+  FiberThreadPool fiber_pool(0, 2 * register_.GetTotalNumberOfGates());
 
   // ------------------------------ setup phase ------------------------------
-  stats.record_start<Statistics::RunTimeStats::StatID::gates_setup>();
+  statistics.RecordStart<RunTimeStatistics::StatisticsId::kGatesSetup>();
 
-  // evaluate the setup phase of all the gates
-  for (auto &gate : register_.GetGates()) {
-    fpool.post([&] { gate->EvaluateSetup(); });
+  // Evaluate the setup phase of all the gates
+  for (auto& gate : register_.GetGates()) {
+    fiber_pool.post([&] { gate->EvaluateSetup(); });
   }
   register_.GetGatesSetupDoneCondition()->Wait();
-  assert(register_.GetNumOfEvaluatedGateSetups() == register_.GetTotalNumOfGates());
+  assert(register_.GetNumberOfEvaluatedGateSetups() == register_.GetTotalNumberOfGates());
 
-  stats.record_end<Statistics::RunTimeStats::StatID::gates_setup>();
+  statistics.RecordEnd<RunTimeStatistics::StatisticsId::kGatesSetup>();
 
   // ------------------------------ online phase ------------------------------
-  stats.record_start<Statistics::RunTimeStats::StatID::gates_online>();
+  statistics.RecordStart<RunTimeStatistics::StatisticsId::kGatesOnline>();
 
-  // evaluate the online phase of all the gates
-  for (auto &gate : register_.GetGates()) {
-    fpool.post([&] { gate->EvaluateOnline(); });
+  // Evaluate the online phase of all the gates
+  for (auto& gate : register_.GetGates()) {
+    fiber_pool.post([&] { gate->EvaluateOnline(); });
   }
   register_.GetGatesOnlineDoneCondition()->Wait();
-  assert(register_.GetNumOfEvaluatedGates() == register_.GetTotalNumOfGates());
+  assert(register_.GetNumberOfEvaluatedGates() == register_.GetTotalNumberOfGates());
 
-  stats.record_end<Statistics::RunTimeStats::StatID::gates_online>();
+  statistics.RecordEnd<RunTimeStatistics::StatisticsId::kGatesOnline>();
 
   // --------------------------------------------------------------------------
 
-  fpool.join();
+  fiber_pool.join();
 
   // XXX: since we never pop elements from the active queue, clear it manually for now
   // otherwise there will be complains that it is not empty upon repeated execution
   // -> maybe remove the active queue in the future
   register_.ClearActiveQueue();
 
-  stats.record_end<Statistics::RunTimeStats::StatID::evaluate>();
+  statistics.RecordEnd<RunTimeStatistics::StatisticsId::kEvaluate>();
 }
 
-void GateExecutor::evaluate(Statistics::RunTimeStats &stats) {
+void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
   logger_->LogInfo(
       "Start evaluating the circuit gates in parallel (online as soon as some finished setup)");
 
-  stats.record_start<Statistics::RunTimeStats::StatID::evaluate>();
+  statistics.RecordStart<RunTimeStatistics::StatisticsId::kEvaluate>();
 
   // Run preprocessing setup in a separate thread
-  auto f_preprocessing = std::async(std::launch::async, [this] { preprocessing_fctn_(); });
+  auto preprocessing_future = std::async(std::launch::async, [this] { preprocessing_function_(); });
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
-  ENCRYPTO::FiberThreadPool fpool(0, register_.GetTotalNumOfGates());
+  FiberThreadPool fiber_pool(0, register_.GetTotalNumberOfGates());
 
-  // evaluate all the gates
-  for (auto &gate : register_.GetGates()) {
-    fpool.post([&] {
+  // Evaluate all the gates
+  for (auto& gate : register_.GetGates()) {
+    fiber_pool.post([&] {
       gate->EvaluateSetup();
       // XXX: maybe insert a 'yield' here?
       gate->EvaluateOnline();
     });
   }
 
-  f_preprocessing.get();
+  preprocessing_future.get();
 
   // we have to wait until all gates are evaluated before we close the pool
   register_.GetGatesOnlineDoneCondition()->Wait();
-  fpool.join();
+  fiber_pool.join();
 
   // XXX: since we never pop elements from the active queue, clear it manually for now
   // otherwise there will be complains that it is not empty upon repeated execution
   // -> maybe remove the active queue in the future
   register_.ClearActiveQueue();
 
-  stats.record_end<Statistics::RunTimeStats::StatID::evaluate>();
+  statistics.RecordEnd<RunTimeStatistics::StatisticsId::kEvaluate>();
 }
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

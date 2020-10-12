@@ -20,19 +20,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "shared_bits_message.h"
 #include <flatbuffers/flatbuffers.h>
 #include "fbs_headers/message_generated.h"
 #include "fbs_headers/shared_bits_message_generated.h"
 #include "message.h"
-#include "shared_bits_message.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
 flatbuffers::FlatBufferBuilder BuildSharedBitsMaskMessage(const std::vector<std::uint8_t>& buffer) {
   flatbuffers::FlatBufferBuilder builder(buffer.size());
   auto root = CreateSharedBitsMessageDirect(builder, &buffer);
   FinishSharedBitsMessageBuffer(builder, root);
-  return BuildMessage(MessageType::SharedBitsMask, builder.GetBufferPointer(), builder.GetSize());
+  return BuildMessage(MessageType::kSharedBitsMask, builder.GetBufferPointer(), builder.GetSize());
 }
 
 flatbuffers::FlatBufferBuilder BuildSharedBitsReconstructMessage(
@@ -40,8 +40,8 @@ flatbuffers::FlatBufferBuilder BuildSharedBitsReconstructMessage(
   flatbuffers::FlatBufferBuilder builder(buffer.size());
   auto root = CreateSharedBitsMessageDirect(builder, &buffer);
   FinishSharedBitsMessageBuffer(builder, root);
-  return BuildMessage(MessageType::SharedBitsReconstruct, builder.GetBufferPointer(),
+  return BuildMessage(MessageType::kSharedBitsReconstruct, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

@@ -39,41 +39,46 @@
 #include "statistics/analysis.h"
 #include "utility/typedefs.h"
 
-namespace po = boost::program_options;
+namespace program_options = boost::program_options;
 
-bool CheckPartyArgumentSyntax(const std::string& p);
+bool CheckPartyArgumentSyntax(const std::string& party_argument);
 
-std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]);
+std::pair<program_options::variables_map, bool> ParseProgramOptions(int ac, char* av[]);
 
-MOTION::PartyPtr CreateParty(const po::variables_map& vm);
+encrypto::motion::PartyPointer CreateParty(const program_options::variables_map& user_options);
 
-constexpr std::size_t ILLEGAL_PROTOCOL{100}, ILLEGAL_OPERATION_TYPE{100};
+constexpr std::size_t kIllegalProtocol{100}, kIllegalOperationType{100};
 
 struct Combination {
-  Combination(std::size_t bit_size, MOTION::MPCProtocol protocol,
-              ENCRYPTO::IntegerOperationType op_type, std::size_t num_simd)
-      : bit_size_(bit_size), protocol_(protocol), op_type_(op_type), num_simd_(num_simd) {}
+  Combination(std::size_t bit_size, encrypto::motion::MpcProtocol protocol,
+              encrypto::motion::IntegerOperationType operation_type, std::size_t number_of_simd)
+      : bit_size_(bit_size),
+        protocol_(protocol),
+        operation_type_(operation_type),
+        number_of_simd_(number_of_simd) {}
 
   std::size_t bit_size_{0};
-  MOTION::MPCProtocol protocol_{ILLEGAL_PROTOCOL};
-  ENCRYPTO::IntegerOperationType op_type_{ILLEGAL_OPERATION_TYPE};
-  std::size_t num_simd_{0};
+  encrypto::motion::MpcProtocol protocol_{kIllegalProtocol};
+  encrypto::motion::IntegerOperationType operation_type_{kIllegalOperationType};
+  std::size_t number_of_simd_{0};
 };
 
 std::vector<Combination> GenerateAllCombinations() {
-  const std::array arithmetic_bit_sizes = {8, 16, 32, 64};
-  const std::array nums_simd = {1000};
+  using T = encrypto::motion::IntegerOperationType;
 
-  using T = ENCRYPTO::IntegerOperationType;
-  const std::array op_types = {T::ADD, T::MUL, T::DIV, T::EQ, T::GT, T::SUB};
+  const std::array kArithmeticBitSizes = {8, 16, 32, 64};
+  const std::array kNumbersOfSimd = {1000};
+  const std::array kOperationTypes = {T::kAdd, T::kMul, T::kDiv, T::kEq, T::kGt, T::kSub};
 
   std::vector<Combination> combinations;
 
-  for (const auto bit_size : arithmetic_bit_sizes) {
-    for (const auto op_type : op_types) {
-      for (const auto num_simd : nums_simd) {
-        combinations.emplace_back(bit_size, MOTION::MPCProtocol::BooleanGMW, op_type, num_simd);
-        combinations.emplace_back(bit_size, MOTION::MPCProtocol::BMR, op_type, num_simd);
+  for (const auto bit_size : kArithmeticBitSizes) {
+    for (const auto operation_type : kOperationTypes) {
+      for (const auto number_of_simd : kNumbersOfSimd) {
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
+                                  operation_type, number_of_simd);
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                  number_of_simd);
       }
     }
   }
@@ -81,11 +86,11 @@ std::vector<Combination> GenerateAllCombinations() {
 }
 
 int main(int ac, char* av[]) {
-  auto [vm, help_flag] = ParseProgramOptions(ac, av);
+  auto [user_options, help_flag] = ParseProgramOptions(ac, av);
   // if help flag is set - print allowed command line arguments and exit
   if (help_flag) return EXIT_SUCCESS;
 
-  const auto num_repetitions{vm["repetitions"].as<std::size_t>()};
+  const auto number_of_repetitions{user_options["repetitions"].as<std::size_t>()};
 
   std::vector<Combination> combinations;
 
@@ -93,39 +98,43 @@ int main(int ac, char* av[]) {
 
   combinations = GenerateAllCombinations();
 
-  for (const auto comb : combinations) {
-    MOTION::Statistics::AccumulatedRunTimeStats accumulated_stats;
-    MOTION::Statistics::AccumulatedCommunicationStats accumulated_comm_stats;
-    for (std::size_t i = 0; i < num_repetitions; ++i) {
-      MOTION::PartyPtr party{CreateParty(vm)};
+  for (const auto combination : combinations) {
+    encrypto::motion::AccumulatedRunTimeStatistics accumulated_statistics;
+    encrypto::motion::AccumulatedCommunicationStatistics accumulated_communication_statistics;
+    for (std::size_t i = 0; i < number_of_repetitions; ++i) {
+      encrypto::motion::PartyPointer party{CreateParty(user_options)};
       // establish communication channels with other parties
-      auto stats =
-          EvaluateProtocol(party, comb.num_simd_, comb.bit_size_, comb.protocol_, comb.op_type_);
-      accumulated_stats.add(stats);
-      auto comm_stats = party->get_communication_layer().get_transport_statistics();
-      accumulated_comm_stats.add(comm_stats);
+      auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
+                                         combination.protocol_, combination.operation_type_);
+      accumulated_statistics.Add(statistics);
+      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      accumulated_communication_statistics.Add(communication_statistics);
     }
-    std::cout << fmt::format(MOTION::ToString(comb.protocol_), ENCRYPTO::ToString(comb.op_type_),
-                             comb.bit_size_, comb.num_simd_);
-    std::cout << MOTION::Statistics::print_stats(
+    std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
+                             encrypto::motion::to_string(combination.operation_type_),
+                             combination.bit_size_, combination.number_of_simd_);
+    std::cout << encrypto::motion::PrintStatistics(
         fmt::format("Protocol {} operation {} bit size {} SIMD {}",
-                    MOTION::ToString(comb.protocol_), ENCRYPTO::ToString(comb.op_type_),
-                    comb.bit_size_, comb.num_simd_),
-        accumulated_stats, accumulated_comm_stats);
+                    encrypto::motion::to_string(combination.protocol_),
+                    encrypto::motion::to_string(combination.operation_type_), combination.bit_size_,
+                    combination.number_of_simd_),
+        accumulated_statistics, accumulated_communication_statistics);
   }
   return EXIT_SUCCESS;
 }
 
-const std::regex party_argument_re("(\\d+),(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}),(\\d{1,5})");
+const std::regex kPartyArgumentRegex(
+    "(\\d+),(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}),(\\d{1,5})");
 
-bool CheckPartyArgumentSyntax(const std::string& p) {
+bool CheckPartyArgumentSyntax(const std::string& party_argument) {
   // other party's id, IP address, and port
-  return std::regex_match(p, party_argument_re);
+  return std::regex_match(party_argument, kPartyArgumentRegex);
 }
 
-std::tuple<std::size_t, std::string, std::uint16_t> ParsePartyArgument(const std::string& p) {
+std::tuple<std::size_t, std::string, std::uint16_t> ParsePartyArgument(
+    const std::string& party_argument) {
   std::smatch match;
-  std::regex_match(p, match, party_argument_re);
+  std::regex_match(party_argument, match, kPartyArgumentRegex);
   auto id = boost::lexical_cast<std::size_t>(match[1]);
   auto host = match[2];
   auto port = boost::lexical_cast<std::uint16_t>(match[3]);
@@ -133,58 +142,58 @@ std::tuple<std::size_t, std::string, std::uint16_t> ParsePartyArgument(const std
 }
 
 // <variables map, help flag>
-std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
+std::pair<program_options::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
   using namespace std::string_view_literals;
-  constexpr std::string_view config_file_msg =
-      "config file, other arguments will overwrite the parameters read from the config file"sv;
+  constexpr std::string_view kConfigFileMessage =
+      "configuration file, other arguments will overwrite the parameters read from the configuration file"sv;
   bool print, help;
-  boost::program_options::options_description desc("Allowed options");
+  boost::program_options::options_description description("Allowed options");
   // clang-format off
-  desc.add_options()
-      ("help,h", po::bool_switch(&help)->default_value(false),"produce help message")
+  description.add_options()
+      ("help,h", program_options::bool_switch(&help)->default_value(false),"produce help message")
       ("disable-logging,l","disable logging to file")
-      ("print-config,p", po::bool_switch(&print)->default_value(false), "print config")
-      ("config-file,f", po::value<std::string>(), config_file_msg.data())
-      ("my-id", po::value<std::size_t>(), "my party id")
-      ("other-parties", po::value<std::vector<std::string>>()->multitoken(), "(other party id, IP, port, my role), e.g., --other-parties 1,127.0.0.1,7777")
-      ("online-after-setup", po::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)")
-      ("repetitions", po::value<std::size_t>()->default_value(1), "number of repetitions");
+      ("print-configuration,p", program_options::bool_switch(&print)->default_value(false), "print configuration")
+      ("configuration-file,f", program_options::value<std::string>(), kConfigFileMessage.data())
+      ("my-id", program_options::value<std::size_t>(), "my party id")
+      ("other-parties", program_options::value<std::vector<std::string>>()->multitoken(), "(other party id, IP, port, my role), e.g., --other-parties 1,127.0.0.1,7777")
+      ("online-after-setup", program_options::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)")
+      ("repetitions", program_options::value<std::size_t>()->default_value(1), "number of repetitions");
   // clang-format on
 
-  po::variables_map vm;
+  program_options::variables_map user_options;
 
-  po::store(po::parse_command_line(ac, av, desc), vm);
-  po::notify(vm);
+  program_options::store(program_options::parse_command_line(ac, av, description), user_options);
+  program_options::notify(user_options);
 
-  // argument help or no arguments (at least a config file is expected)
+  // argument help or no arguments (at least a configuration file is expected)
   if (help) {
-    std::cout << desc << "\n";
-    return std::make_pair<po::variables_map, bool>({}, true);
+    std::cout << description << "\n";
+    return std::make_pair<program_options::variables_map, bool>({}, true);
   }
 
-  // read config file
-  if (vm.count("config-file")) {
-    std::ifstream ifs(vm["config-file"].as<std::string>().c_str());
-    po::variables_map vm_config_file;
-    po::store(po::parse_config_file(ifs, desc), vm);
-    po::notify(vm);
+  // read configuration file
+  if (user_options.count("configuration-file")) {
+    std::ifstream ifs(user_options["configuration-file"].as<std::string>().c_str());
+    program_options::variables_map user_option_config_file;
+    program_options::store(program_options::parse_config_file(ifs, description), user_options);
+    program_options::notify(user_options);
   }
 
   // print parsed parameters
-  if (vm.count("my-id")) {
-    if (print) std::cout << "My id " << vm["my-id"].as<std::size_t>() << std::endl;
+  if (user_options.count("my-id")) {
+    if (print) std::cout << "My id " << user_options["my-id"].as<std::size_t>() << std::endl;
   } else
     throw std::runtime_error("My id is not set but required");
 
-  if (vm.count("other-parties")) {
+  if (user_options.count("other-parties")) {
     const std::vector<std::string> other_parties{
-        vm["other-parties"].as<std::vector<std::string>>()};
+        user_options["other-parties"].as<std::vector<std::string>>()};
     std::string parties("Other parties: ");
-    for (auto& p : other_parties) {
-      if (CheckPartyArgumentSyntax(p)) {
-        if (print) parties.append(" " + p);
+    for (auto& party : other_parties) {
+      if (CheckPartyArgumentSyntax(party)) {
+        if (print) parties.append(" " + party);
       } else {
-        throw std::runtime_error("Incorrect party argument syntax " + p);
+        throw std::runtime_error("Incorrect party argument syntax " + party);
       }
     }
     if (print) std::cout << parties << std::endl;
@@ -192,43 +201,44 @@ std::pair<po::variables_map, bool> ParseProgramOptions(int ac, char* av[]) {
     throw std::runtime_error("Other parties' information is not set but required");
 
   if (print) {
-    std::cout << "Number of SIMD AES evaluations: " << vm["num-simd"].as<std::size_t>()
+    std::cout << "Number of SIMD AES evaluations: " << user_options["num-simd"].as<std::size_t>()
               << std::endl;
 
-    std::cout << "MPC Protocol: " << vm["protocol"].as<std::string>() << std::endl;
+    std::cout << "MPC Protocol: " << user_options["protocol"].as<std::string>() << std::endl;
   }
-  return std::make_pair(vm, help);
+  return std::make_pair(user_options, help);
 }
 
-MOTION::PartyPtr CreateParty(const po::variables_map& vm) {
-  const auto parties_str{vm["other-parties"].as<const std::vector<std::string>>()};
-  const auto num_parties{parties_str.size()};
-  const auto my_id{vm["my-id"].as<std::size_t>()};
-  if (my_id >= num_parties) {
+encrypto::motion::PartyPointer CreateParty(const program_options::variables_map& user_options) {
+  const auto parties_string{user_options["other-parties"].as<const std::vector<std::string>>()};
+  const auto number_of_parties{parties_string.size()};
+  const auto my_id{user_options["my-id"].as<std::size_t>()};
+  if (my_id >= number_of_parties) {
     throw std::runtime_error(fmt::format(
         "My id needs to be in the range [0, #parties - 1], current my id is {} and #parties is {}",
-        my_id, num_parties));
+        my_id, number_of_parties));
   }
 
-  MOTION::Communication::tcp_parties_config parties_config(num_parties);
+  encrypto::motion::communication::TcpPartiesConfiguration parties_configuration(number_of_parties);
 
-  for (const auto& party_str : parties_str) {
-    const auto [party_id, host, port] = ParsePartyArgument(party_str);
-    if (party_id >= num_parties) {
+  for (const auto& party_string : parties_string) {
+    const auto [party_id, host, port] = ParsePartyArgument(party_string);
+    if (party_id >= number_of_parties) {
       throw std::runtime_error(
           fmt::format("Party's id needs to be in the range [0, #parties - 1], current id "
                       "is {} and #parties is {}",
-                      party_id, num_parties));
+                      party_id, number_of_parties));
     }
-    parties_config.at(party_id) = std::make_pair(host, port);
+    parties_configuration.at(party_id) = std::make_pair(host, port);
   }
-  MOTION::Communication::TCPSetupHelper helper(my_id, parties_config);
-  auto comm_layer = std::make_unique<MOTION::Communication::CommunicationLayer>(my_id, helper.setup_connections());
-  auto party = std::make_unique<MOTION::Party>(std::move(comm_layer));
-  auto config = party->GetConfiguration();
+  encrypto::motion::communication::TcpSetupHelper helper(my_id, parties_configuration);
+  auto communication_layer = std::make_unique<encrypto::motion::communication::CommunicationLayer>(
+      my_id, helper.SetupConnections());
+  auto party = std::make_unique<encrypto::motion::Party>(std::move(communication_layer));
+  auto configuration = party->GetConfiguration();
   // disable logging if the corresponding flag was set
-  const auto logging{!vm.count("disable-logging")};
-  config->SetLoggingEnabled(logging);
-  config->SetOnlineAfterSetup(vm["online-after-setup"].as<bool>());
+  const auto logging{!user_options.count("disable-logging")};
+  configuration->SetLoggingEnabled(logging);
+  configuration->SetOnlineAfterSetup(user_options["online-after-setup"].as<bool>());
   return party;
 }

@@ -27,13 +27,13 @@
 #include <stdexcept>
 #include <vector>
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
 struct TransportStatistics {
-  std::size_t num_messages_sent = 0;
-  std::size_t num_messages_received = 0;
-  std::size_t num_bytes_sent = 0;
-  std::size_t num_bytes_received = 0;
+  std::size_t number_of_messages_sent = 0;
+  std::size_t number_of_messages_received = 0;
+  std::size_t number_of_bytes_sent = 0;
+  std::size_t number_of_bytes_received = 0;
 };
 
 // underlying transport between two parties
@@ -48,26 +48,26 @@ class Transport {
   virtual ~Transport() = default;
 
   // send a message
-  virtual void send_message(std::vector<std::uint8_t>&& message) = 0;
-  virtual void send_message(const std::vector<std::uint8_t>& message) = 0;
+  virtual void SendMessage(std::vector<std::uint8_t>&& message) = 0;
+  virtual void SendMessage(const std::vector<std::uint8_t>& message) = 0;
 
   // check if a new message is available
-  virtual bool available() const = 0;
+  virtual bool Available() const = 0;
 
   // receive message, possibly blocking
-  virtual std::optional<std::vector<std::uint8_t>> receive_message() = 0;
+  virtual std::optional<std::vector<std::uint8_t>> ReceiveMessage() = 0;
 
   // shutdown the outgoing part of the transport to signal end of communication
-  virtual void shutdown_send() = 0;
+  virtual void ShutdownSend() = 0;
 
   // shutdown this transport
-  virtual void shutdown() = 0;
+  virtual void Shutdown() = 0;
 
-  const TransportStatistics& get_stats() const;
-  void reset_stats();
+  const TransportStatistics& GetStatistics() const;
+  void ResetStatistics();
 
  protected:
   TransportStatistics statistics_;
 };
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

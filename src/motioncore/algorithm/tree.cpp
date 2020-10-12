@@ -22,27 +22,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "share/share_wrapper.h"
+#include "protocols/share_wrapper.h"
 #include "utility/helpers.h"
 
-namespace ENCRYPTO::Algorithm {
-MOTION::Shares::ShareWrapper FullANDTree(const MOTION::Shares::ShareWrapper& s) {
-  assert(MOTION::Helpers::IsPowerOfTwo(s->GetBitLength()));
+namespace encrypto::motion {
+
+ShareWrapper FullAndTree(const ShareWrapper& s) {
+  assert(IsPowerOfTwo(s->GetBitLength()));
   auto result = s;
   while (result->GetBitLength() != 1) {
     const auto split{result.Split()};
-    const auto left{MOTION::Shares::ShareWrapper::Join(std::vector<MOTION::Shares::ShareWrapper>(
-        split.begin(), split.begin() + split.size() / 2))};
-    const auto right{MOTION::Shares::ShareWrapper::Join(
-        std::vector<MOTION::Shares::ShareWrapper>(split.begin() + split.size() / 2, split.end()))};
+    const auto left{ShareWrapper::Join(
+        std::vector<ShareWrapper>(split.begin(), split.begin() + split.size() / 2))};
+    const auto right{ShareWrapper::Join(
+        std::vector<ShareWrapper>(split.begin() + split.size() / 2, split.end()))};
     result = left & right;
   }
   return result;
 }
 
-MOTION::Shares::ShareWrapper FullANDTree(const std::vector<MOTION::Shares::ShareWrapper>& v) {
-  assert(MOTION::Helpers::IsPowerOfTwo(v.size()));
-  const auto s = MOTION::Shares::ShareWrapper::Join(v);
-  return FullANDTree(s);
+ShareWrapper FullAndTree(const std::vector<ShareWrapper>& v) {
+  assert(IsPowerOfTwo(v.size()));
+  const auto s = ShareWrapper::Join(v);
+  return FullAndTree(s);
 }
-}
+
+}  // namespace encrypto::motion

@@ -28,7 +28,7 @@
 #include <functional>
 #include <mutex>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 class Condition {
  public:
@@ -37,7 +37,7 @@ class Condition {
 
   ~Condition() = default;
   Condition() = delete;
-  Condition(Condition &) = delete;
+  Condition(Condition&) = delete;
 
   // checks if the condition was satisfied
   bool operator()() {
@@ -60,7 +60,7 @@ class Condition {
 
   // the variables that the condition function depends on shall only be modified under the locked
   // mutex
-  std::mutex &GetMutex() noexcept { return mutex_; }
+  std::mutex& GetMutex() noexcept { return mutex_; }
 
  private:
   std::condition_variable condition_variable_;
@@ -68,4 +68,4 @@ class Condition {
   const std::function<bool()> condition_function_;
 };
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

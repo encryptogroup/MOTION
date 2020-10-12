@@ -29,48 +29,47 @@
 
 #include "message.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
-flatbuffers::FlatBufferBuilder BuildBMRMessage(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrMessage(const std::size_t id,
                                                const std::vector<std::uint8_t>& payload,
                                                const MessageType t) {
   flatbuffers::FlatBufferBuilder builder_bmr_message(64);
   auto output_message_root =
-      CreateBMRMessageDirect(builder_bmr_message, static_cast<uint64_t>(id), &payload);
-  FinishBMRMessageBuffer(builder_bmr_message, output_message_root);
+      CreateBmrMessageDirect(builder_bmr_message, static_cast<uint64_t>(id), &payload);
+  FinishBmrMessageBuffer(builder_bmr_message, output_message_root);
 
-  return BuildMessage(t, builder_bmr_message.GetBufferPointer(),
-                      builder_bmr_message.GetSize());
+  return BuildMessage(t, builder_bmr_message.GetBufferPointer(), builder_bmr_message.GetSize());
 }
 
-flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput0Message(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload) {
-  return BuildBMRMessage(id, payload, MessageType::BMRInputGate0);
+  return BuildBmrMessage(id, payload, MessageType::kBmrInputGate0);
 }
 
-flatbuffers::FlatBufferBuilder BuildBMRInput0Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput0Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload) {
-  return BuildBMRMessage(id, std::move(payload), MessageType::BMRInputGate0);
+  return BuildBmrMessage(id, std::move(payload), MessageType::kBmrInputGate0);
 }
 
-flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput1Message(const std::size_t id,
                                                      const std::vector<std::uint8_t>& payload) {
-  return BuildBMRMessage(id, payload, MessageType::BMRInputGate1);
+  return BuildBmrMessage(id, payload, MessageType::kBmrInputGate1);
 }
 
-flatbuffers::FlatBufferBuilder BuildBMRInput1Message(const std::size_t id,
+flatbuffers::FlatBufferBuilder BuildBmrInput1Message(const std::size_t id,
                                                      std::vector<std::uint8_t>&& payload) {
-  return BuildBMRMessage(id, std::move(payload), MessageType::BMRInputGate1);
+  return BuildBmrMessage(id, std::move(payload), MessageType::kBmrInputGate1);
 }
 
-flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
-                                                     const std::vector<std::uint8_t>& payload) {
-  return BuildBMRMessage(id, payload, MessageType::BMRANDGate);
+flatbuffers::FlatBufferBuilder BuildBmrAndMessage(const std::size_t id,
+                                                  const std::vector<std::uint8_t>& payload) {
+  return BuildBmrMessage(id, payload, MessageType::kBmrAndGate);
 }
 
-flatbuffers::FlatBufferBuilder BuildBMRANDMessage(const std::size_t id,
-                                                     std::vector<std::uint8_t>&& payload) {
-  return BuildBMRMessage(id, std::move(payload), MessageType::BMRANDGate);
+flatbuffers::FlatBufferBuilder BuildBmrAndMessage(const std::size_t id,
+                                                  std::vector<std::uint8_t>&& payload) {
+  return BuildBmrMessage(id, std::move(payload), MessageType::kBmrAndGate);
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

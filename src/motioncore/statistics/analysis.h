@@ -29,53 +29,59 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 #include <list>
-#include "run_time_stats.h"
+#include "run_time_statistics.h"
 
-namespace MOTION {
+namespace encrypto::motion::communication {
 
-namespace Communication {
 struct TransportStatistics;
-}
 
-namespace Statistics {
+}  // namespace encrypto::motion::communication
 
-struct AccumulatedRunTimeStats {
-  using clock_type = std::chrono::steady_clock;
-  using duration = clock_type::duration;
-  using resolution = std::milli;
-  using accumulator_type = boost::accumulators::accumulator_set<
+namespace encrypto::motion {
+
+class AccumulatedRunTimeStatistics {
+ public:
+  using ClockType = std::chrono::steady_clock;
+  using Duration = ClockType::duration;
+  using Resolution = std::milli;
+  using AccumulatorType = boost::accumulators::accumulator_set<
       double,
       boost::accumulators::stats<boost::accumulators::tag::mean, boost::accumulators::tag::median,
                                  boost::accumulators::tag::lazy_variance>>;
 
-  std::size_t count_ = 0;
-  std::array<accumulator_type, static_cast<std::size_t>(RunTimeStats::StatID::MAX) + 1>
-      accumulators_;
+  void Add(const RunTimeStatistics& statistics);
 
-  void add(const RunTimeStats& stats);
-  std::string print_human_readable() const;
+  std::string PrintHumanReadable() const;
+
+ private:
+  std::size_t count_ = 0;
+  std::array<AccumulatorType, static_cast<std::size_t>(RunTimeStatistics::StatisticsId::kMax) + 1>
+      accumulators_;
 };
 
-struct AccumulatedCommunicationStats {
-  using accumulator_type = boost::accumulators::accumulator_set<
+class AccumulatedCommunicationStatistics {
+ public:
+  using AccumulatorType = boost::accumulators::accumulator_set<
       std::size_t,
       boost::accumulators::stats<boost::accumulators::tag::mean, boost::accumulators::tag::sum>>;
 
-  static constexpr std::size_t idx_num_messages_sent = 0;
-  static constexpr std::size_t idx_num_messages_received = 1;
-  static constexpr std::size_t idx_num_bytes_sent = 2;
-  static constexpr std::size_t idx_num_bytes_received = 3;
+  static constexpr std::size_t kIdxNumberOfMessagesSent = 0;
+  static constexpr std::size_t kIdxNumberOfMessagesReceived = 1;
+  static constexpr std::size_t kIdxNumberOfBytesSent = 2;
+  static constexpr std::size_t kIdxNumberOfBytesReceived = 3;
 
+  void Add(const communication::TransportStatistics& statistics);
+
+  void Add(const std::vector<communication::TransportStatistics>& statistics);
+
+  std::string PrintHumanReadable() const;
+
+ private:
   std::size_t count_ = 0;
-  std::array<accumulator_type, 4> accumulators_;
-
-  void add(const Communication::TransportStatistics& stats);
-  void add(const std::vector<Communication::TransportStatistics>& stats);
-  std::string print_human_readable() const;
+  std::array<AccumulatorType, 4> accumulators_;
 };
 
-std::string print_stats(const std::string& experiment_name, const AccumulatedRunTimeStats&,
-                        const AccumulatedCommunicationStats&);
+std::string PrintStatistics(const std::string& experiment_name, const AccumulatedRunTimeStatistics&,
+                            const AccumulatedCommunicationStatistics&);
 
-}  // namespace Statistics
-}  // namespace MOTION
+}  // namespace encrypto::motion

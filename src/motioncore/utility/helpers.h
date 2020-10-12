@@ -29,48 +29,55 @@
 #include <random>
 
 #include "condition.h"
-#include "crypto/random/aes128_ctr_rng.h"
+#include "primitives/random/aes128_ctr_rng.h"
 #include "typedefs.h"
 
-namespace MOTION::Helpers {
+namespace encrypto::motion {
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-std::vector<T> RandomVector(std::size_t length) {
-  auto& rng = AES128_CTR_RNG::get_thread_instance();
-  const auto byte_size = sizeof(T) * length;
-  std::vector<T> vec(length);
-  rng.random_bytes(reinterpret_cast<std::byte*>(vec.data()), byte_size);
+template <typename UnsignedIntegralType,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
+std::vector<UnsignedIntegralType> RandomVector(std::size_t length) {
+  auto& rng = Aes128CtrRng::GetThreadInstance();
+  const auto byte_size = sizeof(UnsignedIntegralType) * length;
+  std::vector<UnsignedIntegralType> vec(length);
+  rng.RandomBytes(reinterpret_cast<std::byte*>(vec.data()), byte_size);
   return vec;
 }
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline std::vector<std::uint8_t> ToByteVector(const std::vector<T> &values) {
-  std::vector<std::uint8_t> result(
-      reinterpret_cast<const std::uint8_t *>(values.data()),
-      reinterpret_cast<const std::uint8_t *>(values.data()) + sizeof(T) * values.size());
+template <typename UnsignedIntegralType,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
+inline std::vector<std::uint8_t> ToByteVector(const std::vector<UnsignedIntegralType>& values) {
+  std::vector<std::uint8_t> result(reinterpret_cast<const std::uint8_t*>(values.data()),
+                                   reinterpret_cast<const std::uint8_t*>(values.data()) +
+                                       sizeof(UnsignedIntegralType) * values.size());
   return result;
 }
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline std::vector<T> FromByteVector(const std::vector<std::uint8_t> &buffer) {
-  assert(buffer.size() % sizeof(T) == 0);  // buffer length is multiple of the element size
-  std::vector<T> result(sizeof(T) * buffer.size());
+template <typename UnsignedIntegralType,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
+inline std::vector<UnsignedIntegralType> FromByteVector(const std::vector<std::uint8_t>& buffer) {
+  assert(buffer.size() % sizeof(UnsignedIntegralType) ==
+         0);  // buffer length is multiple of the element size
+  std::vector<UnsignedIntegralType> result(sizeof(UnsignedIntegralType) * buffer.size());
   std::copy(buffer.data(), buffer.data() + buffer.size(),
-            reinterpret_cast<std::uint8_t *>(result.data()));
+            reinterpret_cast<std::uint8_t*>(result.data()));
   return result;
 }
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-inline std::vector<T> FromByteVector(const flatbuffers::Vector<std::uint8_t> &buffer) {
-  assert(buffer.size() % sizeof(T) == 0);  // buffer length is multiple of the element size
-  std::vector<T> result(buffer.size() / sizeof(T));
+template <typename UnsignedIntegralType,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
+inline std::vector<UnsignedIntegralType> FromByteVector(
+    const flatbuffers::Vector<std::uint8_t>& buffer) {
+  assert(buffer.size() % sizeof(UnsignedIntegralType) ==
+         0);  // buffer length is multiple of the element size
+  std::vector<UnsignedIntegralType> result(buffer.size() / sizeof(UnsignedIntegralType));
   std::copy(buffer.data(), buffer.data() + buffer.size(),
-            reinterpret_cast<std::uint8_t *>(result.data()));
+            reinterpret_cast<std::uint8_t*>(result.data()));
   return result;
 }
 
 template <typename T>
-inline std::vector<T> AddVectors(std::vector<std::vector<T>> &vectors) {
+inline std::vector<T> AddVectors(std::vector<std::vector<T>>& vectors) {
   if (vectors.size() == 0) {
     return {};
   }  // if empty input vector
@@ -78,22 +85,22 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>> &vectors) {
   std::vector<T> result = vectors.at(0);
 
   for (auto i = 1ull; i < vectors.size(); ++i) {
-    auto &v = vectors.at(i);
-    assert(v.size() == result.size());  // expect the vectors to be of the same size
+    auto& inner_vector = vectors.at(i);
+    assert(inner_vector.size() == result.size());  // expect the vectors to be of the same size
     for (auto j = 0ull; j < result.size(); ++j) {
-      result.at(j) += v.at(j);  // TODO: implement using AVX2 and AVX512
+      result.at(j) += inner_vector.at(j);  // TODO: implement using AVX2 and AVX512
     }
   }
   return result;
 }
 
 template <typename T>
-inline std::vector<T> AddVectors(std::vector<std::vector<T>> &&vectors) {
+inline std::vector<T> AddVectors(std::vector<std::vector<T>>&& vectors) {
   return AddVectors(vectors);
 }
 
 template <typename T>
-inline std::vector<T> AddVectors(const std::vector<T> &a, const std::vector<T> &b) {
+inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -107,52 +114,52 @@ inline std::vector<T> AddVectors(const std::vector<T> &a, const std::vector<T> &
 }
 
 template <typename T>
-inline std::vector<T> RestrictAddVectors(const std::vector<T> &a, const std::vector<T> &b) {
+inline std::vector<T> RestrictAddVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
   std::vector<T> result(a.size());
-  const T *__restrict__ a_ptr{a.data()};
-  const T *__restrict__ b_ptr{b.data()};
-  T *__restrict__ r_ptr{result.data()};
-  std::transform(a_ptr, a_ptr + a.size(), b_ptr, r_ptr,
-                 [](const T &a_var, const T &b_var) { return a_var + b_var; });
+  const T* __restrict__ a_pointer{a.data()};
+  const T* __restrict__ b_pointer{b.data()};
+  T* __restrict__ result_pointer{result.data()};
+  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
+                 [](const T& a_value, const T& b_value) { return a_value + b_value; });
   return result;
 }
 
 template <typename T>
-inline std::vector<T> RestrictMulVectors(const std::vector<T> &a, const std::vector<T> &b) {
+inline std::vector<T> RestrictMulVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
   std::vector<T> result(a.size());
-  const T *__restrict__ a_ptr{a.data()};
-  const T *__restrict__ b_ptr{b.data()};
-  T *__restrict__ r_ptr{result.data()};
-  std::transform(a_ptr, a_ptr + a.size(), b_ptr, r_ptr,
-                 [](const T &a_var, const T &b_var) { return a_var * b_var; });
+  const T* __restrict__ a_pointer{a.data()};
+  const T* __restrict__ b_pointer{b.data()};
+  T* __restrict__ result_pointer{result.data()};
+  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
+                 [](const T& a_value, const T& b_value) { return a_value * b_value; });
   return result;
 }
 
 template <typename T>
-inline std::vector<T> RestrictSubVectors(const std::vector<T> &a, const std::vector<T> &b) {
+inline std::vector<T> RestrictSubVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
   std::vector<T> result(a.size());
-  const T *__restrict__ a_ptr{a.data()};
-  const T *__restrict__ b_ptr{b.data()};
-  T *__restrict__ r_ptr{result.data()};
-  std::transform(a_ptr, a_ptr + a.size(), b_ptr, r_ptr,
-                 [](const T &a_var, const T &b_var) { return a_var - b_var; });
+  const T* __restrict__ a_pointer{a.data()};
+  const T* __restrict__ b_pointer{b.data()};
+  T* __restrict__ result_pointer{result.data()};
+  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
+                 [](const T& a_value, const T& b_value) { return a_value - b_value; });
   return result;
 }
 
 template <typename T>
-inline std::vector<T> SubVectors(const std::vector<T> &a, const std::vector<T> &b) {
+inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -165,53 +172,53 @@ inline std::vector<T> SubVectors(const std::vector<T> &a, const std::vector<T> &
 }
 
 template <typename T>
-inline T SumReduction(const std::vector<T> &v) {
-  if (v.size() == 0) {
+inline T SumReduction(const std::vector<T>& values) {
+  if (values.size() == 0) {
     return 0;
-  } else if (v.size() == 1) {
-    return v.at(0);
+  } else if (values.size() == 1) {
+    return values.at(0);
   } else {
     T sum = 0;
-#pragma omp parallel for reduction(+ : sum) default(none) shared(v)
-    for (auto i = 0ull; i < v.size(); ++i) {
-      sum += v.at(i);
+#pragma omp parallel for reduction(+ : sum) default(none) shared(values)
+    for (auto i = 0ull; i < values.size(); ++i) {
+      sum += values.at(i);
     }
     return sum;
   }
 }
 
 template <typename T>
-inline T SubReduction(const std::vector<T> &v) {
-  if (v.size() == 0) {
+inline T SubReduction(const std::vector<T>& values) {
+  if (values.size() == 0) {
     return 0;
   } else {
-    T result = v.at(0);
-    for (auto i = 1ull; i < v.size(); ++i) {
-      result -= v.at(i);
+    T result = values.at(0);
+    for (auto i = 1ull; i < values.size(); ++i) {
+      result -= values.at(i);
     }
     return result;
   }
 }
 
-// +---------+--------------------------+
-// | sum_0 = | v_00 + v_01 + ... + v_0m |
-// |  ...    | ........................ |
-// | sum_n = | v_n0 + v_n1 + ... + v_nm |
-// +---------+--------------------------+
+// +---------+-----------------------------------------+
+// | sum_0 = | values_00 + values_01 + ... + values_0m |
+// |  ...    | ....................................... |
+// | sum_n = | values_n0 + values_n1 + ... + values_nm |
+// +---------+-----------------------------------------+
 
 template <typename T>
-inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
-  if (v.size() == 0) {
+inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>>& values) {
+  if (values.size() == 0) {
     return {};
   } else {
-    std::vector<T> sum(v.at(0).size());
-    for (auto i = 1ull; i < v.size(); ++i) {
-      assert(v.at(0).size() == v.at(i).size());
+    std::vector<T> sum(values.at(0).size());
+    for (auto i = 1ull; i < values.size(); ++i) {
+      assert(values.at(0).size() == values.at(i).size());
     }
 
     for (auto i = 0ull; i < sum.size(); ++i) {
-      for (auto j = 0ull; j < v.size(); ++j) {
-        sum.at(i) += v.at(j).at(i);
+      for (auto j = 0ull; j < values.size(); ++j) {
+        sum.at(i) += values.at(j).at(i);
       }
     }
     return std::move(sum);
@@ -219,18 +226,18 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>> &v) {
 }
 
 template <typename T>
-inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>> &v) {
-  if (v.size() == 0) {
+inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>>& values) {
+  if (values.size() == 0) {
     return {};
   } else {
-    std::vector<T> result = v.at(0);
-    for (auto i = 1ull; i < v.size(); ++i) {
-      assert(v.at(0).size() == v.at(i).size());
+    std::vector<T> result = values.at(0);
+    for (auto i = 1ull; i < values.size(); ++i) {
+      assert(values.at(0).size() == values.at(i).size());
     }
 
     for (auto i = 0ull; i < result.size(); ++i) {
-      for (auto j = 1ull; j < v.size(); ++j) {
-        result.at(i) -= v.at(j).at(i);
+      for (auto j = 1ull; j < values.size(); ++j) {
+        result.at(i) -= values.at(j).at(i);
       }
     }
     return std::move(result);
@@ -252,18 +259,18 @@ inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
 }
 
 template <typename T>
-inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>> &v) {
-  if (v.size() == 0) {
+inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>>& values) {
+  if (values.size() == 0) {
     return {};
   } else {
-    std::vector<T> product(v.at(0).size(), 1);
-    for (auto i = 1ull; i < v.size(); ++i) {
-      assert(v.at(0).size() == v.at(i).size());
+    std::vector<T> product(values.at(0).size(), 1);
+    for (auto i = 1ull; i < values.size(); ++i) {
+      assert(values.at(0).size() == values.at(i).size());
     }
 
     for (auto i = 0ull; i < product.size(); ++i) {
-      for (auto j = 0ull; j < v.size(); ++j) {
-        product.at(i) *= v.at(j).at(i);
+      for (auto j = 0ull; j < values.size(); ++j) {
+        product.at(i) *= values.at(j).at(i);
       }
     }
     return std::move(product);
@@ -271,68 +278,69 @@ inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>> &v) {
 }
 
 template <typename T>
-inline T RowMulReduction(const std::vector<T> &v) {
-  if (v.size() == 0) {
+inline T RowMulReduction(const std::vector<T>& values) {
+  if (values.size() == 0) {
     return 0;
   } else {
-    T product = v.at(0);
-    for (auto i = 1ull; i < v.size(); ++i) {
-      product *= v.at(i);
+    T product = values.at(0);
+    for (auto i = 1ull; i < values.size(); ++i) {
+      product *= values.at(i);
     }
     return product;
   }
 }
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
-bool IsPowerOfTwo(T x) {
+template <typename UnsignedIntegralType,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
+bool IsPowerOfTwo(UnsignedIntegralType x) {
   return x > 0 && (!(x & (x - 1)));
 }
 
-namespace Print {
-inline std::string Hex(const std::uint8_t *v, std::size_t N) {
+inline std::string Hex(const std::uint8_t* values, std::size_t n) {
   std::string buffer;
-  for (auto i = 0ull; i < N; ++i) {
-    buffer.append(fmt::format("{0:#x} ", v[i]));
+  for (auto i = 0ull; i < n; ++i) {
+    buffer.append(fmt::format("{0:#x} ", values[i]));
   }
   buffer.erase(buffer.end() - 1);  // remove the last whitespace
   return buffer;
 }
 
-inline std::string Hex(const std::byte *v, std::size_t N) {
-  return Hex(reinterpret_cast<const std::uint8_t *>(v), N);
+inline std::string Hex(const std::byte* values, std::size_t n) {
+  return Hex(reinterpret_cast<const std::uint8_t*>(values), n);
 }
 
 template <std::size_t N>
-inline std::string Hex(const std::array<std::byte, N> &v) {
-  return Hex(reinterpret_cast<const std::uint8_t *>(v.data()), v.size());
+inline std::string Hex(const std::array<std::byte, N>& values) {
+  return Hex(reinterpret_cast<const std::uint8_t*>(values.data()), values.size());
 }
 
 template <std::size_t N>
-inline std::string Hex(const std::array<std::uint8_t, N> &v) {
-  return Hex(v.data(), v.size());
+inline std::string Hex(const std::array<std::uint8_t, N>& values) {
+  return Hex(values.data(), values.size());
 }
 
-inline std::string Hex(const std::vector<std::uint8_t> &v) { return Hex(v.data(), v.size()); }
+inline std::string Hex(const std::vector<std::uint8_t>& values) {
+  return Hex(values.data(), values.size());
+}
 
-inline std::string Hex(const std::vector<std::byte> &v) { return Hex(v.data(), v.size()); }
+inline std::string Hex(const std::vector<std::byte>& values) {
+  return Hex(values.data(), values.size());
+}
 
-inline std::string Hex(const std::vector<std::uint8_t> &&v) { return Hex(v); }
-
-std::string ToString(MPCProtocol p);
+inline std::string Hex(const std::vector<std::uint8_t>&& values) { return Hex(values); }
 
 template <typename T>
-inline std::string ToString(std::vector<T> vector) {
+inline std::string to_string(std::vector<T> values) {
+  using std::to_string;
   std::string result;
-  for (auto &v : vector) {
-    result.append(std::to_string(v) + " ");
+  for (auto& v : values) {
+    result.append(to_string(v) + " ");
   }
   return result;
 }
-}  // namespace Print
 
-namespace Compare {
 template <typename T>
-inline bool Vectors(const std::vector<T> &a, const std::vector<T> &b) {
+inline bool Vectors(const std::vector<T>& a, const std::vector<T>& b) {
   if (a.size() != b.size()) {
     return false;
   }
@@ -345,26 +353,22 @@ inline bool Vectors(const std::vector<T> &a, const std::vector<T> &b) {
 }
 
 template <typename T>
-inline bool Dimensions(const std::vector<std::vector<T>> &v) {
-  if (v.size() <= 1) {
+inline bool Dimensions(const std::vector<std::vector<T>>& values) {
+  if (values.size() <= 1) {
     return true;
   } else {
-    auto first_size = v.at(0).size();
-    for (auto i = 1ull; i < v.size(); ++i) {
-      if (first_size != v.at(i).size()) {
+    auto first_size = values.at(0).size();
+    for (auto i = 1ull; i < values.size(); ++i) {
+      if (first_size != values.at(i).size()) {
         return false;
       }
     }
   }
   return true;
 }
-}  // namespace Compare
 
 std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor);
 
-namespace Convert {
-
 inline std::size_t BitsToBytes(const std::size_t bits) { return (bits + 7) / 8; }
 
-}  // namespace Convert
-}  // namespace MOTION::Helpers
+}  // namespace encrypto::motion

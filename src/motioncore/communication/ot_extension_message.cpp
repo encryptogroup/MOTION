@@ -26,41 +26,42 @@
 
 #include "fbs_headers/ot_extension_generated.h"
 
-namespace MOTION::Communication {
-flatbuffers::FlatBufferBuilder BuildOTExtensionMessageSender(const std::byte *buffer,
+namespace encrypto::motion::communication {
+
+flatbuffers::FlatBufferBuilder BuildOtExtensionMessageSender(const std::byte* buffer,
                                                              const std::size_t size,
                                                              const std::size_t i) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(reinterpret_cast<const std::uint8_t *>(buffer),
-                                     reinterpret_cast<const std::uint8_t *>(buffer) + size);
-  auto root = CreateOTExtensionMessageDirect(builder, i, &v_buffer);
-  FinishOTExtensionMessageBuffer(builder, root);
-  return BuildMessage(MessageType::OTExtensionSender, builder.GetBufferPointer(),
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<const std::uint8_t*>(buffer),
+                                     reinterpret_cast<const std::uint8_t*>(buffer) + size);
+  auto root = CreateOtExtensionMessageDirect(builder, i, &v_buffer);
+  FinishOtExtensionMessageBuffer(builder, root);
+  return BuildMessage(MessageType::kOtExtensionSender, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
-flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverMasks(const std::byte *buffer,
+flatbuffers::FlatBufferBuilder BuildOtExtensionMessageReceiverMasks(const std::byte* buffer,
                                                                     const std::size_t size,
                                                                     const std::size_t i) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(reinterpret_cast<const std::uint8_t *>(buffer),
-                                     reinterpret_cast<const std::uint8_t *>(buffer) + size);
-  auto root = CreateOTExtensionMessageDirect(builder, i, &v_buffer);
-  FinishOTExtensionMessageBuffer(builder, root);
-  return BuildMessage(MessageType::OTExtensionReceiverMasks, builder.GetBufferPointer(),
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<const std::uint8_t*>(buffer),
+                                     reinterpret_cast<const std::uint8_t*>(buffer) + size);
+  auto root = CreateOtExtensionMessageDirect(builder, i, &v_buffer);
+  FinishOtExtensionMessageBuffer(builder, root);
+  return BuildMessage(MessageType::kOtExtensionReceiverMasks, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
-flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverCorrections(const std::byte *buffer,
+flatbuffers::FlatBufferBuilder BuildOtExtensionMessageReceiverCorrections(const std::byte* buffer,
                                                                           const std::size_t size,
                                                                           const std::size_t i) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(reinterpret_cast<const std::uint8_t *>(buffer),
-                                     reinterpret_cast<const std::uint8_t *>(buffer) + size);
-  auto root = CreateOTExtensionMessageDirect(builder, i, &v_buffer);
-  FinishOTExtensionMessageBuffer(builder, root);
-  return BuildMessage(MessageType::OTExtensionReceiverCorrections, builder.GetBufferPointer(),
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<const std::uint8_t*>(buffer),
+                                     reinterpret_cast<const std::uint8_t*>(buffer) + size);
+  auto root = CreateOtExtensionMessageDirect(builder, i, &v_buffer);
+  FinishOtExtensionMessageBuffer(builder, root);
+  return BuildMessage(MessageType::kOtExtensionReceiverCorrections, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

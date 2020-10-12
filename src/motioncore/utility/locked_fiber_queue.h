@@ -31,7 +31,7 @@
 #include <optional>
 #include <queue>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 /**
  * Closable queue for elements of type T synchronized with fiber primitives.
@@ -50,7 +50,7 @@ class LockedFiberQueue {
   /**
    * Checks if queue is closed.
    */
-  bool closed() const noexcept {
+  bool IsClosed() const noexcept {
     std::lock_guard lock(mutex_);
     return closed_;
   }
@@ -63,7 +63,7 @@ class LockedFiberQueue {
       std::scoped_lock lock(mutex_);
       closed_ = true;
     }
-    cv_.notify_all();
+    condition_variable_.notify_all();
   }
 
   /**
@@ -77,7 +77,7 @@ class LockedFiberQueue {
       std::scoped_lock lock(mutex_);
       queue_.push(item);
     }
-    cv_.notify_one();
+    condition_variable_.notify_one();
   }
 
   void enqueue(T&& item) {
@@ -88,7 +88,7 @@ class LockedFiberQueue {
       std::scoped_lock lock(mutex_);
       queue_.push(std::move(item));
     }
-    cv_.notify_one();
+    condition_variable_.notify_one();
   }
 
   /**
@@ -100,7 +100,7 @@ class LockedFiberQueue {
       return std::nullopt;
     }
     if (queue_.empty() && !closed_) {
-      cv_.wait(lock, [this] { return !this->queue_.empty() || this->closed_; });
+      condition_variable_.wait(lock, [this] { return !this->queue_.empty() || this->closed_; });
     }
     if (queue_.empty()) {
       return std::nullopt;
@@ -115,9 +115,9 @@ class LockedFiberQueue {
   bool closed_ = false;
   std::queue<T> queue_;
   mutable boost::fibers::mutex mutex_;
-  boost::fibers::condition_variable_any cv_;
+  boost::fibers::condition_variable_any condition_variable_;
 };
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion
 
 #endif  // LOCKED_QUEUE_HPP

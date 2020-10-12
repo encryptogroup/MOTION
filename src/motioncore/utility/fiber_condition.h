@@ -28,7 +28,7 @@
 #include <boost/fiber/mutex.hpp>
 #include <functional>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 class FiberCondition {
  public:
@@ -37,7 +37,7 @@ class FiberCondition {
 
   ~FiberCondition() = default;
   FiberCondition() = delete;
-  FiberCondition(FiberCondition &) = delete;
+  FiberCondition(FiberCondition&) = delete;
 
   // checks if the condition was satisfied
   // bool operator()() {
@@ -63,7 +63,7 @@ class FiberCondition {
 
   // the variables that the condition function depends on shall only be modified under the locked
   // mutex
-  boost::fibers::mutex &GetMutex() noexcept { return mutex_; }
+  boost::fibers::mutex& GetMutex() noexcept { return mutex_; }
 
  private:
   mutable boost::fibers::condition_variable condition_variable_;
@@ -71,4 +71,4 @@ class FiberCondition {
   const std::function<bool()> condition_function_;
 };
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

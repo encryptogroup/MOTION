@@ -29,19 +29,19 @@
 #include <fmt/format.h>
 
 #include "configuration.h"
-#include "gate/gate.h"
-#include "utility/fiber_condition.h"
+#include "protocols/gate.h"
+#include "protocols/wire.h"
 #include "utility/constants.h"
+#include "utility/fiber_condition.h"
 #include "utility/logger.h"
-#include "wire/wire.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
 Register::Register(std::shared_ptr<Logger> logger) : logger_(std::move(logger)) {
-  gates_setup_done_condition_ =
-      std::make_shared<ENCRYPTO::FiberCondition>([this]() { return gates_setup_done_flag_; });
-  gates_online_done_condition_ =
-      std::make_shared<ENCRYPTO::FiberCondition>([this]() { return gates_online_done_flag_; });
+  gates_setup_done_condition_ = std::make_shared<FiberCondition>(
+      [this]() { return gates_setup_done_flag_; });
+  gates_online_done_condition_ = std::make_shared<FiberCondition>(
+      [this]() { return gates_online_done_flag_; });
 }
 
 Register::~Register() {
@@ -50,30 +50,36 @@ Register::~Register() {
   wires_.clear();
 }
 
-std::size_t Register::NextGateId() noexcept { return global_gate_id_++; }
+std::size_t Register::NextGateId() noexcept {
+  // TODO the return value is old global_gate_id, not the increased one. Check if that is intended.
+  return global_gate_id_++;
+}
 
-std::size_t Register::NextWireId() noexcept { return global_wire_id_++; }
+std::size_t Register::NextWireId() noexcept {
+  // TODO the return value is old global_wire_id, not the increased one. Check if that is intended.
+  return global_wire_id_++;
+}
 
-std::size_t Register::NextArithmeticSharingId(std::size_t num_of_parallel_values) {
-  assert(num_of_parallel_values != 0);
+std::size_t Register::NextArithmeticSharingId(std::size_t number_of_parallel_values) {
+  assert(number_of_parallel_values != 0);
   auto old_id = global_arithmetic_gmw_sharing_id_;
-  global_arithmetic_gmw_sharing_id_ += num_of_parallel_values;
+  global_arithmetic_gmw_sharing_id_ += number_of_parallel_values;
   return old_id;
 }
 
-std::size_t Register::NextBooleanGMWSharingId(std::size_t num_of_parallel_values) {
-  assert(num_of_parallel_values != 0);
+std::size_t Register::NextBooleanGmwSharingId(std::size_t number_of_parallel_values) {
+  assert(number_of_parallel_values != 0);
   auto old_id = global_boolean_gmw_sharing_id_;
-  global_boolean_gmw_sharing_id_ += num_of_parallel_values;
+  global_boolean_gmw_sharing_id_ += number_of_parallel_values;
   return old_id;
 }
 
-void Register::RegisterNextGate(MOTION::Gates::GatePtr gate) {
+void Register::RegisterNextGate(GatePointer gate) {
   assert(gate != nullptr);
   gates_.push_back(gate);
 }
 
-void Register::RegisterNextInputGate(MOTION::Gates::GatePtr gate) {
+void Register::RegisterNextInputGate(GatePointer gate) {
   RegisterNextGate(gate);
   assert(gate != nullptr);
   input_gates_.push_back(gate);
@@ -82,7 +88,7 @@ void Register::RegisterNextInputGate(MOTION::Gates::GatePtr gate) {
 void Register::AddToActiveQueue(std::size_t gate_id) {
   std::scoped_lock lock(active_queue_mutex_);
   active_gates_.push(gate_id);
-  if constexpr (MOTION_VERBOSE_DEBUG) {
+  if constexpr (kVerboseDebug) {
     logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
   }
 }
@@ -106,8 +112,8 @@ std::int64_t Register::GetNextGateFromActiveQueue() {
 }
 
 void Register::IncrementEvaluatedGatesSetupCounter() {
-  auto num_evaluated_gates_setup = ++evaluated_gates_setup_;
-  if (num_evaluated_gates_setup == gates_.size()) {
+  auto number_of_evaluated_gates_setup = ++evaluated_gates_setup_;
+  if (number_of_evaluated_gates_setup == gates_.size()) {
     {
       std::scoped_lock lock(gates_setup_done_condition_->GetMutex());
       gates_setup_done_flag_ = true;
@@ -117,8 +123,8 @@ void Register::IncrementEvaluatedGatesSetupCounter() {
 }
 
 void Register::IncrementEvaluatedGatesOnlineCounter() {
-  auto num_evaluated_gates_setup = ++evaluated_gates_online_;
-  if (num_evaluated_gates_setup == gates_.size()) {
+  auto number_of_evaluated_gates_setup = ++evaluated_gates_online_;
+  if (number_of_evaluated_gates_setup == gates_.size()) {
     {
       std::scoped_lock lock(gates_online_done_condition_->GetMutex());
       gates_online_done_flag_ = true;
@@ -158,11 +164,11 @@ void Register::Clear() {
   }
   assert(active_gates_.empty());
   assert(evaluated_gates_online_ == gates_.size());
-  for (auto &gate : gates_) {
+  for (auto& gate : gates_) {
     gate->Clear();
   }
 
-  for (auto &wire : wires_) {
+  for (auto& wire : wires_) {
     wire->Clear();
   }
 
@@ -173,21 +179,21 @@ void Register::Clear() {
 }
 
 bool Register::AddCachedAlgorithmDescription(
-    std::string path, const std::shared_ptr<ENCRYPTO::AlgorithmDescription> &algo_description) {
+    std::string path, const std::shared_ptr<AlgorithmDescription>& algorithm_description) {
   std::scoped_lock lock(cached_algos_mutex_);
-  const auto [it, success] = cached_algos_.try_emplace(path, algo_description);
+  const auto [iterator, success] = cached_algos_.try_emplace(path, algorithm_description);
   return success;
 }
 
-std::shared_ptr<ENCRYPTO::AlgorithmDescription> Register::GetCachedAlgorithmDescription(
-    const std::string &path) {
+std::shared_ptr<AlgorithmDescription> Register::GetCachedAlgorithmDescription(
+    const std::string& path) {
   std::scoped_lock lock(cached_algos_mutex_);
-  const auto it = cached_algos_.find(path);
-  if (it == cached_algos_.end()) {
+  const auto iterator = cached_algos_.find(path);
+  if (iterator == cached_algos_.end()) {
     return nullptr;
   } else {
-    return it->second;
+    return iterator->second;
   }
 }
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

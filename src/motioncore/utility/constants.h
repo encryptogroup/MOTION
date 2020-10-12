@@ -31,56 +31,56 @@
 #include "config.h"
 #include "typedefs.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
 // just in case if we all of a sudden will decide to change the name
-constexpr std::string_view FRAMEWORK_NAME{"MOTION"};
+constexpr std::string_view kFrameworkName{"MOTION"};
 
 // abbreviation for megabytes
-constexpr std::size_t MB{1024 * 1024};
+constexpr std::size_t kMb{1024 * 1024};
 
-// Verbose debug flag. If MOTION_DEBUG equals false, this flag will always be interpreted as false.
+// Verbose debug flag. If kDebug equals false, this flag will always be interpreted as false.
 // Verbose means here that MOTION will log virtually everything: not only the performed actions but
 // also the sent and received messages. One may need this, e.g., for debugging correctness of the
 // protocols to better understand what went wrong. This may be _very_ slow and need a lot of storage
 // for logs! So try to keep the code small if you need this flag for debugging.
-constexpr bool MOTION_VERBOSE_DEBUG_WISH{false};
+constexpr bool kVerboseDebugWish{false};
 
 // Don't compile unnecessary code if verbose debugging is not needed
-constexpr bool MOTION_VERBOSE_DEBUG{MOTION_DEBUG && MOTION_VERBOSE_DEBUG_WISH};
+constexpr bool kVerboseDebug{kDebug && kVerboseDebugWish};
 
-constexpr std::size_t AES_KEY_SIZE{16};
+constexpr std::size_t kAesKeySize{16};
 
-constexpr std::size_t AES_BLOCK_SIZE_{16};
+constexpr std::size_t kAesBlockSize{16};
 
-constexpr std::size_t AES_IV_SIZE{AES_BLOCK_SIZE_ / 2};
+constexpr std::size_t kAesIvSize{kAesBlockSize / 2};
 
-constexpr std::size_t MESSAGE_SIZE_BYTELEN{sizeof(std::uint32_t)};
+constexpr std::size_t kMessageSizeBytelen{sizeof(std::uint32_t)};
 
 // the maximum allowed message size in flatbuffers
 // 2^31, approx. 2 GB
-constexpr std::uint32_t MAX_MESSAGE_SIZE{std::numeric_limits<std::uint32_t>::max() / 2};
+constexpr std::uint32_t kMaxMessageSize{std::numeric_limits<std::uint32_t>::max() / 2};
 
 // symmetric security parameter
-constexpr std::size_t kappa{128};
+constexpr std::size_t kKappa{128};
 
 // stack size for fibers
 // Increase the fiber stack size when in debug mode because it requires storing additional debugging
 // information, which, however, would be an unnecessary memory overhead when built in release mode,
 // thus increase the fiber stack size only in debug mode
-constexpr std::size_t MOTION_FIBER_STACK_SIZE = MOTION_DEBUG ? 32 * 1024 : 14 * 1024;
+constexpr std::size_t kFiberStackSize = kDebug ? 32 * 1024 : 14 * 1024;
 
 enum class FiberStackAllocator {
   // standard allocator
-  fixedsize,
+  kFixedSize,
   // allocate the stacks from a memory pool
-  pooled_fixedsize,
+  kPooledFixedSize,
   // use an allocator for fiber stacks that inserts a guard page at the end of
   // the stack space resulting in a SIGSEGV if a stack overflow happens
-  protected_fixedsize,
+  kProtectedFixedSize,
 };
 
 // standard allocator for fiber stacks
-constexpr FiberStackAllocator MOTION_FIBER_STACK_ALLOCATOR{FiberStackAllocator::fixedsize};
+constexpr FiberStackAllocator kFiberStackAllocator{FiberStackAllocator::kFixedSize};
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

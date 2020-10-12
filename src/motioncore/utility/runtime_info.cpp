@@ -29,9 +29,9 @@
 #include <boost/process/io.hpp>
 #include <boost/process/pipe.hpp>
 
-namespace MOTION {
+namespace encrypto::motion {
 
-std::string get_cmdline() {
+std::string GetCmdLine() {
   std::ifstream f("/proc/self/cmdline");
   assert(f);
   std::string cmdline;
@@ -44,7 +44,7 @@ std::string get_cmdline() {
   return cmdline;
 }
 
-std::size_t get_pid() {
+std::size_t GetPid() {
   std::ifstream f("/proc/self/stat");
   assert(f);
   std::size_t pid;
@@ -52,7 +52,7 @@ std::size_t get_pid() {
   return pid;
 }
 
-std::string get_hostname() {
+std::string GetHostname() {
   std::ifstream f("/proc/sys/kernel/hostname");
   assert(f);
   std::string hostname;
@@ -60,7 +60,7 @@ std::string get_hostname() {
   return hostname;
 }
 
-std::string get_username() {
+std::string GetUsername() {
   namespace bp = boost::process;
   bp::ipstream output;
   bp::child child_process("whoami", bp::std_out > output);
@@ -69,4 +69,4 @@ std::string get_username() {
   return username;
 }
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

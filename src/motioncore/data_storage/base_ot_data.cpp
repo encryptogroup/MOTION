@@ -25,59 +25,57 @@
 #include "base_ot_data.h"
 #include "utility/fiber_condition.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-BaseOTsReceiverData::BaseOTsReceiverData() : received_S_(128, false) {
+BaseOtReceiverData::BaseOtReceiverData() : received_S(128, false) {
   for (auto i = 0; i < 128; ++i) {
-    received_S_condition_.emplace_back(
-        std::make_unique<ENCRYPTO::FiberCondition>([this, i]() { return received_S_.at(i); }));
+    received_S_condition.emplace_back(
+        std::make_unique<FiberCondition>([this, i]() { return received_S.at(i); }));
   }
-  S_.resize(128);
+  S.resize(128);
 
-  is_ready_condition_ =
-      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return is_ready_.load(); });
+  is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
 }
 
-BaseOTsSenderData::BaseOTsSenderData() : received_R_(128, false) {
+BaseOtSenderData::BaseOtSenderData() : received_R(128, false) {
   for (auto i = 0; i < 128; ++i) {
-    received_R_condition_.emplace_back(
-        std::make_unique<ENCRYPTO::FiberCondition>([this, i]() { return received_R_.at(i); }));
+    received_R_condition.emplace_back(
+        std::make_unique<FiberCondition>([this, i]() { return received_R.at(i); }));
   }
-  R_.resize(128);
+  R.resize(128);
 
-  is_ready_condition_ =
-      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return is_ready_.load(); });
+  is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
 }
 
-void BaseOTsData::MessageReceived(const std::uint8_t *message, const BaseOTsDataType type,
-                                  const std::size_t ot_id) {
+void BaseOtData::MessageReceived(const std::uint8_t* message, const BaseOtDataType type,
+                                 const std::size_t ot_id) {
   switch (type) {
-    case BaseOTsDataType::HL17_R: {
+    case BaseOtDataType::kHL17R: {
       {
-        std::scoped_lock lock(sender_data_.received_R_condition_.at(ot_id)->GetMutex());
-        std::copy(message, message + sender_data_.R_.at(ot_id).size(),
-                  reinterpret_cast<std::uint8_t *>(sender_data_.R_.at(ot_id).data()));
-        sender_data_.received_R_.at(ot_id) = true;
+        std::scoped_lock lock(sender_data.received_R_condition.at(ot_id)->GetMutex());
+        std::copy(message, message + sender_data.R.at(ot_id).size(),
+                  reinterpret_cast<std::uint8_t*>(sender_data.R.at(ot_id).data()));
+        sender_data.received_R.at(ot_id) = true;
       }
-      sender_data_.received_R_condition_.at(ot_id)->NotifyOne();
+      sender_data.received_R_condition.at(ot_id)->NotifyOne();
       break;
     }
-    case BaseOTsDataType::HL17_S: {
+    case BaseOtDataType::kHL17S: {
       {
-        std::scoped_lock lock(receiver_data_.received_S_condition_.at(ot_id)->GetMutex());
-        std::copy(message, message + receiver_data_.S_.at(ot_id).size(),
-                  reinterpret_cast<std::uint8_t *>(receiver_data_.S_.at(ot_id).begin()));
-        receiver_data_.received_S_.at(ot_id) = true;
+        std::scoped_lock lock(receiver_data.received_S_condition.at(ot_id)->GetMutex());
+        std::copy(message, message + receiver_data.S.at(ot_id).size(),
+                  reinterpret_cast<std::uint8_t*>(receiver_data.S.at(ot_id).begin()));
+        receiver_data.received_S.at(ot_id) = true;
       }
-      receiver_data_.received_S_condition_.at(ot_id)->NotifyOne();
+      receiver_data.received_S_condition.at(ot_id)->NotifyOne();
       break;
     }
     default: {
       throw std::runtime_error(
           fmt::format("DataStorage::BaseOTsReceived: unknown data type {}; data_type must be <{}",
-                      type, BaseOTsDataType::BaseOTs_invalid_data_type));
+                      type, BaseOtDataType::kBaseOtInvalidDataType));
     }
   }
 }
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

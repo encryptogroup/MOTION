@@ -27,16 +27,17 @@
 #include <flatbuffers/flatbuffers.h>
 #include "utility/constants.h"
 
-namespace MOTION::Communication {
-flatbuffers::FlatBufferBuilder BuildOTExtensionMessageSender(const std::byte *buffer,
+namespace encrypto::motion::communication {
+
+flatbuffers::FlatBufferBuilder BuildOtExtensionMessageSender(const std::byte* buffer,
                                                              const std::size_t size,
                                                              const std::size_t i);
 
-flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverMasks(const std::byte *buffer,
+flatbuffers::FlatBufferBuilder BuildOtExtensionMessageReceiverMasks(const std::byte* buffer,
                                                                     const std::size_t size,
                                                                     const std::size_t i);
 
-flatbuffers::FlatBufferBuilder BuildOTExtensionMessageReceiverCorrections(const std::byte *buffer,
+flatbuffers::FlatBufferBuilder BuildOtExtensionMessageReceiverCorrections(const std::byte* buffer,
                                                                           const std::size_t size,
                                                                           const std::size_t i);
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

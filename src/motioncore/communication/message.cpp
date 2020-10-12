@@ -27,9 +27,10 @@
 #include "fbs_headers/message_generated.h"
 #include "utility/typedefs.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
+
 flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
-                                                   const std::vector<uint8_t> *payload) {
+                                            const std::vector<uint8_t>* payload) {
   auto allocation_size = payload ? payload->size() + 20 : 1024;
   flatbuffers::FlatBufferBuilder builder(allocation_size);
   auto root = CreateMessageDirect(builder, message_type, payload);
@@ -37,8 +38,8 @@ flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
   return builder;
 }
 
-flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t *payload,
-                                                   std::size_t size) {
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t* payload,
+                                            std::size_t size) {
   assert(payload);
   std::vector<std::uint8_t> buffer(payload, payload + size);
   return BuildMessage(message_type, &buffer);
@@ -48,37 +49,37 @@ using namespace std::string_literals;
 
 std::string to_string(MessageType message_type) {
   switch (message_type) {
-    case MessageType::HelloMessage:
+    case MessageType::kHelloMessage:
       return "MessageType::HelloMessage"s;
-    case MessageType::OutputMessage:
+    case MessageType::kOutputMessage:
       return "MessageType::OutputMessage"s;
-    case MessageType::TerminationMessage:
+    case MessageType::kTerminationMessage:
       return "MessageType::TerminationMessage"s;
-    case MessageType::SynchronizationMessage:
+    case MessageType::kSynchronizationMessage:
       return "MessageType::SynchronizationMessage"s;
-    case MessageType::BaseROTMessageSender:
-      return "MessageType::BaseROTMessageSender"s;
-    case MessageType::BaseROTMessageReceiver:
-      return "MessageType::BaseROTMessageReceiver"s;
-    case MessageType::OTExtensionReceiverMasks:
-      return "MessageType::OTExtensionReceiverMasks"s;
-    case MessageType::OTExtensionReceiverCorrections:
-      return "MessageType::OTExtensionReceiverCorrections"s;
-    case MessageType::OTExtensionSender:
-      return "MessageType::OTExtensionSender"s;
-    case MessageType::BMRInputGate0:
-      return "MessageType::BMRInputGate0"s;
-    case MessageType::BMRInputGate1:
-      return "MessageType::BMRInputGate1"s;
-    case MessageType::BMRANDGate:
-      return "MessageType::BMRANDGate"s;
-    case MessageType::SharedBitsMask:
+    case MessageType::kBaseROtMessageSender:
+      return "MessageType::BaseROtMessageSender"s;
+    case MessageType::kBaseROtMessageReceiver:
+      return "MessageType::BaseROtMessageReceiver"s;
+    case MessageType::kOtExtensionReceiverMasks:
+      return "MessageType::OtExtensionReceiverMasks"s;
+    case MessageType::kOtExtensionReceiverCorrections:
+      return "MessageType::OtExtensionReceiverCorrections"s;
+    case MessageType::kOtExtensionSender:
+      return "MessageType::OtExtensionSender"s;
+    case MessageType::kBmrInputGate0:
+      return "MessageType::BmrInputGate0"s;
+    case MessageType::kBmrInputGate1:
+      return "MessageType::BmrInputGate1"s;
+    case MessageType::kBmrAndGate:
+      return "MessageType::BmrAndGate"s;
+    case MessageType::kSharedBitsMask:
       return "MessageType::SharedBitsMask"s;
-    case MessageType::SharedBitsReconstruct:
+    case MessageType::kSharedBitsReconstruct:
       return "MessageType::SharedBitsReconstruct"s;
     default:
       return "Unknown MessageType => update to_string function"s;
   }
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

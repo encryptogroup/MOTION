@@ -25,23 +25,24 @@
 #pragma once
 
 #include "base/party.h"
-#include "statistics/run_time_stats.h"
+#include "statistics/run_time_statistics.h"
 #include "utility/typedefs.h"
 
 enum Provider : std::size_t {
-  AMT = 0,
-  BMT = 1,
-  GOT = 2,
-  XCOT = 3,
-  ACOT = 4,
-  ROT = 5,
-  SB = 6,
-  SP = 7
+  kAmt = 0,
+  kBmt = 1,
+  kGOt = 2,
+  kXcOt = 3,
+  kAcOt = 4,
+  kROt = 5,
+  kSb = 6,
+  kSp = 7
 };
 
-constexpr std::array PROVIDER_NAME{"AMT", "BMT", "GOT", "XCOT", "ACOT", "ROT", "SB", "SP"};
+constexpr std::array kProviderName{"AMT", "BMT", "GOT", "XCOT", "ACOT", "ROT", "SB", "SP"};
 
-inline std::string ToString(Provider p) { return PROVIDER_NAME[p]; }
+inline std::string to_string(Provider p) { return kProviderName[p]; }
 
-MOTION::Statistics::RunTimeStats BenchmarkProvider(MOTION::PartyPtr& party, std::size_t batch_size,
-                                                  Provider provider, std::size_t bit_size = 0);
+encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPointer& party,
+                                                      std::size_t batch_size, Provider provider,
+                                                      std::size_t bit_size = 0);

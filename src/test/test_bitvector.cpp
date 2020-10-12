@@ -34,41 +34,42 @@ namespace {
 
 TEST(BitVector, Constructors) {
   {
-    auto bv = ENCRYPTO::BitVector<>();
-    EXPECT_EQ(bv.GetSize(), 0);
+    auto bit_vector = encrypto::motion::BitVector<>();
+    EXPECT_EQ(bit_vector.GetSize(), 0);
   }
   {
-    auto bv = ENCRYPTO::BitVector<>(true);
-    EXPECT_EQ(bv.GetSize(), 1);
-    EXPECT_EQ(bv.Get(0), true);
+    auto bit_vector = encrypto::motion::BitVector<>(true);
+    EXPECT_EQ(bit_vector.GetSize(), 1);
+    EXPECT_EQ(bit_vector.Get(0), true);
   }
 }
 
 TEST(BitVector, Random) {
   {
-    std::vector<ENCRYPTO::BitVector<>> bvs;
-    std::generate_n(std::back_inserter(bvs), 100, [] { return ENCRYPTO::BitVector<>::Random(1); });
-    auto all_size_1 =
-        std::all_of(std::begin(bvs), std::end(bvs), [](auto bv) { return bv.GetSize() == 1; });
+    std::vector<encrypto::motion::BitVector<>> bit_vectors;
+    std::generate_n(std::back_inserter(bit_vectors), 100,
+                    [] { return encrypto::motion::BitVector<>::Random(1); });
+    auto all_size_1 = std::all_of(std::begin(bit_vectors), std::end(bit_vectors),
+                                  [](auto bit_vector) { return bit_vector.GetSize() == 1; });
     EXPECT_TRUE(all_size_1);
     // all bits should be zero with very low probability
-    auto all_zeros =
-        std::all_of(std::begin(bvs), std::end(bvs), [](auto bv) { return bv.Get(0) == 0; });
+    auto all_zeros = std::all_of(std::begin(bit_vectors), std::end(bit_vectors),
+                                 [](auto bit_vector) { return bit_vector.Get(0) == 0; });
     EXPECT_FALSE(all_zeros);
   }
   {
-    auto bv = ENCRYPTO::BitVector<>::Random(120);
-    EXPECT_EQ(bv.GetSize(), 120);
-    auto v = bv.GetData();
+    auto bit_vector = encrypto::motion::BitVector<>::Random(120);
+    EXPECT_EQ(bit_vector.GetSize(), 120);
+    auto v = bit_vector.GetData();
     // all bits should be zero with very low probability
     bool all_zeros =
         std::all_of(std::begin(v), std::end(v), [](auto byte) { return byte == std::byte(0x00); });
     EXPECT_FALSE(all_zeros);
   }
   {
-    auto bv = ENCRYPTO::BitVector<>::Random(128);
-    EXPECT_EQ(bv.GetSize(), 128);
-    auto v = bv.GetData();
+    auto bit_vector = encrypto::motion::BitVector<>::Random(128);
+    EXPECT_EQ(bit_vector.GetSize(), 128);
+    auto v = bit_vector.GetData();
     // all bits should be zero with very low probability
     bool all_zeros =
         std::all_of(std::begin(v), std::end(v), [](auto byte) { return byte == std::byte(0x00); });
@@ -77,19 +78,19 @@ TEST(BitVector, Random) {
 }
 
 TEST(BitVector, OutOfBoundsException) {
-  std::mt19937_64 e(0);
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  std::mt19937_64 mersenne_twister(0);
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto i = 0ull, j = 1ull; i < 20u; ++i) {
-      std::uniform_int_distribution<std::uint64_t> dist(0ul, 1'000'000ul);
+      std::uniform_int_distribution<std::uint64_t> distribution(0ul, 1'000'000ul);
 
       auto should_throw_set = [&](std::size_t size) {
-        ENCRYPTO::BitVector<> bv(size);
-        bv.Set(true, size + dist(e));
+        encrypto::motion::BitVector<> bit_vector(size);
+        bit_vector.Set(true, size + distribution(mersenne_twister));
       };
 
       auto should_throw_get = [&](std::size_t size) {
-        ENCRYPTO::BitVector<> bv(size);
-        bv.Set(true, size + dist(e));
+        encrypto::motion::BitVector<> bit_vector(size);
+        bit_vector.Set(true, size + distribution(mersenne_twister));
       };
 
       ASSERT_ANY_THROW(should_throw_set(j));
@@ -101,147 +102,147 @@ TEST(BitVector, OutOfBoundsException) {
 }
 
 TEST(BitVector, SingleBitOperations) {
-  std::mt19937_64 e(0);
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    ENCRYPTO::BitVector<> bv(1);
-    ASSERT_FALSE(bv.Get(0));
+  std::mt19937_64 mersenne_twister(0);
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
+    encrypto::motion::BitVector<> bit_vector(1);
+    ASSERT_FALSE(bit_vector.Get(0));
 
-    bv.Set(true, 0);
-    ASSERT_TRUE(bv.Get(0));
+    bit_vector.Set(true, 0);
+    ASSERT_TRUE(bit_vector.Get(0));
 
-    bv.Set(false, 0);
-    ASSERT_FALSE(bv.Get(0));
+    bit_vector.Set(false, 0);
+    ASSERT_FALSE(bit_vector.Get(0));
 
-    std::uniform_int_distribution<std::uint64_t> dist(0ul, 1'000'000ul);
-    std::size_t size = dist(e);
+    std::uniform_int_distribution<std::uint64_t> distribution(0ul, 1'000'000ul);
+    std::size_t size = distribution(mersenne_twister);
 
-    bv.Resize(size, true);
+    bit_vector.Resize(size, true);
 
     for (auto i = 0ull; i < 1000u; ++i) {
-      std::size_t pos0 = dist(e) % size;
-      std::size_t pos1 = dist(e) % size;
-      while (pos0 == pos1) {
-        pos1 = dist(e) % size;
+      std::size_t position0 = distribution(mersenne_twister) % size;
+      std::size_t position1 = distribution(mersenne_twister) % size;
+      while (position0 == position1) {
+        position1 = distribution(mersenne_twister) % size;
       }
 
-      bv.Set(true, pos0);
-      ASSERT_TRUE(bv.Get(pos0));
-      ASSERT_TRUE(bv[pos0]);
-      bv.Set(true, pos1);
-      ASSERT_TRUE(bv.Get(pos1));
-      ASSERT_TRUE(bv[pos1]);
+      bit_vector.Set(true, position0);
+      ASSERT_TRUE(bit_vector.Get(position0));
+      ASSERT_TRUE(bit_vector[position0]);
+      bit_vector.Set(true, position1);
+      ASSERT_TRUE(bit_vector.Get(position1));
+      ASSERT_TRUE(bit_vector[position1]);
 
-      bv.Set(false, pos0);
-      ASSERT_FALSE(bv.Get(pos0));
-      ASSERT_FALSE(bv[pos0]);
-      bv.Set(false, pos1);
-      ASSERT_FALSE(bv.Get(pos1));
-      ASSERT_FALSE(bv[pos0]);
+      bit_vector.Set(false, position0);
+      ASSERT_FALSE(bit_vector.Get(position0));
+      ASSERT_FALSE(bit_vector[position0]);
+      bit_vector.Set(false, position1);
+      ASSERT_FALSE(bit_vector.Get(position1));
+      ASSERT_FALSE(bit_vector[position0]);
     }
   }
 }
 
 TEST(BitVector, AllBitsOperations) {
-  std::mt19937_64 e(0);
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  std::mt19937_64 mersenne_twister(0);
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto size = 1ull; size <= 1'000'000u; size *= 10) {
-      ENCRYPTO::BitVector<> bv(size);
-      bv.Set(true);
+      encrypto::motion::BitVector<> bit_vector(size);
+      bit_vector.Set(true);
 
-      ASSERT_TRUE(bv.Get(0));
-      ASSERT_TRUE(bv.Get(bv.GetSize() - 1));
+      ASSERT_TRUE(bit_vector.Get(0));
+      ASSERT_TRUE(bit_vector.Get(bit_vector.GetSize() - 1));
 
-      std::uniform_int_distribution<std::uint64_t> dist(0, size);
+      std::uniform_int_distribution<std::uint64_t> distribution(0, size);
       for (auto i = 0ull; i < 100u && i < size; ++i) {
-        auto pos = dist(e) % bv.GetSize();
-        ASSERT_TRUE(bv.Get(pos));
+        auto position = distribution(mersenne_twister) % bit_vector.GetSize();
+        ASSERT_TRUE(bit_vector.Get(position));
       }
 
-      bv.Set(false);
+      bit_vector.Set(false);
 
-      ASSERT_FALSE(bv.Get(0));
-      ASSERT_FALSE(bv.Get(bv.GetSize() - 1));
+      ASSERT_FALSE(bit_vector.Get(0));
+      ASSERT_FALSE(bit_vector.Get(bit_vector.GetSize() - 1));
 
       for (auto i = 0ull; i < 100u && i < size; ++i) {
-        auto pos = dist(e) % bv.GetSize();
-        ASSERT_FALSE(bv.Get(pos));
+        auto position = distribution(mersenne_twister) % bit_vector.GetSize();
+        ASSERT_FALSE(bit_vector.Get(position));
       }
     }
   }
 }
 
 TEST(BitVector, VectorVectorOperations) {
-  std::mt19937_64 e(0);
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  std::mt19937_64 mersenne_twister(0);
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto size = 1ull; size <= 100'000u; size *= 10) {
-      ENCRYPTO::BitVector<> bv0(size);
-      ENCRYPTO::BitVector<> bv1(size);
+      encrypto::motion::BitVector<> bit_vector0(size);
+      encrypto::motion::BitVector<> bit_vector1(size);
 
-      std::vector<bool> v0(size, false), v1(size, false), result_and(size, false),
+      std::vector<bool> vector0(size, false), vector1(size, false), result_and(size, false),
           result_xor(size, false), result_or(size, false);
-      std::uniform_int_distribution<uint64_t> dist(0, 1);
+      std::uniform_int_distribution<uint64_t> distribution(0, 1);
 
       for (auto i = 0ull; i < size; ++i) {
-        v0.at(i) = dist(e);
-        v1.at(i) = dist(e);
+        vector0.at(i) = distribution(mersenne_twister);
+        vector1.at(i) = distribution(mersenne_twister);
 
-        bv0.Set(v0.at(i), i);
-        bv1.Set(v1.at(i), i);
+        bit_vector0.Set(vector0.at(i), i);
+        bit_vector1.Set(vector1.at(i), i);
 
-        result_and.at(i) = v0.at(i) & v1.at(i);
-        result_xor.at(i) = v0.at(i) ^ v1.at(i);
-        result_or.at(i) = v0.at(i) | v1.at(i);
+        result_and.at(i) = vector0.at(i) & vector1.at(i);
+        result_xor.at(i) = vector0.at(i) ^ vector1.at(i);
+        result_or.at(i) = vector0.at(i) | vector1.at(i);
       }
 
-      ENCRYPTO::BitVector<> bv_and = bv0 & bv1;
-      ENCRYPTO::BitVector<> bv_xor = bv0 ^ bv1;
-      ENCRYPTO::BitVector<> bv_or = bv0 | bv1;
+      encrypto::motion::BitVector<> bit_vector_and = bit_vector0 & bit_vector1;
+      encrypto::motion::BitVector<> bit_vector_xor = bit_vector0 ^ bit_vector1;
+      encrypto::motion::BitVector<> bit_vector_or = bit_vector0 | bit_vector1;
 
       for (auto i = 0ull; i < size; ++i) {
-        ASSERT_TRUE(result_and.at(i) == bv_and.Get(i));
-        ASSERT_TRUE(result_xor.at(i) == bv_xor.Get(i));
-        ASSERT_TRUE(result_or.at(i) == bv_or.Get(i));
+        ASSERT_TRUE(result_and.at(i) == bit_vector_and.Get(i));
+        ASSERT_TRUE(result_xor.at(i) == bit_vector_xor.Get(i));
+        ASSERT_TRUE(result_or.at(i) == bit_vector_or.Get(i));
       }
 
-      auto bv_and_old = bv_and;
-      bv_and &= bv_and;
+      auto bit_vector_and_old = bit_vector_and;
+      bit_vector_and &= bit_vector_and;
 
-      bv_xor ^= bv_xor;
-      ENCRYPTO::BitVector<> bv_zero(bv_xor.GetSize(), false);
+      bit_vector_xor ^= bit_vector_xor;
+      encrypto::motion::BitVector<> bit_vector_zero(bit_vector_xor.GetSize(), false);
 
-      auto bv_or_old = bv_or;
-      bv_or |= bv_or;
+      auto bit_vector_or_old = bit_vector_or;
+      bit_vector_or |= bit_vector_or;
 
-      ASSERT_TRUE(bv_and_old == bv_and);
-      ASSERT_TRUE(bv_xor == bv_zero);
-      ASSERT_TRUE(bv_or_old == bv_or);
+      ASSERT_TRUE(bit_vector_and_old == bit_vector_and);
+      ASSERT_TRUE(bit_vector_xor == bit_vector_zero);
+      ASSERT_TRUE(bit_vector_or_old == bit_vector_or);
 
-      auto bv0_copy = bv0;
-      std::uniform_int_distribution<uint64_t> dist_size(0, bv0_copy.GetSize() - 1);
+      auto bit_vector0_copy = bit_vector0;
+      std::uniform_int_distribution<uint64_t> distribution_size(0, bit_vector0_copy.GetSize() - 1);
       for (auto i = 0ull; i < 10; ++i) {
-        auto pos = dist_size(e);
-        bool value = bv0_copy.Get(pos);
+        auto position = distribution_size(mersenne_twister);
+        bool value = bit_vector0_copy.Get(position);
 
-        ASSERT_TRUE(bv0 == bv0_copy);
-        bv0_copy.Set(!value, pos);
-        ASSERT_FALSE(bv0 == bv0_copy);
-        bv0_copy.Set(value, pos);
-        ASSERT_TRUE(bv0 == bv0_copy);
+        ASSERT_TRUE(bit_vector0 == bit_vector0_copy);
+        bit_vector0_copy.Set(!value, position);
+        ASSERT_FALSE(bit_vector0 == bit_vector0_copy);
+        bit_vector0_copy.Set(value, position);
+        ASSERT_TRUE(bit_vector0 == bit_vector0_copy);
       }
     }
   }
 }
 
-TEST(BitVector, ANDReduce) {
+TEST(BitVector, AndReduce) {
   for (auto size : {0, 1, 2, 15, 16, 17, 64, 65, 100}) {
-    ENCRYPTO::BitVector<> bv(size, true);
-    auto result = ENCRYPTO::BitVector<>::ANDReduceBitVector(bv);
+    encrypto::motion::BitVector<> bit_vector(size, true);
+    auto result = encrypto::motion::BitVector<>::AndReduceBitVector(bit_vector);
     EXPECT_TRUE(result);
   }
 }
 
 TEST(BitVector, Append) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     std::vector<std::size_t> sizes;
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
@@ -249,25 +250,25 @@ TEST(BitVector, Append) {
     for (auto i = 128ull; i < 10'000; i *= 2) {
       sizes.push_back(i);
     }
-    std::mt19937_64 e(0);
+    std::mt19937_64 mersenne_twister(0);
     for (auto size : sizes) {
-      std::uniform_int_distribution<uint64_t> dist_n_vectors(2, 20);
+      std::uniform_int_distribution<uint64_t> distribution_number_of_vectors(2, 20);
 
-      std::vector<std::vector<bool>> stl_vectors(dist_n_vectors(e));
-      std::vector<ENCRYPTO::BitVector<>> bit_vectors(stl_vectors.size());
+      std::vector<std::vector<bool>> stl_vectors(distribution_number_of_vectors(mersenne_twister));
+      std::vector<encrypto::motion::BitVector<>> bit_vectors(stl_vectors.size());
 
-      std::uniform_int_distribution<uint64_t> dist(0, 1);
+      std::uniform_int_distribution<uint64_t> distribution(0, 1);
 
       for (auto j = 0ull; j < stl_vectors.size(); ++j) {
         for (auto i = 0ull; i < size; ++i) {
-          stl_vectors.at(j).push_back(dist(e));
+          stl_vectors.at(j).push_back(distribution(mersenne_twister));
           bit_vectors.at(j).Append(stl_vectors.at(j).at(i));
           ASSERT_EQ(stl_vectors.at(j).at(i), bit_vectors.at(j).Get(i));
         }
       }
 
       std::vector<bool> stl_vector_result;
-      ENCRYPTO::BitVector<> bit_vector_result;
+      encrypto::motion::BitVector<> bit_vector_result;
 
       for (auto i = 0ull; i < stl_vectors.size(); ++i) {
         stl_vector_result.insert(stl_vector_result.end(), stl_vectors.at(i).begin(),
@@ -285,7 +286,7 @@ TEST(BitVector, Append) {
 }
 
 TEST(BitVector, Subset) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     std::vector<std::size_t> sizes;
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
@@ -296,23 +297,23 @@ TEST(BitVector, Subset) {
     }
     for (auto i : sizes) {
       std::vector<bool> stl_vector(i);
-      ENCRYPTO::BitVector<> bit_vector(i);
+      encrypto::motion::BitVector<> bit_vector(i);
 
-      std::mt19937_64 e(0);
-      std::uniform_int_distribution<uint64_t> dist_from(0, i / 2);
-      std::uniform_int_distribution<uint64_t> dist_to(i / 2, i - 1);
-      std::uniform_int_distribution<uint64_t> dist_bool(0, 1);
+      std::mt19937_64 mersenne_twister(0);
+      std::uniform_int_distribution<uint64_t> distribution_from(0, i / 2);
+      std::uniform_int_distribution<uint64_t> distribution_to(i / 2, i - 1);
+      std::uniform_int_distribution<uint64_t> distribution_bool(0, 1);
 
       for (auto j = 0ull; j < stl_vector.size(); ++j) {
-        stl_vector.at(j) = dist_bool(e);
+        stl_vector.at(j) = distribution_bool(mersenne_twister);
         bit_vector.Set(stl_vector.at(j), j);
       }
 
-      auto from = dist_from(e);
-      auto to = dist_to(e);
+      auto from = distribution_from(mersenne_twister);
+      auto to = distribution_to(mersenne_twister);
 
       std::vector<bool> stl_vector_subset(stl_vector.begin() + from, stl_vector.begin() + to);
-      ENCRYPTO::BitVector<> bit_vector_subset = bit_vector.Subset(from, to);
+      encrypto::motion::BitVector<> bit_vector_subset = bit_vector.Subset(from, to);
 
       for (auto j = 0ull; j < stl_vector_subset.size(); ++j) {
         ASSERT_EQ(stl_vector_subset.at(j), bit_vector_subset.Get(j));
@@ -324,7 +325,7 @@ TEST(BitVector, Subset) {
 }
 
 TEST(BitVector, AppendSubset) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     std::vector<std::size_t> sizes;
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
@@ -334,26 +335,26 @@ TEST(BitVector, AppendSubset) {
     }
     for (auto size : sizes) {
       std::vector<bool> stl_vector_result;
-      ENCRYPTO::BitVector<> bit_vector_result;
+      encrypto::motion::BitVector<> bit_vector_result;
       for (auto subset_i = 0ull; subset_i < 20u; ++subset_i) {
         std::vector<bool> stl_vector(size);
-        ENCRYPTO::BitVector<> bit_vector(size);
+        encrypto::motion::BitVector<> bit_vector(size);
 
-        std::mt19937_64 e(0);
-        std::uniform_int_distribution<uint64_t> dist_from(0, size / 2);
-        std::uniform_int_distribution<uint64_t> dist_to(size / 2, size - 1);
-        std::uniform_int_distribution<uint64_t> dist_bool(0, 1);
+        std::mt19937_64 mersenne_twister(0);
+        std::uniform_int_distribution<uint64_t> distribution_from(0, size / 2);
+        std::uniform_int_distribution<uint64_t> distribution_to(size / 2, size - 1);
+        std::uniform_int_distribution<uint64_t> distribution_bool(0, 1);
 
         for (auto j = 0ull; j < stl_vector.size(); ++j) {
-          stl_vector.at(j) = dist_bool(e);
+          stl_vector.at(j) = distribution_bool(mersenne_twister);
           bit_vector.Set(stl_vector.at(j), j);
         }
 
-        auto from = dist_from(e);
-        auto to = dist_to(e);
+        auto from = distribution_from(mersenne_twister);
+        auto to = distribution_to(mersenne_twister);
 
         std::vector<bool> stl_vector_subset(stl_vector.begin() + from, stl_vector.begin() + to);
-        ENCRYPTO::BitVector<> bit_vector_subset = bit_vector.Subset(from, to);
+        encrypto::motion::BitVector<> bit_vector_subset = bit_vector.Subset(from, to);
 
         for (auto j = 0ull; j < stl_vector_subset.size(); ++j) {
           ASSERT_EQ(stl_vector_subset.at(j), bit_vector_subset.Get(j));
@@ -372,7 +373,7 @@ TEST(BitVector, AppendSubset) {
 }
 
 TEST(BitVector, AppendSpan) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     std::vector<std::size_t> sizes;
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
@@ -380,30 +381,30 @@ TEST(BitVector, AppendSpan) {
     for (auto i = 128ull; i < 10'000; i *= 2) {
       sizes.push_back(i);
     }
-    std::mt19937_64 e(0);
+    std::mt19937_64 mersenne_twister(0);
     for (auto size : sizes) {
-      std::uniform_int_distribution<uint64_t> dist_n_vectors(2, 20);
+      std::uniform_int_distribution<uint64_t> distribution_number_of_vectors(2, 20);
 
-      std::vector<std::vector<bool>> stl_vectors(dist_n_vectors(e));
-      std::vector<ENCRYPTO::BitVector<>> bit_vectors(stl_vectors.size());
+      std::vector<std::vector<bool>> stl_vectors(distribution_number_of_vectors(mersenne_twister));
+      std::vector<encrypto::motion::BitVector<>> bit_vectors(stl_vectors.size());
 
-      std::uniform_int_distribution<uint64_t> dist(0, 1);
+      std::uniform_int_distribution<uint64_t> distribution(0, 1);
 
       for (auto j = 0ull; j < stl_vectors.size(); ++j) {
         for (auto i = 0ull; i < size; ++i) {
-          stl_vectors.at(j).push_back(dist(e));
+          stl_vectors.at(j).push_back(distribution(mersenne_twister));
           bit_vectors.at(j).Append(stl_vectors.at(j).at(i));
           ASSERT_EQ(stl_vectors.at(j).at(i), bit_vectors.at(j).Get(i));
         }
       }
 
       std::vector<bool> stl_vector_result;
-      ENCRYPTO::BitVector<> bit_vector_result;
+      encrypto::motion::BitVector<> bit_vector_result;
 
       for (auto i = 0ull; i < stl_vectors.size(); ++i) {
         stl_vector_result.insert(stl_vector_result.end(), stl_vectors.at(i).begin(),
                                  stl_vectors.at(i).end());
-        bit_vector_result.Append(ENCRYPTO::BitSpan(bit_vectors.at(i)));
+        bit_vector_result.Append(encrypto::motion::BitSpan(bit_vectors.at(i)));
       }
 
       for (auto i = 0ull; i < stl_vector_result.size(); ++i) {
@@ -416,11 +417,11 @@ TEST(BitVector, AppendSpan) {
 }
 
 TEST(BitVector, Copy) {
-  std::mt19937_64 e(0);
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  std::mt19937_64 mersenne_twister(0);
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     const std::size_t size = 1'000'000;
     std::vector<bool> stl_vector(size, false);
-    ENCRYPTO::BitVector<> bit_vector(size, false);
+    encrypto::motion::BitVector<> bit_vector(size, false);
     std::vector<std::size_t> sizes;
     for (auto i = 1; i < 20; ++i) {
       sizes.push_back(i);
@@ -431,24 +432,24 @@ TEST(BitVector, Copy) {
     }
 
     for (auto i : sizes) {
-      std::vector<bool> tmp_stl_vector(i);
-      ENCRYPTO::BitVector<> tmp_bit_vector(i);
+      std::vector<bool> temporary_stl_vector(i);
+      encrypto::motion::BitVector<> temporary_bit_vector(i);
 
-      std::uniform_int_distribution<uint64_t> dist_from(0, size - i);
-      std::uniform_int_distribution<uint64_t> dist_to(0, i - 1);
-      std::uniform_int_distribution<uint64_t> dist_bool(0, 1);
+      std::uniform_int_distribution<uint64_t> distribution_from(0, size - i);
+      std::uniform_int_distribution<uint64_t> distribution_to(0, i - 1);
+      std::uniform_int_distribution<uint64_t> distribution_bool(0, 1);
 
-      for (auto j = 0ull; j < tmp_stl_vector.size(); ++j) {
-        tmp_stl_vector.at(j) = dist_bool(e);
-        tmp_bit_vector.Set(tmp_stl_vector.at(j), j);
+      for (auto j = 0ull; j < temporary_stl_vector.size(); ++j) {
+        temporary_stl_vector.at(j) = distribution_bool(mersenne_twister);
+        temporary_bit_vector.Set(temporary_stl_vector.at(j), j);
       }
 
-      auto from = dist_from(e);
-      auto to = from + dist_to(e);
+      auto from = distribution_from(mersenne_twister);
+      auto to = from + distribution_to(mersenne_twister);
 
-      std::copy(tmp_stl_vector.begin(), tmp_stl_vector.begin() + to - from,
+      std::copy(temporary_stl_vector.begin(), temporary_stl_vector.begin() + to - from,
                 stl_vector.begin() + from);
-      bit_vector.Copy(from, to, tmp_bit_vector);
+      bit_vector.Copy(from, to, temporary_bit_vector);
     }
     for (auto j = 0ull; j < stl_vector.size(); ++j) {
       ASSERT_EQ(stl_vector.at(j), bit_vector.Get(j));
@@ -457,175 +458,175 @@ TEST(BitVector, Copy) {
 }
 
 TEST(BitSpan, SingleBitOperations) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    ENCRYPTO::BitVector<> bv_1(1);
-    ENCRYPTO::BitSpan bs_1(bv_1);
-    ASSERT_FALSE(bs_1.Get(0));
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
+    encrypto::motion::BitVector<> bit_vector1(1);
+    encrypto::motion::BitSpan bit_span1(bit_vector1);
+    ASSERT_FALSE(bit_span1.Get(0));
 
-    bs_1.Set(true, 0);
-    ASSERT_TRUE(bs_1.Get(0));
+    bit_span1.Set(true, 0);
+    ASSERT_TRUE(bit_span1.Get(0));
 
-    bs_1.Set(false, 0);
-    ASSERT_FALSE(bs_1.Get(0));
+    bit_span1.Set(false, 0);
+    ASSERT_FALSE(bit_span1.Get(0));
 
-    ASSERT_EQ(bv_1, bs_1);
+    ASSERT_EQ(bit_vector1, bit_span1);
 
-    std::mt19937_64 e(0);
-    std::uniform_int_distribution<std::uint64_t> dist(0ul, 1'000'000ul);
-    std::size_t size = dist(e);
+    std::mt19937_64 mersenne_twister(0);
+    std::uniform_int_distribution<std::uint64_t> distribution(0ul, 1'000'000ul);
+    std::size_t size = distribution(mersenne_twister);
 
-    ENCRYPTO::BitVector<> bv(size);
-    ENCRYPTO::BitSpan bs(bv);
-    ENCRYPTO::BitVector<> bv_check(size);
+    encrypto::motion::BitVector<> bit_vector(size);
+    encrypto::motion::BitSpan bit_span(bit_vector);
+    encrypto::motion::BitVector<> bit_vector_check(size);
 
     for (auto i = 0ull; i < 1000u; ++i) {
-      std::size_t pos0 = dist(e) % size;
-      std::size_t pos1 = dist(e) % size;
-      while (pos0 == pos1) {
-        pos1 = dist(e) % size;
+      std::size_t position0 = distribution(mersenne_twister) % size;
+      std::size_t position1 = distribution(mersenne_twister) % size;
+      while (position0 == position1) {
+        position1 = distribution(mersenne_twister) % size;
       }
 
-      bs.Set(true, pos0);
-      ASSERT_TRUE(bs[pos0]);
-      bs.Set(false, pos1);
-      ASSERT_FALSE(bs[pos1]);
-      bv_check.Set(true, pos0);
-      bv_check.Set(false, pos1);
+      bit_span.Set(true, position0);
+      ASSERT_TRUE(bit_span[position0]);
+      bit_span.Set(false, position1);
+      ASSERT_FALSE(bit_span[position1]);
+      bit_vector_check.Set(true, position0);
+      bit_vector_check.Set(false, position1);
     }
 
-    ASSERT_EQ(bs, bv);
-    ASSERT_EQ(bs, bv_check);
+    ASSERT_EQ(bit_span, bit_vector);
+    ASSERT_EQ(bit_span, bit_vector_check);
   }
 }
 
 TEST(BitSpan, AllBitsOperations) {
   for (auto size = 1ull; size <= 1'000'000u; size *= 10) {
-    ENCRYPTO::BitVector<> bv(size);
-    ENCRYPTO::BitSpan bs(bv);
-    auto bv_check = bv;
+    encrypto::motion::BitVector<> bit_vector(size);
+    encrypto::motion::BitSpan bit_span(bit_vector);
+    auto bit_vector_check = bit_vector;
 
-    bs.Set(true);
-    bv_check.Set(true);
+    bit_span.Set(true);
+    bit_vector_check.Set(true);
 
-    ASSERT_EQ(bs, bv);
-    ASSERT_EQ(bs, bv_check);
+    ASSERT_EQ(bit_span, bit_vector);
+    ASSERT_EQ(bit_span, bit_vector_check);
 
-    bs.Set(false);
-    bv_check.Set(false);
+    bit_span.Set(false);
+    bit_vector_check.Set(false);
 
-    ASSERT_EQ(bs, bv);
-    ASSERT_EQ(bs, bv_check);
+    ASSERT_EQ(bit_span, bit_vector);
+    ASSERT_EQ(bit_span, bit_vector_check);
   }
 }
 
 TEST(BitSpan, SpanSpanOperations) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto size = 1ull; size <= 100'000u; size *= 10) {
-      auto bv0(ENCRYPTO::BitVector<>::RandomSeeded(size, size));
-      auto bv1(ENCRYPTO::BitVector<>::RandomSeeded(size, size * 2));
-      ENCRYPTO::BitSpan bs0{bv0};
-      ENCRYPTO::BitSpan bs1{bv1};
+      auto bit_vector0(encrypto::motion::BitVector<>::RandomSeeded(size, size));
+      auto bit_vector1(encrypto::motion::BitVector<>::RandomSeeded(size, size * 2));
+      encrypto::motion::BitSpan bit_span0{bit_vector0};
+      encrypto::motion::BitSpan bit_span1{bit_vector1};
 
-      ENCRYPTO::BitVector<> bv_and = bv0 & bv1;
-      ENCRYPTO::BitVector<> bv_or = bv0 | bv1;
-      ENCRYPTO::BitVector<> bv_xor = bv0 ^ bv1;
+      encrypto::motion::BitVector<> bit_vector_and = bit_vector0 & bit_vector1;
+      encrypto::motion::BitVector<> bit_vector_or = bit_vector0 | bit_vector1;
+      encrypto::motion::BitVector<> bit_vector_xor = bit_vector0 ^ bit_vector1;
 
-      ENCRYPTO::BitVector<> bv_check;
-      ENCRYPTO::BitSpan bs_check;
+      encrypto::motion::BitVector<> bit_vector_check;
+      encrypto::motion::BitSpan bit_span_check;
 
-      ASSERT_EQ(bv_and, bs0 & bs1);
-      ASSERT_EQ(bv_and, bs0 & bv1);
-      ASSERT_EQ(bv_and, bv0 & bs1);
+      ASSERT_EQ(bit_vector_and, bit_span0 & bit_span1);
+      ASSERT_EQ(bit_vector_and, bit_span0 & bit_vector1);
+      ASSERT_EQ(bit_vector_and, bit_vector0 & bit_span1);
 
-      bv_check = bv0;
-      bv_check &= bs1;
-      ASSERT_EQ(bv_and, bv_check);
-      bv_check = bv1;
-      bv_check &= bs0;
-      ASSERT_EQ(bv_and, bv_check);
-      bv_check = bv0;
-      bs_check = bv_check;
-      bs_check &= bv1;
-      ASSERT_EQ(bv_and, bs_check);
-      bv_check = bv0;
-      bs_check = bv_check;
-      bs_check &= bs1;
-      ASSERT_EQ(bv_and, bs_check);
+      bit_vector_check = bit_vector0;
+      bit_vector_check &= bit_span1;
+      ASSERT_EQ(bit_vector_and, bit_vector_check);
+      bit_vector_check = bit_vector1;
+      bit_vector_check &= bit_span0;
+      ASSERT_EQ(bit_vector_and, bit_vector_check);
+      bit_vector_check = bit_vector0;
+      bit_span_check = bit_vector_check;
+      bit_span_check &= bit_vector1;
+      ASSERT_EQ(bit_vector_and, bit_span_check);
+      bit_vector_check = bit_vector0;
+      bit_span_check = bit_vector_check;
+      bit_span_check &= bit_span1;
+      ASSERT_EQ(bit_vector_and, bit_span_check);
 
-      ASSERT_EQ(bv_or, bs0 | bs1);
-      ASSERT_EQ(bv_or, bs0 | bv1);
-      ASSERT_EQ(bv_or, bv0 | bs1);
+      ASSERT_EQ(bit_vector_or, bit_span0 | bit_span1);
+      ASSERT_EQ(bit_vector_or, bit_span0 | bit_vector1);
+      ASSERT_EQ(bit_vector_or, bit_vector0 | bit_span1);
 
-      bv_check = bv0;
-      bv_check |= bs1;
-      ASSERT_EQ(bv_or, bv_check);
-      bv_check = bv1;
-      bv_check |= bs0;
-      ASSERT_EQ(bv_or, bv_check);
-      bv_check = bv0;
-      bs_check = bv_check;
-      bs_check |= bv1;
-      ASSERT_EQ(bv_or, bs_check);
-      bv_check = bv0;
-      bs_check = bv_check;
-      bs_check |= bs1;
-      ASSERT_EQ(bv_or, bs_check);
+      bit_vector_check = bit_vector0;
+      bit_vector_check |= bit_span1;
+      ASSERT_EQ(bit_vector_or, bit_vector_check);
+      bit_vector_check = bit_vector1;
+      bit_vector_check |= bit_span0;
+      ASSERT_EQ(bit_vector_or, bit_vector_check);
+      bit_vector_check = bit_vector0;
+      bit_span_check = bit_vector_check;
+      bit_span_check |= bit_vector1;
+      ASSERT_EQ(bit_vector_or, bit_span_check);
+      bit_vector_check = bit_vector0;
+      bit_span_check = bit_vector_check;
+      bit_span_check |= bit_span1;
+      ASSERT_EQ(bit_vector_or, bit_span_check);
 
-      ASSERT_EQ(bv_xor, bs0 ^ bs1);
-      ASSERT_EQ(bv_xor, bs0 ^ bv1);
-      ASSERT_EQ(bv_xor, bv0 ^ bs1);
+      ASSERT_EQ(bit_vector_xor, bit_span0 ^ bit_span1);
+      ASSERT_EQ(bit_vector_xor, bit_span0 ^ bit_vector1);
+      ASSERT_EQ(bit_vector_xor, bit_vector0 ^ bit_span1);
 
-      bv_check = bv0;
-      bv_check ^= bs1;
-      ASSERT_EQ(bv_xor, bv_check);
-      bv_check = bv1;
-      bv_check ^= bs0;
-      ASSERT_EQ(bv_xor, bv_check);
-      bv_check = bv0;
-      bs_check = bv_check;
-      bs_check ^= bv1;
-      ASSERT_EQ(bv_xor, bs_check);
-      bv_check = bv0;
-      bs_check = bv_check;
-      bs_check ^= bs1;
-      ASSERT_EQ(bv_xor, bs_check);
+      bit_vector_check = bit_vector0;
+      bit_vector_check ^= bit_span1;
+      ASSERT_EQ(bit_vector_xor, bit_vector_check);
+      bit_vector_check = bit_vector1;
+      bit_vector_check ^= bit_span0;
+      ASSERT_EQ(bit_vector_xor, bit_vector_check);
+      bit_vector_check = bit_vector0;
+      bit_span_check = bit_vector_check;
+      bit_span_check ^= bit_vector1;
+      ASSERT_EQ(bit_vector_xor, bit_span_check);
+      bit_vector_check = bit_vector0;
+      bit_span_check = bit_vector_check;
+      bit_span_check ^= bit_span1;
+      ASSERT_EQ(bit_vector_xor, bit_span_check);
 
-      ASSERT_EQ(~bv_xor, ~bs_check);
+      ASSERT_EQ(~bit_vector_xor, ~bit_span_check);
     }
   }
 }
 
 TEST(BitSpan, Subset) {
-  auto should_throw_f = []() { ENCRYPTO::BitSpan().Subset(0, 1); };
-  ASSERT_THROW(should_throw_f(), std::out_of_range);
+  auto should_throw_function = []() { encrypto::motion::BitSpan().Subset(0, 1); };
+  ASSERT_THROW(should_throw_function(), std::out_of_range);
 
-  std::mt19937_64 e(1);
+  std::mt19937_64 mersenne_twister(1);
 
   for (auto i = 0ull; i < 10; ++i) {
-    std::uniform_int_distribution<std::uint64_t> dist_size(0, 10'000);
-    const auto bit_size{dist_size(e)};
-    std::uniform_int_distribution<std::uint64_t> dist_from(0, bit_size);
-    const auto from{dist_from(e)};
-    std::uniform_int_distribution<std::uint64_t> dist_to(from, bit_size);
-    const auto to{dist_to(e)};
+    std::uniform_int_distribution<std::uint64_t> distribution_size(0, 10'000);
+    const auto bit_size{distribution_size(mersenne_twister)};
+    std::uniform_int_distribution<std::uint64_t> distribution_from(0, bit_size);
+    const auto from{distribution_from(mersenne_twister)};
+    std::uniform_int_distribution<std::uint64_t> distribution_to(from, bit_size);
+    const auto to{distribution_to(mersenne_twister)};
 
-    ENCRYPTO::BitVector<> bv(bit_size);
-    ENCRYPTO::BitSpan bs(bv);
+    encrypto::motion::BitVector<> bit_vector(bit_size);
+    encrypto::motion::BitSpan bit_span(bit_vector);
 
-    ASSERT_EQ(bv.Subset(from, to), bs.Subset(from, to));
+    ASSERT_EQ(bit_vector.Subset(from, to), bit_span.Subset(from, to));
   }
 }
 
 TEST(BitSpan, Copy) {
-  std::mt19937_64 e(0);
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  std::mt19937_64 mersenne_twister(0);
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     const std::size_t size = 1'000'000;
-    ENCRYPTO::BitVector<> bv_buffer0(size, false);
-    ENCRYPTO::BitVector<> bv_buffer1(size, false);
-    ENCRYPTO::BitVector<> bv_check(size, false);
+    encrypto::motion::BitVector<> bit_vector_buffer0(size, false);
+    encrypto::motion::BitVector<> bit_vector_buffer1(size, false);
+    encrypto::motion::BitVector<> bit_vector_check(size, false);
 
-    ENCRYPTO::BitSpan bs0(bv_buffer0);
-    ENCRYPTO::BitSpan bs1(bv_buffer1);
+    encrypto::motion::BitSpan bit_span0(bit_vector_buffer0);
+    encrypto::motion::BitSpan bit_span1(bit_vector_buffer1);
 
     std::vector<std::size_t> sizes;
     for (auto i = 1; i < 20; ++i) {
@@ -637,22 +638,23 @@ TEST(BitSpan, Copy) {
     }
 
     for (auto i : sizes) {
-      ENCRYPTO::BitVector<> tmp_bit_vector(i);
+      encrypto::motion::BitVector<> temporary_bit_vector(i);
 
-      std::uniform_int_distribution<uint64_t> dist_from(0, size - i);
-      std::uniform_int_distribution<uint64_t> dist_to(0, i - 1);
-      std::uniform_int_distribution<uint64_t> dist_bool(0, 1);
+      std::uniform_int_distribution<uint64_t> distribution_from(0, size - i);
+      std::uniform_int_distribution<uint64_t> distribution_to(0, i - 1);
+      std::uniform_int_distribution<uint64_t> distribution_bool(0, 1);
 
-      for (auto j = 0ull; j < i; ++j) tmp_bit_vector.Set(dist_bool(e), j);
+      for (auto j = 0ull; j < i; ++j)
+        temporary_bit_vector.Set(distribution_bool(mersenne_twister), j);
 
-      const auto from = dist_from(e);
-      const auto to = from + dist_to(e);
+      const auto from = distribution_from(mersenne_twister);
+      const auto to = from + distribution_to(mersenne_twister);
 
-      bv_check.Copy(from, to, tmp_bit_vector);
-      bs0.Copy(from, to, tmp_bit_vector);
-      bs1.Copy(from, to, ENCRYPTO::BitSpan(tmp_bit_vector));
-      EXPECT_EQ(bs0, bv_check);
-      EXPECT_EQ(bs1, bv_check);
+      bit_vector_check.Copy(from, to, temporary_bit_vector);
+      bit_span0.Copy(from, to, temporary_bit_vector);
+      bit_span1.Copy(from, to, encrypto::motion::BitSpan(temporary_bit_vector));
+      EXPECT_EQ(bit_span0, bit_vector_check);
+      EXPECT_EQ(bit_span1, bit_vector_check);
     }
   }
 }

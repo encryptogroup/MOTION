@@ -29,60 +29,62 @@
 
 #include "transport.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
 namespace detail {
-struct TCPTransportImpl;
-}
 
-class TCPTransport : public Transport {
+struct TcpTransportImplementation;
+
+}  // namespace detail
+
+class TcpTransport : public Transport {
  public:
-  TCPTransport(std::unique_ptr<detail::TCPTransportImpl> impl);
-  TCPTransport(TCPTransport&& other);
+  TcpTransport(std::unique_ptr<detail::TcpTransportImplementation> implementation);
+  TcpTransport(TcpTransport&& other);
 
   // Destructor needs to be defined in implementation due to pimpl
-  ~TCPTransport();
+  ~TcpTransport();
 
-  void send_message(std::vector<std::uint8_t>&& message);
-  void send_message(const std::vector<std::uint8_t>& message);
+  void SendMessage(std::vector<std::uint8_t>&& message) override;
+  void SendMessage(const std::vector<std::uint8_t>& message) override;
 
-  bool available() const;
-  std::optional<std::vector<std::uint8_t>> receive_message();
-  void shutdown_send();
-  void shutdown();
+  bool Available() const override;
+  std::optional<std::vector<std::uint8_t>> ReceiveMessage() override;
+  void ShutdownSend() override;
+  void Shutdown() override;
 
  private:
   bool is_connected_;
-  std::unique_ptr<detail::TCPTransportImpl> impl_;
+  std::unique_ptr<detail::TcpTransportImplementation> implementation_;
 };
 
-using tcp_connection_config = std::pair<std::string, std::uint16_t>;
-using tcp_parties_config = std::vector<tcp_connection_config>;
+using TcpConnectionConfiguration = std::pair<std::string, std::uint16_t>;
+using TcpPartiesConfiguration = std::vector<TcpConnectionConfiguration>;
 
 // Helper class to establish point-to-point TCP connections among a set of
 // parties.  Given the ID of the local party and a collection of host and port
 // for all parties, connections are created as follows: This party tries to
 // connect to all parties with smaller IDs, and it accepts connections from the
 // parties with larger IDs.
-class TCPSetupHelper {
+class TcpSetupHelper {
  public:
-  TCPSetupHelper(std::size_t my_id, const tcp_parties_config& parties_config);
+  TcpSetupHelper(std::size_t my_id, const TcpPartiesConfiguration& parties_configuration);
 
   // Destructor needs to be defined in implementation due to pimpl
-  ~TCPSetupHelper();
+  ~TcpSetupHelper();
 
   // Try to establish connections as described above.
   // Throws a std::runtime_error if something goes wrong.
-  std::vector<std::unique_ptr<Transport>> setup_connections();
+  std::vector<std::unique_ptr<Transport>> SetupConnections();
 
  private:
-  struct TCPSetupImpl;
+  struct TcpSetupImplementation;
 
   std::size_t my_id_;
-  std::size_t num_parties_;
-  bool connections_open = false;
-  const tcp_parties_config parties_config_;
-  std::unique_ptr<TCPSetupImpl> impl_;
+  std::size_t number_of_parties_;
+  bool connections_open_ = false;
+  const TcpPartiesConfiguration parties_configuration_;
+  std::unique_ptr<TcpSetupImplementation> implementation_;
 };
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

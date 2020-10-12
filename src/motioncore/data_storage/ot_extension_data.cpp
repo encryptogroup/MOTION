@@ -30,221 +30,221 @@
 #include "utility/condition.h"
 #include "utility/fiber_condition.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-OTExtensionReceiverData::OTExtensionReceiverData() {
-  setup_finished_cond_ =
-      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_finished_.load(); });
+OtExtensionReceiverData::OtExtensionReceiverData() {
+  setup_finished_condition =
+      std::make_unique<FiberCondition>([this]() { return setup_finished.load(); });
 }
 
-OTExtensionSenderData::OTExtensionSenderData() {
-  setup_finished_cond_ =
-      std::make_unique<ENCRYPTO::FiberCondition>([this]() { return setup_finished_.load(); });
+OtExtensionSenderData::OtExtensionSenderData() {
+  setup_finished_condition =
+      std::make_unique<FiberCondition>([this]() { return setup_finished.load(); });
 
-  for (std::size_t i = 0; i < u_promises_.size(); ++i) u_futures_[i] = u_promises_[i].get_future();
+  for (std::size_t i = 0; i < u_promises.size(); ++i) u_futures[i] = u_promises[i].get_future();
 }
 
-void OTExtensionData::MessageReceived(const std::uint8_t *message,
+void OtExtensionData::MessageReceived(const std::uint8_t* message,
                                       [[maybe_unused]] std::size_t message_size,
-                                      const OTExtensionDataType type, const std::size_t i) {
+                                      const OtExtensionDataType type, const std::size_t i) {
   switch (type) {
-    case OTExtensionDataType::rcv_masks: {
+    case OtExtensionDataType::kReceptionMask: {
       {
-        while (sender_data_.bit_size_ == 0) std::this_thread::yield();
-        std::scoped_lock lock(sender_data_.u_mutex_);
-        sender_data_.u_[i] = ENCRYPTO::AlignedBitVector(message, sender_data_.bit_size_);
-        sender_data_.u_promises_[sender_data_.num_received_u_].set_value(i);
+        while (sender_data.bit_size == 0) std::this_thread::yield();
+        std::scoped_lock lock(sender_data.u_mutex);
+        sender_data.u[i] = AlignedBitVector(message, sender_data.bit_size);
+        sender_data.u_promises[sender_data.number_of_received_us].set_value(i);
 
         // set to 0 after Clear()
-        sender_data_.num_received_u_++;
+        sender_data.number_of_received_us++;
       }
 
       break;
     }
-    case OTExtensionDataType::rcv_corrections: {
-      auto cond = sender_data_.received_correction_offsets_cond_.find(i);
-      assert(cond != sender_data_.received_correction_offsets_cond_.end());
+    case OtExtensionDataType::kReceptionCorrection: {
+      auto condition = sender_data.received_correction_offsets_condition.find(i);
+      assert(condition != sender_data.received_correction_offsets_condition.end());
       {
-        std::scoped_lock lock(cond->second->GetMutex(), sender_data_.corrections_mutex_);
-        auto num_ots = sender_data_.num_ots_in_batch_.find(i);
-        assert(num_ots != sender_data_.num_ots_in_batch_.end());
-        ENCRYPTO::BitVector<> local_corrections(message, num_ots->second);
-        sender_data_.corrections_.Copy(i, i + num_ots->second, local_corrections);
-        sender_data_.received_correction_offsets_.emplace(i);
+        std::scoped_lock lock(condition->second->GetMutex(), sender_data.corrections_mutex);
+        auto number_of_ots = sender_data.number_of_ots_in_batch.find(i);
+        assert(number_of_ots != sender_data.number_of_ots_in_batch.end());
+        BitVector<> local_corrections(message, number_of_ots->second);
+        sender_data.corrections.Copy(i, i + number_of_ots->second, local_corrections);
+        sender_data.received_correction_offsets.emplace(i);
       }
-      cond->second->NotifyAll();
+      condition->second->NotifyAll();
       break;
     }
-    case OTExtensionDataType::snd_messages: {
+    case OtExtensionDataType::kSendMessage: {
       {
-        receiver_data_.setup_finished_cond_->Wait();
+        receiver_data.setup_finished_condition->Wait();
 
-        std::unique_lock lock(receiver_data_.bitlengths_mutex_);
-        const auto bitlen = receiver_data_.bitlengths_.at(i);
+        std::unique_lock lock(receiver_data.bitlengths_mutex);
+        const auto bitlength = receiver_data.bitlengths.at(i);
         lock.unlock();
 
-        const auto bs_it = receiver_data_.num_ots_in_batch_.find(i);
-        assert(bs_it != receiver_data_.num_ots_in_batch_.end());
-        const auto batch_size = bs_it->second;
+        const auto batch_iterator = receiver_data.number_of_ots_in_batch.find(i);
+        assert(batch_iterator != receiver_data.number_of_ots_in_batch.end());
+        const auto batch_size = batch_iterator->second;
 
-        auto msg_type = receiver_data_.msg_type_.find(i);
-        if (msg_type != receiver_data_.msg_type_.end()) {
-          switch (msg_type->second) {
-            case OTMsgType::block128: {
-              auto promise_it = receiver_data_.message_promises_block128_.find(i);
-              assert(promise_it != receiver_data_.message_promises_block128_.end());
-              auto &[size, promise] = promise_it->second;
+        auto message_type = receiver_data.message_type.find(i);
+        if (message_type != receiver_data.message_type.end()) {
+          switch (message_type->second) {
+            case OtMessageType::kBlock128: {
+              auto promise_iterator = receiver_data.message_promises_block128.find(i);
+              assert(promise_iterator != receiver_data.message_promises_block128.end());
+              auto& [size, promise] = promise_iterator->second;
               assert(size * 16 == message_size);
-              promise.set_value(ENCRYPTO::block128_vector(size, message));
+              promise.set_value(Block128Vector(size, message));
               return;
             } break;
-            case OTMsgType::bit: {
-              auto promise_it = receiver_data_.message_promises_bit_.find(i);
-              assert(promise_it != receiver_data_.message_promises_bit_.end());
-              auto &[size, promise] = promise_it->second;
+            case OtMessageType::kBit: {
+              auto promise_iterator = receiver_data.message_promises_bit.find(i);
+              assert(promise_iterator != receiver_data.message_promises_bit.end());
+              auto& [size, promise] = promise_iterator->second;
               assert((size + 7) / 8 == message_size);
-              promise.set_value(ENCRYPTO::BitVector<>(message, size));
+              promise.set_value(BitVector<>(message, size));
               return;
             } break;
-            case OTMsgType::uint8: {
+            case OtMessageType::kUint8: {
               constexpr auto type_c = boost::hana::type_c<std::uint8_t>;
-              auto& promise_map = receiver_data_.message_promises_int_[type_c];
-              auto promise_it = promise_map.find(i);
-              assert(promise_it != promise_map.end());
-              auto &[size, promise] = promise_it->second;
+              auto& promise_map = receiver_data.message_promises_int[type_c];
+              auto promise_iterator = promise_map.find(i);
+              assert(promise_iterator != promise_map.end());
+              auto& [size, promise] = promise_iterator->second;
               assert(size * sizeof(decltype(type_c)::type) == message_size);
-              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
-              promise.set_value(std::vector(message_p, message_p + size));
+              auto message_pointer = reinterpret_cast<const decltype(type_c)::type*>(message);
+              promise.set_value(std::vector(message_pointer, message_pointer + size));
               return;
             } break;
-            case OTMsgType::uint16: {
+            case OtMessageType::kUint16: {
               constexpr auto type_c = boost::hana::type_c<std::uint16_t>;
-              auto& promise_map = receiver_data_.message_promises_int_[type_c];
-              auto promise_it = promise_map.find(i);
-              assert(promise_it != promise_map.end());
-              auto &[size, promise] = promise_it->second;
+              auto& promise_map = receiver_data.message_promises_int[type_c];
+              auto promise_iterator = promise_map.find(i);
+              assert(promise_iterator != promise_map.end());
+              auto& [size, promise] = promise_iterator->second;
               assert(size * sizeof(decltype(type_c)::type) == message_size);
-              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
-              promise.set_value(std::vector(message_p, message_p + size));
+              auto message_pointer = reinterpret_cast<const decltype(type_c)::type*>(message);
+              promise.set_value(std::vector(message_pointer, message_pointer + size));
               return;
             } break;
-            case OTMsgType::uint32: {
+            case OtMessageType::kUint32: {
               constexpr auto type_c = boost::hana::type_c<std::uint32_t>;
-              auto& promise_map = receiver_data_.message_promises_int_[type_c];
-              auto promise_it = promise_map.find(i);
-              assert(promise_it != promise_map.end());
-              auto &[size, promise] = promise_it->second;
+              auto& promise_map = receiver_data.message_promises_int[type_c];
+              auto promise_iterator = promise_map.find(i);
+              assert(promise_iterator != promise_map.end());
+              auto& [size, promise] = promise_iterator->second;
               assert(size * sizeof(decltype(type_c)::type) == message_size);
-              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
-              promise.set_value(std::vector(message_p, message_p + size));
+              auto message_pointer = reinterpret_cast<const decltype(type_c)::type*>(message);
+              promise.set_value(std::vector(message_pointer, message_pointer + size));
               return;
             } break;
-            case OTMsgType::uint64: {
+            case OtMessageType::kUint64: {
               constexpr auto type_c = boost::hana::type_c<std::uint64_t>;
-              auto& promise_map = receiver_data_.message_promises_int_[type_c];
-              auto promise_it = promise_map.find(i);
-              assert(promise_it != promise_map.end());
-              auto &[size, promise] = promise_it->second;
+              auto& promise_map = receiver_data.message_promises_int[type_c];
+              auto promise_iterator = promise_map.find(i);
+              assert(promise_iterator != promise_map.end());
+              auto& [size, promise] = promise_iterator->second;
               assert(size * sizeof(decltype(type_c)::type) == message_size);
-              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
-              promise.set_value(std::vector(message_p, message_p + size));
+              auto message_pointer = reinterpret_cast<const decltype(type_c)::type*>(message);
+              promise.set_value(std::vector(message_pointer, message_pointer + size));
               return;
             } break;
-            case OTMsgType::uint128: {
+            case OtMessageType::kUint128: {
               constexpr auto type_c = boost::hana::type_c<__uint128_t>;
-              auto& promise_map = receiver_data_.message_promises_int_[type_c];
-              auto promise_it = promise_map.find(i);
-              assert(promise_it != promise_map.end());
-              auto &[size, promise] = promise_it->second;
+              auto& promise_map = receiver_data.message_promises_int[type_c];
+              auto promise_iterator = promise_map.find(i);
+              assert(promise_iterator != promise_map.end());
+              auto& [size, promise] = promise_iterator->second;
               assert(size * sizeof(decltype(type_c)::type) == message_size);
-              auto message_p = reinterpret_cast<const decltype(type_c)::type *>(message);
-              promise.set_value(std::vector(message_p, message_p + size));
+              auto message_pointer = reinterpret_cast<const decltype(type_c)::type*>(message);
+              promise.set_value(std::vector(message_pointer, message_pointer + size));
               return;
             } break;
           }
         }
 
-        auto it_c = receiver_data_.output_conds_.find(i);
-        assert(it_c != receiver_data_.output_conds_.end());
+        auto conditions_iterator = receiver_data.output_conditions.find(i);
+        assert(conditions_iterator != receiver_data.output_conditions.end());
 
         bool success{false};
         do {
           {
-            std::scoped_lock lock(receiver_data_.num_messages_mutex_);
-            success = receiver_data_.num_messages_.find(i) != receiver_data_.num_messages_.end();
+            std::scoped_lock lock(receiver_data.number_of_messages_to_be_sent_mutex);
+            success = receiver_data.number_of_messages_to_be_sent.find(i) !=
+                      receiver_data.number_of_messages_to_be_sent.end();
           }
           if (!success) std::this_thread::yield();
         } while (!success);
 
-        const auto n = receiver_data_.num_messages_.at(i);
+        const auto n = receiver_data.number_of_messages_to_be_sent.at(i);
 
-        ENCRYPTO::BitVector<> message_bv(message, batch_size * bitlen * n);
+        BitVector<> message_bv(message, batch_size * bitlength * n);
 
         success = false;
         do {
           {
-            std::scoped_lock lock(receiver_data_.real_choices_mutex_);
-            success = receiver_data_.real_choices_cond_.find(i) !=
-                      receiver_data_.real_choices_cond_.end();
+            std::scoped_lock lock(receiver_data.real_choices_mutex);
+            success = receiver_data.real_choices_condition.find(i) !=
+                      receiver_data.real_choices_condition.end();
           }
           if (!success) std::this_thread::yield();
         } while (!success);
-        receiver_data_.real_choices_cond_.at(i)->Wait();
+        receiver_data.real_choices_condition.at(i)->Wait();
 
         for (auto j = 0ull; j < batch_size; ++j) {
           if (n == 2) {
-            if (receiver_data_.random_choices_->Get(i + j)) {
-              receiver_data_.outputs_.at(i + j) ^=
-                  message_bv.Subset((2 * j + 1) * bitlen, (2 * j + 2) * bitlen);
+            if (receiver_data.random_choices->Get(i + j)) {
+              receiver_data.outputs.at(i + j) ^=
+                  message_bv.Subset((2 * j + 1) * bitlength, (2 * j + 2) * bitlength);
             } else {
-              receiver_data_.outputs_.at(i + j) ^=
-                  message_bv.Subset(2 * j * bitlen, (2 * j + 1) * bitlen);
+              receiver_data.outputs.at(i + j) ^=
+                  message_bv.Subset(2 * j * bitlength, (2 * j + 1) * bitlength);
             }
           } else if (n == 1) {
-            if (receiver_data_.real_choices_->Get(i + j)) {
-              if (receiver_data_.xor_correlation_.find(i) !=
-                  receiver_data_.xor_correlation_.end()) {
-                receiver_data_.outputs_.at(i + j) ^=
-                    message_bv.Subset(j * bitlen, (j + 1) * bitlen);
+            if (receiver_data.real_choices->Get(i + j)) {
+              if (receiver_data.xor_correlation.find(i) != receiver_data.xor_correlation.end()) {
+                receiver_data.outputs.at(i + j) ^=
+                    message_bv.Subset(j * bitlength, (j + 1) * bitlength);
               } else {
-                auto msg = message_bv.Subset(j * bitlen, (j + 1) * bitlen);
-                auto out = receiver_data_.outputs_.at(i + j).GetMutableData().data();
-                switch (bitlen) {
+                auto message = message_bv.Subset(j * bitlength, (j + 1) * bitlength);
+                auto output = receiver_data.outputs.at(i + j).GetMutableData().data();
+                switch (bitlength) {
                   case 8u: {
-                    *reinterpret_cast<uint8_t *>(out) =
-                        *reinterpret_cast<const uint8_t *>(msg.GetData().data()) -
-                        *reinterpret_cast<const uint8_t *>(out);
+                    *reinterpret_cast<uint8_t*>(output) =
+                        *reinterpret_cast<const uint8_t*>(message.GetData().data()) -
+                        *reinterpret_cast<const uint8_t*>(output);
                     break;
                   }
                   case 16u: {
-                    *reinterpret_cast<uint16_t *>(out) =
-                        *reinterpret_cast<const uint16_t *>(msg.GetData().data()) -
-                        *reinterpret_cast<const uint16_t *>(out);
+                    *reinterpret_cast<uint16_t*>(output) =
+                        *reinterpret_cast<const uint16_t*>(message.GetData().data()) -
+                        *reinterpret_cast<const uint16_t*>(output);
                     break;
                   }
                   case 32u: {
-                    *reinterpret_cast<uint32_t *>(out) =
-                        *reinterpret_cast<const uint32_t *>(msg.GetData().data()) -
-                        *reinterpret_cast<const uint32_t *>(out);
+                    *reinterpret_cast<uint32_t*>(output) =
+                        *reinterpret_cast<const uint32_t*>(message.GetData().data()) -
+                        *reinterpret_cast<const uint32_t*>(output);
                     break;
                   }
                   case 64u: {
-                    *reinterpret_cast<uint64_t *>(out) =
-                        *reinterpret_cast<const uint64_t *>(msg.GetData().data()) -
-                        *reinterpret_cast<const uint64_t *>(out);
+                    *reinterpret_cast<uint64_t*>(output) =
+                        *reinterpret_cast<const uint64_t*>(message.GetData().data()) -
+                        *reinterpret_cast<const uint64_t*>(output);
                     break;
                   }
                   case 128u: {
-                    *reinterpret_cast<__uint128_t *>(out) =
-                        *reinterpret_cast<const __uint128_t *>(msg.GetData().data()) -
-                        *reinterpret_cast<const __uint128_t *>(out);
+                    *reinterpret_cast<__uint128_t*>(output) =
+                        *reinterpret_cast<const __uint128_t*>(message.GetData().data()) -
+                        *reinterpret_cast<const __uint128_t*>(output);
                     break;
                   }
                   default:
-                    throw std::runtime_error(
-                        fmt::format("Unsupported bitlen={} for additive correlation. Allowed are "
-                                    "bitlengths: 8, 16, 32, 64.",
-                                    bitlen));
+                    throw std::runtime_error(fmt::format(
+                        "Unsupported bitlength={} for additive correlation. Allowed are "
+                        "bitlengths: 8, 16, 32, 64.",
+                        bitlength));
                 }
               }
             }
@@ -254,70 +254,71 @@ void OTExtensionData::MessageReceived(const std::uint8_t *message,
         }
 
         {
-          std::scoped_lock lock(it_c->second->GetMutex(), receiver_data_.received_outputs_mutex_);
-          receiver_data_.received_outputs_.emplace(i);
+          std::scoped_lock lock(conditions_iterator->second->GetMutex(),
+                                receiver_data.received_outputs_mutex);
+          receiver_data.received_outputs.emplace(i);
         }
-        it_c->second->NotifyAll();
+        conditions_iterator->second->NotifyAll();
       }
       break;
     }
     default: {
       throw std::runtime_error(fmt::format(
-          "DataStorage::OTExtensionDataType: unknown data type {}; data_type must be <{}", type,
-          OTExtensionDataType::OTExtension_invalid_data_type));
+          "DataStorage::OtExtensionDataType: unknown data type {}; data_type must be <{}", type,
+          OtExtensionDataType::kOtExtensionInvalidDataType));
     }
   }
 }
 
-ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
-OTExtensionReceiverData::RegisterForBlock128SenderMessage(std::size_t ot_id, std::size_t size) {
-  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector> promise;
-  auto fut = promise.get_future();
+ReusableFiberFuture<Block128Vector> OtExtensionReceiverData::RegisterForBlock128SenderMessage(
+    std::size_t ot_id, std::size_t size) {
+  ReusableFiberPromise<Block128Vector> promise;
+  auto future = promise.get_future();
   auto [it, success] =
-      message_promises_block128_.emplace(ot_id, std::make_pair(size, std::move(promise)));
+      message_promises_block128.emplace(ot_id, std::make_pair(size, std::move(promise)));
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for Block128SenderMessage for OT#{}", ot_id));
   }
-  return fut;
+  return future;
 }
 
-ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>>
-OTExtensionReceiverData::RegisterForBitSenderMessage(std::size_t ot_id, std::size_t size) {
-  ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>> promise;
-  auto fut = promise.get_future();
+ReusableFiberFuture<BitVector<>> OtExtensionReceiverData::RegisterForBitSenderMessage(
+    std::size_t ot_id, std::size_t size) {
+  ReusableFiberPromise<BitVector<>> promise;
+  auto future = promise.get_future();
   auto [it, success] =
-      message_promises_bit_.emplace(ot_id, std::make_pair(size, std::move(promise)));
+      message_promises_bit.emplace(ot_id, std::make_pair(size, std::move(promise)));
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for BitSenderMessage for OT#{}", ot_id));
   }
-  return fut;
+  return future;
 }
 
 template <typename T>
-ENCRYPTO::ReusableFiberFuture<std::vector<T>> OTExtensionReceiverData::RegisterForIntSenderMessage(
+ReusableFiberFuture<std::vector<T>> OtExtensionReceiverData::RegisterForIntSenderMessage(
     std::size_t ot_id, std::size_t size) {
-  ENCRYPTO::ReusableFiberPromise<std::vector<T>> promise;
-  auto fut = promise.get_future();
-  auto [it, success] = message_promises_int_[boost::hana::type_c<T>].emplace(
+  ReusableFiberPromise<std::vector<T>> promise;
+  auto future = promise.get_future();
+  auto [it, success] = message_promises_int[boost::hana::type_c<T>].emplace(
       ot_id, std::make_pair(size, std::move(promise)));
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for IntSenderMessage for OT#{}", ot_id));
   }
-  return fut;
+  return future;
 }
 
-template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint8_t>>
-OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
-template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint16_t>>
-OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
-template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint32_t>>
-OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
-template ENCRYPTO::ReusableFiberFuture<std::vector<std::uint64_t>>
-OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
-template ENCRYPTO::ReusableFiberFuture<std::vector<__uint128_t>>
-OTExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ReusableFiberFuture<std::vector<std::uint8_t>>
+OtExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ReusableFiberFuture<std::vector<std::uint16_t>>
+OtExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ReusableFiberFuture<std::vector<std::uint32_t>>
+OtExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ReusableFiberFuture<std::vector<std::uint64_t>>
+OtExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
+template ReusableFiberFuture<std::vector<__uint128_t>>
+OtExtensionReceiverData::RegisterForIntSenderMessage(std::size_t ot_id, std::size_t size);
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

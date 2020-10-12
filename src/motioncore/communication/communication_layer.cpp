@@ -24,6 +24,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <limits>
 #include <shared_mutex>
 #include <stdexcept>
 #include <thread>
@@ -43,22 +44,23 @@
 #include "utility/synchronized_queue.h"
 #include "utility/thread.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
-struct CommunicationLayer::CommunicationLayerImpl {
-  CommunicationLayerImpl(std::size_t my_id, std::vector<std::unique_ptr<Transport>>&& transports,
-                         std::shared_ptr<Logger> logger);
+struct CommunicationLayer::CommunicationLayerImplementation {
+  CommunicationLayerImplementation(std::size_t my_id,
+                                   std::vector<std::unique_ptr<Transport>>&& transports,
+                                   std::shared_ptr<Logger> logger);
   // run in a thread for each party
-  void receive_task(std::size_t party_id);
-  void send_task(std::size_t party_id);
+  void ReceiveTask(std::size_t party_id);
+  void SendTask(std::size_t party_id);
 
   // setup threads and data structures
-  void initialize(std::size_t my_id, std::size_t num_parties);
-  void send_termination_messages();
-  void shutdown();
+  void initialize(std::size_t my_id, std::size_t number_of_parties);
+  void SendTerminationMessages();
+  void Shutdown();
 
   std::size_t my_id_;
-  std::size_t num_parties_;
+  std::size_t number_of_parties_;
 
   std::promise<void> start_promise_;
   std::shared_future<void> start_sfuture_;
@@ -70,7 +72,7 @@ struct CommunicationLayer::CommunicationLayerImpl {
   using message_t =
       std::variant<std::vector<std::uint8_t>, std::shared_ptr<const std::vector<std::uint8_t>>>;
 
-  std::vector<ENCRYPTO::SynchronizedFiberQueue<message_t>> send_queues_;
+  std::vector<SynchronizedFiberQueue<message_t>> send_queues_;
   std::vector<std::thread> receive_threads_;
   std::vector<std::thread> send_threads_;
 
@@ -79,60 +81,58 @@ struct CommunicationLayer::CommunicationLayerImpl {
   std::vector<MessageHandlerMap> message_handlers_;
   std::vector<std::shared_ptr<MessageHandler>> fallback_message_handlers_;
 
-  std::shared_ptr<SyncHandler> sync_handler_;
+  std::shared_ptr<SynchronizationHandler> sync_handler_;
 
   std::shared_ptr<Logger> logger_;
 };
 
-CommunicationLayer::CommunicationLayerImpl::CommunicationLayerImpl(
+CommunicationLayer::CommunicationLayerImplementation::CommunicationLayerImplementation(
     std::size_t my_id, std::vector<std::unique_ptr<Transport>>&& transports,
     std::shared_ptr<Logger> logger)
     : my_id_(my_id),
-      num_parties_(transports.size()),
+      number_of_parties_(transports.size()),
       start_sfuture_(start_promise_.get_future().share()),
       transports_(std::move(transports)),
-      send_queues_(num_parties_),
-      message_handlers_(num_parties_),
-      fallback_message_handlers_(num_parties_),
-      sync_handler_(std::make_shared<SyncHandler>(my_id_, num_parties_, logger)),
+      send_queues_(number_of_parties_),
+      message_handlers_(number_of_parties_),
+      fallback_message_handlers_(number_of_parties_),
+      sync_handler_(std::make_shared<SynchronizationHandler>(my_id_, number_of_parties_, logger)),
       logger_(std::move(logger)) {
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id) {
       receive_threads_.emplace_back();
       send_threads_.emplace_back();
       continue;
     }
-    receive_threads_.emplace_back([this, party_id] { receive_task(party_id); });
-    send_threads_.emplace_back([this, party_id] { send_task(party_id); });
+    receive_threads_.emplace_back([this, party_id] { ReceiveTask(party_id); });
+    send_threads_.emplace_back([this, party_id] { SendTask(party_id); });
 
-    ENCRYPTO::thread_set_name(receive_threads_.at(party_id),
-                              fmt::format("recv-{}<->{}", my_id_, party_id));
-    ENCRYPTO::thread_set_name(send_threads_.at(party_id),
-                              fmt::format("send-{}<->{}", my_id_, party_id));
+    ThreadSetName(receive_threads_.at(party_id), fmt::format("recv-{}<->{}", my_id_, party_id));
+    ThreadSetName(send_threads_.at(party_id), fmt::format("send-{}<->{}", my_id_, party_id));
   }
 }
 
-void CommunicationLayer::CommunicationLayerImpl::send_task(std::size_t party_id) {
+void CommunicationLayer::CommunicationLayerImplementation::SendTask(std::size_t party_id) {
   auto& queue = send_queues_.at(party_id);
   auto& transport = *transports_.at(party_id);
 
   auto my_start_sfuture = start_sfuture_;
   my_start_sfuture.get();
 
-  while (!queue.closed_and_empty()) {
-    auto tmp_queue = queue.batch_dequeue();
+  while (!queue.IsClosedAndEmpty()) {
+    auto tmp_queue = queue.BatchDequeue();
     if (!tmp_queue.has_value()) {
-      assert(queue.closed());
+      assert(queue.IsClosed());
       break;
     }
     while (!tmp_queue->empty()) {
       auto& message = tmp_queue->front();
       if (message.index() == 0) {
         // std::vector<std::uint8_t>
-        transport.send_message(std::get<0>(message));
+        transport.SendMessage(std::get<0>(message));
       } else if (message.index() == 1) {
         // std::shared_ptr<const std::vector<std::uint8_t>>
-        transport.send_message(*std::get<1>(message));
+        transport.SendMessage(*std::get<1>(message));
       }
       tmp_queue->pop();
       if (logger_) {
@@ -141,14 +141,14 @@ void CommunicationLayer::CommunicationLayerImpl::send_task(std::size_t party_id)
     }
   }
 
-  transport.shutdown_send();
+  transport.ShutdownSend();
 
   if (logger_) {
-    logger_->LogDebug(fmt::format("send_task finished for party {}", party_id));
+    logger_->LogDebug(fmt::format("SendTask finished for party {}", party_id));
   }
 }
 
-void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_id) {
+void CommunicationLayer::CommunicationLayerImplementation::ReceiveTask(std::size_t party_id) {
   auto& transport = *transports_.at(party_id);
   auto& handler_map = message_handlers_.at(party_id);
 
@@ -158,11 +158,11 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
   while (continue_communication_) {
     std::optional<std::vector<std::uint8_t>> raw_message_opt;
     try {
-      raw_message_opt = transport.receive_message();
+      raw_message_opt = transport.ReceiveMessage();
     } catch (std::runtime_error& e) {
       if (logger_) {
         logger_->LogError(
-            fmt::format("receive_message failed for party {}: {}", party_id, e.what()));
+            fmt::format("ReceiveMessage failed for party {}: {}", party_id, e.what()));
       }
       break;
     }
@@ -182,9 +182,9 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
       if (logger_) {
         logger_->LogError(fmt::format("received corrupt message from party {}", party_id));
       }
-      auto fbh = fallback_message_handlers_.at(party_id);
-      if (fbh) {
-        fbh->received_message(party_id, std::move(raw_message));
+      auto fallback_handler = fallback_message_handlers_.at(party_id);
+      if (fallback_handler) {
+        fallback_handler->ReceivedMessage(party_id, std::move(raw_message));
       }
       continue;
     }
@@ -193,14 +193,14 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
     auto message = GetMessage(raw_message.data());
 
     auto message_type = message->message_type();
-    if constexpr (MOTION_DEBUG) {
+    if constexpr (kDebug) {
       if (logger_) {
         logger_->LogDebug(fmt::format("received message of type {} from party {}",
                                       EnumNameMessageType(message_type), party_id));
       }
     }
-    if (message_type == MessageType::TerminationMessage) {
-      if constexpr (MOTION_DEBUG) {
+    if (message_type == MessageType::kTerminationMessage) {
+      if constexpr (kDebug) {
         if (logger_) {
           logger_->LogDebug(fmt::format("received termination message from party {}", party_id));
         }
@@ -208,13 +208,13 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
       break;
     }
     std::shared_lock lock(message_handlers_mutex_);
-    auto it = handler_map.find(message_type);
-    if (it != handler_map.end()) {
-      it->second->received_message(party_id, std::move(raw_message));
+    auto iterator = handler_map.find(message_type);
+    if (iterator != handler_map.end()) {
+      iterator->second->ReceivedMessage(party_id, std::move(raw_message));
     } else {
-      auto fbh = fallback_message_handlers_.at(party_id);
-      if (fbh) {
-        fbh->received_message(party_id, std::move(raw_message));
+      auto fallback_handler = fallback_message_handlers_.at(party_id);
+      if (fallback_handler) {
+        fallback_handler->ReceivedMessage(party_id, std::move(raw_message));
       }
       if (logger_) {
         logger_->LogError(fmt::format("dropping message of type {} from party {}",
@@ -223,27 +223,27 @@ void CommunicationLayer::CommunicationLayerImpl::receive_task(std::size_t party_
     }
   }
 
-  if constexpr (MOTION_DEBUG) {
+  if constexpr (kDebug) {
     if (logger_) {
-      logger_->LogDebug(fmt::format("receive_task finished for party {}", party_id));
+      logger_->LogDebug(fmt::format("ReceiveTask finished for party {}", party_id));
     }
   }
 }
 
-void CommunicationLayer::CommunicationLayerImpl::shutdown() {
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+void CommunicationLayer::CommunicationLayerImplementation::Shutdown() {
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
     send_queues_.at(party_id).close();
   }
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
     send_threads_.at(party_id).join();
     receive_threads_.at(party_id).join();
-    transports_.at(party_id)->shutdown();
+    transports_.at(party_id)->Shutdown();
   }
 }
 
@@ -255,40 +255,41 @@ CommunicationLayer::CommunicationLayer(std::size_t my_id,
                                        std::vector<std::unique_ptr<Transport>>&& transports,
                                        std::shared_ptr<Logger> logger)
     : my_id_(my_id),
-      num_parties_(transports.size()),
-      impl_(std::make_unique<CommunicationLayerImpl>(my_id, std::move(transports), logger)),
+      number_of_parties_(transports.size()),
+      implementation_(
+          std::make_unique<CommunicationLayerImplementation>(my_id, std::move(transports), logger)),
       is_started_(false),
       is_shutdown_(false),
       logger_(std::move(logger)) {
-  if (num_parties_ <= 1) {
+  if (number_of_parties_ <= 1) {
     throw std::invalid_argument(
-        fmt::format("speficied invalid number of parties: {} <= 1", num_parties_));
+        fmt::format("speficied invalid number of parties: {} <= 1", number_of_parties_));
   }
-  if (my_id >= num_parties_) {
+  if (my_id >= number_of_parties_) {
     throw std::invalid_argument(
-        fmt::format("speficied invalid party id: {} >= {}", my_id, num_parties_));
+        fmt::format("speficied invalid party id: {} >= {}", my_id, number_of_parties_));
   }
-  register_message_handler([this](auto) { return impl_->sync_handler_; },
-                           {MessageType::SynchronizationMessage});
+  RegisterMessageHandler([this](auto) { return implementation_->sync_handler_; },
+                         {MessageType::kSynchronizationMessage});
 }
 
 CommunicationLayer::~CommunicationLayer() {
-  deregister_message_handler({MessageType::SynchronizationMessage});
-  shutdown();
+  DeregisterMessageHandler({MessageType::kSynchronizationMessage});
+  Shutdown();
 }
 
-void CommunicationLayer::start() {
+void CommunicationLayer::Start() {
   if (is_started_) {
     return;
   }
-  impl_->start_promise_.set_value();
-  if constexpr (MOTION_DEBUG) {
+  implementation_->start_promise_.set_value();
+  if constexpr (kDebug) {
     if (logger_) {
-      for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+      for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
         if (party_id == my_id_) {
           continue;
         }
-        for (auto& [type, h] : impl_->message_handlers_.at(party_id)) {
+        for (auto& [type, h] : implementation_->message_handlers_.at(party_id)) {
           logger_->LogDebug(fmt::format("message_handler installed for party {}, type {}", party_id,
                                         EnumNameMessageType(type)));
         }
@@ -298,108 +299,109 @@ void CommunicationLayer::start() {
   is_started_ = true;
 }
 
-void CommunicationLayer::sync() {
-  if constexpr (MOTION_DEBUG) {
+void CommunicationLayer::Synchronize() {
+  if constexpr (kDebug) {
     if (logger_) {
       logger_->LogDebug("start synchronization");
     }
   }
-  auto& sync_handler = *impl_->sync_handler_;
+  auto& synchronization_handler = *implementation_->sync_handler_;
   // synchronize s.t. this method cannot be executed simultaneously
-  std::scoped_lock lock(sync_handler.get_mutex());
+  std::scoped_lock lock(synchronization_handler.GetMutex());
   // increment counter
-  std::uint64_t new_sync_state = sync_handler.increment_my_sync_state();
+  std::uint64_t new_synchronization_state =
+      synchronization_handler.IncrementMySynchronizationState();
   // broadcast sync message with counter value
   {
-    const std::vector<std::uint8_t> v(
-        reinterpret_cast<std::uint8_t*>(&new_sync_state),
-        reinterpret_cast<std::uint8_t*>(&new_sync_state) + sizeof(new_sync_state));
-    auto message_builder = BuildMessage(MessageType::SynchronizationMessage, &v);
-    broadcast_message(std::move(message_builder));
+    const std::vector<std::uint8_t> v(reinterpret_cast<std::uint8_t*>(&new_synchronization_state),
+                                      reinterpret_cast<std::uint8_t*>(&new_synchronization_state) +
+                                          sizeof(new_synchronization_state));
+    auto message_builder = BuildMessage(MessageType::kSynchronizationMessage, &v);
+    BroadcastMessage(std::move(message_builder));
   }
   // wait for N-1 sync messages with at least the same value
-  sync_handler.wait();
-  if constexpr (MOTION_DEBUG) {
+  synchronization_handler.Wait();
+  if constexpr (kDebug) {
     if (logger_) {
       logger_->LogDebug("finished synchronization");
     }
   }
 }
 
-void CommunicationLayer::send_message(std::size_t party_id, std::vector<std::uint8_t>&& message) {
-  impl_->send_queues_.at(party_id).enqueue(std::move(message));
+void CommunicationLayer::SendMessage(std::size_t party_id, std::vector<std::uint8_t>&& message) {
+  implementation_->send_queues_.at(party_id).enqueue(std::move(message));
 }
 
-void CommunicationLayer::send_message(std::size_t party_id,
-                                      const std::vector<std::uint8_t>& message) {
-  impl_->send_queues_.at(party_id).enqueue(message);
+void CommunicationLayer::SendMessage(std::size_t party_id,
+                                     const std::vector<std::uint8_t>& message) {
+  implementation_->send_queues_.at(party_id).enqueue(message);
 }
 
-void CommunicationLayer::send_message(std::size_t party_id,
-                                      std::shared_ptr<const std::vector<std::uint8_t>> message) {
-  impl_->send_queues_.at(party_id).enqueue(std::move(message));
+void CommunicationLayer::SendMessage(std::size_t party_id,
+                                     std::shared_ptr<const std::vector<std::uint8_t>> message) {
+  implementation_->send_queues_.at(party_id).enqueue(std::move(message));
 }
 
-void CommunicationLayer::send_message(std::size_t party_id,
-                                      flatbuffers::FlatBufferBuilder&& message_builder) {
+void CommunicationLayer::SendMessage(std::size_t party_id,
+                                     flatbuffers::FlatBufferBuilder&& message_builder) {
   auto message_detached = message_builder.Release();
   auto message_buffer = message_detached.data();
-  send_message(party_id,
-               std::vector<std::uint8_t>(message_buffer, message_buffer + message_detached.size()));
+  SendMessage(party_id,
+              std::vector<std::uint8_t>(message_buffer, message_buffer + message_detached.size()));
 }
 
-void CommunicationLayer::broadcast_message(std::vector<std::uint8_t>&& message) {
-  if (num_parties_ == 2) {
-    send_message(1 - my_id_, std::move(message));
+void CommunicationLayer::BroadcastMessage(std::vector<std::uint8_t>&& message) {
+  if (number_of_parties_ == 2) {
+    SendMessage(1 - my_id_, std::move(message));
     return;
   }
-  broadcast_message(std::make_shared<std::vector<std::uint8_t>>(std::move(message)));
+  BroadcastMessage(std::make_shared<std::vector<std::uint8_t>>(std::move(message)));
 }
 
 // TODO: prevent unnecessary copies
-void CommunicationLayer::broadcast_message(const std::vector<std::uint8_t>& message) {
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+void CommunicationLayer::BroadcastMessage(const std::vector<std::uint8_t>& message) {
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
-    impl_->send_queues_.at(party_id).enqueue(message);
+    implementation_->send_queues_.at(party_id).enqueue(message);
   }
 }
 
-void CommunicationLayer::broadcast_message(
+void CommunicationLayer::BroadcastMessage(
     std::shared_ptr<const std::vector<std::uint8_t>> message) {
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
-    impl_->send_queues_.at(party_id).enqueue(message);
+    implementation_->send_queues_.at(party_id).enqueue(message);
   }
 }
 
-void CommunicationLayer::broadcast_message(flatbuffers::FlatBufferBuilder&& message_builder) {
+void CommunicationLayer::BroadcastMessage(flatbuffers::FlatBufferBuilder&& message_builder) {
   auto message_detached = message_builder.Release();
   auto message_buffer = message_detached.data();
-  if (num_parties_ == 2) {
-    send_message(1 - my_id_, std::vector<std::uint8_t>(message_buffer,
-                                                       message_buffer + message_detached.size()));
+  if (number_of_parties_ == 2) {
+    SendMessage(1 - my_id_, std::vector<std::uint8_t>(message_buffer,
+                                                      message_buffer + message_detached.size()));
     return;
   }
-  broadcast_message(std::make_shared<std::vector<std::uint8_t>>(
+  BroadcastMessage(std::make_shared<std::vector<std::uint8_t>>(
       message_buffer, message_buffer + message_detached.size()));
 }
 
-void CommunicationLayer::register_message_handler(message_handler_f handler_factory,
-                                                  const std::vector<MessageType>& message_types) {
-  std::scoped_lock lock(impl_->message_handlers_mutex_);
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+void CommunicationLayer::RegisterMessageHandler(MessageHandlerFunction handler_factory,
+                                                const std::vector<MessageType>& message_types) {
+  std::scoped_lock lock(implementation_->message_handlers_mutex_);
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
-    auto& map = impl_->message_handlers_.at(party_id);
+    auto& map = implementation_->message_handlers_.at(party_id);
     auto handler = handler_factory(party_id);
     for (auto type : message_types) {
       map.emplace(type, handler);
-      if constexpr (MOTION_DEBUG) {
+      if constexpr (kDebug) {
         if (logger_) {
           logger_->LogDebug(fmt::format("registered handler for messages of type {} from party {}",
                                         EnumNameMessageType(type), party_id));
@@ -409,16 +411,16 @@ void CommunicationLayer::register_message_handler(message_handler_f handler_fact
   }
 }
 
-void CommunicationLayer::deregister_message_handler(const std::vector<MessageType>& message_types) {
-  std::scoped_lock lock(impl_->message_handlers_mutex_);
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+void CommunicationLayer::DeregisterMessageHandler(const std::vector<MessageType>& message_types) {
+  std::scoped_lock lock(implementation_->message_handlers_mutex_);
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
-    auto& map = impl_->message_handlers_.at(party_id);
+    auto& map = implementation_->message_handlers_.at(party_id);
     for (auto type : message_types) {
       map.erase(type);
-      if constexpr (MOTION_DEBUG) {
+      if constexpr (kDebug) {
         if (logger_) {
           logger_->LogDebug(
               fmt::format("deregistered handler for messages of type {} from party {}",
@@ -428,119 +430,124 @@ void CommunicationLayer::deregister_message_handler(const std::vector<MessageTyp
     }
   }
 }
-MessageHandler& CommunicationLayer::get_message_handler(std::size_t party_id,
-                                                        MessageType message_type) {
-  if (party_id == my_id_ || party_id >= num_parties_) {
+
+MessageHandler& CommunicationLayer::GetMessageHandler(std::size_t party_id,
+                                                      MessageType message_type) {
+  if (party_id == my_id_ || party_id >= number_of_parties_) {
     throw std::invalid_argument(fmt::format("invalid party_id {} specified", party_id));
   }
-  std::scoped_lock lock(impl_->message_handlers_mutex_);
-  const auto& map = impl_->message_handlers_.at(party_id);
-  auto it = map.find(message_type);
-  if (it == map.end()) {
+  std::scoped_lock lock(implementation_->message_handlers_mutex_);
+  const auto& map = implementation_->message_handlers_.at(party_id);
+  auto iterator = map.find(message_type);
+  if (iterator == map.end()) {
     throw std::logic_error(fmt::format(
         "no message_handler registered for message_type {} and party {}", message_type, party_id));
   }
-  return *it->second;
+  return *iterator->second;
 }
 
-void CommunicationLayer::register_fallback_message_handler(message_handler_f handler_factory) {
-  auto& fbhs = impl_->fallback_message_handlers_;
-  fbhs.resize(num_parties_);
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+void CommunicationLayer::RegisterFallbackMessageHandler(MessageHandlerFunction handler_factory) {
+  auto& fallback_handlers = implementation_->fallback_message_handlers_;
+  fallback_handlers.resize(number_of_parties_);
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
-    fbhs.at(party_id) = handler_factory(party_id);
+    fallback_handlers.at(party_id) = handler_factory(party_id);
   }
 }
 
-MessageHandler& CommunicationLayer::get_fallback_message_handler(std::size_t party_id) {
-  if (party_id == my_id_ || party_id >= num_parties_) {
+MessageHandler& CommunicationLayer::GetFallbackMessageHandler(std::size_t party_id) {
+  if (party_id == my_id_ || party_id >= number_of_parties_) {
     throw std::invalid_argument(fmt::format("invalid party_id {} specified", party_id));
   }
-  return *impl_->fallback_message_handlers_.at(party_id);
+  return *implementation_->fallback_message_handlers_.at(party_id);
 }
 
-void CommunicationLayer::shutdown() {
+void CommunicationLayer::Shutdown() {
   if (is_shutdown_) {
     return;
   }
-  auto message_builder = BuildMessage(MessageType::TerminationMessage, nullptr);
-  broadcast_message(std::move(message_builder));
-  if constexpr (MOTION_DEBUG) {
+  auto message_builder = BuildMessage(MessageType::kTerminationMessage, nullptr);
+  BroadcastMessage(std::move(message_builder));
+  if constexpr (kDebug) {
     if (logger_) {
       logger_->LogDebug("broadcasted termination messages");
     }
   }
-  impl_->shutdown();
+  implementation_->Shutdown();
   is_shutdown_ = true;
 }
 
-std::vector<TransportStatistics> CommunicationLayer::get_transport_statistics() const noexcept {
-  std::vector<TransportStatistics> stats;
-  stats.reserve(num_parties_);
-  for (std::size_t party_id = 0; party_id < num_parties_; ++party_id) {
+std::vector<TransportStatistics> CommunicationLayer::GetTransportStatistics() const noexcept {
+  std::vector<TransportStatistics> statistics;
+  statistics.reserve(number_of_parties_);
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) {
       continue;
     }
-    stats.emplace_back(impl_->transports_.at(party_id)->get_stats());
+    statistics.emplace_back(implementation_->transports_.at(party_id)->GetStatistics());
   }
-  return stats;
+  return statistics;
 }
 
-void CommunicationLayer::set_logger(std::shared_ptr<Logger> logger) {
+void CommunicationLayer::SetLogger(std::shared_ptr<Logger> logger) {
   if (is_started_) {
     throw std::logic_error(
         "changing the logger is not allowed after the CommunicationLayer has been started");
   }
   logger_ = logger;
-  impl_->logger_ = logger;
+  implementation_->logger_ = logger;
 }
 
-std::vector<std::unique_ptr<CommunicationLayer>> make_dummy_communication_layers(
-    std::size_t num_parties) {
+std::vector<std::unique_ptr<CommunicationLayer>> MakeDummyCommunicationLayers(
+    std::size_t number_of_parties) {
   std::vector<std::vector<std::unique_ptr<Transport>>> transports;
-  transports.reserve(num_parties);
-  std::generate_n(std::back_inserter(transports), num_parties,
-                  [num_parties] { return std::vector<std::unique_ptr<Transport>>(num_parties); });
-  for (std::size_t party_i = 0; party_i < num_parties - 1; ++party_i) {
-    for (std::size_t party_j = party_i + 1; party_j < num_parties; ++party_j) {
-      auto [trans_ij, trans_ji] = DummyTransport::make_transport_pair();
+  transports.reserve(number_of_parties);
+  std::generate_n(std::back_inserter(transports), number_of_parties, [number_of_parties] {
+    return std::vector<std::unique_ptr<Transport>>(number_of_parties);
+  });
+  for (std::size_t party_i = 0; party_i < number_of_parties - 1; ++party_i) {
+    for (std::size_t party_j = party_i + 1; party_j < number_of_parties; ++party_j) {
+      auto [trans_ij, trans_ji] = DummyTransport::MakeTransportPair();
       transports.at(party_i).at(party_j) = std::move(trans_ij);
       transports.at(party_j).at(party_i) = std::move(trans_ji);
     }
   }
-  std::vector<std::unique_ptr<CommunicationLayer>> comm_layers;
-  comm_layers.reserve(num_parties);
-  for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
-    comm_layers.emplace_back(
+  std::vector<std::unique_ptr<CommunicationLayer>> communication_layers;
+  communication_layers.reserve(number_of_parties);
+  for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
+    communication_layers.emplace_back(
         std::make_unique<CommunicationLayer>(party_id, std::move(transports.at(party_id))));
   }
-  return comm_layers;
+  return communication_layers;
 }
 
-std::vector<std::unique_ptr<CommunicationLayer>> make_local_tcp_communication_layers(
-    std::size_t num_parties, bool ipv6) {
+std::vector<std::unique_ptr<CommunicationLayer>> MakeLocalTcpCommunicationLayers(
+    std::size_t number_of_parties, bool ipv6) {
+  constexpr uint16_t kPort = 10000;
   const auto localhost = ipv6 ? "::1" : "127.0.0.1";
-  tcp_parties_config config;
-  config.reserve(num_parties);
-  for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
-    config.push_back({localhost, 10000 + party_id});
+  TcpPartiesConfiguration configuration;
+  configuration.reserve(number_of_parties);
+  assert(number_of_parties < std::numeric_limits<uint16_t>::max());
+  for (uint16_t party_id = 0; party_id < number_of_parties; ++party_id) {
+    configuration.push_back({localhost, kPort + party_id});
   }
-  std::vector<std::future<std::vector<std::unique_ptr<Transport>>>> futs;
-  for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
-    futs.emplace_back(std::async(std::launch::async, [party_id, &config] {
-      TCPSetupHelper helper(party_id, config);
-      return helper.setup_connections();
+  std::vector<std::future<std::vector<std::unique_ptr<Transport>>>> futures;
+  for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
+    futures.emplace_back(std::async(std::launch::async, [party_id, &configuration] {
+      TcpSetupHelper helper(party_id, configuration);
+      return helper.SetupConnections();
     }));
   }
-  std::vector<std::unique_ptr<CommunicationLayer>> comm_layers;
-  comm_layers.reserve(num_parties);
-  for (std::size_t party_id = 0; party_id < num_parties; ++party_id) {
-    auto transports = futs.at(party_id).get();
-    comm_layers.emplace_back(std::make_unique<CommunicationLayer>(party_id, std::move(transports)));
+  std::vector<std::unique_ptr<CommunicationLayer>> communication_layers;
+  communication_layers.reserve(number_of_parties);
+  for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
+    auto transports = futures.at(party_id).get();
+    communication_layers.emplace_back(
+        std::make_unique<CommunicationLayer>(party_id, std::move(transports)));
   }
-  return comm_layers;
+  return communication_layers;
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

@@ -35,28 +35,29 @@
 #include <stdlib.h>
 
 namespace {
-TEST(BitMatrix, Transpose) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
-    for (auto i = 0ull; i < 11u; ++i) {
-      std::random_device rd;
-      std::uniform_int_distribution<std::uint64_t> dist(0, 1ull << i);
 
-      const std::size_t m = dist(rd), n = dist(rd);
+TEST(BitMatrix, Transpose) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
+    for (auto i = 0ull; i < 11u; ++i) {
+      std::random_device random_generator;
+      std::uniform_int_distribution<std::uint64_t> distribution(0, 1ull << i);
+
+      const std::size_t m = distribution(random_generator), n = distribution(random_generator);
       // const std::size_t m = 128, n = 16'777'216ull;
       // const  std::size_t m = 16'777'216ull, n = 128;
-      std::vector<ENCRYPTO::AlignedBitVector> vectors(m);
+      std::vector<encrypto::motion::AlignedBitVector> vectors(m);
 
       for (auto j = 0ull; j < m; ++j) {
-        vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
+        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
       }
 
-      ENCRYPTO::BitMatrix bm(vectors);
-      auto bm_transposed = bm;
-      bm_transposed.Transpose();
+      encrypto::motion::BitMatrix bit_matrix(vectors);
+      auto bit_matrix_transposed = bit_matrix;
+      bit_matrix_transposed.Transpose();
 
       for (auto column_i = 0ull; column_i < n; ++column_i) {
         for (auto row_i = 0ull; row_i < m; ++row_i) {
-          ASSERT_EQ(bm.Get(row_i, column_i), bm_transposed.Get(column_i, row_i));
+          ASSERT_EQ(bit_matrix.Get(row_i, column_i), bit_matrix_transposed.Get(column_i, row_i));
         }
       }
     }
@@ -64,25 +65,25 @@ TEST(BitMatrix, Transpose) {
 }
 
 TEST(BitMatrix, Transpose128) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto i = 7ull; i < 15u; ++i) {
-      std::random_device rd;
-      std::uniform_int_distribution<std::uint64_t> dist(1, 1ull << i);
-      const std::size_t m = 128, n = dist(rd);
+      std::random_device random_generator;
+      std::uniform_int_distribution<std::uint64_t> distribution(1, 1ull << i);
+      const std::size_t m = 128, n = distribution(random_generator);
       // const std::size_t m = 128, n = 16'777'216ull; // 2^24
-      std::vector<ENCRYPTO::AlignedBitVector> vectors(m);
+      std::vector<encrypto::motion::AlignedBitVector> vectors(m);
 
       for (auto j = 0ull; j < m; ++j) {
-        vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
+        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
       }
 
-      const ENCRYPTO::BitMatrix bm(vectors);
-      auto bm_transposed = bm;
-      bm_transposed.Transpose128Rows();
+      const encrypto::motion::BitMatrix bit_matrix(vectors);
+      auto bit_matrix_transposed = bit_matrix;
+      bit_matrix_transposed.Transpose128Rows();
 
       for (auto column_i = 0ull; column_i < n; ++column_i) {
         for (auto row_i = 0ull; row_i < m; ++row_i) {
-          ASSERT_EQ(bm.Get(row_i, column_i), bm_transposed.Get(column_i, row_i));
+          ASSERT_EQ(bit_matrix.Get(row_i, column_i), bit_matrix_transposed.Get(column_i, row_i));
         }
       }
     }
@@ -90,80 +91,81 @@ TEST(BitMatrix, Transpose128) {
 }
 
 TEST(BitMatrix, Transpose128InPlaceOnRawPointers) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  constexpr std::size_t kM = 128;
+  constexpr auto kBitsInBlock = kM * kM;
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto i = 7ull; i < 15u; ++i) {
-      const std::size_t m = 128, n = 1ull << i;
-      // const std::size_t m = 128, n = 16'777'216ull; // 2^24
-      std::vector<ENCRYPTO::AlignedBitVector> vectors(m);
+      const std::size_t n = 1ull << i;
+      std::vector<encrypto::motion::AlignedBitVector> vectors(kM);
 
-      for (auto j = 0ull; j < m; ++j) {
-        vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
+      for (auto j = 0ull; j < kM; ++j) {
+        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
       }
 
-      ENCRYPTO::BitMatrix bm(vectors);
-      bm.Transpose128Rows();
+      encrypto::motion::BitMatrix bit_matrix(vectors);
+      bit_matrix.Transpose128Rows();
 
-      std::array<std::byte *, 128> ptrs;
-      for (auto j = 0u; j < ptrs.size(); ++j) {
-        ptrs.at(j) = vectors.at(j).GetMutableData().data();
+      std::array<std::byte*, 128> pointers;
+      for (auto j = 0u; j < pointers.size(); ++j) {
+        pointers.at(j) = vectors.at(j).GetMutableData().data();
       }
-      ENCRYPTO::BitMatrix::Transpose128RowsInplace(ptrs, n);
+      encrypto::motion::BitMatrix::Transpose128RowsInplace(pointers, n);
 
-      std::vector<ENCRYPTO::AlignedBitVector> vectors_tr;
-      constexpr auto bits_in_blk = m * m;
-      for (auto j = 0ull; j < n * m; j += m) {
-        const auto residue = j % bits_in_blk;
-        const auto row_i = residue / m;
-        const auto blk_offset = (16 * (j / bits_in_blk));
-        auto ptr = ptrs.at(row_i) + blk_offset;
-        vectors_tr.emplace_back(ptr, m);
+      std::vector<encrypto::motion::AlignedBitVector> vectors_test_result;
+      for (auto j = 0ull; j < n * kM; j += kM) {
+        const auto residue = j % kBitsInBlock;
+        const auto row_i = residue / kM;
+        const auto block_offset = (16 * (j / kBitsInBlock));
+        auto pointer = pointers.at(row_i) + block_offset;
+        vectors_test_result.emplace_back(pointer, kM);
       }
 
-      assert(vectors_tr.size() == n);
+      assert(vectors_test_result.size() == n);
 
-      ENCRYPTO::BitMatrix bm_tr(vectors_tr);
+      encrypto::motion::BitMatrix bit_matrix_test_result(vectors_test_result);
 
-      ASSERT_TRUE(bm == bm_tr);
+      ASSERT_TRUE(bit_matrix == bit_matrix_test_result);
     }
   }
 }
 
 TEST(BitMatrix, Transpose128InPlaceOnRawPointersBitSlicing) {
-  for (auto test_iterations = 0ull; test_iterations < TEST_ITERATIONS; ++test_iterations) {
+  constexpr std::size_t kM = 128;
+  constexpr auto kBitsInBlock = kM * kM;
+  for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
     for (auto i = 7ull; i < 15u; ++i) {
-      const std::size_t m = 128, n = 1ull << i;
-      // const std::size_t m = 128, n = 16'777'216ull; // 2^24
-      std::vector<ENCRYPTO::AlignedBitVector> vectors(m);
+      const std::size_t n = 1ull << i;
+      std::vector<encrypto::motion::AlignedBitVector> vectors(kM);
 
-      for (auto j = 0ull; j < m; ++j) {
-        vectors.at(j) = ENCRYPTO::AlignedBitVector::Random(n);
+      for (auto j = 0ull; j < kM; ++j) {
+        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
       }
 
-      ENCRYPTO::BitMatrix bm(vectors);
-      bm.Transpose128Rows();
+      encrypto::motion::BitMatrix bit_matrix(vectors);
+      bit_matrix.Transpose128Rows();
 
-      std::array<std::byte *, 128> ptrs;
-      for (auto j = 0u; j < ptrs.size(); ++j) {
-        ptrs.at(j) = vectors.at(j).GetMutableData().data();
+      std::array<std::byte*, 128> pointers;
+      for (auto j = 0u; j < pointers.size(); ++j) {
+        pointers.at(j) = vectors.at(j).GetMutableData().data();
       }
-      ENCRYPTO::BitMatrix::TransposeUsingBitSlicing(ptrs, n);
+      encrypto::motion::BitMatrix::TransposeUsingBitSlicing(pointers, n);
 
-      std::vector<ENCRYPTO::AlignedBitVector> vectors_tr;
-      constexpr auto bits_in_blk = m * m;
-      for (auto j = 0ull; j < n * m; j += m) {
-        const auto residue = j % bits_in_blk;
-        const auto row_i = residue / m;
-        const auto blk_offset = (16 * (j / bits_in_blk));
-        auto ptr = ptrs.at(row_i) + blk_offset;
-        vectors_tr.emplace_back(ptr, m);
+      std::vector<encrypto::motion::AlignedBitVector> vectors_test_result;
+      for (auto j = 0ull; j < n * kM; j += kM) {
+        const auto residue = j % kBitsInBlock;
+        const auto row_i = residue / kM;
+        const auto block_offset = (16 * (j / kBitsInBlock));
+        auto pointer = pointers.at(row_i) + block_offset;
+        vectors_test_result.emplace_back(pointer, kM);
       }
 
-      assert(vectors_tr.size() == n);
+      assert(vectors_test_result.size() == n);
 
-      ENCRYPTO::BitMatrix bm_tr(vectors_tr);
+      encrypto::motion::BitMatrix bm_test_result(vectors_test_result);
 
-      ASSERT_TRUE(bm == bm_tr);
+      ASSERT_TRUE(bit_matrix == bm_test_result);
     }
   }
-}  // namespace
+}
+
 }  // namespace

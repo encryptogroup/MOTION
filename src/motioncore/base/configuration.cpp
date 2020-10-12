@@ -28,19 +28,19 @@
 
 #include "utility/constants.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
-Configuration::Configuration(std::size_t my_id, std::size_t num_parties)
+Configuration::Configuration(std::size_t my_id, std::size_t number_of_parties)
     : my_id_(my_id),
-      num_parties_(num_parties),
-      num_threads_(std::max(std::thread::hardware_concurrency(), 8u)) {
-  if constexpr (MOTION_VERBOSE_DEBUG) {
+      number_of_parties_(number_of_parties),
+      number_of_threads_(std::max(std::thread::hardware_concurrency(), 8u)) {
+  if constexpr (kVerboseDebug) {
     severity_level_ = boost::log::trivial::trace;
-  } else if constexpr (MOTION_DEBUG) {
+  } else if constexpr (kDebug) {
     severity_level_ = boost::log::trivial::debug;
   }
 }
 
 void Configuration::SetOnlineAfterSetup(bool value) { online_after_setup_ = value; }
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

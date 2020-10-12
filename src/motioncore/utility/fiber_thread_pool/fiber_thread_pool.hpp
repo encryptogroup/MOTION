@@ -26,61 +26,61 @@
 #include <thread>
 #include <vector>
 
-namespace boost {
-namespace fibers {
+namespace boost::fibers {
+
 class barrier;
 template <typename T>
 class buffered_channel;
-}  // namespace fibers
-}  // namespace boost
+
+}  // namespace boost::fibers
 
 struct pool_ctx;
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 class FiberThreadPool {
- public:
-  using task_t = std::function<void()>;
+public:
+    using task_t = std::function<void()>;
 
-  // Create a thread pool with given number of workers
-  // - num_workers
-  //   if 0 then the value of std::thread::hardware_concurrency() is used
-  //   else it must be at least 2
-  // - num_tasks
-  //   number of tasks that are to be expected
-  // - suspend_scheduler
-  //   suspend if there is no work to be done
-  FiberThreadPool(std::size_t num_workers, std::size_t num_tasks = 0,
-                  bool suspend_scheduler = true);
+    // Create a thread pool with given number of workers
+    // - number_of_workers
+    //   if 0 then the value of std::thread::hardware_concurrency() is used
+    //   else it must be at least 2
+    // - number_of_tasks
+    //   number of tasks that are to be expected
+    // - suspend_scheduler
+    //   suspend if there is no work to be done
+    FiberThreadPool(std::size_t number_of_workers, std::size_t number_of_tasks = 0,
+                    bool suspend_scheduler = true);
 
-  // Destructor, calls join() if necessary
-  ~FiberThreadPool();
+    // Destructor, calls join() if necessary
+    ~FiberThreadPool();
 
-  // Post a new task to the pool's queue.
-  // This may block if the task queue is currently full
-  void post(task_t task);
+    // Post a new task to the pool's queue.
+    // This may block if the task queue is currently full
+    void post(task_t task);
 
-  // Close the pool.  No new tasks can be posted to the pool.
-  // Note: Be sure that all previously posted tasks has been completed before
-  // you call this method.
-  void join();
+    // Close the pool.  No new tasks can be posted to the pool.
+    // Note: Be sure that all previously posted tasks has been completed before
+    // you call this method.
+    void join();
 
-  // Join all the fibers that were created.
-  // No new fibers must be created during this call.
-  void join_fibers();
+    // Join all the fibers that were created.
+    // No new fibers must be created during this call.
+    void join_fibers();
 
- private:
-  void create_threads();
+private:
+    void create_threads();
 
-  std::size_t num_workers_;
-  bool running_;
-  bool suspend_scheduler_;
-  std::unique_ptr<boost::fibers::buffered_channel<task_t>> task_queue_;
-  std::unique_ptr<boost::fibers::barrier> worker_barrier_;
-  std::vector<std::thread> worker_threads_;
-  std::shared_ptr<pool_ctx> pool_ctx_;
+    std::size_t number_of_workers_;
+    bool running_;
+    bool suspend_scheduler_;
+    std::unique_ptr<boost::fibers::buffered_channel<task_t>> task_queue_;
+    std::unique_ptr<boost::fibers::barrier> worker_barrier_;
+    std::vector<std::thread> worker_threads_;
+    std::shared_ptr<pool_ctx> pool_ctx_;
 };
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion
 
 #endif  // FIBER_THREAD_POOL_HPP

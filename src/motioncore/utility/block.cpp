@@ -20,20 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "block.h"
 #include <algorithm>
 #include <boost/algorithm/hex.hpp>
 #include <cassert>
-#include "block.h"
-#include "crypto/random/aes128_ctr_rng.h"
+#include "primitives/random/aes128_ctr_rng.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
-void block128_t::set_to_random() {
-  auto& rng = AES128_CTR_RNG::get_thread_instance();
-  rng.random_blocks_aligned(byte_array.data(), 1);
+void Block128::SetToRandom() {
+  auto& rng = Aes128CtrRng::GetThreadInstance();
+  rng.RandomBlocksAligned(byte_array.data(), 1);
 }
 
-std::string block128_t::as_string() const {
+std::string Block128::AsString() const {
   std::string result;
   result.reserve(2 * sizeof(byte_array));
   boost::algorithm::hex(
@@ -43,9 +43,9 @@ std::string block128_t::as_string() const {
   return result;
 }
 
-void block128_vector::set_to_random() {
-  auto& rng = AES128_CTR_RNG::get_thread_instance();
-  rng.random_blocks_aligned(reinterpret_cast<std::byte*>(block_vector.data()), block_vector.size());
+void Block128Vector::SetToRandom() {
+  auto& rng = Aes128CtrRng::GetThreadInstance();
+  rng.RandomBlocksAligned(reinterpret_cast<std::byte*>(block_vector.data()), block_vector.size());
 }
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

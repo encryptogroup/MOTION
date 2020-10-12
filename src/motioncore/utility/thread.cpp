@@ -18,18 +18,18 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+#include "thread.h"
 #include <pthread.h>
 #include <cassert>
 #include <string>
 #include <thread>
-#include "thread.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
-void thread_set_name(std::thread& thread, const std::string& name) {
+void ThreadSetName(std::thread& thread, const std::string& name) {
   assert(name.size() <= 16);
   auto handle = thread.native_handle();
   pthread_setname_np(handle, name.c_str());
 }
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

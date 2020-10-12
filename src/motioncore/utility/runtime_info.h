@@ -25,20 +25,20 @@
 #include <cstddef>
 #include <string>
 
-namespace MOTION {
+namespace encrypto::motion {
 
 // Return a representation of the command line arguments.
 //
 // To be exact, the strings from /proc/self/cmdline are joined by a space.
-std::string get_cmdline();
+std::string GetCmdLine();
 
 // Read this process' pid from /proc/self/stat
-std::size_t get_pid();
+std::size_t GetPid();
 
 // Read the system's hostname from /proc/sys/kernel/hostname
-std::string get_hostname();
+std::string GetHostname();
 
 // Get this user's name via `whoami`
-std::string get_username();
+std::string GetUsername();
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

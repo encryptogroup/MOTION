@@ -30,14 +30,14 @@
 
 #include "utility/typedefs.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 struct PrimitiveOperation {
-  PrimitiveOperationType type_{PrimitiveOperationType::INVALID};
-  std::size_t parent_a_{0};
-  std::optional<std::size_t> parent_b_{std::nullopt};
-  std::optional<std::size_t> selection_bit_{std::nullopt};
-  std::size_t output_wire_{0};
+  PrimitiveOperationType type{PrimitiveOperationType::kInvalid};
+  std::size_t parent_a{0};
+  std::optional<std::size_t> parent_b{std::nullopt};
+  std::optional<std::size_t> selection_bit{std::nullopt};
+  std::size_t output_wire{0};
 };
 
 struct AlgorithmDescription {
@@ -55,15 +55,16 @@ struct AlgorithmDescription {
 
   static AlgorithmDescription FromBristolFashion(std::ifstream& stream);
 
-  static AlgorithmDescription FromABY(const std::string& path);
+  static AlgorithmDescription FromAby(const std::string& path);
 
-  static AlgorithmDescription FromABY(std::string&& path);
+  static AlgorithmDescription FromAby(std::string&& path);
 
-  static AlgorithmDescription FromABY(std::ifstream& stream);
+  static AlgorithmDescription FromAby(std::ifstream& stream);
 
-  std::size_t n_output_wires_{0}, n_input_wires_parent_a_{0}, n_wires_{0}, n_gates_{0};
-  std::optional<std::size_t> n_input_wires_parent_b_{std::nullopt};
-  std::vector<PrimitiveOperation> gates_;
+  std::size_t number_of_output_wires{0}, number_of_input_wires_parent_a{0}, number_of_wires{0},
+      number_of_gates{0};
+  std::optional<std::size_t> number_of_input_wires_parent_b{std::nullopt};
+  std::vector<PrimitiveOperation> gates;
 };
 
-}
+}  // namespace encrypto::motion

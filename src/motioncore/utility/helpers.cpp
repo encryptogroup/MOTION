@@ -29,34 +29,11 @@
 
 #include "condition.h"
 
-namespace MOTION::Helpers {
-
-namespace Print {
-std::string ToString(MPCProtocol p) {
-  std::string result;
-  switch (p) {
-    case MPCProtocol::ArithmeticGMW:
-      result.append("ArithmeticGMW");
-      break;
-    case MPCProtocol::BooleanGMW:
-      result.append("BooleanGMW");
-      break;
-    case MPCProtocol::BMR:
-      result.append("BMR");
-      break;
-    default:
-      result.append(fmt::format("InvalidProtocol with value {}", static_cast<int>(p)));
-      break;
-  }
-  return result;
-}
-
-}  // namespace Print
-
-namespace Compare {}  // namespace Compare
+namespace encrypto::motion {
 
 std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor) {
   assert(divisor != 0);
   return 1 + ((dividend - 1) / divisor);
 }
-}
+
+}  // namespace encrypto::motion

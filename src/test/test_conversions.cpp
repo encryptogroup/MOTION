@@ -32,78 +32,79 @@
 #include <gtest/gtest.h>
 
 #include "base/party.h"
-#include "crypto/multiplication_triple/mt_provider.h"
-#include "share/share_wrapper.h"
+#include "multiplication_triple/mt_provider.h"
+#include "protocols/share_wrapper.h"
+#include "protocols/bmr/bmr_wire.h"
+#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "utility/typedefs.h"
-#include "wire/bmr_wire.h"
-#include "wire/boolean_gmw_wire.h"
 
 #include "test_constants.h"
 
 namespace {
-using namespace MOTION;
+using namespace encrypto::motion;
 
 // number of parties, wires, SIMD values, online-after-setup flag
-using conv_parameters_t = std::tuple<std::size_t, std::size_t, std::size_t, bool>;
+using ConversionParametersType = std::tuple<std::size_t, std::size_t, std::size_t, bool>;
 
-class ConversionTest : public testing::TestWithParam<conv_parameters_t> {
+class ConversionTest : public testing::TestWithParam<ConversionParametersType> {
  public:
   void SetUp() override {
     auto parameters = GetParam();
-    std::tie(num_parties_, num_wires_, num_simd_, online_after_setup_) = parameters;
+    std::tie(number_of_parties_, number_of_wires_, number_of_simd_, online_after_setup_) =
+        parameters;
   }
-  void TearDown() override { num_parties_ = num_wires_ = num_simd_ = 0; }
+  void TearDown() override { number_of_parties_ = number_of_wires_ = number_of_simd_ = 0; }
 
  protected:
-  std::size_t num_parties_ = 0, num_wires_ = 0, num_simd_ = 0;
+  std::size_t number_of_parties_ = 0, number_of_wires_ = 0, number_of_simd_ = 0;
   bool online_after_setup_ = false;
 };
 
 TEST_P(ConversionTest, Y2B) {
-  constexpr auto BMR = MOTION::MPCProtocol::BMR;
+  constexpr auto kBmr = encrypto::motion::MpcProtocol::kBmr;
   std::srand(0);
-  const std::size_t input_owner = std::rand() % this->num_parties_,
-                    output_owner = std::rand() % this->num_parties_;
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->num_parties_);
-  for (auto &bv_v : global_input) {
-    bv_v.resize(this->num_wires_);
-    for (auto &bv : bv_v) {
-      bv = ENCRYPTO::BitVector<>::Random(this->num_simd_);
+  const std::size_t input_owner = std::rand() % this->number_of_parties_,
+                    output_owner = std::rand() % this->number_of_parties_;
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input(this->number_of_parties_);
+  for (auto& bv_v : global_input) {
+    bv_v.resize(this->number_of_wires_);
+    for (auto& bv : bv_v) {
+      bv = encrypto::motion::BitVector<>::Random(this->number_of_simd_);
     }
   }
-  std::vector<ENCRYPTO::BitVector<>> dummy_input(this->num_wires_,
-                                                 ENCRYPTO::BitVector<>(this->num_simd_, false));
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      this->number_of_wires_, encrypto::motion::BitVector<>(this->number_of_simd_, false));
 
   try {
-    std::vector<PartyPtr> motion_parties(
-        std::move(GetNLocalParties(this->num_parties_, PORT_OFFSET)));
-    for (auto &p : motion_parties) {
-      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-      p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
+    std::vector<PartyPointer> motion_parties(
+        std::move(GetNumberOfLocalParties(this->number_of_parties_, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
     }
-    std::vector<std::thread> t;
+    std::vector<std::thread> threads;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &motion_parties, this, input_owner, output_owner, &global_input,
-                      &dummy_input]() {
-        Shares::SharePtr tmp_share;
+      threads.emplace_back([party_id, &motion_parties, this, input_owner, output_owner,
+                            &global_input, &dummy_input]() {
+        SharePointer temporary_share;
         if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-          tmp_share =
-              motion_parties.at(party_id)->IN<BMR>(global_input.at(input_owner), input_owner);
+          temporary_share =
+              motion_parties.at(party_id)->In<kBmr>(global_input.at(input_owner), input_owner);
         } else {
-          tmp_share = motion_parties.at(party_id)->IN<BMR>(dummy_input, input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBmr>(dummy_input, input_owner);
         }
 
-        MOTION::Shares::ShareWrapper s_in(tmp_share);
-        EXPECT_EQ(s_in->GetBitLength(), this->num_wires_);
-        const auto s_conv{s_in.Convert<MPCProtocol::BooleanGMW>()};
-        auto s_out{s_conv.Out(output_owner)};
+        encrypto::motion::ShareWrapper share_input(temporary_share);
+        EXPECT_EQ(share_input->GetBitLength(), this->number_of_wires_);
+        const auto share_conversion{share_input.Convert<MpcProtocol::kBooleanGmw>()};
+        auto share_output{share_conversion.Out(output_owner)};
 
         motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
-          for (auto i = 0ull; i < this->num_wires_; ++i) {
-            auto wire_single{
-                std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out->GetWires().at(i))};
+          for (auto i = 0ull; i < this->number_of_wires_; ++i) {
+            auto wire_single{std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(
+                share_output->GetWires().at(i))};
             assert(wire_single);
             EXPECT_EQ(wire_single->GetValues(), global_input.at(input_owner).at(i));
           }
@@ -111,58 +112,58 @@ TEST_P(ConversionTest, Y2B) {
         motion_parties.at(party_id)->Finish();
       });
     }
-    for (auto &tt : t)
-      if (tt.joinable()) tt.join();
-  } catch (std::exception &e) {
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
 }
 
 TEST_P(ConversionTest, B2Y) {
-  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
   std::srand(0);
-  const std::size_t input_owner = std::rand() % this->num_parties_,
-                    output_owner = std::rand() % this->num_parties_;
-  std::vector<std::vector<ENCRYPTO::BitVector<>>> global_input(this->num_parties_);
-  for (auto &bv_v : global_input) {
-    bv_v.resize(this->num_wires_);
-    for (auto &bv : bv_v) {
-      bv = ENCRYPTO::BitVector<>::Random(this->num_simd_);
+  const std::size_t input_owner = std::rand() % this->number_of_parties_,
+                    output_owner = std::rand() % this->number_of_parties_;
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input(this->number_of_parties_);
+  for (auto& bv_v : global_input) {
+    bv_v.resize(this->number_of_wires_);
+    for (auto& bv : bv_v) {
+      bv = encrypto::motion::BitVector<>::Random(this->number_of_simd_);
     }
   }
-  std::vector<ENCRYPTO::BitVector<>> dummy_input(this->num_wires_,
-                                                 ENCRYPTO::BitVector<>(this->num_simd_, false));
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      this->number_of_wires_, encrypto::motion::BitVector<>(this->number_of_simd_, false));
 
   try {
-    std::vector<PartyPtr> motion_parties(
-        std::move(GetNLocalParties(this->num_parties_, PORT_OFFSET)));
-    for (auto &p : motion_parties) {
-      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-      p->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
+    std::vector<PartyPointer> motion_parties(
+        std::move(GetNumberOfLocalParties(this->number_of_parties_, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
     }
-    std::vector<std::thread> t;
+    std::vector<std::thread> threads;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &motion_parties, this, input_owner, output_owner, &global_input,
-                      &dummy_input]() {
-        Shares::SharePtr tmp_share;
+      threads.emplace_back([party_id, &motion_parties, this, input_owner, output_owner,
+                            &global_input, &dummy_input]() {
+        SharePointer temporary_share;
         if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-          tmp_share =
-              motion_parties.at(party_id)->IN<BGMW>(global_input.at(input_owner), input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBooleanGmw>(
+              global_input.at(input_owner), input_owner);
         } else {
-          tmp_share = motion_parties.at(party_id)->IN<BGMW>(dummy_input, input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, input_owner);
         }
 
-        MOTION::Shares::ShareWrapper s_in(tmp_share);
-        EXPECT_EQ(s_in->GetBitLength(), this->num_wires_);
-        const auto s_conv{s_in.Convert<MPCProtocol::BMR>()};
-        auto s_out{s_conv.Out(output_owner)};
+        encrypto::motion::ShareWrapper share_input(temporary_share);
+        EXPECT_EQ(share_input->GetBitLength(), this->number_of_wires_);
+        const auto share_conversion{share_input.Convert<MpcProtocol::kBmr>()};
+        auto share_output{share_conversion.Out(output_owner)};
 
         motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
-          for (auto i = 0ull; i < this->num_wires_; ++i) {
-            auto wire_single{
-                std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(i))};
+          for (auto i = 0ull; i < this->number_of_wires_; ++i) {
+            auto wire_single{std::dynamic_pointer_cast<encrypto::motion::proto::bmr::Wire>(
+                share_output->GetWires().at(i))};
             assert(wire_single);
             EXPECT_EQ(wire_single->GetPublicValues(), global_input.at(input_owner).at(i));
           }
@@ -170,306 +171,315 @@ TEST_P(ConversionTest, B2Y) {
         motion_parties.at(party_id)->Finish();
       });
     }
-    for (auto &tt : t)
-      if (tt.joinable()) tt.join();
-  } catch (std::exception &e) {
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
 }
 
-constexpr std::array<std::size_t, 2> conv_num_parties{2, 3};
-constexpr std::array<std::size_t, 3> conv_num_wires{1, 10, 64};
-constexpr std::array<std::size_t, 3> conv_num_simd{1, 10, 64};
-constexpr std::array<bool, 2> conv_online_after_setup{false, true};
+constexpr std::array<std::size_t, 2> kConversionNumberOfParties{2, 3};
+constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
+constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
+constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
 
-INSTANTIATE_TEST_SUITE_P(
-    ConversionTestSuite, ConversionTest,
-    testing::Combine(testing::ValuesIn(conv_num_parties), testing::ValuesIn(conv_num_wires),
-                     testing::ValuesIn(conv_num_simd), testing::ValuesIn(conv_online_after_setup)),
-    [](const testing::TestParamInfo<ConversionTest::ParamType> &info) {
-      const auto mode = static_cast<bool>(std::get<3>(info.param)) ? "Seq" : "Par";
-      std::string name = fmt::format("{}_Parties_{}_Wires_{}_SIMD__{}", std::get<0>(info.param),
-                                     std::get<1>(info.param), std::get<2>(info.param), mode);
-      return name;
-    });
+INSTANTIATE_TEST_SUITE_P(ConversionTestSuite, ConversionTest,
+                         testing::Combine(testing::ValuesIn(kConversionNumberOfParties),
+                                          testing::ValuesIn(kConversionNumberOfWires),
+                                          testing::ValuesIn(kConversionNumberOfSimd),
+                                          testing::ValuesIn(kConversionOnlineAfterSetup)),
+                         [](const testing::TestParamInfo<ConversionTest::ParamType>& info) {
+                           const auto mode =
+                               static_cast<bool>(std::get<3>(info.param)) ? "Seq" : "Par";
+                           std::string name = fmt::format(
+                               "{}_Parties_{}_Wires_{}_SIMD__{}", std::get<0>(info.param),
+                               std::get<1>(info.param), std::get<2>(info.param), mode);
+                           return name;
+                         });
 
 // number of parties, SIMD values, online-after-setup flag
-using aconv_parameters_t = std::tuple<std::size_t, std::size_t, bool>;
+using ArithmeticConversionParametersType = std::tuple<std::size_t, std::size_t, bool>;
 
-class ArithmeticConversionTest : public testing::TestWithParam<aconv_parameters_t> {
+class ArithmeticConversionTest : public testing::TestWithParam<ArithmeticConversionParametersType> {
  public:
   void SetUp() override {
     auto parameters = GetParam();
-    std::tie(num_parties_, num_simd_, online_after_setup_) = parameters;
+    std::tie(number_of_parties_, number_of_simd_, online_after_setup_) = parameters;
   }
-  void TearDown() override { num_parties_ = num_simd_ = 0; }
+  void TearDown() override { number_of_parties_ = number_of_simd_ = 0; }
 
  protected:
-  std::size_t num_parties_ = 0, num_simd_ = 0;
+  std::size_t number_of_parties_ = 0, number_of_simd_ = 0;
   bool online_after_setup_ = false;
 };
 
 template <typename T>
-void A2YRun(const std::size_t num_parties, const std::size_t num_simd,
+void A2YRun(const std::size_t number_of_parties, const std::size_t number_of_simd,
             const bool online_after_setup) {
-  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   std::srand(0);
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
+  std::mt19937 mersenne_twister(0);
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto r = std::bind(distribution, mersenne_twister);
 
-  const std::size_t input_owner = std::rand() % num_parties,
-                    output_owner = std::rand() % num_parties;
-  std::vector<std::vector<T>> global_input(num_parties);
-  for (auto &v : global_input) {
-    v.resize(num_simd);
-    for (auto &x : v) x = r();
+  const std::size_t input_owner = std::rand() % number_of_parties,
+                    output_owner = std::rand() % number_of_parties;
+  std::vector<std::vector<T>> global_input(number_of_parties);
+  for (auto& v : global_input) {
+    v.resize(number_of_simd);
+    for (auto& x : v) x = r();
   }
-  std::vector<T> dummy_input(num_simd, 0);
+  std::vector<T> dummy_input(number_of_simd, 0);
 
   try {
-    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
-    for (auto &p : motion_parties) {
-      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-      p->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
+    std::vector<PartyPointer> motion_parties(
+        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
     }
-    std::vector<std::thread> t;
+    std::vector<std::thread> threads;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back(
+      threads.emplace_back(
           [party_id, &motion_parties, input_owner, output_owner, &global_input, &dummy_input]() {
-            Shares::SharePtr tmp_share;
+            SharePointer temporary_share;
             if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              tmp_share =
-                  motion_parties.at(party_id)->IN<AGMW>(global_input.at(input_owner), input_owner);
+              temporary_share = motion_parties.at(party_id)->In<kArithmeticGmw>(
+                  global_input.at(input_owner), input_owner);
             } else {
-              tmp_share = motion_parties.at(party_id)->IN<AGMW>(dummy_input, input_owner);
+              temporary_share =
+                  motion_parties.at(party_id)->In<kArithmeticGmw>(dummy_input, input_owner);
             }
 
-            MOTION::Shares::ShareWrapper s_in(tmp_share);
-            const auto s_conv{s_in.Convert<MPCProtocol::BMR>()};
-            const auto s_out{s_conv.Out(output_owner)};
+            encrypto::motion::ShareWrapper share_input(temporary_share);
+            const auto share_conversion{share_input.Convert<MpcProtocol::kBmr>()};
+            const auto share_output{share_conversion.Out(output_owner)};
 
             motion_parties.at(party_id)->Run();
 
-            std::vector<ENCRYPTO::BitVector<>> out_bv;
+            std::vector<encrypto::motion::BitVector<>> output_bit_vector;
             if (party_id == output_owner) {
-              for (auto i = 0ull; i < s_in->GetBitLength(); ++i) {
-                auto wire_single{
-                    std::dynamic_pointer_cast<MOTION::Wires::BMRWire>(s_out->GetWires().at(i))};
+              for (auto i = 0ull; i < share_input->GetBitLength(); ++i) {
+                auto wire_single{std::dynamic_pointer_cast<encrypto::motion::proto::bmr::Wire>(
+                    share_output->GetWires().at(i))};
                 assert(wire_single);
-                out_bv.emplace_back(wire_single->GetPublicValues());
+                output_bit_vector.emplace_back(wire_single->GetPublicValues());
               }
 
-              const auto result{ENCRYPTO::ToVectorOutput<T>(out_bv)};
-              for (auto simd_i = 0ull; simd_i < s_in->GetNumOfSIMDValues(); ++simd_i)
+              const auto result{encrypto::motion::ToVectorOutput<T>(output_bit_vector)};
+              for (auto simd_i = 0ull; simd_i < share_input->GetNumberOfSimdValues(); ++simd_i)
                 EXPECT_EQ(result.at(simd_i), global_input.at(input_owner).at(simd_i));
             }
             motion_parties.at(party_id)->Finish();
           });
     }
-    for (auto &tt : t)
-      if (tt.joinable()) tt.join();
-  } catch (std::exception &e) {
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
 }
 
 TEST_P(ArithmeticConversionTest, A2Y_8_bit) {
-  A2YRun<std::uint8_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2YRun<std::uint8_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(ArithmeticConversionTest, A2Y_16_bit) {
-  A2YRun<std::uint16_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2YRun<std::uint16_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(ArithmeticConversionTest, A2Y_32_bit) {
-  A2YRun<std::uint32_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2YRun<std::uint32_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(ArithmeticConversionTest, A2Y_64_bit) {
-  A2YRun<std::uint64_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2YRun<std::uint64_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 
 template <typename T>
-void A2BRun(const std::size_t num_parties, const std::size_t num_simd,
+void A2BRun(const std::size_t number_of_parties, const std::size_t number_of_simd,
             const bool online_after_setup) {
-  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   std::srand(0);
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
+  std::mt19937 mersenne_twister(0);
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto r = std::bind(distribution, mersenne_twister);
 
-  const std::size_t input_owner = std::rand() % num_parties,
-                    output_owner = std::rand() % num_parties;
-  std::vector<std::vector<T>> global_input(num_parties);
-  for (auto &v : global_input) {
-    v.resize(num_simd);
-    for (auto &x : v) x = r();
+  const std::size_t input_owner = std::rand() % number_of_parties,
+                    output_owner = std::rand() % number_of_parties;
+  std::vector<std::vector<T>> global_input(number_of_parties);
+  for (auto& v : global_input) {
+    v.resize(number_of_simd);
+    for (auto& x : v) x = r();
   }
-  std::vector<T> dummy_input(num_simd, 0);
+  std::vector<T> dummy_input(number_of_simd, 0);
 
   try {
-    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
-    for (auto &p : motion_parties) {
-      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-      p->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
+    std::vector<PartyPointer> motion_parties(
+        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
     }
-    std::vector<std::thread> t;
+    std::vector<std::thread> threads;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back(
-          [party_id, &motion_parties, input_owner, output_owner, &global_input, &dummy_input]() {
-            Shares::SharePtr tmp_share;
-            if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-              tmp_share =
-                  motion_parties.at(party_id)->IN<AGMW>(global_input.at(input_owner), input_owner);
-            } else {
-              tmp_share = motion_parties.at(party_id)->IN<AGMW>(dummy_input, input_owner);
-            }
+      threads.emplace_back([party_id, &motion_parties, input_owner, output_owner, &global_input,
+                            &dummy_input]() {
+        SharePointer temporary_share;
+        if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
+          temporary_share = motion_parties.at(party_id)->In<kArithmeticGmw>(
+              global_input.at(input_owner), input_owner);
+        } else {
+          temporary_share =
+              motion_parties.at(party_id)->In<kArithmeticGmw>(dummy_input, input_owner);
+        }
 
-            MOTION::Shares::ShareWrapper s_in(tmp_share);
-            const auto s_conv{s_in.Convert<MPCProtocol::BooleanGMW>()};
-            const auto s_out{s_conv.Out(output_owner)};
+        encrypto::motion::ShareWrapper share_input(temporary_share);
+        const auto share_conversion{share_input.Convert<MpcProtocol::kBooleanGmw>()};
+        const auto share_output{share_conversion.Out(output_owner)};
 
-            motion_parties.at(party_id)->Run();
+        motion_parties.at(party_id)->Run();
 
-            std::vector<ENCRYPTO::BitVector<>> out_bv;
-            if (party_id == output_owner) {
-              for (auto i = 0ull; i < s_in->GetBitLength(); ++i) {
-                auto wire_single{
-                    std::dynamic_pointer_cast<MOTION::Wires::GMWWire>(s_out->GetWires().at(i))};
-                assert(wire_single);
-                out_bv.emplace_back(wire_single->GetValues());
-              }
+        std::vector<encrypto::motion::BitVector<>> output_bit_vector;
+        if (party_id == output_owner) {
+          for (auto i = 0ull; i < share_input->GetBitLength(); ++i) {
+            auto wire_single{std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(
+                share_output->GetWires().at(i))};
+            assert(wire_single);
+            output_bit_vector.emplace_back(wire_single->GetValues());
+          }
 
-              const auto result{ENCRYPTO::ToVectorOutput<T>(out_bv)};
-              for (auto simd_i = 0ull; simd_i < s_in->GetNumOfSIMDValues(); ++simd_i)
-                EXPECT_EQ(result.at(simd_i), global_input.at(input_owner).at(simd_i));
-            }
-            motion_parties.at(party_id)->Finish();
-          });
+          const auto result{encrypto::motion::ToVectorOutput<T>(output_bit_vector)};
+          for (auto simd_i = 0ull; simd_i < share_input->GetNumberOfSimdValues(); ++simd_i)
+            EXPECT_EQ(result.at(simd_i), global_input.at(input_owner).at(simd_i));
+        }
+        motion_parties.at(party_id)->Finish();
+      });
     }
-    for (auto &tt : t)
-      if (tt.joinable()) tt.join();
-  } catch (std::exception &e) {
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
 }
 
 TEST_P(ArithmeticConversionTest, A2B_8_bit) {
-  A2BRun<std::uint8_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2BRun<std::uint8_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(ArithmeticConversionTest, A2B_16_bit) {
-  A2BRun<std::uint16_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2BRun<std::uint16_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(ArithmeticConversionTest, A2B_32_bit) {
-  A2BRun<std::uint32_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2BRun<std::uint32_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(ArithmeticConversionTest, A2B_64_bit) {
-  A2BRun<std::uint64_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  A2BRun<std::uint64_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ArithmeticConversionTestSuite, ArithmeticConversionTest,
-    testing::Combine(testing::ValuesIn(conv_num_parties), testing::ValuesIn(conv_num_simd),
-                     testing::ValuesIn(conv_online_after_setup)),
-    [](const testing::TestParamInfo<ArithmeticConversionTest::ParamType> &info) {
+    testing::Combine(testing::ValuesIn(kConversionNumberOfParties),
+                     testing::ValuesIn(kConversionNumberOfSimd),
+                     testing::ValuesIn(kConversionOnlineAfterSetup)),
+    [](const testing::TestParamInfo<ArithmeticConversionTest::ParamType>& info) {
       const auto mode = static_cast<bool>(std::get<2>(info.param)) ? "Seq" : "Par";
       std::string name = fmt::format("{}_Parties_{}_SIMD__{}", std::get<0>(info.param),
                                      std::get<1>(info.param), mode);
       return name;
     });
 
-
-class BooleanConversionTest : public testing::TestWithParam<aconv_parameters_t> {
+class BooleanConversionTest : public testing::TestWithParam<ArithmeticConversionParametersType> {
  public:
   void SetUp() override {
     auto parameters = GetParam();
-    std::tie(num_parties_, num_simd_, online_after_setup_) = parameters;
+    std::tie(number_of_parties_, number_of_simd_, online_after_setup_) = parameters;
   }
-  void TearDown() override { num_parties_ = num_simd_ = 0; }
+  void TearDown() override { number_of_parties_ = number_of_simd_ = 0; }
 
  protected:
-  std::size_t num_parties_ = 0, num_simd_ = 0;
+  std::size_t number_of_parties_ = 0, number_of_simd_ = 0;
   bool online_after_setup_ = false;
 };
 
 template <typename T>
-void B2ARun(const std::size_t num_parties, const std::size_t num_simd,
+void B2ARun(const std::size_t number_of_parties, const std::size_t number_of_simd,
             const bool online_after_setup) {
-  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
-  constexpr auto BGMW = MOTION::MPCProtocol::BooleanGMW;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
   constexpr auto bit_size = sizeof(T) * 8;
   std::srand(0);
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
+  std::mt19937 mersenne_twister(0);
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto r = std::bind(distribution, mersenne_twister);
 
-  const std::size_t input_owner = std::rand() % num_parties,
-                    output_owner = std::rand() % num_parties;
-  std::vector<ENCRYPTO::BitVector<>> global_input(bit_size);
-  for (auto &bv : global_input) {
-    bv = ENCRYPTO::BitVector<>::Random(num_simd);
+  const std::size_t input_owner = std::rand() % number_of_parties,
+                    output_owner = std::rand() % number_of_parties;
+  std::vector<encrypto::motion::BitVector<>> global_input(bit_size);
+  for (auto& bv : global_input) {
+    bv = encrypto::motion::BitVector<>::Random(number_of_simd);
   }
-  const auto global_input_as_int{ENCRYPTO::ToVectorOutput<T>(global_input)};
-  std::vector<ENCRYPTO::BitVector<>> dummy_input(bit_size, ENCRYPTO::BitVector<>(num_simd, false));
+  const auto global_input_ashare_inputt{encrypto::motion::ToVectorOutput<T>(global_input)};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      bit_size, encrypto::motion::BitVector<>(number_of_simd, false));
 
   try {
-    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
-    for (auto &p : motion_parties) {
-      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-      p->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
+    std::vector<PartyPointer> motion_parties(
+        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
     }
-    std::vector<std::thread> t;
+    std::vector<std::thread> threads;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &motion_parties, input_owner, output_owner, &global_input,
-                      &global_input_as_int, &dummy_input]() {
-        Shares::SharePtr tmp_share;
+      threads.emplace_back([party_id, &motion_parties, input_owner, output_owner, &global_input,
+                            &global_input_ashare_inputt, &dummy_input]() {
+        SharePointer temporary_share;
         if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-          tmp_share = motion_parties.at(party_id)->IN<BGMW>(global_input, input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBooleanGmw>(global_input, input_owner);
         } else {
-          tmp_share = motion_parties.at(party_id)->IN<BGMW>(dummy_input, input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, input_owner);
         }
 
-        MOTION::Shares::ShareWrapper s_in(tmp_share);
-        const auto s_conv{s_in.Convert<AGMW>()};
-        const auto s_out{s_conv.Out(output_owner)};
+        encrypto::motion::ShareWrapper share_input(temporary_share);
+        const auto share_conversion{share_input.Convert<kArithmeticGmw>()};
+        const auto share_output{share_conversion.Out(output_owner)};
 
         motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
-          auto wire{
-              std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(s_out->GetWires().at(0))};
+          auto wire{std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
+              share_output->GetWires().at(0))};
           assert(wire);
           auto result = wire->GetValues();
 
-          for (auto simd_i = 0ull; simd_i < s_in->GetNumOfSIMDValues(); ++simd_i)
-            EXPECT_EQ(result.at(simd_i), global_input_as_int.at(simd_i));
+          for (auto simd_i = 0ull; simd_i < share_input->GetNumberOfSimdValues(); ++simd_i)
+            EXPECT_EQ(result.at(simd_i), global_input_ashare_inputt.at(simd_i));
         }
         motion_parties.at(party_id)->Finish();
       });
     }
-    for (auto &tt : t)
-      if (tt.joinable()) tt.join();
-  } catch (std::exception &e) {
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
 }
 
 TEST_P(BooleanConversionTest, B2A_8_bit) {
-  B2ARun<std::uint8_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  B2ARun<std::uint8_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(BooleanConversionTest, B2A_16_bit) {
-  B2ARun<std::uint16_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  B2ARun<std::uint16_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(BooleanConversionTest, B2A_32_bit) {
-  B2ARun<std::uint32_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  B2ARun<std::uint32_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(BooleanConversionTest, B2A_64_bit) {
-  B2ARun<std::uint64_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  B2ARun<std::uint64_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 
 INSTANTIATE_TEST_SUITE_P(BooleanConversionTestSuite, BooleanConversionTest,
-                         testing::Combine(testing::ValuesIn(conv_num_parties),
-                                          testing::ValuesIn(conv_num_simd),
-                                          testing::ValuesIn(conv_online_after_setup)),
-                         [](const testing::TestParamInfo<BooleanConversionTest::ParamType> &info) {
+                         testing::Combine(testing::ValuesIn(kConversionNumberOfParties),
+                                          testing::ValuesIn(kConversionNumberOfSimd),
+                                          testing::ValuesIn(kConversionOnlineAfterSetup)),
+                         [](const testing::TestParamInfo<BooleanConversionTest::ParamType>& info) {
                            const auto mode =
                                static_cast<bool>(std::get<2>(info.param)) ? "Seq" : "Par";
                            std::string name =
@@ -478,100 +488,101 @@ INSTANTIATE_TEST_SUITE_P(BooleanConversionTestSuite, BooleanConversionTest,
                            return name;
                          });
 
-class YaoConversionTest : public testing::TestWithParam<aconv_parameters_t> {
+class YaoConversionTest : public testing::TestWithParam<ArithmeticConversionParametersType> {
  public:
   void SetUp() override {
     auto parameters = GetParam();
-    std::tie(num_parties_, num_simd_, online_after_setup_) = parameters;
+    std::tie(number_of_parties_, number_of_simd_, online_after_setup_) = parameters;
   }
-  void TearDown() override { num_parties_ = num_simd_ = 0; }
+  void TearDown() override { number_of_parties_ = number_of_simd_ = 0; }
 
  protected:
-  std::size_t num_parties_ = 0, num_simd_ = 0;
+  std::size_t number_of_parties_ = 0, number_of_simd_ = 0;
   bool online_after_setup_ = false;
 };
 
-
 template <typename T>
-void Y2ARun(const std::size_t num_parties, const std::size_t num_simd,
+void Y2ARun(const std::size_t number_of_parties, const std::size_t number_of_simd,
             const bool online_after_setup) {
-  constexpr auto AGMW = MOTION::MPCProtocol::ArithmeticGMW;
-  constexpr auto BMR = MOTION::MPCProtocol::BMR;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  constexpr auto kBmr = encrypto::motion::MpcProtocol::kBmr;
   constexpr auto bit_size = sizeof(T) * 8;
   std::srand(0);
-  std::mt19937 g(0);
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  auto r = std::bind(dist, g);
+  std::mt19937 mersenne_twister(0);
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto r = std::bind(distribution, mersenne_twister);
 
-  const std::size_t input_owner = std::rand() % num_parties,
-                    output_owner = std::rand() % num_parties;
-  std::vector<ENCRYPTO::BitVector<>> global_input(bit_size);
-  for (auto &bv : global_input) {
-    bv = ENCRYPTO::BitVector<>::Random(num_simd);
+  const std::size_t input_owner = std::rand() % number_of_parties,
+                    output_owner = std::rand() % number_of_parties;
+  std::vector<encrypto::motion::BitVector<>> global_input(bit_size);
+  for (auto& bv : global_input) {
+    bv = encrypto::motion::BitVector<>::Random(number_of_simd);
   }
-  const auto global_input_as_int{ENCRYPTO::ToVectorOutput<T>(global_input)};
-  std::vector<ENCRYPTO::BitVector<>> dummy_input(bit_size, ENCRYPTO::BitVector<>(num_simd, false));
+  const auto global_input_ashare_inputt{encrypto::motion::ToVectorOutput<T>(global_input)};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      bit_size, encrypto::motion::BitVector<>(number_of_simd, false));
 
   try {
-    std::vector<PartyPtr> motion_parties(std::move(GetNLocalParties(num_parties, PORT_OFFSET)));
-    for (auto &p : motion_parties) {
-      p->GetLogger()->SetEnabled(DETAILED_LOGGING_ENABLED);
-      p->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
+    std::vector<PartyPointer> motion_parties(
+        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
     }
-    std::vector<std::thread> t;
+    std::vector<std::thread> threads;
     for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-      t.emplace_back([party_id, &motion_parties, input_owner, output_owner, &global_input,
-                      &global_input_as_int, &dummy_input]() {
-        Shares::SharePtr tmp_share;
+      threads.emplace_back([party_id, &motion_parties, input_owner, output_owner, &global_input,
+                            &global_input_ashare_inputt, &dummy_input]() {
+        SharePointer temporary_share;
         if (input_owner == motion_parties.at(party_id)->GetConfiguration()->GetMyId()) {
-          tmp_share = motion_parties.at(party_id)->IN<BMR>(global_input, input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBmr>(global_input, input_owner);
         } else {
-          tmp_share = motion_parties.at(party_id)->IN<BMR>(dummy_input, input_owner);
+          temporary_share = motion_parties.at(party_id)->In<kBmr>(dummy_input, input_owner);
         }
 
-        MOTION::Shares::ShareWrapper s_in(tmp_share);
-        const auto s_conv{s_in.Convert<AGMW>()};
-        const auto s_out{s_conv.Out(output_owner)};
+        encrypto::motion::ShareWrapper share_input(temporary_share);
+        const auto share_conversion{share_input.Convert<kArithmeticGmw>()};
+        const auto share_output{share_conversion.Out(output_owner)};
 
         motion_parties.at(party_id)->Run();
 
         if (party_id == output_owner) {
-          auto wire{
-              std::dynamic_pointer_cast<MOTION::Wires::ArithmeticWire<T>>(s_out->GetWires().at(0))};
+          auto wire{std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
+              share_output->GetWires().at(0))};
           assert(wire);
           auto result = wire->GetValues();
 
-          for (auto simd_i = 0ull; simd_i < s_in->GetNumOfSIMDValues(); ++simd_i)
-            EXPECT_EQ(result.at(simd_i), global_input_as_int.at(simd_i));
+          for (auto simd_i = 0ull; simd_i < share_input->GetNumberOfSimdValues(); ++simd_i)
+            EXPECT_EQ(result.at(simd_i), global_input_ashare_inputt.at(simd_i));
         }
         motion_parties.at(party_id)->Finish();
       });
     }
-    for (auto &tt : t)
-      if (tt.joinable()) tt.join();
-  } catch (std::exception &e) {
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  } catch (std::exception& e) {
     std::cerr << e.what() << std::endl;
   }
 }
 
 TEST_P(YaoConversionTest, Y2A_8_bit) {
-  Y2ARun<std::uint8_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  Y2ARun<std::uint8_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(YaoConversionTest, Y2A_16_bit) {
-  Y2ARun<std::uint16_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  Y2ARun<std::uint16_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(YaoConversionTest, Y2A_32_bit) {
-  Y2ARun<std::uint32_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  Y2ARun<std::uint32_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 TEST_P(YaoConversionTest, Y2A_64_bit) {
-  Y2ARun<std::uint64_t>(this->num_parties_, this->num_simd_, this->online_after_setup_);
+  Y2ARun<std::uint64_t>(this->number_of_parties_, this->number_of_simd_, this->online_after_setup_);
 }
 
 INSTANTIATE_TEST_SUITE_P(YaoConversionTestSuite, YaoConversionTest,
-                         testing::Combine(testing::ValuesIn(conv_num_parties),
-                                          testing::ValuesIn(conv_num_simd),
-                                          testing::ValuesIn(conv_online_after_setup)),
-                         [](const testing::TestParamInfo<YaoConversionTest::ParamType> &info) {
+                         testing::Combine(testing::ValuesIn(kConversionNumberOfParties),
+                                          testing::ValuesIn(kConversionNumberOfSimd),
+                                          testing::ValuesIn(kConversionOnlineAfterSetup)),
+                         [](const testing::TestParamInfo<YaoConversionTest::ParamType>& info) {
                            const auto mode =
                                static_cast<bool>(std::get<2>(info.param)) ? "Seq" : "Par";
                            std::string name =
@@ -579,6 +590,5 @@ INSTANTIATE_TEST_SUITE_P(YaoConversionTestSuite, YaoConversionTest,
                                            std::get<1>(info.param), mode);
                            return name;
                          });
-
 
 }  // namespace

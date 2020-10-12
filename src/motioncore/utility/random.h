@@ -29,7 +29,7 @@
 
 #include "utility/typedefs.h"
 
-namespace MOTION {
+namespace encrypto::motion {
 
 inline std::vector<std::uint8_t> RandomVector(std::size_t size_in_bytes) {
   std::vector<std::uint8_t> buffer(size_in_bytes);
@@ -53,4 +53,5 @@ inline std::vector<std::uint8_t> RandomVector(std::size_t size_in_bytes) {
   }
   return buffer;
 }
-}  // namespace MOTION
+
+}  // namespace encrypto::motion

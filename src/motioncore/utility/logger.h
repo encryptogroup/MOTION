@@ -32,10 +32,11 @@
 #include <memory>
 #include <mutex>
 
-using logger_type =
+namespace encrypto::motion {
+
+using LoggerType =
     boost::log::sources::severity_channel_logger<boost::log::trivial::severity_level, std::size_t>;
 
-namespace MOTION {
 class Logger {
  public:
   // multiple instantiations of Logger in one application will cause duplicates
@@ -44,25 +45,25 @@ class Logger {
 
   ~Logger();
 
-  void Log(boost::log::trivial::severity_level severity_level, const std::string& msg);
+  void Log(boost::log::trivial::severity_level severity_level, const std::string& message);
 
-  void Log(boost::log::trivial::severity_level severity_level, std::string&& msg);
+  void Log(boost::log::trivial::severity_level severity_level, std::string&& message);
 
-  void LogTrace(const std::string& msg);
+  void LogTrace(const std::string& message);
 
-  void LogTrace(std::string&& msg);
+  void LogTrace(std::string&& message);
 
-  void LogInfo(const std::string& msg);
+  void LogInfo(const std::string& message);
 
-  void LogInfo(std::string&& msg);
+  void LogInfo(std::string&& message);
 
-  void LogDebug(const std::string& msg);
+  void LogDebug(const std::string& message);
 
-  void LogDebug(std::string&& msg);
+  void LogDebug(std::string&& message);
 
-  void LogError(const std::string& msg);
+  void LogError(const std::string& message);
 
-  void LogError(std::string&& msg);
+  void LogError(std::string&& message);
 
   bool IsEnabled() { return logging_enabled_; }
 
@@ -70,8 +71,8 @@ class Logger {
 
  private:
   boost::shared_ptr<boost::log::sinks::synchronous_sink<boost::log::sinks::text_file_backend>>
-      g_file_sink;
-  std::unique_ptr<logger_type> logger_;
+      g_file_sink_;
+  std::unique_ptr<LoggerType> logger_;
   const std::size_t my_id_;
   std::atomic<bool> logging_enabled_ = true;
   std::mutex write_mutex_;
@@ -82,5 +83,6 @@ class Logger {
   Logger() = delete;
 };
 
-using LoggerPtr = std::shared_ptr<Logger>;
-}  // namespace MOTION
+using LoggerPointer = std::shared_ptr<Logger>;
+
+}  // namespace encrypto::motion

@@ -26,18 +26,18 @@
 #include <boost/hana/map.hpp>
 #include <boost/hana/tuple.hpp>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
-// type_map is a compile-time map whose keys are types that are mapped to
+// TypeMap is a compile-time map whose keys are types that are mapped to
 // objects of possibly different types depending on the key
-// e.g. type_map<std::vector, int, std::string> maps
+// e.g. TypeMap<std::vector, int, std::string> maps
 // - int (as type) to an std::vector<int> instance, and
 // - std::string to an std::vector<int> instance.
 
 #if __cplusplus > 201703L  // C++20
 
 template <template <typename> class Value, typename... Ts>
-using type_map = decltype([] {
+using TypeMap = decltype([] {
   return boost::hana::unpack(boost::hana::tuple_t<Ts...>, [](auto... t) {
     return boost::hana::make_map(
         boost::hana::make_pair(decltype(t)(), Value<typename decltype(t)::type>())...);
@@ -49,17 +49,18 @@ using type_map = decltype([] {
 namespace detail {
 
 template <template <typename> class Value, typename... Ts>
-auto make_type_map() {
+auto MakeTypeMap() {
   return boost::hana::unpack(boost::hana::tuple_t<Ts...>, [](auto... t) {
     return boost::hana::make_map(
         boost::hana::make_pair(decltype(t)(), Value<typename decltype(t)::type>())...);
   });
 }
+
 }  // namespace detail
 
 template <template <typename> class Value, typename... Ts>
-using type_map = decltype(detail::make_type_map<Value, Ts...>());
+using TypeMap = decltype(detail::MakeTypeMap<Value, Ts...>());
 
 #endif
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

@@ -1,20 +1,20 @@
-namespace MOTION.Communication;
+namespace encrypto.motion.communication;
 
 enum MessageType : ubyte {
-  HelloMessage = 0,
-  OutputMessage = 1,
-  TerminationMessage = 2,
-  SynchronizationMessage = 3,
-  BaseROTMessageSender = 4,
-  BaseROTMessageReceiver = 5,
-  OTExtensionReceiverMasks = 6,
-  OTExtensionReceiverCorrections = 7,
-  OTExtensionSender = 8,
-  BMRInputGate0 = 9,                    // publishes the public value held by the input owner (lambda ^ input)
-  BMRInputGate1 = 10,                   // publishes the keys on wire under the public value to all parties
-  BMRANDGate = 11,                      // publishes garbled tables corresponding to a gate (n_wires * n_simd * 3 rows)
-  SharedBitsMask = 12,
-  SharedBitsReconstruct = 13,
+  kHelloMessage = 0,
+  kOutputMessage = 1,
+  kTerminationMessage = 2,
+  kSynchronizationMessage = 3,
+  kBaseROtMessageSender = 4,
+  kBaseROtMessageReceiver = 5,
+  kOtExtensionReceiverMasks = 6,
+  kOtExtensionReceiverCorrections = 7,
+  kOtExtensionSender = 8,
+  kBmrInputGate0 = 9,                    // publishes the public value held by the input owner (lambda ^ input)
+  kBmrInputGate1 = 10,                   // publishes the keys on wire under the public value to all parties
+  kBmrAndGate = 11,                      // publishes garbled tables corresponding to a gate (n_wires * n_simd * 3 rows)
+  kSharedBitsMask = 12,
+  kSharedBitsReconstruct = 13,
   // add new message types here
   }
 

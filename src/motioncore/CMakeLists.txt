@@ -3,6 +3,8 @@ add_library(motion
         algorithm/tree.cpp
         base/backend.cpp
         base/configuration.cpp
+        base/motion_base_provider.cpp
+        base/output_message_handler.cpp
         base/party.cpp
         base/register.cpp
         communication/base_ot_message.cpp
@@ -17,40 +19,42 @@ add_library(motion
         communication/sync_handler.cpp
         communication/tcp_transport.cpp
         communication/transport.cpp
-        crypto/aes/aesni_primitives.cpp
-        crypto/base_ots/base_ot_provider.cpp
-        crypto/base_ots/ot_hl17.cpp
-        crypto/blake2b.cpp
-        crypto/bmr_provider.cpp
-        crypto/curve25519/mycurve25519.cpp
-        crypto/motion_base_provider.cpp
-        crypto/multiplication_triple/mt_provider.cpp
-        crypto/multiplication_triple/sb_provider.cpp
-        crypto/multiplication_triple/sp_provider.cpp
-        crypto/oblivious_transfer/ot_flavors.cpp
-        crypto/oblivious_transfer/ot_provider.cpp
-        crypto/output_message_handler.cpp
-        crypto/pseudo_random_generator.cpp
-        crypto/sharing_randomness_generator.cpp
-        crypto/random/aes128_ctr_rng.cpp
         data_storage/base_ot_data.cpp
-        data_storage/bmr_data.cpp
         data_storage/ot_extension_data.cpp
         data_storage/shared_bits_data.cpp
         executor/gate_executor.cpp
-        gate/bmr_gate.cpp
-        gate/boolean_gmw_gate.cpp
-        gate/constant_gate.cpp
-        gate/conversion_gate.cpp
-        gate/gate.cpp
+        multiplication_triple/mt_provider.cpp
+        multiplication_triple/sb_provider.cpp
+        multiplication_triple/sp_provider.cpp
+        oblivious_transfer/base_ots/base_ot_provider.cpp
+        oblivious_transfer/base_ots/ot_hl17.cpp
+        oblivious_transfer/ot_flavors.cpp
+        oblivious_transfer/ot_provider.cpp
+        primitives/aes/aesni_primitives.cpp
+        primitives/blake2b.cpp
+        primitives/curve25519/mycurve25519.cpp
+        primitives/pseudo_random_generator.cpp
+        primitives/sharing_randomness_generator.cpp
+        primitives/random/aes128_ctr_rng.cpp
+        protocols/bmr/bmr_data.cpp
+        protocols/bmr/bmr_gate.cpp
+        protocols/bmr/bmr_provider.cpp
+        protocols/bmr/bmr_share.cpp
+        protocols/bmr/bmr_wire.cpp
+        protocols/boolean_gmw/boolean_gmw_gate.cpp
+        protocols/boolean_gmw/boolean_gmw_share.cpp
+        protocols/boolean_gmw/boolean_gmw_wire.cpp
+        protocols/constant/constant_gate.cpp
+        protocols/constant/constant_share.cpp
+        protocols/constant/constant_wire.cpp
+        protocols/conversion/conversion_gate.cpp
+        protocols/gate.cpp
+        protocols/share.cpp
+        protocols/share_wrapper.cpp
+        protocols/wire.cpp
         secure_type/secure_unsigned_integer.cpp
-        share/bmr_share.cpp
-        share/boolean_gmw_share.cpp
-        share/constant_share.cpp
-        share/share.cpp
-        share/share_wrapper.cpp
         statistics/analysis.cpp
-        statistics/run_time_stats.cpp
+        statistics/run_time_statistics.cpp
         utility/bit_matrix.cpp
         utility/bit_vector.cpp
         utility/block.cpp
@@ -61,10 +65,6 @@ add_library(motion
         utility/logger.cpp
         utility/runtime_info.cpp
         utility/thread.cpp
-        wire/bmr_wire.cpp
-        wire/constant_wire.cpp
-        wire/boolean_gmw_wire.cpp
-        wire/wire.cpp
         )
 add_library(MOTION::motion ALIAS motion)
 

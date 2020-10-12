@@ -24,32 +24,32 @@
 
 #include "test_constants.h"
 
-#include "crypto/random/aes128_ctr_rng.h"
+#include "primitives/random/aes128_ctr_rng.h"
 
 // Test vectors from NIST FIPS 197, Appendix A
 
-TEST(AES128_CTR_RNG, no_trivial_output) {
-  alignas(16) std::array<std::byte, 10 * AES128_CTR_RNG::block_size> output_0;
-  alignas(16) std::array<std::byte, 10 * AES128_CTR_RNG::block_size> output_1;
-  AES128_CTR_RNG rng;
-  AES128_CTR_RNG rng2;
-  auto& rngt = AES128_CTR_RNG::get_thread_instance();
+TEST(Aes128CtrRng, no_trivial_output) {
+  alignas(16) std::array<std::byte, 10 * Aes128CtrRng::kBlockSize> output_0;
+  alignas(16) std::array<std::byte, 10 * Aes128CtrRng::kBlockSize> output_1;
+  Aes128CtrRng rng1;
+  Aes128CtrRng rng2;
+  auto& rngt = Aes128CtrRng::GetThreadInstance();
 
-  rng.random_blocks_aligned(output_0.data(), 10);
-  rng.random_blocks_aligned(output_1.data(), 10);
+  rng1.RandomBlocksAligned(output_0.data(), 10);
+  rng1.RandomBlocksAligned(output_1.data(), 10);
   // two subsequent queries do not return the same bytes
   EXPECT_NE(output_0, output_1);
 
-  rng.sample_key();
-  rng.random_blocks_aligned(output_1.data(), 10);
+  rng1.SampleKey();
+  rng1.RandomBlocksAligned(output_1.data(), 10);
   // a new key results in different bytes
   EXPECT_NE(output_0, output_1);
 
-  rng2.random_blocks_aligned(output_1.data(), 10);
+  rng2.RandomBlocksAligned(output_1.data(), 10);
   // a different RNG instance results in different bytes
   EXPECT_NE(output_0, output_1);
 
   // the thread RNG instance results in different bytes
-  rngt.random_blocks_aligned(output_1.data(), 10);
+  rngt.RandomBlocksAligned(output_1.data(), 10);
   EXPECT_NE(output_0, output_1);
 }

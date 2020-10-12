@@ -30,7 +30,7 @@
 #include <optional>
 #include <queue>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 /**
  * Synchronized, closable queue for elements of type T.
@@ -43,7 +43,7 @@ namespace ENCRYPTO {
  * be closed which signals consumers that no further elements will be inserted.
  * Dequeue operations return std::nullopt if the queue is closed and empty.
  */
-template <typename T, typename MutexType, typename CVType>
+template <typename T, typename MutexType, typename ConditionVariableType>
 class BasicSynchronizedQueue {
  public:
   BasicSynchronizedQueue() = default;
@@ -60,7 +60,7 @@ class BasicSynchronizedQueue {
   /**
    * Check if queue is closed.
    */
-  bool closed() const noexcept {
+  bool IsClosed() const noexcept {
     std::scoped_lock lock(mutex_);
     return closed_;
   }
@@ -68,7 +68,7 @@ class BasicSynchronizedQueue {
   /**
    * Check if queue is closed and empty.
    */
-  bool closed_and_empty() const noexcept {
+  bool IsClosedAndEmpty() const noexcept {
     std::scoped_lock lock(mutex_);
     return closed_ && queue_.empty();
   }
@@ -81,7 +81,7 @@ class BasicSynchronizedQueue {
       std::scoped_lock lock(mutex_);
       closed_ = true;
     }
-    cv_.notify_all();
+    condition_variable_.notify_all();
   }
 
   /**
@@ -95,7 +95,7 @@ class BasicSynchronizedQueue {
       std::scoped_lock lock(mutex_);
       queue_.push(item);
     }
-    cv_.notify_one();
+    condition_variable_.notify_one();
   }
 
   void enqueue(T&& item) {
@@ -106,7 +106,7 @@ class BasicSynchronizedQueue {
       std::scoped_lock lock(mutex_);
       queue_.push(std::move(item));
     }
-    cv_.notify_one();
+    condition_variable_.notify_one();
   }
 
   /**
@@ -118,7 +118,7 @@ class BasicSynchronizedQueue {
       return std::nullopt;
     }
     if (queue_.empty() && !closed_) {
-      cv_.wait(lock, [this] { return !this->queue_.empty() || this->closed_; });
+      condition_variable_.wait(lock, [this] { return !this->queue_.empty() || this->closed_; });
     }
     if (queue_.empty()) {
       assert(closed_);
@@ -133,14 +133,14 @@ class BasicSynchronizedQueue {
   /**
    * Extract all elements of the queue.
    */
-  std::optional<std::queue<T>> batch_dequeue() noexcept {
+  std::optional<std::queue<T>> BatchDequeue() noexcept {
     std::queue<T> output;
     std::unique_lock lock(mutex_);
     if (queue_.empty() && closed_) {
       return std::nullopt;
     }
     if (queue_.empty() && !closed_) {
-      cv_.wait(lock, [this] { return !this->queue_.empty() || this->closed_; });
+      condition_variable_.wait(lock, [this] { return !this->queue_.empty() || this->closed_; });
     }
     if (queue_.empty()) {
       return std::nullopt;
@@ -154,7 +154,7 @@ class BasicSynchronizedQueue {
   bool closed_ = false;
   std::queue<T> queue_;
   mutable MutexType mutex_;
-  CVType cv_;
+  ConditionVariableType condition_variable_;
 };
 
 template <typename T>
@@ -164,4 +164,4 @@ template <typename T>
 using SynchronizedFiberQueue =
     BasicSynchronizedQueue<T, boost::fibers::mutex, boost::fibers::condition_variable>;
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

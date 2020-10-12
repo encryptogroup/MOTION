@@ -27,10 +27,12 @@
 #include <flatbuffers/flatbuffers.h>
 #include "utility/constants.h"
 
-namespace MOTION::Communication {
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::byte *buffer, std::size_t size,
+namespace encrypto::motion::communication {
+
+flatbuffers::FlatBufferBuilder BuildBaseROtMessageReceiver(std::byte* buffer, std::size_t size,
                                                            std::size_t ot_id);
 
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::byte *buffer, std::size_t size,
+flatbuffers::FlatBufferBuilder BuildBaseROtMessageSender(std::byte* buffer, std::size_t size,
                                                          std::size_t ot_id);
-}  // namespace MOTION::Communication
+
+}  // namespace encrypto::motion::communication

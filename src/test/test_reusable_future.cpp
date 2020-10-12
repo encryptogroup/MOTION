@@ -24,9 +24,7 @@
 
 #include "utility/reusable_future.h"
 
-namespace {
-
-using namespace ENCRYPTO;
+using namespace encrypto::motion;
 
 TEST(ReusableFuture, SetAfterGetFuture) {
   ReusablePromise<int> promise;
@@ -54,25 +52,25 @@ TEST(ReusableFuture, SetTwice) {
 }
 
 TEST(ReusableFuture, SetTwiceWithReset) {
+  constexpr int kInputValue1 = 42;
+  constexpr int kInputValue2 = 47;
+
   ReusablePromise<int> promise;
   auto future = promise.get_future();
 
-  int input_value_1 = 42;
-  int input_value_2 = 47;
-
-  promise.set_value(input_value_1);
+  promise.set_value(kInputValue1);
   auto output_value_1 = future.get();
-  EXPECT_EQ(input_value_1, output_value_1);
+  EXPECT_EQ(kInputValue1, output_value_1);
 
-  promise.set_value(input_value_2);
+  promise.set_value(kInputValue2);
   auto output_value_2 = future.get();
-  EXPECT_EQ(input_value_2, output_value_2);
+  EXPECT_EQ(kInputValue2, output_value_2);
 }
 
 TEST(ReusableFuture, InvalidFuture) {
-  ReusableFuture<int> fut;
-  EXPECT_FALSE(fut.valid());
-  EXPECT_THROW(fut.get(), std::future_error);
+  ReusableFuture<int> future;
+  EXPECT_FALSE(future.valid());
+  EXPECT_THROW(future.get(), std::future_error);
 }
 
 TEST(ReusableFuture, InvalidPromise) {
@@ -89,5 +87,3 @@ TEST(ReusableFuture, RetrieveFutureTwice) {
   auto _ = promise.get_future();
   EXPECT_THROW(promise.get_future(), std::future_error);
 }
-
-}  // namespace

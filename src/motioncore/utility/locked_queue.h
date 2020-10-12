@@ -30,7 +30,7 @@
 #include <optional>
 #include <queue>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 /**
  * Locked queue for elements of type T
@@ -54,7 +54,7 @@ class LockedQueue {
       std::scoped_lock<std::timed_mutex> lock(mutex_);
       queue_.push(item);
     }
-    cv_.notify_one();
+    condition_variable_.notify_one();
   }
 
   void enqueue(T&& item) {
@@ -62,7 +62,7 @@ class LockedQueue {
       std::scoped_lock<std::timed_mutex> lock(mutex_);
       queue_.push(item);
     }
-    cv_.notify_one();
+    condition_variable_.notify_one();
   }
 
   /**
@@ -71,7 +71,7 @@ class LockedQueue {
   T dequeue() {
     std::unique_lock<std::timed_mutex> lock(mutex_);
     if (queue_.empty()) {
-      cv_.wait(lock, [this] { return !this->queue_.empty(); });
+      condition_variable_.wait(lock, [this] { return !this->queue_.empty(); });
     }
     auto item = queue_.front();
     queue_.pop();
@@ -96,7 +96,7 @@ class LockedQueue {
       return std::optional(item);
     }
     // queue is currently empty
-    if (!cv_.wait_for(lock, duration, [this] { return !this->queue_.empty(); })) {
+    if (!condition_variable_.wait_for(lock, duration, [this] { return !this->queue_.empty(); })) {
       lock.unlock();
       return std::optional<T>(std::nullopt);
     }
@@ -111,7 +111,7 @@ class LockedQueue {
    * Extract all elements of the queue.
    */
   template <typename Tick, typename Period>
-  std::queue<T> batch_dequeue(const std::chrono::duration<Tick, Period>& duration) {
+  std::queue<T> BatchDeque(const std::chrono::duration<Tick, Period>& duration) {
     std::queue<T> output;
     std::unique_lock<std::timed_mutex> lock(mutex_, duration);
 
@@ -120,7 +120,8 @@ class LockedQueue {
       // let's wait for new entries
       if (queue_.empty()) {
         // there are some entries now
-        if (cv_.wait_for(lock, duration, [this] { return !this->queue_.empty(); })) {
+        if (condition_variable_.wait_for(lock, duration,
+                                         [this] { return !this->queue_.empty(); })) {
           std::swap(queue_, output);
         }
       }
@@ -136,9 +137,9 @@ class LockedQueue {
  private:
   std::queue<T> queue_;
   mutable std::timed_mutex mutex_;
-  std::condition_variable_any cv_;
+  std::condition_variable_any condition_variable_;
 };
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion
 
 #endif  // LOCKED_QUEUE_HPP

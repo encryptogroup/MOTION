@@ -25,7 +25,7 @@
 #include "transport.h"
 #include "utility/synchronized_queue.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
 class DummyTransport : public Transport {
  public:
@@ -34,31 +34,31 @@ class DummyTransport : public Transport {
 
   // create a pair of dummy transports which are connected to each other
   static std::pair<std::unique_ptr<DummyTransport>, std::unique_ptr<DummyTransport>>
-  make_transport_pair();
+  MakeTransportPair();
 
   // send a message
-  void send_message(std::vector<std::uint8_t>&& message);
-  void send_message(const std::vector<std::uint8_t>& message);
+  void SendMessage(std::vector<std::uint8_t>&& message) override;
+  void SendMessage(const std::vector<std::uint8_t>& message) override;
 
   // check if a new message is available
-  bool available() const;
+  bool Available() const override;
 
   // receive message, possibly blocking
-  std::optional<std::vector<std::uint8_t>> receive_message();
+  std::optional<std::vector<std::uint8_t>> ReceiveMessage() override;
 
   // shutdown the outgoing part of the transport to signal end of communication
-  void shutdown_send();
+  void ShutdownSend() override;
 
   // shutdown this transport
-  void shutdown();
+  void Shutdown() override;
 
  private:
-  using message_queue_t = ENCRYPTO::SynchronizedQueue<std::vector<std::uint8_t>>;
-  DummyTransport(std::shared_ptr<message_queue_t> send_queue,
-                 std::shared_ptr<message_queue_t> receive_queue) noexcept;
+  using MessageQueueType = SynchronizedQueue<std::vector<std::uint8_t>>;
+  DummyTransport(std::shared_ptr<MessageQueueType> send_queue,
+                 std::shared_ptr<MessageQueueType> receive_queue) noexcept;
 
-  std::shared_ptr<message_queue_t> send_queue_;
-  std::shared_ptr<message_queue_t> receive_queue_;
+  std::shared_ptr<MessageQueueType> send_queue_;
+  std::shared_ptr<MessageQueueType> receive_queue_;
 };
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

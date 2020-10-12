@@ -22,15 +22,15 @@
 
 #include "transport.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
-const TransportStatistics& Transport::get_stats() const { return statistics_; }
+const TransportStatistics& Transport::GetStatistics() const { return statistics_; }
 
-void Transport::reset_stats() {
-  statistics_.num_messages_sent = 0;
-  statistics_.num_messages_received = 0;
-  statistics_.num_bytes_sent = 0;
-  statistics_.num_bytes_received = 0;
+void Transport::ResetStatistics() {
+  statistics_.number_of_messages_sent = 0;
+  statistics_.number_of_messages_received = 0;
+  statistics_.number_of_bytes_sent = 0;
+  statistics_.number_of_bytes_received = 0;
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

@@ -26,4 +26,4 @@
 
 #include "base/party.h"
 
-void EvaluateProtocol(MOTION::PartyPtr & party);
+void EvaluateProtocol(encrypto::motion::PartyPointer& party);

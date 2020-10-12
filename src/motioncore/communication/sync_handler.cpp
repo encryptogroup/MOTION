@@ -27,13 +27,14 @@
 #include "fbs_headers/message_generated.h"
 #include "utility/logger.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
-void SyncHandler::received_message(std::size_t party_id, std::vector<std::uint8_t>&& raw_message) {
+void SynchronizationHandler::ReceivedMessage(std::size_t party_id,
+                                             std::vector<std::uint8_t>&& raw_message) {
   assert(!raw_message.empty());
   const auto message =
-      Communication::GetMessage(reinterpret_cast<std::uint8_t*>(raw_message.data()));
-  auto message_size = message->payload()->size();
+      communication::GetMessage(reinterpret_cast<std::uint8_t*>(raw_message.data()));
+  const auto message_size = message->payload()->size();
   if (message_size != sizeof(std::uint64_t)) {
     if (logger_) {
       logger_->LogError(
@@ -45,25 +46,27 @@ void SyncHandler::received_message(std::size_t party_id, std::vector<std::uint8_
   // the data may not be aligned to the same as a 64-bit value
   // thus we need to copy it
   const auto message_data = message->payload()->data();
-  std::uint64_t received_sync_state;
+  std::uint64_t received_synchronization_state;
   // std::copy requires its dereferenced iterators to be assignable,
   // so we do the extra cast here
-  char* received_sync_state_ptr = reinterpret_cast<char*>(&received_sync_state);
+  char* received_sync_state_ptr = reinterpret_cast<char*>(&received_synchronization_state);
   std::copy_n(message_data, sizeof(std::uint64_t), received_sync_state_ptr);
   {
-    std::scoped_lock lock(received_sync_states_mutex_);
-    sync_states_.at(party_id) = std::max(received_sync_state, sync_states_.at(party_id));
+    std::scoped_lock lock(received_synchronization_states_mutex_);
+    synchronization_states_.at(party_id) =
+        std::max(received_synchronization_state, synchronization_states_.at(party_id));
   }
-  sync_states_cv_.notify_all();
+  synchronization_states_condition_variable_.notify_all();
 }
 
-void SyncHandler::wait() {
-  auto my_sync_state = sync_states_.at(my_id_);
-  std::unique_lock lock(received_sync_states_mutex_);
-  sync_states_cv_.wait(lock, [this, my_sync_state] {
-    return std::all_of(std::begin(sync_states_), std::end(sync_states_),
-                       [my_sync_state](auto s) { return s >= my_sync_state; });
+void SynchronizationHandler::Wait() {
+  auto my_synchronization_state = synchronization_states_.at(my_id_);
+  std::unique_lock lock(received_synchronization_states_mutex_);
+  synchronization_states_condition_variable_.wait(lock, [this, my_synchronization_state] {
+    return std::all_of(
+        std::begin(synchronization_states_), std::end(synchronization_states_),
+        [my_synchronization_state](auto s) { return s >= my_synchronization_state; });
   });
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

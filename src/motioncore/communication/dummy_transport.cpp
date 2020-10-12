@@ -22,59 +22,59 @@
 
 #include "dummy_transport.h"
 
-namespace MOTION::Communication {
+namespace encrypto::motion::communication {
 
 DummyTransport::DummyTransport(DummyTransport&& other)
     : Transport(std::move(other)),
       send_queue_(std::move(other.send_queue_)),
       receive_queue_(std::move(other.receive_queue_)) {}
 
-DummyTransport::DummyTransport(std::shared_ptr<message_queue_t> send_queue,
-                               std::shared_ptr<message_queue_t> receive_queue) noexcept
+DummyTransport::DummyTransport(std::shared_ptr<MessageQueueType> send_queue,
+                               std::shared_ptr<MessageQueueType> receive_queue) noexcept
     : send_queue_(send_queue), receive_queue_(receive_queue) {}
 
 std::pair<std::unique_ptr<DummyTransport>, std::unique_ptr<DummyTransport>>
-DummyTransport::make_transport_pair() {
-  auto queue_0 = std::make_shared<message_queue_t>();
-  auto queue_1 = std::make_shared<message_queue_t>();
+DummyTransport::MakeTransportPair() {
+  auto queue_0 = std::make_shared<MessageQueueType>();
+  auto queue_1 = std::make_shared<MessageQueueType>();
   auto transport_0 = std::unique_ptr<DummyTransport>(new DummyTransport(queue_0, queue_1));
   auto transport_1 = std::unique_ptr<DummyTransport>(new DummyTransport(queue_1, queue_0));
   return std::make_pair(std::move(transport_0), std::move(transport_1));
 }
 
-void DummyTransport::send_message(std::vector<std::uint8_t>&& message) {
+void DummyTransport::SendMessage(std::vector<std::uint8_t>&& message) {
   auto message_size = message.size();
   send_queue_->enqueue(std::move(message));
-  statistics_.num_messages_sent += 1;
-  statistics_.num_bytes_sent += message_size;
+  statistics_.number_of_messages_sent += 1;
+  statistics_.number_of_bytes_sent += message_size;
 }
 
-void DummyTransport::send_message(const std::vector<std::uint8_t>& message) {
+void DummyTransport::SendMessage(const std::vector<std::uint8_t>& message) {
   auto message_size = message.size();
   send_queue_->enqueue(message);
-  statistics_.num_messages_sent += 1;
-  statistics_.num_bytes_sent += message_size;
+  statistics_.number_of_messages_sent += 1;
+  statistics_.number_of_bytes_sent += message_size;
 }
 
-bool DummyTransport::available() const { return !receive_queue_->empty(); }
+bool DummyTransport::Available() const { return !receive_queue_->empty(); }
 
-std::optional<std::vector<std::uint8_t>> DummyTransport::receive_message() {
+std::optional<std::vector<std::uint8_t>> DummyTransport::ReceiveMessage() {
   auto message_opt = receive_queue_->dequeue();
   if (!message_opt.has_value()) {
     // transport has been closed
-    assert(receive_queue_->closed());
+    assert(receive_queue_->IsClosed());
     return std::nullopt;
   }
-  statistics_.num_messages_received += 1;
-  statistics_.num_bytes_received += message_opt->size();
+  statistics_.number_of_messages_received += 1;
+  statistics_.number_of_bytes_received += message_opt->size();
   return message_opt;
 }
 
-void DummyTransport::shutdown_send() { send_queue_->close(); }
+void DummyTransport::ShutdownSend() { send_queue_->close(); }
 
-void DummyTransport::shutdown() {
-  shutdown_send();
+void DummyTransport::Shutdown() {
+  ShutdownSend();
   receive_queue_->close();
 }
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

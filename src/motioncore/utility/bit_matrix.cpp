@@ -29,37 +29,40 @@
 #include <cmath>
 #include <iostream>
 
-#include "crypto/pseudo_random_generator.h"
 #include "helpers.h"
+#include "primitives/pseudo_random_generator.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
+
 void BitMatrix::Transpose() {
-  std::size_t num_rows = data_.size();
-  if (num_rows == 0 || num_columns_ == 0 || (num_rows == 1 && num_columns_ == 1)) {
+  std::size_t number_of_rows = data_.size();
+  if (number_of_rows == 0 || number_of_columns_ == 0 ||
+      (number_of_rows == 1 && number_of_columns_ == 1)) {
     return;
-  } else if (num_rows == 1) {
-    for (auto i = 1ull; i < num_columns_; ++i) {
+  } else if (number_of_rows == 1) {
+    for (auto i = 1ull; i < number_of_columns_; ++i) {
       data_.emplace_back(1, data_.at(0).Get(i));
     }
     data_.at(0).Resize(1, true);
     return;
-  } else if (num_columns_ == 1) {
-    for (auto i = 1ull; i < num_rows; ++i) {
+  } else if (number_of_columns_ == 1) {
+    for (auto i = 1ull; i < number_of_rows; ++i) {
       data_.at(0).Append(data_.at(i));
     }
     data_.resize(1);
     return;
   }
 
-  const std::size_t block_size_unpadded = std::min(num_rows, num_columns_);
+  const std::size_t block_size_unpadded = std::min(number_of_rows, number_of_columns_);
   const std::size_t block_size = static_cast<std::size_t>(pow(2, ceil(log2(block_size_unpadded))));
-  const std::size_t initial_num_columns = num_columns_;
-  const std::size_t initial_num_rows = data_.size();
+  const std::size_t initial_number_of_columns = number_of_columns_;
+  const std::size_t initial_number_of_rows = data_.size();
 
   // pad to the block size
-  if (num_columns_ % block_size > 0u) {
-    for (auto& bv : data_) {
-      bv.Resize(num_columns_ + block_size - (num_columns_ % block_size), true);
+  if (number_of_columns_ % block_size > 0u) {
+    for (auto& block_vector : data_) {
+      block_vector.Resize(number_of_columns_ + block_size - (number_of_columns_ % block_size),
+                          true);
     }
   }
 
@@ -69,8 +72,8 @@ void BitMatrix::Transpose() {
   }
 
   // move the first blocks manually to reduce the memory overhead - prevent padding to a square
-  if (num_columns_ > num_rows) {
-    for (auto i = block_size; i < num_columns_; i += block_size) {
+  if (number_of_columns_ > number_of_rows) {
+    for (auto i = block_size; i < number_of_columns_; i += block_size) {
 #pragma omp for
       for (auto j = 0ull; j < block_size; ++j) {
         data_.emplace_back(data_.at(j).Subset(i, i + block_size));
@@ -80,7 +83,7 @@ void BitMatrix::Transpose() {
     for (auto i = 0ull; i < block_size; ++i) {
       data_.at(i).Resize(block_size, true);
     }
-  } else if (num_columns_ < num_rows) {
+  } else if (number_of_columns_ < number_of_rows) {
     for (auto i = block_size; i < data_.size(); i += block_size) {
 #pragma omp for
       for (auto j = 0ull; j < block_size; ++j) {
@@ -93,13 +96,13 @@ void BitMatrix::Transpose() {
   TransposeInternal();
 
   // remove padding
-  data_.resize(initial_num_columns);
+  data_.resize(initial_number_of_columns);
 
-  for (auto& bv : data_) {
-    bv.Resize(initial_num_rows, true);
+  for (auto& block_vector : data_) {
+    block_vector.Resize(initial_number_of_rows, true);
   }
 
-  num_columns_ = initial_num_rows;
+  number_of_columns_ = initial_number_of_rows;
 }
 
 void BitMatrix::TransposeInternal() {
@@ -146,25 +149,25 @@ void BitMatrix::Transpose128Rows() {
     throw std::runtime_error("Little endian encoding is required for BitMatrix::Transpose128");
   }
 
-  std::size_t num_rows = data_.size();
-  assert(num_rows == 128);
-  assert(num_columns_ > 0);
+  std::size_t number_of_rows = data_.size();
+  assert(number_of_rows == 128);
+  assert(number_of_columns_ > 0);
 
   constexpr std::size_t block_size = 128;
-  const std::size_t initial_num_columns = num_columns_;
-  const std::size_t initial_num_rows = data_.size();
+  const std::size_t initial_number_of_columns = number_of_columns_;
+  const std::size_t initial_number_of_rows = data_.size();
 
   // pad to the block size
-  if (num_columns_ % block_size > 0u) {
-    const auto padding_size = block_size - (num_columns_ % block_size);
-    for (auto& bv : data_) {
-      bv.Resize(num_columns_ + padding_size);
+  if (number_of_columns_ % block_size > 0u) {
+    const auto padding_size = block_size - (number_of_columns_ % block_size);
+    for (auto& block_vector : data_) {
+      block_vector.Resize(number_of_columns_ + padding_size);
     }
   }
 
   // move the first blocks manually to reduce the memory overhead - prevent padding to a square
-  if (num_columns_ > num_rows) {
-    for (auto i = block_size; i < num_columns_; i += block_size) {
+  if (number_of_columns_ > number_of_rows) {
+    for (auto i = block_size; i < number_of_columns_; i += block_size) {
 #pragma omp for
       for (auto j = 0ull; j < block_size; ++j) {
         data_.emplace_back(data_.at(j).Subset(i, i + block_size));
@@ -174,7 +177,7 @@ void BitMatrix::Transpose128Rows() {
     for (auto i = 0ull; i < block_size; ++i) {
       data_.at(i).Resize(block_size);
     }
-  } else if (num_columns_ < num_rows) {
+  } else if (number_of_columns_ < number_of_rows) {
     for (auto i = block_size; i < data_.size(); i += block_size) {
 #pragma omp for
       for (auto j = 0ull; j < block_size; ++j) {
@@ -187,54 +190,55 @@ void BitMatrix::Transpose128Rows() {
   Transpose128RowsInternal();
 
   // remove padding
-  data_.resize(initial_num_columns);
+  data_.resize(initial_number_of_columns);
 
-  for (auto& bv : data_) {
-    bv.Resize(initial_num_rows);
+  for (auto& block_vector : data_) {
+    block_vector.Resize(initial_number_of_rows);
   }
 
-  num_columns_ = initial_num_rows;
+  number_of_columns_ = initial_number_of_rows;
 }
 
 void BitMatrix::Transpose128RowsInternal() {
-  constexpr std::size_t num_columns = 128;
-  for (auto block_offset = 0u; block_offset < num_columns_; block_offset += num_columns) {
-    std::array<std::uint64_t*, num_columns> rows_64;
-    std::array<std::uint32_t*, num_columns> rows_32;
+  constexpr std::size_t kNumberOfColumns = 128;
+  for (auto block_offset = 0u; block_offset < number_of_columns_;
+       block_offset += kNumberOfColumns) {
+    std::array<std::uint64_t*, kNumberOfColumns> rows_64_bit;
+    std::array<std::uint32_t*, kNumberOfColumns> rows_32_bit;
 
-    for (auto i = 0u; i < num_columns; ++i) {
-      rows_64.at(i) =
+    for (auto i = 0u; i < kNumberOfColumns; ++i) {
+      rows_64_bit.at(i) =
           reinterpret_cast<std::uint64_t*>(data_.at(block_offset + i).GetMutableData().data());
-      rows_32.at(i) =
+      rows_32_bit.at(i) =
           reinterpret_cast<std::uint32_t*>(data_.at(block_offset + i).GetMutableData().data());
     }
 
-    Transpose128x128InPlace(rows_64, rows_32);
+    Transpose128x128InPlace(rows_64_bit, rows_32_bit);
   }
 }
 
-void BitMatrix::AppendRow(const AlignedBitVector& bv) {
-  if (bv.GetSize() != num_columns_) {
-    throw std::runtime_error("BitMatrix::AppendRow : bv.GetSize() != num_columns");
+void BitMatrix::AppendRow(const AlignedBitVector& block_vector) {
+  if (block_vector.GetSize() != number_of_columns_) {
+    throw std::runtime_error("BitMatrix::AppendRow : block_vector.GetSize() != number_of_columns");
   }
-  data_.push_back(bv);
+  data_.push_back(block_vector);
 }
 
-void BitMatrix::AppendRow(AlignedBitVector&& bv) {
-  if (bv.GetSize() != num_columns_) {
-    throw std::runtime_error("BitMatrix::AppendRow : bv.GetSize() != num_columns");
+void BitMatrix::AppendRow(AlignedBitVector&& block_vector) {
+  if (block_vector.GetSize() != number_of_columns_) {
+    throw std::runtime_error("BitMatrix::AppendRow : block_vector.GetSize() != number_of_columns");
   }
-  data_.emplace_back(std::move(bv));
+  data_.emplace_back(std::move(block_vector));
 }
 
-void BitMatrix::AppendColumn(const AlignedBitVector& bv) {
-  if (bv.GetSize() != data_.size()) {
-    throw std::runtime_error("BitMatrix::AppendColumn : bv.GetSize() != num_rows");
+void BitMatrix::AppendColumn(const AlignedBitVector& block_vector) {
+  if (block_vector.GetSize() != data_.size()) {
+    throw std::runtime_error("BitMatrix::AppendColumn : block_vector.GetSize() != number_of_rows");
   }
   for (auto i = 0ull; i < data_.size(); ++i) {
-    data_.at(i).Append(bv.Get(i));
+    data_.at(i).Append(block_vector.Get(i));
   }
-  ++num_columns_;
+  ++number_of_columns_;
 }
 
 std::string BitMatrix::AsString() const {
@@ -246,74 +250,83 @@ std::string BitMatrix::AsString() const {
 }
 
 void BitMatrix::Transpose128RowsInplace(std::array<std::byte*, 128>& matrix,
-                                        std::size_t num_columns) {
-  constexpr std::size_t blk_size = 128;
-  for (auto blk_offset = 0u; blk_offset < num_columns; blk_offset += blk_size) {
-    std::array<std::uint64_t*, blk_size> rows_64;
-    std::array<std::uint32_t*, blk_size> rows_32;
+                                        std::size_t number_of_columns) {
+  constexpr std::size_t kBlkSize = 128;
+  constexpr std::size_t kBitsInByte = 8;
 
-    for (auto i = 0u; i < blk_size; ++i) {
-      rows_64.at(i) = reinterpret_cast<std::uint64_t*>(matrix.at(i) + (blk_offset >> 3));
-      rows_32.at(i) = reinterpret_cast<std::uint32_t*>(matrix.at(i) + (blk_offset >> 3));
+  for (auto block_offset = 0u; block_offset < number_of_columns; block_offset += kBlkSize) {
+    std::array<std::uint64_t*, kBlkSize> rows_64_bit;
+    std::array<std::uint32_t*, kBlkSize> rows_32_bit;
+
+    for (auto i = 0u; i < kBlkSize; ++i) {
+      rows_64_bit.at(i) =
+          reinterpret_cast<std::uint64_t*>(matrix.at(i) + (block_offset / kBitsInByte));
+      rows_32_bit.at(i) =
+          reinterpret_cast<std::uint32_t*>(matrix.at(i) + (block_offset / kBitsInByte));
     }
 
-    Transpose128x128InPlace(rows_64, rows_32);
+    Transpose128x128InPlace(rows_64_bit, rows_32_bit);
   }
 }
 
-void BitMatrix::Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64,
-                                        std::array<std::uint32_t*, 128>& rows_32) {
-  constexpr std::size_t blk_size = 128;
+void BitMatrix::Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64_bit,
+                                        std::array<std::uint32_t*, 128>& rows_32_bit) {
+  constexpr std::size_t kBlkSize = 128;
 
-  std::array<std::uint64_t, blk_size> tmp_64_0, tmp_64_1;
+  std::array<std::uint64_t, kBlkSize> tmp_64_0, tmp_64_1;
 
   {
-    constexpr std::size_t this_blk_size = 128;
+    constexpr std::size_t kThisBlkSize = 128;
+    constexpr std::size_t kThisNumberOfSubBlocks = kThisBlkSize / 64;
+    constexpr std::size_t kThisSubBlockSize = kThisBlkSize / kThisNumberOfSubBlocks;
     // swap the corresponding 64-bit blocks
-    constexpr std::size_t this_subblk_size = this_blk_size / 2;
-    for (auto i = 0u; i < this_subblk_size; ++i) {
-      std::swap(rows_64.at(i)[1], rows_64.at(this_subblk_size + i)[0]);
+    for (auto i = 0u; i < kThisSubBlockSize; ++i) {
+      std::swap(rows_64_bit.at(i)[1], rows_64_bit.at(kThisSubBlockSize + i)[0]);
     }
   }
 
   {
-    constexpr std::size_t this_blk_size = 64;
-    constexpr std::size_t this_subblk_size = this_blk_size / 2;
+    constexpr std::size_t kThisBlkSize = 64;
+    constexpr std::size_t kThisNumberOfSubBlocks = kThisBlkSize / 32;
+    constexpr std::size_t kThisSubBlockSize = kThisBlkSize / kThisNumberOfSubBlocks;
     // swap the corresponding 32-bit blocks
-    for (auto i = 0u; i < blk_size; i += this_blk_size) {
-      for (auto j = 0u; j < this_subblk_size; ++j) {
-        std::swap(rows_32.at(i + j)[1], rows_32.at(this_subblk_size + i + j)[0]);
-        std::swap(rows_32.at(i + j)[3], rows_32.at(this_subblk_size + i + j)[2]);
+    for (auto i = 0u; i < kBlkSize; i += kThisBlkSize) {
+      for (auto j = 0u; j < kThisSubBlockSize; ++j) {
+        std::swap(rows_32_bit.at(i + j)[1], rows_32_bit.at(kThisSubBlockSize + i + j)[0]);
+        std::swap(rows_32_bit.at(i + j)[3], rows_32_bit.at(kThisSubBlockSize + i + j)[2]);
       }
     }
   }
 
   {
     // block size = {32, 16}
-    constexpr std::array<std::uint64_t, 2> mask0{0xFFFF0000FFFF0000ull, 0xFF00FF00FF00FF00ull};
-    constexpr std::array<std::uint64_t, 2> mask1{~mask0.at(0), ~mask0.at(1)};
+    constexpr std::array<std::uint64_t, 2> kMask0{0xFFFF0000FFFF0000ull, 0xFF00FF00FF00FF00ull};
+    constexpr std::array<std::uint64_t, 2> kMask1{~kMask0.at(0), ~kMask0.at(1)};
     for (auto this_blk_size = 32, block_id = 0; this_blk_size > 8;
          this_blk_size >>= 1, ++block_id) {
       const std::size_t this_subblk_size = this_blk_size >> 1;
-      for (auto i = 0u; i < blk_size; i += this_blk_size) {
+      for (auto i = 0u; i < kBlkSize; i += this_blk_size) {
         for (auto j = 0u; j < this_subblk_size; ++j) {
-          tmp_64_0.at(i + j) = (rows_64.at(i + j)[0] & mask0.at(block_id)) >> this_subblk_size;
+          tmp_64_0.at(i + j) = (rows_64_bit.at(i + j)[0] & kMask0.at(block_id)) >> this_subblk_size;
           tmp_64_0.at(i + this_subblk_size + j) =
-              (rows_64.at(i + j)[1] & mask0.at(block_id)) >> this_subblk_size;
+              (rows_64_bit.at(i + j)[1] & kMask0.at(block_id)) >> this_subblk_size;
 
-          tmp_64_1.at(i + j) = (rows_64.at(this_subblk_size + i + j)[0] & mask1.at(block_id))
+          tmp_64_1.at(i + j) = (rows_64_bit.at(this_subblk_size + i + j)[0] & kMask1.at(block_id))
                                << this_subblk_size;
           tmp_64_1.at(i + this_subblk_size + j) =
-              (rows_64.at(this_subblk_size + i + j)[1] & mask1.at(block_id)) << this_subblk_size;
+              (rows_64_bit.at(this_subblk_size + i + j)[1] & kMask1.at(block_id))
+              << this_subblk_size;
 
-          rows_64.at(i + j)[0] = (rows_64.at(i + j)[0] & mask1.at(block_id)) | tmp_64_1.at(i + j);
-          rows_64.at(i + j)[1] =
-              (rows_64.at(i + j)[1] & mask1.at(block_id)) | tmp_64_1.at(i + this_subblk_size + j);
+          rows_64_bit.at(i + j)[0] =
+              (rows_64_bit.at(i + j)[0] & kMask1.at(block_id)) | tmp_64_1.at(i + j);
+          rows_64_bit.at(i + j)[1] = (rows_64_bit.at(i + j)[1] & kMask1.at(block_id)) |
+                                     tmp_64_1.at(i + this_subblk_size + j);
 
-          rows_64.at(this_subblk_size + i + j)[0] =
-              (rows_64.at(this_subblk_size + i + j)[0] & mask0.at(block_id)) | tmp_64_0.at(i + j);
-          rows_64.at(this_subblk_size + i + j)[1] =
-              (rows_64.at(this_subblk_size + i + j)[1] & mask0.at(block_id)) |
+          rows_64_bit.at(this_subblk_size + i + j)[0] =
+              (rows_64_bit.at(this_subblk_size + i + j)[0] & kMask0.at(block_id)) |
+              tmp_64_0.at(i + j);
+          rows_64_bit.at(this_subblk_size + i + j)[1] =
+              (rows_64_bit.at(this_subblk_size + i + j)[1] & kMask0.at(block_id)) |
               tmp_64_0.at(i + this_subblk_size + j);
         }
       }
@@ -331,30 +344,34 @@ void BitMatrix::Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64
 
   {
     // block size = {8, 4, 2}
-    constexpr std::array<std::uint64_t, 3> mask0{0x0F0F0F0F0F0F0F0Full, 0x3333333333333333ull,
-                                                 0x5555555555555555ull};
-    constexpr std::array<std::uint64_t, 3> mask1{~mask0.at(0), ~mask0.at(1), ~mask0.at(2)};
+    constexpr std::array<std::uint64_t, 3> kMask0{0x0F0F0F0F0F0F0F0Full, 0x3333333333333333ull,
+                                                  0x5555555555555555ull};
+    constexpr std::array<std::uint64_t, 3> kMask1{~kMask0.at(0), ~kMask0.at(1), ~kMask0.at(2)};
     for (auto this_blk_size = 8, block_id = 0; this_blk_size > 1; this_blk_size >>= 1, ++block_id) {
       const std::size_t this_subblk_size = this_blk_size >> 1;
-      for (auto i = 0u; i < blk_size; i += this_blk_size) {
+      for (auto i = 0u; i < kBlkSize; i += this_blk_size) {
         for (auto j = 0u; j < this_subblk_size; ++j) {
-          tmp_64_0.at(i + j) = (rows_64.at(i + j)[0] & mask0.at(block_id)) << this_subblk_size;
-          tmp_64_0.at(i + this_subblk_size + j) = (rows_64.at(i + j)[1] & mask0.at(block_id))
+          tmp_64_0.at(i + j) = (rows_64_bit.at(i + j)[0] & kMask0.at(block_id)) << this_subblk_size;
+          tmp_64_0.at(i + this_subblk_size + j) = (rows_64_bit.at(i + j)[1] & kMask0.at(block_id))
                                                   << this_subblk_size;
 
           tmp_64_1.at(i + j) =
-              (rows_64.at(this_subblk_size + i + j)[0] & mask1.at(block_id)) >> this_subblk_size;
+              (rows_64_bit.at(this_subblk_size + i + j)[0] & kMask1.at(block_id)) >>
+              this_subblk_size;
           tmp_64_1.at(i + this_subblk_size + j) =
-              (rows_64.at(this_subblk_size + i + j)[1] & mask1.at(block_id)) >> this_subblk_size;
+              (rows_64_bit.at(this_subblk_size + i + j)[1] & kMask1.at(block_id)) >>
+              this_subblk_size;
 
-          rows_64.at(i + j)[0] = (rows_64.at(i + j)[0] & mask1.at(block_id)) | tmp_64_1.at(i + j);
-          rows_64.at(i + j)[1] =
-              (rows_64.at(i + j)[1] & mask1.at(block_id)) | tmp_64_1.at(i + this_subblk_size + j);
+          rows_64_bit.at(i + j)[0] =
+              (rows_64_bit.at(i + j)[0] & kMask1.at(block_id)) | tmp_64_1.at(i + j);
+          rows_64_bit.at(i + j)[1] = (rows_64_bit.at(i + j)[1] & kMask1.at(block_id)) |
+                                     tmp_64_1.at(i + this_subblk_size + j);
 
-          rows_64.at(this_subblk_size + i + j)[0] =
-              (rows_64.at(this_subblk_size + i + j)[0] & mask0.at(block_id)) | tmp_64_0.at(i + j);
-          rows_64.at(this_subblk_size + i + j)[1] =
-              (rows_64.at(this_subblk_size + i + j)[1] & mask0.at(block_id)) |
+          rows_64_bit.at(this_subblk_size + i + j)[0] =
+              (rows_64_bit.at(this_subblk_size + i + j)[0] & kMask0.at(block_id)) |
+              tmp_64_0.at(i + j);
+          rows_64_bit.at(this_subblk_size + i + j)[1] =
+              (rows_64_bit.at(this_subblk_size + i + j)[1] & kMask0.at(block_id)) |
               tmp_64_0.at(i + this_subblk_size + j);
         }
       }
@@ -389,31 +406,32 @@ void BitMatrix::Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64
 // Enquiries about further applications and development opportunities are
 // welcome.
 
-void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, std::size_t ncols) {
+void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
+                                         std::size_t number_of_colums) {
 #define INP(r, c)                                     \
   reinterpret_cast<const std::uint8_t* __restrict__>( \
       __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
-#define OUT(r, c) out[(r)*nrows / 8 + (c) / 8]
+#define OUT(r, c) output[(r)*kNumberOfRows / 8 + (c) / 8]
 
-  constexpr std::uint64_t nrows = 128;
-  std::vector<std::uint8_t, boost::alignment::aligned_allocator<std::byte, 16>> out(
-      ((nrows * ncols) + 7) / 8, 0);
+  constexpr std::uint64_t kNumberOfRows = 128;
+  std::vector<std::uint8_t, boost::alignment::aligned_allocator<std::byte, 16>> output(
+      ((kNumberOfRows * number_of_colums) + 7) / 8, 0);
 
   uint64_t rr, cc;
   int i;
 
-  assert(nrows % 8 == 0 && ncols % 8 == 0);
+  assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
 
-  // constexpr auto block_size = nrows * nrows;
-  // const auto num_blocks = nrows * ncols / block_size;
+  // constexpr auto block_size = kNumberOfRows * kNumberOfRows;
+  // const auto number_of_blocks = kNumberOfRows * number_of_colums / block_size;
 
 //#define MOTION_AVX2
 #if false && defined(MOTION_AVX512)
   static_assert(false, "Bitsliced transposition with AVX512 is currently buggy (both at compile- and runtime) and thus disabled.");
   // TODO: not tested yet
   __m512i vec;
-  for (rr = 0; rr <= nrows - 32; rr += 8) {
-    for (cc = 0; cc < ncols; cc += 64) {
+  for (rr = 0; rr <= kNumberOfRows - 32; rr += 8) {
+    for (cc = 0; cc < number_of_colums; cc += 64) {
       vec = _mm512_set_epi8(
           INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
           INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
@@ -438,8 +456,8 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, st
                 "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
                 "runtime) and thus disabled.");
   __m256i vec;
-  for (rr = 0; rr <= nrows - 32; rr += 32) {
-    for (cc = 0; cc < ncols; cc += 8) {
+  for (rr = 0; rr <= kNumberOfRows - 32; rr += 32) {
+    for (cc = 0; cc < number_of_colums; cc += 8) {
       vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
                             INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
                             INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
@@ -450,39 +468,42 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, st
                             INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
         *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
-        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+        // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
+        // kNumberOfRows) * 16 + rr / 8;
+        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
       }
     }
   }
 #else
   __m128i vec;
   // Do the main body in 16x8 blocks:
-  for (rr = 0; rr <= nrows - 16; rr += 16) {
-    for (cc = 0; cc < ncols; cc += 8) {
+  for (rr = 0; rr <= kNumberOfRows - 16; rr += 16) {
+    for (cc = 0; cc < number_of_colums; cc += 8) {
       vec = _mm_set_epi8(INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
                          INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
                          INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
                          INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
       for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
         *(uint16_t * __restrict__) & OUT(cc + i, rr) = _mm_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
-        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+        // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
+        // kNumberOfRows) * 16 + rr / 8;
+        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
       }
     }
   }
 #endif
 
-  for (auto j = 0ull; j < ncols; ++j) {
-    std::copy(reinterpret_cast<const std::uint8_t* __restrict__>(out.data()) + j * 16,
-              reinterpret_cast<const std::uint8_t* __restrict__>(out.data()) + (j + 1) * 16,
+  for (auto j = 0ull; j < number_of_colums; ++j) {
+    std::copy(reinterpret_cast<const std::uint8_t* __restrict__>(output.data()) + j * 16,
+              reinterpret_cast<const std::uint8_t* __restrict__>(output.data()) + (j + 1) * 16,
               reinterpret_cast<std::uint8_t* __restrict__>(
-                  __builtin_assume_aligned(matrix.at(j % nrows), 16)) +
-                  (j / nrows) * 16);
+                  __builtin_assume_aligned(matrix.at(j % kNumberOfRows), 16)) +
+                  (j / kNumberOfRows) * 16);
   }
 
-  // for (auto j = 0ull; j < nrows; ++j) {
-  // std::copy(out.data() + j * 16 * num_blocks, out.data() + (j + 1) * 16 * num_blocks,
+  // for (auto j = 0ull; j < kNumberOfRows; ++j) {
+  // std::copy(output.data() + j * 16 * number_of_blocks, output.data() + (j + 1) * 16 *
+  // number_of_blocks,
   //          reinterpret_cast<std::uint8_t*>(matrix.at(j)));
   // }
 }
@@ -490,26 +511,28 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, st
 void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
                                           std::vector<BitVector<>>& y0,
                                           std::vector<BitVector<>>& y1, const BitVector<> choices,
-                                          PRG& prg_fixed_key, const std::size_t ncols,
+                                          primitives::Prg& prg_fixed_key,
+                                          const std::size_t number_of_colums,
                                           const std::vector<std::size_t>& bitlengths) {
-  constexpr std::size_t kappa{128}, nrows{128};
+  constexpr std::size_t kKappa{128}, kNumberOfRows{128};
 #define INP(r, c)                                     \
   reinterpret_cast<const std::uint8_t* __restrict__>( \
       __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
   assert(y0.size() == y1.size());
 
-  const std::size_t original_size{y0.size()}, difference{ncols - original_size};
+  const std::size_t original_size{y0.size()}, difference{number_of_colums - original_size};
   if (difference) {
-    y0.resize(ncols);
-    y1.resize(ncols);
+    y0.resize(number_of_colums);
+    y1.resize(number_of_colums);
   }
 
-  for (auto& bv : y0) bv = BitVector(std::vector<std::byte>(kappa / 8), kappa);
+  for (auto& block_vector : y0)
+    block_vector = BitVector(std::vector<std::byte>(kKappa / 8), kKappa);
 
   std::uint64_t r{0}, c{0};
   int i{0};
 
-  assert(nrows % 8 == 0 && ncols % 8 == 0);
+  assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
 
 //#define MOTION_AVX2
 // this is pretty broken
@@ -519,8 +542,8 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
                 "runtime) and thus disabled.");
   // TODO: not tested yet
   __m512i vec;
-  for (r = 0; r <= nrows - 32; r += 8) {
-    for (c = 0; c < ncols; c += 64) {
+  for (r = 0; r <= kNumberOfRows - 32; r += 8) {
+    for (c = 0; c < number_of_colums; c += 64) {
       vec = _mm512_set_epi8(
           INP(r + 56, c), INP(r + 57, c), INP(r + 58, c), INP(r + 59, c), INP(r + 60, c),
           INP(r + 61, c), INP(r + 62, c), INP(r + 63, c), INP(r + 48, c), INP(r + 49, c),
@@ -545,8 +568,8 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
                 "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
                 "runtime) and thus disabled.");
   __m256i vec;
-  for (r = 0; r <= nrows - 32; r += 32) {
-    for (c = 0; c < ncols; c += 8) {
+  for (r = 0; r <= kNumberOfRows - 32; r += 32) {
+    for (c = 0; c < number_of_colums; c += 8) {
       vec = _mm256_set_epi8(INP(r + 24, c), INP(r + 25, c), INP(r + 26, c), INP(r + 27, c),
                             INP(r + 28, c), INP(r + 29, c), INP(r + 30, c), INP(r + 31, c),
                             INP(r + 16, c), INP(r + 17, c), INP(r + 18, c), INP(r + 19, c),
@@ -557,18 +580,18 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
                             INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
         *(uint32_t*)&OUT(c + i, r) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((c + i) % nrows) * num_blocks * 16 + (c / nrows) * 16 + r / 8;
-        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+        // const auto pos = ((c + i) % kNumberOfRows) * number_of_blocks * 16 + (c / kNumberOfRows) * 16 + r / 8;
+        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
       }
     }
   }
 #else
   __m128i vec;
-  PRG prg_var_key;
+  primitives::Prg prg_var_key;
   // process 128x128 blocks
-  while (c < ncols) {
+  while (c < number_of_colums) {
     auto c_old{c};
-    for (r = 0; r <= nrows - 16; r += 16) {
+    for (r = 0; r <= kNumberOfRows - 16; r += 16) {
       for (c = c_old; c == c_old || (c % 128 != 0); c += 8) {
         vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
                            INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
@@ -586,29 +609,27 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
       auto& out1 = y1[c_old];
 
       // bit length of the OT
-      const auto bitlen = bitlengths[c_old];
+      const auto bitlength = bitlengths[c_old];
 
       out1 = choices ^ out0;
       assert(out0.GetSize() == 128);
       assert(out1.GetSize() == 128);
       // compute the sender outputs
-      if (bitlen <= kappa) {
+      if (bitlength <= kKappa) {
         // the bit length is smaller than 128 bit
-        prg_fixed_key.MMO(out0.GetMutableData().data());
-        prg_fixed_key.MMO(out1.GetMutableData().data());
-        out0.Resize(bitlen);
-        out1.Resize(bitlen);
+        prg_fixed_key.Mmo(out0.GetMutableData().data());
+        prg_fixed_key.Mmo(out1.GetMutableData().data());
+        out0.Resize(bitlength);
+        out1.Resize(bitlength);
       } else {
         // string OT with bit length > 128 bit
         // -> do seed compression and send later only 128 bit seeds
-        prg_fixed_key.MMO(out0.GetMutableData().data());
-        prg_fixed_key.MMO(out1.GetMutableData().data());
+        prg_fixed_key.Mmo(out0.GetMutableData().data());
+        prg_fixed_key.Mmo(out1.GetMutableData().data());
         prg_var_key.SetKey(out0.GetData().data());
-        out0 =
-            BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+        out0 = BitVector<>(prg_var_key.Encrypt(BitsToBytes(bitlength)), bitlength);
         prg_var_key.SetKey(out1.GetData().data());
-        out1 =
-            BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+        out1 = BitVector<>(prg_var_key.Encrypt(BitsToBytes(bitlength)), bitlength);
       }
     }
   }
@@ -616,25 +637,27 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
 }
 
 void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
-                                            std::vector<BitVector<>>& out, PRG& prg_fixed_key,
-                                            const std::size_t ncols,
+                                            std::vector<BitVector<>>& output,
+                                            primitives::Prg& prg_fixed_key,
+                                            const std::size_t number_of_colums,
                                             const std::vector<std::size_t>& bitlengths) {
-  constexpr std::size_t kappa{128}, nrows{128};
+  constexpr std::size_t kKappa{128}, kNumberOfRows{128};
 #define INP(r, c)                                     \
   reinterpret_cast<const std::uint8_t* __restrict__>( \
       __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
 
-  const std::size_t original_size{out.size()}, difference{ncols - original_size};
+  const std::size_t original_size{output.size()}, difference{number_of_colums - original_size};
   if (difference) {
-    out.resize(ncols);
+    output.resize(number_of_colums);
   }
 
-  for (auto& bv : out) bv = BitVector(std::vector<std::byte>(kappa / 8), kappa);
+  for (auto& block_vector : output)
+    block_vector = BitVector(std::vector<std::byte>(kKappa / 8), kKappa);
 
   std::uint64_t r{0}, c{0};
   int i{0};
 
-  assert(nrows % 8 == 0 && ncols % 8 == 0);
+  assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
 
 //#define MOTION_AVX2
 #if false && defined(MOTION_AVX512)
@@ -643,8 +666,8 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
                 "runtime) and thus disabled.");
   // TODO: not tested yet
   __m512i vec;
-  for (rr = 0; rr <= nrows - 32; rr += 8) {
-    for (cc = 0; cc < ncols; cc += 64) {
+  for (rr = 0; rr <= kNumberOfRows - 32; rr += 8) {
+    for (cc = 0; cc < number_of_colums; cc += 64) {
       vec = _mm512_set_epi8(
           INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
           INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
@@ -669,8 +692,8 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
                 "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
                 "runtime) and thus disabled.");
   __m256i vec;
-  for (rr = 0; rr <= nrows - 32; rr += 32) {
-    for (cc = 0; cc < ncols; cc += 8) {
+  for (rr = 0; rr <= kNumberOfRows - 32; rr += 32) {
+    for (cc = 0; cc < number_of_colums; cc += 8) {
       vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
                             INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
                             INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
@@ -681,42 +704,43 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
                             INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
         *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
-        //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
+        // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
+        // kNumberOfRows) * 16 + rr / 8;
+        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
       }
     }
   }
 #else
   __m128i vec;
-  PRG prg_var_key;
+  primitives::Prg prg_var_key;
   // process 128x128 blocks
-  while (c < ncols) {
+  while (c < number_of_colums) {
     auto c_old{c};
-    for (r = 0; r <= nrows - 16; r += 16) {
+    for (r = 0; r <= kNumberOfRows - 16; r += 16) {
       for (c = c_old; c == c_old || (c % 128 != 0); c += 8) {
         vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
                            INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
                            INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
                            INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
         for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
-          *reinterpret_cast<std::uint16_t* __restrict__>(out[c + i].GetMutableData().data() +
+          *reinterpret_cast<std::uint16_t* __restrict__>(output[c + i].GetMutableData().data() +
                                                          r / 8) = _mm_movemask_epi8(vec);
         }
       }
     }
     // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
-      auto& o = out[c_old];
+      auto& o = output[c_old];
       assert(o.GetSize() == 128);
-      const std::size_t bitlen = bitlengths[c_old];
+      const std::size_t bitlength = bitlengths[c_old];
 
-      if (bitlen <= kappa) {
-        prg_fixed_key.MMO(o.GetMutableData().data());
-        o.Resize(bitlen);
+      if (bitlength <= kKappa) {
+        prg_fixed_key.Mmo(o.GetMutableData().data());
+        o.Resize(bitlength);
       } else {
-        prg_fixed_key.MMO(o.GetMutableData().data());
+        prg_fixed_key.Mmo(o.GetMutableData().data());
         prg_var_key.SetKey(o.GetData().data());
-        o = BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+        o = BitVector<>(prg_var_key.Encrypt(BitsToBytes(bitlength)), bitlength);
       }
     }
   }
@@ -737,4 +761,4 @@ bool BitMatrix::operator==(const BitMatrix& other) {
   return true;
 }
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

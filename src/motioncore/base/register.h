@@ -30,29 +30,18 @@
 #include <queue>
 #include <unordered_map>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
+
 struct AlgorithmDescription;
 class FiberCondition;
-}
-
-namespace MOTION {
+class Gate;
+using GatePointer = std::shared_ptr<Gate>;
+class Wire;
+using WirePointer = std::shared_ptr<Wire>;
 
 // >> forward declarations
 
 class Logger;
-
-namespace Gates {
-namespace Interfaces {
-class Gate;
-}  // namespace Interfaces
-using Gate = Interfaces::Gate;
-using GatePtr = std::shared_ptr<Gate>;
-}  // namespace Gates
-
-namespace Wires {
-class Wire;
-using WirePtr = std::shared_ptr<Wire>;
-}  // namespace Wires
 
 // forward declarations <<
 
@@ -68,27 +57,27 @@ class Register {
 
   std::size_t NextWireId() noexcept;
 
-  std::size_t NextArithmeticSharingId(std::size_t num_of_parallel_values);
+  std::size_t NextArithmeticSharingId(std::size_t number_of_parallel_values);
 
-  std::size_t NextBooleanGMWSharingId(std::size_t num_of_parallel_values);
+  std::size_t NextBooleanGmwSharingId(std::size_t number_of_parallel_values);
 
-  void RegisterNextGate(Gates::GatePtr gate);
+  void RegisterNextGate(GatePointer gate);
 
-  void RegisterNextInputGate(Gates::GatePtr gate);
+  void RegisterNextInputGate(GatePointer gate);
 
-  const Gates::GatePtr &GetGate(std::size_t gate_id) const {
+  const GatePointer& GetGate(std::size_t gate_id) const {
     return gates_.at(gate_id - gate_id_offset_);
   }
 
-  const auto &GetInputGates() const { return input_gates_; }
+  const auto& GetInputGates() const { return input_gates_; }
 
-  auto &GetGates() const { return gates_; }
+  auto& GetGates() const { return gates_; }
 
   void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
 
-  void RegisterNextWire(Wires::WirePtr wire) { wires_.push_back(wire); }
+  void RegisterNextWire(WirePointer wire) { wires_.push_back(wire); }
 
-  Wires::WirePtr GetWire(std::size_t wire_id) const { return wires_.at(wire_id - wire_id_offset_); }
+  WirePointer GetWire(std::size_t wire_id) const { return wires_.at(wire_id - wire_id_offset_); }
 
   void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
 
@@ -102,35 +91,35 @@ class Register {
 
   void IncrementEvaluatedGatesOnlineCounter();
 
-  std::size_t GetNumOfEvaluatedGateSetups() const { return evaluated_gates_setup_; }
+  std::size_t GetNumberOfEvaluatedGateSetups() const { return evaluated_gates_setup_; }
 
-  std::size_t GetNumOfEvaluatedGates() const { return evaluated_gates_online_; }
+  std::size_t GetNumberOfEvaluatedGates() const { return evaluated_gates_online_; }
 
-  std::size_t GetTotalNumOfGates() const { return global_gate_id_ - gate_id_offset_; }
+  std::size_t GetTotalNumberOfGates() const { return global_gate_id_ - gate_id_offset_; }
 
   void Reset();
 
   void Clear();
 
-  std::shared_ptr<ENCRYPTO::FiberCondition> GetGatesSetupDoneCondition() {
+  std::shared_ptr<FiberCondition> GetGatesSetupDoneCondition() {
     return gates_setup_done_condition_;
   };
 
-  std::shared_ptr<ENCRYPTO::FiberCondition> GetGatesOnlineDoneCondition() {
+  std::shared_ptr<FiberCondition> GetGatesOnlineDoneCondition() {
     return gates_online_done_condition_;
   };
 
   /// \brief Tries to insert an AlgorithmDescription object read from a file into cached_algos_
   /// \param path absolute path to the corresponding file
-  /// \param algo_description AlgorithmDescription object corresponding to the parsed file
+  /// \param algorithm_description AlgorithmDescription object corresponding to the parsed file
   /// \returns true if the insertion was successful and false if the object is already in the cache
   bool AddCachedAlgorithmDescription(
-      std::string path, const std::shared_ptr<ENCRYPTO::AlgorithmDescription> &algo_description);
+      std::string path, const std::shared_ptr<AlgorithmDescription>& algorithm_description);
 
   /// \brief Gets cached AlgorithmDescription object read from a file and placed into cached_algos_
   /// \return shared_ptr to the algorithm description or to nullptr if not in the hash table
-  std::shared_ptr<ENCRYPTO::AlgorithmDescription> GetCachedAlgorithmDescription(
-      const std::string &path);
+  std::shared_ptr<AlgorithmDescription> GetCachedAlgorithmDescription(
+      const std::string& path);
 
  private:
   std::shared_ptr<Logger> logger_;
@@ -147,20 +136,22 @@ class Register {
   bool gates_setup_done_flag_ = false;
   bool gates_online_done_flag_ = false;
   // conditions which enable waiting for the above flags to change to true
-  std::shared_ptr<ENCRYPTO::FiberCondition> gates_setup_done_condition_;
-  std::shared_ptr<ENCRYPTO::FiberCondition> gates_online_done_condition_;
+  std::shared_ptr<FiberCondition> gates_setup_done_condition_;
+  std::shared_ptr<FiberCondition> gates_online_done_condition_;
 
   std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
 
-  std::vector<Gates::GatePtr> input_gates_;
-  std::vector<Gates::GatePtr> gates_;
+  std::vector<GatePointer> input_gates_;
+  std::vector<GatePointer> gates_;
 
-  std::vector<Wires::WirePtr> wires_;
+  std::vector<WirePointer> wires_;
 
-  std::unordered_map<std::string, std::shared_ptr<ENCRYPTO::AlgorithmDescription>> cached_algos_;
+  std::unordered_map<std::string, std::shared_ptr<AlgorithmDescription>>
+      cached_algos_;
   std::mutex cached_algos_mutex_;
 };
 
-using RegisterPtr = std::shared_ptr<Register>;
-}  // namespace MOTION
+using RegisterPointer = std::shared_ptr<Register>;
+
+}  // namespace encrypto::motion

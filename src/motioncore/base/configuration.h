@@ -27,17 +27,17 @@
 #include <boost/log/trivial.hpp>
 #include <memory>
 
-namespace MOTION {
+namespace encrypto::motion {
 
 class Configuration {
  public:
-  Configuration(std::size_t my_id, std::size_t num_parties);
+  Configuration(std::size_t my_id, std::size_t number_of_parties);
 
   ~Configuration() = default;
 
-  std::size_t GetNumOfThreads() const noexcept { return num_threads_; }
+  std::size_t GetNumOfThreads() const noexcept { return number_of_threads_; }
 
-  void SetNumOfThreads(std::size_t n) { num_threads_ = n; }
+  void SetNumOfThreads(std::size_t n) { number_of_threads_ = n; }
 
   void SetLoggingSeverityLevel(boost::log::trivial::severity_level severity_level) {
     severity_level_ = severity_level;
@@ -53,7 +53,7 @@ class Configuration {
 
   std::size_t GetMyId() const { return my_id_; }
 
-  std::size_t GetNumOfParties() const { return num_parties_; }
+  std::size_t GetNumOfParties() const { return number_of_parties_; }
 
   boost::log::trivial::severity_level GetLoggingSeverityLevel() const noexcept {
     return severity_level_;
@@ -61,7 +61,7 @@ class Configuration {
 
  private:
   std::size_t my_id_;
-  std::size_t num_parties_;
+  std::size_t number_of_parties_;
 
   boost::log::trivial::severity_level severity_level_ = boost::log::trivial::info;
 
@@ -75,9 +75,9 @@ class Configuration {
   // communication handlers! the latter always use at least 2 threads for each
   // communication channel to send and receive data to prevent the communication
   // becoming a bottleneck, e.g., in 10 Gbps networks.
-  std::size_t num_threads_;
+  std::size_t number_of_threads_;
 };
 
-using ConfigurationPtr = std::shared_ptr<Configuration>;
+using ConfigurationPointer = std::shared_ptr<Configuration>;
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

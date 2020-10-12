@@ -25,30 +25,28 @@
 #include <functional>
 #include <memory>
 
-namespace MOTION {
+namespace encrypto::motion {
+
+struct RunTimeStatistics;
 
 class Logger;
 class Register;
 
-namespace Statistics {
-struct RunTimeStats;
-}
-
 // Evaluates all registered gates.
 class GateExecutor {
  public:
-  GateExecutor(Register &, std::function<void()> preprocessing_fctn, std::shared_ptr<Logger>);
+  GateExecutor(Register&, std::function<void()> preprocessing_function, std::shared_ptr<Logger>);
 
   // Run the setup phases first for all gates before starting with the online
   // phases.
-  void evaluate_setup_online(Statistics::RunTimeStats &stats);
+  void EvaluateSetupOnline(RunTimeStatistics& statistics);
   // Run setup and online phase of each gate as soon as possible.
-  void evaluate(Statistics::RunTimeStats &stats);
+  void Evaluate(RunTimeStatistics& statistics);
 
  private:
-  Register &register_;
-  std::function<void()> preprocessing_fctn_;
+  Register& register_;
+  std::function<void()> preprocessing_function_;
   std::shared_ptr<Logger> logger_;
 };
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

@@ -28,8 +28,8 @@
 
 #include "utility/synchronized_queue.h"
 
-namespace MOTION::Communication {
-
+namespace encrypto::motion::communication {
+    
 // Abstract interface for handling received messages
 //
 // An instance of MessageHandler can be registered with the CommunicationLayer
@@ -45,20 +45,20 @@ class MessageHandler {
   //
   // This method may be called concurrently with different values of party_id.
   // The client is responsible for the necessary synchronization.
-  virtual void received_message(std::size_t party_id, std::vector<std::uint8_t>&& message) = 0;
+  virtual void ReceivedMessage(std::size_t party_id, std::vector<std::uint8_t>&& message) = 0;
 };
 
 // Example message handler which puts received messages into a queue
 class QueueHandler : public MessageHandler {
  public:
-  void received_message(std::size_t, std::vector<std::uint8_t>&& message) override {
+  void ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& message) override {
     messages_.enqueue(std::move(message));
   };
 
-  ENCRYPTO::SynchronizedQueue<std::vector<std::uint8_t>>& get_queue() { return messages_; };
+  SynchronizedQueue<std::vector<std::uint8_t>>& GetQueue() { return messages_; };
 
  private:
-  ENCRYPTO::SynchronizedQueue<std::vector<std::uint8_t>> messages_;
+  SynchronizedQueue<std::vector<std::uint8_t>> messages_;
 };
 
-}  // namespace MOTION::Communication
+}  // namespace encrypto::motion::communication

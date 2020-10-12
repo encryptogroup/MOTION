@@ -27,19 +27,19 @@
 #include <cstddef>
 #include <string_view>
 
-namespace MOTION {
+namespace encrypto::motion {
 
-// MOTION_DEBUG flag is set true when compiler in Debug mode, i.e., CMAKE_BUILD_TYPE=Debug.
+// kDebug flag is set true when compiler in Debug mode, i.e., CMAKE_BUILD_TYPE=Debug.
 // If this flag equals true, MOTION will log information about the actions that happened, e.g., gate
 // allocation and evaluation, OT extension, etc.
 // clang-format off
-constexpr bool MOTION_DEBUG{@MOTION_DEBUG@};
+constexpr bool kDebug{@MOTION_DEBUG@};
 
-constexpr float MOTION_VERSION{@MOTION_VERSION@};
-constexpr std::string_view MOTION_ROOT_DIR{"@MOTION_ROOT_DIR@"};
+constexpr float kVersion{@MOTION_VERSION@};
+constexpr std::string_view kRootDir{"@MOTION_ROOT_DIR@"};
 
 // alignment for data buffers
-constexpr std::size_t MOTION_ALIGNMENT{@MOTION_ALIGNMENT@};
+constexpr std::size_t kAlignment{@MOTION_ALIGNMENT@};
 // clang-format on
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

@@ -40,164 +40,149 @@
 #include "utility/meta.hpp"
 #include "utility/reusable_future.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
+
 class FiberCondition;
-}  // namespace ENCRYPTO
 
-namespace MOTION {
-
-enum OTExtensionDataType : uint {
-  rcv_masks = 0,
-  rcv_corrections = 1,
-  snd_messages = 2,
-  OTExtension_invalid_data_type = 3
+enum OtExtensionDataType : uint {
+  kReceptionMask = 0,
+  kReceptionCorrection = 1,
+  kSendMessage = 2,
+  kOtExtensionInvalidDataType = 3
 };
 
-enum class OTMsgType {
-  bit,
-  block128,
-  uint8,
-  uint16,
-  uint32,
-  uint64,
-  uint128
-};
+enum class OtMessageType { kBit, kBlock128, kUint8, kUint16, kUint32, kUint64, kUint128 };
 
-struct OTExtensionReceiverData {
-  OTExtensionReceiverData();
-  ~OTExtensionReceiverData() = default;
+struct OtExtensionReceiverData {
+  OtExtensionReceiverData();
+  ~OtExtensionReceiverData() = default;
 
-  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::block128_vector>
-  RegisterForBlock128SenderMessage(std::size_t ot_id, std::size_t size);
-  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<ENCRYPTO::BitVector<>> RegisterForBitSenderMessage(
+  [[nodiscard]] ReusableFiberFuture<Block128Vector> RegisterForBlock128SenderMessage(
       std::size_t ot_id, std::size_t size);
+  [[nodiscard]] ReusableFiberFuture<BitVector<>>
+  RegisterForBitSenderMessage(std::size_t ot_id, std::size_t size);
   template <typename T>
-  [[nodiscard]] ENCRYPTO::ReusableFiberFuture<std::vector<T>> RegisterForIntSenderMessage(
+  [[nodiscard]] ReusableFiberFuture<std::vector<T>> RegisterForIntSenderMessage(
       std::size_t ot_id, std::size_t size);
 
   // matrix of the OT extension scheme
   // XXX: can't we delete this after setup?
-  std::shared_ptr<ENCRYPTO::BitMatrix> T_;
+  std::shared_ptr<BitMatrix> T;
 
   // if many OTs are received in batches, it is not necessary to store all of the flags
   // for received messages but only for the first OT id in the batch. Thus, use a hash table.
-  std::unordered_set<std::size_t> received_outputs_;
-  std::vector<ENCRYPTO::BitVector<>> outputs_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>> output_conds_;
-  std::mutex received_outputs_mutex_;
+  std::unordered_set<std::size_t> received_outputs;
+  std::vector<BitVector<>> outputs;
+  std::unordered_map<std::size_t, std::unique_ptr<FiberCondition>> output_conditions;
+  std::mutex received_outputs_mutex;
 
   // how many messages need to be sent from sender to receiver?
   // GOT -> 2
   // COT -> 1
   // ROT -> 0 (not in map)
-  std::unordered_map<std::size_t, std::size_t> num_messages_;
-  std::mutex num_messages_mutex_;
+  std::unordered_map<std::size_t, std::size_t> number_of_messages_to_be_sent;
+  std::mutex number_of_messages_to_be_sent_mutex;
 
   // is an OT batch of XOR correlated OT?
-  std::unordered_set<std::size_t> xor_correlation_;
+  std::unordered_set<std::size_t> xor_correlation;
 
-  std::mutex bitlengths_mutex_;
+  std::mutex bitlengths_mutex;
   // bit length of every OT
-  std::vector<std::size_t> bitlengths_;
+  std::vector<std::size_t> bitlengths;
 
   // real choices for every OT?
-  std::unique_ptr<ENCRYPTO::BitVector<>> real_choices_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>> real_choices_cond_;
+  std::unique_ptr<BitVector<>> real_choices;
+  std::unordered_map<std::size_t, std::unique_ptr<FiberCondition>> real_choices_condition;
 
   // store the message types of new-style OTs
-  std::unordered_map<std::size_t, OTMsgType> msg_type_;
+  std::unordered_map<std::size_t, OtMessageType> message_type;
 
   // Promises for the sender messages
   // ot_id -> (vector size, vector promise)
-  std::unordered_map<std::size_t,
-                     std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::BitVector<>>>>
-      message_promises_bit_;
-  std::unordered_map<
-      std::size_t,
-      std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<ENCRYPTO::block128_vector>>>
-      message_promises_block128_;
+  std::unordered_map<std::size_t, std::pair<std::size_t, ReusableFiberPromise<BitVector<>>>>
+      message_promises_bit;
+  std::unordered_map<std::size_t, std::pair<std::size_t, ReusableFiberPromise<Block128Vector>>>
+      message_promises_block128;
 
   template <typename T>
-  using promise_map_t =
-      std::unordered_map<std::size_t,
-                         std::pair<std::size_t, ENCRYPTO::ReusableFiberPromise<std::vector<T>>>>;
-  ENCRYPTO::type_map<promise_map_t, std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t,
-                     __uint128_t>
-      message_promises_int_;
+  using PromiseMapType =
+      std::unordered_map<std::size_t, std::pair<std::size_t, ReusableFiberPromise<std::vector<T>>>>;
+  TypeMap<PromiseMapType, std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t, __uint128_t>
+      message_promises_int;
 
   // have we already set the choices for this OT batch?
-  std::unordered_set<std::size_t> set_real_choices_;
-  std::mutex real_choices_mutex_;
+  std::unordered_set<std::size_t> set_real_choices;
+  std::mutex real_choices_mutex;
 
   // random choices from OT precomputation
-  std::unique_ptr<ENCRYPTO::AlignedBitVector> random_choices_;
+  std::unique_ptr<AlignedBitVector> random_choices;
 
   // how many ots are in each batch?
-  std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
+  std::unordered_map<std::size_t, std::size_t> number_of_ots_in_batch;
 
   // flag and condition variable: is setup is done?
-  std::unique_ptr<ENCRYPTO::FiberCondition> setup_finished_cond_;
-  std::atomic<bool> setup_finished_{false};
+  std::unique_ptr<FiberCondition> setup_finished_condition;
+  std::atomic<bool> setup_finished{false};
 
   // XXX: unused
-  std::atomic<std::size_t> consumed_offset_{0};
+  std::atomic<std::size_t> consumed_offset{0};
 };
 
-struct OTExtensionSenderData {
-  OTExtensionSenderData();
-  ~OTExtensionSenderData() = default;
+struct OtExtensionSenderData {
+  OtExtensionSenderData();
+  ~OtExtensionSenderData() = default;
 
   // width of the bit matrix
-  std::atomic<std::size_t> bit_size_{0};
+  std::atomic<std::size_t> bit_size{0};
 
-  /// receiver's mask that are needed to construct matrix @param V_
-  std::array<ENCRYPTO::AlignedBitVector, 128> u_;
+  /// receiver's mask that are needed to construct matrix @param V
+  std::array<AlignedBitVector, 128> u;
 
-  std::array<ENCRYPTO::ReusablePromise<std::size_t>, 128> u_promises_;
-  std::array<ENCRYPTO::ReusableFuture<std::size_t>, 128> u_futures_;
-  std::mutex u_mutex_;
-  std::size_t num_received_u_{0};
+  std::array<ReusablePromise<std::size_t>, 128> u_promises;
+  std::array<ReusableFuture<std::size_t>, 128> u_futures;
+  std::mutex u_mutex;
+  std::size_t number_of_received_us{0};
   // matrix of the OT extension scheme
   // XXX: can't we delete this after setup?
-  std::shared_ptr<ENCRYPTO::BitMatrix> V_;
+  std::shared_ptr<BitMatrix> V;
 
-  // offset, num_ots
-  std::unordered_map<std::size_t, std::size_t> num_ots_in_batch_;
+  // offset, number_of_ots
+  std::unordered_map<std::size_t, std::size_t> number_of_ots_in_batch;
 
   // corrections for GOTs, i.e., if random choice bit is not the real choice bit
   // send 1 to flip the messages before encoding or 0 otherwise for each GOT
-  std::unordered_set<std::size_t> received_correction_offsets_;
-  std::unordered_map<std::size_t, std::unique_ptr<ENCRYPTO::FiberCondition>>
-      received_correction_offsets_cond_;
-  ENCRYPTO::BitVector<> corrections_;
-  mutable std::mutex corrections_mutex_;
+  std::unordered_set<std::size_t> received_correction_offsets;
+  std::unordered_map<std::size_t, std::unique_ptr<FiberCondition>>
+      received_correction_offsets_condition;
+  BitVector<> corrections;
+  mutable std::mutex corrections_mutex;
 
   // random sender outputs
   // XXX: why not aligned?
-  std::vector<ENCRYPTO::BitVector<>> y0_, y1_;
+  std::vector<BitVector<>> y0, y1;
 
   // bit length of every OT
-  std::vector<std::size_t> bitlengths_;
+  std::vector<std::size_t> bitlengths;
 
   // flag and condition variable: is setup is done?
-  std::unique_ptr<ENCRYPTO::FiberCondition> setup_finished_cond_;
-  std::atomic<bool> setup_finished_{false};
+  std::unique_ptr<FiberCondition> setup_finished_condition;
+  std::atomic<bool> setup_finished{false};
 
   // XXX: unused
-  std::atomic<std::size_t> consumed_offset_{0};
+  std::atomic<std::size_t> consumed_offset{0};
 };
 
-struct OTExtensionData {
+struct OtExtensionData {
   void MessageReceived(const std::uint8_t* message, std::size_t message_size,
-                       const OTExtensionDataType type, const std::size_t ot_id = 0);
+                       const OtExtensionDataType type, const std::size_t ot_id = 0);
 
-  OTExtensionReceiverData& GetReceiverData() { return receiver_data_; }
-  const OTExtensionReceiverData& GetReceiverData() const { return receiver_data_; }
-  OTExtensionSenderData& GetSenderData() { return sender_data_; }
-  const OTExtensionSenderData& GetSenderData() const { return sender_data_; }
+  OtExtensionReceiverData& GetReceiverData() { return receiver_data; }
+  const OtExtensionReceiverData& GetReceiverData() const { return receiver_data; }
+  OtExtensionSenderData& GetSenderData() { return sender_data; }
+  const OtExtensionSenderData& GetSenderData() const { return sender_data; }
 
-  OTExtensionReceiverData receiver_data_;
-  OTExtensionSenderData sender_data_;
+  OtExtensionReceiverData receiver_data;
+  OtExtensionSenderData sender_data;
 };
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

@@ -23,10 +23,10 @@
 #include <string>
 #include <thread>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 // Sets the name of a given thread using pthread_setname_np which can be useful for debugging.
 // - name.size() <= 16
-void thread_set_name(std::thread& thread, const std::string& name);
+void ThreadSetName(std::thread& thread, const std::string& name);
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

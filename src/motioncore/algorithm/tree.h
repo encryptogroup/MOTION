@@ -24,10 +24,14 @@
 
 #pragma once
 
-#include "share/share_wrapper.h"
 
-namespace ENCRYPTO::Algorithm {
-MOTION::Shares::ShareWrapper FullANDTree(const MOTION::Shares::ShareWrapper& s);
 
-MOTION::Shares::ShareWrapper FullANDTree(const std::vector<MOTION::Shares::ShareWrapper>& v);
-}
+namespace encrypto::motion {
+    
+struct ShareWrapper;
+
+ShareWrapper FullAndTree(const ShareWrapper& s);
+
+ShareWrapper FullAndTree(const std::vector<ShareWrapper>& v);
+
+}  // namespace encrypto::motion

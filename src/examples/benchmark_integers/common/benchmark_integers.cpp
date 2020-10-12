@@ -25,57 +25,57 @@
 #include "benchmark_integers.h"
 
 #include "algorithm/algorithm_description.h"
-#include "share/share_wrapper.h"
+#include "protocols/share_wrapper.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "statistics/analysis.h"
-#include "statistics/run_time_stats.h"
+#include "statistics/run_time_statistics.h"
 #include "utility/config.h"
 
-MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::size_t num_simd,
-                                                  std::size_t bit_size,
-                                                  MOTION::MPCProtocol protocol,
-                                                  ENCRYPTO::IntegerOperationType op_type) {
-  const std::vector<ENCRYPTO::BitVector<>> tmp_bool(bit_size, ENCRYPTO::BitVector<>(num_simd));
+encrypto::motion::RunTimeStatistics EvaluateProtocol(
+    encrypto::motion::PartyPointer& party, std::size_t number_of_simd, std::size_t bit_size,
+    encrypto::motion::MpcProtocol protocol, encrypto::motion::IntegerOperationType operation_type) {
+  const std::vector<encrypto::motion::BitVector<>> temporary_bool(
+      bit_size, encrypto::motion::BitVector<>(number_of_simd));
 
-  MOTION::SecureUnsignedInteger a, b;
+  encrypto::motion::SecureUnsignedInteger a, b;
 
   switch (protocol) {
-    case MOTION::MPCProtocol::BooleanGMW: {
-      a = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
-      b = party->IN<MOTION::MPCProtocol::BooleanGMW>(tmp_bool, 0);
+    case encrypto::motion::MpcProtocol::kBooleanGmw: {
+      a = party->In<encrypto::motion::MpcProtocol::kBooleanGmw>(temporary_bool, 0);
+      b = party->In<encrypto::motion::MpcProtocol::kBooleanGmw>(temporary_bool, 0);
       break;
     }
-    case MOTION::MPCProtocol::BMR: {
-      a = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
-      b = party->IN<MOTION::MPCProtocol::BMR>(tmp_bool, 0);
+    case encrypto::motion::MpcProtocol::kBmr: {
+      a = party->In<encrypto::motion::MpcProtocol::kBmr>(temporary_bool, 0);
+      b = party->In<encrypto::motion::MpcProtocol::kBmr>(temporary_bool, 0);
       break;
     }
     default:
       throw std::invalid_argument("Invalid MPC protocol");
   }
 
-  switch (op_type) {
-    case ENCRYPTO::IntegerOperationType::SUB: {
+  switch (operation_type) {
+    case encrypto::motion::IntegerOperationType::kSub: {
       a - b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::GT: {
+    case encrypto::motion::IntegerOperationType::kGt: {
       a > b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::DIV: {
+    case encrypto::motion::IntegerOperationType::kDiv: {
       a / b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::MUL: {
+    case encrypto::motion::IntegerOperationType::kMul: {
       a* b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::ADD: {
+    case encrypto::motion::IntegerOperationType::kAdd: {
       a + b;
       break;
     }
-    case ENCRYPTO::IntegerOperationType::EQ: {
+    case encrypto::motion::IntegerOperationType::kEq: {
       a == b;
       break;
     }
@@ -86,6 +86,6 @@ MOTION::Statistics::RunTimeStats EvaluateProtocol(MOTION::PartyPtr& party, std::
 
   party->Run();
   party->Finish();
-  const auto& stats = party->GetBackend()->GetRunTimeStats();
-  return stats.front();
+  const auto& statistics = party->GetBackend()->GetRunTimeStatistics();
+  return statistics.front();
 }

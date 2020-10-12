@@ -27,26 +27,28 @@
 #include "fbs_headers/base_ot_generated.h"
 #include "utility/typedefs.h"
 
-namespace MOTION::Communication {
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageReceiver(std::byte *buffer, std::size_t size,
+namespace encrypto::motion::communication {
+
+flatbuffers::FlatBufferBuilder BuildBaseROtMessageReceiver(std::byte* buffer, std::size_t size,
                                                            std::size_t ot_id) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(reinterpret_cast<std::uint8_t *>(buffer),
-                                     reinterpret_cast<std::uint8_t *>(buffer) + size);
-  auto root = CreateBaseROTMessageDirect(builder, ot_id, &v_buffer);
-  FinishBaseROTMessageBuffer(builder, root);
-  return BuildMessage(MessageType::BaseROTMessageReceiver, builder.GetBufferPointer(),
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<std::uint8_t*>(buffer),
+                                     reinterpret_cast<std::uint8_t*>(buffer) + size);
+  auto root = CreateBaseROtMessageDirect(builder, ot_id, &v_buffer);
+  FinishBaseROtMessageBuffer(builder, root);
+  return BuildMessage(MessageType::kBaseROtMessageReceiver, builder.GetBufferPointer(),
                       builder.GetSize());
 }
 
-flatbuffers::FlatBufferBuilder BuildBaseROTMessageSender(std::byte *buffer, std::size_t size,
+flatbuffers::FlatBufferBuilder BuildBaseROtMessageSender(std::byte* buffer, std::size_t size,
                                                          std::size_t ot_id) {
   flatbuffers::FlatBufferBuilder builder(size + 32);
-  std::vector<std::uint8_t> v_buffer(reinterpret_cast<std::uint8_t *>(buffer),
-                                     reinterpret_cast<std::uint8_t *>(buffer) + size);
-  auto root = CreateBaseROTMessageDirect(builder, ot_id, &v_buffer);
-  FinishBaseROTMessageBuffer(builder, root);
-  return BuildMessage(MessageType::BaseROTMessageSender, builder.GetBufferPointer(),
+  std::vector<std::uint8_t> v_buffer(reinterpret_cast<std::uint8_t*>(buffer),
+                                     reinterpret_cast<std::uint8_t*>(buffer) + size);
+  auto root = CreateBaseROtMessageDirect(builder, ot_id, &v_buffer);
+  FinishBaseROtMessageBuffer(builder, root);
+  return BuildMessage(MessageType::kBaseROtMessageSender, builder.GetBufferPointer(),
                       builder.GetSize());
 }
-}  // namespace MOTION::Communication
+
+}  // namespace encrypto::motion::communication

@@ -24,11 +24,10 @@
 
 #include <type_traits>
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 template <typename T>
-using is_unsigned_int_t =
-    std::enable_if_t<std::conjunction_v<std::is_integral<T>, std::is_unsigned<T>,
-                                        std::negation<std::is_same<T, bool>>>>;
+using IsUnsignedInt = std::enable_if_t<std::conjunction_v<std::is_integral<T>, std::is_unsigned<T>,
+                                                          std::negation<std::is_same<T, bool>>>>;
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion

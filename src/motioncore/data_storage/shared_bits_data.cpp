@@ -22,42 +22,42 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <cassert>
 #include "shared_bits_data.h"
+#include <cassert>
 
-namespace MOTION {
+namespace encrypto::motion {
 
-ENCRYPTO::ReusableFuture<std::vector<std::uint8_t>> SharedBitsData::RegisterForMaskMessage(
+ReusableFuture<std::vector<std::uint8_t>> SharedBitsData::RegisterForMaskMessage(
     size_t expected_size) {
   assert(expected_size > 0);
-  mask_message_expected_size_ = expected_size;
-  return mask_message_promise_.get_future();
+  mask_message_expected_size = expected_size;
+  return mask_message_promise.get_future();
 }
 
-ENCRYPTO::ReusableFuture<std::vector<std::uint8_t>> SharedBitsData::RegisterForReconstructMessage(
-    size_t expected_size) {
+ReusableFuture<std::vector<std::uint8_t>>
+SharedBitsData::RegisterForReconstructMessage(size_t expected_size) {
   assert(expected_size > 0);
-  reconstruct_message_expected_size_ = expected_size;
-  return reconstruct_message_promise_.get_future();
+  reconstruct_message_expected_size = expected_size;
+  return reconstruct_message_promise.get_future();
 }
 
 void SharedBitsData::MessageReceived(const SharedBitsMessageType type, const std::uint8_t* message,
                                      const std::size_t size) {
-  if (type == SharedBitsMessageType::mask_message) {
-    if (size != mask_message_expected_size_) {
+  if (type == SharedBitsMessageType::kMaskMessage) {
+    if (size != mask_message_expected_size) {
       // TODO: log and drop
       return;
     }
     std::vector<std::uint8_t> buffer(message, message + size);
-    mask_message_promise_.set_value(std::move(buffer));
-  } else if (type == SharedBitsMessageType::reconstruct_message) {
-    if (size != reconstruct_message_expected_size_) {
+    mask_message_promise.set_value(std::move(buffer));
+  } else if (type == SharedBitsMessageType::kReconstructMessage) {
+    if (size != reconstruct_message_expected_size) {
       // TODO: log and drop
       return;
     }
     std::vector<std::uint8_t> buffer(message, message + size);
-    reconstruct_message_promise_.set_value(std::move(buffer));
+    reconstruct_message_promise.set_value(std::move(buffer));
   }
 }
 
-}  // namespace MOTION
+}  // namespace encrypto::motion

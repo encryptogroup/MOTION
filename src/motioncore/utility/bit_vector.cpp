@@ -23,206 +23,213 @@
 // SOFTWARE.
 
 #include "bit_vector.h"
-#include "crypto/random/aes128_ctr_rng.h"
+#include "primitives/random/aes128_ctr_rng.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
-inline auto constexpr bits_to_bytes(std::size_t n_bits) { return (n_bits + 7) >> 3; }
+auto constexpr NumberOfBitsToNumberOfBytes(std::size_t number_of_bits) {
+  return (number_of_bits + 7) >> 3;
+}
 
 // TODO: migrate BitVector functions to the functions below
 
-inline void TruncateToFitImpl(std::byte* ptr, const std::size_t bit_size) {
+inline void TruncateToFitImplementation(std::byte* pointer, const std::size_t bit_size) {
   const auto bit_offset = bit_size % 8;
-  const auto byte_size = bits_to_bytes(bit_size);
-  if (bit_offset) *(ptr + byte_size - 1) &= TRUNCATION_BIT_MASK[bit_offset - 1];
+  const auto byte_size = NumberOfBitsToNumberOfBytes(bit_size);
+  if (bit_offset) *(pointer + byte_size - 1) &= TruncationBitMask[bit_offset - 1];
 }
 
-inline void SetImpl(std::byte* ptr, const bool value, const std::size_t bit_size) noexcept {
-  const std::size_t byte_size{bits_to_bytes(bit_size)};
+inline void SetImplementation(std::byte* pointer, const bool value,
+                              const std::size_t bit_size) noexcept {
+  const std::size_t byte_size{NumberOfBitsToNumberOfBytes(bit_size)};
   for (auto i = 0ull; i < byte_size; ++i) {
     if (value) {  // set
-      *(ptr + i) |= std::byte(0xFFu);
+      *(pointer + i) |= std::byte(0xFFu);
     } else {  // unset
-      *(ptr + i) &= std::byte(0u);
+      *(pointer + i) &= std::byte(0u);
     }
   }
 
   if (value) {
-    TruncateToFitImpl(ptr, bit_size);
+    TruncateToFitImplementation(pointer, bit_size);
   }
 }
 
-inline void SetAtImpl(std::byte* ptr, const bool value, const std::size_t pos) noexcept {
-  const std::size_t byte_offset = pos / 8;
-  const std::size_t bit_offset = pos % 8;
+inline void SetAtImplementation(std::byte* pointer, const bool value,
+                                const std::size_t position) noexcept {
+  const std::size_t byte_offset = position / 8;
+  const std::size_t bit_offset = position % 8;
 
   if (value) {
-    *(ptr + byte_offset) |= SET_BIT_MASK[bit_offset];
+    *(pointer + byte_offset) |= kSetBitMask[bit_offset];
   } else {
-    *(ptr + byte_offset) &= UNSET_BIT_MASK[bit_offset];
+    *(pointer + byte_offset) &= kUnsetBitMask[bit_offset];
   }
 }
 
-inline bool GetImpl(const std::byte* ptr, const std::size_t pos) noexcept {
-  const std::size_t byte_offset = pos / 8;
-  const std::size_t bit_offset = pos % 8;
+inline bool GetImplementation(const std::byte* pointer, const std::size_t position) noexcept {
+  const std::size_t byte_offset = position / 8;
+  const std::size_t bit_offset = position % 8;
 
-  const auto result = *(ptr + byte_offset) & SET_BIT_MASK[bit_offset];
-  return result == SET_BIT_MASK[bit_offset];
+  const auto result = *(pointer + byte_offset) & kSetBitMask[bit_offset];
+  return result == kSetBitMask[bit_offset];
 }
 
 template <typename T, typename U>
-inline bool EQImpl(const T* ptr1, const U* ptr2, const std::size_t byte_size) {
-  const auto ptr1_cast{reinterpret_cast<const std::byte*>(ptr1)};
-  const auto ptr2_cast{reinterpret_cast<const std::byte*>(ptr2)};
-  return std::equal(ptr1_cast, ptr1_cast + byte_size, ptr2_cast);
+inline bool EqualImplementation(const T* pointer1, const U* pointer2, const std::size_t byte_size) {
+  const auto pointer1_cast{reinterpret_cast<const std::byte*>(pointer1)};
+  const auto pointer2_cast{reinterpret_cast<const std::byte*>(pointer2)};
+  return std::equal(pointer1_cast, pointer1_cast + byte_size, pointer2_cast);
 }
 
 // TODO: check how good this is vectorized
 template <typename T, typename U>
-inline bool AlignedEQImpl(const T* ptr1, const U* ptr2, const std::size_t byte_size) {
-  const auto ptr1_cast{
-      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(ptr1, MOTION::MOTION_ALIGNMENT))};
-  const auto ptr2_cast{
-      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(ptr2, MOTION::MOTION_ALIGNMENT))};
-  return std::equal(ptr1_cast, ptr1_cast + byte_size, ptr2_cast);
+inline bool AlignedEqualImplementation(const T* pointer1, const U* pointer2,
+                                       const std::size_t byte_size) {
+  const auto pointer1_cast{
+      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(pointer1, kAlignment))};
+  const auto pointer2_cast{
+      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(pointer2, kAlignment))};
+  return std::equal(pointer1_cast, pointer1_cast + byte_size, pointer2_cast);
 }
 
 template <typename T, typename U>
-inline void XORImpl(const T* in, U* res, const std::size_t byte_size) {
-  const auto in_cast{reinterpret_cast<const std::byte*>(in)};
-  auto res_cast{reinterpret_cast<std::byte*>(res)};
-  std::transform(in_cast, in_cast + byte_size, res_cast, res_cast,
+inline void XorImplementation(const T* input, U* result, const std::size_t byte_size) {
+  const auto input_cast{reinterpret_cast<const std::byte*>(input)};
+  auto result_cast{reinterpret_cast<std::byte*>(result)};
+  std::transform(input_cast, input_cast + byte_size, result_cast, result_cast,
                  [](const std::byte& a, const std::byte& b) { return a ^ b; });
 }
 
 // TODO: check how good this is vectorized
 template <typename T, typename U>
-inline void AlignedXORImpl(const T* in, U* res, const std::size_t byte_size) {
-  const auto in_cast{
-      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(in, MOTION::MOTION_ALIGNMENT))};
-  auto res_cast{
-      reinterpret_cast<std::byte*>(__builtin_assume_aligned(res, MOTION::MOTION_ALIGNMENT))};
-  std::transform(in_cast, in_cast + byte_size, res_cast, res_cast,
+inline void AlignedXorImplementation(const T* input, U* result, const std::size_t byte_size) {
+  const auto input_cast{
+      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(input, kAlignment))};
+  auto result_cast{reinterpret_cast<std::byte*>(__builtin_assume_aligned(result, kAlignment))};
+  std::transform(input_cast, input_cast + byte_size, result_cast, result_cast,
                  [](const std::byte& a, const std::byte& b) { return a ^ b; });
 }
 
 template <typename T, typename U>
-inline void ANDImpl(const T* in, U* res, const std::size_t byte_size) {
-  const auto in_cast{reinterpret_cast<const std::byte*>(in)};
-  auto res_cast{reinterpret_cast<std::byte*>(res)};
-  std::transform(in_cast, in_cast + byte_size, res_cast, res_cast,
+inline void AndImplementation(const T* input, U* result, const std::size_t byte_size) {
+  const auto input_cast{reinterpret_cast<const std::byte*>(input)};
+  auto result_cast{reinterpret_cast<std::byte*>(result)};
+  std::transform(input_cast, input_cast + byte_size, result_cast, result_cast,
                  [](const std::byte& a, const std::byte& b) { return a & b; });
 }
 
 template <typename T, typename U>
-inline void AlignedANDImpl(const T* in, U* res, const std::size_t byte_size) {
-  const auto in_cast{
-      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(in, MOTION::MOTION_ALIGNMENT))};
-  auto res_cast{
-      reinterpret_cast<std::byte*>(__builtin_assume_aligned(res, MOTION::MOTION_ALIGNMENT))};
-  std::transform(in_cast, in_cast + byte_size, res_cast, res_cast,
+inline void AlignedAndImplementation(const T* input, U* result, const std::size_t byte_size) {
+  const auto input_cast{
+      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(input, kAlignment))};
+  auto result_cast{reinterpret_cast<std::byte*>(__builtin_assume_aligned(result, kAlignment))};
+  std::transform(input_cast, input_cast + byte_size, result_cast, result_cast,
                  [](const std::byte& a, const std::byte& b) { return a & b; });
 }
 
 template <typename T, typename U>
-inline void ORImpl(const T* in, U* res, const std::size_t byte_size) {
-  const auto in_cast{reinterpret_cast<const std::byte*>(in)};
-  auto res_cast{reinterpret_cast<std::byte*>(res)};
-  std::transform(in_cast, in_cast + byte_size, res_cast, res_cast,
+inline void OrImplementation(const T* input, U* result, const std::size_t byte_size) {
+  const auto input_cast{reinterpret_cast<const std::byte*>(input)};
+  auto result_cast{reinterpret_cast<std::byte*>(result)};
+  std::transform(input_cast, input_cast + byte_size, result_cast, result_cast,
                  [](const std::byte& a, const std::byte& b) { return a | b; });
 }
 
 template <typename T, typename U>
-inline void AlignedORImpl(const T* in, U* res, const std::size_t byte_size) {
-  const auto in_cast{
-      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(in, MOTION::MOTION_ALIGNMENT))};
-  auto res_cast{
-      reinterpret_cast<std::byte*>(__builtin_assume_aligned(res, MOTION::MOTION_ALIGNMENT))};
-  std::transform(in_cast, in_cast + byte_size, res_cast, res_cast,
+inline void AlignedOrImplementation(const T* input, U* result, const std::size_t byte_size) {
+  const auto input_cast{
+      reinterpret_cast<const std::byte*>(__builtin_assume_aligned(input, kAlignment))};
+  auto result_cast{reinterpret_cast<std::byte*>(__builtin_assume_aligned(result, kAlignment))};
+  std::transform(input_cast, input_cast + byte_size, result_cast, result_cast,
                  [](const std::byte& a, const std::byte& b) { return a | b; });
 }
 
-inline void CopyImpl(const std::size_t from, const std::size_t to, std::byte* src, std::byte* dst) {
+inline void CopyImplementation(const std::size_t from, const std::size_t to, std::byte* source,
+                               std::byte* destination) {
   if (from > to) {
     throw std::logic_error(
         fmt::format("'from' index ({}) needs to be smaller less than 'to' index ({})", from, to));
   }
 
-  const auto num_bits = to - from;
+  const auto number_of_bits = to - from;
 
-  if (num_bits == 1) {
-    SetAtImpl(dst, GetImpl(src, 0), from);
+  if (number_of_bits == 1) {
+    SetAtImplementation(destination, GetImplementation(source, 0), from);
     return;
   }
 
-  const auto dest_to_offset = to % 8;
-  const auto dest_from_offset = from % 8;
+  const auto destination_to_offset = to % 8;
+  const auto destination_from_offset = from % 8;
 
-  if (dest_from_offset + num_bits < 8) {
-    const auto mask = (std::byte(0xFF) >> dest_from_offset) &
-                      (std::byte(0xFF) << (8 - dest_from_offset - num_bits));
+  if (destination_from_offset + number_of_bits < 8) {
+    const auto mask = (std::byte(0xFF) >> destination_from_offset) &
+                      (std::byte(0xFF) << (8 - destination_from_offset - number_of_bits));
     const auto from_bytes = from / 8;
-    *(dst + from_bytes) &= ~mask;
-    *(dst + from_bytes) |= ((*src) >> dest_from_offset) & mask;
+    *(destination + from_bytes) &= ~mask;
+    *(destination + from_bytes) |= ((*source) >> destination_from_offset) & mask;
   } else if ((from % 8) == 0) {
-    const auto num_bytes = MOTION::Helpers::Convert::BitsToBytes(num_bits);
+    const auto number_of_bytes = BitsToBytes(number_of_bits);
     const auto from_bytes = from / 8;
-    const auto dest_to_1 = dest_to_offset > 0 ? 1 : 0;
-    for (auto i = 0ull; i < num_bytes - dest_to_1; ++i) {
-      *(dst + from_bytes + i) = *(src + i);
+    const auto destination_to_1 = destination_to_offset > 0 ? 1 : 0;
+    for (auto i = 0ull; i < number_of_bytes - destination_to_1; ++i) {
+      *(destination + from_bytes + i) = *(source + i);
     }
-    if (dest_to_offset > 0) {
-      const auto mask = std::byte(0xFF) >> dest_to_offset;
-      *(dst + from_bytes + num_bytes - 1) &= mask;
-      *(dst + from_bytes + num_bytes - 1) |= *(src + num_bytes - 1) & ~mask;
+    if (destination_to_offset > 0) {
+      const auto mask = std::byte(0xFF) >> destination_to_offset;
+      *(destination + from_bytes + number_of_bytes - 1) &= mask;
+      *(destination + from_bytes + number_of_bytes - 1) |= *(source + number_of_bytes - 1) & ~mask;
     }
   } else {
-    const auto num_bytes = MOTION::Helpers::Convert::BitsToBytes(dest_from_offset + num_bits);
-    const auto num_complete_bytes =
-        MOTION::Helpers::Convert::BitsToBytes(num_bits - (8 - dest_from_offset) - dest_to_offset);
-    BitVector tmp(dest_from_offset);
-    tmp.Append(BitSpan(src, num_bits));
+    const auto number_of_bytes = BitsToBytes(destination_from_offset + number_of_bits);
+    const auto number_of_complete_bytes =
+        BitsToBytes(number_of_bits - (8 - destination_from_offset) - destination_to_offset);
+    BitVector tmp(destination_from_offset);
+    tmp.Append(BitSpan(source, number_of_bits));
 
     const auto from_bytes = from / 8;
 
-    const auto mask0 = ~(std::byte(0xFF) >> dest_from_offset);
-    *(dst + from_bytes) &= mask0;
-    *(dst + from_bytes) |= tmp.GetData()[0];
+    const auto mask0 = ~(std::byte(0xFF) >> destination_from_offset);
+    *(destination + from_bytes) &= mask0;
+    *(destination + from_bytes) |= tmp.GetData()[0];
 
-    if (num_complete_bytes > 0u) {
-      std::copy(tmp.GetData().data() + 1, tmp.GetData().data() + num_complete_bytes + 1,
-                dst + from_bytes + 1);
+    if (number_of_complete_bytes > 0u) {
+      std::copy(tmp.GetData().data() + 1, tmp.GetData().data() + number_of_complete_bytes + 1,
+                destination + from_bytes + 1);
     }
 
-    if (dest_to_offset > 0) {
-      const auto mask1 = std::byte(0xFFu >> dest_to_offset);
-      *(dst + from_bytes + num_bytes - 1) &= mask1;
-      *(dst + from_bytes + num_bytes - 1) |= (tmp.GetData()[tmp.GetData().size() - 1]);
+    if (destination_to_offset > 0) {
+      const auto mask1 = std::byte(0xFFu >> destination_to_offset);
+      *(destination + from_bytes + number_of_bytes - 1) &= mask1;
+      *(destination + from_bytes + number_of_bytes - 1) |=
+          (tmp.GetData()[tmp.GetData().size() - 1]);
     }
   }
 }
 
 template <typename Allocator>
-BitVector<Allocator>::BitVector(std::size_t n_bits, bool value) noexcept
-    : data_vector_(bits_to_bytes(n_bits), value ? std::byte(0xFF) : std::byte(0x00)),
-      bit_size_(n_bits) {
+BitVector<Allocator>::BitVector(std::size_t number_of_bits, bool value) noexcept
+    : data_vector_(NumberOfBitsToNumberOfBytes(number_of_bits),
+                   value ? std::byte(0xFF) : std::byte(0x00)),
+      bit_size_(number_of_bits) {
   if (value) {
     TruncateToFit();
   }
 }
 
 template <typename Allocator>
-BitVector<Allocator>::BitVector(const std::byte* buf, std::size_t n_bits)
-    : data_vector_(buf, buf + bits_to_bytes(n_bits)), bit_size_(n_bits) {
+BitVector<Allocator>::BitVector(const std::byte* buffer, std::size_t number_of_bits)
+    : data_vector_(buffer, buffer + NumberOfBitsToNumberOfBytes(number_of_bits)),
+      bit_size_(number_of_bits) {
   TruncateToFit();
 }
 
 template <typename Allocator>
-template <typename Allocator2>
-BitVector<Allocator>::BitVector(const std::vector<std::byte, Allocator2>& data, std::size_t n_bits)
-    : bit_size_(n_bits) {
-  const std::size_t byte_size = bits_to_bytes(n_bits);
+template <typename OtherAllocator>
+BitVector<Allocator>::BitVector(const std::vector<std::byte, OtherAllocator>& data,
+                                std::size_t number_of_bits)
+    : bit_size_(number_of_bits) {
+  const std::size_t byte_size = NumberOfBitsToNumberOfBytes(number_of_bits);
   if (byte_size > data.size()) {
     throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
   }
@@ -230,19 +237,20 @@ BitVector<Allocator>::BitVector(const std::vector<std::byte, Allocator2>& data, 
   TruncateToFit();
 }
 
-template BitVector<std_alloc>::BitVector(const std::vector<std::byte, std_alloc>& data,
-                                         std::size_t n_bits);
-template BitVector<std_alloc>::BitVector(const std::vector<std::byte, aligned_alloc>& data,
-                                         std::size_t n_bits);
-template BitVector<aligned_alloc>::BitVector(const std::vector<std::byte, std_alloc>& data,
-                                             std::size_t n_bits);
-template BitVector<aligned_alloc>::BitVector(const std::vector<std::byte, aligned_alloc>& data,
-                                             std::size_t n_bits);
+template BitVector<StdAllocator>::BitVector(const std::vector<std::byte, StdAllocator>& data,
+                                            std::size_t number_of_bits);
+template BitVector<StdAllocator>::BitVector(const std::vector<std::byte, AlignedAllocator>& data,
+                                            std::size_t number_of_bits);
+template BitVector<AlignedAllocator>::BitVector(const std::vector<std::byte, StdAllocator>& data,
+                                                std::size_t number_of_bits);
+template BitVector<AlignedAllocator>::BitVector(
+    const std::vector<std::byte, AlignedAllocator>& data, std::size_t number_of_bits);
 
 template <typename Allocator>
-BitVector<Allocator>::BitVector(std::vector<std::byte, Allocator>&& data, std::size_t n_bits)
-    : bit_size_(n_bits) {
-  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(n_bits);
+BitVector<Allocator>::BitVector(std::vector<std::byte, Allocator>&& data,
+                                std::size_t number_of_bits)
+    : bit_size_(number_of_bits) {
+  const std::size_t byte_size = BitsToBytes(number_of_bits);
   if (byte_size > data.size()) {
     throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", byte_size, data.size()));
   }
@@ -252,13 +260,14 @@ BitVector<Allocator>::BitVector(std::vector<std::byte, Allocator>&& data, std::s
 }
 
 template <typename Allocator>
-BitVector<Allocator>::BitVector(const std::vector<bool>& data, std::size_t n_bits)
-    : bit_size_(n_bits) {
+BitVector<Allocator>::BitVector(const std::vector<bool>& data, std::size_t number_of_bits)
+    : bit_size_(number_of_bits) {
   if (bit_size_ > data.size()) {
-    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", n_bits, data.size()));
+    throw std::out_of_range(
+        fmt::format("BitVector: accessing {} of {}", number_of_bits, data.size()));
   }
 
-  const std::size_t byte_size = MOTION::Helpers::Convert::BitsToBytes(n_bits);
+  const std::size_t byte_size = BitsToBytes(number_of_bits);
   constexpr std::byte zero_byte = std::byte();
   data_vector_.reserve(byte_size);
   while (data_vector_.size() < byte_size) {
@@ -283,92 +292,93 @@ void BitVector<Allocator>::Invert() {
 
 template <typename Allocator>
 BitVector<Allocator> BitVector<Allocator>::operator~() const {
-  BitVector bv = *this;
-  bv.Invert();
-  return bv;
+  BitVector bit_vector = *this;
+  bit_vector.Invert();
+  return bit_vector;
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-bool BitVector<Allocator1>::operator!=(const BitVector<Allocator2>& other) const noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+bool BitVector<Allocator>::operator!=(const BitVector<OtherAllocator>& other) const noexcept {
   return !(*this == other);
 }
 
-template bool BitVector<std_alloc>::operator!=(const BitVector<std_alloc>& other) const noexcept;
-template bool BitVector<std_alloc>::operator!=(const BitVector<aligned_alloc>& other) const
-    noexcept;
-template bool BitVector<aligned_alloc>::operator!=(const BitVector<std_alloc>& other) const
-    noexcept;
-template bool BitVector<aligned_alloc>::operator!=(const BitVector<aligned_alloc>& other) const
-    noexcept;
+template bool BitVector<StdAllocator>::operator!=(
+    const BitVector<StdAllocator>& other) const noexcept;
+template bool BitVector<StdAllocator>::operator!=(
+    const BitVector<AlignedAllocator>& other) const noexcept;
+template bool BitVector<AlignedAllocator>::operator!=(
+    const BitVector<StdAllocator>& other) const noexcept;
+template bool BitVector<AlignedAllocator>::operator!=(
+    const BitVector<AlignedAllocator>& other) const noexcept;
 
-template <typename Allocator1>
-template <typename Allocator2>
-BitVector<Allocator1> BitVector<Allocator1>::operator&(const BitVector<Allocator2>& other) const
-    noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+BitVector<Allocator> BitVector<Allocator>::operator&(
+    const BitVector<OtherAllocator>& other) const noexcept {
   auto result = *this;
   result &= other;
   return result;
 }
 
-template BitVector<std_alloc> BitVector<std_alloc>::operator&(
-    const BitVector<std_alloc>& other) const noexcept;
-template BitVector<std_alloc> BitVector<std_alloc>::operator&(
-    const BitVector<aligned_alloc>& other) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator&(
-    const BitVector<std_alloc>& other) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator&(
-    const BitVector<aligned_alloc>& other) const noexcept;
+template BitVector<StdAllocator> BitVector<StdAllocator>::operator&(
+    const BitVector<StdAllocator>& other) const noexcept;
+template BitVector<StdAllocator> BitVector<StdAllocator>::operator&(
+    const BitVector<AlignedAllocator>& other) const noexcept;
+template BitVector<AlignedAllocator> BitVector<AlignedAllocator>::operator&(
+    const BitVector<StdAllocator>& other) const noexcept;
+template BitVector<AlignedAllocator> BitVector<AlignedAllocator>::operator&(
+    const BitVector<AlignedAllocator>& other) const noexcept;
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::operator&(const BitSpan& bs) const noexcept {
-  return bs & *this;
+BitVector<Allocator> BitVector<Allocator>::operator&(const BitSpan& bit_span) const noexcept {
+  return bit_span & *this;
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-BitVector<Allocator1> BitVector<Allocator1>::operator^(const BitVector<Allocator2>& other) const
-    noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+BitVector<Allocator> BitVector<Allocator>::operator^(
+    const BitVector<OtherAllocator>& other) const noexcept {
   auto result = *this;
   result ^= other;
   return result;
 }
 
-template BitVector<std_alloc> BitVector<std_alloc>::operator^(
-    const BitVector<std_alloc>& other) const noexcept;
-template BitVector<std_alloc> BitVector<std_alloc>::operator^(
-    const BitVector<aligned_alloc>& other) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator^(
-    const BitVector<std_alloc>& other) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator^(
-    const BitVector<aligned_alloc>& other) const noexcept;
+template BitVector<StdAllocator> BitVector<StdAllocator>::operator^(
+    const BitVector<StdAllocator>& other) const noexcept;
+template BitVector<StdAllocator> BitVector<StdAllocator>::operator^(
+    const BitVector<AlignedAllocator>& other) const noexcept;
+template BitVector<AlignedAllocator> BitVector<AlignedAllocator>::operator^(
+    const BitVector<StdAllocator>& other) const noexcept;
+template BitVector<AlignedAllocator> BitVector<AlignedAllocator>::operator^(
+    const BitVector<AlignedAllocator>& other) const noexcept;
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::operator^(const BitSpan& bs) const noexcept {
-  return bs ^ *this;
+BitVector<Allocator> BitVector<Allocator>::operator^(const BitSpan& bit_span) const noexcept {
+  return bit_span ^ *this;
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-BitVector<Allocator1> BitVector<Allocator1>::operator|(const BitVector<Allocator2>& other) const
-    noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+BitVector<Allocator> BitVector<Allocator>::operator|(
+    const BitVector<OtherAllocator>& other) const noexcept {
   auto result = *this;
   result |= other;
   return result;
 }
 
-template BitVector<std_alloc> BitVector<std_alloc>::operator|(
-    const BitVector<std_alloc>& other) const noexcept;
-template BitVector<std_alloc> BitVector<std_alloc>::operator|(
-    const BitVector<aligned_alloc>& other) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator|(
-    const BitVector<std_alloc>& other) const noexcept;
-template BitVector<aligned_alloc> BitVector<aligned_alloc>::operator|(
-    const BitVector<aligned_alloc>& other) const noexcept;
+template BitVector<StdAllocator> BitVector<StdAllocator>::operator|(
+    const BitVector<StdAllocator>& other) const noexcept;
+template BitVector<StdAllocator> BitVector<StdAllocator>::operator|(
+    const BitVector<AlignedAllocator>& other) const noexcept;
+template BitVector<AlignedAllocator> BitVector<AlignedAllocator>::operator|(
+    const BitVector<StdAllocator>& other) const noexcept;
+template BitVector<AlignedAllocator> BitVector<AlignedAllocator>::operator|(
+    const BitVector<AlignedAllocator>& other) const noexcept;
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::operator|(const BitSpan& bs) const noexcept {
-  return bs | *this;
+BitVector<Allocator> BitVector<Allocator>::operator|(const BitSpan& bit_span) const noexcept {
+  return bit_span | *this;
 }
 
 template <typename Allocator>
@@ -379,17 +389,18 @@ BitVector<Allocator>& BitVector<Allocator>::operator=(const BitVector<Allocator>
 }
 
 template <typename Allocator>
-template <typename Allocator2>
-BitVector<Allocator>& BitVector<Allocator>::operator=(const BitVector<Allocator2>& other) noexcept {
+template <typename OtherAllocator>
+BitVector<Allocator>& BitVector<Allocator>::operator=(
+    const BitVector<OtherAllocator>& other) noexcept {
   bit_size_ = other.GetSize();
   data_vector_.assign(other.data_vector_.cbegin(), other.data_vector_.cend());
   return *this;
 }
 
-template BitVector<std_alloc>& BitVector<std_alloc>::operator=(
-    const BitVector<aligned_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator=(
-    const BitVector<std_alloc>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator=(
+    const BitVector<AlignedAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator=(
+    const BitVector<StdAllocator>& other) noexcept;
 
 template <typename Allocator>
 BitVector<Allocator>& BitVector<Allocator>::operator=(BitVector<Allocator>&& other) noexcept {
@@ -398,31 +409,32 @@ BitVector<Allocator>& BitVector<Allocator>::operator=(BitVector<Allocator>&& oth
   return *this;
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-bool BitVector<Allocator1>::operator==(const BitVector<Allocator2>& other) const noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+bool BitVector<Allocator>::operator==(const BitVector<OtherAllocator>& other) const noexcept {
   if (bit_size_ != other.GetSize()) {
     return false;
   }
   assert(data_vector_.size() == other.GetData().size());
-  if constexpr (std::is_same_v<Allocator1, Allocator2>) {
+  if constexpr (std::is_same_v<Allocator, OtherAllocator>) {
     return data_vector_ == other.data_vector_;
   } else {
     return std::equal(data_vector_.begin(), data_vector_.end(), other.data_vector_.begin());
   }
 }
 
-template bool BitVector<std_alloc>::operator==(const BitVector<std_alloc>& other) const noexcept;
-template bool BitVector<std_alloc>::operator==(const BitVector<aligned_alloc>& other) const
-    noexcept;
-template bool BitVector<aligned_alloc>::operator==(const BitVector<std_alloc>& other) const
-    noexcept;
-template bool BitVector<aligned_alloc>::operator==(const BitVector<aligned_alloc>& other) const
-    noexcept;
+template bool BitVector<StdAllocator>::operator==(
+    const BitVector<StdAllocator>& other) const noexcept;
+template bool BitVector<StdAllocator>::operator==(
+    const BitVector<AlignedAllocator>& other) const noexcept;
+template bool BitVector<AlignedAllocator>::operator==(
+    const BitVector<StdAllocator>& other) const noexcept;
+template bool BitVector<AlignedAllocator>::operator==(
+    const BitVector<AlignedAllocator>& other) const noexcept;
 
 template <typename Allocator>
-bool BitVector<Allocator>::operator==(const BitSpan& bs) const noexcept {
-  return bs == *this;
+bool BitVector<Allocator>::operator==(const BitSpan& bit_span) const noexcept {
+  return bit_span == *this;
 }
 
 template <typename Allocator>
@@ -441,40 +453,40 @@ void BitVector<Allocator>::Set(bool value) noexcept {
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Set(bool value, std::size_t pos) {
-  if (pos >= bit_size_) {
-    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", pos, bit_size_));
+void BitVector<Allocator>::Set(bool value, std::size_t position) {
+  if (position >= bit_size_) {
+    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", position, bit_size_));
   }
 
-  std::size_t byte_offset = pos / 8;
-  std::size_t bit_offset = pos % 8;
+  std::size_t byte_offset = position / 8;
+  std::size_t bit_offset = position % 8;
 
   if (value) {
-    data_vector_.at(byte_offset) |= SET_BIT_MASK[bit_offset];
+    data_vector_.at(byte_offset) |= kSetBitMask[bit_offset];
   } else {
-    data_vector_.at(byte_offset) &= UNSET_BIT_MASK[bit_offset];
+    data_vector_.at(byte_offset) &= kUnsetBitMask[bit_offset];
   }
 }
 
 template <typename Allocator>
-bool BitVector<Allocator>::Get(std::size_t pos) const {
-  if (pos >= bit_size_) {
-    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", pos, bit_size_));
+bool BitVector<Allocator>::Get(std::size_t position) const {
+  if (position >= bit_size_) {
+    throw std::out_of_range(fmt::format("BitVector: accessing {} of {}", position, bit_size_));
   }
 
-  std::size_t byte_offset = pos / 8;
-  std::size_t bit_offset = pos % 8;
+  std::size_t byte_offset = position / 8;
+  std::size_t bit_offset = position % 8;
 
   auto result = data_vector_.at(byte_offset);
-  result &= SET_BIT_MASK[bit_offset];
+  result &= kSetBitMask[bit_offset];
 
-  return result == SET_BIT_MASK[bit_offset];
+  return result == kSetBitMask[bit_offset];
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-BitVector<Allocator1>& BitVector<Allocator1>::operator&=(
-    const BitVector<Allocator2>& other) noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+BitVector<Allocator>& BitVector<Allocator>::operator&=(
+    const BitVector<OtherAllocator>& other) noexcept {
   const auto max_bit_size = std::max(bit_size_, other.GetSize());
   const auto min_byte_size = std::min(data_vector_.size(), other.GetData().size());
 
@@ -486,32 +498,32 @@ BitVector<Allocator1>& BitVector<Allocator1>::operator&=(
   return *this;
 }
 
-template BitVector<std_alloc>& BitVector<std_alloc>::operator&=(
-    const BitVector<std_alloc>& other) noexcept;
-template BitVector<std_alloc>& BitVector<std_alloc>::operator&=(
-    const BitVector<aligned_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator&=(
-    const BitVector<std_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator&=(
-    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator&=(
+    const BitVector<StdAllocator>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator&=(
+    const BitVector<AlignedAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator&=(
+    const BitVector<StdAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator&=(
+    const BitVector<AlignedAllocator>& other) noexcept;
 
 template <typename Allocator>
-BitVector<Allocator>& BitVector<Allocator>::operator&=(const BitSpan& bs) noexcept {
-  BoundsCheckEquality(bs.GetSize());
+BitVector<Allocator>& BitVector<Allocator>::operator&=(const BitSpan& bit_span) noexcept {
+  BoundsCheckEquality(bit_span.GetSize());
 
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bs.GetSize())};
+  const auto byte_size{BitsToBytes(bit_span.GetSize())};
 
-  if (IsAligned() && bs.IsAligned())
-    AlignedANDImpl(bs.GetData(), data_vector_.data(), byte_size);
+  if (IsAligned() && bit_span.IsAligned())
+    AlignedAndImplementation(bit_span.GetData(), data_vector_.data(), byte_size);
   else
-    ANDImpl(bs.GetData(), data_vector_.data(), byte_size);
+    AndImplementation(bit_span.GetData(), data_vector_.data(), byte_size);
   return *this;
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-BitVector<Allocator1>& BitVector<Allocator1>::operator^=(
-    const BitVector<Allocator2>& other) noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+BitVector<Allocator>& BitVector<Allocator>::operator^=(
+    const BitVector<OtherAllocator>& other) noexcept {
   auto min_byte_size = std::min(data_vector_.size(), other.data_vector_.size());
 
   std::transform(data_vector_.cbegin(), data_vector_.cbegin() + min_byte_size,
@@ -521,35 +533,35 @@ BitVector<Allocator1>& BitVector<Allocator1>::operator^=(
   return *this;
 }
 
-template BitVector<std_alloc>& BitVector<std_alloc>::operator^=(
-    const BitVector<std_alloc>& other) noexcept;
-template BitVector<std_alloc>& BitVector<std_alloc>::operator^=(
-    const BitVector<aligned_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator^=(
-    const BitVector<std_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator^=(
-    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator^=(
+    const BitVector<StdAllocator>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator^=(
+    const BitVector<AlignedAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator^=(
+    const BitVector<StdAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator^=(
+    const BitVector<AlignedAllocator>& other) noexcept;
 
 template <typename Allocator>
-BitVector<Allocator>& BitVector<Allocator>::operator^=(const BitSpan& bs) noexcept {
-  BoundsCheckEquality(bs.GetSize());
+BitVector<Allocator>& BitVector<Allocator>::operator^=(const BitSpan& bit_span) noexcept {
+  BoundsCheckEquality(bit_span.GetSize());
 
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bs.GetSize())};
+  const auto byte_size{BitsToBytes(bit_span.GetSize())};
 
-  if (IsAligned() && bs.IsAligned())
-    AlignedXORImpl(bs.GetData(), data_vector_.data(), byte_size);
+  if (IsAligned() && bit_span.IsAligned())
+    AlignedXorImplementation(bit_span.GetData(), data_vector_.data(), byte_size);
   else
-    XORImpl(bs.GetData(), data_vector_.data(), byte_size);
+    XorImplementation(bit_span.GetData(), data_vector_.data(), byte_size);
   return *this;
 }
 
-template <typename Allocator1>
-template <typename Allocator2>
-BitVector<Allocator1>& BitVector<Allocator1>::operator|=(
-    const BitVector<Allocator2>& other) noexcept {
+template <typename Allocator>
+template <typename OtherAllocator>
+BitVector<Allocator>& BitVector<Allocator>::operator|=(
+    const BitVector<OtherAllocator>& other) noexcept {
   const auto max_bit_size = std::max(bit_size_, other.GetSize());
   const auto min_byte_size = std::min(data_vector_.size(), other.GetData().size());
-  const auto max_byte_size = MOTION::Helpers::Convert::BitsToBytes(max_bit_size);
+  const auto max_byte_size = BitsToBytes(max_bit_size);
 
   Resize(max_bit_size, true);
 
@@ -565,35 +577,35 @@ BitVector<Allocator1>& BitVector<Allocator1>::operator|=(
   return *this;
 }
 
-template BitVector<std_alloc>& BitVector<std_alloc>::operator|=(
-    const BitVector<std_alloc>& other) noexcept;
-template BitVector<std_alloc>& BitVector<std_alloc>::operator|=(
-    const BitVector<aligned_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator|=(
-    const BitVector<std_alloc>& other) noexcept;
-template BitVector<aligned_alloc>& BitVector<aligned_alloc>::operator|=(
-    const BitVector<aligned_alloc>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator|=(
+    const BitVector<StdAllocator>& other) noexcept;
+template BitVector<StdAllocator>& BitVector<StdAllocator>::operator|=(
+    const BitVector<AlignedAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator|=(
+    const BitVector<StdAllocator>& other) noexcept;
+template BitVector<AlignedAllocator>& BitVector<AlignedAllocator>::operator|=(
+    const BitVector<AlignedAllocator>& other) noexcept;
 
 template <typename Allocator>
-BitVector<Allocator>& BitVector<Allocator>::operator|=(const BitSpan& bs) noexcept {
-  BoundsCheckEquality(bs.GetSize());
+BitVector<Allocator>& BitVector<Allocator>::operator|=(const BitSpan& bit_span) noexcept {
+  BoundsCheckEquality(bit_span.GetSize());
 
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bs.GetSize())};
+  const auto byte_size{BitsToBytes(bit_span.GetSize())};
 
-  if (IsAligned() && bs.IsAligned())
-    AlignedORImpl(bs.GetData(), data_vector_.data(), byte_size);
+  if (IsAligned() && bit_span.IsAligned())
+    AlignedOrImplementation(bit_span.GetData(), data_vector_.data(), byte_size);
   else
-    ORImpl(bs.GetData(), data_vector_.data(), byte_size);
+    OrImplementation(bit_span.GetData(), data_vector_.data(), byte_size);
   return *this;
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Resize(std::size_t num_bits, bool zero_fill) noexcept {
-  if (bit_size_ == num_bits) {
+void BitVector<Allocator>::Resize(std::size_t number_of_bits, bool zero_fill) noexcept {
+  if (bit_size_ == number_of_bits) {
     return;
   }
-  bit_size_ = num_bits;
-  const auto byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size_);
+  bit_size_ = number_of_bits;
+  const auto byte_size = BitsToBytes(bit_size_);
   if (zero_fill) {
     constexpr std::byte zero_byte = std::byte();
     data_vector_.reserve(byte_size);
@@ -611,41 +623,41 @@ void BitVector<Allocator>::Append(bool bit) noexcept {
   const auto bit_offset = bit_size_ % 8;
   if (bit_offset == 0u) {
     if (bit) {
-      data_vector_.push_back(SET_BIT_MASK[0]);
+      data_vector_.push_back(kSetBitMask[0]);
     } else {
       data_vector_.push_back(std::byte(0));
     }
   } else {
     if (bit) {
-      data_vector_.at(data_vector_.size() - 1) |= SET_BIT_MASK[bit_offset];
+      data_vector_.at(data_vector_.size() - 1) |= kSetBitMask[bit_offset];
     }
   }
   ++bit_size_;
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Append(const std::byte* ptr,
+void BitVector<Allocator>::Append(const std::byte* pointer,
                                   const std::size_t append_bit_size) noexcept {
   if (append_bit_size > 0u) {
     const auto old_bit_offset = bit_size_ % 8;
-    const auto append_byte_size = MOTION::Helpers::Convert::BitsToBytes(append_bit_size);
+    const auto append_byte_size = BitsToBytes(append_bit_size);
     const auto new_bit_size = bit_size_ + append_bit_size;
-    const auto new_byte_size = MOTION::Helpers::Convert::BitsToBytes(new_bit_size);
+    const auto new_byte_size = BitsToBytes(new_bit_size);
 
     if (new_bit_size <= 8u) {
       if (bit_size_ == 0u) {
-        data_vector_.emplace_back(*ptr);
+        data_vector_.emplace_back(*pointer);
       } else {
-        data_vector_.at(0) |= (*ptr >> old_bit_offset);
+        data_vector_.at(0) |= (*pointer >> old_bit_offset);
       }
     } else if (old_bit_offset == 0u) {
-      data_vector_.insert(data_vector_.end(), ptr, ptr + append_byte_size);
+      data_vector_.insert(data_vector_.end(), pointer, pointer + append_byte_size);
     } else if (old_bit_offset + append_bit_size <= 8u) {
-      data_vector_.at(data_vector_.size() - 1) |= *ptr >> old_bit_offset;
+      data_vector_.at(data_vector_.size() - 1) |= *pointer >> old_bit_offset;
     } else if (append_bit_size <= 8u) {
-      data_vector_.at(data_vector_.size() - 1) |= *ptr >> old_bit_offset;
+      data_vector_.at(data_vector_.size() - 1) |= *pointer >> old_bit_offset;
       if (old_bit_offset + append_bit_size > 8u) {
-        data_vector_.push_back(*ptr << (8 - old_bit_offset));
+        data_vector_.push_back(*pointer << (8 - old_bit_offset));
       }
     } else {
       auto old_byte_offset = data_vector_.size() - 1;
@@ -655,12 +667,12 @@ void BitVector<Allocator>::Append(const std::byte* ptr,
         data_vector_.push_back(zero_byte);
       }
       for (std::size_t i = 0; i < append_byte_size; ++i) {
-        data_vector_.at(old_byte_offset) |= (*(ptr + i) >> old_bit_offset);
+        data_vector_.at(old_byte_offset) |= (*(pointer + i) >> old_bit_offset);
         const bool other_has_next_block = i + 1 < append_byte_size;
         const bool last_shift_needed = old_bit_offset + (append_bit_size % 8) > 8u;
         const bool other_fits_byte_size = append_bit_size % 8 == 0;
         if (other_has_next_block || last_shift_needed || other_fits_byte_size) {
-          data_vector_.at(old_byte_offset + 1) |= *(ptr + i) << (8 - old_bit_offset);
+          data_vector_.at(old_byte_offset + 1) |= *(pointer + i) << (8 - old_bit_offset);
         }
         ++old_byte_offset;
       }
@@ -684,9 +696,9 @@ void BitVector<Allocator>::Append(BitVector&& other) noexcept {
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Append(const BitSpan& bs) {
-  if (bs.GetSize() > 0u) {
-    Append(bs.GetData());
+void BitVector<Allocator>::Append(const BitSpan& bit_span) {
+  if (bit_span.GetSize() > 0u) {
+    Append(bit_span.GetData());
     // Need to truncate because the buffer is not owned and we do not know what bits are behind
     // the assigned range
     TruncateToFit();
@@ -694,9 +706,9 @@ void BitVector<Allocator>::Append(const BitSpan& bs) {
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Append(BitSpan&& bs) {
-  if (bs.GetSize() > 0u) {
-    Append(bs.GetData(), bs.GetSize());
+void BitVector<Allocator>::Append(BitSpan&& bit_span) {
+  if (bit_span.GetSize() > 0u) {
+    Append(bit_span.GetData(), bit_span.GetSize());
     // Need to truncate because the buffer is not owned and we do not know what bits are behind
     // the assigned range
     TruncateToFit();
@@ -704,87 +716,89 @@ void BitVector<Allocator>::Append(BitSpan&& bs) {
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Copy(const std::size_t dest_from, const std::size_t dest_to,
-                                const BitVector& other) {
-  assert(dest_from <= dest_to);
-  const std::size_t bitlen = dest_to - dest_from;
+void BitVector<Allocator>::Copy(const std::size_t offset_source,
+                                const std::size_t offset_destination, const BitVector& other) {
+  assert(offset_source <= offset_destination);
+  const std::size_t bitlength = offset_destination - offset_source;
 
-  if (dest_from > bit_size_ || dest_to > bit_size_) {
-    throw std::out_of_range(
-        fmt::format("Accessing positions {} to {} of {}", dest_from, dest_to, bit_size_));
+  if (offset_source > bit_size_ || offset_destination > bit_size_) {
+    throw std::out_of_range(fmt::format("Accessing positions {} to {} of {}", offset_source,
+                                        offset_destination, bit_size_));
   }
 
-  if (bitlen > other.GetSize()) {
-    throw std::out_of_range(
-        fmt::format("Accessing position {} of {}", dest_to - dest_from, other.GetSize()));
+  if (bitlength > other.GetSize()) {
+    throw std::out_of_range(fmt::format("Accessing position {} of {}",
+                                        offset_destination - offset_source, other.GetSize()));
   }
 
-  if (dest_from == dest_to) {
+  if (offset_source == offset_destination) {
     return;
   }
 
-  const auto num_bits = dest_to - dest_from;
+  const auto number_of_bits = offset_destination - offset_source;
 
-  if (num_bits == 1) {
-    Set(other.Get(0), dest_from);
+  if (number_of_bits == 1) {
+    Set(other.Get(0), offset_source);
     return;
   }
 
-  const auto dest_to_offset = dest_to % 8;
-  const auto dest_from_offset = dest_from % 8;
+  const auto destination_to_offset = offset_destination % 8;
+  const auto destination_from_offset = offset_source % 8;
 
-  if (dest_from_offset + num_bits < 8) {
-    const auto mask = (std::byte(0xFF) >> dest_from_offset) &
-                      (std::byte(0xFF) << (8 - dest_from_offset - num_bits));
-    const auto from_bytes = dest_from / 8;
+  if (destination_from_offset + number_of_bits < 8) {
+    const auto mask = (std::byte(0xFF) >> destination_from_offset) &
+                      (std::byte(0xFF) << (8 - destination_from_offset - number_of_bits));
+    const auto from_bytes = offset_source / 8;
     data_vector_.at(from_bytes) &= ~mask;
-    data_vector_.at(from_bytes) |= (other.GetData().at(0) >> dest_from_offset) & mask;
-  } else if ((dest_from % 8) == 0) {
-    const auto num_bytes = MOTION::Helpers::Convert::BitsToBytes(num_bits);
-    const auto from_bytes = dest_from / 8;
-    const auto dest_to_1 = dest_to_offset > 0 ? 1 : 0;
-    for (auto i = 0ull; i < num_bytes - dest_to_1; ++i) {
+    data_vector_.at(from_bytes) |= (other.GetData().at(0) >> destination_from_offset) & mask;
+  } else if ((offset_source % 8) == 0) {
+    const auto number_of_bytes = BitsToBytes(number_of_bits);
+    const auto from_bytes = offset_source / 8;
+    const auto destination_to_1 = destination_to_offset > 0 ? 1 : 0;
+    for (auto i = 0ull; i < number_of_bytes - destination_to_1; ++i) {
       data_vector_.at(from_bytes + i) = other.GetData().at(i);
     }
-    if (dest_to_offset > 0) {
-      const auto mask = std::byte(0xFF) >> dest_to_offset;
-      data_vector_.at(from_bytes + num_bytes - 1) &= mask;
-      data_vector_.at(from_bytes + num_bytes - 1) |= (other.GetData().at(num_bytes - 1) & ~mask);
+    if (destination_to_offset > 0) {
+      const auto mask = std::byte(0xFF) >> destination_to_offset;
+      data_vector_.at(from_bytes + number_of_bytes - 1) &= mask;
+      data_vector_.at(from_bytes + number_of_bytes - 1) |=
+          (other.GetData().at(number_of_bytes - 1) & ~mask);
     }
   } else {
-    const auto num_bytes = MOTION::Helpers::Convert::BitsToBytes(dest_from_offset + num_bits);
-    const auto num_complete_bytes =
-        MOTION::Helpers::Convert::BitsToBytes(num_bits - (8 - dest_from_offset) - dest_to_offset);
-    const auto dest_from_offset = dest_from % 8;
-    BitVector tmp(dest_from_offset);
-    if (num_bits != other.GetSize()) {
-      tmp.Append(other.Subset(0, num_bits));
+    const auto number_of_bytes = BitsToBytes(destination_from_offset + number_of_bits);
+    const auto number_of_complete_bytes =
+        BitsToBytes(number_of_bits - (8 - destination_from_offset) - destination_to_offset);
+    const auto destination_from_offset = offset_source % 8;
+    BitVector tmp(destination_from_offset);
+    if (number_of_bits != other.GetSize()) {
+      tmp.Append(other.Subset(0, number_of_bits));
     } else {
       tmp.Append(other);
     }
-    const auto from_bytes = dest_from / 8;
+    const auto from_bytes = offset_source / 8;
 
-    const auto mask = ~(std::byte(0xFF) >> dest_from_offset);
+    const auto mask = ~(std::byte(0xFF) >> destination_from_offset);
     data_vector_.at(from_bytes) &= mask;
     data_vector_.at(from_bytes) |= tmp.data_vector_.at(0);
 
-    if (num_complete_bytes > 0u) {
-      std::copy(tmp.data_vector_.begin() + 1, tmp.data_vector_.begin() + num_complete_bytes + 1,
+    if (number_of_complete_bytes > 0u) {
+      std::copy(tmp.data_vector_.begin() + 1,
+                tmp.data_vector_.begin() + number_of_complete_bytes + 1,
                 data_vector_.begin() + from_bytes + 1);
     }
 
-    if (dest_to_offset > 0) {
-      auto mask = std::byte(0xFFu >> dest_to_offset);
-      data_vector_.at(from_bytes + num_bytes - 1) &= mask;
-      data_vector_.at(from_bytes + num_bytes - 1) |=
+    if (destination_to_offset > 0) {
+      auto mask = std::byte(0xFFu >> destination_to_offset);
+      data_vector_.at(from_bytes + number_of_bytes - 1) &= mask;
+      data_vector_.at(from_bytes + number_of_bytes - 1) |=
           (tmp.data_vector_.at(tmp.data_vector_.size() - 1));
     }
   }
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Copy(const std::size_t dest_from, const BitVector& other) {
-  Copy(dest_from, dest_from + other.GetSize(), other);
+void BitVector<Allocator>::Copy(const std::size_t offset_source, const BitVector& other) {
+  Copy(offset_source, offset_source + other.GetSize(), other);
 }
 
 template <typename Allocator>
@@ -795,46 +809,45 @@ BitVector<Allocator> BitVector<Allocator>::Subset(std::size_t from, std::size_t 
     throw std::out_of_range(fmt::format("Accessing positions {} to {} of {}", from, to, bit_size_));
   }
 
-  BitVector bv;
+  BitVector bit_vector;
   if (from == to) {
-    return bv;
+    return bit_vector;
   }
 
   if (to - from == bit_size_) {
     return *this;
   }
 
-  bv.Resize(to - from);
+  bit_vector.Resize(to - from);
 
   const auto from_bit_offset = from % 8;
 
   if (from_bit_offset == 0u) {
-    std::copy(data_vector_.begin() + (from / 8),
-              data_vector_.begin() + (MOTION::Helpers::Convert::BitsToBytes(to)),
-              bv.data_vector_.begin());
-  } else if (from_bit_offset + bv.bit_size_ <= 8u) {
-    bv.data_vector_.at(0) = data_vector_.at(from / 8);
-    bv.data_vector_.at(0) <<= from_bit_offset;
+    std::copy(data_vector_.begin() + (from / 8), data_vector_.begin() + (BitsToBytes(to)),
+              bit_vector.data_vector_.begin());
+  } else if (from_bit_offset + bit_vector.bit_size_ <= 8u) {
+    bit_vector.data_vector_.at(0) = data_vector_.at(from / 8);
+    bit_vector.data_vector_.at(0) <<= from_bit_offset;
   } else {
     auto new_byte_offset = 0ull;
     auto bit_counter = 0ull;
-    const auto max = bv.bit_size_;
+    const auto max = bit_vector.bit_size_;
     for (; bit_counter < max; ++new_byte_offset) {
       auto left_part = data_vector_.at((from / 8) + new_byte_offset) << from_bit_offset;
-      bv.data_vector_.at(new_byte_offset) |= left_part;
+      bit_vector.data_vector_.at(new_byte_offset) |= left_part;
       bit_counter += 8 - from_bit_offset;
       if (bit_counter < max) {
         auto right_part =
             data_vector_.at((from / 8) + new_byte_offset + 1) >> (8 - from_bit_offset);
-        bv.data_vector_.at(new_byte_offset) |= right_part;
+        bit_vector.data_vector_.at(new_byte_offset) |= right_part;
         bit_counter += from_bit_offset;
       }
     }
   }
 
-  bv.TruncateToFit();
+  bit_vector.TruncateToFit();
 
-  return bv;
+  return bit_vector;
 }
 
 template <typename Allocator>
@@ -859,107 +872,109 @@ BitVector<Allocator> BitVector<Allocator>::RandomSeeded(const std::size_t size,
   std::uniform_int_distribution<std::uint64_t> dist(0, std::numeric_limits<std::uint64_t>::max());
   std::uniform_int_distribution<std::uint64_t> dist_bool(0, 1);
 
-  BitVector bv(size);
-  auto ptr = reinterpret_cast<std::uint64_t*>(bv.data_vector_.data());
+  BitVector bit_vector(size);
+  auto pointer = reinterpret_cast<std::uint64_t*>(bit_vector.data_vector_.data());
 
   std::size_t i;
 
   for (i = 0ull; i + 64 <= size; i += 64) {
-    *(ptr + (i / 64)) = dist(e);
+    *(pointer + (i / 64)) = dist(e);
   }
 
   for (; i < size; ++i) {
-    bv.Set(dist_bool(e) == true, i);
+    bit_vector.Set(dist_bool(e) == true, i);
   }
 
-  return bv;
+  return bit_vector;
 }
 
 template <typename Allocator>
 BitVector<Allocator> BitVector<Allocator>::Random(const std::size_t bit_size) noexcept {
-  auto& rng = AES128_CTR_RNG::get_thread_instance();
-  auto byte_size = MOTION::Helpers::Convert::BitsToBytes(bit_size);
+  auto& rng = Aes128CtrRng::GetThreadInstance();
+  auto byte_size = BitsToBytes(bit_size);
 
-  BitVector bv(bit_size);
-  rng.random_bytes(bv.data_vector_.data(), byte_size);
-  bv.TruncateToFit();
+  BitVector bit_vector(bit_size);
+  rng.RandomBytes(bit_vector.data_vector_.data(), byte_size);
+  bit_vector.TruncateToFit();
 
-  return bv;
+  return bit_vector;
 }
 
 template <typename Allocator>
-bool BitVector<Allocator>::ANDReduceBitVector(const BitVector& vector) {
-  if (vector.GetSize() == 0) {
+bool BitVector<Allocator>::AndReduceBitVector(const BitVector& bit_vector) {
+  if (bit_vector.GetSize() == 0) {
     return true;
-  } else if (vector.GetSize() == 1) {
-    return vector.Get(0);
-  } else if (vector.GetSize() <= 16) {
-    bool result = vector.Get(0);
-    for (auto i = 1ull; i < vector.GetSize(); ++i) {
-      result &= vector.Get(i);
+  } else if (bit_vector.GetSize() == 1) {
+    return bit_vector.Get(0);
+  } else if (bit_vector.GetSize() <= 16) {
+    bool result = bit_vector.Get(0);
+    for (auto i = 1ull; i < bit_vector.GetSize(); ++i) {
+      result &= bit_vector.Get(i);
     }
     return result;
   } else {
-    auto raw_vector = vector.GetData();
+    auto raw_vector = bit_vector.GetData();
     std::byte b = raw_vector.at(0);
 
-    const bool div_by_8{(vector.GetSize() % 8) == 0};
+    const bool div_by_8{(bit_vector.GetSize() % 8) == 0};
     const auto size{div_by_8 ? raw_vector.size() : raw_vector.size() - 1};
-    const auto remainder_size{vector.GetSize() - (size * 8)};
+    const auto remainder_size{bit_vector.GetSize() - (size * 8)};
 
     for (auto i = 1ull; i < size; ++i) b &= raw_vector.at(i);
 
-    BitVector bv({b}, 8);
+    BitVector tmp({b}, 8);
     bool result{b == std::byte(0xFF)};
 
-    for (auto i = 1; i < 8; ++i) result &= bv.Get(i);
+    for (auto i = 1; i < 8; ++i) result &= tmp.Get(i);
 
-    for (std::size_t i = 0; i < remainder_size; ++i) result &= vector.Get(vector.GetSize() - i - 1);
+    for (std::size_t i = 0; i < remainder_size; ++i)
+      result &= bit_vector.Get(bit_vector.GetSize() - i - 1);
 
     return result;
   }
 }
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::ANDBitVectors(const std::vector<BitVector>& vectors) {
-  if (vectors.size() == 0) {
+BitVector<Allocator> BitVector<Allocator>::AndBitVectors(
+    const std::vector<BitVector>& bit_vectors) {
+  if (bit_vectors.size() == 0) {
     return {};
-  } else if (vectors.size() == 1) {
-    return vectors.at(0);
+  } else if (bit_vectors.size() == 1) {
+    return bit_vectors.at(0);
   } else {
-    auto result = vectors.at(0);
+    auto result = bit_vectors.at(0);
 
-    for (auto i = 1ull; i < vectors.size(); ++i) {
-      result &= vectors.at(i);
+    for (auto i = 1ull; i < bit_vectors.size(); ++i) {
+      result &= bit_vectors.at(i);
     }
     return result;
   }
 }
 
 template <typename Allocator>
-bool BitVector<Allocator>::ORReduceBitVector(const BitVector& vector) {
-  if (vector.GetSize() == 0) {
+bool BitVector<Allocator>::OrReduceBitVector(const BitVector& bit_vector) {
+  if (bit_vector.GetSize() == 0) {
     return {};
-  } else if (vector.GetSize() == 1) {
-    return vector.Get(0);
-  } else if (vector.GetSize() <= 64) {
-    bool result = vector.Get(0);
-    for (auto i = 1ull; i < vector.GetSize(); ++i) {
-      result |= vector.Get(i);
+  } else if (bit_vector.GetSize() == 1) {
+    return bit_vector.Get(0);
+  } else if (bit_vector.GetSize() <= 64) {
+    bool result = bit_vector.Get(0);
+    for (auto i = 1ull; i < bit_vector.GetSize(); ++i) {
+      result |= bit_vector.Get(i);
     }
     return result;
   } else {
-    auto raw_vector = vector.GetData();
+    auto raw_vector = bit_vector.GetData();
     std::byte b = raw_vector.at(0);
 
     for (auto i = 1ull; i < raw_vector.size(); ++i) {
       b |= raw_vector.at(i);
     }
-    BitVector bv({b}, 8);
-    bool result = bv.Get(0);
+    BitVector tmp({b}, 8);
+    bool result = tmp.Get(0);
 
     for (auto i = 1; i < 8; ++i) {
-      result |= bv.Get(i);
+      result |= tmp.Get(i);
     }
 
     return result;
@@ -967,23 +982,23 @@ bool BitVector<Allocator>::ORReduceBitVector(const BitVector& vector) {
 }
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::ORBitVectors(const std::vector<BitVector>& vectors) {
-  if (vectors.size() == 0) {
+BitVector<Allocator> BitVector<Allocator>::OrBitVectors(const std::vector<BitVector>& bit_vectors) {
+  if (bit_vectors.size() == 0) {
     return {};
-  } else if (vectors.size() == 1) {
-    return vectors.at(0);
+  } else if (bit_vectors.size() == 1) {
+    return bit_vectors.at(0);
   } else {
-    auto result = vectors.at(0);
+    auto result = bit_vectors.at(0);
 
-    for (auto i = 1ull; i < vectors.size(); ++i) {
-      result |= vectors.at(i);
+    for (auto i = 1ull; i < bit_vectors.size(); ++i) {
+      result |= bit_vectors.at(i);
     }
     return result;
   }
 }
 
 template <typename Allocator>
-std::vector<BitVector<Allocator>> BitVector<Allocator>::ANDBitVectors(
+std::vector<BitVector<Allocator>> BitVector<Allocator>::AndBitVectors(
     const std::vector<BitVector>& a, const std::vector<BitVector>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
@@ -999,45 +1014,45 @@ std::vector<BitVector<Allocator>> BitVector<Allocator>::ANDBitVectors(
 }
 
 template <typename Allocator>
-std::vector<BitVector<Allocator>> BitVector<Allocator>::ANDBitVectors(
-    const std::vector<std::vector<BitVector>>& vectors) {
-  if (vectors.size() == 0) {
+std::vector<BitVector<Allocator>> BitVector<Allocator>::AndBitVectors(
+    const std::vector<std::vector<BitVector>>& bit_vectors) {
+  if (bit_vectors.size() == 0) {
     return {};
-  } else if (vectors.size() == 1) {
-    return vectors.at(0);
+  } else if (bit_vectors.size() == 1) {
+    return bit_vectors.at(0);
   } else {
-    auto result = vectors.at(0);
-    for (auto i = 1ull; i < vectors.size(); ++i) {
-      result = ANDBitVectors(result, vectors.at(i));
+    auto result = bit_vectors.at(0);
+    for (auto i = 1ull; i < bit_vectors.size(); ++i) {
+      result = AndBitVectors(result, bit_vectors.at(i));
     }
     return result;
   }
 }
 
 template <typename Allocator>
-bool BitVector<Allocator>::XORReduceBitVector(const BitVector& vector) {
-  if (vector.GetSize() == 0) {
+bool BitVector<Allocator>::XorReduceBitVector(const BitVector& bit_vector) {
+  if (bit_vector.GetSize() == 0) {
     return {};
-  } else if (vector.GetSize() == 1) {
-    return vector.Get(0);
-  } else if (vector.GetSize() <= 64) {
-    bool result = vector.Get(0);
-    for (auto i = 1ull; i < vector.GetSize(); ++i) {
-      result ^= vector.Get(i);
+  } else if (bit_vector.GetSize() == 1) {
+    return bit_vector.Get(0);
+  } else if (bit_vector.GetSize() <= 64) {
+    bool result = bit_vector.Get(0);
+    for (auto i = 1ull; i < bit_vector.GetSize(); ++i) {
+      result ^= bit_vector.Get(i);
     }
     return result;
   } else {
-    auto raw_vector = vector.GetData();
+    auto raw_vector = bit_vector.GetData();
     std::byte b = raw_vector.at(0);
 
     for (auto i = 1ull; i < raw_vector.size(); ++i) {
       b ^= raw_vector.at(i);
     }
-    BitVector bv({b}, 8);
-    bool result = bv.Get(0);
+    BitVector tmp({b}, 8);
+    bool result = tmp.Get(0);
 
     for (auto i = 1; i < 8; ++i) {
-      result ^= bv.Get(i);
+      result ^= tmp.Get(i);
     }
 
     return result;
@@ -1045,23 +1060,24 @@ bool BitVector<Allocator>::XORReduceBitVector(const BitVector& vector) {
 }
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::XORBitVectors(const std::vector<BitVector>& vectors) {
-  if (vectors.size() == 0) {
+BitVector<Allocator> BitVector<Allocator>::XorBitVectors(
+    const std::vector<BitVector>& bit_vectors) {
+  if (bit_vectors.size() == 0) {
     return {};
-  } else if (vectors.size() == 1) {
-    return vectors.at(0);
+  } else if (bit_vectors.size() == 1) {
+    return bit_vectors.at(0);
   } else {
-    auto result = vectors.at(0);
+    auto result = bit_vectors.at(0);
 
-    for (auto i = 1ull; i < vectors.size(); ++i) {
-      result ^= vectors.at(i);
+    for (auto i = 1ull; i < bit_vectors.size(); ++i) {
+      result ^= bit_vectors.at(i);
     }
     return result;
   }
 }
 
 template <typename Allocator>
-std::vector<BitVector<Allocator>> BitVector<Allocator>::XORBitVectors(
+std::vector<BitVector<Allocator>> BitVector<Allocator>::XorBitVectors(
     const std::vector<BitVector>& a, const std::vector<BitVector>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
@@ -1077,29 +1093,29 @@ std::vector<BitVector<Allocator>> BitVector<Allocator>::XORBitVectors(
 }
 
 template <typename Allocator>
-std::vector<BitVector<Allocator>> BitVector<Allocator>::XORBitVectors(
-    const std::vector<std::vector<BitVector>>& vectors) {
-  if (vectors.size() == 0) {
+std::vector<BitVector<Allocator>> BitVector<Allocator>::XorBitVectors(
+    const std::vector<std::vector<BitVector>>& bit_vectors) {
+  if (bit_vectors.size() == 0) {
     return {};
-  } else if (vectors.size() == 1) {
-    return vectors.at(0);
+  } else if (bit_vectors.size() == 1) {
+    return bit_vectors.at(0);
   } else {
-    auto result = vectors.at(0);
-    for (auto i = 1ull; i < vectors.size(); ++i) {
-      result = XORBitVectors(result, vectors.at(i));
+    auto result = bit_vectors.at(0);
+    for (auto i = 1ull; i < bit_vectors.size(); ++i) {
+      result = XorBitVectors(result, bit_vectors.at(i));
     }
     return result;
   }
 }
 
 template <typename Allocator>
-bool BitVector<Allocator>::EqualSizeDimensions(const std::vector<BitVector>& v) {
-  if (v.size() <= 1) {
+bool BitVector<Allocator>::EqualSizeDimensions(const std::vector<BitVector>& bit_vectors) {
+  if (bit_vectors.size() <= 1) {
     return true;
   } else {
-    auto first_size = v.at(0).GetSize();
-    for (auto i = 1ull; i < v.size(); ++i) {
-      if (first_size != v.at(i).GetSize()) {
+    auto first_size = bit_vectors.at(0).GetSize();
+    for (auto i = 1ull; i < bit_vectors.size(); ++i) {
+      if (first_size != bit_vectors.at(i).GetSize()) {
         return false;
       }
     }
@@ -1111,12 +1127,12 @@ template <typename Allocator>
 void BitVector<Allocator>::TruncateToFit() noexcept {
   const auto bit_offset = bit_size_ % 8;
   if (bit_offset > 0u) {
-    data_vector_.at(data_vector_.size() - 1) &= TRUNCATION_BIT_MASK[bit_offset - 1];
+    data_vector_.at(data_vector_.size() - 1) &= TruncationBitMask[bit_offset - 1];
   }
 }
 template <typename Allocator>
 void BitVector<Allocator>::BoundsCheckEquality([[maybe_unused]] const std::size_t bit_size) const {
-  if constexpr (MOTION::MOTION_DEBUG) {
+  if constexpr (kDebug) {
     if (bit_size_ != bit_size)
       throw std::logic_error(
           fmt::format("Required exact size match with {}, but got {}", bit_size_, bit_size));
@@ -1125,374 +1141,389 @@ void BitVector<Allocator>::BoundsCheckEquality([[maybe_unused]] const std::size_
 
 template <typename Allocator>
 void BitVector<Allocator>::BoundsCheckInRange([[maybe_unused]] const std::size_t bit_size) const {
-  if constexpr (MOTION::MOTION_DEBUG) {
+  if constexpr (kDebug) {
     if (bit_size_ != bit_size)
       throw std::out_of_range(fmt::format("Trying to access {} from {}", bit_size_, bit_size));
   }
 }
 
-template class BitVector<std_alloc>;
-template class BitVector<aligned_alloc>;
+template class BitVector<StdAllocator>;
+template class BitVector<AlignedAllocator>;
 
 template <>
-std::vector<BitVector<std_alloc>> ToInput<float, std::true_type, std_alloc>(float t) {
+std::vector<BitVector<StdAllocator>> ToInput<float, std::true_type, StdAllocator>(float t) {
   uint32_t tmp;
   std::copy(reinterpret_cast<std::uint32_t*>(&t), reinterpret_cast<std::uint32_t*>(&t) + 1, &tmp);
   return ToInput(tmp);
 }
 
 template <>
-std::vector<BitVector<std_alloc>> ToInput<double, std::true_type, std_alloc>(double t) {
+std::vector<BitVector<StdAllocator>> ToInput<double, std::true_type, StdAllocator>(double t) {
   uint64_t tmp;
   std::copy(reinterpret_cast<std::uint64_t*>(&t), reinterpret_cast<std::uint64_t*>(&t) + 1, &tmp);
   return ToInput(tmp);
 }
 
 template <>
-std::vector<BitVector<std_alloc>> ToInput<float, std::true_type, std_alloc>(
-    const std::vector<float>& v) {
-  std::vector<std::uint32_t> v_conv;
-  v_conv.reserve(v.size());
-  for (const auto& f : v) v_conv.emplace_back(*reinterpret_cast<const std::uint32_t*>(&f));
-  return ToInput(v_conv);
+std::vector<BitVector<StdAllocator>> ToInput<float, std::true_type, StdAllocator>(
+    const std::vector<float>& vector_of_floats) {
+  std::vector<std::uint32_t> vector_of_floats_converted;
+  vector_of_floats_converted.reserve(vector_of_floats.size());
+  for (const auto& f : vector_of_floats)
+    vector_of_floats_converted.emplace_back(*reinterpret_cast<const std::uint32_t*>(&f));
+  return ToInput(vector_of_floats_converted);
 }
 
 template <>
-std::vector<BitVector<std_alloc>> ToInput<double, std::true_type, std_alloc>(
-    const std::vector<double>& v) {
-  std::vector<std::uint32_t> v_conv;
-  v_conv.reserve(v.size());
-  for (const auto& f : v) v_conv.emplace_back(*reinterpret_cast<const std::uint64_t*>(&f));
-  return ToInput(v_conv);
+std::vector<BitVector<StdAllocator>> ToInput<double, std::true_type, StdAllocator>(
+    const std::vector<double>& vector_of_doubles) {
+  std::vector<std::uint32_t> vector_of_doubles_converted;
+  vector_of_doubles_converted.reserve(vector_of_doubles.size());
+  for (const auto& d : vector_of_doubles)
+    vector_of_doubles_converted.emplace_back(*reinterpret_cast<const std::uint64_t*>(&d));
+  return ToInput(vector_of_doubles_converted);
 }
 
-template <typename T, typename, typename Allocator>
-std::vector<BitVector<Allocator>> ToInput(T t) {
-  constexpr auto bitlen{sizeof(T) * 8};
+template <typename IntegralType, typename, typename Allocator>
+std::vector<BitVector<Allocator>> ToInput(IntegralType integral_value) {
+  constexpr auto kBitLength{sizeof(IntegralType) * 8};
 
-  static_assert(std::is_integral<T>::value);
-  static_assert(sizeof(T) <= 8);
-  if constexpr (sizeof(T) == 1) {
-    static_assert(std::is_same_v<T, std::uint8_t>);
-  } else if constexpr (sizeof(T) == 2) {
-    static_assert(std::is_same_v<T, std::uint16_t>);
-  } else if constexpr (sizeof(T) == 4) {
-    static_assert(std::is_same_v<T, std::uint32_t>);
-  } else if constexpr (sizeof(T) == 8) {
-    static_assert(std::is_same_v<T, std::uint64_t>);
+  static_assert(std::is_integral<IntegralType>::value);
+  static_assert(sizeof(IntegralType) <= 8);
+  if constexpr (sizeof(IntegralType) == 1) {
+    static_assert(std::is_same_v<IntegralType, std::uint8_t>);
+  } else if constexpr (sizeof(IntegralType) == 2) {
+    static_assert(std::is_same_v<IntegralType, std::uint16_t>);
+  } else if constexpr (sizeof(IntegralType) == 4) {
+    static_assert(std::is_same_v<IntegralType, std::uint32_t>);
+  } else if constexpr (sizeof(IntegralType) == 8) {
+    static_assert(std::is_same_v<IntegralType, std::uint64_t>);
   }
-  std::vector<BitVector<Allocator>> v;
-  for (auto i = 0ull; i < bitlen; ++i) v.emplace_back(((t >> i) & 1) == 1);
-  return v;
+  std::vector<BitVector<Allocator>> result;
+  for (auto i = 0ull; i < kBitLength; ++i) result.emplace_back(((integral_value >> i) & 1) == 1);
+  return result;
 }
 
-template std::vector<BitVector<std_alloc>> ToInput(std::uint8_t);
-template std::vector<BitVector<std_alloc>> ToInput(std::uint16_t);
-template std::vector<BitVector<std_alloc>> ToInput(std::uint32_t);
-template std::vector<BitVector<std_alloc>> ToInput(std::uint64_t);
+template std::vector<BitVector<StdAllocator>> ToInput(std::uint8_t);
+template std::vector<BitVector<StdAllocator>> ToInput(std::uint16_t);
+template std::vector<BitVector<StdAllocator>> ToInput(std::uint32_t);
+template std::vector<BitVector<StdAllocator>> ToInput(std::uint64_t);
 
-template <typename T, typename, typename Allocator>
-std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& in_v) {
-  static_assert(std::is_integral<T>::value);
-  static_assert(sizeof(T) <= 8);
-  if constexpr (sizeof(T) == 1) {
-    static_assert(std::is_same_v<T, std::uint8_t>);
-  } else if constexpr (sizeof(T) == 2) {
-    static_assert(std::is_same_v<T, std::uint16_t>);
-  } else if constexpr (sizeof(T) == 4) {
-    static_assert(std::is_same_v<T, std::uint32_t>);
-  } else if constexpr (sizeof(T) == 8) {
-    static_assert(std::is_same_v<T, std::uint64_t>);
+template <typename IntegralType, typename, typename Allocator>
+std::vector<BitVector<Allocator>> ToInput(const std::vector<IntegralType>& input_vector) {
+  static_assert(std::is_integral<IntegralType>::value);
+  static_assert(sizeof(IntegralType) <= 8);
+  if constexpr (sizeof(IntegralType) == 1) {
+    static_assert(std::is_same_v<IntegralType, std::uint8_t>);
+  } else if constexpr (sizeof(IntegralType) == 2) {
+    static_assert(std::is_same_v<IntegralType, std::uint16_t>);
+  } else if constexpr (sizeof(IntegralType) == 4) {
+    static_assert(std::is_same_v<IntegralType, std::uint32_t>);
+  } else if constexpr (sizeof(IntegralType) == 8) {
+    static_assert(std::is_same_v<IntegralType, std::uint64_t>);
   }
 
-  constexpr auto bitlen{sizeof(T) * 8};
-  std::vector<BitVector<Allocator>> v(bitlen);
-  for (auto i = 0ull; i < in_v.size(); ++i) {
-    for (auto j = 0ull; j < bitlen; ++j) {
-      v.at(j).Append(((in_v.at(i) >> j) & 1) == 1);
+  constexpr auto kBitLength{sizeof(IntegralType) * 8};
+  std::vector<BitVector<Allocator>> result(kBitLength);
+  for (auto i = 0ull; i < input_vector.size(); ++i) {
+    for (auto j = 0ull; j < kBitLength; ++j) {
+      result.at(j).Append(((input_vector.at(i) >> j) & 1) == 1);
     }
   }
-  return v;
+  return result;
 }
 
-template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint8_t>&);
-template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint16_t>&);
-template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint32_t>&);
-template std::vector<BitVector<std_alloc>> ToInput(const std::vector<std::uint64_t>&);
+template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint8_t>&);
+template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint16_t>&);
+template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint32_t>&);
+template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint64_t>&);
 
-BitSpan::BitSpan(std::byte* ptr, std::size_t bit_size, bool aligned)
-    : ptr_(ptr), bit_size_(bit_size), aligned_(aligned) {}
+BitSpan::BitSpan(std::byte* pointer, std::size_t bit_size, bool aligned)
+    : pointer_(pointer), bit_size_(bit_size), aligned_(aligned) {}
 
 template <typename T>
-BitSpan::BitSpan(T* ptr, std::size_t bit_size, bool aligned)
-    : ptr_(reinterpret_cast<std::byte*>(ptr)), bit_size_(bit_size), aligned_(aligned) {}
+BitSpan::BitSpan(T* pointer, std::size_t bit_size, bool aligned)
+    : pointer_(reinterpret_cast<std::byte*>(pointer)), bit_size_(bit_size), aligned_(aligned) {}
 
 BitSpan::BitSpan(const BitSpan& other) { *this = other; }
 
 BitSpan::BitSpan(BitSpan&& other) { *this = std::move(other); }
 
 BitSpan& BitSpan::operator=(const BitSpan& other) {
-  ptr_ = other.ptr_;
+  pointer_ = other.pointer_;
   bit_size_ = other.bit_size_;
   aligned_ = other.aligned_;
   return *this;
 }
 
 BitSpan& BitSpan::operator=(BitSpan&& other) {
-  ptr_ = other.ptr_;
+  pointer_ = other.pointer_;
   bit_size_ = other.bit_size_;
   aligned_ = other.aligned_;
   return *this;
 }
 
-template <typename BitVectorT>
-bool BitSpan::operator==(const BitVectorT& bv) const {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if (aligned_ && bv.IsAligned())
-    return AlignedEQImpl(ptr_, bv.GetData().data(), byte_size);
+template <typename BitVectorType>
+bool BitSpan::operator==(const BitVectorType& bit_vector) const {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if (aligned_ && bit_vector.IsAligned())
+    return AlignedEqualImplementation(pointer_, bit_vector.GetData().data(), byte_size);
   else
-    return EQImpl(ptr_, bv.GetData().data(), byte_size);
+    return EqualImplementation(pointer_, bit_vector.GetData().data(), byte_size);
 }
 
-template bool BitSpan::operator==(const BitVector<std_alloc>& bv) const;
-template bool BitSpan::operator==(const BitVector<aligned_alloc>& bv) const;
+template bool BitSpan::operator==(const BitVector<StdAllocator>& bit_vector) const;
+template bool BitSpan::operator==(const BitVector<AlignedAllocator>& bit_vector) const;
 
-bool BitSpan::operator==(const BitSpan& bs) const {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if (aligned_ && bs.aligned_)
-    return AlignedEQImpl(ptr_, bs.ptr_, byte_size);
+bool BitSpan::operator==(const BitSpan& bit_span) const {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if (aligned_ && bit_span.aligned_)
+    return AlignedEqualImplementation(pointer_, bit_span.pointer_, byte_size);
   else
-    return EQImpl(ptr_, bs.ptr_, byte_size);
+    return EqualImplementation(pointer_, bit_span.pointer_, byte_size);
 }
 
-template <typename BitVectorT>
-BitVectorT BitSpan::operator&(const BitVectorT& bv) const {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  BitVectorT result;
-  if constexpr (BitVectorT::IsAligned()) {
-    result = BitVectorT(ptr_, bit_size_);
-    AlignedANDImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
+template <typename BitVectorType>
+BitVectorType BitSpan::operator&(const BitVectorType& bit_vector) const {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  BitVectorType result;
+  if constexpr (BitVectorType::IsAligned()) {
+    result = BitVectorType(pointer_, bit_size_);
+    AlignedAndImplementation(bit_vector.GetData().data(), result.GetMutableData().data(),
+                             byte_size);
   } else {  // we do not want an AlignedBitVector as output
-    result = BitVectorT(ptr_, bit_size_);
-    ANDImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
+    result = BitVectorType(pointer_, bit_size_);
+    AndImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::operator&(const BitVector<std_alloc>& bv) const;
-template BitVector<aligned_alloc> BitSpan::operator&(const BitVector<aligned_alloc>& bv) const;
+template BitVector<StdAllocator> BitSpan::operator&(
+    const BitVector<StdAllocator>& bit_vector) const;
+template BitVector<AlignedAllocator> BitSpan::operator&(
+    const BitVector<AlignedAllocator>& bit_vector) const;
 
-template <typename BitVectorT>
-BitVectorT BitSpan::operator&(const BitSpan& bs) const {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  BitVectorT result;
-  if constexpr (std::is_same_v<AlignedBitVector, BitVectorT>) {
-    if (bs.aligned_) {
-      result = BitVectorT(ptr_, bit_size_);
-      AlignedANDImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+template <typename BitVectorType>
+BitVectorType BitSpan::operator&(const BitSpan& bit_span) const {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  BitVectorType result;
+  if constexpr (std::is_same_v<AlignedBitVector, BitVectorType>) {
+    if (bit_span.aligned_) {
+      result = BitVectorType(pointer_, bit_size_);
+      AlignedAndImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
     } else if (aligned_) {
-      result = BitVectorT(bs.ptr_, bit_size_);
-      AlignedANDImpl(ptr_, result.GetMutableData().data(), byte_size);
+      result = BitVectorType(bit_span.pointer_, bit_size_);
+      AlignedAndImplementation(pointer_, result.GetMutableData().data(), byte_size);
     } else {  // none of both is aligned
-      result = BitVectorT(ptr_, bit_size_);
-      ANDImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+      result = BitVectorType(pointer_, bit_size_);
+      AndImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
     }
   } else {  // we do not want an AlignedBitVector as output
-    result = BitVectorT(ptr_, bit_size_);
-    ANDImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+    result = BitVectorType(pointer_, bit_size_);
+    AndImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::operator&(const BitSpan& bv) const;
-template BitVector<aligned_alloc> BitSpan::operator&(const BitSpan& bv) const;
+template BitVector<StdAllocator> BitSpan::operator&(const BitSpan& bit_vector) const;
+template BitVector<AlignedAllocator> BitSpan::operator&(const BitSpan& bit_vector) const;
 
-template <typename BitVectorT>
-BitVectorT BitSpan::operator|(const BitVectorT& bv) const {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  BitVectorT result;
-  if constexpr (BitVectorT::IsAligned()) {
-    result = BitVectorT(ptr_, bit_size_);
-    AlignedORImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
+template <typename BitVectorType>
+BitVectorType BitSpan::operator|(const BitVectorType& bit_vector) const {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  BitVectorType result;
+  if constexpr (BitVectorType::IsAligned()) {
+    result = BitVectorType(pointer_, bit_size_);
+    AlignedOrImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {
-    result = BitVectorT(ptr_, bit_size_);
-    ORImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
+    result = BitVectorType(pointer_, bit_size_);
+    OrImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::operator|(const BitVector<std_alloc>& bv) const;
-template BitVector<aligned_alloc> BitSpan::operator|(const BitVector<aligned_alloc>& bv) const;
+template BitVector<StdAllocator> BitSpan::operator|(
+    const BitVector<StdAllocator>& bit_vector) const;
+template BitVector<AlignedAllocator> BitSpan::operator|(
+    const BitVector<AlignedAllocator>& bit_vector) const;
 
-template <typename BitVectorT>
-BitVectorT BitSpan::operator|(const BitSpan& bs) const {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  BitVectorT result;
-  if constexpr (std::is_same_v<AlignedBitVector, BitVectorT>) {
-    if (bs.aligned_) {
-      result = BitVectorT(ptr_, bit_size_);
-      AlignedORImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+template <typename BitVectorType>
+BitVectorType BitSpan::operator|(const BitSpan& bit_span) const {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  BitVectorType result;
+  if constexpr (std::is_same_v<AlignedBitVector, BitVectorType>) {
+    if (bit_span.aligned_) {
+      result = BitVectorType(pointer_, bit_size_);
+      AlignedOrImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
     } else if (aligned_) {
-      result = BitVectorT(bs.ptr_, bit_size_);
-      AlignedORImpl(ptr_, result.GetMutableData().data(), byte_size);
+      result = BitVectorType(bit_span.pointer_, bit_size_);
+      AlignedOrImplementation(pointer_, result.GetMutableData().data(), byte_size);
     } else {
-      result = BitVectorT(ptr_, bit_size_);
-      ORImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+      result = BitVectorType(pointer_, bit_size_);
+      OrImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
     }
   } else {
-    result = BitVectorT(ptr_, bit_size_);
-    ORImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+    result = BitVectorType(pointer_, bit_size_);
+    OrImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::operator|(const BitSpan& bv) const;
-template BitVector<aligned_alloc> BitSpan::operator|(const BitSpan& bv) const;
+template BitVector<StdAllocator> BitSpan::operator|(const BitSpan& bit_vector) const;
+template BitVector<AlignedAllocator> BitSpan::operator|(const BitSpan& bit_vector) const;
 
-template <typename BitVectorT>
-BitVectorT BitSpan::operator^(const BitVectorT& bv) const {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  BitVectorT result;
-  if constexpr (BitVectorT::IsAligned()) {
-    result = BitVectorT(ptr_, bit_size_);
-    AlignedXORImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
+template <typename BitVectorType>
+BitVectorType BitSpan::operator^(const BitVectorType& bit_vector) const {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  BitVectorType result;
+  if constexpr (BitVectorType::IsAligned()) {
+    result = BitVectorType(pointer_, bit_size_);
+    AlignedXorImplementation(bit_vector.GetData().data(), result.GetMutableData().data(),
+                             byte_size);
   } else {
-    result = BitVectorT(ptr_, bit_size_);
-    XORImpl(bv.GetData().data(), result.GetMutableData().data(), byte_size);
+    result = BitVectorType(pointer_, bit_size_);
+    XorImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::operator^(const BitVector<std_alloc>& bv) const;
-template BitVector<aligned_alloc> BitSpan::operator^(const BitVector<aligned_alloc>& bv) const;
+template BitVector<StdAllocator> BitSpan::operator^(
+    const BitVector<StdAllocator>& bit_vector) const;
+template BitVector<AlignedAllocator> BitSpan::operator^(
+    const BitVector<AlignedAllocator>& bit_vector) const;
 
-template <typename BitVectorT>
-BitVectorT BitSpan::operator^(const BitSpan& bs) const {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  BitVectorT result;
-  if constexpr (std::is_same_v<AlignedBitVector, BitVectorT>) {
-    if (bs.aligned_) {
-      result = BitVectorT(ptr_, bit_size_);
-      AlignedXORImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+template <typename BitVectorType>
+BitVectorType BitSpan::operator^(const BitSpan& bit_span) const {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  BitVectorType result;
+  if constexpr (std::is_same_v<AlignedBitVector, BitVectorType>) {
+    if (bit_span.aligned_) {
+      result = BitVectorType(pointer_, bit_size_);
+      AlignedXorImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
     } else if (aligned_) {
-      result = BitVectorT(bs.ptr_, bit_size_);
-      AlignedXORImpl(ptr_, result.GetMutableData().data(), byte_size);
+      result = BitVectorType(bit_span.pointer_, bit_size_);
+      AlignedXorImplementation(pointer_, result.GetMutableData().data(), byte_size);
     } else {
-      result = BitVectorT(ptr_, bit_size_);
-      XORImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+      result = BitVectorType(pointer_, bit_size_);
+      XorImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
     }
   } else {
-    result = BitVectorT(ptr_, bit_size_);
-    XORImpl(bs.ptr_, result.GetMutableData().data(), byte_size);
+    result = BitVectorType(pointer_, bit_size_);
+    XorImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::operator^(const BitSpan& bv) const;
-template BitVector<aligned_alloc> BitSpan::operator^(const BitSpan& bv) const;
+template BitVector<StdAllocator> BitSpan::operator^(const BitSpan& bit_vector) const;
+template BitVector<AlignedAllocator> BitSpan::operator^(const BitSpan& bit_vector) const;
 
-template <typename BitVectorT>
-BitSpan& BitSpan::operator&=(const BitVectorT& bv) {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if constexpr (BitVectorT::IsAligned()) {
+template <typename BitVectorType>
+BitSpan& BitSpan::operator&=(const BitVectorType& bit_vector) {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if constexpr (BitVectorType::IsAligned()) {
     if (aligned_)
-      AlignedANDImpl(bv.GetData().data(), ptr_, byte_size);
+      AlignedAndImplementation(bit_vector.GetData().data(), pointer_, byte_size);
     else
-      ANDImpl(bv.GetData().data(), ptr_, byte_size);
+      AndImplementation(bit_vector.GetData().data(), pointer_, byte_size);
   } else
-    ANDImpl(bv.GetData().data(), ptr_, byte_size);
+    AndImplementation(bit_vector.GetData().data(), pointer_, byte_size);
   return *this;
 }
 
-template BitSpan& BitSpan::operator&=(const BitVector<std_alloc>& bv);
-template BitSpan& BitSpan::operator&=(const BitVector<aligned_alloc>& bv);
+template BitSpan& BitSpan::operator&=(const BitVector<StdAllocator>& bit_vector);
+template BitSpan& BitSpan::operator&=(const BitVector<AlignedAllocator>& bit_vector);
 
-BitSpan& BitSpan::operator&=(const BitSpan& bs) {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if (aligned_ && bs.aligned_)
-    AlignedANDImpl(bs.ptr_, ptr_, byte_size);
+BitSpan& BitSpan::operator&=(const BitSpan& bit_span) {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if (aligned_ && bit_span.aligned_)
+    AlignedAndImplementation(bit_span.pointer_, pointer_, byte_size);
   else
-    ANDImpl(bs.ptr_, ptr_, byte_size);
+    AndImplementation(bit_span.pointer_, pointer_, byte_size);
   return *this;
 }
 
-template <typename BitVectorT>
-BitSpan& BitSpan::operator|=(const BitVectorT& bv) {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if constexpr (BitVectorT::IsAligned()) {
+template <typename BitVectorType>
+BitSpan& BitSpan::operator|=(const BitVectorType& bit_vector) {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if constexpr (BitVectorType::IsAligned()) {
     if (aligned_)
-      AlignedORImpl(bv.GetData().data(), ptr_, byte_size);
+      AlignedOrImplementation(bit_vector.GetData().data(), pointer_, byte_size);
     else
-      ORImpl(bv.GetData().data(), ptr_, byte_size);
+      OrImplementation(bit_vector.GetData().data(), pointer_, byte_size);
   } else
-    ORImpl(bv.GetData().data(), ptr_, byte_size);
+    OrImplementation(bit_vector.GetData().data(), pointer_, byte_size);
   return *this;
 }
 
-template BitSpan& BitSpan::operator|=(const BitVector<std_alloc>& bv);
-template BitSpan& BitSpan::operator|=(const BitVector<aligned_alloc>& bv);
+template BitSpan& BitSpan::operator|=(const BitVector<StdAllocator>& bit_vector);
+template BitSpan& BitSpan::operator|=(const BitVector<AlignedAllocator>& bit_vector);
 
-BitSpan& BitSpan::operator|=(const BitSpan& bs) {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if (aligned_ && bs.aligned_)
-    AlignedORImpl(bs.ptr_, ptr_, byte_size);
+BitSpan& BitSpan::operator|=(const BitSpan& bit_span) {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if (aligned_ && bit_span.aligned_)
+    AlignedOrImplementation(bit_span.pointer_, pointer_, byte_size);
   else
-    ORImpl(bs.ptr_, ptr_, byte_size);
+    OrImplementation(bit_span.pointer_, pointer_, byte_size);
   return *this;
 }
 
-template <typename BitVectorT>
-BitSpan& BitSpan::operator^=(const BitVectorT& bv) {
-  assert(bit_size_ == bv.GetSize());
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if constexpr (BitVectorT::IsAligned()) {
+template <typename BitVectorType>
+BitSpan& BitSpan::operator^=(const BitVectorType& bit_vector) {
+  assert(bit_size_ == bit_vector.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if constexpr (BitVectorType::IsAligned()) {
     if (aligned_)
-      AlignedXORImpl(bv.GetData().data(), ptr_, byte_size);
+      AlignedXorImplementation(bit_vector.GetData().data(), pointer_, byte_size);
     else
-      XORImpl(bv.GetData().data(), ptr_, byte_size);
+      XorImplementation(bit_vector.GetData().data(), pointer_, byte_size);
   } else
-    XORImpl(bv.GetData().data(), ptr_, byte_size);
+    XorImplementation(bit_vector.GetData().data(), pointer_, byte_size);
   return *this;
 }
 
-template BitSpan& BitSpan::operator^=(const BitVector<std_alloc>& bv);
-template BitSpan& BitSpan::operator^=(const BitVector<aligned_alloc>& bv);
+template BitSpan& BitSpan::operator^=(const BitVector<StdAllocator>& bit_vector);
+template BitSpan& BitSpan::operator^=(const BitVector<AlignedAllocator>& bit_vector);
 
-BitSpan& BitSpan::operator^=(const BitSpan& bs) {
-  assert(bit_size_ == bs.bit_size_);
-  const auto byte_size{MOTION::Helpers::Convert::BitsToBytes(bit_size_)};
-  if (aligned_ && bs.aligned_)
-    AlignedXORImpl(bs.ptr_, ptr_, byte_size);
+BitSpan& BitSpan::operator^=(const BitSpan& bit_span) {
+  assert(bit_size_ == bit_span.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if (aligned_ && bit_span.aligned_)
+    AlignedXorImplementation(bit_span.pointer_, pointer_, byte_size);
   else
-    XORImpl(bs.ptr_, ptr_, byte_size);
+    XorImplementation(bit_span.pointer_, pointer_, byte_size);
   return *this;
 }
 
-bool BitSpan::Get(const std::size_t pos) const { return GetImpl(ptr_, pos); }
+bool BitSpan::Get(const std::size_t position) const {
+  return GetImplementation(pointer_, position);
+}
 
-void BitSpan::Set(const bool value) { SetImpl(ptr_, value, bit_size_); }
+void BitSpan::Set(const bool value) { SetImplementation(pointer_, value, bit_size_); }
 
-void BitSpan::Set(const bool value, const std::size_t pos) { SetAtImpl(ptr_, value, pos); }
+void BitSpan::Set(const bool value, const std::size_t position) {
+  SetAtImplementation(pointer_, value, position);
+}
 
 void BitSpan::Invert() {
-  std::transform(ptr_, ptr_ + bits_to_bytes(bit_size_), ptr_, [](std::byte& b) { return ~b; });
-  TruncateToFitImpl(ptr_, bit_size_);
+  std::transform(pointer_, pointer_ + NumberOfBitsToNumberOfBytes(bit_size_), pointer_,
+                 [](std::byte& b) { return ~b; });
+  TruncateToFitImplementation(pointer_, bit_size_);
 }
 
-template <typename BitVectorT>
-BitVectorT BitSpan::Subset(const std::size_t from, const std::size_t to) const {
+template <typename BitVectorType>
+BitVectorType BitSpan::Subset(const std::size_t from, const std::size_t to) const {
   if (from > to || to > bit_size_) {
     throw std::out_of_range(
         fmt::format("Accessing positions {} to {} in BitSpan of bit_size {}", from, to, bit_size_));
@@ -1500,39 +1531,39 @@ BitVectorT BitSpan::Subset(const std::size_t from, const std::size_t to) const {
   assert(from <= to);
 
   if (from == to) {
-    return BitVectorT();
+    return BitVectorType();
   }
 
   if (to - from == bit_size_) {
-    return BitVectorT(ptr_, bit_size_);
+    return BitVectorType(pointer_, bit_size_);
   }
 
   const auto subset_bit_size{to - from};
 
-  BitVectorT result;
+  BitVectorType result;
   result.Resize(subset_bit_size);
 
-  std::byte* res_ptr = result.IsAligned()
-                           ? reinterpret_cast<std::byte*>(__builtin_assume_aligned(
-                                 result.GetMutableData().data(), MOTION::MOTION_ALIGNMENT))
-                           : result.GetMutableData().data();
+  std::byte* result_pointer = result.IsAligned()
+                                  ? reinterpret_cast<std::byte*>(__builtin_assume_aligned(
+                                        result.GetMutableData().data(), kAlignment))
+                                  : result.GetMutableData().data();
   const auto from_bit_offset{from % 8};
 
   if (from_bit_offset == 0u) {
-    std::copy(ptr_ + (from / 8), ptr_ + (MOTION::Helpers::Convert::BitsToBytes(to)), res_ptr);
+    std::copy(pointer_ + (from / 8), pointer_ + (BitsToBytes(to)), result_pointer);
   } else if (from_bit_offset + subset_bit_size <= 8u) {
-    *res_ptr = *(ptr_ + (from / 8));
-    *res_ptr <<= from_bit_offset;
+    *result_pointer = *(pointer_ + (from / 8));
+    *result_pointer <<= from_bit_offset;
   } else {
     auto new_byte_offset = 0ull;
     auto bit_counter = 0ull;
     for (; bit_counter < subset_bit_size; ++new_byte_offset) {
-      auto left_part = *(ptr_ + (from / 8) + new_byte_offset) << from_bit_offset;
-      *(res_ptr + new_byte_offset) |= left_part;
+      auto left_part = *(pointer_ + (from / 8) + new_byte_offset) << from_bit_offset;
+      *(result_pointer + new_byte_offset) |= left_part;
       bit_counter += 8 - from_bit_offset;
       if (bit_counter < subset_bit_size) {
-        auto right_part = *(ptr_ + (from / 8) + new_byte_offset + 1) >> (8 - from_bit_offset);
-        *(res_ptr + new_byte_offset) |= right_part;
+        auto right_part = *(pointer_ + (from / 8) + new_byte_offset + 1) >> (8 - from_bit_offset);
+        *(result_pointer + new_byte_offset) |= right_part;
         bit_counter += from_bit_offset;
       }
     }
@@ -1540,71 +1571,80 @@ BitVectorT BitSpan::Subset(const std::size_t from, const std::size_t to) const {
   return result;
 }
 
-template BitVector<std_alloc> BitSpan::Subset(const std::size_t from, const std::size_t to) const;
-template BitVector<aligned_alloc> BitSpan::Subset(const std::size_t from,
-                                                  const std::size_t to) const;
+template BitVector<StdAllocator> BitSpan::Subset(const std::size_t from,
+                                                 const std::size_t to) const;
+template BitVector<AlignedAllocator> BitSpan::Subset(const std::size_t from,
+                                                     const std::size_t to) const;
 
 std::string BitSpan::AsString() const noexcept {
   std::string result;
   for (auto i = 0ull; i < bit_size_; ++i) {
-    result.append(std::to_string(GetImpl(ptr_, i)));
+    result.append(std::to_string(GetImplementation(pointer_, i)));
   }
   return result;
 }
 
-template <typename BitVectorT>
-void BitSpan::Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorT& other) {
-  const std::size_t bitlen = dest_to - dest_from;
+template <typename BitVectorType>
+void BitSpan::Copy(const std::size_t offset_source, const std::size_t offset_destination,
+                   BitVectorType& other) {
+  const std::size_t bitlength = offset_destination - offset_source;
 
-  if (dest_from > bit_size_ || dest_to > bit_size_) {
-    throw std::out_of_range(
-        fmt::format("Accessing positions {} to {} of {}", dest_from, dest_to, bit_size_));
+  if (offset_source > bit_size_ || offset_destination > bit_size_) {
+    throw std::out_of_range(fmt::format("Accessing positions {} to {} of {}", offset_source,
+                                        offset_destination, bit_size_));
   }
 
-  if (bitlen > other.GetSize()) {
-    throw std::out_of_range(
-        fmt::format("Accessing position {} of {}", dest_to - dest_from, other.GetSize()));
+  if (bitlength > other.GetSize()) {
+    throw std::out_of_range(fmt::format("Accessing position {} of {}",
+                                        offset_destination - offset_source, other.GetSize()));
   }
 
-  if (dest_from == dest_to) {
+  if (offset_source == offset_destination) {
     return;
   }
 
-  CopyImpl(dest_from, dest_to, other.GetMutableData().data(), ptr_);
+  CopyImplementation(offset_source, offset_destination, other.GetMutableData().data(), pointer_);
 }
 
-template void BitSpan::Copy<BitVector<std_alloc>>(const std::size_t dest_from,
-                                                  const std::size_t dest_to,
-                                                  BitVector<std_alloc>& other);
-template void BitSpan::Copy<BitVector<aligned_alloc>>(const std::size_t dest_from,
-                                                      const std::size_t dest_to,
-                                                      BitVector<aligned_alloc>& other);
+template void BitSpan::Copy<BitVector<StdAllocator>>(const std::size_t offset_source,
+                                                     const std::size_t offset_destination,
+                                                     BitVector<StdAllocator>& other);
+template void BitSpan::Copy<BitVector<AlignedAllocator>>(const std::size_t offset_source,
+                                                         const std::size_t offset_destination,
+                                                         BitVector<AlignedAllocator>& other);
 
-template <typename BitVectorT>
-void BitSpan::Copy(const std::size_t dest_from, BitVectorT& other) {
-  CopyImpl(dest_from, dest_from + other.GetSize(), other.GetMutableData().data(), ptr_);
+template <typename BitVectorType>
+void BitSpan::Copy(const std::size_t offset_source, BitVectorType& other) {
+  CopyImplementation(offset_source, offset_source + other.GetSize(), other.GetMutableData().data(),
+                     pointer_);
 }
-template void BitSpan::Copy<BitVector<std_alloc>>(const std::size_t dest_from,
-                                                  BitVector<std_alloc>& other);
-template void BitSpan::Copy<BitVector<aligned_alloc>>(const std::size_t dest_from,
-                                                      BitVector<aligned_alloc>& other);
+template void BitSpan::Copy<BitVector<StdAllocator>>(const std::size_t offset_source,
+                                                     BitVector<StdAllocator>& other);
+template void BitSpan::Copy<BitVector<AlignedAllocator>>(const std::size_t offset_source,
+                                                         BitVector<AlignedAllocator>& other);
 
-void BitSpan::Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan&& other) {
-  CopyImpl(dest_from, dest_to, other.GetMutableData(), ptr_);
-}
-
-void BitSpan::Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan& other) {
-  CopyImpl(dest_from, dest_to, other.GetMutableData(), ptr_);
+void BitSpan::Copy(const std::size_t offset_source, const std::size_t offset_destination,
+                   BitSpan&& other) {
+  CopyImplementation(offset_source, offset_destination, other.GetMutableData(), pointer_);
 }
 
-void BitSpan::Copy(const std::size_t dest_from, BitSpan& other) {
-  CopyImpl(dest_from, dest_from + other.bit_size_, other.GetMutableData(), ptr_);
+void BitSpan::Copy(const std::size_t offset_source, const std::size_t offset_destination,
+                   BitSpan& other) {
+  CopyImplementation(offset_source, offset_destination, other.GetMutableData(), pointer_);
 }
 
-void BitSpan::Copy(const std::size_t dest_from, BitSpan&& other) {
-  CopyImpl(dest_from, dest_from + other.bit_size_, other.GetMutableData(), ptr_);
+void BitSpan::Copy(const std::size_t offset_source, BitSpan& other) {
+  CopyImplementation(offset_source, offset_source + other.bit_size_, other.GetMutableData(),
+                     pointer_);
 }
 
-std::ostream& operator<<(std::ostream& os, const BitSpan& bar) { return os << bar.AsString(); }
+void BitSpan::Copy(const std::size_t offset_source, BitSpan&& other) {
+  CopyImplementation(offset_source, offset_source + other.bit_size_, other.GetMutableData(),
+                     pointer_);
+}
 
-}  // namespace ENCRYPTO
+std::ostream& operator<<(std::ostream& os, const BitSpan& bit_span) {
+  return os << bit_span.AsString();
+}
+
+}  // namespace encrypto::motion

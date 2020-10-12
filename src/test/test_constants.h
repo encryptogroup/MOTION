@@ -26,8 +26,7 @@
 
 #include <initializer_list>
 
-constexpr auto TEST_ITERATIONS = 2u;  // increase if needed
-constexpr auto DETAILED_LOGGING_ENABLED = false;
-constexpr auto PORT_OFFSET = 17777u;
-
-constexpr auto num_parties_list = {2u, 3u, 4u, 5u, 10u};
+constexpr auto kTestIterations = 2u;  // increase if needed
+constexpr auto kDetailedLoggingEnabled = false;
+constexpr auto kPortOffset = 17777u;
+constexpr auto kNumberOfPartiesList = {2u, 3u, 4u, 5u, 10u};

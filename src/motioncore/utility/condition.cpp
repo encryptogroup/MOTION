@@ -24,7 +24,7 @@
 
 #include "condition.h"
 
-namespace ENCRYPTO {
+namespace encrypto::motion {
 
 bool Condition::Wait() {
   std::unique_lock<std::mutex> lock(mutex_);
@@ -32,4 +32,4 @@ bool Condition::Wait() {
   return true;
 }
 
-}  // namespace ENCRYPTO
+}  // namespace encrypto::motion
