@@ -29,8 +29,8 @@
 // Test vectors from NIST FIPS 197, Appendix A
 
 TEST(AES128_CTR_RNG, no_trivial_output) {
-  std::array<std::byte, 10 * AES128_CTR_RNG::block_size> output_0;
-  std::array<std::byte, 10 * AES128_CTR_RNG::block_size> output_1;
+  alignas(16) std::array<std::byte, 10 * AES128_CTR_RNG::block_size> output_0;
+  alignas(16) std::array<std::byte, 10 * AES128_CTR_RNG::block_size> output_1;
   AES128_CTR_RNG rng;
   AES128_CTR_RNG rng2;
   auto& rngt = AES128_CTR_RNG::get_thread_instance();

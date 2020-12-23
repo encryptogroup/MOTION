@@ -43,7 +43,9 @@ void SyncHandler::received_message(std::size_t party_id, std::vector<std::uint8_
     return;
   }
   const auto message_data = message->payload()->data();
-  std::uint64_t received_sync_state = *reinterpret_cast<const std::uint64_t*>(message_data);
+  //std::uint64_t received_sync_state = *reinterpret_cast<const std::uint64_t*>(message_data);
+  std::uint64_t received_sync_state;
+  memcpy(&received_sync_state, message_data, sizeof(std::uint64_t));
   {
     std::scoped_lock lock(received_sync_states_mutex_);
     sync_states_.at(party_id) = std::max(received_sync_state, sync_states_.at(party_id));
