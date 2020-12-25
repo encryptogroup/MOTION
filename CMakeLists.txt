@@ -36,7 +36,7 @@ set(Boost_USE_STATIC_LIBS ON)
 
 if (Boost_FOUND)
     set(MOTION_BOOST_LOG_DYN_LINK ON)
-    else()
+else ()
     include(cmake/BuildBoostLocally.cmake)
 endif ()
 
@@ -44,8 +44,7 @@ set(MOTION_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(MOTION_EXTERN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
-
-if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_BINARY_DIR}")
+if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     # Set build type to `Release` if non was specified:
     if (NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE Release CACHE STRING
@@ -119,16 +118,21 @@ add_subdirectory(fbs)
 add_subdirectory(src/motioncore)
 
 if (MOTION_BUILD_TESTS)
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
-        find_package(Git REQUIRED)
-        message("initialize Git submodule: extern/googletest")
-        execute_process(COMMAND git submodule update --init extern/googletest
-                WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
-    endif ()
+    find_package(GTest QUIET)
+    if (GTest_Found)
+        message(STATUS "Found GTest")
+    elseif (NOT GTest_Found AND NOT TARGET gtest::gtest)
+        if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/googletest/CMakeLists.txt")
+            find_package(Git REQUIRED)
+            message("initialize Git submodule: extern/googletest")
+            execute_process(COMMAND git submodule update --init extern/googletest
+                    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
+        endif ()
 
-    set(BUILD_GMOCK OFF CACHE BOOL "Disable building gmock" FORCE)
-    add_subdirectory(extern/googletest)
-    add_subdirectory(src/test)
+        set(BUILD_GMOCK OFF CACHE BOOL "Disable building gmock" FORCE)
+        add_subdirectory(extern/googletest)
+        add_subdirectory(src/test)
+    endif ()
 endif (MOTION_BUILD_TESTS)
 
 if (MOTION_BUILD_EXE)
@@ -136,5 +140,5 @@ if (MOTION_BUILD_EXE)
 endif (MOTION_BUILD_EXE)
 
 if (MOTION_BUILD_DOC)
-    add_subdirectory(docs)
+    add_subdirectory(doc)
 endif (MOTION_BUILD_DOC)
