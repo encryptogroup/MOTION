@@ -42,10 +42,14 @@ void SyncHandler::received_message(std::size_t party_id, std::vector<std::uint8_
     }
     return;
   }
+  // the data may not be aligned to the same as a 64-bit value
+  // thus we need to copy it
   const auto message_data = message->payload()->data();
-  //std::uint64_t received_sync_state = *reinterpret_cast<const std::uint64_t*>(message_data);
   std::uint64_t received_sync_state;
-  memcpy(&received_sync_state, message_data, sizeof(std::uint64_t));
+  // std::copy requires its dereferenced iterators to be assignable,
+  // so we do the extra cast here
+  char* received_sync_state_ptr = reinterpret_cast<char*>(&received_sync_state);
+  std::copy_n(message_data, sizeof(std::uint64_t), received_sync_state_ptr);
   {
     std::scoped_lock lock(received_sync_states_mutex_);
     sync_states_.at(party_id) = std::max(received_sync_state, sync_states_.at(party_id));
