@@ -30,14 +30,18 @@
 
 namespace encrypto::motion {
 
+/// \brief Wraps a boost::fibers::condition_variable with a boost::fibers::mutex 
+///        and a condition checking function.
 class FiberCondition {
  public:
-  // registers the condition function that encapsulates the condition checking
-  FiberCondition(const std::function<bool()> f) : condition_function_(f) {}
 
   ~FiberCondition() = default;
   FiberCondition() = delete;
   FiberCondition(FiberCondition&) = delete;
+  
+  /// \brief Registers the condition function that encapsulates the condition checking.
+  /// \param condition_function
+  FiberCondition(const std::function<bool()> condition_function) : condition_function_(condition_function) {}
 
   // checks if the condition was satisfied
   // bool operator()() {
@@ -45,11 +49,14 @@ class FiberCondition {
   //   return condition_function_();
   // }
 
+  /// \brief Blocks until fiber is notified and condition_function_ returns true.
   void Wait() const {
     std::unique_lock<decltype(mutex_)> lock(mutex_);
     condition_variable_.wait(lock, condition_function_);
   }
 
+  /// \brief Blocks until fiber is notified and condition_function_ returns true
+  ///        or \p duration time has passed.
   template <typename Tick, typename Period>
   bool WaitFor(std::chrono::duration<Tick, Period> duration) const {
     std::unique_lock<decltype(mutex_)> lock(mutex_);
@@ -57,12 +64,15 @@ class FiberCondition {
     return condition_function_();
   }
 
+  /// \brief Unblocks one thread waiting for condition_variable_.
   void NotifyOne() const noexcept { condition_variable_.notify_one(); }
 
+  /// \brief Unblocks all threads waiting for condition_variable_.
   void NotifyAll() const noexcept { condition_variable_.notify_all(); }
 
-  // the variables that the condition function depends on shall only be modified under the locked
-  // mutex
+  /// \brief Get the mutex.
+  /// \note The variables that the condition function depends on shall 
+  ///       only be modified under the locked mutex.
   boost::fibers::mutex& GetMutex() noexcept { return mutex_; }
 
  private:

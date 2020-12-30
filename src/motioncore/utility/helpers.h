@@ -34,6 +34,10 @@
 
 namespace encrypto::motion {
 
+    
+/// \brief Returns a vector of \p length random unsigned integral values.
+/// \tparam UnsignedIntegralType
+/// \param length
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
 std::vector<UnsignedIntegralType> RandomVector(std::size_t length) {
@@ -44,6 +48,9 @@ std::vector<UnsignedIntegralType> RandomVector(std::size_t length) {
   return vec;
 }
 
+/// \brief Converts a vector of unsigned integral values to a vector of uint8_t
+/// \tparam UnsignedIntegralType
+/// \param values
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
 inline std::vector<std::uint8_t> ToByteVector(const std::vector<UnsignedIntegralType>& values) {
@@ -53,6 +60,9 @@ inline std::vector<std::uint8_t> ToByteVector(const std::vector<UnsignedIntegral
   return result;
 }
 
+/// \brief Converts a vector of uint8_t to a vector of unsigned integral values
+/// \tparam UnsignedIntegralType
+/// \param buffer
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
 inline std::vector<UnsignedIntegralType> FromByteVector(const std::vector<std::uint8_t>& buffer) {
@@ -64,6 +74,9 @@ inline std::vector<UnsignedIntegralType> FromByteVector(const std::vector<std::u
   return result;
 }
 
+/// \brief Converts a flatbuffer vector of uint8_t to a vector of unsigned integral values
+/// \tparam UnsignedIntegralType
+/// \param buffer
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
 inline std::vector<UnsignedIntegralType> FromByteVector(
@@ -76,6 +89,71 @@ inline std::vector<UnsignedIntegralType> FromByteVector(
   return result;
 }
 
+/// \brief Adds each element in \p a and \p b and returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the += operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the sum the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+#pragma omp simd
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) += b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+/// \brief Subtracts each element in \p a and \p b and returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the -= operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the difference the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) -= b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+/// \brief Multiplies each element in \p a and \p b and returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the *= operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the product the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) *= b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+/// \brief Performs the AddVectors operation on an arbitrary number of vectors.
+/// \tparam T type of the elements in the vectors. T must provide the += operator.
+/// \param vectors A vector of vectors.
+/// \return A vector containing at position i the sum of each element
+///         at position i of the input vectors.
+/// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>>& vectors) {
   if (vectors.size() == 0) {
@@ -94,25 +172,26 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>>& vectors) {
   return result;
 }
 
+/// \brief Performs the AddVectors operation on an arbitrary number of vectors.
+/// \tparam T type of the elements in the vectors. T must provide the += operator.
+/// \param vectors A vector of vectors.
+/// \return A vector containing at position i the sum of each element
+///         at position i of the input vectors.
+/// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>>&& vectors) {
   return AddVectors(vectors);
 }
 
-template <typename T>
-inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& b) {
-  assert(a.size() == b.size());
-  if (a.size() == 0) {
-    return {};
-  }  // if empty input vector
-  std::vector<T> result = a;
-#pragma omp simd
-  for (auto j = 0ull; j < result.size(); ++j) {
-    result.at(j) += b.at(j);  // TODO: implement using AVX2 and AVX512
-  }
-  return result;
-}
+// XXX two distinct vectors do not overlop, so I don't see the use for the restrict functions.
 
+/// \brief Adds each element in \p a and \p b and returns the result.
+///        It is assumed that the vectors do not overlap.
+/// \tparam T type of the elements in the vectors. T must provide the binary + operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the sum the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
 template <typename T>
 inline std::vector<T> RestrictAddVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
@@ -128,21 +207,13 @@ inline std::vector<T> RestrictAddVectors(const std::vector<T>& a, const std::vec
   return result;
 }
 
-template <typename T>
-inline std::vector<T> RestrictMulVectors(const std::vector<T>& a, const std::vector<T>& b) {
-  assert(a.size() == b.size());
-  if (a.size() == 0) {
-    return {};
-  }  // if empty input vector
-  std::vector<T> result(a.size());
-  const T* __restrict__ a_pointer{a.data()};
-  const T* __restrict__ b_pointer{b.data()};
-  T* __restrict__ result_pointer{result.data()};
-  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
-                 [](const T& a_value, const T& b_value) { return a_value * b_value; });
-  return result;
-}
-
+/// \brief Subtracts each element in \p a and \p b and returns the result.
+///        It is assumed that the vectors do not overlap.
+/// \tparam T type of the elements in the vectors. T must provide the binary - operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the difference the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
 template <typename T>
 inline std::vector<T> RestrictSubVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
@@ -158,19 +229,31 @@ inline std::vector<T> RestrictSubVectors(const std::vector<T>& a, const std::vec
   return result;
 }
 
+/// \brief Mulitiplies each element in \p a and \p b and returns the result.
+///        It is assumed that the vectors do not overlap.
+/// \tparam T type of the elements in the vectors. T must provide the binary * operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the product the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline std::vector<T> RestrictMulVectors(const std::vector<T>& a, const std::vector<T>& b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
-  std::vector<T> result = a;
-  for (auto j = 0ull; j < result.size(); ++j) {
-    result.at(j) -= b.at(j);  // TODO: implement using AVX2 and AVX512
-  }
+  std::vector<T> result(a.size());
+  const T* __restrict__ a_pointer{a.data()};
+  const T* __restrict__ b_pointer{b.data()};
+  T* __restrict__ result_pointer{result.data()};
+  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
+                 [](const T& a_value, const T& b_value) { return a_value * b_value; });
   return result;
 }
 
+/// \brief Returns the sum of each element in \p values.
+/// \tparam T type of the elements in the vectors. T must provide the += operator.
+/// \param values
 template <typename T>
 inline T SumReduction(const std::vector<T>& values) {
   if (values.size() == 0) {
@@ -187,6 +270,9 @@ inline T SumReduction(const std::vector<T>& values) {
   }
 }
 
+/// \brief Returns the difference of each element in \p values.
+/// \tparam T type of the elements in the vectors. T must provide the -= operator.
+/// \param values
 template <typename T>
 inline T SubReduction(const std::vector<T>& values) {
   if (values.size() == 0) {
@@ -200,12 +286,32 @@ inline T SubReduction(const std::vector<T>& values) {
   }
 }
 
-// +---------+-----------------------------------------+
-// | sum_0 = | values_00 + values_01 + ... + values_0m |
-// |  ...    | ....................................... |
-// | sum_n = | values_n0 + values_n1 + ... + values_nm |
-// +---------+-----------------------------------------+
+/// \brief Returns the product of each element in \p values.
+/// \tparam T type of the elements in the vectors. T must provide the *= operator.
+/// \param values
+template <typename T>
+inline T MulReduction(const std::vector<T>& values) {
+  if (values.size() == 0) {
+    return 0;
+  } else {
+    T product = values.at(0);
+    for (auto i = 1ull; i < values.size(); ++i) {
+      product *= values.at(i);
+    }
+    return product;
+  }
+}
 
+/// \brief Returns the sum of each row in a matrix.
+/// \tparam T type of the elements in the vectors. T must provide the += operator.
+/// \param values A vector of vectors.
+/// \return The resulting vector can be represented by the following graphic:
+///         +----------+--------------------------------------------------+
+///         | sum[0] = | values[0][0] + values[1][0] + ... + values[m][0] |
+///         |  ...     | ................................................ |
+///         | sum[n] = | values[0][n] + values[1][n] + ... + values[m][n] |
+///         +----------+--------------------------------------------------+
+/// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
 inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>>& values) {
   if (values.size() == 0) {
@@ -225,6 +331,16 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>>& values)
   }
 }
 
+/// \brief Returns the difference of each row in a matrix.
+/// \tparam T type of the elements in the vectors. T must provide the -= operator.
+/// \param values A vector of vectors.
+/// \return The resulting vector can be represented by the following graphic:
+///         +-----------+--------------------------------------------------+
+///         | diff[0] = | values[0][0] - values[1][0] - ... - values[m][0] |
+///         |   ...     | ................................................ |
+///         | diff[n] = | values[0][n] - values[1][n] - ... - values[m][n] |
+///         +-----------+--------------------------------------------------+
+/// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
 inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>>& values) {
   if (values.size() == 0) {
@@ -244,20 +360,16 @@ inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>>& values)
   }
 }
 
-template <typename T>
-inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
-  assert(a.size() == b.size());
-  if (a.size() == 0) {
-    return {};
-  }  // if empty input vector
-  std::vector<T> result = a;
-
-  for (auto j = 0ull; j < result.size(); ++j) {
-    result.at(j) *= b.at(j);  // TODO: implement using AVX2 and AVX512
-  }
-  return result;
-}
-
+/// \brief Returns the product of each row in a matrix.
+/// \tparam T type of the elements in the vectors. T must provide the *= operator.
+/// \param values A vector of vectors.
+/// \return The resulting vector can be represented by the following graphic:
+///         +-----------+--------------------------------------------------+
+///         | prod[0] = | values[0][0] * values[1][0] * ... * values[m][0] |
+///         |   ...     | ................................................ |
+///         | prod[n] = | values[0][n] * values[1][n] * ... * values[m][n] |
+///         +-----------+--------------------------------------------------+
+/// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
 inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>>& values) {
   if (values.size() == 0) {
@@ -277,25 +389,18 @@ inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>>& values)
   }
 }
 
-template <typename T>
-inline T RowMulReduction(const std::vector<T>& values) {
-  if (values.size() == 0) {
-    return 0;
-  } else {
-    T product = values.at(0);
-    for (auto i = 1ull; i < values.size(); ++i) {
-      product *= values.at(i);
-    }
-    return product;
-  }
-}
-
+/// \brief Check if unisgned integral value is a power of two.
+/// \tparam UnsignedIntegralType
+/// \param x
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
 bool IsPowerOfTwo(UnsignedIntegralType x) {
   return x > 0 && (!(x & (x - 1)));
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
+/// \param n Number of bytes.
 inline std::string Hex(const std::uint8_t* values, std::size_t n) {
   std::string buffer;
   for (auto i = 0ull; i < n; ++i) {
@@ -305,30 +410,46 @@ inline std::string Hex(const std::uint8_t* values, std::size_t n) {
   return buffer;
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
+/// \param n Number of bytes.
 inline std::string Hex(const std::byte* values, std::size_t n) {
   return Hex(reinterpret_cast<const std::uint8_t*>(values), n);
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
 template <std::size_t N>
 inline std::string Hex(const std::array<std::byte, N>& values) {
   return Hex(reinterpret_cast<const std::uint8_t*>(values.data()), values.size());
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
 template <std::size_t N>
 inline std::string Hex(const std::array<std::uint8_t, N>& values) {
   return Hex(values.data(), values.size());
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
 inline std::string Hex(const std::vector<std::uint8_t>& values) {
   return Hex(values.data(), values.size());
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
 inline std::string Hex(const std::vector<std::byte>& values) {
   return Hex(values.data(), values.size());
 }
 
+/// \brief Returns a hexadecimal string representation of the bytes stored in \p values
+/// \param values
 inline std::string Hex(const std::vector<std::uint8_t>&& values) { return Hex(values); }
 
+/// \brief Returns a string representation of the std::vector \p values
+/// \tparam T Type of the element in the std::vector. Must provide an overload of to_string.
+/// \param values
 template <typename T>
 inline std::string to_string(std::vector<T> values) {
   using std::to_string;
@@ -338,6 +459,8 @@ inline std::string to_string(std::vector<T> values) {
   }
   return result;
 }
+
+/// XXX the std library implements operators for vector comparisions.
 
 template <typename T>
 inline bool Vectors(const std::vector<T>& a, const std::vector<T>& b) {
@@ -352,6 +475,9 @@ inline bool Vectors(const std::vector<T>& a, const std::vector<T>& b) {
   return true;
 }
 
+
+/// \brief Checks if all the vectors have the same size.
+/// \param values A vector of vectors.
 template <typename T>
 inline bool Dimensions(const std::vector<std::vector<T>>& values) {
   if (values.size() <= 1) {
@@ -367,8 +493,14 @@ inline bool Dimensions(const std::vector<std::vector<T>>& values) {
   return true;
 }
 
+/// \brief Divides two size_t and returns the ceiled quotient.
+/// \param dividend
+/// \param divisor
+/// \pre Divisor is not 0.
 std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor);
 
-inline std::size_t BitsToBytes(const std::size_t bits) { return (bits + 7) / 8; }
+/// \brief Returns the number of bytes necessary to store \p bits bits.
+/// \param bits
+constexpr std::size_t BitsToBytes(const std::size_t bits) { return (bits + 7) / 8; }
 
 }  // namespace encrypto::motion

@@ -487,7 +487,7 @@ TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
                     share_output_1K->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = RowMulReduction(input_1);
+            T expected_result_1 = MulReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_100 = wire_100->GetValues();

@@ -189,7 +189,7 @@ void InputGate::EvaluateOnline() {
     assert(input.size() > 0u);           // assert >=1 wire
     assert(input.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
     // assert SIMD lengths of all wires are equal
-    assert(motion::BitVector<>::EqualSizeDimensions(input));
+    assert(motion::BitVector<>::IsEqualSizeDimensions(input));
 
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto wire = std::dynamic_pointer_cast<bmr::Wire>(output_wires_.at(i));

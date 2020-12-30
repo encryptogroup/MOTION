@@ -43,6 +43,10 @@ class BitMatrix {
  public:
   BitMatrix() = default;
 
+  /// \brief Construct a \p rows x \p columns BitMatrix with all bits set to \p value.
+  /// \param rows
+  /// \param columns
+  /// \param value
   BitMatrix(std::size_t rows, std::size_t columns, bool value = false)
       : number_of_columns_(columns) {
     for (auto i = 0ull; i < rows; ++i) {
@@ -50,6 +54,9 @@ class BitMatrix {
     }
   }
 
+  /// \brief Construct a BitMatrix by moving a vector of AlignedBitVectors.
+  /// \param vectors Each AlignedBitVector represents a row of the BitMatrix.
+  /// \pre All AlignedBitVectors have the same size.
   BitMatrix(std::vector<AlignedBitVector>&& vectors) : data_(std::move(vectors)) {
     if (data_.size() > 0) {
       auto number_of_columns = data_.at(0).GetSize();
@@ -60,6 +67,9 @@ class BitMatrix {
     }
   }
 
+  /// \brief Construct a BitMatrix by copying a vector of AlignedBitVectors.
+  /// \param vectors Each AlignedBitVector represents a row of the BitMatrix.
+  /// \pre All AlignedBitVectors have the same size.
   BitMatrix(const std::vector<AlignedBitVector>& vectors) : data_(vectors) {
     if (data_.size() > 0) {
       auto number_of_columns = data_.at(0).GetSize();
@@ -70,6 +80,8 @@ class BitMatrix {
     }
   }
 
+  // XXX The copy and move constructors/assignments can set to default.
+  // XXX Assignments do not return BitMatrix& and do not check for self-assignment.
   BitMatrix(const BitMatrix& other) {
     data_.insert(data_.begin(), other.data_.begin(), other.data_.end());
     number_of_columns_ = other.number_of_columns_;
@@ -90,60 +102,121 @@ class BitMatrix {
     number_of_columns_ = other.number_of_columns_;
   }
 
+  /// \brief Returns a const AlignedBitVector reference to row \p i of the matrix.
+  /// \param i
   const AlignedBitVector& GetRow(std::size_t i) const { return data_.at(i); }
 
-  /// \brief Returns a mutable BitVector corresponding to row # i of the matrix.
+  /// \brief Returns a mutable AlignedBitVector reference to row \p i of the matrix.
+  /// \note
   /// Changing the size of the underlying BitVector causes <b>Undefined Behaviour</b>.
   /// The underlying BitVector can be replaced completely by a BitVector of the same size.
+  /// \param i
   AlignedBitVector& GetMutableRow(std::size_t i) { return data_.at(i); }
 
+  /// \brief Get Bit at input position.
+  /// \param row_i
+  /// \param column_i
   bool Get(std::size_t row_i, std::size_t column_i) const { return data_.at(row_i).Get(column_i); }
 
+  /// \brief Set or unset bit at input position.
+  /// \param row_i
+  /// \param column_i
+  /// \param value
   void Set(std::size_t row_i, std::size_t column_i, bool value) {
     data_.at(row_i).Set(value, column_i);
   }
 
+  /// \brief Appends a new row by copying the input bit_vector to the matrix.
+  /// \param bit_vector The new row.
+  /// \pre Size of \p bit_vector must be equal to the number of columns in the matrix.
   void AppendRow(const AlignedBitVector& bit_vector);
 
+  /// \brief Appends a new row by moving the input bit_vector to the matrix.
+  /// \param bit_vector The new row.
+  /// \pre Size of \p bit_vector must be equal to the number of columns in the matrix.
   void AppendRow(AlignedBitVector&& bit_vector);
 
+  /// \brief Appends a new column by copying the input bit_vector to the matrix.
+  /// \param bit_vector The new column.
+  /// \pre Size of \p bit_vector must be equal to the number of rows in the matrix.
   void AppendColumn(const AlignedBitVector& bit_vector);
 
+  /// \brief Appends a new column by moving the input bit_vector to the matrix.
+  /// \param bit_vector The new column.
+  /// \pre Size of \p bit_vector must be equal to the number of rows in the matrix.
   void AppendColumn(AlignedBitVector&& bit_vector) { AppendColumn(bit_vector); }
 
+  /// \brief Return a string representation of the BitMatrix.
   std::string AsString() const;
 
+  /// \brief Force the number of columns to be equal to \p n.
+  /// \param n
   void ForceSetNumColumns(std::size_t n) { number_of_columns_ = n; }
 
-  /// \brief Transposes the matrix inplace
+  /// \brief Transposes the matrix inplace.
   void Transpose();
 
+  /// \brief Transposes a matrix with exactly 128 rows (faster).
+  /// \pre The matrix has exactly 128 rows and at least 1 column.
   void Transpose128Rows();
 
+  /// \brief Transposes a matrix of 128 rows and arbitrary column size inplace.
+  /// \param matrix
+  /// \param number_of_columns
+  /// \pre All rows must be of equal size.
   static void Transpose128RowsInplace(std::array<std::byte*, 128>& matrix,
                                       std::size_t number_of_columns);
 
+  /// \brief Transposes a matrix of 128 rows and arbitrary column size inplace using BitSlicing.
+  /// \param matrix
+  /// \param number_of_columns
+  /// \pre All rows must be of size equal to number_of_colums.
   static void TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
                                        std::size_t number_of_columns);
 
+  /// \brief Transposes a matrix of 128 rows and arbitrary column size and encrypts it for the sender role.
+  /// \param matrix
+  /// \param y0 \todo description
+  /// \param y1 \todo description
+  /// \param number_of_columns
+  /// \param choices \todo description
+  /// \param prg_fixed_key \todo description
+  /// \param bitlengths  \todo description
+  /// \pre - All rows must be of size equal to number_of_colums
+  ///      - y0 and y1 must be of equal size
   static void SenderTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
                                         std::vector<BitVector<>>& y0, std::vector<BitVector<>>& y1,
                                         const BitVector<> choices, primitives::Prg& prg_fixed_key,
                                         const std::size_t number_of_columns,
                                         const std::vector<std::size_t>& bitlengths);
 
+  /// \brief Transposes a matrix of 128 rows and arbitrary column size and encrypts it for the recepient role.
+  /// \param matrix
+  /// \param[out] output
+  /// \param number_of_columns
+  /// \param choices \todo description
+  /// \param prg_fixed_key \todo description
+  /// \param bitlengths  \todo description
+  /// \pre - All rows must be of size equal to number_of_colums
+  ///      - y0 and y1 must be of equal size
   static void ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
                                           std::vector<BitVector<>>& output,
                                           primitives::Prg& prg_fixed_key,
                                           const std::size_t number_of_columns,
                                           const std::vector<std::size_t>& bitlengths);
 
+  /// \brief Compare with another BitMatrix for equality
+  /// \param other
   bool operator==(const BitMatrix& other);
 
+  /// \brief Compare with another BitMatrix for inequality
+  /// \param other
   bool operator!=(const BitMatrix& other) { return !(*this == other); }
 
+  /// \brief Get number of rows in the BitMatrix
   auto GetNumRows() const noexcept { return data_.size(); }
 
+  /// \brief Get number of columns in the BitMatrix
   auto GetNumColumns() const noexcept { return number_of_columns_; }
 
  private:

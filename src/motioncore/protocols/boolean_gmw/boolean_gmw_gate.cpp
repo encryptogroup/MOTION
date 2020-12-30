@@ -70,7 +70,7 @@ void InputGate::InitializationHelper() {
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
-  assert(BitVector<>::EqualSizeDimensions(input_));
+  assert(BitVector<>::IsEqualSizeDimensions(input_));
 
   boolean_sharing_id_ = _register.NextBooleanGmwSharingId(input_.size() * bits_);
 

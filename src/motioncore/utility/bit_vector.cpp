@@ -607,10 +607,10 @@ void BitVector<Allocator>::Resize(std::size_t number_of_bits, bool zero_fill) no
   bit_size_ = number_of_bits;
   const auto byte_size = BitsToBytes(bit_size_);
   if (zero_fill) {
-    constexpr std::byte zero_byte = std::byte();
+    constexpr std::byte kZeroByte = std::byte();
     data_vector_.reserve(byte_size);
     while (data_vector_.size() < byte_size) {
-      data_vector_.push_back(zero_byte);
+      data_vector_.push_back(kZeroByte);
     }
   } else {
     data_vector_.resize(byte_size);
@@ -687,6 +687,7 @@ void BitVector<Allocator>::Append(const BitVector<Allocator>& other) noexcept {
   // No need to truncate because the BitVector is zero-padded
 }
 
+// XXX this method does the same thing as the method above. Remove or change.
 template <typename Allocator>
 void BitVector<Allocator>::Append(BitVector&& other) noexcept {
   if (other.GetSize() > 0u) {
@@ -705,6 +706,7 @@ void BitVector<Allocator>::Append(const BitSpan& bit_span) {
   }
 }
 
+// XXX this method does the same thing as the method above. Remove or change.
 template <typename Allocator>
 void BitVector<Allocator>::Append(BitSpan&& bit_span) {
   if (bit_span.GetSize() > 0u) {
@@ -1109,7 +1111,7 @@ std::vector<BitVector<Allocator>> BitVector<Allocator>::XorBitVectors(
 }
 
 template <typename Allocator>
-bool BitVector<Allocator>::EqualSizeDimensions(const std::vector<BitVector>& bit_vectors) {
+bool BitVector<Allocator>::IsEqualSizeDimensions(const std::vector<BitVector>& bit_vectors) {
   if (bit_vectors.size() <= 1) {
     return true;
   } else {
@@ -1238,12 +1240,8 @@ template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uin
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint32_t>&);
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint64_t>&);
 
-BitSpan::BitSpan(std::byte* pointer, std::size_t bit_size, bool aligned)
-    : pointer_(pointer), bit_size_(bit_size), aligned_(aligned) {}
-
-template <typename T>
-BitSpan::BitSpan(T* pointer, std::size_t bit_size, bool aligned)
-    : pointer_(reinterpret_cast<std::byte*>(pointer)), bit_size_(bit_size), aligned_(aligned) {}
+BitSpan::BitSpan(std::byte* buffer, std::size_t bit_size, bool aligned)
+    : pointer_(buffer), bit_size_(bit_size), aligned_(aligned) {}
 
 BitSpan::BitSpan(const BitSpan& other) { *this = other; }
 
@@ -1264,245 +1262,245 @@ BitSpan& BitSpan::operator=(BitSpan&& other) {
 }
 
 template <typename BitVectorType>
-bool BitSpan::operator==(const BitVectorType& bit_vector) const {
-  assert(bit_size_ == bit_vector.GetSize());
+bool BitSpan::operator==(const BitVectorType& other) const {
+  assert(bit_size_ == other.GetSize());
   const auto byte_size{BitsToBytes(bit_size_)};
-  if (aligned_ && bit_vector.IsAligned())
-    return AlignedEqualImplementation(pointer_, bit_vector.GetData().data(), byte_size);
+  if (aligned_ && other.IsAligned())
+    return AlignedEqualImplementation(pointer_, other.GetData().data(), byte_size);
   else
-    return EqualImplementation(pointer_, bit_vector.GetData().data(), byte_size);
+    return EqualImplementation(pointer_, other.GetData().data(), byte_size);
 }
 
-template bool BitSpan::operator==(const BitVector<StdAllocator>& bit_vector) const;
-template bool BitSpan::operator==(const BitVector<AlignedAllocator>& bit_vector) const;
+template bool BitSpan::operator==(const BitVector<StdAllocator>& other) const;
+template bool BitSpan::operator==(const BitVector<AlignedAllocator>& other) const;
 
-bool BitSpan::operator==(const BitSpan& bit_span) const {
-  assert(bit_size_ == bit_span.bit_size_);
+bool BitSpan::operator==(const BitSpan& other) const {
+  assert(bit_size_ == other.bit_size_);
   const auto byte_size{BitsToBytes(bit_size_)};
-  if (aligned_ && bit_span.aligned_)
-    return AlignedEqualImplementation(pointer_, bit_span.pointer_, byte_size);
+  if (aligned_ && other.aligned_)
+    return AlignedEqualImplementation(pointer_, other.pointer_, byte_size);
   else
-    return EqualImplementation(pointer_, bit_span.pointer_, byte_size);
+    return EqualImplementation(pointer_, other.pointer_, byte_size);
 }
 
 template <typename BitVectorType>
-BitVectorType BitSpan::operator&(const BitVectorType& bit_vector) const {
-  assert(bit_size_ == bit_vector.GetSize());
+BitVectorType BitSpan::operator&(const BitVectorType& other) const {
+  assert(bit_size_ == other.GetSize());
   const auto byte_size{BitsToBytes(bit_size_)};
   BitVectorType result;
   if constexpr (BitVectorType::IsAligned()) {
     result = BitVectorType(pointer_, bit_size_);
-    AlignedAndImplementation(bit_vector.GetData().data(), result.GetMutableData().data(),
+    AlignedAndImplementation(other.GetData().data(), result.GetMutableData().data(),
                              byte_size);
   } else {  // we do not want an AlignedBitVector as output
     result = BitVectorType(pointer_, bit_size_);
-    AndImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
+    AndImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
 template BitVector<StdAllocator> BitSpan::operator&(
-    const BitVector<StdAllocator>& bit_vector) const;
+    const BitVector<StdAllocator>& other) const;
 template BitVector<AlignedAllocator> BitSpan::operator&(
-    const BitVector<AlignedAllocator>& bit_vector) const;
+    const BitVector<AlignedAllocator>& other) const;
 
 template <typename BitVectorType>
-BitVectorType BitSpan::operator&(const BitSpan& bit_span) const {
-  assert(bit_size_ == bit_span.bit_size_);
+BitVectorType BitSpan::operator&(const BitSpan& other) const {
+  assert(bit_size_ == other.bit_size_);
   const auto byte_size{BitsToBytes(bit_size_)};
   BitVectorType result;
   if constexpr (std::is_same_v<AlignedBitVector, BitVectorType>) {
-    if (bit_span.aligned_) {
+    if (other.aligned_) {
       result = BitVectorType(pointer_, bit_size_);
-      AlignedAndImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+      AlignedAndImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
     } else if (aligned_) {
-      result = BitVectorType(bit_span.pointer_, bit_size_);
+      result = BitVectorType(other.pointer_, bit_size_);
       AlignedAndImplementation(pointer_, result.GetMutableData().data(), byte_size);
     } else {  // none of both is aligned
       result = BitVectorType(pointer_, bit_size_);
-      AndImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+      AndImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
     }
   } else {  // we do not want an AlignedBitVector as output
     result = BitVectorType(pointer_, bit_size_);
-    AndImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+    AndImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<StdAllocator> BitSpan::operator&(const BitSpan& bit_vector) const;
-template BitVector<AlignedAllocator> BitSpan::operator&(const BitSpan& bit_vector) const;
+template BitVector<StdAllocator> BitSpan::operator&(const BitSpan& other) const;
+template BitVector<AlignedAllocator> BitSpan::operator&(const BitSpan& other) const;
 
 template <typename BitVectorType>
-BitVectorType BitSpan::operator|(const BitVectorType& bit_vector) const {
-  assert(bit_size_ == bit_vector.GetSize());
+BitVectorType BitSpan::operator|(const BitVectorType& other) const {
+  assert(bit_size_ == other.GetSize());
   const auto byte_size{BitsToBytes(bit_size_)};
   BitVectorType result;
   if constexpr (BitVectorType::IsAligned()) {
     result = BitVectorType(pointer_, bit_size_);
-    AlignedOrImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
+    AlignedOrImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {
     result = BitVectorType(pointer_, bit_size_);
-    OrImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
+    OrImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
 template BitVector<StdAllocator> BitSpan::operator|(
-    const BitVector<StdAllocator>& bit_vector) const;
+    const BitVector<StdAllocator>& other) const;
 template BitVector<AlignedAllocator> BitSpan::operator|(
-    const BitVector<AlignedAllocator>& bit_vector) const;
+    const BitVector<AlignedAllocator>& other) const;
 
 template <typename BitVectorType>
-BitVectorType BitSpan::operator|(const BitSpan& bit_span) const {
-  assert(bit_size_ == bit_span.bit_size_);
+BitVectorType BitSpan::operator|(const BitSpan& other) const {
+  assert(bit_size_ == other.bit_size_);
   const auto byte_size{BitsToBytes(bit_size_)};
   BitVectorType result;
   if constexpr (std::is_same_v<AlignedBitVector, BitVectorType>) {
-    if (bit_span.aligned_) {
+    if (other.aligned_) {
       result = BitVectorType(pointer_, bit_size_);
-      AlignedOrImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+      AlignedOrImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
     } else if (aligned_) {
-      result = BitVectorType(bit_span.pointer_, bit_size_);
+      result = BitVectorType(other.pointer_, bit_size_);
       AlignedOrImplementation(pointer_, result.GetMutableData().data(), byte_size);
     } else {
       result = BitVectorType(pointer_, bit_size_);
-      OrImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+      OrImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
     }
   } else {
     result = BitVectorType(pointer_, bit_size_);
-    OrImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+    OrImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<StdAllocator> BitSpan::operator|(const BitSpan& bit_vector) const;
-template BitVector<AlignedAllocator> BitSpan::operator|(const BitSpan& bit_vector) const;
+template BitVector<StdAllocator> BitSpan::operator|(const BitSpan& other) const;
+template BitVector<AlignedAllocator> BitSpan::operator|(const BitSpan& other) const;
 
 template <typename BitVectorType>
-BitVectorType BitSpan::operator^(const BitVectorType& bit_vector) const {
-  assert(bit_size_ == bit_vector.GetSize());
+BitVectorType BitSpan::operator^(const BitVectorType& other) const {
+  assert(bit_size_ == other.GetSize());
   const auto byte_size{BitsToBytes(bit_size_)};
   BitVectorType result;
   if constexpr (BitVectorType::IsAligned()) {
     result = BitVectorType(pointer_, bit_size_);
-    AlignedXorImplementation(bit_vector.GetData().data(), result.GetMutableData().data(),
+    AlignedXorImplementation(other.GetData().data(), result.GetMutableData().data(),
                              byte_size);
   } else {
     result = BitVectorType(pointer_, bit_size_);
-    XorImplementation(bit_vector.GetData().data(), result.GetMutableData().data(), byte_size);
+    XorImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
 template BitVector<StdAllocator> BitSpan::operator^(
-    const BitVector<StdAllocator>& bit_vector) const;
+    const BitVector<StdAllocator>& other) const;
 template BitVector<AlignedAllocator> BitSpan::operator^(
-    const BitVector<AlignedAllocator>& bit_vector) const;
+    const BitVector<AlignedAllocator>& other) const;
 
 template <typename BitVectorType>
-BitVectorType BitSpan::operator^(const BitSpan& bit_span) const {
-  assert(bit_size_ == bit_span.bit_size_);
+BitVectorType BitSpan::operator^(const BitSpan& other) const {
+  assert(bit_size_ == other.bit_size_);
   const auto byte_size{BitsToBytes(bit_size_)};
   BitVectorType result;
   if constexpr (std::is_same_v<AlignedBitVector, BitVectorType>) {
-    if (bit_span.aligned_) {
+    if (other.aligned_) {
       result = BitVectorType(pointer_, bit_size_);
-      AlignedXorImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+      AlignedXorImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
     } else if (aligned_) {
-      result = BitVectorType(bit_span.pointer_, bit_size_);
+      result = BitVectorType(other.pointer_, bit_size_);
       AlignedXorImplementation(pointer_, result.GetMutableData().data(), byte_size);
     } else {
       result = BitVectorType(pointer_, bit_size_);
-      XorImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+      XorImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
     }
   } else {
     result = BitVectorType(pointer_, bit_size_);
-    XorImplementation(bit_span.pointer_, result.GetMutableData().data(), byte_size);
+    XorImplementation(other.pointer_, result.GetMutableData().data(), byte_size);
   }
   return result;
 }
 
-template BitVector<StdAllocator> BitSpan::operator^(const BitSpan& bit_vector) const;
-template BitVector<AlignedAllocator> BitSpan::operator^(const BitSpan& bit_vector) const;
+template BitVector<StdAllocator> BitSpan::operator^(const BitSpan& other) const;
+template BitVector<AlignedAllocator> BitSpan::operator^(const BitSpan& other) const;
 
 template <typename BitVectorType>
-BitSpan& BitSpan::operator&=(const BitVectorType& bit_vector) {
-  assert(bit_size_ == bit_vector.GetSize());
+BitSpan& BitSpan::operator&=(const BitVectorType& other) {
+  assert(bit_size_ == other.GetSize());
   const auto byte_size{BitsToBytes(bit_size_)};
   if constexpr (BitVectorType::IsAligned()) {
     if (aligned_)
-      AlignedAndImplementation(bit_vector.GetData().data(), pointer_, byte_size);
+      AlignedAndImplementation(other.GetData().data(), pointer_, byte_size);
     else
-      AndImplementation(bit_vector.GetData().data(), pointer_, byte_size);
+      AndImplementation(other.GetData().data(), pointer_, byte_size);
   } else
-    AndImplementation(bit_vector.GetData().data(), pointer_, byte_size);
+    AndImplementation(other.GetData().data(), pointer_, byte_size);
   return *this;
 }
 
-template BitSpan& BitSpan::operator&=(const BitVector<StdAllocator>& bit_vector);
-template BitSpan& BitSpan::operator&=(const BitVector<AlignedAllocator>& bit_vector);
+template BitSpan& BitSpan::operator&=(const BitVector<StdAllocator>& other);
+template BitSpan& BitSpan::operator&=(const BitVector<AlignedAllocator>& other);
 
-BitSpan& BitSpan::operator&=(const BitSpan& bit_span) {
-  assert(bit_size_ == bit_span.bit_size_);
+BitSpan& BitSpan::operator&=(const BitSpan& other) {
+  assert(bit_size_ == other.bit_size_);
   const auto byte_size{BitsToBytes(bit_size_)};
-  if (aligned_ && bit_span.aligned_)
-    AlignedAndImplementation(bit_span.pointer_, pointer_, byte_size);
+  if (aligned_ && other.aligned_)
+    AlignedAndImplementation(other.pointer_, pointer_, byte_size);
   else
-    AndImplementation(bit_span.pointer_, pointer_, byte_size);
-  return *this;
-}
-
-template <typename BitVectorType>
-BitSpan& BitSpan::operator|=(const BitVectorType& bit_vector) {
-  assert(bit_size_ == bit_vector.GetSize());
-  const auto byte_size{BitsToBytes(bit_size_)};
-  if constexpr (BitVectorType::IsAligned()) {
-    if (aligned_)
-      AlignedOrImplementation(bit_vector.GetData().data(), pointer_, byte_size);
-    else
-      OrImplementation(bit_vector.GetData().data(), pointer_, byte_size);
-  } else
-    OrImplementation(bit_vector.GetData().data(), pointer_, byte_size);
-  return *this;
-}
-
-template BitSpan& BitSpan::operator|=(const BitVector<StdAllocator>& bit_vector);
-template BitSpan& BitSpan::operator|=(const BitVector<AlignedAllocator>& bit_vector);
-
-BitSpan& BitSpan::operator|=(const BitSpan& bit_span) {
-  assert(bit_size_ == bit_span.bit_size_);
-  const auto byte_size{BitsToBytes(bit_size_)};
-  if (aligned_ && bit_span.aligned_)
-    AlignedOrImplementation(bit_span.pointer_, pointer_, byte_size);
-  else
-    OrImplementation(bit_span.pointer_, pointer_, byte_size);
+    AndImplementation(other.pointer_, pointer_, byte_size);
   return *this;
 }
 
 template <typename BitVectorType>
-BitSpan& BitSpan::operator^=(const BitVectorType& bit_vector) {
-  assert(bit_size_ == bit_vector.GetSize());
+BitSpan& BitSpan::operator|=(const BitVectorType& other) {
+  assert(bit_size_ == other.GetSize());
   const auto byte_size{BitsToBytes(bit_size_)};
   if constexpr (BitVectorType::IsAligned()) {
     if (aligned_)
-      AlignedXorImplementation(bit_vector.GetData().data(), pointer_, byte_size);
+      AlignedOrImplementation(other.GetData().data(), pointer_, byte_size);
     else
-      XorImplementation(bit_vector.GetData().data(), pointer_, byte_size);
+      OrImplementation(other.GetData().data(), pointer_, byte_size);
   } else
-    XorImplementation(bit_vector.GetData().data(), pointer_, byte_size);
+    OrImplementation(other.GetData().data(), pointer_, byte_size);
   return *this;
 }
 
-template BitSpan& BitSpan::operator^=(const BitVector<StdAllocator>& bit_vector);
-template BitSpan& BitSpan::operator^=(const BitVector<AlignedAllocator>& bit_vector);
+template BitSpan& BitSpan::operator|=(const BitVector<StdAllocator>& other);
+template BitSpan& BitSpan::operator|=(const BitVector<AlignedAllocator>& other);
 
-BitSpan& BitSpan::operator^=(const BitSpan& bit_span) {
-  assert(bit_size_ == bit_span.bit_size_);
+BitSpan& BitSpan::operator|=(const BitSpan& other) {
+  assert(bit_size_ == other.bit_size_);
   const auto byte_size{BitsToBytes(bit_size_)};
-  if (aligned_ && bit_span.aligned_)
-    AlignedXorImplementation(bit_span.pointer_, pointer_, byte_size);
+  if (aligned_ && other.aligned_)
+    AlignedOrImplementation(other.pointer_, pointer_, byte_size);
   else
-    XorImplementation(bit_span.pointer_, pointer_, byte_size);
+    OrImplementation(other.pointer_, pointer_, byte_size);
+  return *this;
+}
+
+template <typename BitVectorType>
+BitSpan& BitSpan::operator^=(const BitVectorType& other) {
+  assert(bit_size_ == other.GetSize());
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if constexpr (BitVectorType::IsAligned()) {
+    if (aligned_)
+      AlignedXorImplementation(other.GetData().data(), pointer_, byte_size);
+    else
+      XorImplementation(other.GetData().data(), pointer_, byte_size);
+  } else
+    XorImplementation(other.GetData().data(), pointer_, byte_size);
+  return *this;
+}
+
+template BitSpan& BitSpan::operator^=(const BitVector<StdAllocator>& other);
+template BitSpan& BitSpan::operator^=(const BitVector<AlignedAllocator>& other);
+
+BitSpan& BitSpan::operator^=(const BitSpan& other) {
+  assert(bit_size_ == other.bit_size_);
+  const auto byte_size{BitsToBytes(bit_size_)};
+  if (aligned_ && other.aligned_)
+    AlignedXorImplementation(other.pointer_, pointer_, byte_size);
+  else
+    XorImplementation(other.pointer_, pointer_, byte_size);
   return *this;
 }
 
