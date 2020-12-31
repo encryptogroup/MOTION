@@ -1,4 +1,4 @@
-# [MOTION](https://ia.cr/2020/1137) [![Build Status](https://travis-ci.com/Oleksandr-Tkachenko/MOTION.svg?token=vWcBQYzxXnAWavBdMFeK&branch=master)](https://travis-ci.com/Oleksandr-Tkachenko/MOTION)
+# [MOTION](https://ia.cr/2020/1137) [![Build Status](https://travis-ci.org/encryptogroup/MOTION.svg?branch=master)](https://travis-ci.org/encryptogroup/MOTION)
 
 ### A Framework for Mixed-Protocol Multi-Party Computation
 
