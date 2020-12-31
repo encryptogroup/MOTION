@@ -408,7 +408,8 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, st
   // const auto num_blocks = nrows * ncols / block_size;
 
 //#define MOTION_AVX2
-#if defined(MOTION_AVX512)
+#if false && defined(MOTION_AVX512)
+  static_assert(false, "Bitsliced transposition with AVX512 is currently buggy (both at compile- and runtime) and thus disabled.");
   // TODO: not tested yet
   __m512i vec;
   for (rr = 0; rr <= nrows - 32; rr += 8) {
@@ -432,7 +433,10 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix, st
       }
     }
   }
-#elif defined(MOTION_AVX2)
+#elif false && defined(MOTION_AVX2)
+  static_assert(false,
+                "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
+                "runtime) and thus disabled.");
   __m256i vec;
   for (rr = 0; rr <= nrows - 32; rr += 32) {
     for (cc = 0; cc < ncols; cc += 8) {
@@ -508,45 +512,52 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
   assert(nrows % 8 == 0 && ncols % 8 == 0);
 
 //#define MOTION_AVX2
-#if defined(MOTION_AVX512)
+// this is pretty broken
+#if false && defined(MOTION_AVX512)
+  static_assert(false,
+                "Bitsliced transposition with AVX512 is currently buggy (both at compile- and "
+                "runtime) and thus disabled.");
   // TODO: not tested yet
   __m512i vec;
-  for (rr = 0; rr <= nrows - 32; rr += 8) {
-    for (cc = 0; cc < ncols; cc += 64) {
+  for (r = 0; r <= nrows - 32; r += 8) {
+    for (c = 0; c < ncols; c += 64) {
       vec = _mm512_set_epi8(
-          INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
-          INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
-          INP(rr + 50, cc), INP(rr + 51, cc), INP(rr + 52, cc), INP(rr + 53, cc), INP(rr + 54, cc),
-          INP(rr + 55, cc), INP(rr + 39, cc), INP(rr + 40, cc), INP(rr + 41, cc), INP(rr + 42, cc),
-          INP(rr + 43, cc), INP(rr + 44, cc), INP(rr + 45, cc), INP(rr + 46, cc), INP(rr + 32, cc),
-          INP(rr + 33, cc), INP(rr + 34, cc), INP(rr + 35, cc), INP(rr + 36, cc), INP(rr + 37, cc),
-          INP(rr + 38, cc), INP(rr + 39, cc), INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc),
-          INP(rr + 27, cc), INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
-          INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc), INP(rr + 20, cc),
-          INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc), INP(rr + 8, cc), INP(rr + 9, cc),
-          INP(rr + 10, cc), INP(rr + 11, cc), INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc),
-          INP(rr + 15, cc), INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-          INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+          INP(r + 56, c), INP(r + 57, c), INP(r + 58, c), INP(r + 59, c), INP(r + 60, c),
+          INP(r + 61, c), INP(r + 62, c), INP(r + 63, c), INP(r + 48, c), INP(r + 49, c),
+          INP(r + 50, c), INP(r + 51, c), INP(r + 52, c), INP(r + 53, c), INP(r + 54, c),
+          INP(r + 55, c), INP(r + 39, c), INP(r + 40, c), INP(r + 41, c), INP(r + 42, c),
+          INP(r + 43, c), INP(r + 44, c), INP(r + 45, c), INP(r + 46, c), INP(r + 32, c),
+          INP(r + 33, c), INP(r + 34, c), INP(r + 35, c), INP(r + 36, c), INP(r + 37, c),
+          INP(r + 38, c), INP(r + 39, c), INP(r + 24, c), INP(r + 25, c), INP(r + 26, c),
+          INP(r + 27, c), INP(r + 28, c), INP(r + 29, c), INP(r + 30, c), INP(r + 31, c),
+          INP(r + 16, c), INP(r + 17, c), INP(r + 18, c), INP(r + 19, c), INP(r + 20, c),
+          INP(r + 21, c), INP(r + 22, c), INP(r + 23, c), INP(r + 8, c), INP(r + 9, c),
+          INP(r + 10, c), INP(r + 11, c), INP(r + 12, c), INP(r + 13, c), INP(r + 14, c),
+          INP(r + 15, c), INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
+          INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
       for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
-        OUT(cc + i, rr) = _mm512_movepi64_mask(vec);
+        OUT(c + i, r) = _mm512_movepi64_mask(vec);
       }
     }
   }
-#elif defined(MOTION_AVX2)
+#elif false && defined(MOTION_AVX2)
+  static_assert(false,
+                "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
+                "runtime) and thus disabled.");
   __m256i vec;
-  for (rr = 0; rr <= nrows - 32; rr += 32) {
-    for (cc = 0; cc < ncols; cc += 8) {
-      vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
-                            INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
-                            INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
-                            INP(rr + 20, cc), INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc),
-                            INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
-                            INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
-                            INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-                            INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+  for (r = 0; r <= nrows - 32; r += 32) {
+    for (c = 0; c < ncols; c += 8) {
+      vec = _mm256_set_epi8(INP(r + 24, c), INP(r + 25, c), INP(r + 26, c), INP(r + 27, c),
+                            INP(r + 28, c), INP(r + 29, c), INP(r + 30, c), INP(r + 31, c),
+                            INP(r + 16, c), INP(r + 17, c), INP(r + 18, c), INP(r + 19, c),
+                            INP(r + 20, c), INP(r + 21, c), INP(r + 22, c), INP(r + 23, c),
+                            INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
+                            INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
+                            INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
+                            INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
-        *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % nrows) * num_blocks * 16 + (cc / nrows) * 16 + rr / 8;
+        *(uint32_t*)&OUT(c + i, r) = _mm256_movemask_epi8(vec);
+        // const auto pos = ((c + i) % nrows) * num_blocks * 16 + (c / nrows) * 16 + r / 8;
         //*(uint16_t*)&out[pos] = _mm_movemask_epi8(vec);
       }
     }
@@ -626,7 +637,10 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
   assert(nrows % 8 == 0 && ncols % 8 == 0);
 
 //#define MOTION_AVX2
-#if defined(MOTION_AVX512)
+#if false && defined(MOTION_AVX512)
+  static_assert(false,
+                "Bitsliced transposition with AVX512 is currently buggy (both at compile- and "
+                "runtime) and thus disabled.");
   // TODO: not tested yet
   __m512i vec;
   for (rr = 0; rr <= nrows - 32; rr += 8) {
@@ -650,7 +664,10 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
       }
     }
   }
-#elif defined(MOTION_AVX2)
+#elif false && defined(MOTION_AVX2)
+  static_assert(false,
+                "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
+                "runtime) and thus disabled.");
   __m256i vec;
   for (rr = 0; rr <= nrows - 32; rr += 32) {
     for (cc = 0; cc < ncols; cc += 8) {
@@ -689,18 +706,18 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
     }
     // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
-        auto &o = out[c_old];
-        assert(o.GetSize() == 128);
-        const std::size_t bitlen = bitlengths[c_old];
+      auto& o = out[c_old];
+      assert(o.GetSize() == 128);
+      const std::size_t bitlen = bitlengths[c_old];
 
-        if (bitlen <= kappa) {
-          prg_fixed_key.MMO(o.GetMutableData().data());
-          o.Resize(bitlen);
-        } else {
-          prg_fixed_key.MMO(o.GetMutableData().data());
-          prg_var_key.SetKey(o.GetData().data());
-          o = BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
-        }
+      if (bitlen <= kappa) {
+        prg_fixed_key.MMO(o.GetMutableData().data());
+        o.Resize(bitlen);
+      } else {
+        prg_fixed_key.MMO(o.GetMutableData().data());
+        prg_var_key.SetKey(o.GetData().data());
+        o = BitVector<>(prg_var_key.Encrypt(MOTION::Helpers::Convert::BitsToBytes(bitlen)), bitlen);
+      }
     }
   }
 #endif
