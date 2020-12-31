@@ -88,8 +88,7 @@ class BooleanGmwToBmrGate final : public OneGate {
   BooleanGmwToBmrGate(const Gate&) = delete;
 
  private:
-  std::vector<ReusableFiberFuture<BitVector<>>>
-      received_public_values_;
+  std::vector<ReusableFiberFuture<BitVector<>>> received_public_values_;
   std::vector<ReusableFiberFuture<Block128Vector>> received_public_keys_;
 };
 
@@ -112,8 +111,7 @@ class ArithmeticGmwToBmrGate final : public OneGate {
   ArithmeticGmwToBmrGate(const Gate&) = delete;
 
  private:
-  ReusableFiberPromise<std::vector<BitVector<>>>*
-      input_promise_;
+  ReusableFiberPromise<std::vector<BitVector<>>>* input_promise_;
 };
 
 }  // namespace encrypto::motion

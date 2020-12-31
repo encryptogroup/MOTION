@@ -37,8 +37,7 @@ class OutputMessageHandler : public communication::MessageHandler {
 
   // Register for an OutputMessage.
   // Returns a future which can be used to wait for and retrieve the message.
-  ReusableFiberFuture<std::vector<std::uint8_t>> register_for_output_message(
-      std::size_t gate_id);
+  ReusableFiberFuture<std::vector<std::uint8_t>> register_for_output_message(std::size_t gate_id);
 
   // Method which is called on received messages.
   void ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& message) override;

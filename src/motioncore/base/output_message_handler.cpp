@@ -34,8 +34,8 @@ namespace encrypto::motion {
 OutputMessageHandler::OutputMessageHandler(std::size_t party_id, std::shared_ptr<Logger> logger)
     : party_id_(party_id), logger_(std::move(logger)) {}
 
-ReusableFiberFuture<std::vector<std::uint8_t>>
-OutputMessageHandler::register_for_output_message(std::size_t gate_id) {
+ReusableFiberFuture<std::vector<std::uint8_t>> OutputMessageHandler::register_for_output_message(
+    std::size_t gate_id) {
   ReusableFiberPromise<std::vector<std::uint8_t>> promise;
   auto future = promise.get_future();
   std::unique_lock<std::mutex> lock(output_message_promises_mutex_);

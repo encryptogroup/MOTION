@@ -406,29 +406,25 @@ void ArithmeticGmwToBmrGate::EvaluateOnline() {
 
   switch (bitlength) {
     case 8: {
-      auto w{
-          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint8_t>>(parent_[0])};
+      auto w{std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint8_t>>(parent_[0])};
       assert(w);
       input_promise_->set_value(ToInput(w->GetValues()));
       break;
     }
     case 16: {
-      auto w{
-          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint16_t>>(parent_[0])};
+      auto w{std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint16_t>>(parent_[0])};
       assert(w);
       input_promise_->set_value(ToInput(w->GetValues()));
       break;
     }
     case 32: {
-      auto w{
-          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint32_t>>(parent_[0])};
+      auto w{std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint32_t>>(parent_[0])};
       assert(w);
       input_promise_->set_value(ToInput(w->GetValues()));
       break;
     }
     case 64: {
-      auto w{
-          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint64_t>>(parent_[0])};
+      auto w{std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<std::uint64_t>>(parent_[0])};
       assert(w);
       input_promise_->set_value(ToInput(w->GetValues()));
       break;

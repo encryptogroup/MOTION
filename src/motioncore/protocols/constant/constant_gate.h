@@ -28,9 +28,9 @@
 
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "protocols/gate.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
+#include "protocols/gate.h"
 #include "utility/bit_vector.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
@@ -47,8 +47,7 @@ class ConstantBooleanInputGate final : public Gate {
       : ConstantBooleanInputGate(BitVector<>(b), backend) {}
 
   ConstantBooleanInputGate(BitVector<>&& bv, Backend& backend)
-      : ConstantBooleanInputGate(std::vector<BitVector<>>{std::move(bv)},
-                                 backend) {}
+      : ConstantBooleanInputGate(std::vector<BitVector<>>{std::move(bv)}, backend) {}
 
   ConstantBooleanInputGate(const BitVector<>& bv, Backend& backend)
       : ConstantBooleanInputGate(std::vector<BitVector<>>{bv}, backend) {}
@@ -192,11 +191,11 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
       output = non_constant_wire->GetValues();
     }
 
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
+    GetLogger().LogDebug(
+        fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
@@ -204,8 +203,7 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
   arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare() {
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     assert(arithmetic_wire);
     auto result = std::make_shared<arithmetic_gmw::Share<T>>(arithmetic_wire);
     return result;
@@ -288,11 +286,11 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     std::vector<T> output =
         RestrictMulVectors(constant_wire->GetValues(), non_constant_wire->GetValues());
 
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
+    GetLogger().LogDebug(
+        fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
@@ -300,8 +298,7 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
   arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare() {
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     assert(arithmetic_wire);
     auto result = std::make_shared<arithmetic_gmw::Share<T>>(arithmetic_wire);
     return result;

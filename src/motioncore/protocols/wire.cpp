@@ -22,8 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "gate.h"
 #include "wire.h"
+#include "gate.h"
 
 #include <fmt/format.h>
 

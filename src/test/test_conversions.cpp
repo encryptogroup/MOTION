@@ -33,9 +33,9 @@
 
 #include "base/party.h"
 #include "multiplication_triple/mt_provider.h"
-#include "protocols/share_wrapper.h"
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
+#include "protocols/share_wrapper.h"
 #include "utility/typedefs.h"
 
 #include "test_constants.h"

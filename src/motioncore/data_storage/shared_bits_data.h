@@ -38,12 +38,10 @@ struct SharedBitsData {
   void Clear();
 
   // register to receive the masked value during squaring
-  ReusableFuture<std::vector<std::uint8_t>> RegisterForMaskMessage(
-      size_t expected_size);
+  ReusableFuture<std::vector<std::uint8_t>> RegisterForMaskMessage(size_t expected_size);
 
   // register to receive the reconstruction messages for a^2
-  ReusableFuture<std::vector<std::uint8_t>> RegisterForReconstructMessage(
-      size_t expected_size);
+  ReusableFuture<std::vector<std::uint8_t>> RegisterForReconstructMessage(size_t expected_size);
 
   ReusablePromise<std::vector<std::uint8_t>> mask_message_promise;
   std::size_t mask_message_expected_size = 0;

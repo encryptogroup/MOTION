@@ -29,9 +29,9 @@
 
 #include "algorithm/algorithm_description.h"
 #include "base/party.h"
-#include "protocols/share_wrapper.h"
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
+#include "protocols/share_wrapper.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "utility/config.h"
 

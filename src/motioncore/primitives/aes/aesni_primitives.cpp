@@ -89,14 +89,15 @@ void AesniKeyExpansion128(void* round_keys_input) {
   // movdqa 0xa0[rdi], xmm1
 }
 
-void AesniCtrStreamBlocks128(const void* round_keys_input, std::uint64_t* counter_input_pointer, void* output_input_pointer,
-                             std::size_t number_of_blocks) {
+void AesniCtrStreamBlocks128(const void* round_keys_input, std::uint64_t* counter_input_pointer,
+                             void* output_input_pointer, std::size_t number_of_blocks) {
   alignas(16) std::array<__m128i, kAesNumRoundKeys128> round_keys;
   alignas(16) std::array<__m128i, 4> wb;
   auto counter = *counter_input_pointer;
 
   // we assume the output buffer is aligned
-  auto output = reinterpret_cast<__m128i*>(__builtin_assume_aligned(output_input_pointer, kAesBlockSize));
+  auto output =
+      reinterpret_cast<__m128i*>(__builtin_assume_aligned(output_input_pointer, kAesBlockSize));
 
   // copy the round keys onto the stack
   // -> compiler will put them into registers
@@ -147,7 +148,8 @@ void AesniCtrStreamBlocks128(const void* round_keys_input, std::uint64_t* counte
   *counter_input_pointer = counter;
 }
 
-void AesniCtrStreamBlocks128Unaligned(const void* round_keys_input, std::uint64_t* counter_input_pointer,
+void AesniCtrStreamBlocks128Unaligned(const void* round_keys_input,
+                                      std::uint64_t* counter_input_pointer,
                                       void* output_input_pointer, std::size_t number_of_blocks) {
   // almost the same code as in `AesniCtrStreamBlocks128Unaligned`
 
@@ -340,7 +342,8 @@ void AesniBmrDkc(const void* round_keys_input, const void* key_a, const void* ke
       reinterpret_cast<const __m128i*>(__builtin_assume_aligned(key_b, kAesBlockSize));
   auto round_keys =
       reinterpret_cast<const __m128i*>(__builtin_assume_aligned(round_keys_input, kAesBlockSize));
-  auto out = reinterpret_cast<__m128i*>(__builtin_assume_aligned(output_input_pointer, kAesBlockSize));
+  auto out =
+      reinterpret_cast<__m128i*>(__builtin_assume_aligned(output_input_pointer, kAesBlockSize));
   __m128i mixed_keys = AesniMixKeys(*key_a_pointer, *key_b_pointer);
   for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
     __m128i tmp = mixed_keys ^ _mm_set_epi64x(gate_id, party_id);

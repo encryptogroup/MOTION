@@ -34,13 +34,13 @@
 #include "utility/typedefs.h"
 
 namespace encrypto::motion::communication {
-    
+
 class CommunicationLayer;
 
 }  // namespace encrypto::motion::communication
 
 namespace encrypto::motion {
-    
+
 class BaseProvider;
 class OtProvider;
 class Wire;

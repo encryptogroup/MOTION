@@ -34,14 +34,14 @@ namespace encrypto::motion {
 ///        and a condition checking function.
 class Condition {
  public:
-
   ~Condition() = default;
   Condition() = delete;
   Condition(Condition&) = delete;
-  
+
   /// \brief Registers the condition function that encapsulates the condition checking
   /// \param condition_function
-  Condition(const std::function<bool()> condition_function) : condition_function_(condition_function) {}
+  Condition(const std::function<bool()> condition_function)
+      : condition_function_(condition_function) {}
 
   /// \brief checks if the condition was satisfied
   bool operator()() {
@@ -69,7 +69,7 @@ class Condition {
   void NotifyAll() noexcept { condition_variable_.notify_all(); }
 
   /// \brief Get the mutex.
-  /// \note The variables that the condition function depends on shall 
+  /// \note The variables that the condition function depends on shall
   ///       only be modified under the locked mutex.
   std::mutex& GetMutex() noexcept { return mutex_; }
 

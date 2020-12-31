@@ -66,8 +66,7 @@ Backend::Backend(communication::CommunicationLayer& communication_layer,
       register_(std::make_shared<Register>(logger_)),
       gate_executor_(std::make_unique<GateExecutor>(
           *register_, [this] { RunPreprocessing(); }, logger_)) {
-  motion_base_provider_ =
-      std::make_unique<BaseProvider>(communication_layer_, logger_);
+  motion_base_provider_ = std::make_unique<BaseProvider>(communication_layer_, logger_);
   base_ot_provider_ = std::make_unique<BaseOtProvider>(communication_layer, logger_);
 
   communication_layer_.SetLogger(logger_);

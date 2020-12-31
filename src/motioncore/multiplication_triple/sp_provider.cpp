@@ -36,8 +36,7 @@ bool SpProvider::NeedSps() const noexcept {
 }
 
 SpProvider::SpProvider(const std::size_t my_id) : my_id_(my_id) {
-  finished_condition_ =
-      std::make_shared<FiberCondition>([this]() { return finished_; });
+  finished_condition_ = std::make_shared<FiberCondition>([this]() { return finished_; });
 }
 
 SpProviderFromOts::SpProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& ot_providers,

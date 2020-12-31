@@ -174,13 +174,9 @@ class BitMatrix {
   static void TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
                                        std::size_t number_of_columns);
 
-  /// \brief Transposes a matrix of 128 rows and arbitrary column size and encrypts it for the sender role.
-  /// \param matrix
-  /// \param y0 \todo description
-  /// \param y1 \todo description
-  /// \param number_of_columns
-  /// \param choices \todo description
-  /// \param prg_fixed_key \todo description
+  /// \brief Transposes a matrix of 128 rows and arbitrary column size and encrypts it for the
+  /// sender role. \param matrix \param y0 \todo description \param y1 \todo description \param
+  /// number_of_columns \param choices \todo description \param prg_fixed_key \todo description
   /// \param bitlengths  \todo description
   /// \pre - All rows must be of size equal to number_of_colums
   ///      - y0 and y1 must be of equal size
@@ -190,14 +186,10 @@ class BitMatrix {
                                         const std::size_t number_of_columns,
                                         const std::vector<std::size_t>& bitlengths);
 
-  /// \brief Transposes a matrix of 128 rows and arbitrary column size and encrypts it for the recepient role.
-  /// \param matrix
-  /// \param[out] output
-  /// \param number_of_columns
-  /// \param choices \todo description
-  /// \param prg_fixed_key \todo description
-  /// \param bitlengths  \todo description
-  /// \pre - All rows must be of size equal to number_of_colums
+  /// \brief Transposes a matrix of 128 rows and arbitrary column size and encrypts it for the
+  /// recepient role. \param matrix \param[out] output \param number_of_columns \param choices \todo
+  /// description \param prg_fixed_key \todo description \param bitlengths  \todo description \pre -
+  /// All rows must be of size equal to number_of_colums
   ///      - y0 and y1 must be of equal size
   static void ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
                                           std::vector<BitVector<>>& output,

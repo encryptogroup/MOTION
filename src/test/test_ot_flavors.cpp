@@ -25,9 +25,9 @@
 #include <future>
 #include <memory>
 
+#include "base/motion_base_provider.h"
 #include "communication/communication_layer.h"
 #include "oblivious_transfer/base_ots/base_ot_provider.h"
-#include "base/motion_base_provider.h"
 #include "oblivious_transfer/ot_flavors.h"
 #include "oblivious_transfer/ot_provider.h"
 #include "utility/block.h"
@@ -88,7 +88,6 @@ class OtFlavorTest : public ::testing::Test {
     }
     std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
   }
-
 
   const std::size_t sender_i_ = 0;
   const std::size_t receiver_i_ = 1;

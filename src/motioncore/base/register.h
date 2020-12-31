@@ -118,8 +118,7 @@ class Register {
 
   /// \brief Gets cached AlgorithmDescription object read from a file and placed into cached_algos_
   /// \return shared_ptr to the algorithm description or to nullptr if not in the hash table
-  std::shared_ptr<AlgorithmDescription> GetCachedAlgorithmDescription(
-      const std::string& path);
+  std::shared_ptr<AlgorithmDescription> GetCachedAlgorithmDescription(const std::string& path);
 
  private:
   std::shared_ptr<Logger> logger_;
@@ -147,8 +146,7 @@ class Register {
 
   std::vector<WirePointer> wires_;
 
-  std::unordered_map<std::string, std::shared_ptr<AlgorithmDescription>>
-      cached_algos_;
+  std::unordered_map<std::string, std::shared_ptr<AlgorithmDescription>> cached_algos_;
   std::mutex cached_algos_mutex_;
 };
 

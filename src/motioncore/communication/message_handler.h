@@ -29,7 +29,7 @@
 #include "utility/synchronized_queue.h"
 
 namespace encrypto::motion::communication {
-    
+
 // Abstract interface for handling received messages
 //
 // An instance of MessageHandler can be registered with the CommunicationLayer

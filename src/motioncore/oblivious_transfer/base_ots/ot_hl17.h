@@ -32,7 +32,6 @@
 
 #include "primitives/curve25519/mycurve25519.h"
 
-
 namespace encrypto::motion {
 
 struct BaseOtData;

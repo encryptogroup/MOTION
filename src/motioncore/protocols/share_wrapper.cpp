@@ -580,7 +580,8 @@ ShareWrapper ShareWrapper::Add(SharePointer share, SharePointer other) const {
     assert(other_a);
     auto other_wire_a = other_a->GetArithmeticWire();
 
-    auto addition_gate = std::make_shared<proto::arithmetic_gmw::AdditionGate<T>>(this_wire_a, other_wire_a);
+    auto addition_gate =
+        std::make_shared<proto::arithmetic_gmw::AdditionGate<T>>(this_wire_a, other_wire_a);
     auto addition_gate_cast = std::static_pointer_cast<Gate>(addition_gate);
     share_->GetRegister()->RegisterNextGate(addition_gate_cast);
     auto result = std::static_pointer_cast<Share>(addition_gate->GetOutputAsArithmeticShare());

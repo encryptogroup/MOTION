@@ -34,7 +34,6 @@
 
 namespace encrypto::motion {
 
-    
 /// \brief Returns a vector of \p length random unsigned integral values.
 /// \tparam UnsignedIntegralType
 /// \param length
@@ -474,7 +473,6 @@ inline bool Vectors(const std::vector<T>& a, const std::vector<T>& b) {
   }
   return true;
 }
-
 
 /// \brief Checks if all the vectors have the same size.
 /// \param values A vector of vectors.

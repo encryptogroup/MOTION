@@ -34,8 +34,8 @@ ReusableFuture<std::vector<std::uint8_t>> SharedBitsData::RegisterForMaskMessage
   return mask_message_promise.get_future();
 }
 
-ReusableFuture<std::vector<std::uint8_t>>
-SharedBitsData::RegisterForReconstructMessage(size_t expected_size) {
+ReusableFuture<std::vector<std::uint8_t>> SharedBitsData::RegisterForReconstructMessage(
+    size_t expected_size) {
   assert(expected_size > 0);
   reconstruct_message_expected_size = expected_size;
   return reconstruct_message_promise.get_future();

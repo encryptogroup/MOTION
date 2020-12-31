@@ -24,7 +24,6 @@
 
 #pragma once
 
-
 #include <fmt/format.h>
 
 #include "arithmetic_gmw_wire.h"

@@ -57,8 +57,7 @@ void Wire::InitializationHelperBmr() {
   const auto number_of_parties = backend_.GetCommunicationLayer().GetNumberOfParties();
   public_keys_.resize(n_simd_ * number_of_parties);
 
-  setup_ready_cond_ =
-      std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); });
+  setup_ready_cond_ = std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); });
 }
 
 void Wire::GenerateRandomPrivateKeys() { secret_0_keys_.SetToRandom(); }

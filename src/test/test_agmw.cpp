@@ -24,9 +24,9 @@
 
 #include <gtest/gtest.h>
 #include "base/party.h"
-#include "protocols/share_wrapper.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_gate.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
+#include "protocols/share_wrapper.h"
 #include "test_constants.h"
 #include "test_helpers.h"
 

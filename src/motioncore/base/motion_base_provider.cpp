@@ -57,7 +57,7 @@ struct HelloMessageHandler : public communication::MessageHandler {
   ReusableFuture<std::vector<std::uint8_t>> GetRandomnessSharingSeedFuture();
 
   std::shared_ptr<Logger> logger_;
-  std::vector<ReusablePromise<std::vector<std::uint8_t>>>  fixed_key_aes_seed_promises;
+  std::vector<ReusablePromise<std::vector<std::uint8_t>>> fixed_key_aes_seed_promises;
   std::vector<ReusableFuture<std::vector<std::uint8_t>>> fixed_key_aes_seed_futures;
   std::vector<ReusablePromise<std::vector<std::uint8_t>>> randomness_sharing_seed_promises;
   std::vector<ReusableFuture<std::vector<std::uint8_t>>> randomness_sharing_seed_futures;
@@ -148,7 +148,8 @@ void BaseProvider::Setup() {
     if (party_id == my_id_) {
       continue;
     }
-    my_randomness_generators_.at(party_id) = std::make_unique<primitives::SharingRandomnessGenerator>(party_id);
+    my_randomness_generators_.at(party_id) =
+        std::make_unique<primitives::SharingRandomnessGenerator>(party_id);
     my_randomness_generators_.at(party_id)->Initialize(
         reinterpret_cast<std::uint8_t*>(my_seeds.at(party_id).data()));
     their_randomness_generators_.at(party_id) =

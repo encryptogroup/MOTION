@@ -32,8 +32,7 @@ ConstantBooleanWire::ConstantBooleanWire(std::size_t number_of_simd, Backend& ba
 ConstantBooleanWire::ConstantBooleanWire(BitVector<>&& values, Backend& backend)
     : BooleanWire(backend, values.GetSize()), values_(std::move(values)) {}
 
-ConstantBooleanWire::ConstantBooleanWire(const BitVector<>& values,
-                                         Backend& backend)
+ConstantBooleanWire::ConstantBooleanWire(const BitVector<>& values, Backend& backend)
     : BooleanWire(backend, values.GetSize()), values_(values) {}
 
 ConstantBooleanWire::ConstantBooleanWire(bool value, Backend& backend) : BooleanWire(backend, 1) {

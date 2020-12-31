@@ -27,19 +27,19 @@
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion::communication {
-    
+
 class CommunicationLayer;
 
 }  // namespace encrypto::motion::communication
 
 namespace encrypto::motion::primitives {
-    
+
 class SharingRandomnessGenerator;
 
 }  // namespace encrypto::motion::primitives
 
 namespace encrypto::motion {
-    
+
 class FiberCondition;
 class Logger;
 struct HelloMessageHandler;

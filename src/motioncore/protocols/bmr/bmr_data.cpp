@@ -28,7 +28,7 @@
 namespace encrypto::motion::proto::bmr {
 
 void Data::MessageReceived(const std::uint8_t* message, const DataType type,
-                              const std::size_t gate_id) {
+                           const std::size_t gate_id) {
   // XXX: maybe check that the message has the right size
   switch (type) {
     case DataType::kInputStep0: {

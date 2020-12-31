@@ -24,6 +24,4 @@
 
 #pragma once
 
-namespace encrypto::motion {
-    
-}  //  namespace encrypto::motion
+namespace encrypto::motion {}  //  namespace encrypto::motion

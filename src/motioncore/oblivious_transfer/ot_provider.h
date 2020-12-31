@@ -34,7 +34,7 @@
 #include "utility/bit_vector.h"
 
 namespace encrypto::motion::communication {
-    
+
 class CommunicationLayer;
 
 }  // namespace encrypto::motion::communication

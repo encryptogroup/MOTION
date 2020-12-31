@@ -31,8 +31,7 @@ SharingRandomnessGenerator::SharingRandomnessGenerator(std::size_t party_id)
   if (!context_arithmetic_ || !context_boolean_) {
     throw(std::runtime_error(fmt::format("Could not initialize EVP context")));
   }
-  initialized_condition_ =
-      std::make_unique<FiberCondition>([this]() { return initialized_; });
+  initialized_condition_ = std::make_unique<FiberCondition>([this]() { return initialized_; });
 }
 
 void SharingRandomnessGenerator::Initialize(

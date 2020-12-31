@@ -79,7 +79,8 @@ encrypto::motion::ShareWrapper DummyBmrShare(encrypto::motion::PartyPointer& par
     bmr_wire->SetOnlineFinished();
   }
 
-  return encrypto::motion::ShareWrapper(std::make_shared<encrypto::motion::proto::bmr::Share>(wires));
+  return encrypto::motion::ShareWrapper(
+      std::make_shared<encrypto::motion::proto::bmr::Share>(wires));
 }
 
 encrypto::motion::ShareWrapper DummyBooleanGmwShare(encrypto::motion::PartyPointer& party,
@@ -97,7 +98,8 @@ encrypto::motion::ShareWrapper DummyBooleanGmwShare(encrypto::motion::PartyPoint
     w->SetOnlineFinished();
   }
 
-  return encrypto::motion::ShareWrapper(std::make_shared<encrypto::motion::proto::boolean_gmw::Share>(wires));
+  return encrypto::motion::ShareWrapper(
+      std::make_shared<encrypto::motion::proto::boolean_gmw::Share>(wires));
 }
 
 encrypto::motion::RunTimeStatistics EvaluateProtocol(

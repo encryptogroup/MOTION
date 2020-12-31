@@ -49,8 +49,9 @@ void SynchronizationHandler::ReceivedMessage(std::size_t party_id,
   std::uint64_t received_synchronization_state;
   // std::copy requires its dereferenced iterators to be assignable,
   // so we do the extra cast here
-  char* received_sync_state_ptr = reinterpret_cast<char*>(&received_synchronization_state);
-  std::copy_n(message_data, sizeof(std::uint64_t), received_sync_state_ptr);
+  char* received_synchronization_state_ptr =
+      reinterpret_cast<char*>(&received_synchronization_state);
+  std::copy_n(message_data, sizeof(std::uint64_t), received_synchronization_state_ptr);
   {
     std::scoped_lock lock(received_synchronization_states_mutex_);
     synchronization_states_.at(party_id) =

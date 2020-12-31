@@ -27,9 +27,9 @@
 #include "test_constants.h"
 
 #include "base/backend.h"
+#include "base/motion_base_provider.h"
 #include "base/party.h"
 #include "data_storage/base_ot_data.h"
-#include "base/motion_base_provider.h"
 #include "oblivious_transfer/ot_provider.h"
 
 namespace {

@@ -23,8 +23,8 @@
 // SOFTWARE.
 
 #include "ot_provider.h"
-#include "ot_flavors.h"
 #include "base_ots/base_ot_provider.h"
+#include "ot_flavors.h"
 
 #include "base/motion_base_provider.h"
 #include "communication/communication_layer.h"

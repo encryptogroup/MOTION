@@ -24,13 +24,13 @@
 
 #include <type_traits>
 #include "base/register.h"
-#include "protocols/gate.h"
-#include "protocols/share.h"
 #include "multiplication_triple/sb_provider.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
 #include "protocols/boolean_gmw/boolean_gmw_share.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
+#include "protocols/gate.h"
+#include "protocols/share.h"
 #include "utility/constants.h"
 #include "utility/fiber_condition.h"
 #include "utility/logger.h"
@@ -129,7 +129,8 @@ class GmwToArithmeticGate final : public OneGate {
     auto& ts_wires = ts_->GetMutableWires();
     for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
       auto t_wire = std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(ts_wires.at(wire_i));
-      auto parent_gmw_wire = std::dynamic_pointer_cast<const proto::boolean_gmw::Wire>(parent_.at(wire_i));
+      auto parent_gmw_wire =
+          std::dynamic_pointer_cast<const proto::boolean_gmw::Wire>(parent_.at(wire_i));
       t_wire->GetMutableValues() = parent_gmw_wire->GetValues();
       // xor them with the shared bits
       for (std::size_t j = 0; j < number_of_simd; ++j) {
@@ -154,11 +155,11 @@ class GmwToArithmeticGate final : public OneGate {
       T output_value = 0;
       for (std::size_t wire_i = 0; wire_i < bit_size; ++wire_i) {
         if (GetCommunicationLayer().GetMyId() == 0) {
-          T t(ts_clear_b.at(wire_i)->GetValues().Get(j));   // the masked bit
+          T t(ts_clear_b.at(wire_i)->GetValues().Get(j));         // the masked bit
           T r(sbs.at(sb_offset_ + wire_i * number_of_simd + j));  // the arithmetically shared bit
           output_value += T(t + r - 2 * t * r) << wire_i;
         } else {
-          T t(ts_clear_b.at(wire_i)->GetValues().Get(j));   // the masked bit
+          T t(ts_clear_b.at(wire_i)->GetValues().Get(j));         // the masked bit
           T r(sbs.at(sb_offset_ + wire_i * number_of_simd + j));  // the arithmetically shared bit
           output_value += T(r - 2 * t * r) << wire_i;
         }
@@ -172,7 +173,8 @@ class GmwToArithmeticGate final : public OneGate {
   }
 
   const proto::arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare() const {
-    auto arithmetic_wire = std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+    auto arithmetic_wire =
+        std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     assert(arithmetic_wire);
     auto result = std::make_shared<proto::arithmetic_gmw::Share<T>>(arithmetic_wire);
     return result;

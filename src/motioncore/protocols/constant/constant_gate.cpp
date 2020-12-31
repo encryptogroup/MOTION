@@ -28,26 +28,23 @@
 
 namespace encrypto::motion::proto {
 
-ConstantBooleanInputGate::ConstantBooleanInputGate(std::vector<BitVector<>>&& v,
+ConstantBooleanInputGate::ConstantBooleanInputGate(std::vector<BitVector<>>&& v, Backend& backend)
+    : Gate(backend) {
+  assert(output_wires_.empty());
+  output_wires_.reserve(v.size());
+  for (std::size_t i = 0; i < v.size(); ++i) {
+    output_wires_.emplace_back(std::make_shared<ConstantBooleanWire>(std::move(v[i]), backend));
+  }
+  InitializationHelper();
+}
+
+ConstantBooleanInputGate::ConstantBooleanInputGate(const std::vector<BitVector<>>& v,
                                                    Backend& backend)
     : Gate(backend) {
   assert(output_wires_.empty());
   output_wires_.reserve(v.size());
   for (std::size_t i = 0; i < v.size(); ++i) {
-    output_wires_.emplace_back(
-        std::make_shared<ConstantBooleanWire>(std::move(v[i]), backend));
-  }
-  InitializationHelper();
-}
-
-ConstantBooleanInputGate::ConstantBooleanInputGate(
-    const std::vector<BitVector<>>& v, Backend& backend)
-    : Gate(backend) {
-  assert(output_wires_.empty());
-  output_wires_.reserve(v.size());
-  for (std::size_t i = 0; i < v.size(); ++i) {
-    output_wires_.emplace_back(
-        std::make_shared<ConstantBooleanWire>(v[i], backend));
+    output_wires_.emplace_back(std::make_shared<ConstantBooleanWire>(v[i], backend));
   }
   InitializationHelper();
 }
@@ -75,8 +72,7 @@ ConstantArithmeticInputGate<T>::ConstantArithmeticInputGate(const std::vector<T>
                                                             Backend& backend)
     : Gate(backend) {
   assert(output_wires_.empty());
-  output_wires_.emplace_back(
-      std::make_shared<ConstantArithmeticWire<T>>(v, backend));
+  output_wires_.emplace_back(std::make_shared<ConstantArithmeticWire<T>>(v, backend));
   InitializationHelper();
 }
 
@@ -84,8 +80,7 @@ template <typename T>
 ConstantArithmeticInputGate<T>::ConstantArithmeticInputGate(std::vector<T>&& v, Backend& backend)
     : Gate(backend) {
   assert(output_wires_.empty());
-  output_wires_.emplace_back(
-      std::make_shared<ConstantArithmeticWire<T>>(std::move(v), backend));
+  output_wires_.emplace_back(std::make_shared<ConstantArithmeticWire<T>>(std::move(v), backend));
   InitializationHelper();
 }
 

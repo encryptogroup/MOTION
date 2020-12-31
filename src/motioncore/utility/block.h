@@ -32,10 +32,9 @@ namespace encrypto::motion {
 
 /// \brief Block of aligned 128 bit / 16 B.
 struct Block128 {
-    
   // default constructor: uninitialized
   Block128(){};
-  
+
   // XXX Copy and move constructors/assignments can be defaulted.
   // XXX Ássignments do not check for self-assignment.
 
@@ -100,7 +99,7 @@ struct Block128 {
     std::transform(k0, k0 + kBlockSize, k1, k0, [](auto a, auto b) { return a ^ b; });
     return *this;
   }
-  
+
   /// \brief Performs XOR operation between two Block128.
   /// \param other
   Block128 operator^(const Block128& other) const {
@@ -109,17 +108,17 @@ struct Block128 {
     return result;
   }
 
-  /// \brief Performs XOR-assign operation between this Block128 and a non-overlapping arbitrary range of bytes.
-  /// \param other
+  /// \brief Performs XOR-assign operation between this Block128 and a non-overlapping arbitrary
+  /// range of bytes. \param other
   Block128& operator^=(const std::byte* __restrict__ other) {
     auto k0 =
         reinterpret_cast<std::byte*>(__builtin_assume_aligned(byte_array.data(), kBlockAlignment));
     std::transform(k0, k0 + kBlockSize, other, k0, [](auto a, auto b) { return a ^ b; });
     return *this;
   }
-  
-  /// \brief Performs XOR operation between this Block128 and a non-overlapping arbitrary range of bytes.
-  /// \param other
+
+  /// \brief Performs XOR operation between this Block128 and a non-overlapping arbitrary range of
+  /// bytes. \param other
   Block128 operator^(const std::byte* __restrict__ other) const {
     Block128 result = *this;
     result ^= other;
@@ -167,13 +166,12 @@ struct Block128 {
 
 /// \brief Vector of 128 bit / 16 B blocks.
 struct Block128Vector {
-  
   // create an empty vector
   Block128Vector() = default;
-    
+
   // XXX Copy and move constructors/assignments can be defaulted.
   // XXX Ássignments do not check for self-assignment.
-  
+
   // copy constructor
   Block128Vector(const Block128Vector& other) : block_vector(other.block_vector) {}
 
@@ -211,7 +209,7 @@ struct Block128Vector {
     auto buffer = reinterpret_cast<std::byte*>(block_vector[0].data());
     std::copy(input, input + 16 * size, buffer);
   }
-  
+
   /// \brief Access Block128 at \p index. Throws an exception if index is out of bounds.
   /// \param index
   Block128& at(std::size_t index) { return block_vector.at(index); };
@@ -219,7 +217,7 @@ struct Block128Vector {
 
   /// \brief Get pointer to the first Block128.
   Block128* data() { return block_vector.data(); }
-  
+
   /// \brief Get const pointer to the first Block128.
   const Block128* data() const { return block_vector.data(); }
 
@@ -229,12 +227,12 @@ struct Block128Vector {
   /// \brief Get size of the Block128Vector content in bytes.
   std::size_t ByteSize() const { return block_vector.size() * Block128::size(); };
 
-  /// \brief Resize the Block128Vector to contain \p new_size elements. 
+  /// \brief Resize the Block128Vector to contain \p new_size elements.
   ///        New elements are left uninitialized.
   /// \param new_size
   void resize(std::size_t new_size) { block_vector.resize(new_size); }
 
-  /// \brief Resize the Block128Vector to contain \p new_size elements. 
+  /// \brief Resize the Block128Vector to contain \p new_size elements.
   ///        New elements are set to \p value.
   /// \param new_size
   /// \param value
@@ -242,14 +240,15 @@ struct Block128Vector {
 
   /// \brief Returns an iterator to the first element of the Block128Vector.
   auto begin() { return block_vector.begin(); }
-  
+
   /// \brief Returns a const iterator to the first element of the Block128Vector.
   auto begin() const { return block_vector.begin(); }
-  
-  /// \brief Returns an iterator to the element following the last element of the Block128Vector. 
+
+  /// \brief Returns an iterator to the element following the last element of the Block128Vector.
   auto end() { return block_vector.end(); }
-  
-  /// \brief Returns a const iterator to the element following the last element of the Block128Vector. 
+
+  /// \brief Returns a const iterator to the element following the last element of the
+  /// Block128Vector.
   auto end() const { return block_vector.end(); }
 
   /// \brief Set all Block128 in this vector to zero.
@@ -275,7 +274,7 @@ struct Block128Vector {
     std::transform(k0, k0 + 16 * size(), k1, k0, [](auto a, auto b) { return a ^ b; });
     return *this;
   }
-  
+
   /// \brief Perform a XOR operation between all the Block128 in this vector
   ///        and the Block128 in a different one of same size.
   /// \param other
@@ -296,11 +295,11 @@ struct Block128Vector {
   /// \brief Access Block128 at \p index. Undefined behaviour if index is out of bounds.
   /// \param index
   Block128& operator[](std::size_t index) { return block_vector[index]; };
-  
+
   /// \brief Access Block128 at \p index. Undefined behaviour if index is out of bounds.
   /// \param index
   const Block128& operator[](std::size_t index) const { return block_vector[index]; };
-  
+
   /// \brief Creates a zero-filled vector of \p size elements.
   /// \param size
   static Block128Vector MakeZero(std::size_t size) {

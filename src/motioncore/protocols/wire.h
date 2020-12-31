@@ -60,9 +60,7 @@ class Wire {
 
   const std::atomic<bool>& IsReady() const noexcept;
 
-  const FiberCondition& GetIsReadyCondition() const noexcept {
-    return is_done_condition_;
-  }
+  const FiberCondition& GetIsReadyCondition() const noexcept { return is_done_condition_; }
 
   std::size_t GetWireId() const { return static_cast<std::size_t>(wire_id_); }
 

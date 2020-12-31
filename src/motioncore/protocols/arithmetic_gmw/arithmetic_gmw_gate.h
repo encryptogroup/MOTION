@@ -27,12 +27,12 @@
 #include <fmt/format.h>
 
 #include "arithmetic_gmw_share.h"
+#include "base/motion_base_provider.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/fbs_headers/output_message_generated.h"
 #include "communication/output_message.h"
-#include "base/motion_base_provider.h"
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "primitives/sharing_randomness_generator.h"
@@ -88,8 +88,8 @@ class InputGate final : public motion::InputGate {
 
     auto gate_info = fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_,
                                  input_owner_id_);
-    GetLogger().LogDebug(
-        fmt::format("Allocate an arithmetic_gmw::InputGate with following properties: {}", gate_info));
+    GetLogger().LogDebug(fmt::format(
+        "Allocate an arithmetic_gmw::InputGate with following properties: {}", gate_info));
   }
 
   ~InputGate() final = default;
@@ -357,7 +357,8 @@ class OutputGate final : public motion::OutputGate {
 
     // we are done with this gate
     if constexpr (kDebug) {
-      GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::OutputGate with id#{}", gate_id_));
+      GetLogger().LogDebug(
+          fmt::format("Evaluated arithmetic_gmw::OutputGate with id#{}", gate_id_));
     }
     SetOnlineIsReady();
     GetRegister().IncrementEvaluatedGatesOnlineCounter();
@@ -433,7 +434,8 @@ class AdditionGate final : public motion::TwoGate {
     auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
+    GetLogger().LogDebug(
+        fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
@@ -512,7 +514,8 @@ class SubtractionGate final : public motion::TwoGate {
     auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);
 
-    GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::SubtractionGate with id#{}", gate_id_));
+    GetLogger().LogDebug(
+        fmt::format("Evaluated arithmetic_gmw::SubtractionGate with id#{}", gate_id_));
     SetOnlineIsReady();
     GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
@@ -722,8 +725,8 @@ class SquareGate final : public motion::OneGate {
 
     auto gate_info = fmt::format("uint{}_t type, gate id {}, parent: {}", sizeof(T) * 8, gate_id_,
                                  parent_.at(0)->GetWireId());
-    GetLogger().LogDebug(
-        fmt::format("Created an arithmetic_gmw::SquareGate with following properties: {}", gate_info));
+    GetLogger().LogDebug(fmt::format(
+        "Created an arithmetic_gmw::SquareGate with following properties: {}", gate_info));
   }
 
   ~SquareGate() final = default;

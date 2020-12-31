@@ -23,17 +23,17 @@
 // SOFTWARE.
 
 #include "bmr_gate.h"
-#include "bmr_wire.h"
 #include "bmr_data.h"
 #include "bmr_provider.h"
+#include "bmr_wire.h"
 
 #include "base/backend.h"
+#include "base/motion_base_provider.h"
 #include "communication/bmr_message.h"
 #include "communication/communication_layer.h"
-#include "primitives/aes/aesni_primitives.h"
-#include "base/motion_base_provider.h"
 #include "oblivious_transfer/ot_flavors.h"
 #include "oblivious_transfer/ot_provider.h"
+#include "primitives/aes/aesni_primitives.h"
 #include "primitives/pseudo_random_generator.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "utility/block.h"

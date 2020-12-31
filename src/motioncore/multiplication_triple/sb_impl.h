@@ -35,7 +35,7 @@
 #include "utility/helpers.h"
 
 namespace encrypto::motion {
-    
+
 namespace detail {
 
 // smallest square root of a mod 2^k

@@ -38,10 +38,10 @@
 namespace encrypto::motion {
 
 Register::Register(std::shared_ptr<Logger> logger) : logger_(std::move(logger)) {
-  gates_setup_done_condition_ = std::make_shared<FiberCondition>(
-      [this]() { return gates_setup_done_flag_; });
-  gates_online_done_condition_ = std::make_shared<FiberCondition>(
-      [this]() { return gates_online_done_flag_; });
+  gates_setup_done_condition_ =
+      std::make_shared<FiberCondition>([this]() { return gates_setup_done_flag_; });
+  gates_online_done_condition_ =
+      std::make_shared<FiberCondition>([this]() { return gates_online_done_flag_; });
 }
 
 Register::~Register() {

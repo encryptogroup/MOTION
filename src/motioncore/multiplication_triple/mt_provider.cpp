@@ -60,8 +60,7 @@ const BinaryMtVector& MtProvider::GetBinaryAll() const noexcept {
 
 MtProvider::MtProvider(const std::size_t my_id, const std::size_t number_of_parties)
     : my_id_(my_id), number_of_parties_(number_of_parties) {
-  finished_condition_ =
-      std::make_shared<FiberCondition>([this]() { return finished_.load(); });
+  finished_condition_ = std::make_shared<FiberCondition>([this]() { return finished_.load(); });
 }
 
 MtProviderFromOts::MtProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& ot_providers,

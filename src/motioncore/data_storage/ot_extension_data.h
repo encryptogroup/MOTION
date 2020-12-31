@@ -59,11 +59,11 @@ struct OtExtensionReceiverData {
 
   [[nodiscard]] ReusableFiberFuture<Block128Vector> RegisterForBlock128SenderMessage(
       std::size_t ot_id, std::size_t size);
-  [[nodiscard]] ReusableFiberFuture<BitVector<>>
-  RegisterForBitSenderMessage(std::size_t ot_id, std::size_t size);
+  [[nodiscard]] ReusableFiberFuture<BitVector<>> RegisterForBitSenderMessage(std::size_t ot_id,
+                                                                             std::size_t size);
   template <typename T>
-  [[nodiscard]] ReusableFiberFuture<std::vector<T>> RegisterForIntSenderMessage(
-      std::size_t ot_id, std::size_t size);
+  [[nodiscard]] ReusableFiberFuture<std::vector<T>> RegisterForIntSenderMessage(std::size_t ot_id,
+                                                                                std::size_t size);
 
   // matrix of the OT extension scheme
   // XXX: can't we delete this after setup?

@@ -30,13 +30,13 @@
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion::communication {
-    
+
 class CommunicationLayer;
 
 }  // namespace encrypto::motion::communication
 
 namespace encrypto::motion::proto::bmr {
-    
+
 struct Data;
 
 class Provider {

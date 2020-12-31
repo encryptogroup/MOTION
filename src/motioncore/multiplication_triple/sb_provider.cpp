@@ -45,8 +45,7 @@ bool SbProvider::NeedSbs() const noexcept {
 }
 
 SbProvider::SbProvider(const std::size_t my_id) : my_id_(my_id) {
-  finished_condition_ =
-      std::make_shared<FiberCondition>([this]() { return finished_; });
+  finished_condition_ = std::make_shared<FiberCondition>([this]() { return finished_; });
 }
 
 class SbMessageHandler : public communication::MessageHandler {

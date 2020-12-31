@@ -24,10 +24,8 @@
 
 #pragma once
 
-
-
 namespace encrypto::motion {
-    
+
 struct ShareWrapper;
 
 ShareWrapper FullAndTree(const ShareWrapper& s);

@@ -47,7 +47,7 @@ using SharePointer = std::shared_ptr<Share>;
 }  // namespace encrypto::motion::proto::boolean_gmw
 
 namespace encrypto::motion::proto::bmr {
-    
+
 class Provider;
 
 }  // namespace encrypto::motion::proto::bmr

@@ -580,7 +580,8 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
                             INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
         *(uint32_t*)&OUT(c + i, r) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((c + i) % kNumberOfRows) * number_of_blocks * 16 + (c / kNumberOfRows) * 16 + r / 8;
+        // const auto pos = ((c + i) % kNumberOfRows) * number_of_blocks * 16 + (c / kNumberOfRows)
+        // * 16 + r / 8;
         //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
       }
     }

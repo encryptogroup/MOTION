@@ -24,13 +24,12 @@
 
 #pragma once
 
-
 #include "bmr_share.h"
 
 #include <future>
 
-#include "protocols/gate.h"
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
+#include "protocols/gate.h"
 #include "utility/bit_vector.h"
 #include "utility/block.h"
 #include "utility/reusable_future.h"
@@ -76,7 +75,7 @@ class InputGate final : public motion::InputGate {
 
  protected:
   std::size_t number_of_simd_{0};  ///< Number of parallel values on wires
-  std::size_t bit_size_{0};  ///< Number of wires
+  std::size_t bit_size_{0};        ///< Number of wires
   motion::ReusableFiberFuture<motion::BitVector<>> received_public_values_;
   std::vector<motion::ReusableFiberFuture<motion::Block128Vector>> received_public_keys_;
   motion::ReusableFiberFuture<std::vector<motion::BitVector<>>> input_future_;

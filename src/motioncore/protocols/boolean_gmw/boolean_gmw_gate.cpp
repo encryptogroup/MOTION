@@ -28,10 +28,10 @@
 #include <fmt/format.h>
 
 #include "base/backend.h"
+#include "base/motion_base_provider.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
 #include "communication/output_message.h"
-#include "base/motion_base_provider.h"
 #include "multiplication_triple/mt_provider.h"
 #include "oblivious_transfer/ot_provider.h"
 #include "primitives/sharing_randomness_generator.h"
@@ -40,16 +40,14 @@
 
 namespace encrypto::motion::proto::boolean_gmw {
 
-InputGate::InputGate(const std::vector<BitVector<>>& input, std::size_t party_id,
-                     Backend& backend)
+InputGate::InputGate(const std::vector<BitVector<>>& input, std::size_t party_id, Backend& backend)
     : InputGate::Base(backend), input_(input) {
   input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
   InitializationHelper();
 }
 
-InputGate::InputGate(std::vector<BitVector<>>&& input, std::size_t party_id,
-                     Backend& backend)
+InputGate::InputGate(std::vector<BitVector<>>&& input, std::size_t party_id, Backend& backend)
     : InputGate::Base(backend), input_(std::move(input)) {
   input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
@@ -755,8 +753,8 @@ MuxGate::MuxGate(const motion::SharePointer& a, const motion::SharePointer& b,
   output_wires_.reserve(number_of_wires);
   BitVector dummy_bv(number_of_simd_values);
   for (size_t i = 0; i < number_of_wires; ++i) {
-    auto& w = output_wires_.emplace_back(
-        std::static_pointer_cast<motion::Wire>(std::make_shared<boolean_gmw::Wire>(dummy_bv, backend_)));
+    auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
+        std::make_shared<boolean_gmw::Wire>(dummy_bv, backend_)));
     GetRegister().RegisterNextWire(w);
   }
 
@@ -826,7 +824,8 @@ void MuxGate::EvaluateOnline() {
     }
     xored_vector.emplace_back(a ^ b);
   }
-  auto gmw_wire_selection_bits = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_c_.at(0));
+  auto gmw_wire_selection_bits =
+      std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_c_.at(0));
   assert(gmw_wire_selection_bits);
   const auto& selection_bits = gmw_wire_selection_bits->GetValues();
   for (auto other_pid = 0ull; other_pid < number_of_parties; ++other_pid) {

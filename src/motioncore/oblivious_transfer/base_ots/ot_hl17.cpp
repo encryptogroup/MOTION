@@ -59,7 +59,8 @@ void HashPoint(curve25519::ge_p3& output, const curve25519::ge_p3& input) {
   curve25519::x25519_ge_scalarmult_base(&output, hash_output.data());
 }
 
-void OtHL17::Send0(SenderState& state, std::array<std::byte, kCurve25519GeByteSize>& message_output) {
+void OtHL17::Send0(SenderState& state,
+                   std::array<std::byte, kCurve25519GeByteSize>& message_output) {
   // sample y <- Zp
   curve25519::sc_random(state.y);
 
@@ -209,7 +210,7 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OtHL17::S
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
     send_function_(communication::BuildBaseROtMessageSender(messages_s0.at(i).data(),
-                                                              messages_s0.at(i).size(), i));
+                                                            messages_s0.at(i).size(), i));
     Send1(states.at(i));
   }
 
@@ -241,7 +242,7 @@ std::vector<std::vector<std::byte>> OtHL17::Receive(const BitVector<>& choices) 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
     Receive1(states.at(i), messages_r1.at(i), base_ots_receiver.S.at(i));
     send_function_(communication::BuildBaseROtMessageReceiver(messages_r1.at(i).data(),
-                                                                messages_r1.at(i).size(), i));
+                                                              messages_r1.at(i).size(), i));
   }
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {

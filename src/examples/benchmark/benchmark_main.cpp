@@ -56,7 +56,7 @@ struct Combination {
         protocol(protocol),
         operation_type(operation_type),
         number_of_simd(number_of_simd) {}
-       
+
   std::size_t bit_size{0};
   encrypto::motion::MpcProtocol protocol{kIllegalProtocol};
   encrypto::motion::PrimitiveOperationType operation_type{kIllegalOperationType};

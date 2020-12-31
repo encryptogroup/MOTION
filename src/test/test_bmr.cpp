@@ -33,9 +33,9 @@
 
 #include "base/party.h"
 #include "multiplication_triple/mt_provider.h"
-#include "protocols/share_wrapper.h"
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
+#include "protocols/share_wrapper.h"
 #include "utility/typedefs.h"
 
 #include "test_constants.h"
@@ -486,8 +486,8 @@ TEST_P(BmrHeavyTest, Mux) {
 
       if (party_id == output_owner) {
         for (auto i = 0ull; i < number_of_wires_; ++i) {
-          auto wire_single =
-              std::dynamic_pointer_cast<encrypto::motion::proto::bmr::Wire>(sw_out->GetWires().at(i));
+          auto wire_single = std::dynamic_pointer_cast<encrypto::motion::proto::bmr::Wire>(
+              sw_out->GetWires().at(i));
           assert(wire_single);
           for (auto j = 0ull; j < number_of_simd_; ++j) {
             if (bit_vector_selection[j])

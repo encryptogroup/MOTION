@@ -30,18 +30,18 @@
 
 namespace encrypto::motion {
 
-/// \brief Wraps a boost::fibers::condition_variable with a boost::fibers::mutex 
+/// \brief Wraps a boost::fibers::condition_variable with a boost::fibers::mutex
 ///        and a condition checking function.
 class FiberCondition {
  public:
-
   ~FiberCondition() = default;
   FiberCondition() = delete;
   FiberCondition(FiberCondition&) = delete;
-  
+
   /// \brief Registers the condition function that encapsulates the condition checking.
   /// \param condition_function
-  FiberCondition(const std::function<bool()> condition_function) : condition_function_(condition_function) {}
+  FiberCondition(const std::function<bool()> condition_function)
+      : condition_function_(condition_function) {}
 
   // checks if the condition was satisfied
   // bool operator()() {
@@ -71,7 +71,7 @@ class FiberCondition {
   void NotifyAll() const noexcept { condition_variable_.notify_all(); }
 
   /// \brief Get the mutex.
-  /// \note The variables that the condition function depends on shall 
+  /// \note The variables that the condition function depends on shall
   ///       only be modified under the locked mutex.
   boost::fibers::mutex& GetMutex() noexcept { return mutex_; }
 
