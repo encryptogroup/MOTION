@@ -1,6 +1,6 @@
 # [MOTION](https://ia.cr/2020/1137) [![Build Status](https://travis-ci.com/Oleksandr-Tkachenko/MOTION.svg?token=vWcBQYzxXnAWavBdMFeK&branch=master)](https://travis-ci.com/Oleksandr-Tkachenko/MOTION)
 
-###A Framework for Mixed-Protocol Multi-Party Computation
+### A Framework for Mixed-Protocol Multi-Party Computation
 
 This code is provided as a experimental implementation for testing purposes and should not be used in a productive environment. We cannot guarantee security and correctness.
 
