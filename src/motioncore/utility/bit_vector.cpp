@@ -718,44 +718,44 @@ void BitVector<Allocator>::Append(BitSpan&& bit_span) {
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Copy(const std::size_t offset_source,
-                                const std::size_t offset_destination, const BitVector& other) {
-  assert(offset_source <= offset_destination);
-  const std::size_t bitlength = offset_destination - offset_source;
+void BitVector<Allocator>::Copy(const std::size_t dest_from, const std::size_t dest_to,
+                                const BitVector& other) {
+  assert(dest_from <= dest_to);
+  const std::size_t bitlength = dest_to - dest_from;
 
-  if (offset_source > bit_size_ || offset_destination > bit_size_) {
-    throw std::out_of_range(fmt::format("Accessing positions {} to {} of {}", offset_source,
-                                        offset_destination, bit_size_));
+  if (dest_from > bit_size_ || dest_to > bit_size_) {
+    throw std::out_of_range(
+        fmt::format("Accessing positions {} to {} of {}", dest_from, dest_to, bit_size_));
   }
 
   if (bitlength > other.GetSize()) {
-    throw std::out_of_range(fmt::format("Accessing position {} of {}",
-                                        offset_destination - offset_source, other.GetSize()));
+    throw std::out_of_range(
+        fmt::format("Accessing position {} of {}", dest_to - dest_from, other.GetSize()));
   }
 
-  if (offset_source == offset_destination) {
+  if (dest_from == dest_to) {
     return;
   }
 
-  const auto number_of_bits = offset_destination - offset_source;
+  const auto number_of_bits = dest_to - dest_from;
 
   if (number_of_bits == 1) {
-    Set(other.Get(0), offset_source);
+    Set(other.Get(0), dest_from);
     return;
   }
 
-  const auto destination_to_offset = offset_destination % 8;
-  const auto destination_from_offset = offset_source % 8;
+  const auto destination_to_offset = dest_to % 8;
+  const auto destination_from_offset = dest_from % 8;
 
   if (destination_from_offset + number_of_bits < 8) {
     const auto mask = (std::byte(0xFF) >> destination_from_offset) &
                       (std::byte(0xFF) << (8 - destination_from_offset - number_of_bits));
-    const auto from_bytes = offset_source / 8;
+    const auto from_bytes = dest_from / 8;
     data_vector_.at(from_bytes) &= ~mask;
     data_vector_.at(from_bytes) |= (other.GetData().at(0) >> destination_from_offset) & mask;
-  } else if ((offset_source % 8) == 0) {
+  } else if ((dest_from % 8) == 0) {
     const auto number_of_bytes = BitsToBytes(number_of_bits);
-    const auto from_bytes = offset_source / 8;
+    const auto from_bytes = dest_from / 8;
     const auto destination_to_1 = destination_to_offset > 0 ? 1 : 0;
     for (auto i = 0ull; i < number_of_bytes - destination_to_1; ++i) {
       data_vector_.at(from_bytes + i) = other.GetData().at(i);
@@ -770,14 +770,14 @@ void BitVector<Allocator>::Copy(const std::size_t offset_source,
     const auto number_of_bytes = BitsToBytes(destination_from_offset + number_of_bits);
     const auto number_of_complete_bytes =
         BitsToBytes(number_of_bits - (8 - destination_from_offset) - destination_to_offset);
-    const auto destination_from_offset = offset_source % 8;
+    const auto destination_from_offset = dest_from % 8;
     BitVector tmp(destination_from_offset);
     if (number_of_bits != other.GetSize()) {
       tmp.Append(other.Subset(0, number_of_bits));
     } else {
       tmp.Append(other);
     }
-    const auto from_bytes = offset_source / 8;
+    const auto from_bytes = dest_from / 8;
 
     const auto mask = ~(std::byte(0xFF) >> destination_from_offset);
     data_vector_.at(from_bytes) &= mask;
@@ -799,8 +799,8 @@ void BitVector<Allocator>::Copy(const std::size_t offset_source,
 }
 
 template <typename Allocator>
-void BitVector<Allocator>::Copy(const std::size_t offset_source, const BitVector& other) {
-  Copy(offset_source, offset_source + other.GetSize(), other);
+void BitVector<Allocator>::Copy(const std::size_t dest_from, const BitVector& other) {
+  Copy(dest_from, dest_from + other.GetSize(), other);
 }
 
 template <typename Allocator>
@@ -1290,8 +1290,7 @@ BitVectorType BitSpan::operator&(const BitVectorType& other) const {
   BitVectorType result;
   if constexpr (BitVectorType::IsAligned()) {
     result = BitVectorType(pointer_, bit_size_);
-    AlignedAndImplementation(other.GetData().data(), result.GetMutableData().data(),
-                             byte_size);
+    AlignedAndImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {  // we do not want an AlignedBitVector as output
     result = BitVectorType(pointer_, bit_size_);
     AndImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
@@ -1299,8 +1298,7 @@ BitVectorType BitSpan::operator&(const BitVectorType& other) const {
   return result;
 }
 
-template BitVector<StdAllocator> BitSpan::operator&(
-    const BitVector<StdAllocator>& other) const;
+template BitVector<StdAllocator> BitSpan::operator&(const BitVector<StdAllocator>& other) const;
 template BitVector<AlignedAllocator> BitSpan::operator&(
     const BitVector<AlignedAllocator>& other) const;
 
@@ -1345,8 +1343,7 @@ BitVectorType BitSpan::operator|(const BitVectorType& other) const {
   return result;
 }
 
-template BitVector<StdAllocator> BitSpan::operator|(
-    const BitVector<StdAllocator>& other) const;
+template BitVector<StdAllocator> BitSpan::operator|(const BitVector<StdAllocator>& other) const;
 template BitVector<AlignedAllocator> BitSpan::operator|(
     const BitVector<AlignedAllocator>& other) const;
 
@@ -1383,8 +1380,7 @@ BitVectorType BitSpan::operator^(const BitVectorType& other) const {
   BitVectorType result;
   if constexpr (BitVectorType::IsAligned()) {
     result = BitVectorType(pointer_, bit_size_);
-    AlignedXorImplementation(other.GetData().data(), result.GetMutableData().data(),
-                             byte_size);
+    AlignedXorImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
   } else {
     result = BitVectorType(pointer_, bit_size_);
     XorImplementation(other.GetData().data(), result.GetMutableData().data(), byte_size);
@@ -1392,8 +1388,7 @@ BitVectorType BitSpan::operator^(const BitVectorType& other) const {
   return result;
 }
 
-template BitVector<StdAllocator> BitSpan::operator^(
-    const BitVector<StdAllocator>& other) const;
+template BitVector<StdAllocator> BitSpan::operator^(const BitVector<StdAllocator>& other) const;
 template BitVector<AlignedAllocator> BitSpan::operator^(
     const BitVector<AlignedAllocator>& other) const;
 
@@ -1583,62 +1578,57 @@ std::string BitSpan::AsString() const noexcept {
 }
 
 template <typename BitVectorType>
-void BitSpan::Copy(const std::size_t offset_source, const std::size_t offset_destination,
-                   BitVectorType& other) {
-  const std::size_t bitlength = offset_destination - offset_source;
+void BitSpan::Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorType& other) {
+  const std::size_t bitlength = dest_to - dest_from;
 
-  if (offset_source > bit_size_ || offset_destination > bit_size_) {
-    throw std::out_of_range(fmt::format("Accessing positions {} to {} of {}", offset_source,
-                                        offset_destination, bit_size_));
+  if (dest_from > bit_size_ || dest_to > bit_size_) {
+    throw std::out_of_range(
+        fmt::format("Accessing positions {} to {} of {}", dest_from, dest_to, bit_size_));
   }
 
   if (bitlength > other.GetSize()) {
-    throw std::out_of_range(fmt::format("Accessing position {} of {}",
-                                        offset_destination - offset_source, other.GetSize()));
+    throw std::out_of_range(
+        fmt::format("Accessing position {} of {}", dest_to - dest_from, other.GetSize()));
   }
 
-  if (offset_source == offset_destination) {
+  if (dest_from == dest_to) {
     return;
   }
 
-  CopyImplementation(offset_source, offset_destination, other.GetMutableData().data(), pointer_);
+  CopyImplementation(dest_from, dest_to, other.GetMutableData().data(), pointer_);
 }
 
-template void BitSpan::Copy<BitVector<StdAllocator>>(const std::size_t offset_source,
-                                                     const std::size_t offset_destination,
+template void BitSpan::Copy<BitVector<StdAllocator>>(const std::size_t dest_from,
+                                                     const std::size_t dest_to,
                                                      BitVector<StdAllocator>& other);
-template void BitSpan::Copy<BitVector<AlignedAllocator>>(const std::size_t offset_source,
-                                                         const std::size_t offset_destination,
+template void BitSpan::Copy<BitVector<AlignedAllocator>>(const std::size_t dest_from,
+                                                         const std::size_t dest_to,
                                                          BitVector<AlignedAllocator>& other);
 
 template <typename BitVectorType>
-void BitSpan::Copy(const std::size_t offset_source, BitVectorType& other) {
-  CopyImplementation(offset_source, offset_source + other.GetSize(), other.GetMutableData().data(),
+void BitSpan::Copy(const std::size_t dest_from, BitVectorType& other) {
+  CopyImplementation(dest_from, dest_from + other.GetSize(), other.GetMutableData().data(),
                      pointer_);
 }
-template void BitSpan::Copy<BitVector<StdAllocator>>(const std::size_t offset_source,
+template void BitSpan::Copy<BitVector<StdAllocator>>(const std::size_t dest_from,
                                                      BitVector<StdAllocator>& other);
-template void BitSpan::Copy<BitVector<AlignedAllocator>>(const std::size_t offset_source,
+template void BitSpan::Copy<BitVector<AlignedAllocator>>(const std::size_t dest_from,
                                                          BitVector<AlignedAllocator>& other);
 
-void BitSpan::Copy(const std::size_t offset_source, const std::size_t offset_destination,
-                   BitSpan&& other) {
-  CopyImplementation(offset_source, offset_destination, other.GetMutableData(), pointer_);
+void BitSpan::Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan&& other) {
+  CopyImplementation(dest_from, dest_to, other.GetMutableData(), pointer_);
 }
 
-void BitSpan::Copy(const std::size_t offset_source, const std::size_t offset_destination,
-                   BitSpan& other) {
-  CopyImplementation(offset_source, offset_destination, other.GetMutableData(), pointer_);
+void BitSpan::Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan& other) {
+  CopyImplementation(dest_from, dest_to, other.GetMutableData(), pointer_);
 }
 
-void BitSpan::Copy(const std::size_t offset_source, BitSpan& other) {
-  CopyImplementation(offset_source, offset_source + other.bit_size_, other.GetMutableData(),
-                     pointer_);
+void BitSpan::Copy(const std::size_t dest_from, BitSpan& other) {
+  CopyImplementation(dest_from, dest_from + other.bit_size_, other.GetMutableData(), pointer_);
 }
 
-void BitSpan::Copy(const std::size_t offset_source, BitSpan&& other) {
-  CopyImplementation(offset_source, offset_source + other.bit_size_, other.GetMutableData(),
-                     pointer_);
+void BitSpan::Copy(const std::size_t dest_from, BitSpan&& other) {
+  CopyImplementation(dest_from, dest_from + other.bit_size_, other.GetMutableData(), pointer_);
 }
 
 std::ostream& operator<<(std::ostream& os, const BitSpan& bit_span) {

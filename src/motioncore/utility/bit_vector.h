@@ -72,7 +72,7 @@ class BitVector {
   // Move constructor
   BitVector(BitVector&& bit_vector) noexcept
       : data_vector_(std::move(bit_vector.data_vector_)), bit_size_(bit_vector.bit_size_) {}
-      
+
   // XXX Copy and Move constructor/assigment can be defaulted
 
   // Copy constructor
@@ -108,7 +108,7 @@ class BitVector {
   /// \param data
   /// \note Initializing a BitVector this way is inefficient!
   BitVector(const std::vector<bool>& data) : BitVector(data, data.size()) {}
-  
+
   /// \brief Initialize from a std::vector<bool>.
   /// \param data
   /// \param number_of_bits Expected number of bits.
@@ -208,14 +208,14 @@ class BitVector {
   /// \brief Get bit at given position
   /// \param position
   bool Get(std::size_t position) const;
-  
+
   /// \brief Resize BitVector to size \p number_of_bits. New bits are uninitialized by default.
   /// \param number_of_bits
   /// \param zero_fill Sets new bits to 0 if option is set to true.
   void Resize(std::size_t number_of_bits, bool zero_fill = false) noexcept;
 
-  /// \brief Reserves new space for BitVector, so that it can contain at least \p number_of_bits bits
-  /// \param number_of_bits
+  /// \brief Reserves new space for BitVector, so that it can contain at least \p number_of_bits
+  /// bits \param number_of_bits
   void Reserve(std::size_t number_of_bits) { data_vector_.reserve(number_of_bits); }
 
   /// \brief Appends a bit to BitVector.
@@ -242,23 +242,22 @@ class BitVector {
   ///       it does not have ownership of its data.
   void Append(BitSpan&& other);
 
-  /// \brief Appends \p append_bit_size bytes starting from \p pointer to BitVector. 
+  /// \brief Appends \p append_bit_size bytes starting from \p pointer to BitVector.
   /// \param pointer
   /// \param append_bit_size
   void Append(const std::byte* pointer, const std::size_t append_bit_size) noexcept;
-  
-  // XXX I don't understand the intention behind the copy methods.
-  // Do they copy the elements starting from offset_source to the end into other, 
-  // starting from offset_destination? Or do they copy a portion between
-  // offset_source and offset_destination into other, overwriting the content of other?
-  void Copy(const std::size_t offset_source, const std::size_t offset_destination,
-            const BitVector& other);
 
-  void Copy(const std::size_t offset_source, const BitVector& other);
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
+  /// in this.
+  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, const BitVector& other);
 
-  /// \brief Returns a new BitVector containing the bits of this BitVector between positions \p from and \p to.
-  /// \param from
-  /// \param to
+  /// \brief copies other to this[dest_from...dest_from+GetSize()].
+  /// \throws an std::out_of_range exception if this is smaller than other.
+  void Copy(const std::size_t dest_from, const BitVector& other);
+
+  /// \brief Returns a new BitVector containing the bits of this BitVector between positions \p from
+  /// and \p to. \param from \param to
   BitVector Subset(std::size_t from, std::size_t to) const;
 
   /// \brief Returns a string representation of this BitVector.
@@ -266,14 +265,14 @@ class BitVector {
 
   /// \brief Clear this Bitvector.
   void Clear() noexcept;
-  
-/// \brief In-place bit-wise invert.
+
+  /// \brief In-place bit-wise invert.
   void Invert();
 
   /// \brief Get bit at given position in the BitVector.
   /// \param position
   bool operator[](std::size_t position) const { return Get(position); }
-  
+
   /// \brief Return an inverted copy of this BitVector.
   BitVector operator~() const;
 
@@ -292,7 +291,7 @@ class BitVector {
   /// \param other
   template <typename OtherAllocator>
   BitVector operator^(const BitVector<OtherAllocator>& other) const noexcept;
-  
+
   /// \brief Perform XOR operation between every bit of a BitVector and a BitSpan.
   /// \param other
   /// \note A BitSpan is essentially a BitVector, with the only difference that
@@ -320,7 +319,7 @@ class BitVector {
   /// \note A BitSpan is essentially a BitVector, with the only difference that
   ///       it does not have ownership of its data.
   bool operator!=(const BitSpan& other) const noexcept;
-  
+
   /// \brief Compares two BitVectors for equality.
   /// \param other
   template <typename OtherAllocator>
@@ -375,7 +374,7 @@ class BitVector {
   static BitVector RandomSeeded(const std::size_t size, const std::size_t seed = 0) noexcept;
 
   /// \brief Performs OR operation between all bits in BitVector.
-  /// \param bit_vector 
+  /// \param bit_vector
   static bool OrReduceBitVector(const BitVector& bit_vector);
 
   /// \brief Performs OR operation between all BitVectors in \p bit_vectors.
@@ -383,7 +382,7 @@ class BitVector {
   static BitVector OrBitVectors(const std::vector<BitVector>& bit_vectors);
 
   /// \brief Performs AND operation between all bits in BitVector.
-  /// \param bit_vector 
+  /// \param bit_vector
   static bool AndReduceBitVector(const BitVector& bit_vector);
 
   /// \brief Performs AND operation between all BitVectors in \p bit_vectors.
@@ -451,10 +450,10 @@ std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bit_vecto
 // BitVectors, which are a suitable input to MOTION.
 
 /// \brief Converts a value of UnsignedIntegralType to a vector of BitVector.
-/// \details A vector of BitVectors allows to interleave multiple arithmetic values 
-///          intended to be used in a SIMD way. Let x be an arithmetic value, 
+/// \details A vector of BitVectors allows to interleave multiple arithmetic values
+///          intended to be used in a SIMD way. Let x be an arithmetic value,
 ///          with x0,...,xn being its little-endian bit representation.
-///          This value is then represented by a value v of type std::vector<BitVector> 
+///          This value is then represented by a value v of type std::vector<BitVector>
 ///          with v[j][0] == xj.
 ///          Now, if we interleave x with y and z of the same bit representation, then:
 ///          v[j][0] == xj, v[j][1] == yj, v[j][2] == zj.
@@ -469,14 +468,15 @@ template <typename UnsignedIntegralType,
 std::vector<BitVector<Allocator>> ToInput(UnsignedIntegralType unsigned_integral_value);
 
 /// \brief Converts a vector of UnsignedIntegralType to a vector of BitVector.
-/// \details A vector of BitVectors allows to interleave multiple arithmetic values 
-///          intended to be used in a SIMD way. Let x be an arithmetic value, 
+/// \details A vector of BitVectors allows to interleave multiple arithmetic values
+///          intended to be used in a SIMD way. Let x be an arithmetic value,
 ///          with x0,...,xn being its little-endian bit representation.
-///          This value is then represented by a value v of type std::vector<BitVector> 
+///          This value is then represented by a value v of type std::vector<BitVector>
 ///          with v[j][0] == xj.
 ///          Now, if we interleave x with y and z of the same bit representation, then:
 ///          v[j][0] == xj, v[j][1] == yj, v[j][2] == zj.
-/// \post - All BitVectors in the vector returned will have size equal to \p unsigned_integral_vector.size().
+/// \post - All BitVectors in the vector returned will have size equal to \p
+/// unsigned_integral_vector.size().
 ///       - The returned vector will have size equal to number of bits in \p UnsignedIntegralType.
 /// \tparam UnsignedIntegralType
 /// \param unsigned_integral_vector
@@ -511,10 +511,10 @@ std::vector<BitVector<Allocator>> ToInput(
 // integer numbers
 
 /// \brief Converts a vector of BitVectors to a value of UnsignedIntegralType.
-/// \details A vector of BitVectors allows to interleave multiple arithmetic values 
-///          intended to be used in a SIMD way. Let x be an arithmetic value, 
+/// \details A vector of BitVectors allows to interleave multiple arithmetic values
+///          intended to be used in a SIMD way. Let x be an arithmetic value,
 ///          with x0,...,xn being its little-endian bit representation.
-///          This value is then represented by a value v of type std::vector<BitVector> 
+///          This value is then represented by a value v of type std::vector<BitVector>
 ///          with v[j][0] == xj.
 ///          Now, if we interleave x with y and z of the same bit representation, then:
 ///          v[j][0] == xj, v[j][1] == yj, v[j][2] == zj.
@@ -565,9 +565,9 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
 
 /// \brief Converts a vector of UnsignedIntegralType to a vector of BitVectors.
 /// \details A vector of BitVectors allows to interleave multiple arithmetic values
-///          intended to be used in a SIMD way. Let x be an arithmetic value, 
+///          intended to be used in a SIMD way. Let x be an arithmetic value,
 ///          with x0,...,xn being its little-endian bit representation.
-///          This value is then represented by a value v of type std::vector<BitVector> 
+///          This value is then represented by a value v of type std::vector<BitVector>
 ///          with v[j][0] == xj.
 ///          Now, if we interleave x with y and z of the same bit representation, then:
 ///          v[j][0] == xj, v[j][1] == yj, v[j][2] == zj.
@@ -624,7 +624,6 @@ std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator
 
 using AlignedBitVector = BitVector<AlignedAllocator>;
 
-
 /// \brief Non-owning non-resizeable BitVector.
 /// \details Provides a read-write BitVector API over a raw buffer, e.g. std::byte *.
 /// The underlying buffer is not owned by the BitSpan, in contrast to BitVector.
@@ -675,7 +674,7 @@ class BitSpan {
   /// \param aligned Alignment of the buffer
   template <typename T>
   BitSpan(T* buffer, std::size_t bit_size, bool aligned = false)
-  : pointer_(reinterpret_cast<std::byte*>(buffer)), bit_size_(bit_size), aligned_(aligned) {}
+      : pointer_(reinterpret_cast<std::byte*>(buffer)), bit_size_(bit_size), aligned_(aligned) {}
 
   // TODO make this a user-defined conversion.
   /// \brief Converts this BitSpan to a BitVector
@@ -685,9 +684,8 @@ class BitSpan {
     return BitVectorType(pointer_, bit_size_);
   }
 
-  /// \brief Returns a new BitVector containing the bits of this BitSpan between positions \p from and \p to.
-  /// \param from
-  /// \param to
+  /// \brief Returns a new BitVector containing the bits of this BitSpan between positions \p from
+  /// and \p to. \param from \param to
   template <typename BitVectorType = AlignedBitVector>
   BitVectorType Subset(const std::size_t from, const std::size_t to) const;
 
@@ -804,24 +802,36 @@ class BitSpan {
   /// \brief Returns true if Allocator is aligned allocator.
   bool IsAligned() const noexcept { return aligned_; }
 
-  // XXX See comment above Copy methods in BitVector.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
+  /// in this.
+  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
   template <typename BitVectorType>
-  void Copy(const std::size_t offset_source, const std::size_t offset_destination,
-            BitVectorType& other);
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorType& other);
 
+  /// \brief copies other to this[dest_from...dest_from+GetSize()].
+  /// \throws an std::out_of_range exception if this is smaller than other.
   template <typename BitVectorType>
-  void Copy(const std::size_t offset_source, BitVectorType& other);
+  void Copy(const std::size_t dest_from, BitVectorType& other);
 
-  void Copy(const std::size_t offset_source, const std::size_t offset_destination, BitSpan& other);
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
+  /// in this.
+  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan& other);
 
-  void Copy(const std::size_t offset_source, const std::size_t offset_destination, BitSpan&& other);
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
+  /// in this.
+  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan&& other);
 
-  void Copy(const std::size_t offset_source, BitSpan& other);
+  /// \brief copies other to this[dest_from...dest_from+GetSize()].
+  /// \throws an std::out_of_range exception if this is smaller than other.
+  void Copy(const std::size_t dest_from, BitSpan& other);
 
-  void Copy(const std::size_t offset_source, BitSpan&& other);
+  /// \brief copies other to this[dest_from...dest_from+GetSize()].
+  /// \throws an std::out_of_range exception if this is smaller than other.
+  void Copy(const std::size_t dest_from, BitSpan&& other);
 
  private:
-
   std::byte* pointer_;
   std::size_t bit_size_;
   bool aligned_;
