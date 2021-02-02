@@ -48,6 +48,9 @@ add_library(motion
         protocols/constant/constant_share.cpp
         protocols/constant/constant_wire.cpp
         protocols/conversion/conversion_gate.cpp
+        protocols/data_management/simdify_gate.cpp
+        protocols/data_management/subset_gate.cpp
+        protocols/data_management/unsimdify_gate.cpp
         protocols/gate.cpp
         protocols/share.cpp
         protocols/share_wrapper.cpp
