@@ -24,20 +24,28 @@
 
 #include "share_wrapper.h"
 
+#include <typeinfo>
+
 #include "algorithm/algorithm_description.h"
 #include "algorithm/tree.h"
 #include "base/backend.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_gate.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
+#include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
 #include "protocols/bmr/bmr_gate.h"
 #include "protocols/bmr/bmr_share.h"
+#include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
 #include "protocols/boolean_gmw/boolean_gmw_share.h"
+#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/constant/constant_gate.h"
 #include "protocols/constant/constant_share.h"
 #include "protocols/constant/constant_wire.h"
 #include "protocols/conversion/b2a_gate.h"
 #include "protocols/conversion/conversion_gate.h"
+#include "protocols/data_management/simdify_gate.h"
+#include "protocols/data_management/subset_gate.h"
+#include "protocols/data_management/unsimdify_gate.h"
 #include "secure_type/secure_unsigned_integer.h"
 
 namespace encrypto::motion {
@@ -257,7 +265,7 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper& other) const {
         if ((inner_bitlength & i) == i) {
           const auto _begin = split.begin() + offset;
           const auto _end = split.begin() + offset + i;
-          q.push(ShareWrapper::Join(_begin, _end));
+          q.push(ShareWrapper::Concatenate(_begin, _end));
           offset += i;
         }
       }
@@ -265,7 +273,7 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper& other) const {
         output.emplace_back(FullAndTree(q.front()));
         q.pop();
       }
-      result = ShareWrapper::Join(output);
+      result = ShareWrapper::Concatenate(output);
     }
     return result;
   }
@@ -303,7 +311,8 @@ ShareWrapper ShareWrapper::Mux(const ShareWrapper& a, const ShareWrapper& b) con
 
     auto a_xor_b = a ^ b;
 
-    auto mask = ShareWrapper::Join(std::vector<ShareWrapper>(a_xor_b->GetBitLength(), *this));
+    auto mask =
+        ShareWrapper::Concatenate(std::vector<ShareWrapper>(a_xor_b->GetBitLength(), *this));
     mask &= a_xor_b;
     return b ^ mask;
   }
@@ -402,41 +411,49 @@ ShareWrapper ShareWrapper::BmrToBooleanGmw() const {
   return ShareWrapper(bmr_to_boolean_gmw_gate->GetOutputAsShare());
 }
 
-const SharePointer ShareWrapper::Out(std::size_t output_owner) const {
+ShareWrapper ShareWrapper::Out(std::size_t output_owner) const {
   assert(share_);
   auto& backend = share_->GetBackend();
+  SharePointer result{nullptr};
   switch (share_->GetProtocol()) {
     case MpcProtocol::kArithmeticGmw: {
       switch (share_->GetBitLength()) {
         case 8u: {
-          return backend.ArithmeticGmwOutput<std::uint8_t>(share_, output_owner);
+          result = backend.ArithmeticGmwOutput<std::uint8_t>(share_, output_owner);
+          break;
         }
         case 16u: {
-          return backend.ArithmeticGmwOutput<std::uint16_t>(share_, output_owner);
+          result = backend.ArithmeticGmwOutput<std::uint16_t>(share_, output_owner);
+          break;
         }
         case 32u: {
-          return backend.ArithmeticGmwOutput<std::uint32_t>(share_, output_owner);
+          result = backend.ArithmeticGmwOutput<std::uint32_t>(share_, output_owner);
+          break;
         }
         case 64u: {
-          return backend.ArithmeticGmwOutput<std::uint64_t>(share_, output_owner);
+          result = backend.ArithmeticGmwOutput<std::uint64_t>(share_, output_owner);
+          break;
         }
         default: {
-          throw(std::runtime_error(
-              fmt::format("Unknown arithmetic ring of {} bilength", share_->GetBitLength())));
+          throw std::runtime_error(
+              fmt::format("Unknown arithmetic ring of {} bilength", share_->GetBitLength()));
         }
       }
-    }
+    } break;
     case MpcProtocol::kBooleanGmw: {
-      return backend.BooleanGmwOutput(share_, output_owner);
+      result = backend.BooleanGmwOutput(share_, output_owner);
+      break;
     }
     case MpcProtocol::kBmr: {
-      return backend.BmrOutput(share_, output_owner);
+      result = backend.BmrOutput(share_, output_owner);
+      break;
     }
     default: {
-      throw(std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
-                                           static_cast<uint>(share_->GetProtocol()))));
+      throw std::runtime_error(
+          fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(share_->GetProtocol())));
     }
   }
+  return ShareWrapper(result);
 }
 
 std::vector<ShareWrapper> ShareWrapper::Split() const {
@@ -447,28 +464,30 @@ std::vector<ShareWrapper> ShareWrapper::Split() const {
   return result;
 }
 
-ShareWrapper ShareWrapper::Join(const std::vector<ShareWrapper>& shares) {
-  if (shares.empty()) throw std::runtime_error("ShareWrapper cannot be empty");
+ShareWrapper ShareWrapper::GetWire(std::size_t i) const { return ShareWrapper(share_->GetWire(i)); }
+
+ShareWrapper ShareWrapper::Concatenate(std::span<const ShareWrapper> input) {
+  if (input.empty()) throw std::runtime_error("ShareWrapper cannot be empty");
   {
-    const auto protocol = shares.at(0)->GetProtocol();
-    for (auto i = 1ull; i < shares.size(); ++i) {
-      if (shares.at(i)->GetProtocol() != protocol) {
+    const auto protocol = input[0]->GetProtocol();
+    for (auto i = 1ull; i < input.size(); ++i) {
+      if (input[i]->GetProtocol() != protocol) {
         throw std::runtime_error("Trying to join shares of different types");
       }
     }
   }
   std::vector<SharePointer> unwrapped_shares;
-  unwrapped_shares.reserve(shares.size());
-  for (const auto& s : shares) unwrapped_shares.emplace_back(*s);
+  unwrapped_shares.reserve(input.size());
+  for (const auto& s : input) unwrapped_shares.emplace_back(*s);
 
   std::size_t bit_size_wires{0};
-  for (const auto& s : shares) bit_size_wires += s->GetBitLength();
+  for (const auto& s : input) bit_size_wires += s->GetBitLength();
 
   std::vector<WirePointer> wires;
   wires.reserve(bit_size_wires);
-  for (const auto& s : shares)
+  for (const auto& s : input)
     for (const auto& w : s->GetWires()) wires.emplace_back(w);
-  switch (shares.at(0)->GetProtocol()) {
+  switch (input[0]->GetProtocol()) {
     case MpcProtocol::kArithmeticGmw: {
       switch (wires.at(0)->GetBitLength()) {
         case 8: {
@@ -566,8 +585,153 @@ ShareWrapper ShareWrapper::Evaluate(const AlgorithmDescription& algorithm) const
     output.emplace_back(*pointers_to_wires_of_split_share.at(i));
   }
 
-  return ShareWrapper::Join(output);
+  return ShareWrapper::Concatenate(output);
 }
+
+void ShareWrapper::ShareConsistencyCheck() const {
+  if (share_->GetWires().size() == 0) {
+    throw std::invalid_argument("ShareWrapper::share_ has 0 wires");
+  }
+  if constexpr (kDebug) {
+    std::size_t number_of_simd{share_->GetWires()[0]->GetNumberOfSimdValues()};
+    for (std::size_t i = 0; i < share_->GetWires().size(); ++i) {
+      if (share_->GetWires()[i]->GetNumberOfSimdValues() != number_of_simd) {
+        throw std::invalid_argument(
+            fmt::format("ShareWrapper::share_ has inconsistent numbers of SIMD values"));
+      }
+    }
+    if (number_of_simd == 0) {
+      throw std::invalid_argument(fmt::format("Wires in ShareWrapper::share_ have 0 SIMD values"));
+    }
+  }
+}
+
+template <typename Test, template <typename...> class Ref>
+struct is_specialization : std::false_type {};
+
+template <template <typename...> class Ref, typename... Args>
+struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
+
+template <typename T>
+T ShareWrapper::As() const {
+  ShareConsistencyCheck();
+  if constexpr (std::is_unsigned<T>()) {
+    if (share_->GetCircuitType() != CircuitType::kArithmetic) {
+      throw std::invalid_argument(
+          "Trying to ShareWrapper::As() to a arithmetic output with non-arithmetic input");
+    }
+    if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+      auto arithmetic_gmw_wire =
+          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(share_->GetWires()[0]);
+      assert(arithmetic_gmw_wire);
+      return arithmetic_gmw_wire->GetValues()[0];
+    } else if (share_->GetProtocol() == MpcProtocol::kArithmeticConstant) {
+      auto constant_arithmetic_wire =
+          std::dynamic_pointer_cast<proto::ConstantArithmeticWire<T>>(share_->GetWires()[0]);
+      assert(constant_arithmetic_wire);
+      return constant_arithmetic_wire->GetValues()[0];
+    } else {
+      throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
+    }
+  } else if constexpr (is_specialization<T, std::vector>::value &&
+                       std::is_unsigned<typename T::value_type>()) {
+    // std::vector of unsigned integers
+    if (share_->GetCircuitType() != CircuitType::kArithmetic) {
+      throw std::invalid_argument(
+          "Trying to ShareWrapper::As() to a arithmetic output with non-arithmetic input");
+    }
+    if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+      auto arithmetic_gmw_wire =
+          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<typename T::value_type>>(
+              share_->GetWires()[0]);
+      assert(arithmetic_gmw_wire);
+      return arithmetic_gmw_wire->GetValues();
+    } else if (share_->GetProtocol() == MpcProtocol::kArithmeticConstant) {
+      auto constant_arithmetic_wire =
+          std::dynamic_pointer_cast<proto::ConstantArithmeticWire<typename T::value_type>>(
+              share_->GetWires()[0]);
+      assert(constant_arithmetic_wire);
+      return constant_arithmetic_wire->GetValues();
+    } else {
+      throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
+    }
+  } else {
+    throw std::invalid_argument(
+        fmt::format("Unsupported output type in ShareWrapper::As<{}>()", typeid(T).name()));
+  }
+}
+
+template <>
+bool ShareWrapper::As<bool>() const {
+  ShareConsistencyCheck();
+  if (share_->GetCircuitType() != CircuitType::kBoolean) {
+    throw std::invalid_argument(
+        "Trying to ShareWrapper::As() to a Boolean output with non-Boolean input");
+  }
+  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
+    auto boolean_gmw_wire =
+        std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(share_->GetWires()[0]);
+    assert(boolean_gmw_wire);
+    return boolean_gmw_wire->GetValues()[0];
+  } else if (share_->GetProtocol() == MpcProtocol::kBmr) {
+    auto bmr_wire = std::dynamic_pointer_cast<proto::bmr::Wire>(share_->GetWires()[0]);
+    assert(bmr_wire);
+    return bmr_wire->GetPublicValues()[0];
+  } else if (share_->GetProtocol() == MpcProtocol::kBooleanConstant) {
+    auto constant_boolean_wire =
+        std::dynamic_pointer_cast<proto::ConstantBooleanWire>(share_->GetWires()[0]);
+    assert(constant_boolean_wire);
+    return constant_boolean_wire->GetValues()[0];
+  } else {
+    throw std::invalid_argument("Unsupported Boolean protocol in ShareWrapper::As()");
+  }
+}
+
+template <>
+BitVector<> ShareWrapper::As() const {
+  ShareConsistencyCheck();
+  if (share_->GetCircuitType() != CircuitType::kBoolean) {
+    throw std::invalid_argument(
+        "Trying to ShareWrapper::As() to a Boolean output with non-Boolean input");
+  }
+  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
+    auto boolean_gmw_wire =
+        std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(share_->GetWires()[0]);
+    assert(boolean_gmw_wire);
+    return boolean_gmw_wire->GetValues();
+  } else if (share_->GetProtocol() == MpcProtocol::kBmr) {
+    auto bmr_wire = std::dynamic_pointer_cast<proto::bmr::Wire>(share_->GetWires()[0]);
+    assert(bmr_wire);
+    return bmr_wire->GetPublicValues();
+  } else if (share_->GetProtocol() == MpcProtocol::kBooleanConstant) {
+    auto constant_boolean_wire =
+        std::dynamic_pointer_cast<proto::ConstantBooleanWire>(share_->GetWires()[0]);
+    assert(constant_boolean_wire);
+    return constant_boolean_wire->GetValues();
+  } else {
+    throw std::invalid_argument("Unsupported Boolean protocol in ShareWrapper::As()");
+  }
+}
+
+template <>
+std::vector<BitVector<>> ShareWrapper::As() const {
+  std::vector<BitVector<>> result;
+  result.reserve(share_->GetWires().size());
+  for (std::size_t i = 0; i < share_->GetWires().size(); ++i) {
+    result.emplace_back(this->GetWire(i).As<BitVector<>>());
+  }
+  return result;
+}
+
+template std::uint8_t ShareWrapper::As() const;
+template std::uint16_t ShareWrapper::As() const;
+template std::uint32_t ShareWrapper::As() const;
+template std::uint64_t ShareWrapper::As() const;
+
+template std::vector<std::uint8_t> ShareWrapper::As() const;
+template std::vector<std::uint16_t> ShareWrapper::As() const;
+template std::vector<std::uint32_t> ShareWrapper::As() const;
+template std::vector<std::uint64_t> ShareWrapper::As() const;
 
 template <typename T>
 ShareWrapper ShareWrapper::Add(SharePointer share, SharePointer other) const {
@@ -710,5 +874,46 @@ template ShareWrapper ShareWrapper::Mul<std::uint32_t>(SharePointer share,
                                                        SharePointer other) const;
 template ShareWrapper ShareWrapper::Mul<std::uint64_t>(SharePointer share,
                                                        SharePointer other) const;
+
+ShareWrapper ShareWrapper::Subset(std::vector<std::size_t>&& positions){
+  return Subset(std::span<const std::size_t>(positions));
+}
+
+ShareWrapper ShareWrapper::Subset(std::span<const std::size_t> positions) {
+  auto subset_gate = std::make_shared<SubsetGate>(share_, positions);
+  auto subset_gate_cast = std::static_pointer_cast<Gate>(subset_gate);
+  share_->GetRegister()->RegisterNextGate(subset_gate_cast);
+  return ShareWrapper(subset_gate->GetOutputAsShare());
+}
+
+std::vector<ShareWrapper> ShareWrapper::Unsimdify() {
+  auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_);
+  auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);
+  share_->GetRegister()->RegisterNextGate(unsimdify_gate_cast);
+  std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
+  std::vector<ShareWrapper> result(shares.size());
+  std::transform(shares.begin(), shares.end(), result.begin(),
+                 [](SharePointer share) { return ShareWrapper(share); });
+  return result;
+}
+
+ShareWrapper ShareWrapper::Simdify(std::span<const ShareWrapper> input) {
+  std::vector<SharePointer> input_as_shares;
+  input_as_shares.reserve(input.size());
+  for (auto& share_wrapper : input) input_as_shares.emplace_back(share_wrapper.Get());
+  return Simdify(input_as_shares);
+}
+
+ShareWrapper ShareWrapper::Simdify(std::span<SharePointer> input) {
+  if (input.empty()) throw std::invalid_argument("Empty inputs in ShareWrapper::Simdify");
+  auto simdify_gate = std::make_shared<SimdifyGate>(input);
+  auto simdify_gate_cast = std::static_pointer_cast<Gate>(simdify_gate);
+  input[0]->GetRegister()->RegisterNextGate(simdify_gate_cast);
+  return simdify_gate->GetOutputAsShare();
+}
+
+ ShareWrapper ShareWrapper::Simdify(std::vector<ShareWrapper> && input){
+   return Simdify(input);
+ }
 
 }  // namespace encrypto::motion
