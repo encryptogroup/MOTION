@@ -18,8 +18,11 @@ add_executable(motiontest
         test_reusable_future.cpp
         test_rng.cpp
         test_sb.cpp
+        test_simdify_gate.cpp
         test_sp.cpp
+        test_subset_gate.cpp
         test_tcp_transport.cpp
+        test_unsimdify_gate.cpp
         )
 
 target_compile_features(motiontest PRIVATE cxx_std_17)
