@@ -137,6 +137,15 @@ class Share final : public motion::Share {
     return v;
   }
 
+  std::shared_ptr<Base> GetWire(std::size_t i) const {
+    if (i >= wires_.size()) {
+      throw std::out_of_range(
+          fmt::format("Trying to access wire #{} out of {} wires", i, wires_.size()));
+    }
+    std::vector<motion::WirePointer> result = {std::static_pointer_cast<motion::Wire>(wires_[i])};
+    return std::make_shared<Share<T>>(result);
+  }
+
   Share(Share&) = delete;
 
  private:

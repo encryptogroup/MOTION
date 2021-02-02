@@ -45,6 +45,8 @@ class Share final : public BooleanShare {
   std::size_t GetBitLength() const noexcept final { return wires_.size(); }
 
   std::vector<std::shared_ptr<motion::Share>> Split() const noexcept final;
+
+  std::shared_ptr<motion::Share> GetWire(std::size_t i) const final;
 };
 
 using SharePointer = std::shared_ptr<Share>;
