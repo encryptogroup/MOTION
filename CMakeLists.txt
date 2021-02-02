@@ -23,10 +23,9 @@ find_package(OpenMP REQUIRED)
 # At least boost 1.73.0 is needed to use the C++20 standard.
 set(REQUIRED_BOOST_VERSION "1.73.0")
 
-find_package(Boost ${REQUIRED_BOOST_VERSION}
+find_package(Boost QUIET ${REQUIRED_BOOST_VERSION}
         COMPONENTS
         context
-        coroutine
         fiber
         filesystem
         log
@@ -35,12 +34,6 @@ find_package(Boost ${REQUIRED_BOOST_VERSION}
         system
         thread)
 set(Boost_USE_STATIC_LIBS ON)
-
-if (Boost_FOUND)
-    set(MOTION_BOOST_LOG_DYN_LINK ON)
-else ()
-    include(cmake/BuildBoostLocally.cmake)
-endif ()
 
 set(MOTION_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
