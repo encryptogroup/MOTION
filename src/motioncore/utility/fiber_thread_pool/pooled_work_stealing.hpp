@@ -28,6 +28,8 @@
 #include <boost/fiber/scheduler.hpp>
 #include <boost/thread/barrier.hpp>
 
+// clang-format off
+
 struct pool_ctx;
 
 class pooled_work_stealing : public boost::fibers::algo::algorithm {
@@ -74,5 +76,7 @@ public:
 
     virtual void notify() noexcept;
 };
+
+// clang-format on
 
 #endif  // POOLED_WORK_STEALING_H

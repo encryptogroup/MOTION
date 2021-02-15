@@ -324,7 +324,7 @@ class OutputGate final : public motion::OutputGate {
 
         shared_outputs.push_back(
             FromByteVector<T>(*output_message_pointer->wires()->Get(0)->payload()));
-        assert(shared_outputs.at(i).size() == parent_.at(0)->GetNumberOfSimdValues());
+        assert(shared_outputs[i].size() == parent_[0]->GetNumberOfSimdValues());
       }
 
       // reconstruct the shared value

@@ -434,7 +434,7 @@ template bool BitVector<AlignedAllocator>::operator==(
 
 template <typename Allocator>
 bool BitVector<Allocator>::operator==(const BitSpan& bit_span) const noexcept {
-  return bit_span == *this;
+  return bit_span.operator==(*this);
 }
 
 template <typename Allocator>
@@ -891,7 +891,7 @@ BitVector<Allocator> BitVector<Allocator>::RandomSeeded(const std::size_t size,
 }
 
 template <typename Allocator>
-BitVector<Allocator> BitVector<Allocator>::Random(const std::size_t bit_size) noexcept {
+BitVector<Allocator> BitVector<Allocator>::SecureRandom(const std::size_t bit_size) noexcept {
   auto& rng = Aes128CtrRng::GetThreadInstance();
   auto byte_size = BitsToBytes(bit_size);
 

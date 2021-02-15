@@ -141,6 +141,15 @@ class ConstantArithmeticShare : public motion::Share {
     return v;
   }
 
+  std::shared_ptr<motion::Share> GetWire(std::size_t i) const {
+    if (i >= wires_.size()) {
+      throw std::out_of_range(
+          fmt::format("Trying to access wire #{} out of {} wires", i, wires_.size()));
+    }
+    std::vector<motion::WirePointer> result = {std::static_pointer_cast<motion::Wire>(wires_[i])};
+    return std::make_shared<ConstantArithmeticShare<T>>(result);
+  };
+
   ConstantArithmeticShare(ConstantArithmeticShare&) = delete;
 
  private:
@@ -160,7 +169,7 @@ class ConstantArithmeticShare : public motion::Share {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 using ConstantArithmeticSharePointer = std::shared_ptr<ConstantArithmeticShare<T>>;
 
-class ConstantBooleanShare : public BooleanShare {
+class ConstantBooleanShare final : public BooleanShare {
  public:
   ConstantBooleanShare(const std::vector<WirePointer>& wires);
 
@@ -179,6 +188,8 @@ class ConstantBooleanShare : public BooleanShare {
   std::size_t GetBitLength() const noexcept final { return wires_.size(); }
 
   std::vector<std::shared_ptr<motion::Share>> Split() const noexcept final;
+
+  std::shared_ptr<motion::Share> GetWire(std::size_t i) const final;
 };
 
 using ConstantBooleanSharePointer = std::shared_ptr<ConstantBooleanShare>;

@@ -102,7 +102,7 @@ class OtFlavorTest : public ::testing::Test {
 TEST_F(OtFlavorTest, FixedXcOt128) {
   constexpr std::size_t kNumberOfOts = 1000;
   const auto correlation = encrypto::motion::Block128::MakeRandom();
-  const auto choice_bits = encrypto::motion::BitVector<>::Random(kNumberOfOts);
+  const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender = GetSenderProvider().RegisterSendFixedXcOt128(kNumberOfOts);
   auto ot_receiver = GetReceiverProvider().RegisterReceiveFixedXcOt128(kNumberOfOts);
 
@@ -130,8 +130,8 @@ TEST_F(OtFlavorTest, FixedXcOt128) {
 
 TEST_F(OtFlavorTest, XcOtBit) {
   constexpr std::size_t kNumberOfOts = 1000;
-  const auto correlations = encrypto::motion::BitVector<>::Random(kNumberOfOts);
-  const auto choice_bits = encrypto::motion::BitVector<>::Random(kNumberOfOts);
+  const auto correlations = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
+  const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender = GetSenderProvider().RegisterSendXcOtBit(kNumberOfOts);
   auto ot_receiver = GetReceiverProvider().RegisterReceiveXcOtBit(kNumberOfOts);
 
@@ -163,7 +163,7 @@ TYPED_TEST_SUITE(AcOtTest, integer_types);
 TYPED_TEST(AcOtTest, AcOt) {
   constexpr std::size_t kNumberOfOts = 1000;
   const auto correlations = encrypto::motion::RandomVector<TypeParam>(kNumberOfOts);
-  const auto choice_bits = encrypto::motion::BitVector<>::Random(kNumberOfOts);
+  const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender = this->GetSenderProvider().template RegisterSendAcOt<TypeParam>(kNumberOfOts);
   auto ot_receiver =
       this->GetReceiverProvider().template RegisterReceiveAcOt<TypeParam>(kNumberOfOts);
@@ -197,7 +197,7 @@ TYPED_TEST(AcOtTest, VectorAcOt) {
   constexpr std::size_t kNumberOfOts = 100;
   constexpr std::size_t kVectorSize = 100;
   const auto correlations = encrypto::motion::RandomVector<TypeParam>(kNumberOfOts * kVectorSize);
-  const auto choice_bits = encrypto::motion::BitVector<>::Random(kNumberOfOts);
+  const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender =
       this->GetSenderProvider().template RegisterSendAcOt<TypeParam>(kNumberOfOts, kVectorSize);
   auto ot_receiver = this->GetReceiverProvider().template RegisterReceiveAcOt<TypeParam>(
@@ -237,7 +237,7 @@ TYPED_TEST(AcOtTest, VectorAcOt) {
 TEST_F(OtFlavorTest, GOt128) {
   constexpr std::size_t kNumberOfOts = 1000;
   const auto sender_input = encrypto::motion::Block128Vector::MakeRandom(2 * kNumberOfOts);
-  const auto choice_bits = encrypto::motion::BitVector<>::Random(kNumberOfOts);
+  const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender = GetSenderProvider().RegisterSendGOt128(kNumberOfOts);
   auto ot_receiver = GetReceiverProvider().RegisterReceiveGOt128(kNumberOfOts);
 
@@ -263,8 +263,8 @@ TEST_F(OtFlavorTest, GOt128) {
 
 TEST_F(OtFlavorTest, GOtBit) {
   constexpr std::size_t kNumberOfOts = 1000;
-  const auto sender_input = encrypto::motion::BitVector<>::Random(2 * kNumberOfOts);
-  const auto choice_bits = encrypto::motion::BitVector<>::Random(kNumberOfOts);
+  const auto sender_input = encrypto::motion::BitVector<>::SecureRandom(2 * kNumberOfOts);
+  const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender = GetSenderProvider().RegisterSendGOtBit(kNumberOfOts);
   auto ot_receiver = GetReceiverProvider().RegisterReceiveGOtBit(kNumberOfOts);
 

@@ -40,10 +40,10 @@ TEST(BooleanGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
       const std::size_t input_owner = std::rand() % number_of_parties,
                         output_owner = std::rand() % number_of_parties;
       const auto global_input_1 = (std::rand() % 2) == 1;
-      const auto global_input_1K = encrypto::motion::BitVector<>::Random(1000);
+      const auto global_input_1K = encrypto::motion::BitVector<>::SecureRandom(1000);
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -97,10 +97,10 @@ TEST(BooleanGmw, Inv_1K_Simd_2_3_4_5_10_parties) {
     for (auto number_of_parties : kNumberOfPartiesList) {
       const std::size_t input_owner = std::rand() % number_of_parties,
                         output_owner = std::rand() % number_of_parties;
-      const auto global_input_1K = encrypto::motion::BitVector<>::Random(1000);
+      const auto global_input_1K = encrypto::motion::BitVector<>::SecureRandom(1000);
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -151,7 +151,7 @@ TEST(BooleanGmw, Xor_64_bit_200_Simd_2_3_4_5_10_parties) {
       for (auto& bv_v : global_input_200_64_bit) {
         bv_v.resize(64);
         for (auto& bv : bv_v) {
-          bv = encrypto::motion::BitVector<>::Random(200);
+          bv = encrypto::motion::BitVector<>::SecureRandom(200);
         }
       }
       std::vector<encrypto::motion::BitVector<>> dummy_input_200_64_bit(
@@ -159,7 +159,7 @@ TEST(BooleanGmw, Xor_64_bit_200_Simd_2_3_4_5_10_parties) {
 
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -226,13 +226,14 @@ TEST(BooleanGmw, Mux_1K_Simd_2_3_parties) {
                       selection_bit_owner = std::rand() % number_of_parties,
                       output_owner = std::rand() % number_of_parties;
 
-    encrypto::motion::BitVector<> global_input_1K_a{encrypto::motion::BitVector<>::Random(1000)},
-        global_input_1K_b{encrypto::motion::BitVector<>::Random(1000)},
-        global_input_1K_selection{encrypto::motion::BitVector<>::Random(1000)};
+    encrypto::motion::BitVector<> global_input_1K_a{
+        encrypto::motion::BitVector<>::SecureRandom(1000)},
+        global_input_1K_b{encrypto::motion::BitVector<>::SecureRandom(1000)},
+        global_input_1K_selection{encrypto::motion::BitVector<>::SecureRandom(1000)};
 
     encrypto::motion::BitVector<> dummy_input_1K(1000, false);
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -295,16 +296,16 @@ TEST(BooleanGmw, Mux_1K_Simd_64_wireshare_2_3_parties) {
                       output_owner = std::rand() % number_of_parties;
 
     std::vector<encrypto::motion::BitVector<>> global_input_1K_a(
-        64, encrypto::motion::BitVector<>::Random(1000)),
-        global_input_1K_b(64, encrypto::motion::BitVector<>::Random(1000));
+        64, encrypto::motion::BitVector<>::SecureRandom(1000)),
+        global_input_1K_b(64, encrypto::motion::BitVector<>::SecureRandom(1000));
     encrypto::motion::BitVector<> global_input_1K_selection{
-        encrypto::motion::BitVector<>::Random(1000)};
+        encrypto::motion::BitVector<>::SecureRandom(1000)};
 
     std::vector<encrypto::motion::BitVector<>> dummy_input_1K(64,
                                                               encrypto::motion::BitVector<>(1000));
     encrypto::motion::BitVector<> dummy_input_1K_sel(1000, false);
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -369,14 +370,14 @@ TEST(BooleanGmw, Eq_1_bit_1K_Simd_2_3_parties) {
     for (auto& bv_v : global_input) {
       bv_v.resize(kNumberOfWires);
       for (auto& bv : bv_v) {
-        bv = encrypto::motion::BitVector<>::Random(kNumberOfSimd);
+        bv = encrypto::motion::BitVector<>::SecureRandom(kNumberOfSimd);
       }
     }
     std::vector<encrypto::motion::BitVector<>> dummy_input(
         kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
     std::vector<PartyPointer> motion_parties(
-        GetNumberOfLocalParties(number_of_parties, kPortOffset));
+        MakeLocallyConnectedParties(number_of_parties, kPortOffset));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -445,7 +446,7 @@ TEST(BooleanGmw, Eq_64_bit_10_Simd_2_3_parties) {
     for (auto& bv_v : global_input) {
       bv_v.resize(kNumberOfWires);
       for (auto& bv : bv_v) {
-        bv = encrypto::motion::BitVector<>::Random(kNumberOfSimd);
+        bv = encrypto::motion::BitVector<>::SecureRandom(kNumberOfSimd);
       }
     }
 
@@ -457,7 +458,7 @@ TEST(BooleanGmw, Eq_64_bit_10_Simd_2_3_parties) {
         kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
     std::vector<PartyPointer> motion_parties(
-        GetNumberOfLocalParties(number_of_parties, kPortOffset));
+        MakeLocallyConnectedParties(number_of_parties, kPortOffset));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -527,13 +528,13 @@ TEST(BooleanGmw, And_1_bit_1_1K_Simd_2_3_parties) {
       std::vector<encrypto::motion::BitVector<>> global_input_1K(number_of_parties);
 
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
-        global_input_1K.at(j) = encrypto::motion::BitVector<>::Random(1000);
+        global_input_1K.at(j) = encrypto::motion::BitVector<>::SecureRandom(1000);
       }
       bool dummy_input_1 = false;
       encrypto::motion::BitVector<> dummy_input_1K(1000, false);
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -640,7 +641,7 @@ TEST(BooleanGmw, And_64_bit_10_Simd_2_3_parties) {
       for (auto& bv_v : global_input_10_64_bit) {
         bv_v.resize(64);
         for (auto& bv : bv_v) {
-          bv = encrypto::motion::BitVector<>::Random(10);
+          bv = encrypto::motion::BitVector<>::SecureRandom(10);
         }
       }
       std::vector<encrypto::motion::BitVector<>> dummy_input_10_64_bit(
@@ -648,7 +649,7 @@ TEST(BooleanGmw, And_64_bit_10_Simd_2_3_parties) {
 
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -716,13 +717,13 @@ TEST(BooleanGmw, Or_1_bit_1_1K_Simd_2_3_parties) {
       std::vector<encrypto::motion::BitVector<>> global_input_1K(number_of_parties);
 
       for (auto j = 0ull; j < global_input_1K.size(); ++j) {
-        global_input_1K.at(j) = encrypto::motion::BitVector<>::Random(1000);
+        global_input_1K.at(j) = encrypto::motion::BitVector<>::SecureRandom(1000);
       }
       bool dummy_input_1 = false;
       encrypto::motion::BitVector<> dummy_input_1K(1000, false);
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);
@@ -797,7 +798,7 @@ TEST(BooleanGmw, Or_64_bit_10_Simd_2_3_parties) {
       for (auto& bv_v : global_input_10_64_bit) {
         bv_v.resize(64);
         for (auto& bv : bv_v) {
-          bv = encrypto::motion::BitVector<>::Random(10);
+          bv = encrypto::motion::BitVector<>::SecureRandom(10);
         }
       }
       std::vector<encrypto::motion::BitVector<>> dummy_input_10_64_bit(
@@ -805,7 +806,7 @@ TEST(BooleanGmw, Or_64_bit_10_Simd_2_3_parties) {
 
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(i % 2 == 1);

@@ -32,6 +32,8 @@ namespace encrypto::motion::proto {
 template <typename T>
 class ConstantArithmeticWire final : public Wire {
  public:
+  using value_type = T;
+
   ConstantArithmeticWire(Backend& backend, std::size_t number_of_simd)
       : Wire(backend, number_of_simd) {}
 
@@ -66,7 +68,7 @@ using ConstantArithmeticWirePointer = std::shared_ptr<ConstantArithmeticWire<T>>
 
 class ConstantBooleanWire final : public BooleanWire {
  public:
-  ConstantBooleanWire(size_t number_of_simd, Backend& backend);
+  ConstantBooleanWire(Backend& backend, std::size_t number_of_simd);
 
   ConstantBooleanWire(BitVector<>&& values, Backend& backend);
 

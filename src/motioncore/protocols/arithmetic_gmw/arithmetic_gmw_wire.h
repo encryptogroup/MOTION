@@ -32,8 +32,9 @@ namespace encrypto::motion::proto::arithmetic_gmw {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class Wire final : public motion::Wire {
   using Base = motion::Wire;
-
  public:
+  using value_type = T;
+
   Wire(Backend& backend, std::size_t number_of_simd) : Base(backend, number_of_simd) {}
 
   Wire(std::vector<T>&& values, Backend& backend)

@@ -56,6 +56,8 @@ class Share : public std::enable_shared_from_this<Share> {
 
   virtual std::vector<std::shared_ptr<Share>> Split() const noexcept = 0;
 
+  virtual std::shared_ptr<Share> GetWire(std::size_t i) const = 0;
+
   Backend& GetBackend() const { return backend_; }
 
   std::shared_ptr<Register> GetRegister();
@@ -64,7 +66,7 @@ class Share : public std::enable_shared_from_this<Share> {
 
   Share(const Share&) = delete;
 
-  static std::shared_ptr<Share> Join(const std::vector<std::shared_ptr<Share>>& v);
+  static std::shared_ptr<Share> Concatenate(const std::vector<std::shared_ptr<Share>>& v);
 
   bool IsConstant() const noexcept;
 

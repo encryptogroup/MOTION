@@ -366,9 +366,10 @@ class BitVector {
 
   /// \brief Returns a random BitVector.
   /// \param size The size of the returned BitVector.
-  static BitVector Random(const std::size_t size) noexcept;
+  static BitVector SecureRandom(const std::size_t size) noexcept;
 
   /// \brief Returns a random BitVector using an input seed.
+  /// Internally uses Mersenne twister, do not use as cryptographic randomness!
   /// \param size The size of the returned BitVector.
   /// \param seed
   static BitVector RandomSeeded(const std::size_t size, const std::size_t seed = 0) noexcept;

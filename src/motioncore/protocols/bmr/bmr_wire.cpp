@@ -29,8 +29,8 @@
 
 namespace encrypto::motion::proto::bmr {
 
-Wire::Wire(const std::size_t n_simd, Backend& backend)
-    : BooleanWire(backend, n_simd), secret_0_keys_(n_simd) {
+Wire::Wire(Backend& backend, std::size_t number_of_simd)
+    : BooleanWire(backend, number_of_simd), secret_0_keys_(number_of_simd) {
   InitializationHelperBmr();
 }
 
@@ -63,7 +63,7 @@ void Wire::InitializationHelperBmr() {
 void Wire::GenerateRandomPrivateKeys() { secret_0_keys_.SetToRandom(); }
 
 void Wire::GenerateRandomPermutationBits() {
-  shared_permutation_bits_ = BitVector<>::Random(n_simd_);
+  shared_permutation_bits_ = BitVector<>::SecureRandom(n_simd_);
 }
 
 }  // namespace encrypto::motion::proto::bmr

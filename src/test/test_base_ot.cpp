@@ -33,7 +33,7 @@ using namespace encrypto::motion;
 
 TEST(ObliviousTransfer, BaseOt) {
   const std::size_t number_of_parties = 2;
-  auto motion_parties = GetNumberOfLocalParties(number_of_parties, 0);
+  auto motion_parties = MakeLocallyConnectedParties(number_of_parties, 0);
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
   }

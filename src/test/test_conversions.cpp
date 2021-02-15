@@ -69,7 +69,7 @@ TEST_P(ConversionTest, Y2B) {
   for (auto& bv_v : global_input) {
     bv_v.resize(this->number_of_wires_);
     for (auto& bv : bv_v) {
-      bv = encrypto::motion::BitVector<>::Random(this->number_of_simd_);
+      bv = encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
     }
   }
   std::vector<encrypto::motion::BitVector<>> dummy_input(
@@ -77,7 +77,7 @@ TEST_P(ConversionTest, Y2B) {
 
   try {
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(this->number_of_parties_, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(this->number_of_parties_, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
@@ -128,7 +128,7 @@ TEST_P(ConversionTest, B2Y) {
   for (auto& bv_v : global_input) {
     bv_v.resize(this->number_of_wires_);
     for (auto& bv : bv_v) {
-      bv = encrypto::motion::BitVector<>::Random(this->number_of_simd_);
+      bv = encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
     }
   }
   std::vector<encrypto::motion::BitVector<>> dummy_input(
@@ -136,7 +136,7 @@ TEST_P(ConversionTest, B2Y) {
 
   try {
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(this->number_of_parties_, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(this->number_of_parties_, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(this->online_after_setup_);
@@ -233,7 +233,7 @@ void A2YRun(const std::size_t number_of_parties, const std::size_t number_of_sim
 
   try {
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
@@ -313,7 +313,7 @@ void A2BRun(const std::size_t number_of_parties, const std::size_t number_of_sim
 
   try {
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
@@ -413,7 +413,7 @@ void B2ARun(const std::size_t number_of_parties, const std::size_t number_of_sim
                     output_owner = std::rand() % number_of_parties;
   std::vector<encrypto::motion::BitVector<>> global_input(bit_size);
   for (auto& bv : global_input) {
-    bv = encrypto::motion::BitVector<>::Random(number_of_simd);
+    bv = encrypto::motion::BitVector<>::SecureRandom(number_of_simd);
   }
   const auto global_input_ashare_inputt{encrypto::motion::ToVectorOutput<T>(global_input)};
   std::vector<encrypto::motion::BitVector<>> dummy_input(
@@ -421,7 +421,7 @@ void B2ARun(const std::size_t number_of_parties, const std::size_t number_of_sim
 
   try {
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
@@ -516,7 +516,7 @@ void Y2ARun(const std::size_t number_of_parties, const std::size_t number_of_sim
                     output_owner = std::rand() % number_of_parties;
   std::vector<encrypto::motion::BitVector<>> global_input(bit_size);
   for (auto& bv : global_input) {
-    bv = encrypto::motion::BitVector<>::Random(number_of_simd);
+    bv = encrypto::motion::BitVector<>::SecureRandom(number_of_simd);
   }
   const auto global_input_ashare_inputt{encrypto::motion::ToVectorOutput<T>(global_input)};
   std::vector<encrypto::motion::BitVector<>> dummy_input(
@@ -524,7 +524,7 @@ void Y2ARun(const std::size_t number_of_parties, const std::size_t number_of_sim
 
   try {
     std::vector<PartyPointer> motion_parties(
-        std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);

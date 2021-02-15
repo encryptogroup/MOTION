@@ -16,6 +16,8 @@
 #include <boost/fiber/detail/thread_barrier.hpp>
 #include <boost/fiber/type.hpp>
 
+// clang-format off
+
 struct pool_ctx {
     pool_ctx(std::uint32_t thread_count, bool suspend)
         : thread_count_(thread_count),
@@ -124,3 +126,5 @@ void pooled_work_stealing::notify() noexcept {
         cnd_.notify_all();
     }
 }
+
+// clang-format on

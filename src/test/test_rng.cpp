@@ -28,7 +28,7 @@
 
 // Test vectors from NIST FIPS 197, Appendix A
 
-TEST(Aes128CtrRng, no_trivial_output) {
+TEST(Aes128CtrRng, NoTrivialOutput) {
   alignas(16) std::array<std::byte, 10 * Aes128CtrRng::kBlockSize> output_0;
   alignas(16) std::array<std::byte, 10 * Aes128CtrRng::kBlockSize> output_1;
   Aes128CtrRng rng1;

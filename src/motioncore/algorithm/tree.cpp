@@ -32,9 +32,9 @@ ShareWrapper FullAndTree(const ShareWrapper& s) {
   auto result = s;
   while (result->GetBitLength() != 1) {
     const auto split{result.Split()};
-    const auto left{ShareWrapper::Join(
+    const auto left{ShareWrapper::Concatenate(
         std::vector<ShareWrapper>(split.begin(), split.begin() + split.size() / 2))};
-    const auto right{ShareWrapper::Join(
+    const auto right{ShareWrapper::Concatenate(
         std::vector<ShareWrapper>(split.begin() + split.size() / 2, split.end()))};
     result = left & right;
   }
@@ -43,7 +43,7 @@ ShareWrapper FullAndTree(const ShareWrapper& s) {
 
 ShareWrapper FullAndTree(const std::vector<ShareWrapper>& v) {
   assert(IsPowerOfTwo(v.size()));
-  const auto s = ShareWrapper::Join(v);
+  const auto s = ShareWrapper::Concatenate(v);
   return FullAndTree(s);
 }
 

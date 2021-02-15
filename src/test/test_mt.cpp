@@ -38,7 +38,7 @@ TEST(MultiplicationTriples, Binary) {
     for (auto number_of_parties : {2u, 3u}) {
       try {
         auto motion_parties =
-            encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset);
+            encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset);
 
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
@@ -94,7 +94,7 @@ void TemplateTestInteger() {
     for (auto number_of_parties : {2u, 3u}) {
       try {
         auto motion_parties =
-            encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset);
+            encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset);
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetBackend()->GetMtProvider()->template RequestArithmeticMts<T>(kNumberOfMts);

@@ -23,6 +23,8 @@
 #include <boost/context/stack_context.hpp>
 #include <boost/context/stack_traits.hpp>
 
+// clang-format off
+
 template <std::size_t stack_size, typename traitsT>
 class basic_singleton_pooled_fixedsize_stack {
 private:
@@ -97,5 +99,7 @@ public:
 template <std::size_t stack_size>
 using singleton_pooled_fixedsize_stack =
     basic_singleton_pooled_fixedsize_stack<stack_size, boost::context::stack_traits>;
+
+// clang-format on
 
 #endif  // SINGLETON_POOLED_FIXEDSIZE_STACK_H

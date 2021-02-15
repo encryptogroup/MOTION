@@ -37,13 +37,13 @@ namespace encrypto::motion::proto::boolean_gmw {
 
 class Wire final : public BooleanWire {
  public:
-  Wire(size_t number_of_simd, Backend& backend);
+  Wire(Backend& backend, size_t number_of_simd);
 
-  Wire(BitVector<>&& values, Backend& backend);
+  explicit Wire(BitVector<>&& values, Backend& backend);
 
-  Wire(const BitVector<>& values, Backend& backend);
+  explicit Wire(const BitVector<>& values, Backend& backend);
 
-  Wire(bool value, Backend& backend);
+  explicit Wire(bool value, Backend& backend);
 
   ~Wire() final = default;
 

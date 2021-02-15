@@ -48,7 +48,7 @@ TEST(BitVector, Random) {
   {
     std::vector<encrypto::motion::BitVector<>> bit_vectors;
     std::generate_n(std::back_inserter(bit_vectors), 100,
-                    [] { return encrypto::motion::BitVector<>::Random(1); });
+                    [] { return encrypto::motion::BitVector<>::SecureRandom(1); });
     auto all_size_1 = std::all_of(std::begin(bit_vectors), std::end(bit_vectors),
                                   [](auto bit_vector) { return bit_vector.GetSize() == 1; });
     EXPECT_TRUE(all_size_1);
@@ -58,7 +58,7 @@ TEST(BitVector, Random) {
     EXPECT_FALSE(all_zeros);
   }
   {
-    auto bit_vector = encrypto::motion::BitVector<>::Random(120);
+    auto bit_vector = encrypto::motion::BitVector<>::SecureRandom(120);
     EXPECT_EQ(bit_vector.GetSize(), 120);
     auto v = bit_vector.GetData();
     // all bits should be zero with very low probability
@@ -67,7 +67,7 @@ TEST(BitVector, Random) {
     EXPECT_FALSE(all_zeros);
   }
   {
-    auto bit_vector = encrypto::motion::BitVector<>::Random(128);
+    auto bit_vector = encrypto::motion::BitVector<>::SecureRandom(128);
     EXPECT_EQ(bit_vector.GetSize(), 128);
     auto v = bit_vector.GetData();
     // all bits should be zero with very low probability

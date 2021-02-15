@@ -85,7 +85,7 @@ void InputGate::InitializationHelper() {
 
   output_wires_.reserve(bit_size_);
   for (std::size_t i = 0; i < bit_size_; ++i)
-    output_wires_.emplace_back(std::make_shared<bmr::Wire>(number_of_simd_, backend_));
+    output_wires_.emplace_back(std::make_shared<bmr::Wire>(backend_,number_of_simd_));
 
   for (auto& w : output_wires_) GetRegister().RegisterNextWire(w);
 
@@ -340,6 +340,7 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
 
   output_owner_ = output_owner;
   output_.resize(parent_.size());
+  output_wires_.resize(parent_.size());
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
 
@@ -380,10 +381,11 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == kAll;
 
+  const std::size_t number_of_simd{parent_[0]->GetNumberOfSimdValues()};
   assert(!output_.empty());
-  for (auto& bv : output_) {
-    output_wires_.push_back(
-        std::static_pointer_cast<motion::Wire>(std::make_shared<bmr::Wire>(bv, backend_)));
+  for (auto& wire : output_wires_) {
+    wire = std::static_pointer_cast<motion::Wire>(
+        std::make_shared<bmr::Wire>(backend_, number_of_simd));
   }
 
   for (auto& wire : output_wires_) GetRegister().RegisterNextWire(wire);
@@ -1249,10 +1251,12 @@ void AndGate::EvaluateOnline() {
     GetLogger().LogTrace(fmt::format("Evaluated BMR AND Gate with id#{}", gate_id_));
   }
 
-  for (auto& wire : output_wires_) {
-    const auto bmr_wire = std::dynamic_pointer_cast<const bmr::Wire>(wire);
-    assert(bmr_wire);
-    assert(!bmr_wire->GetPermutationBits().Empty());
+  if constexpr (kDebug) {
+    for (auto& wire : output_wires_) {
+      const auto bmr_wire = std::dynamic_pointer_cast<const bmr::Wire>(wire);
+      assert(bmr_wire);
+      assert(!bmr_wire->GetPermutationBits().Empty());
+    }
   }
 
   assert(!online_is_ready_);

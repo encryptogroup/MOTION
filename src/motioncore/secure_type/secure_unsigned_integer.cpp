@@ -68,7 +68,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteg
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
     return SecureUnsignedInteger(share_input.Evaluate(addition_algorithm));
   }
 }
@@ -101,7 +101,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteg
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
     return SecureUnsignedInteger(share_input.Evaluate(subtraction_algorithm));
   }
 }
@@ -134,7 +134,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteg
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
     return SecureUnsignedInteger(share_input.Evaluate(multiplication_algorithm));
   }
 }
@@ -166,7 +166,7 @@ SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteg
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
     return SecureUnsignedInteger(share_input.Evaluate(division_algorithm));
   }
 }
@@ -199,7 +199,7 @@ ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    const auto share_input{ShareWrapper::Join({*share_, *other.share_})};
+    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
     return share_input.Evaluate(is_greater_algorithm).Split().at(0);
   }
 }

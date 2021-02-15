@@ -61,14 +61,10 @@ class GmwToArithmeticGate final : public OneGate {
         std::make_shared<proto::arithmetic_gmw::Wire<T>>(backend_, number_of_simd));
     GetRegister().RegisterNextWire(output_wires_.at(0));
 
-    // create shares for the intermediate values t
-    // - we need some dummy values to create wires ...
-    const BitVector<> dummy_bit_vector(number_of_simd);
-    // - then we need dummy (?) wires to create shares ...
     std::vector<WirePointer> dummy_wires;
     dummy_wires.reserve(number_of_simd);
     for (std::size_t i = 0; i < bit_size; ++i) {
-      auto w = std::make_shared<proto::boolean_gmw::Wire>(dummy_bit_vector, backend_);
+      auto w = std::make_shared<proto::boolean_gmw::Wire>(backend_, number_of_simd);
       GetRegister().RegisterNextWire(w);
       dummy_wires.emplace_back(std::move(w));
     }

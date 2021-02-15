@@ -44,7 +44,7 @@ TEST(ArithmeticGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
       std::vector<T> global_input_1K = ::RandomVector<T>(1000);
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -71,17 +71,8 @@ TEST(ArithmeticGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
           motion_parties.at(party_id)->Run(2);
 
           if (party_id == output_owner) {
-            auto wire_1 =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1->GetWires().at(0));
-            auto wire_1K =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1K->GetWires().at(0));
-
-            assert(wire_1);
-            assert(wire_1K);
-            EXPECT_EQ(wire_1->GetValues().at(0), global_input_1);
-            EXPECT_TRUE(Vectors(wire_1K->GetValues(), global_input_1K));
+            EXPECT_EQ(share_output_1.As<T>(), global_input_1);
+            EXPECT_EQ(share_output_1K.As<std::vector<T>>(), global_input_1K);
           }
           motion_parties.at(party_id)->Finish();
         }
@@ -114,7 +105,7 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
       }
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -152,18 +143,11 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
           motion_parties.at(party_id)->Run(2);
 
           if (party_id == output_owner) {
-            auto wire_1 =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1->GetWires().at(0));
-            auto wire_1K =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1K->GetWires().at(0));
-
-            T circuit_result_1 = wire_1->GetValues().at(0);
+            T circuit_result_1 = share_output_1.As<T>();
             T expected_result_1 = SumReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
-            const std::vector<T>& circuit_result_1K = wire_1K->GetValues();
+            const std::vector<T>& circuit_result_1K = share_output_1K.As<std::vector<T>>();
             const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
@@ -171,18 +155,11 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
           }
 
           {
-            auto wire_1 =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1_all->GetWires().at(0));
-            auto wire_1K =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1K_all->GetWires().at(0));
-
-            T circuit_result_1 = wire_1->GetValues().at(0);
+            T circuit_result_1 = share_output_1_all.As<T>();
             T expected_result_1 = SumReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
-            const std::vector<T>& circuit_result_1K = wire_1K->GetValues();
+            const std::vector<T>& circuit_result_1K = share_output_1K_all.As<std::vector<T>>();
             const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
@@ -221,7 +198,7 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
       }
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -336,7 +313,7 @@ TEST(ArithmeticGmw, Subtraction_1_1K_Simd_2_3_4_5_10_parties) {
       }
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -441,7 +418,7 @@ TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
       }
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
@@ -529,7 +506,7 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
       }
       try {
         std::vector<PartyPointer> motion_parties(
-            std::move(GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);

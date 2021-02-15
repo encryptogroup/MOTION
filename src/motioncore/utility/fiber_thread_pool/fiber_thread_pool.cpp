@@ -19,6 +19,7 @@
 // IN THE SOFTWARE.
 
 #include "fiber_thread_pool.hpp"
+
 #include <fmt/format.h>
 #include <algorithm>
 #include <boost/context/fixedsize_stack.hpp>
@@ -31,6 +32,7 @@
 #include <cassert>
 #include <iostream>
 #include <thread>
+
 #include "pooled_work_stealing.hpp"
 #include "singleton_pooled_fixedsize_stack.hpp"
 #include "utility/constants.h"

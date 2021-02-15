@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "test_constants.h"
 
@@ -38,7 +38,7 @@ void TemplateTest() {
     for (auto number_of_parties : {2u, 3u}) {
       try {
         auto motion_parties =
-            encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset);
+            encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset);
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
           party->GetBackend()->GetSpProvider()->template RequestSps<T>(kNumSps);

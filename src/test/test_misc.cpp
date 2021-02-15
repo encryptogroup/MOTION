@@ -33,7 +33,7 @@
 #include "utility/condition.h"
 
 namespace {
-TEST(Condition, Wait_NotifyOne) {
+TEST(Condition, WaitNotifyOne) {
   int i = 0;
   encrypto::motion::Condition condition([&i]() { return i == 1; });
 
@@ -63,7 +63,7 @@ TEST(Condition, Wait_NotifyOne) {
   ASSERT_TRUE(wait_2.get());
 }
 
-TEST(Condition, Wait_NotifyAll) {
+TEST(Condition, WaitNotifyAll) {
   int i = 0;
   encrypto::motion::Condition condition([&i]() { return i == 1; });
 
@@ -199,7 +199,7 @@ TEST(Condition, WaitForComplexFunction) {
   ASSERT_TRUE(wait_2.get());
 }
 
-TEST(InputOutput_Un_Vectorization, UnsignedIntegers) {
+TEST(InputOutputUnVectorization, UnsignedIntegers) {
   constexpr std::uint8_t kV8 = 156;
   constexpr std::uint8_t kV8Min = std::numeric_limits<std::uint8_t>::min();
   constexpr std::uint8_t kV8Max = std::numeric_limits<std::uint8_t>::max();
@@ -240,7 +240,7 @@ TEST(InputOutput_Un_Vectorization, UnsignedIntegers) {
   f(kV64, kV64Min, kV64Max);
 }
 
-TEST(InputOutput_Un_Vectorization, VectorsOfUnsignedIntegers) {
+TEST(InputOutputUnVectorization, VectorsOfUnsignedIntegers) {
   std::vector<std::uint8_t> kV8 = {156, 0, std::numeric_limits<std::uint8_t>::max()};
   std::vector<std::uint16_t> kV16 = {15679, 0, std::numeric_limits<std::uint16_t>::max()};
   std::vector<std::uint32_t> kV32 = {429496729l, 0, std::numeric_limits<std::uint32_t>::max()};

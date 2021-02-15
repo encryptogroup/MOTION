@@ -28,7 +28,7 @@
 
 // Test vectors from NIST FIPS 197, Appendix A
 
-TEST(aesni128, key_expansion) {
+TEST(AesNi128, KeyExpansion) {
   const std::array<std::uint8_t, kAesKeySize128> kKey = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae,
                                                          0xd2, 0xa6, 0xab, 0xf7, 0x15, 0x88,
                                                          0x09, 0xcf, 0x4f, 0x3c};
@@ -53,7 +53,7 @@ TEST(aesni128, key_expansion) {
 
 // Expected output generated with pyaes
 
-TEST(aesni128, ctr_stream) {
+TEST(AesNi128, CtrStream) {
   std::array<std::uint8_t, kAesKeySize128> kKey = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
                                                    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
   alignas(kAesBlockSize) std::array<std::uint8_t, kAesRoundKeysSize128> round_keys;
@@ -79,7 +79,7 @@ TEST(aesni128, ctr_stream) {
   }
 }
 
-TEST(aesni128, ctr_stream_unaligned) {
+TEST(AesNi128, CtrStreamUnaligned) {
   std::array<std::uint8_t, kAesKeySize128> kKey = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
                                                    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
   alignas(kAesBlockSize) std::array<std::uint8_t, kAesRoundKeysSize128> round_keys;
@@ -105,7 +105,7 @@ TEST(aesni128, ctr_stream_unaligned) {
   }
 }
 
-TEST(aesni128, ctr_stream_blockwise) {
+TEST(AesNi128, CtrStreamBlockwise) {
   std::array<std::uint8_t, kAesKeySize128> kKey = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
                                                    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
   alignas(kAesBlockSize) std::array<std::uint8_t, kAesRoundKeysSize128> round_keys;
@@ -131,7 +131,7 @@ TEST(aesni128, ctr_stream_blockwise) {
   EXPECT_EQ(output, kExpectedOutput);
 }
 
-TEST(aesni128, tmmo_batch_4) {
+TEST(AesNi128, TmmoBatch4) {
   std::array<std::uint8_t, kAesKeySize128> kKey = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
                                                    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
   alignas(kAesBlockSize) std::array<std::uint8_t, kAesRoundKeysSize128> round_keys;
@@ -157,7 +157,7 @@ TEST(aesni128, tmmo_batch_4) {
   EXPECT_EQ(output, kExpectedOutput);
 }
 
-TEST(aesni128, mmo_single) {
+TEST(AesNi128, MmoSingle) {
   std::array<std::uint8_t, kAesKeySize128> kKey = {0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
                                                    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c};
   alignas(kAesBlockSize) std::array<std::uint8_t, kAesRoundKeysSize128> round_keys;

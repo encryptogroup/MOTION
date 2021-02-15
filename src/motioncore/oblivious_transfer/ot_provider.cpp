@@ -291,7 +291,7 @@ void OtProviderFromOtExtension::ReceiveSetup() {
 
   // make random choices (this is precomputation, real inputs are not known yet)
   ot_extension_receiver_data.random_choices =
-      std::make_unique<AlignedBitVector>(AlignedBitVector::Random(bit_size));
+      std::make_unique<AlignedBitVector>(AlignedBitVector::SecureRandom(bit_size));
 
   // create matrix with kKappa rows
   std::vector<AlignedBitVector> v(kKappa);

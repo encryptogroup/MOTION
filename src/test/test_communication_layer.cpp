@@ -90,9 +90,9 @@ TEST(CommunicationLayer, Dummy) {
   std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
 }
 
-class CommunicationLayerTcp : public testing::TestWithParam<bool> {};
+class CommunicationLayerTest : public testing::TestWithParam<bool> {};
 
-TEST_P(CommunicationLayerTcp, Tcp) {
+TEST_P(CommunicationLayerTest, Tcp) {
   std::size_t number_of_parties = 3;
   auto communication_layers =
       encrypto::motion::communication::MakeLocalTcpCommunicationLayers(3, GetParam());
@@ -156,5 +156,5 @@ TEST_P(CommunicationLayerTcp, Tcp) {
   std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
 }
 
-INSTANTIATE_TEST_SUITE_P(CommunicationLayerTCPTests, CommunicationLayerTcp, testing::Bool(),
+INSTANTIATE_TEST_SUITE_P(CommunicationLayerTcpTests, CommunicationLayerTest, testing::Bool(),
                          [](auto& info) { return info.param ? "ipv6" : "ipv4"; });

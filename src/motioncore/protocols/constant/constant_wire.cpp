@@ -26,7 +26,7 @@
 
 namespace encrypto::motion::proto {
 
-ConstantBooleanWire::ConstantBooleanWire(std::size_t number_of_simd, Backend& backend)
+ConstantBooleanWire::ConstantBooleanWire(Backend& backend, std::size_t number_of_simd)
     : BooleanWire(backend, number_of_simd) {}
 
 ConstantBooleanWire::ConstantBooleanWire(BitVector<>&& values, Backend& backend)

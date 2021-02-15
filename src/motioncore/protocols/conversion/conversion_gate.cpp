@@ -66,7 +66,8 @@ BmrToBooleanGmwGate::BmrToBooleanGmwGate(const SharePointer& parent)
   output_wires_.reserve(number_of_wires);
   for (size_t i = 0; i < number_of_wires; ++i) {
     auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-        std::make_shared<proto::boolean_gmw::Wire>(parent->GetNumberOfSimdValues(), backend_)));
+        std::make_shared<proto::boolean_gmw::Wire>(backend_, parent->GetNumberOfSimdValues())));
+    assert(w);
     GetRegister().RegisterNextWire(w);
   }
 
@@ -154,7 +155,7 @@ BooleanGmwToBmrGate::BooleanGmwToBmrGate(const SharePointer& parent)
 
   output_wires_.resize(parent_.size());
   for (auto& w : output_wires_) {
-    w = std::make_shared<proto::bmr::Wire>(parent->GetNumberOfSimdValues(), backend_);
+    w = std::make_shared<proto::bmr::Wire>(backend_, parent->GetNumberOfSimdValues());
     GetRegister().RegisterNextWire(w);
   }
 

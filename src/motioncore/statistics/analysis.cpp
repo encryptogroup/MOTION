@@ -33,7 +33,7 @@
 
 namespace encrypto::motion {
 
-static double compute_duration(const RunTimeStatistics::TimePointPair& tpp) {
+static double ComputeDuration(const RunTimeStatistics::TimePointPair& tpp) {
   std::chrono::duration<double, AccumulatedRunTimeStatistics::Resolution> d =
       tpp.second - tpp.first;
   return d.count();
@@ -42,7 +42,7 @@ static double compute_duration(const RunTimeStatistics::TimePointPair& tpp) {
 void AccumulatedRunTimeStatistics::Add(const RunTimeStatistics& statistics) {
   for (std::size_t i = 0; i <= static_cast<std::size_t>(RunTimeStatistics::StatisticsId::kMax);
        ++i) {
-    accumulators_[i](compute_duration(statistics.data[i]));
+    accumulators_[i](ComputeDuration(statistics.data[i]));
   }
   ++count_;
 }

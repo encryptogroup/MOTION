@@ -141,8 +141,8 @@ void MtProviderFromOts::Setup() {
 
 static void GenerateRandomTriplesBool(BinaryMtVector& bit_mts, std::size_t number_of_bit_mts) {
   if (number_of_bit_mts > 0u) {
-    bit_mts.a = BitVector<>::Random(number_of_bit_mts);
-    bit_mts.b = BitVector<>::Random(number_of_bit_mts);
+    bit_mts.a = BitVector<>::SecureRandom(number_of_bit_mts);
+    bit_mts.b = BitVector<>::SecureRandom(number_of_bit_mts);
     bit_mts.c = bit_mts.a & bit_mts.b;
   }
 }

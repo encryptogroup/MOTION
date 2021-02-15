@@ -224,7 +224,7 @@ void Party::Finish() {
   }
 }
 
-std::vector<std::unique_ptr<Party>> GetNumberOfLocalParties(const std::size_t number_of_parties,
+std::vector<std::unique_ptr<Party>> MakeLocallyConnectedParties(const std::size_t number_of_parties,
                                                             std::uint16_t, const bool) {
   if (number_of_parties < 2) {
     throw(std::runtime_error(

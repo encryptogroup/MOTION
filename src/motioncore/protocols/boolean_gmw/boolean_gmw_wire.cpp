@@ -26,7 +26,7 @@
 
 namespace encrypto::motion::proto::boolean_gmw {
 
-Wire::Wire(std::size_t number_of_simd, Backend& backend) : BooleanWire(backend, number_of_simd) {}
+Wire::Wire(Backend& backend, std::size_t number_of_simd) : BooleanWire(backend, number_of_simd) {}
 
 Wire::Wire(BitVector<>&& values, Backend& backend)
     : BooleanWire(backend, values.GetSize()), values_(std::move(values)) {}

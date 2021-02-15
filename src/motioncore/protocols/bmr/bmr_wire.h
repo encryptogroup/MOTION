@@ -33,13 +33,13 @@ namespace encrypto::motion::proto::bmr {
 
 class Wire final : public BooleanWire {
  public:
-  Wire(const std::size_t n_simd, Backend& backend);
+  Wire(Backend& backend, std::size_t number_of_simd);
 
-  Wire(BitVector<>&& values, Backend& backend);
+  explicit Wire(BitVector<>&& values, Backend& backend);
 
-  Wire(const BitVector<>& values, Backend& backend);
+  explicit Wire(const BitVector<>& values, Backend& backend);
 
-  Wire(bool value, Backend& backend);
+  explicit Wire(bool value, Backend& backend);
 
   ~Wire() final = default;
 
@@ -89,14 +89,17 @@ class Wire final : public BooleanWire {
  private:
   void InitializationHelperBmr();
 
-  // also store the cleartext values in public_values_ if the wire is the outp
-  BitVector<> public_values_, shared_permutation_bits_;
+  // Store the cleartext values in public_values_ if this wire is an output wire.
+  BitVector<> public_values_;
+  BitVector<> shared_permutation_bits_;
 
-  // store one of the secret keys since we have the global offset for free XOR
+  // Store one of the secret keys since we have the global offset for free XOR.
+  // Structure for n simd values: (k_1 || k_2 || ... || k_n).
   Block128Vector secret_0_keys_;
 
-  // buffer for the super keys corresponding to each simd value
-  // structure: simd X (k_1 || k_2 || ... || k_n)
+  // Buffer for the super keys corresponding to each simd value.
+  // Structure for n simd values and m parties: (K_1 || K_2 || ... || K_n), where K is constructed
+  // by concatenating each of m parties' public keys, i.e., K = (k_1 || k_2 || ... || k_m).
   Block128Vector public_keys_;
 
   std::atomic<bool> setup_ready_{false};

@@ -40,7 +40,7 @@
 using namespace encrypto::motion;
 
 namespace {
-TEST(AlgorithmDescription, FromBristolFormat__int_add8_size) {
+TEST(AlgorithmDescription, FromBristolFormatIntAdd8Size) {
   const auto int_add8 = encrypto::motion::AlgorithmDescription::FromBristol(
       std::string(encrypto::motion::kRootDir) + "/circuits/int/int_add8_size.bristol");
   EXPECT_EQ(int_add8.number_of_gates, 34);
@@ -96,7 +96,7 @@ class SecureUintTest : public ::testing::Test {
     std::vector<encrypto::motion::BitVector<>> dummy_input(
         kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-    std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+    std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -149,7 +149,7 @@ class SecureUintTest : public ::testing::Test {
     std::vector<encrypto::motion::BitVector<>> dummy_input(
         kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-    std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+    std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
     for (auto& party : motion_parties) {
       party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -243,7 +243,7 @@ TYPED_TEST(SecureUintTest, AdditionInBmr) {
                                                          encrypto::motion::BitVector<>(1, false)),
       dummy_input_simd(kNumberOfWires, encrypto::motion::BitVector<>(3, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -316,7 +316,7 @@ TYPED_TEST(SecureUintTest, AdditionInGmw) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -370,7 +370,7 @@ TYPED_TEST(SecureUintTest, SubtractionInBmr) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -424,7 +424,7 @@ TYPED_TEST(SecureUintTest, SubtractionInGmw) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -478,7 +478,7 @@ TYPED_TEST(SecureUintTest, MultiplicationInBmr) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -537,7 +537,7 @@ TYPED_TEST(SecureUintTest, MultiplicationInGmw) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -596,7 +596,7 @@ TYPED_TEST(SecureUintTest, DivisionInBmr) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -656,7 +656,7 @@ TYPED_TEST(SecureUintTest, DivisionInGmw) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -711,7 +711,7 @@ TYPED_TEST(SecureUintTest, EqualityInBmr) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -764,7 +764,7 @@ TYPED_TEST(SecureUintTest, EqualityInGmw) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -817,7 +817,7 @@ TYPED_TEST(SecureUintTest, GreaterThanInGmw) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);
@@ -871,7 +871,7 @@ TYPED_TEST(SecureUintTest, GreaterThanInBmr) {
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-  std::vector<PartyPointer> motion_parties(std::move(GetNumberOfLocalParties(2, kPortOffset)));
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
   for (auto& party : motion_parties) {
     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
     party->GetConfiguration()->SetOnlineAfterSetup(true);

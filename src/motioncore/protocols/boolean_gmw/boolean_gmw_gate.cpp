@@ -213,7 +213,7 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   output_wires_.reserve(number_of_wires);
   for (size_t i = 0; i < number_of_wires; ++i) {
     auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
-        std::make_shared<boolean_gmw::Wire>(number_of_simd_values, backend_)));
+        std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values)));
     GetRegister().RegisterNextWire(w);
   }
 
@@ -253,7 +253,7 @@ void OutputGate::EvaluateOnline() {
   output.reserve(number_of_wires);
   for (std::size_t i = 0; i < number_of_wires; ++i) {
     // wait for parent wire to obtain a value
-    auto gmw_wire = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_.at(i));
+    auto gmw_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(parent_.at(i));
     assert(gmw_wire);
     gmw_wire->GetIsReadyCondition().Wait();
     assert(!gmw_wire->GetValues().GetData().empty());
@@ -396,7 +396,7 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   output_wires_.reserve(number_of_wires);
   for (size_t i = 0; i < number_of_wires; ++i) {
     auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
-        std::make_shared<boolean_gmw::Wire>(number_of_simd_values, backend_)));
+        std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values)));
     GetRegister().RegisterNextWire(w);
   }
 
@@ -484,7 +484,7 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   output_wires_.reserve(number_of_wires);
   for (size_t i = 0; i < number_of_wires; ++i) {
     auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
-        std::make_shared<boolean_gmw::Wire>(number_of_simd_values, backend_)));
+        std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values)));
     GetRegister().RegisterNextWire(w);
   }
 
@@ -557,12 +557,12 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   auto& _register = GetRegister();
 
   for (auto& w : dummy_wires_d) {
-    w = std::make_shared<boolean_gmw::Wire>(number_of_simd_values, backend_);
+    w = std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values);
     _register.RegisterNextWire(w);
   }
 
   for (auto& w : dummy_wires_e) {
-    w = std::make_shared<boolean_gmw::Wire>(number_of_simd_values, backend_);
+    w = std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values);
     _register.RegisterNextWire(w);
   }
 
@@ -591,7 +591,7 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   output_wires_.reserve(number_of_wires);
   for (size_t i = 0; i < number_of_wires; ++i) {
     auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
-        std::make_shared<boolean_gmw::Wire>(number_of_simd_values, backend_)));
+        std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values)));
     GetRegister().RegisterNextWire(w);
   }
 

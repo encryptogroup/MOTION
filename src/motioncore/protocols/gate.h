@@ -116,7 +116,6 @@ class Gate {
 
   Gate(Backend& backend);
 
- protected:
   Register& GetRegister();
   Configuration& GetConfiguration();
   Logger& GetLogger();

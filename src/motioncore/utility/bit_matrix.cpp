@@ -414,7 +414,7 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
 #define OUT(r, c) output[(r)*kNumberOfRows / 8 + (c) / 8]
 
   constexpr std::uint64_t kNumberOfRows = 128;
-  std::vector<std::uint8_t, boost::alignment::aligned_allocator<std::byte, 16>> output(
+  std::vector<std::uint8_t, boost::alignment::aligned_allocator<std::uint8_t, 16>> output(
       ((kNumberOfRows * number_of_colums) + 7) / 8, 0);
 
   uint64_t rr, cc;

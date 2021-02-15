@@ -95,4 +95,13 @@ std::vector<std::shared_ptr<Share>> ConstantBooleanShare::Split() const noexcept
   return v;
 }
 
+std::shared_ptr<motion::Share> ConstantBooleanShare::GetWire(std::size_t i) const {
+  if (i >= wires_.size()) {
+    throw std::out_of_range(
+        fmt::format("Trying to access wire #{} out of {} wires", i, wires_.size()));
+  }
+  std::vector<motion::WirePointer> result = {std::static_pointer_cast<motion::Wire>(wires_[i])};
+  return std::make_shared<ConstantBooleanShare>(result);
+}
+
 }  // namespace encrypto::motion::proto

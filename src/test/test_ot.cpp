@@ -55,7 +55,7 @@ TEST(ObliviousTransfer, Random1oo2OtsFromOtExtension) {
       bitlength.at(bitlength.size() - 1) = 1;
 
       std::vector<encrypto::motion::PartyPointer> motion_parties(
-          std::move(encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+          std::move(encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
       for (auto& party : motion_parties) {
         party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       }
@@ -144,7 +144,7 @@ TEST(ObliviousTransfer, General1oo2OtsFromOtExtension) {
       bitlength.at(bitlength.size() - 1) = 1;
 
       std::vector<encrypto::motion::PartyPointer> motion_parties(
-          std::move(encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+          std::move(encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
       for (auto& party : motion_parties) {
         party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       }
@@ -174,9 +174,10 @@ TEST(ObliviousTransfer, General1oo2OtsFromOtExtension) {
               choices.at(i).at(j).resize(kNumberOfOts);
               for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {
                 sender_messages.at(i).at(j).at(k).push_back(
-                    encrypto::motion::BitVector<>::Random(bitlength.at(k) * 2));
+                    encrypto::motion::BitVector<>::SecureRandom(bitlength.at(k) * 2));
               }
-              choices.at(i).at(j).at(k) = encrypto::motion::BitVector<>::Random(ots_in_batch.at(k));
+              choices.at(i).at(j).at(k) =
+                  encrypto::motion::BitVector<>::SecureRandom(ots_in_batch.at(k));
             }
           }
         }
@@ -259,7 +260,7 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
       bitlength.at(bitlength.size() - 1) = 1;
 
       std::vector<encrypto::motion::PartyPointer> motion_parties(
-          std::move(encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+          std::move(encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
       for (auto& party : motion_parties) {
         party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       }
@@ -290,9 +291,10 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
               choices.at(i).at(j).resize(kNumberOfOts);
               for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {
                 sender_messages.at(i).at(j).at(k).push_back(
-                    encrypto::motion::BitVector<>::Random(bitlength.at(k)));
+                    encrypto::motion::BitVector<>::SecureRandom(bitlength.at(k)));
               }
-              choices.at(i).at(j).at(k) = encrypto::motion::BitVector<>::Random(ots_in_batch.at(k));
+              choices.at(i).at(j).at(k) =
+                  encrypto::motion::BitVector<>::SecureRandom(ots_in_batch.at(k));
             }
           }
         }
@@ -387,7 +389,7 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OtsFromOtExtension) {
       }
 
       std::vector<encrypto::motion::PartyPointer> motion_parties(
-          std::move(encrypto::motion::GetNumberOfLocalParties(number_of_parties, kPortOffset)));
+          std::move(encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
       for (auto& party : motion_parties) {
         party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
       }
@@ -419,9 +421,10 @@ TEST(ObliviousTransfer, AdditivelyCorrelated1oo2OtsFromOtExtension) {
               choices.at(i).at(j).resize(kNumberOfOts);
               for (auto l = 0ull; l < ots_in_batch.at(k); ++l) {
                 sender_messages.at(i).at(j).at(k).push_back(
-                    encrypto::motion::BitVector<>::Random(bitlength.at(k)));
+                    encrypto::motion::BitVector<>::SecureRandom(bitlength.at(k)));
               }
-              choices.at(i).at(j).at(k) = encrypto::motion::BitVector<>::Random(ots_in_batch.at(k));
+              choices.at(i).at(j).at(k) =
+                  encrypto::motion::BitVector<>::SecureRandom(ots_in_batch.at(k));
             }
           }
         }

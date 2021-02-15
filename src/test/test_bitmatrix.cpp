@@ -48,7 +48,7 @@ TEST(BitMatrix, Transpose) {
       std::vector<encrypto::motion::AlignedBitVector> vectors(m);
 
       for (auto j = 0ull; j < m; ++j) {
-        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
+        vectors.at(j) = encrypto::motion::AlignedBitVector::SecureRandom(n);
       }
 
       encrypto::motion::BitMatrix bit_matrix(vectors);
@@ -74,7 +74,7 @@ TEST(BitMatrix, Transpose128) {
       std::vector<encrypto::motion::AlignedBitVector> vectors(m);
 
       for (auto j = 0ull; j < m; ++j) {
-        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
+        vectors.at(j) = encrypto::motion::AlignedBitVector::SecureRandom(n);
       }
 
       const encrypto::motion::BitMatrix bit_matrix(vectors);
@@ -99,7 +99,7 @@ TEST(BitMatrix, Transpose128InPlaceOnRawPointers) {
       std::vector<encrypto::motion::AlignedBitVector> vectors(kM);
 
       for (auto j = 0ull; j < kM; ++j) {
-        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
+        vectors.at(j) = encrypto::motion::AlignedBitVector::SecureRandom(n);
       }
 
       encrypto::motion::BitMatrix bit_matrix(vectors);
@@ -138,7 +138,7 @@ TEST(BitMatrix, Transpose128InPlaceOnRawPointersBitSlicing) {
       std::vector<encrypto::motion::AlignedBitVector> vectors(kM);
 
       for (auto j = 0ull; j < kM; ++j) {
-        vectors.at(j) = encrypto::motion::AlignedBitVector::Random(n);
+        vectors.at(j) = encrypto::motion::AlignedBitVector::SecureRandom(n);
       }
 
       encrypto::motion::BitMatrix bit_matrix(vectors);

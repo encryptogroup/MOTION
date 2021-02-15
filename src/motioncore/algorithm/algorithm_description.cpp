@@ -287,7 +287,8 @@ AlgorithmDescription AlgorithmDescription::FromAby(std::ifstream& stream) {
   assert(stream.good());
   std::string line;
   constexpr int kInvalidValue = 999999999;
-  int constant_input_0 = kInvalidValue, constant_input_1 = kInvalidValue;
+  int constant_input_0 [[maybe_unused]] = kInvalidValue;
+  int constant_input_1 [[maybe_unused]] = kInvalidValue;
   do {
     std::getline(stream, line);
     switch (line[0]) {

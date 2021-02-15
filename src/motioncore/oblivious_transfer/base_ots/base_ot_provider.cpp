@@ -124,7 +124,7 @@ void BaseOtProvider::ComputeBaseOts() {
 
     if (!base_ots_data.GetReceiverData().is_ready) {
       task_futures.emplace_back(std::async(std::launch::async, [this, &base_ots, i] {
-        auto choices = BitVector<>::Random(128);
+        auto choices = BitVector<>::SecureRandom(128);
         auto chosen_messages = base_ots[i]->Receive(choices);  // sender base ots
         auto& receiver_data = data_[i].GetReceiverData();
         receiver_data.c = std::move(choices);

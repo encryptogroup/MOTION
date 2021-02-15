@@ -270,12 +270,11 @@ class Party {
   void EvaluateCircuit();
 };
 
-/// \brief Gets a std::vector of std::unique_ptrs to locally constructed MOTION parties connected
-/// via TCP.
-/// @param number_of_parties Number of MOTION parties.
+/// \brief constructs number_of_parties motion::Party's *locally* connected via TCP.
+/// @param number_of_parties Number of motion::Party's to construct.
 /// @param port TCP port offset.
 /// @param logging Enables/disables logging completely.
-std::vector<std::unique_ptr<Party>> GetNumberOfLocalParties(const std::size_t number_of_parties,
+std::vector<std::unique_ptr<Party>> MakeLocallyConnectedParties(const std::size_t number_of_parties,
                                                             std::uint16_t port,
                                                             const bool logging = false);
 
