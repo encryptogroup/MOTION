@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <boost/fiber/future.hpp>
 #include <cstddef>
 #include <memory>
 #include <unordered_map>
