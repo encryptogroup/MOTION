@@ -5,11 +5,7 @@ find_package(Boost
         program_options
         REQUIRED)
 
-target_compile_features(sha256 PRIVATE cxx_std_17)
-
 target_link_libraries(sha256
         MOTION::motion
         Boost::program_options
         )
-
-target_compile_features(sha256 PRIVATE cxx_std_17)

@@ -25,8 +25,6 @@ add_executable(motiontest
         test_unsimdify_gate.cpp
         )
 
-target_compile_features(motiontest PRIVATE cxx_std_17)
-
 target_link_libraries(motiontest PRIVATE
         MOTION::motion
         OpenMP::OpenMP_CXX

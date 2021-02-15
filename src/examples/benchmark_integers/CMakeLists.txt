@@ -5,11 +5,7 @@ find_package(Boost
         program_options
         REQUIRED)
 
-target_compile_features(benchmark_integers PRIVATE cxx_std_17)
-
 target_link_libraries(benchmark_integers
         MOTION::motion
         Boost::program_options
         )
-
-target_compile_features(benchmark_integers PRIVATE cxx_std_17)
