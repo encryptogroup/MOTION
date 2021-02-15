@@ -32,7 +32,7 @@
 #include "statistics/run_time_statistics.h"
 #include "utility/config.h"
 
-static void check_correctness(encrypto::motion::SharePointer output) {
+static void check_correctness(encrypto::motion::ShareWrapper output) {
   // #!/usr/bin/env python3
   // import pyaes
   // ct = pyaes.AES(bytes(16)).encrypt(bytes(16))
@@ -40,23 +40,13 @@ static void check_correctness(encrypto::motion::SharePointer output) {
   constexpr auto kCorrectionBits =
       "01110100110101000010110001010011100110100101111100110010000100011101110000110100010100011111"
       "011100101011110100101001011101100110";
-  auto wires = output->GetWires();
-  auto number_of_simd = wires.at(0)->GetNumberOfSimdValues();
-  auto protocol = wires.at(0)->GetProtocol();
-  for (std::size_t i = 0; i < 128; ++i) {
-    encrypto::motion::BitVector<> values;
-    if (protocol == encrypto::motion::MpcProtocol::kBooleanGmw) {
-      auto w = std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(wires.at(i));
-      values = std::move(w->GetMutableValues());
-    } else if (protocol == encrypto::motion::MpcProtocol::kBmr) {
-      auto w = std::dynamic_pointer_cast<encrypto::motion::proto::bmr::Wire>(wires.at(i));
-      values = std::move(w->GetMutablePublicValues());
-    }
-    for (std::size_t j = 0; j < number_of_simd; ++j) {
-      auto computed_bit = values.Get(j);
-      if ((kCorrectionBits[i] == '1') != computed_bit) {
-        std::cerr << fmt::format("Computation not correct at output bit {} and SIMD value {}\n", i,
-                                 j);
+  const auto values{output.As<std::vector<encrypto::motion::BitVector<>>>()};
+  for (std::size_t wire_i = 0; wire_i < 128; ++wire_i) {
+    for (std::size_t simd_j = 0; simd_j < output->GetNumberOfSimdValues(); ++simd_j) {
+      auto computed_bit = values[wire_i].Get(simd_j);
+      if ((kCorrectionBits[wire_i] == '1') != computed_bit) {
+        std::cerr << fmt::format("Computation not correct at output bit {} and SIMD value {}\n",
+                                 wire_i, simd_j);
         std::exit(EXIT_FAILURE);
       }
     }
@@ -78,7 +68,7 @@ encrypto::motion::RunTimeStatistics EvaluateProtocol(encrypto::motion::PartyPoin
                               "/circuits/advanced/aes_128.bristol"};
   const auto aes_algorithm{encrypto::motion::AlgorithmDescription::FromBristol(kPathToAlgorithm)};
   const auto result{input.Evaluate(aes_algorithm)};
-  encrypto::motion::SharePointer output = nullptr;
+  encrypto::motion::ShareWrapper output;
   if (check) {
     output = result.Out();
   }
