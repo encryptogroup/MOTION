@@ -85,7 +85,7 @@ void InputGate::InitializationHelper() {
 
   output_wires_.reserve(bit_size_);
   for (std::size_t i = 0; i < bit_size_; ++i)
-    output_wires_.emplace_back(std::make_shared<bmr::Wire>(backend_,number_of_simd_));
+    output_wires_.emplace_back(std::make_shared<bmr::Wire>(backend_, number_of_simd_));
 
   for (auto& w : output_wires_) GetRegister().RegisterNextWire(w);
 

@@ -875,7 +875,7 @@ template ShareWrapper ShareWrapper::Mul<std::uint32_t>(SharePointer share,
 template ShareWrapper ShareWrapper::Mul<std::uint64_t>(SharePointer share,
                                                        SharePointer other) const;
 
-ShareWrapper ShareWrapper::Subset(std::vector<std::size_t>&& positions){
+ShareWrapper ShareWrapper::Subset(std::vector<std::size_t>&& positions) {
   return Subset(std::span<const std::size_t>(positions));
 }
 
@@ -912,8 +912,6 @@ ShareWrapper ShareWrapper::Simdify(std::span<SharePointer> input) {
   return simdify_gate->GetOutputAsShare();
 }
 
- ShareWrapper ShareWrapper::Simdify(std::vector<ShareWrapper> && input){
-   return Simdify(input);
- }
+ShareWrapper ShareWrapper::Simdify(std::vector<ShareWrapper>&& input) { return Simdify(input); }
 
 }  // namespace encrypto::motion

@@ -242,7 +242,7 @@ void SimdifyGate::EvaluateSetup() {
 
 template <typename WireType>
 void ArithmeticSimdifyOnlineImplementation(std::span<WirePointer> parent_wires,
-                                             WirePointer output_wire) {
+                                           WirePointer output_wire) {
   std::size_t output_number_of_simd_values{0};
   for (auto& wire : parent_wires) output_number_of_simd_values += wire->GetNumberOfSimdValues();
 
@@ -264,8 +264,7 @@ void ArithmeticGmwSimdifyOnline(std::span<WirePointer> parent_wires, WirePointer
 }
 
 template <typename T>
-void ArithmeticConstantSimdifyOnline(std::span<WirePointer> parent_wires,
-                                       WirePointer output_wire) {
+void ArithmeticConstantSimdifyOnline(std::span<WirePointer> parent_wires, WirePointer output_wire) {
   ArithmeticSimdifyOnlineImplementation<proto::ConstantArithmeticWire<T>>(parent_wires,
                                                                           output_wire);
 }

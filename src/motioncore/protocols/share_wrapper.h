@@ -125,9 +125,7 @@ class ShareWrapper {
 
   /// \brief concatenates wires in multiple shares in one share.
   /// \throws if wires have different numbers of SIMD values.
-  static ShareWrapper Concatenate(std::vector<ShareWrapper> && input) {
-    return Concatenate(input);
-  }
+  static ShareWrapper Concatenate(std::vector<ShareWrapper>&& input) { return Concatenate(input); }
 
   /// \brief concatenates wires in multiple shares in one share.
   /// \throws if wires have different numbers of SIMD values.
@@ -187,7 +185,7 @@ class ShareWrapper {
 
   /// \brief internally extracts shares from each entry in input and calls
   /// Simdify(std::span<SharePointer> input) on the result.
-  static ShareWrapper Simdify(std::vector<ShareWrapper> && input);
+  static ShareWrapper Simdify(std::vector<ShareWrapper>&& input);
 
   /// \brief converts the information on the wires to T.
   /// Boolean and arithmetic GMW returns the secret-shared values on the wires.
