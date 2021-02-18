@@ -10,11 +10,11 @@ This code is provided as an experimental implementation for testing purposes and
 
 * A **Linux distribution** of your choice (MOTION was developed and tested with recent versions of [Ubuntu](http://www.ubuntu.com/), [Manjaro](https://manjaro.org/) and [Arch Linux](https://www.archlinux.org/)).
 * **Required packages for MOTION:**
-  * `g++` (version >=8)
-    or another compiler and standard library implementing C++17 including the filesystem library
+  * `g++` (version >=10)
+    or another compiler and standard library implementing C++20 including the filesystem library
   * `make`
   * `cmake`
-  * [`boost`](https://www.boost.org/) (version >=1.69.0)
+  * [`boost`](https://www.boost.org/) (version >=1.73.0)
   * `OpenMP`
   * [`OpenSSL`](https://www.openssl.org/) (version >=1.1.0)
 

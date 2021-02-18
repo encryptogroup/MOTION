@@ -20,11 +20,13 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(OpenMP REQUIRED)
 
-set(REQUIRED_BOOST_VERSION "1.69.0")
+# At least boost 1.73.0 is needed to use the C++20 standard.
+set(REQUIRED_BOOST_VERSION "1.73.0")
 
 find_package(Boost ${REQUIRED_BOOST_VERSION}
         COMPONENTS
         context
+        coroutine
         fiber
         filesystem
         log
@@ -59,6 +61,12 @@ if ("${CMAKE_BUILD_TYPE}" MATCHES "Debug" OR "${CMAKE_BUILD_TYPE}" MATCHES "RelW
     set(MOTION_DEBUG "true")
 else ()
     set(MOTION_DEBUG "false")
+endif ()
+
+if (Boost_FOUND)
+    set(MOTION_BOOST_LOG_DYN_LINK ON)
+else ()
+    include(cmake/BuildBoostLocally.cmake)
 endif ()
 
 # Write built executables and libraries to bin/ and lib/, respectively.

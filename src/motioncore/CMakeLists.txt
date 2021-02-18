@@ -127,7 +127,7 @@ endif ()
 #endif ()
 
 
-target_compile_features(motion PRIVATE cxx_std_17)
+target_compile_features(motion PUBLIC cxx_std_20)
 target_compile_options(motion PRIVATE
         ${MOTION_EXTRA_FLAGS}
         -Wall -Wextra
@@ -192,29 +192,25 @@ target_include_directories(motion PUBLIC
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern>
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/fmt/include>
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/flatbuffers/include>
-        ${Boost_INCLUDE_DIRS}
+        $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
         )
 
 target_compile_definitions(motion PUBLIC FMT_HEADER_ONLY BOOST_ERROR_CODE_HEADER_ONLY)
 
 target_link_libraries(motion
         PRIVATE
+        Boost::context
+        Boost::fiber
         Boost::log_setup
         Boost::log
         Boost::filesystem
         Boost::system
-        Boost::fiber
         Boost::thread
-        Boost::context
         OpenMP::OpenMP_CXX
         Threads::Threads
         OpenSSL::Crypto
         OpenSSL::SSL
         )
-
-if (${SANITIZE_ADDRESS_LINK_OPT})
-    target_link_libraries(motion PUBLIC ${SANITIZE_ADDRESS_LINK_OPT})
-endif ()
 
 install(TARGETS motion
         EXPORT "${PROJECT_NAME}Targets"
