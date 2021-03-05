@@ -87,9 +87,10 @@ class SharingRandomnessGenerator {
 
     std::byte input[AES_BLOCK_SIZE];
 
-    std::copy(std::begin(aes_ctr_nonce_arithmetic_), std::end(aes_ctr_nonce_arithmetic_), input);
-    std::copy(reinterpret_cast<const std::uint8_t*>(&gate_id),
-              reinterpret_cast<const std::uint8_t*>(&gate_id) + sizeof(gate_id),
+    std::copy(std::begin(aes_ctr_nonce_arithmetic_), std::end(aes_ctr_nonce_arithmetic_),
+              reinterpret_cast<std::uint8_t*>(input));
+    std::copy(reinterpret_cast<const std::byte*>(&gate_id),
+              reinterpret_cast<const std::byte*>(&gate_id) + sizeof(gate_id),
               input + SharingRandomnessGenerator::kCounterOffset);
 
     auto output = prg_a.Encrypt(input, AES_BLOCK_SIZE);
