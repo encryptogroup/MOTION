@@ -141,7 +141,7 @@ class ConstantArithmeticShare : public motion::Share {
     return v;
   }
 
-  std::shared_ptr<motion::Share> GetWire(std::size_t i) const {
+  std::shared_ptr<motion::Share> GetWire(std::size_t i) const override {
     if (i >= wires_.size()) {
       throw std::out_of_range(
           fmt::format("Trying to access wire #{} out of {} wires", i, wires_.size()));
