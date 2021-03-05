@@ -124,7 +124,7 @@ TEST(BitMatrix, Transpose128InPlaceOnRawPointers) {
 
       encrypto::motion::BitMatrix bit_matrix_test_result(vectors_test_result);
 
-      ASSERT_TRUE(bit_matrix == bit_matrix_test_result);
+      ASSERT_EQ(bit_matrix, bit_matrix_test_result);
     }
   }
 }
@@ -163,7 +163,7 @@ TEST(BitMatrix, Transpose128InPlaceOnRawPointersBitSlicing) {
 
       encrypto::motion::BitMatrix bm_test_result(vectors_test_result);
 
-      ASSERT_TRUE(bit_matrix == bm_test_result);
+      ASSERT_EQ(bit_matrix, bm_test_result);
     }
   }
 }
