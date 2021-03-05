@@ -450,7 +450,8 @@ std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bit_vecto
 // Input functions that convert inputs of integer and floating point types to vectors of
 // BitVectors, which are a suitable input to MOTION.
 
-/// \brief Converts a value of UnsignedIntegralType to a vector of BitVector.
+/// \brief Converts a value of an unsigned integer type or a floating point type to a vector of
+/// BitVector.
 /// \details A vector of BitVectors allows to interleave multiple arithmetic values
 ///          intended to be used in a SIMD way. Let x be an arithmetic value,
 ///          with x0,...,xn being its little-endian bit representation.
@@ -460,15 +461,16 @@ std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bit_vecto
 ///          v[j][0] == xj, v[j][1] == yj, v[j][2] == zj.
 /// \post - All BitVectors in the returned vector will have size equal 1.
 ///       - The returned vector will have size equal to number of bits in \p UnsignedIntegralType.
-/// \tparam UnsignedIntegralType
-/// \param unsigned_integral_vector
+/// \tparam T
+/// \param value
 /// \relates BitVector
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>,
+template <typename T,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T>>,
           typename Allocator = std::allocator<std::byte>>
-std::vector<BitVector<Allocator>> ToInput(UnsignedIntegralType unsigned_integral_value);
+std::vector<BitVector<Allocator>> ToInput(T value);
 
-/// \brief Converts a vector of UnsignedIntegralType to a vector of BitVector.
+/// \brief Converts a vector of an unsigned integer type or a floating point type to a vector of
+/// BitVector.
 /// \details A vector of BitVectors allows to interleave multiple arithmetic values
 ///          intended to be used in a SIMD way. Let x be an arithmetic value,
 ///          with x0,...,xn being its little-endian bit representation.
@@ -479,34 +481,12 @@ std::vector<BitVector<Allocator>> ToInput(UnsignedIntegralType unsigned_integral
 /// \post - All BitVectors in the vector returned will have size equal to \p
 /// unsigned_integral_vector.size().
 ///       - The returned vector will have size equal to number of bits in \p UnsignedIntegralType.
-/// \tparam UnsignedIntegralType
-/// \param unsigned_integral_vector
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>,
+/// \tparam T
+/// \param vector
+template <typename T,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T>>,
           typename Allocator = std::allocator<std::byte>>
-std::vector<BitVector<Allocator>> ToInput(
-    const std::vector<UnsignedIntegralType>& unsigned_integral_vector);
-
-/// \brief Same as ToInput for UnsignedIntegralType, but for bit-representations of floating points.
-/// \post All BitVectors in the vector will have size equal to 1.
-/// \tparam FloatingPointType
-/// \param floating_point_value
-/// \relates BitVector
-template <typename FloatingPointType,
-          typename = std::enable_if_t<std::is_floating_point_v<FloatingPointType>>,
-          typename Allocator = std::allocator<std::byte>>
-std::vector<BitVector<Allocator>> ToInput(FloatingPointType floating_point_value);
-
-/// \brief Same as ToInput for UnsignedIntegralType, but for bit-representations of floating points.
-/// \post All BitVectors in the vector will have size equal to \p floating_point_vector.size().
-/// \tparam FloatingPointType
-/// \param floating_point_vector
-/// \relates BitVector
-template <typename FloatingPointType,
-          typename = std::enable_if_t<std::is_floating_point_v<FloatingPointType>>,
-          typename Allocator = std::allocator<std::byte>>
-std::vector<BitVector<Allocator>> ToInput(
-    const std::vector<FloatingPointType>& floating_point_vector);
+std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
 
 // Output functions for converting vectors of BitVectors to vectors of floating point or
 // integer numbers
