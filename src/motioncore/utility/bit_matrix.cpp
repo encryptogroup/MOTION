@@ -748,7 +748,7 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
 #endif
 }
 
-bool BitMatrix::operator==(const BitMatrix& other) {
+bool BitMatrix::operator==(const BitMatrix& other) const {
   if (other.data_.size() != data_.size()) {
     return false;
   }

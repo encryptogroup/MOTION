@@ -199,11 +199,11 @@ class BitMatrix {
 
   /// \brief Compare with another BitMatrix for equality
   /// \param other
-  bool operator==(const BitMatrix& other);
+  bool operator==(const BitMatrix& other) const;
 
   /// \brief Compare with another BitMatrix for inequality
   /// \param other
-  bool operator!=(const BitMatrix& other) { return !(*this == other); }
+  bool operator!=(const BitMatrix& other) const { return !(*this == other); }
 
   /// \brief Get number of rows in the BitMatrix
   auto GetNumRows() const noexcept { return data_.size(); }
