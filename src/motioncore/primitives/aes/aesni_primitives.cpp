@@ -151,7 +151,7 @@ void AesniCtrStreamBlocks128(const void* round_keys_input, std::uint64_t* counte
 void AesniCtrStreamBlocks128Unaligned(const void* round_keys_input,
                                       std::uint64_t* counter_input_pointer,
                                       void* output_input_pointer, std::size_t number_of_blocks) {
-  // almost the same code as in `AesniCtrStreamBlocks128Unaligned`
+  // almost the same code as in `AesniCtrStreamBlocks128`
 
   alignas(16) std::array<__m128i, kAesNumRoundKeys128> round_keys;
   alignas(16) std::array<__m128i, 4> wb;
@@ -183,7 +183,8 @@ void AesniCtrStreamBlocks128Unaligned(const void* round_keys_input,
     for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[8]);
     for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenc_si128(wb[j], round_keys[9]);
     for (std::size_t j = 0; j < 4; ++j) wb[j] = _mm_aesenclast_si128(wb[j], round_keys[10]);
-    for (std::size_t j = 0; j < 4; ++j) output[i + j] = wb[j];
+    // DIFFERENCE: we need to use an explicit unaligned store here
+    for (std::size_t j = 0; j < 4; ++j) _mm_storeu_si128(&output[i + j], wb[j]);
     counter += 4;
   }
 
@@ -201,7 +202,8 @@ void AesniCtrStreamBlocks128Unaligned(const void* round_keys_input,
     wb[0] = _mm_aesenc_si128(wb[0], round_keys[8]);
     wb[0] = _mm_aesenc_si128(wb[0], round_keys[9]);
     wb[0] = _mm_aesenclast_si128(wb[0], round_keys[10]);
-    output[i] = wb[0];
+    // DIFFERENCE: we need to use an explicit unaligned store here
+    _mm_storeu_si128(&output[i], wb[0]);
     ++counter;
   }
 
