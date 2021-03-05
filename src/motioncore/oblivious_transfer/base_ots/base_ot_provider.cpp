@@ -41,9 +41,8 @@ namespace encrypto::motion {
 class BaseOtMessageHandler : public communication::MessageHandler {
  public:
   // Create a handler object for a given party
-  BaseOtMessageHandler(std::size_t party_id, std::shared_ptr<Logger> logger,
-                       BaseOtData& base_ots_data)
-      : party_id_(party_id), logger_(logger), base_ots_data_(base_ots_data) {}
+  BaseOtMessageHandler(std::shared_ptr<Logger> logger, BaseOtData& base_ots_data)
+      : logger_(logger), base_ots_data_(base_ots_data) {}
 
   // Method which is called on received messages.
   void ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& message) override;
@@ -51,7 +50,6 @@ class BaseOtMessageHandler : public communication::MessageHandler {
   BaseOtData& GetBaseOtsData() { return base_ots_data_; };
 
  private:
-  std::size_t party_id_;
   std::shared_ptr<Logger> logger_;
   BaseOtData& base_ots_data_;
 };
@@ -84,7 +82,7 @@ BaseOtProvider::BaseOtProvider(communication::CommunicationLayer& communication_
       finished_(false) {
   communication_layer_.RegisterMessageHandler(
       [this, &logger](auto party_id) {
-        return std::make_shared<BaseOtMessageHandler>(party_id, logger, data_.at(party_id));
+        return std::make_shared<BaseOtMessageHandler>(logger, data_.at(party_id));
       },
       {communication::MessageType::kBaseROtMessageSender,
        communication::MessageType::kBaseROtMessageReceiver});

@@ -82,7 +82,6 @@ class TcpSetupHelper {
 
   std::size_t my_id_;
   std::size_t number_of_parties_;
-  bool connections_open_ = false;
   const TcpPartiesConfiguration parties_configuration_;
   std::unique_ptr<TcpSetupImplementation> implementation_;
 };

@@ -322,7 +322,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::shared_ptr<SbProvider> sb_provider_;
   std::unique_ptr<proto::bmr::Provider> bmr_provider_;
 
-  bool share_inputs_{true};
   bool require_base_ots_{false};
   bool base_ots_finished_{false};
   bool ot_extension_finished_{false};

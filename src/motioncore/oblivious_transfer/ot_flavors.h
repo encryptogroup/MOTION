@@ -306,9 +306,6 @@ class GOt128Sender : public BasicOtSender {
  private:
   // the sender's inputs, 2 * number_of_ots blocks
   Block128Vector inputs_;
-
-  // if the sender outputs have been computed
-  bool outputs_computed_ = false;
 };
 
 // receiver implementation of batched 128 bit string OT
@@ -353,9 +350,6 @@ class GOtBitSender : public BasicOtSender {
  private:
   // the sender's inputs, 2 * number_of_ots blocks
   BitVector<> inputs_;
-
-  // if the sender outputs have been computed
-  bool outputs_computed_ = false;
 };
 
 // receiver implementation of batched 128 bit string OT
