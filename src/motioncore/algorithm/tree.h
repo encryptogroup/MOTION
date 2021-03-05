@@ -26,7 +26,7 @@
 
 namespace encrypto::motion {
 
-struct ShareWrapper;
+class ShareWrapper;
 
 ShareWrapper FullAndTree(const ShareWrapper& s);
 

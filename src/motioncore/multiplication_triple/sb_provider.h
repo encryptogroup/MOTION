@@ -40,9 +40,9 @@ class CommunicationLayer;
 
 namespace encrypto::motion {
 
-class RunTimeStatistics;
 class Logger;
 class SpProvider;
+struct RunTimeStatistics;
 struct SharedBitsData;
 
 // Provider for Shared Bits (SBs),
