@@ -40,17 +40,17 @@ class ShareWrapper;
 /// Repeated position ids are allowed, meaning that the number of SIMD values of the output share
 /// may be greater than the number of SIMD values of the parent share. Each of the position ids must
 /// be smaller than the number of SIMD values of the parent share.
-class SubsetGate : public OneGate {
+class SubsetGate final : public OneGate {
  public:
   SubsetGate(const SharePointer& parent, std::span<const std::size_t> position_ids);
 
   SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& position_ids);
 
-  ~SubsetGate() final = default;
+  ~SubsetGate() = default;
 
-  void EvaluateSetup() final override;
+  void EvaluateSetup() override;
 
-  void EvaluateOnline() final override;
+  void EvaluateOnline() override;
 
   const SharePointer GetOutputAsShare();
 

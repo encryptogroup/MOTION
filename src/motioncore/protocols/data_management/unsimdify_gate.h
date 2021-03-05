@@ -39,15 +39,15 @@ class ShareWrapper;
 /// \brief yields a set of shares that correspond to single "SIMD layers" of the parent, e.g., if
 /// parent contains 10 SIMD values, the output will contain 10 shares with 1 SIMD value and the
 /// same number of wires as parent.
-class UnsimdifyGate : public OneGate {
+class UnsimdifyGate final : public OneGate {
  public:
   UnsimdifyGate(const SharePointer& parent);
 
-  ~UnsimdifyGate() final = default;
+  ~UnsimdifyGate() = default;
 
-  void EvaluateSetup() final override;
+  void EvaluateSetup() override;
 
-  void EvaluateOnline() final override;
+  void EvaluateOnline() override;
 
   std::vector<SharePointer> GetOutputAsVectorOfShares();
 

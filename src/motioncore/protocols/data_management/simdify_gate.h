@@ -45,15 +45,15 @@ class ShareWrapper;
 /// [parent_0[simd_0], parent_1[simd_0, simd_1, simd_2], parent_2[simd_0, simd_1]].
 ///
 /// \throws invalid_argument if the parent have inconsistent number of wires.
-class SimdifyGate : public OneGate {
+class SimdifyGate final : public OneGate {
  public:
   SimdifyGate(std::span<SharePointer> parents);
 
-  ~SimdifyGate() final = default;
+  ~SimdifyGate() = default;
 
-  void EvaluateSetup() final override;
+  void EvaluateSetup() override;
 
-  void EvaluateOnline() final override;
+  void EvaluateOnline() override;
 
   SharePointer GetOutputAsShare();
 
