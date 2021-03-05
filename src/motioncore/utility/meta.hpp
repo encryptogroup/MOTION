@@ -33,8 +33,9 @@ namespace encrypto::motion {
 // e.g. TypeMap<std::vector, int, std::string> maps
 // - int (as type) to an std::vector<int> instance, and
 // - std::string to an std::vector<int> instance.
+// Note: latest clang does not support lambdas in unevaluated environments yet.
 
-#if __cplusplus > 201703L  // C++20
+#if __cplusplus > 201703L && !defined(__clang__)  // C++20
 
 template <template <typename> class Value, typename... Ts>
 using TypeMap = decltype([] {
