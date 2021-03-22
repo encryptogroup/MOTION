@@ -27,7 +27,7 @@
 #include <typeinfo>
 
 #include "algorithm/algorithm_description.h"
-#include "algorithm/tree.h"
+#include "algorithm/low_depth_reduce.h"
 #include "base/backend.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_gate.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
@@ -252,7 +252,7 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper& other) const {
   if (bitlength == 1) {
     return result;
   } else if (IsPowerOfTwo(bitlength)) {
-    return FullAndTree(result);
+    return LowDepthReduce(result.Split(), std::bit_and<>());
   } else {  // bitlength is not a power of 2
     while (result->GetBitLength() != 1) {
       std::queue<ShareWrapper> q;
@@ -270,7 +270,7 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper& other) const {
         }
       }
       while (!q.empty()) {
-        output.emplace_back(FullAndTree(q.front()));
+        output.emplace_back(LowDepthReduce(q.front().Split(), std::bit_and<>()));
         q.pop();
       }
       result = ShareWrapper::Concatenate(output);

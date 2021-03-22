@@ -1,7 +1,6 @@
 add_library(motion
         algorithm/algorithm_description.cpp
         algorithm/low_depth_reduce.h
-        algorithm/tree.cpp
         base/backend.cpp
         base/configuration.cpp
         base/motion_base_provider.cpp
