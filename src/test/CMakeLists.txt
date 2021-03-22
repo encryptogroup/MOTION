@@ -10,6 +10,7 @@ add_executable(motiontest
         test_conversions.cpp
         test_dummy_transport.cpp
         test_integer_operations.cpp
+        test_low_depth_reduce.cpp
         test_misc.cpp
         test_motion_main.cpp
         test_mt.cpp
