@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2021 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -103,6 +103,21 @@ class SecureUnsignedInteger {
   ShareWrapper operator>(const SecureUnsignedInteger& other) const;
 
   ShareWrapper operator==(const SecureUnsignedInteger& other) const;
+
+  /// \brief decomposes this->share_->Get() into shares with exactly 1 SIMD value.
+  /// See the description in ShareWrapper::Unsimdify for reference.
+  std::vector<SecureUnsignedInteger> Unsimdify() const;
+
+  /// \brief constructs an output gate, which reconstructs the cleartext result. The default
+  /// parameter for the output owner corresponds to all parties being the output owners.
+  /// Uses ShareWrapper::Out.
+  SecureUnsignedInteger Out(
+      std::size_t output_owner = std::numeric_limits<std::int64_t>::max()) const;
+
+  /// \brief converts the information on the wires to T in type Unsigned Integer.
+  /// See the description in ShareWrapper::As for reference.
+  template <typename T>
+  T As() const;
 
  private:
   std::shared_ptr<ShareWrapper> share_{nullptr};

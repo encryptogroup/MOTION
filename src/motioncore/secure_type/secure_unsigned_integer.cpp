@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2021 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -27,7 +27,9 @@
 #include <fmt/format.h>
 
 #include "algorithm/algorithm_description.h"
+#include "base/backend.h"
 #include "base/register.h"
+#include "protocols/data_management/unsimdify_gate.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
 
@@ -255,5 +257,55 @@ std::string SecureUnsignedInteger::ConstructPath(const IntegerOperationType type
   return fmt::format("{}/circuits/int/int_{}{}{}.bristol", kRootDir, operation_type_string,
                      bitlength, suffix);
 }
+
+std::vector<SecureUnsignedInteger> SecureUnsignedInteger::Unsimdify() const {
+  auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_->Get());
+  auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);
+  share_->Get()->GetRegister()->RegisterNextGate(unsimdify_gate_cast);
+  std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
+  std::vector<SecureUnsignedInteger> result(shares.size());
+  std::transform(shares.begin(), shares.end(), result.begin(),
+                 [](SharePointer share) { return SecureUnsignedInteger(share); });
+  return result;
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::Out(std::size_t output_owner) const {
+  return SecureUnsignedInteger(share_->Out(output_owner));
+}
+
+template <typename Test, template <typename...> class Ref>
+struct is_specialization : std::false_type {};
+
+template <template <typename...> class Ref, typename... Args>
+struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
+
+template <typename T>
+T SecureUnsignedInteger::As() const {
+  if (share_->Get()->GetProtocol() == MpcProtocol::kArithmeticGmw)
+    return share_->As<T>();
+  else if (share_->Get()->GetProtocol() == MpcProtocol::kBooleanGmw ||
+           share_->Get()->GetProtocol() == MpcProtocol::kBmr) {
+    auto share_out = share_->As<std::vector<encrypto::motion::BitVector<>>>();
+    if constexpr (std::is_unsigned<T>()) {
+      return encrypto::motion::ToOutput<T>(share_out);
+    } else {
+      throw std::invalid_argument(
+          fmt::format("Unsupported output type in SecureUnsignedInteger::As<{}>() for {} Protocol",
+                      typeid(T).name(), share_->Get()->GetProtocol()));
+    }
+  } else {
+    throw std::invalid_argument("Unsupported protocol for SecureUnsignedInteger::As()");
+  }
+}
+
+template std::uint8_t SecureUnsignedInteger::As() const;
+template std::uint16_t SecureUnsignedInteger::As() const;
+template std::uint32_t SecureUnsignedInteger::As() const;
+template std::uint64_t SecureUnsignedInteger::As() const;
+
+template std::vector<std::uint8_t> SecureUnsignedInteger::As() const;
+template std::vector<std::uint16_t> SecureUnsignedInteger::As() const;
+template std::vector<std::uint32_t> SecureUnsignedInteger::As() const;
+template std::vector<std::uint64_t> SecureUnsignedInteger::As() const;
 
 }  // namespace encrypto::motion
