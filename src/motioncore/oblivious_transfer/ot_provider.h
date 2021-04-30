@@ -31,8 +31,6 @@
 
 #include <flatbuffers/flatbuffers.h>
 
-#include "utility/bit_vector.h"
-
 namespace encrypto::motion::communication {
 
 class CommunicationLayer;
@@ -54,12 +52,16 @@ enum OtProtocol : uint {
   kROt = 1,   // random OT
   kXcOt = 2,  // XOR-correlated OT
   kAcOt = 3,  // additively-correlated OT
-  kInvalidOt = 4,
-  kFixedXcOt128 = 5,
-  kXcOtBit = 6,
-  kGOt128 = 7
+  kFixedXcOt128 = 4,
+  kXcOtBit = 5,
+  kGOt128 = 6,
+  kInvalidOt = 7,
 };
 
+class ROtSender;
+class ROtReceiver;
+class XcOtSender;
+class XcOtReceiver;
 class FixedXcOt128Sender;
 class FixedXcOt128Receiver;
 class XcOtBitSender;
@@ -72,6 +74,8 @@ class GOt128Sender;
 class GOt128Receiver;
 class GOtBitSender;
 class GOtBitReceiver;
+class GOtSender;
+class GOtReceiver;
 
 class OtVector {
  public:
@@ -93,166 +97,6 @@ class OtVector {
   std::function<void(flatbuffers::FlatBufferBuilder&&)> send_function_;
 };
 
-class OtVectorSender : public OtVector {
- public:
-  [[nodiscard]] const std::vector<BitVector<>>& GetInputs() const { return inputs_; };
-
-  virtual const std::vector<BitVector<>>& GetOutputs();
-
-  virtual void SetInputs(const std::vector<BitVector<>>& v) = 0;
-
-  virtual void SetInputs(std::vector<BitVector<>>&& v) = 0;
-
-  virtual void SendMessages() = 0;
-
-  void WaitSetup();
-
- protected:
-  OtVectorSender(const std::size_t ot_id, const std::size_t number_of_ots,
-                 const std::size_t bitlength, const OtProtocol p, OtExtensionSenderData& data,
-                 const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  void Reserve(const std::size_t id, const std::size_t number_of_ots, const std::size_t bitlength);
-
-  OtExtensionSenderData& data_;
-  std::vector<BitVector<>> inputs_, outputs_;
-};
-
-class GOtVectorSender final : public OtVectorSender {
- public:
-  GOtVectorSender(const std::size_t ot_id, const std::size_t number_of_ots,
-                  const std::size_t bitlength, OtExtensionSenderData& data,
-                  const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  void SetInputs(std::vector<BitVector<>>&& v) final override;
-
-  void SetInputs(const std::vector<BitVector<>>& v) final override;
-
-  // blocking wait for correction bits
-  void SendMessages() final override;
-};
-
-class COtVectorSender final : public OtVectorSender {
- public:
-  COtVectorSender(const std::size_t id, const std::size_t number_of_ots,
-                  const std::size_t bitlength, OtProtocol p, OtExtensionSenderData& data,
-                  const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  const std::vector<BitVector<>>& GetOutputs() final override;
-
-  void SetInputs(std::vector<BitVector<>>&& v) final override;
-
-  void SetInputs(const std::vector<BitVector<>>& v) final override;
-
-  void SendMessages() final override;
-
-  // TODO: Implement or remove (class is final)
-  void Truncate(std::size_t number_of_last_bits);
-
- private:
-  // TODO: never referenced in cpp file, maybe remove field?
-  std::size_t number_of_truncated_bits_{0};
-};
-
-class ROtVectorSender final : public OtVectorSender {
- public:
-  ROtVectorSender(const std::size_t ot_id, const std::size_t number_of_ots,
-                  const std::size_t bitlength, OtExtensionSenderData& data,
-                  const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  void SetInputs(std::vector<BitVector<>>&& v) final override;
-
-  void SetInputs(const std::vector<BitVector<>>& v) final override;
-
-  void SendMessages() final override;
-};
-
-class OtVectorReceiver : public OtVector {
- public:
-  virtual void SetChoices(const BitVector<>& v) = 0;
-
-  virtual void SetChoices(BitVector<>&& v) = 0;
-
-  [[nodiscard]] const virtual BitVector<>& GetChoices() = 0;
-
-  [[nodiscard]] const virtual std::vector<BitVector<>>& GetOutputs() = 0;
-
-  virtual void SendCorrections() = 0;
-
-  void WaitSetup();
-
-  bool AreChoicesSet() { return choices_flag_; }
-
- protected:
-  OtVectorReceiver(const std::size_t ot_id, const std::size_t number_of_ots,
-                   const std::size_t bitlength, const OtProtocol p, OtExtensionReceiverData& data,
-                   std::function<void(flatbuffers::FlatBufferBuilder&&)> send_function);
-
-  void Reserve(const std::size_t id, const std::size_t number_of_ots, const std::size_t bitlength);
-
-  OtExtensionReceiverData& data_;
-  BitVector<> choices_;
-  std::atomic<bool> choices_flag_{false};
-  std::vector<BitVector<>> messages_;
-};
-
-class GOtVectorReceiver final : public OtVectorReceiver {
- public:
-  GOtVectorReceiver(const std::size_t ot_id, const std::size_t number_of_ots,
-                    const std::size_t bitlength, OtExtensionReceiverData& data,
-                    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  void SetChoices(BitVector<>&& v) final override;
-
-  void SetChoices(const BitVector<>& v) final override;
-
-  const BitVector<>& GetChoices() final override { return choices_; }
-
-  void SendCorrections() final override;
-
-  const std::vector<BitVector<>>& GetOutputs() final override;
-
- private:
-  std::atomic<bool> corrections_sent_ = false;
-};
-
-class COtVectorReceiver final : public OtVectorReceiver {
- public:
-  COtVectorReceiver(const std::size_t ot_id, const std::size_t number_of_ots,
-                    const std::size_t bitlength, OtProtocol p, OtExtensionReceiverData& data,
-                    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  void SendCorrections() final override;
-
-  void SetChoices(BitVector<>&& v) override;
-
-  void SetChoices(const BitVector<>& v) override;
-
-  const BitVector<>& GetChoices() final override { return choices_; }
-
-  const std::vector<BitVector<>>& GetOutputs() final override;
-
- private:
-  std::atomic<bool> corrections_sent_ = false;
-};
-
-class ROtVectorReceiver final : public OtVectorReceiver {
- public:
-  ROtVectorReceiver(const std::size_t ot_id, const std::size_t number_of_ots,
-                    const std::size_t bitlength, OtExtensionReceiverData& data,
-                    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
-
-  void SetChoices(const BitVector<>& v) final override;
-
-  void SetChoices(BitVector<>&& v) final override;
-
-  void SendCorrections() final override;
-
-  const BitVector<>& GetChoices() final override;
-
-  const std::vector<BitVector<>>& GetOutputs() final override;
-};
-
 class OtProviderSender {
  public:
   OtProviderSender(OtExtensionSenderData& data, std::size_t party_id,
@@ -263,10 +107,11 @@ class OtProviderSender {
 
   OtProviderSender(const OtProviderSender&) = delete;
 
-  std::shared_ptr<OtVectorSender>& GetOts(std::size_t offset);
-
-  std::shared_ptr<OtVectorSender>& RegisterOts(
-      const std::size_t bitlength, const std::size_t number_of_ots, const OtProtocol p,
+  std::unique_ptr<ROtSender> RegisterROt(
+      std::size_t number_of_ots, std::size_t bitlength,
+      const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  std::unique_ptr<XcOtSender> RegisterXcOt(
+      std::size_t number_of_ots, std::size_t bitlength,
       const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
   std::unique_ptr<FixedXcOt128Sender> RegisterFixedXcOt128s(
       const std::size_t number_of_ots,
@@ -277,6 +122,9 @@ class OtProviderSender {
   template <typename T>
   std::unique_ptr<AcOtSender<T>> RegisterAcOt(
       std::size_t number_of_ots, std::size_t vector_size,
+      const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  std::unique_ptr<GOtSender> RegisterGOt(
+      std::size_t number_of_ots, std::size_t bitlength,
       const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
   std::unique_ptr<GOt128Sender> RegisterGOt128(
       const std::size_t number_of_ots,
@@ -292,8 +140,6 @@ class OtProviderSender {
   void Reset();
 
  private:
-  std::unordered_map<std::size_t, std::shared_ptr<OtVectorSender>> sender_data_;
-
   std::size_t total_ots_count_{0};
 
   OtExtensionSenderData& data_;
@@ -313,10 +159,11 @@ class OtProviderReceiver {
 
   OtProviderReceiver(const OtProviderReceiver&) = delete;
 
-  std::shared_ptr<OtVectorReceiver>& GetOts(const std::size_t offset);
-
-  std::shared_ptr<OtVectorReceiver>& RegisterOts(
-      const std::size_t bitlength, const std::size_t number_of_ots, const OtProtocol p,
+  std::unique_ptr<ROtReceiver> RegisterROt(
+      std::size_t number_of_ots, std::size_t bitlength,
+      const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  std::unique_ptr<XcOtReceiver> RegisterXcOt(
+      std::size_t number_of_ots, std::size_t bitlength,
       const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
   std::unique_ptr<FixedXcOt128Receiver> RegisterFixedXcOt128s(
       const std::size_t number_of_ots,
@@ -327,6 +174,9 @@ class OtProviderReceiver {
   template <typename T>
   std::unique_ptr<AcOtReceiver<T>> RegisterAcOt(
       std::size_t number_of_ots, std::size_t vector_size,
+      const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  std::unique_ptr<GOtReceiver> RegisterGOt(
+      std::size_t number_of_ots, std::size_t bitlength,
       const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
   std::unique_ptr<GOt128Receiver> RegisterGOt128(
       const std::size_t number_of_ots,
@@ -341,8 +191,6 @@ class OtProviderReceiver {
   void Reset();
 
  private:
-  std::unordered_map<std::size_t, std::shared_ptr<OtVectorReceiver>> receiver_data_;
-
   std::atomic<std::size_t> total_ots_count_{0};
 
   OtExtensionReceiverData& data_;
@@ -359,15 +207,11 @@ class OtProvider {
 
   OtProvider(const OtProvider&) = delete;
 
-  /// @param bitlength Bit-length of the messages
-  /// @param number_of_ots Number of OTs
-  /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
-  /// @return Offset to the OT that can be used to set input messages
-  [[nodiscard]] std::shared_ptr<OtVectorSender>& RegisterSend(const std::size_t bitlength = 1,
-                                                              const std::size_t number_of_ots = 1,
-                                                              const OtProtocol p = kGOt) {
-    return sender_provider_.RegisterOts(bitlength, number_of_ots, p, send_function_);
-  }
+  [[nodiscard]] std::unique_ptr<ROtSender> RegisterSendROt(std::size_t number_of_ots = 1,
+                                                           std::size_t bitlength = 1);
+
+  [[nodiscard]] std::unique_ptr<XcOtSender> RegisterSendXcOt(std::size_t number_of_ots = 1,
+                                                             std::size_t bitlength = 1);
 
   [[nodiscard]] std::unique_ptr<FixedXcOt128Sender> RegisterSendFixedXcOt128(
       std::size_t number_of_ots = 1);
@@ -378,19 +222,18 @@ class OtProvider {
   [[nodiscard]] std::unique_ptr<AcOtSender<T>> RegisterSendAcOt(std::size_t number_of_ots = 1,
                                                                 std::size_t vector_size = 1);
 
+  [[nodiscard]] std::unique_ptr<GOtSender> RegisterSendGOt(std::size_t number_of_ots = 1,
+                                                           std::size_t bitlength = 1);
+
   [[nodiscard]] std::unique_ptr<GOt128Sender> RegisterSendGOt128(std::size_t number_of_ots = 1);
 
   [[nodiscard]] std::unique_ptr<GOtBitSender> RegisterSendGOtBit(std::size_t number_of_ots = 1);
 
-  /// @param bitlength Bit-length of the messages
-  /// @param number_of_ots Number of OTs
-  /// @param p OT protocol from {General OT (GOT), Correlated OT (COT), Random OT (ROT)}
-  /// @return Offset to the OT that can be used to retrieve the output of the OT
-  [[nodiscard]] std::shared_ptr<OtVectorReceiver>& RegisterReceive(
-      const std::size_t bitlength = 1, const std::size_t number_of_ots = 1,
-      const OtProtocol p = kGOt) {
-    return receiver_provider_.RegisterOts(bitlength, number_of_ots, p, send_function_);
-  }
+  [[nodiscard]] std::unique_ptr<ROtReceiver> RegisterReceiveROt(std::size_t number_of_ots = 1,
+                                                                std::size_t bitlength = 1);
+
+  [[nodiscard]] std::unique_ptr<XcOtReceiver> RegisterReceiveXcOt(std::size_t number_of_ots = 1,
+                                                                  std::size_t bitlength = 1);
 
   [[nodiscard]] std::unique_ptr<FixedXcOt128Receiver> RegisterReceiveFixedXcOt128(
       std::size_t number_of_ots = 1);
@@ -401,6 +244,8 @@ class OtProvider {
   template <typename T>
   [[nodiscard]] std::unique_ptr<AcOtReceiver<T>> RegisterReceiveAcOt(std::size_t number_of_ots = 1,
                                                                      std::size_t vector_size = 1);
+  [[nodiscard]] std::unique_ptr<GOtReceiver> RegisterReceiveGOt(std::size_t number_of_ots = 1,
+                                                                std::size_t bitlength = 1);
 
   [[nodiscard]] std::unique_ptr<GOt128Receiver> RegisterReceiveGOt128(
       std::size_t number_of_ots = 1);

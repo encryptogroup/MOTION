@@ -26,16 +26,10 @@
 
 #include "boolean_gmw_share.h"
 
+#include "oblivious_transfer/ot_flavors.h"
 #include "protocols/gate.h"
 #include "utility/bit_vector.h"
 #include "utility/reusable_future.h"
-
-namespace encrypto::motion {
-
-class OtVectorSender;
-class OtVectorReceiver;
-
-}  // namespace encrypto::motion
 
 namespace encrypto::motion::proto::boolean_gmw {
 
@@ -181,8 +175,8 @@ class MuxGate final : public ThreeGate {
   MuxGate(const Gate&) = delete;
 
  private:
-  std::vector<std::shared_ptr<OtVectorReceiver>> ot_receiver_;
-  std::vector<std::shared_ptr<OtVectorSender>> ot_sender_;
+  std::vector<std::unique_ptr<XcOtReceiver>> ot_receiver_;
+  std::vector<std::unique_ptr<XcOtSender>> ot_sender_;
 };
 
 }  // namespace encrypto::motion::proto::boolean_gmw

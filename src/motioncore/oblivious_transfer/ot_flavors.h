@@ -24,6 +24,8 @@
 
 #include "ot_provider.h"
 
+#include <span>
+
 #include "utility/bit_vector.h"
 #include "utility/block.h"
 #include "utility/reusable_future.h"
@@ -78,6 +80,39 @@ class BasicOtReceiver : public OtVector {
 
   // if the corrections have been transmitted
   bool corrections_sent_ = false;
+};
+
+// sender implementation of batched xor-correlated bit ots
+class ROtSender : public OtVector {
+ public:
+  ROtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+            OtExtensionSenderData& data,
+            const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+
+  // wait that the ot extension setup has finished
+  void WaitSetup() const;
+
+  // compute the sender's outputs
+  void ComputeOutputs();
+
+  // get the sender's outputs
+  std::span<const BitVector<>> GetOutputs() const {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // reference to data storage
+  OtExtensionSenderData& data_;
+
+  // both output masks of the sender
+  std::vector<BitVector<>> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
 };
 
 // sender implementation of batched xor-correlated 128 bit string OT with a
@@ -182,6 +217,87 @@ class XcOtBitSender : public BasicOtSender {
   bool outputs_computed_ = false;
 };
 
+// sender implementation of batched xor-correlated bit ots
+class XcOtSender : public BasicOtSender {
+ public:
+  XcOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+             OtExtensionSenderData& data,
+             const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+
+  // set the correlations for the OTs in this batch
+  void SetCorrelations(std::vector<BitVector<>>&& correlations) {
+    assert(correlations.size() == number_of_ots_);
+    correlations_ = std::move(correlations);
+  }
+  void SetCorrelations(std::span<const BitVector<>> correlations) {
+    assert(correlations.size() == number_of_ots_);
+    correlations_.assign(correlations.begin(), correlations.end());
+  }
+
+  // get the correlations for the OTs in this batch
+  std::span<const BitVector<>> GetCorrelations() const { return correlations_; }
+
+  // compute the sender's outputs
+  void ComputeOutputs();
+
+  // get the sender's outputs
+  std::span<const BitVector<>> GetOutputs() const {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // the correlation vector
+  std::vector<BitVector<>> correlations_;
+
+  // the "0 output" for the sender (the "1 output" can be computed by applying the correlation)
+  std::vector<BitVector<>> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched random generic ots
+class ROtReceiver : OtVector {
+ public:
+  ROtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+              OtExtensionReceiverData& data,
+              const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+
+  // wait that the ot extension setup has finished
+  void WaitSetup() const;
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  std::span<const BitVector<>> GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  const BitVector<>& GetChoices() {
+    assert(outputs_computed_);
+    return choices_;
+  }
+
+ private:
+  // reference to data storage
+  OtExtensionReceiverData& data_;
+
+  // random message choices
+  BitVector<> choices_;
+
+  // the output for the receiver
+  std::vector<BitVector<>> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
 // receiver implementation of batched xor-correlated bit ots
 class XcOtBitReceiver : public BasicOtReceiver {
  public:
@@ -203,6 +319,33 @@ class XcOtBitReceiver : public BasicOtReceiver {
 
   // the output for the receiver
   BitVector<> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched xor-correlated generic ots
+class XcOtReceiver : public BasicOtReceiver {
+ public:
+  XcOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+               OtExtensionReceiverData& data,
+               const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  std::span<const BitVector<>> GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+ private:
+  // future for the sender's message
+  ReusableFiberFuture<std::vector<BitVector<>>> sender_message_future_;
+
+  // the output for the receiver
+  std::vector<BitVector<>> outputs_;
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
@@ -352,7 +495,28 @@ class GOtBitSender : public BasicOtSender {
   BitVector<> inputs_;
 };
 
-// receiver implementation of batched 128 bit string OT
+// sender implementation of batched 1 bit string OT
+class GOtSender : public BasicOtSender {
+ public:
+  GOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+            OtExtensionSenderData& data,
+            const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+
+  // set the message pairs for all OTs in this batch
+  void SetInputs(std::vector<BitVector<>>&& inputs) { inputs_ = std::move(inputs); }
+  void SetInputs(const std::span<BitVector<>> inputs) {
+    inputs_.assign(inputs.begin(), inputs.end());
+  }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+ private:
+  // the sender's inputs, 2 * number_of_ots blocks
+  std::vector<BitVector<>> inputs_;
+};
+
+// receiver implementation of batched 1 bit string OT
 class GOtBitReceiver : public BasicOtReceiver {
  public:
   GOtBitReceiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionReceiverData& data,
@@ -373,6 +537,33 @@ class GOtBitReceiver : public BasicOtReceiver {
 
   // the output for the receiver
   BitVector<> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// receiver implementation of batched arbitrary-size bit string OT
+class GOtReceiver : public BasicOtReceiver {
+ public:
+  GOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+              OtExtensionReceiverData& data,
+              const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  const std::span<const BitVector<>> GetOutputs() const {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+ private:
+  // future for the sender's message
+  ReusableFiberFuture<std::vector<BitVector<>>> sender_message_future_;
+
+  // the output for the receiver
+  std::vector<BitVector<>> outputs_;
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;

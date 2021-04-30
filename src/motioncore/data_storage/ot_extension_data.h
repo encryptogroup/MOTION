@@ -51,7 +51,16 @@ enum OtExtensionDataType : uint {
   kOtExtensionInvalidDataType = 3
 };
 
-enum class OtMessageType { kBit, kBlock128, kUint8, kUint16, kUint32, kUint64, kUint128 };
+enum class OtMessageType {
+  kGenericBoolean,
+  kBit,
+  kBlock128,
+  kUint8,
+  kUint16,
+  kUint32,
+  kUint64,
+  kUint128
+};
 
 struct OtExtensionReceiverData {
   OtExtensionReceiverData();
@@ -61,6 +70,8 @@ struct OtExtensionReceiverData {
       std::size_t ot_id, std::size_t size);
   [[nodiscard]] ReusableFiberFuture<BitVector<>> RegisterForBitSenderMessage(std::size_t ot_id,
                                                                              std::size_t size);
+  [[nodiscard]] ReusableFiberFuture<std::vector<BitVector<>>> RegisterForGenericSenderMessage(
+      std::size_t ot_id, std::size_t size, std::size_t bitlength);
   template <typename T>
   [[nodiscard]] ReusableFiberFuture<std::vector<T>> RegisterForIntSenderMessage(std::size_t ot_id,
                                                                                 std::size_t size);
@@ -103,6 +114,12 @@ struct OtExtensionReceiverData {
       message_promises_bit;
   std::unordered_map<std::size_t, std::pair<std::size_t, ReusableFiberPromise<Block128Vector>>>
       message_promises_block128;
+
+  // Promises for the generic sender messages
+  // ot_id -> (vector size, length of each bitvector, vector promise)
+  std::unordered_map<std::size_t, std::tuple<std::size_t, std::size_t,
+                                             ReusableFiberPromise<std::vector<BitVector<>>>>>
+      message_promises_generic;
 
   template <typename T>
   using PromiseMapType =

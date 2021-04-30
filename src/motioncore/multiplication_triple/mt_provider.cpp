@@ -68,8 +68,14 @@ MtProviderFromOts::MtProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& o
                                      RunTimeStatistics& run_time_statistics)
     : MtProvider(my_id, ot_providers.size()),
       ot_providers_(ot_providers),
-      ots_receiver_(number_of_parties_),
-      ots_sender_(number_of_parties_),
+      ots_receiver_8_(number_of_parties_),
+      ots_sender_8_(number_of_parties_),
+      ots_receiver_16_(number_of_parties_),
+      ots_sender_16_(number_of_parties_),
+      ots_receiver_32_(number_of_parties_),
+      ots_sender_32_(number_of_parties_),
+      ots_receiver_64_(number_of_parties_),
+      ots_sender_64_(number_of_parties_),
       bit_ots_receiver_(number_of_parties_),
       bit_ots_sender_(number_of_parties_),
       logger_(logger),
@@ -106,17 +112,19 @@ void MtProviderFromOts::Setup() {
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kMtSetup>();
 
-#pragma omp parallel for
   for (auto i = 0ull; i < number_of_parties_; ++i) {
     if (i == my_id_) {
       continue;
     }
-    for (auto& ot : ots_sender_.at(i)) {
-      ot->SendMessages();
-    }
-    for (auto& ot : ots_receiver_.at(i)) {
-      ot->SendCorrections();
-    }
+    for (auto& ot : ots_sender_8_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_receiver_8_.at(i)) ot->SendCorrections();
+    for (auto& ot : ots_sender_16_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_receiver_16_.at(i)) ot->SendCorrections();
+    for (auto& ot : ots_sender_32_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_receiver_32_.at(i)) ot->SendCorrections();
+    for (auto& ot : ots_sender_64_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_receiver_64_.at(i)) ot->SendCorrections();
+
     if (number_of_bit_mts_ > 0) {
       assert(bit_ots_receiver_.at(i) != nullptr);
       assert(bit_ots_sender_.at(i) != nullptr);
@@ -170,29 +178,28 @@ static void RegisterHelperBool(OtProvider& ot_provider, std::unique_ptr<XcOtBitS
 
 template <typename T>
 static void RegisterHelper(OtProvider& ot_provider,
-                           std::list<std::shared_ptr<OtVectorSender>>& ots_sender,
-                           std::list<std::shared_ptr<OtVectorReceiver>>& ots_receiver,
+                           std::list<std::unique_ptr<AcOtSender<T>>>& ots_sender,
+                           std::list<std::unique_ptr<AcOtReceiver<T>>>& ots_receiver,
                            std::size_t max_batch_size, const IntegerMtVector<T>& mts,
                            std::size_t number_of_mts) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
-  constexpr auto kAcOt = OtProtocol::kAcOt;
 
   for (std::size_t mt_id = 0; mt_id < number_of_mts;) {
     const auto batch_size = std::min(max_batch_size, number_of_mts - mt_id);
-    auto ot_to_send = ot_provider.RegisterSend(bit_size, batch_size * bit_size, kAcOt);
-    std::vector<BitVector<>> vector_to_send;
-    vector_to_send.reserve(batch_size);
+    auto ot_to_send = ot_provider.template RegisterSendAcOt<T>(batch_size * bit_size);
+    std::vector<T> vector_to_send;
+    vector_to_send.reserve(batch_size * bit_size);
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
         const T input = mts.a.at(mt_id + k) << bit_i;
-        vector_to_send.emplace_back(reinterpret_cast<const std::byte*>(&input), bit_size);
+        vector_to_send.emplace_back(input);
       }
     }
-    ot_to_send->SetInputs(std::move(vector_to_send));
+    ot_to_send->SetCorrelations(std::move(vector_to_send));
 
-    auto ot_to_receive = ot_provider.RegisterReceive(bit_size, batch_size * bit_size, kAcOt);
+    auto ot_to_receive = ot_provider.template RegisterReceiveAcOt<T>(batch_size * bit_size);
     BitVector<> choices;
-    choices.Reserve(BitsToBytes(batch_size * bit_size));
+    choices.Reserve(batch_size * bit_size);
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
         const bool choice = ((mts.b.at(mt_id + k) >> bit_i) & 1u) == 1;
@@ -217,24 +224,22 @@ void MtProviderFromOts::RegisterOts() {
   GenerateRandomTriples<std::uint32_t>(mts32_, number_of_mts_32_);
   GenerateRandomTriples<std::uint64_t>(mts64_, number_of_mts_64_);
 
-#pragma omp parallel for num_threads(number_of_parties_)
   for (auto i = 0ull; i < number_of_parties_; ++i) {
     if (i == my_id_) {
       continue;
     }
-
     if (number_of_bit_mts_ > 0) {
       RegisterHelperBool(*ot_providers_.at(i), bit_ots_sender_.at(i), bit_ots_receiver_.at(i),
                          bit_mts_, number_of_bit_mts_);
     }
-    RegisterHelper<std::uint8_t>(*ot_providers_.at(i), ots_sender_.at(i), ots_receiver_.at(i),
+    RegisterHelper<std::uint8_t>(*ot_providers_.at(i), ots_sender_8_.at(i), ots_receiver_8_.at(i),
                                  kMaxBatchSize, mts8_, number_of_mts_8_);
-    RegisterHelper<std::uint16_t>(*ot_providers_.at(i), ots_sender_.at(i), ots_receiver_.at(i),
-                                  kMaxBatchSize, mts16_, number_of_mts_16_);
-    RegisterHelper<std::uint32_t>(*ot_providers_.at(i), ots_sender_.at(i), ots_receiver_.at(i),
-                                  kMaxBatchSize, mts32_, number_of_mts_32_);
-    RegisterHelper<std::uint64_t>(*ot_providers_.at(i), ots_sender_.at(i), ots_receiver_.at(i),
-                                  kMaxBatchSize, mts64_, number_of_mts_64_);
+    RegisterHelper<std::uint16_t>(*ot_providers_.at(i), ots_sender_16_.at(i),
+                                  ots_receiver_16_.at(i), kMaxBatchSize, mts16_, number_of_mts_16_);
+    RegisterHelper<std::uint32_t>(*ot_providers_.at(i), ots_sender_32_.at(i),
+                                  ots_receiver_32_.at(i), kMaxBatchSize, mts32_, number_of_mts_32_);
+    RegisterHelper<std::uint64_t>(*ot_providers_.at(i), ots_sender_64_.at(i),
+                                  ots_receiver_64_.at(i), kMaxBatchSize, mts64_, number_of_mts_64_);
   }
 }
 
@@ -250,8 +255,8 @@ static void ParseHelperBool(std::unique_ptr<XcOtBitSender>& ots_sender,
 }
 
 template <typename T>
-static void ParseHelper(std::list<std::shared_ptr<OtVectorSender>>& ots_sender,
-                        std::list<std::shared_ptr<OtVectorReceiver>>& ots_receiver,
+static void ParseHelper(std::list<std::unique_ptr<AcOtSender<T>>>& ots_sender,
+                        std::list<std::unique_ptr<AcOtReceiver<T>>>& ots_receiver,
                         std::size_t max_batch_size, IntegerMtVector<T>& mts,
                         std::size_t number_of_mts) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
@@ -260,14 +265,14 @@ static void ParseHelper(std::list<std::shared_ptr<OtVectorSender>>& ots_sender,
     const auto batch_size = std::min(max_batch_size, number_of_mts - mt_id);
     const auto& ot_to_send = ots_sender.front();
     const auto& ot_to_receive = ots_receiver.front();
+    ot_to_send->ComputeOutputs();
     const auto& output_sender = ot_to_send->GetOutputs();
+    ot_to_receive->ComputeOutputs();
     const auto& output_receiver = ot_to_receive->GetOutputs();
     for (auto j = 0ull; j < batch_size; ++j) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
-        mts.c.at(mt_id + j) += *reinterpret_cast<const T* __restrict__>(
-                                   output_receiver.at(j * bit_size + bit_i).GetData().data()) -
-                               *reinterpret_cast<const T* __restrict__>(
-                                   output_sender.at(j * bit_size + bit_i).GetData().data());
+        mts.c.at(mt_id + j) +=
+            output_receiver[j * bit_size + bit_i] - output_sender[j * bit_size + bit_i];
       }
     }
     ots_sender.pop_front();
@@ -285,17 +290,14 @@ void MtProviderFromOts::ParseOutputs() {
     if (number_of_bit_mts_ > 0) {
       ParseHelperBool(bit_ots_sender_.at(i), bit_ots_receiver_.at(i), bit_mts_);
     }
-    ParseHelper<std::uint8_t>(ots_sender_.at(i), ots_receiver_.at(i), kMaxBatchSize, mts8_,
+    ParseHelper<std::uint8_t>(ots_sender_8_.at(i), ots_receiver_8_.at(i), kMaxBatchSize, mts8_,
                               number_of_mts_8_);
-    ParseHelper<std::uint16_t>(ots_sender_.at(i), ots_receiver_.at(i), kMaxBatchSize, mts16_,
+    ParseHelper<std::uint16_t>(ots_sender_16_.at(i), ots_receiver_16_.at(i), kMaxBatchSize, mts16_,
                                number_of_mts_16_);
-    ParseHelper<std::uint32_t>(ots_sender_.at(i), ots_receiver_.at(i), kMaxBatchSize, mts32_,
+    ParseHelper<std::uint32_t>(ots_sender_32_.at(i), ots_receiver_32_.at(i), kMaxBatchSize, mts32_,
                                number_of_mts_32_);
-    ParseHelper<std::uint64_t>(ots_sender_.at(i), ots_receiver_.at(i), kMaxBatchSize, mts64_,
+    ParseHelper<std::uint64_t>(ots_sender_64_.at(i), ots_receiver_64_.at(i), kMaxBatchSize, mts64_,
                                number_of_mts_64_);
-
-    assert(ots_sender_.at(i).empty());
-    assert(ots_receiver_.at(i).empty());
   }
 }
 

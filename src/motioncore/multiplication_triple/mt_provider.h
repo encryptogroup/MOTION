@@ -26,7 +26,7 @@
 
 #include <list>
 
-#include "oblivious_transfer/ot_provider.h"
+#include "oblivious_transfer/ot_flavors.h"
 #include "utility/bit_vector.h"
 #include "utility/fiber_condition.h"
 #include "utility/helpers.h"
@@ -187,8 +187,18 @@ class MtProviderFromOts final : public MtProvider {
   std::vector<std::unique_ptr<OtProvider>>& ot_providers_;
 
   // use alternating party roles for load balancing
-  std::vector<std::list<std::shared_ptr<OtVectorReceiver>>> ots_receiver_;
-  std::vector<std::list<std::shared_ptr<OtVectorSender>>> ots_sender_;
+  std::vector<std::list<std::unique_ptr<AcOtReceiver<std::uint8_t>>>> ots_receiver_8_;
+  std::vector<std::list<std::unique_ptr<AcOtSender<std::uint8_t>>>> ots_sender_8_;
+
+  std::vector<std::list<std::unique_ptr<AcOtReceiver<std::uint16_t>>>> ots_receiver_16_;
+  std::vector<std::list<std::unique_ptr<AcOtSender<std::uint16_t>>>> ots_sender_16_;
+
+  std::vector<std::list<std::unique_ptr<AcOtReceiver<std::uint32_t>>>> ots_receiver_32_;
+  std::vector<std::list<std::unique_ptr<AcOtSender<std::uint32_t>>>> ots_sender_32_;
+
+  std::vector<std::list<std::unique_ptr<AcOtReceiver<std::uint64_t>>>> ots_receiver_64_;
+  std::vector<std::list<std::unique_ptr<AcOtSender<std::uint64_t>>>> ots_sender_64_;
+
   std::vector<std::unique_ptr<XcOtBitReceiver>> bit_ots_receiver_;
   std::vector<std::unique_ptr<XcOtBitSender>> bit_ots_sender_;
 

@@ -405,7 +405,7 @@ TEST(ArithmeticGmw, Subtraction_1_1K_Simd_2_3_4_5_10_parties) {
 
 TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
-  std::srand(std::time(nullptr));
+  std::srand(0);
   auto template_test = [](auto template_variable) {
     using T = decltype(template_variable);
     const std::vector<T> kZeroV_100(100, 0);
@@ -416,17 +416,17 @@ TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
       for (auto& v : input_100) {
         v = ::RandomVector<T>(100);
       }
-      try {
-        std::vector<PartyPointer> motion_parties(
-            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
-        for (auto& party : motion_parties) {
-          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
-        }
-#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(motion_parties.size())
-        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      std::vector<PartyPointer> motion_parties(
+          std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+      for (auto& party : motion_parties) {
+        party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+        party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+      }
+      std::vector<std::future<void>> futures;
+      for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+        futures.emplace_back(std::async(std::launch::async, [party_id, output_owner,
+                                                             number_of_parties, &motion_parties,
+                                                             input_1, input_100, kZeroV_100] {
           std::vector<encrypto::motion::ShareWrapper> share_input_1, share_input_100;
           for (auto j = 0u; j < number_of_parties; ++j) {
             // If my input - real input, otherwise a dummy 0 (-vector).
@@ -456,28 +456,20 @@ TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
           motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
-            auto wire_1 =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1->GetWires().at(0));
-            auto wire_100 =
-                std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
-                    share_output_1K->GetWires().at(0));
-
-            T circuit_result_1 = wire_1->GetValues().at(0);
+            T circuit_result_1 = share_output_1.As<T>();
             T expected_result_1 = MulReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
-            const std::vector<T>& circuit_result_100 = wire_100->GetValues();
+            const std::vector<T> circuit_result_100 = share_output_1K.As<std::vector<T>>();
             const std::vector<T> expected_result_100 = std::move(RowMulReduction(input_100));
             for (auto i = 0u; i < circuit_result_100.size(); ++i) {
               EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
             }
           }
           motion_parties.at(party_id)->Finish();
-        }
-      } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        }));
       }
+      for (auto& f : futures) f.get();
     }
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {

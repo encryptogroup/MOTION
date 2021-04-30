@@ -28,14 +28,11 @@
 #include <fmt/format.h>
 
 #include "base/backend.h"
-#include "base/motion_base_provider.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
 #include "communication/output_message.h"
 #include "multiplication_triple/mt_provider.h"
-#include "oblivious_transfer/ot_provider.h"
 #include "primitives/sharing_randomness_generator.h"
-#include "utility/fiber_condition.h"
 #include "utility/helpers.h"
 
 namespace encrypto::motion::proto::boolean_gmw {
@@ -762,16 +759,15 @@ MuxGate::MuxGate(const motion::SharePointer& a, const motion::SharePointer& b,
   const auto number_of_parties = communication_layer.GetNumberOfParties();
   const auto my_id = communication_layer.GetMyId();
   const auto number_of_bits = parent_a_.size();
-  constexpr auto kXcOt = OtProtocol::kXcOt;
 
   ot_sender_.resize(number_of_parties);
   ot_receiver_.resize(number_of_parties);
 
   for (std::size_t i = 0; i < number_of_parties; ++i) {
     if (i == my_id) continue;
-    ot_sender_.at(i) = GetOtProvider(i).RegisterSend(number_of_bits, number_of_simd_values, kXcOt);
+    ot_sender_.at(i) = GetOtProvider(i).RegisterSendXcOt(number_of_simd_values, number_of_bits);
     ot_receiver_.at(i) =
-        GetOtProvider(i).RegisterReceive(number_of_bits, number_of_simd_values, kXcOt);
+        GetOtProvider(i).RegisterReceiveXcOt(number_of_simd_values, number_of_bits);
   }
 
   if constexpr (kDebug) {
@@ -834,7 +830,7 @@ void MuxGate::EvaluateOnline() {
     ot_receiver_.at(other_pid)->SetChoices(selection_bits);
     ot_receiver_.at(other_pid)->SendCorrections();
 
-    ot_sender_.at(other_pid)->SetInputs(xored_vector);
+    ot_sender_.at(other_pid)->SetCorrelations(xored_vector);
     ot_sender_.at(other_pid)->SendMessages();
   }
 
@@ -843,11 +839,13 @@ void MuxGate::EvaluateOnline() {
 
   for (auto other_pid = 0ull; other_pid < number_of_parties; ++other_pid) {
     if (other_pid == my_id) continue;
-    const auto& ot_r = ot_receiver_.at(other_pid)->GetOutputs();
-    const auto& ot_s = ot_sender_.at(other_pid)->GetOutputs();
+    ot_receiver_.at(other_pid)->ComputeOutputs();
+    const auto ot_r = ot_receiver_.at(other_pid)->GetOutputs();
+    ot_sender_.at(other_pid)->ComputeOutputs();
+    const auto ot_s = ot_sender_.at(other_pid)->GetOutputs();
     for (auto simd_i = 0ull; simd_i < number_of_simd; ++simd_i) {
-      xored_vector.at(simd_i) ^= ot_r.at(simd_i);
-      BitSpan bs(const_cast<std::byte*>(ot_s.at(simd_i).GetData().data()), number_of_bits);
+      xored_vector.at(simd_i) ^= ot_r[simd_i];
+      BitSpan bs(const_cast<std::byte*>(ot_s[simd_i].GetData().data()), number_of_bits);
       xored_vector.at(simd_i) ^= bs;
     }
   }

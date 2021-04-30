@@ -74,6 +74,173 @@ void BasicOtReceiver::SendCorrections() {
   corrections_sent_ = true;
 }
 
+ROtSender::ROtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+                     OtExtensionSenderData& data,
+                     const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
+    : OtVector(ot_id, number_of_ots, bitlength, kROt, send_function), data_(data) {
+  data_.received_correction_offsets_condition.emplace(
+      ot_id_, std::make_unique<FiberCondition>([this]() {
+        std::scoped_lock lock(data_.corrections_mutex);
+        return data_.received_correction_offsets.find(ot_id_) !=
+               data_.received_correction_offsets.end();
+      }));
+  data_.y0.resize(data_.y0.size() + number_of_ots);
+  data_.y1.resize(data_.y1.size() + number_of_ots);
+  data_.bitlengths.resize(data_.bitlengths.size() + number_of_ots, bitlength);
+  data_.number_of_ots_in_batch.emplace(ot_id, number_of_ots);
+}
+
+void ROtSender::WaitSetup() const { data_.setup_finished_condition->Wait(); }
+
+void ROtSender::ComputeOutputs() {
+  if (outputs_computed_) {
+    // the work was already done
+    return;
+  }
+
+  // setup phase needs to be finished
+  WaitSetup();
+
+  // data storage for all the sender data
+  const auto& ot_extension_sender_data = data_;
+
+  // make space for all the OTs
+  outputs_.resize(number_of_ots_);
+
+  // append both masks as the output
+  for (std::size_t i = 0; i < number_of_ots_; ++i) {
+    outputs_[i].Reserve(bitlen_ * 2);
+    outputs_[i].Append(ot_extension_sender_data.y0.at(ot_id_ + i));
+    outputs_[i].Append(ot_extension_sender_data.y1.at(ot_id_ + i));
+  }
+
+  // remember that we have done this
+  outputs_computed_ = true;
+}
+
+ROtReceiver::ROtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+                         OtExtensionReceiverData& data,
+                         const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
+    : OtVector(ot_id, number_of_ots, bitlength, kROt, send_function), data_(data) {
+  data_.outputs.resize(ot_id + number_of_ots);
+  data_.bitlengths.resize(ot_id + number_of_ots, bitlength);
+  data_.number_of_ots_in_batch.emplace(ot_id, number_of_ots);
+}
+
+void ROtReceiver::WaitSetup() const { data_.setup_finished_condition->Wait(); }
+
+void ROtReceiver::ComputeOutputs() {
+  if (outputs_computed_) {
+    // the work was already done
+    return;
+  }
+
+  // setup phase needs to be finished
+  WaitSetup();
+
+  // copy random choices to the internal buffer
+  choices_ = data_.random_choices->Subset(ot_id_, ot_id_ + number_of_ots_);
+
+  // copy the selected random mask to the internal buffer
+  outputs_.assign(data_.outputs.begin() + ot_id_, data_.outputs.begin() + ot_id_ + number_of_ots_);
+
+  // flag that the outputs have been computed
+  outputs_computed_ = true;
+}
+
+// ---------- Generic XcOtSender ----------
+
+XcOtSender::XcOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+                       OtExtensionSenderData& data,
+                       const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
+    : BasicOtSender(ot_id, number_of_ots, bitlength, kXcOt, send_function, data) {}
+
+void XcOtSender::ComputeOutputs() {
+  if (outputs_computed_) {
+    // the work was already done
+    return;
+  }
+
+  // setup phase needs to be finished
+  WaitSetup();
+
+  // data storage for all the sender data
+  const auto& ot_extension_sender_data = data_;
+
+  // wait until the receiver has sent its correction bits
+  ot_extension_sender_data.received_correction_offsets_condition.at(ot_id_)->Wait();
+
+  // make space for all the OTs
+  outputs_.resize(number_of_ots_);
+
+  // get the corrections bits
+  std::unique_lock lock(ot_extension_sender_data.corrections_mutex);
+  const auto corrections =
+      ot_extension_sender_data.corrections.Subset(ot_id_, ot_id_ + number_of_ots_);
+  lock.unlock();
+
+  // take one of the precomputed outputs
+  for (std::size_t i = 0; i < number_of_ots_; ++i) {
+    outputs_[i].Reserve(bitlen_ * 2);
+    if (corrections[i]) {
+      // if the correction bit is 1, we need to swap
+      outputs_[i].Append(ot_extension_sender_data.y1.at(ot_id_ + i));
+    } else {
+      outputs_[i].Append(ot_extension_sender_data.y0.at(ot_id_ + i));
+    }
+    outputs_[i].Append(correlations_[i] ^ outputs_[i]);
+  }
+
+  // remember that we have done this
+  outputs_computed_ = true;
+}
+
+void XcOtSender::SendMessages() const {
+  BitVector<> buffer;
+  buffer.Reserve(bitlen_ * number_of_ots_);
+  const auto& ot_extension_sender_data = data_;
+  for (std::size_t i = 0; i < number_of_ots_; ++i) {
+    buffer.Append(correlations_[i] ^ ot_extension_sender_data.y0.at(ot_id_ + i) ^
+                  ot_extension_sender_data.y1.at(ot_id_ + i));
+  }
+  send_function_(communication::BuildOtExtensionMessageSender(buffer.GetData().data(),
+                                                              buffer.GetData().size(), ot_id_));
+}
+
+// ---------- Generic XcOtReceiver ----------
+
+XcOtReceiver::XcOtReceiver(
+    const std::size_t ot_id, const std::size_t number_of_ots, const std::size_t bitlength,
+    OtExtensionReceiverData& data,
+    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
+    : BasicOtReceiver(ot_id, number_of_ots, bitlength, kXcOt, send_function, data),
+      outputs_(number_of_ots) {
+  data_.message_type.emplace(ot_id, OtMessageType::kGenericBoolean);
+  sender_message_future_ = data_.RegisterForGenericSenderMessage(ot_id, number_of_ots, bitlength);
+}
+
+void XcOtReceiver::ComputeOutputs() {
+  if (outputs_computed_) {
+    // already done
+    return;
+  }
+
+  if (!corrections_sent_) {
+    throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
+  }
+  auto sender_message = sender_message_future_.get();
+
+  for (std::size_t i = 0; i < number_of_ots_; ++i) {
+    assert(sender_message[i].GetSize() == bitlen_);
+    outputs_[i] = std::move(data_.outputs.at(ot_id_ + i));
+    assert(outputs_[i].GetSize() == bitlen_);
+    if (choices_[i]) {
+      outputs_[i] ^= sender_message[i];
+    }
+  }
+  outputs_computed_ = true;
+}
+
 // ---------- FixedXcOt128Sender ----------
 
 FixedXcOt128Sender::FixedXcOt128Sender(
@@ -528,6 +695,80 @@ void GOtBitReceiver::ComputeOutputs() {
       difference = sender_message.Get(2 * i);
     }
     outputs_.Set(difference ^ data_.outputs.at(ot_id_ + i).Get(0), i);
+  }
+  outputs_computed_ = true;
+}
+
+// ---------- Generic GOtSender ----------
+
+GOtSender::GOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+                     OtExtensionSenderData& data,
+                     const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
+    : BasicOtSender(ot_id, number_of_ots, bitlength, kGOt, send_function, data) {}
+
+void GOtSender::SendMessages() const {
+  auto inputs = std::move(inputs_);
+
+  const auto& ot_extension_sender_data = data_;
+  ot_extension_sender_data.received_correction_offsets_condition.at(ot_id_)->Wait();
+  std::unique_lock lock(ot_extension_sender_data.corrections_mutex);
+  const auto corrections =
+      ot_extension_sender_data.corrections.Subset(ot_id_, ot_id_ + number_of_ots_);
+  lock.unlock();
+
+  BitVector<> buffer;
+  buffer.Reserve(number_of_ots_ * bitlen_ * 2);
+
+  for (std::size_t i = 0; i < number_of_ots_; ++i) {
+    // swap the inputs if corrections[i] == true
+    if (corrections[i]) {
+      buffer.Append(inputs[i].Subset(bitlen_, 2 * bitlen_) ^
+                    ot_extension_sender_data.y0.at(ot_id_ + i));
+      buffer.Append(BitSpan(inputs[i].GetMutableData().data(), bitlen_) ^
+                    ot_extension_sender_data.y1.at(ot_id_ + i));
+    } else {
+      buffer.Append(BitSpan(inputs[i].GetMutableData().data(), bitlen_) ^
+                    ot_extension_sender_data.y0.at(ot_id_ + i));
+      buffer.Append(inputs[i].Subset(bitlen_, 2 * bitlen_) ^
+                    ot_extension_sender_data.y1.at(ot_id_ + i));
+    }
+  }
+  send_function_(communication::BuildOtExtensionMessageSender(buffer.GetData().data(),
+                                                              buffer.GetData().size(), ot_id_));
+}
+
+// ---------- Generic GOtSender ----------
+
+GOtReceiver::GOtReceiver(const std::size_t ot_id, const std::size_t number_of_ots,
+                         const std::size_t bitlength, OtExtensionReceiverData& data,
+                         const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
+    : BasicOtReceiver(ot_id, number_of_ots, bitlength, kGOt, send_function, data),
+      outputs_(number_of_ots) {
+  data_.message_type.emplace(ot_id, OtMessageType::kGenericBoolean);
+  sender_message_future_ =
+      data_.RegisterForGenericSenderMessage(ot_id, 2 * number_of_ots, bitlength);
+}
+
+void GOtReceiver::ComputeOutputs() {
+  if (outputs_computed_) {
+    // already done
+    return;
+  }
+
+  if (!corrections_sent_) {
+    throw std::runtime_error("Choices in OT must be se(n)t before calling ComputeOutputs()");
+  }
+  auto sender_message = sender_message_future_.get();
+  const auto random_choices = data_.random_choices->Subset(ot_id_, ot_id_ + number_of_ots_);
+
+  for (std::size_t i = 0; i < number_of_ots_; ++i) {
+    BitSpan difference;
+    if (random_choices[i]) {
+      difference = sender_message[2 * i + 1];
+    } else {
+      difference = sender_message[2 * i];
+    }
+    outputs_[i] = difference ^ data_.outputs.at(ot_id_ + i);
   }
   outputs_computed_ = true;
 }

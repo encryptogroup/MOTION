@@ -106,6 +106,20 @@ void OtExtensionData::MessageReceived(const std::uint8_t* message,
               promise.set_value(BitVector<>(message, size));
               return;
             } break;
+            case OtMessageType::kGenericBoolean: {
+              auto promise_iterator = receiver_data.message_promises_generic.find(i);
+              assert(promise_iterator != receiver_data.message_promises_generic.end());
+              auto& [vector_size, bitlength, promise] = promise_iterator->second;
+              assert((vector_size * bitlength + 7) / 8 == message_size);
+              BitSpan bit_span(const_cast<std::uint8_t*>(message), vector_size * bitlength);
+              std::vector<BitVector<>> result;
+              result.reserve(vector_size);
+              for (std::size_t i = 0; i < vector_size; ++i) {
+                result.emplace_back(bit_span.Subset(i * bitlength, (i + 1) * bitlength));
+              }
+              promise.set_value(std::move(result));
+              return;
+            } break;
             case OtMessageType::kUint8: {
               constexpr auto type_c = boost::hana::type_c<std::uint8_t>;
               auto& promise_map = receiver_data.message_promises_int[type_c];
@@ -292,6 +306,20 @@ ReusableFiberFuture<BitVector<>> OtExtensionReceiverData::RegisterForBitSenderMe
   if (!success) {
     throw std::runtime_error(
         fmt::format("tried to register twice for BitSenderMessage for OT#{}", ot_id));
+  }
+  return future;
+}
+
+ReusableFiberFuture<std::vector<BitVector<>>>
+OtExtensionReceiverData::RegisterForGenericSenderMessage(std::size_t ot_id, std::size_t size,
+                                                         std::size_t bitlength) {
+  ReusableFiberPromise<std::vector<BitVector<>>> promise;
+  auto future = promise.get_future();
+  auto [it, success] =
+      message_promises_generic.emplace(ot_id, std::make_tuple(size, bitlength, std::move(promise)));
+  if (!success) {
+    throw std::runtime_error(
+        fmt::format("tried to register twice for GenericSenderMessage for OT#{}", ot_id));
   }
   return future;
 }
