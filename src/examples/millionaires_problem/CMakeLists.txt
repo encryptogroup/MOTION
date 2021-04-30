@@ -1,4 +1,4 @@
-add_executable(millionairs_problem millionairs_problem.cpp common/millionair.cpp)
+add_executable(millionaires_problem millionaires_problem.cpp common/millionaire.cpp)
 
 if (NOT MOTION_BUILD_BOOST_FROM_SOURCES)
     find_package(Boost
@@ -7,7 +7,7 @@ if (NOT MOTION_BUILD_BOOST_FROM_SOURCES)
             REQUIRED)
 endif ()
 
-target_link_libraries(millionairs_problem
+target_link_libraries(millionaires_problem
         MOTION::motion
         Boost::program_options
         )

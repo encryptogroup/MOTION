@@ -34,7 +34,7 @@
 #include <stdexcept>
 
 #include "base/party.h"
-#include "common/millionair.h"
+#include "common/millionaire.h"
 #include "communication/communication_layer.h"
 #include "communication/tcp_transport.h"
 
