@@ -24,7 +24,6 @@
 
 #include "millionair.h"
 
-#include <bits/c++config.h>
 #include <cstddef>
 #include <vector>
 #include <limits>
