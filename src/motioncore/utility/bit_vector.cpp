@@ -1561,6 +1561,7 @@ BitVectorType BitSpan::Subset(const std::size_t from, const std::size_t to) cons
       }
     }
   }
+  result.TruncateToFit();
   return result;
 }
 
