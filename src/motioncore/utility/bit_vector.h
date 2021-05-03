@@ -64,6 +64,7 @@ template <typename Allocator = std::allocator<std::byte>>
 class BitVector {
   template <typename OtherAllocator>
   friend class BitVector;
+  friend class BitSpan;
 
  public:
   // Default constructor, results in an empty vector
@@ -216,7 +217,7 @@ class BitVector {
 
   /// \brief Reserves new space for BitVector, so that it can contain at least \p number_of_bits
   /// bits \param number_of_bits
-  void Reserve(std::size_t number_of_bits) { data_vector_.reserve(number_of_bits); }
+  void Reserve(std::size_t number_of_bits) { data_vector_.reserve(BitsToBytes(number_of_bits)); }
 
   /// \brief Appends a bit to BitVector.
   /// \param bit
