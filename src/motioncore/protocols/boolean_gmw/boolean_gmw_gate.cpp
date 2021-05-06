@@ -808,8 +808,8 @@ void MuxGate::EvaluateOnline() {
   xored_vector.reserve(number_of_bits);
   for (auto simd_i = 0ull; simd_i < number_of_simd; ++simd_i) {
     BitVector<> a, b;
-    a.Reserve(BitsToBytes(number_of_bits));
-    b.Reserve(BitsToBytes(number_of_bits));
+    a.Reserve(number_of_bits);
+    b.Reserve(number_of_bits);
     for (auto bit_i = 0ull; bit_i < number_of_bits; ++bit_i) {
       auto wire_a = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_a_.at(bit_i));
       auto wire_b = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_b_.at(bit_i));

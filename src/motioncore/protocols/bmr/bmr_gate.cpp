@@ -180,7 +180,7 @@ void InputGate::EvaluateOnline() {
   const auto number_of_wires = output_wires_.size();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
   motion::BitVector<> buffer;
-  buffer.Reserve(motion::BitsToBytes(bit_size_));
+  buffer.Reserve(bit_size_);
 
   // if this is our input, set the public values by masking our real inputs
   // with the random permutation bits
