@@ -87,23 +87,8 @@ struct OtExtensionReceiverData {
   std::unordered_map<std::size_t, std::unique_ptr<FiberCondition>> output_conditions;
   std::mutex received_outputs_mutex;
 
-  // how many messages need to be sent from sender to receiver?
-  // GOT -> 2
-  // COT -> 1
-  // ROT -> 0 (not in map)
-  std::unordered_map<std::size_t, std::size_t> number_of_messages_to_be_sent;
-  std::mutex number_of_messages_to_be_sent_mutex;
-
-  // is an OT batch of XOR correlated OT?
-  std::unordered_set<std::size_t> xor_correlation;
-
-  std::mutex bitlengths_mutex;
   // bit length of every OT
   std::vector<std::size_t> bitlengths;
-
-  // real choices for every OT?
-  std::unique_ptr<BitVector<>> real_choices;
-  std::unordered_map<std::size_t, std::unique_ptr<FiberCondition>> real_choices_condition;
 
   // store the message types of new-style OTs
   std::unordered_map<std::size_t, OtMessageType> message_type;

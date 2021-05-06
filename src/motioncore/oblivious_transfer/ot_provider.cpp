@@ -163,10 +163,7 @@ OtProviderFromOtExtension::OtProviderFromOtExtension(
     std::shared_ptr<Logger> logger)
     : OtProvider(send_function, data, party_id, logger),
       base_ot_data_(base_ot_data),
-      motion_base_provider_(motion_base_provider) {
-  auto& ot_extension_receiver_data = data_.GetReceiverData();
-  ot_extension_receiver_data.real_choices = std::make_unique<BitVector<>>();
-}
+      motion_base_provider_(motion_base_provider) {}
 
 void OtProviderFromOtExtension::SendSetup() {
   // security parameter
