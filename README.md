@@ -162,3 +162,8 @@ Alternatively, it can be built locally in `your_build_folder/doc` by adding `-DM
   with the largest input (i.e., the richest party)
   * **TODO (in work, cleanup):** All the applications implemented in [HyCC](https://gitlab.com/securityengineering/HyCC) 
   via our HyCC adapter
+    
+Three other examples with a detailed `README` can be found in `src/examples/tutorial/` :
+  * Crosstabs
+  * Inner Product
+  * Multiply 3: multiply three real inputs from three parties or three shared inputs from two parties.
