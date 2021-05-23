@@ -140,7 +140,18 @@ make
 make install
 ```
 
+##### Docker setup
 
+1. Create a Docker image. This may take a few minutes, but you will only have to do this once.
+    ```
+   docker build -t motion .
+    ```
+
+2. Run the Docker image.
+    ```
+   docker run -it --rm motion
+    ```
+To check correctness, run the test using `--gtest_filter='-*ipv6*'` because Docker doesn't support IPv6 by default.
 #### Developer Guide and Documentation
 **TODO (in work):** We provide an extensive developer guide with many examples and explanations of how to use MOTION.
 
