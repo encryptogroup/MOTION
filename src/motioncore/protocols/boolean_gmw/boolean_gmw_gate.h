@@ -26,6 +26,8 @@
 
 #include "boolean_gmw_share.h"
 
+#include <span>
+
 #include "oblivious_transfer/ot_flavors.h"
 #include "protocols/gate.h"
 #include "utility/bit_vector.h"
@@ -37,7 +39,7 @@ class InputGate final : public motion::InputGate {
   using Base = motion::InputGate;
 
  public:
-  InputGate(const std::vector<BitVector<>>& input, std::size_t party_id, Backend& backend);
+  InputGate(std::span<const BitVector<>> input, std::size_t party_id, Backend& backend);
 
   InputGate(std::vector<BitVector<>>&& input, std::size_t party_id, Backend& backend);
 
@@ -57,7 +59,7 @@ class InputGate final : public motion::InputGate {
 
   std::size_t bits_;                ///< Number of parallel values on wires
   std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
-                                    ///< correlated randomness using AES CTR
+  ///< correlated randomness using AES CTR
 };
 
 constexpr std::size_t kAll = std::numeric_limits<std::int64_t>::max();

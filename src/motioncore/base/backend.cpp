@@ -30,6 +30,7 @@
 #include <functional>
 #include <future>
 #include <iterator>
+#include <span>
 
 #include <fmt/format.h>
 #include <boost/asio/thread_pool.hpp>
@@ -182,7 +183,7 @@ SharePointer Backend::BooleanGmwInput(std::size_t party_id, BitVector<>&& input)
   return BooleanGmwInput(party_id, std::vector<BitVector<>>{std::move(input)});
 }
 
-SharePointer Backend::BooleanGmwInput(std::size_t party_id, const std::vector<BitVector<>>& input) {
+SharePointer Backend::BooleanGmwInput(std::size_t party_id, std::span<const BitVector<>> input) {
   const auto input_gate = std::make_shared<proto::boolean_gmw::InputGate>(input, party_id, *this);
   const auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
   RegisterInputGate(input_gate_cast);
@@ -280,7 +281,7 @@ SharePointer Backend::BmrInput(std::size_t party_id, BitVector<>&& input) {
   return BmrInput(party_id, std::vector<BitVector<>>{std::move(input)});
 }
 
-SharePointer Backend::BmrInput(std::size_t party_id, const std::vector<BitVector<>>& input) {
+SharePointer Backend::BmrInput(std::size_t party_id, std::span<const BitVector<>> input) {
   const auto input_gate = std::make_shared<proto::bmr::InputGate>(input, party_id, *this);
   const auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
   RegisterInputGate(input_gate_cast);

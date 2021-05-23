@@ -27,6 +27,7 @@
 #include <memory>
 
 #include <flatbuffers/flatbuffers.h>
+#include <span>
 
 #include "protocols/arithmetic_gmw/arithmetic_gmw_gate.h"
 #include "protocols/constant/constant_gate.h"
@@ -127,7 +128,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   SharePointer BooleanGmwInput(std::size_t party_id, BitVector<>&& input);
 
-  SharePointer BooleanGmwInput(std::size_t party_id, const std::vector<BitVector<>>& input);
+  SharePointer BooleanGmwInput(std::size_t party_id, std::span<const BitVector<>> input);
 
   SharePointer BooleanGmwInput(std::size_t party_id, std::vector<BitVector<>>&& input);
 
@@ -156,7 +157,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   SharePointer BmrInput(std::size_t party_id, BitVector<>&& input);
 
-  SharePointer BmrInput(std::size_t party_id, const std::vector<BitVector<>>& input);
+  SharePointer BmrInput(std::size_t party_id, std::span<const BitVector<>> input);
 
   SharePointer BmrInput(std::size_t party_id, std::vector<BitVector<>>&& input);
 

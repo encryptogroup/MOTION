@@ -26,6 +26,7 @@
 
 #include <fmt/format.h>
 #include <memory>
+#include <span>
 #include <vector>
 
 #include "base/backend.h"
@@ -63,7 +64,7 @@ class Party {
   communication::CommunicationLayer& GetCommunicationLayer() { return *communication_layer_; }
 
   template <MpcProtocol P>
-  SharePointer In(const std::vector<BitVector<>>& input,
+  SharePointer In(std::span<const BitVector<>> input,
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
@@ -296,7 +297,7 @@ class Party {
   }
 
   template <MpcProtocol P>
-  SharePointer SharedIn(const std::vector<BitVector<>>& input) {
+  SharePointer SharedIn(std::span<const BitVector<>> input) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
 

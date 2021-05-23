@@ -27,6 +27,8 @@
 #include "bmr_provider.h"
 #include "bmr_wire.h"
 
+#include <span>
+
 #include "base/backend.h"
 #include "base/motion_base_provider.h"
 #include "communication/bmr_message.h"
@@ -50,15 +52,15 @@ InputGate::InputGate(std::size_t number_of_simd, std::size_t bit_size, std::size
   InitializationHelper();
 }
 
-InputGate::InputGate(const std::vector<motion::BitVector<>>& input, std::size_t input_owner_id,
+InputGate::InputGate(std::span<const motion::BitVector<>> input, std::size_t input_owner_id,
                      Backend& backend)
     : InputGate::Base(backend) {
   input_future_ = input_promise_.get_future();
   assert(!input.empty());
   input_owner_id_ = input_owner_id;
   bit_size_ = input.size();
-  number_of_simd_ = input.at(0).GetSize();
-  input_promise_.set_value(input);
+  number_of_simd_ = input[0].GetSize();
+  input_promise_.set_value(std::vector(input.begin(), input.end()));
   InitializationHelper();
 }
 

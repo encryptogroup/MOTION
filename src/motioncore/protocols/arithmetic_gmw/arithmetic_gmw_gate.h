@@ -59,8 +59,8 @@ class InputGate final : public motion::InputGate {
   using Base = motion::InputGate;
 
  public:
-  InputGate(const std::vector<T>& input, std::size_t input_owner, Backend& backend)
-      : Base(backend), input_(input) {
+  InputGate(std::span<const T> input, std::size_t input_owner, Backend& backend)
+      : Base(backend), input_(std::vector(input.begin(), input.end())) {
     input_owner_id_ = input_owner;
     InitializationHelper();
   }

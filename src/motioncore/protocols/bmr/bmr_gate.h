@@ -27,6 +27,7 @@
 #include "bmr_share.h"
 
 #include <future>
+#include <span>
 
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
 #include "protocols/gate.h"
@@ -54,7 +55,7 @@ class InputGate final : public motion::InputGate {
   InputGate(std::size_t number_of_simd, std::size_t bit_size, std::size_t input_owner_id,
             Backend& backend);
 
-  InputGate(const std::vector<motion::BitVector<>>& input, std::size_t input_owner_id,
+  InputGate(std::span<const motion::BitVector<>> input, std::size_t input_owner_id,
             Backend& backend);
 
   InputGate(std::vector<motion::BitVector<>>&& input, std::size_t input_owner_id, Backend& backend);

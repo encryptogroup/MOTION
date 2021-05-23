@@ -26,6 +26,7 @@
 #include "boolean_gmw_wire.h"
 
 #include <fmt/format.h>
+#include <span>
 
 #include "base/backend.h"
 #include "base/register.h"
@@ -37,8 +38,8 @@
 
 namespace encrypto::motion::proto::boolean_gmw {
 
-InputGate::InputGate(const std::vector<BitVector<>>& input, std::size_t party_id, Backend& backend)
-    : InputGate::Base(backend), input_(input) {
+InputGate::InputGate(std::span<const BitVector<>> input, std::size_t party_id, Backend& backend)
+    : InputGate::Base(backend), input_(std::vector(input.begin(), input.end())) {
   input_owner_id_ = party_id;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
   InitializationHelper();
