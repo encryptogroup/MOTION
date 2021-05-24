@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Lennart Braun
+// Copyright (c) 2019-2021 Lennart Braun, Arianne Roselina Prananto
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include <boost/accumulators/statistics/median.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
+#include <boost/json.hpp>
 #include <list>
 #include "run_time_statistics.h"
 
@@ -52,6 +53,8 @@ class AccumulatedRunTimeStatistics {
   void Add(const RunTimeStatistics& statistics);
 
   std::string PrintHumanReadable() const;
+ 
+  boost::json::object ToJson() const;
 
  private:
   std::size_t count_ = 0;
@@ -75,6 +78,8 @@ class AccumulatedCommunicationStatistics {
   void Add(const std::vector<communication::TransportStatistics>& statistics);
 
   std::string PrintHumanReadable() const;
+ 
+  boost::json::object ToJson() const;
 
  private:
   std::size_t count_ = 0;

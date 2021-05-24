@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Lennart Braun
+// Copyright (c) 2019-2021 Lennart Braun, Arianne Roselina Prananto
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@
 #include "analysis.h"
 
 #include <cmath>
+#include <iostream>
 #include <sstream>
 
 #include <fmt/format.h>
@@ -98,6 +99,29 @@ std::string AccumulatedRunTimeStatistics::PrintHumanReadable() const {
   return ss.str();
 }
 
+boost::json::object AccumulatedRunTimeStatistics::ToJson() const {
+  const auto make_triple = [this](const auto& stat_id) {
+    const auto& acc = At(accumulators_, stat_id);
+    return boost::json::object({{"mean", boost::accumulators::mean(acc)},
+                                {"median", boost::accumulators::median(acc)},
+                                // uncorrected standard deviation
+                                {"stddev", std::sqrt(boost::accumulators::variance(acc))}});
+  };
+  return {{"repetitions", count_},
+          {"mt_presetup", make_triple(StatId::kMtPresetup)},
+          {"mt_setup", make_triple(StatId::kMtSetup)},
+          {"sp_presetup", make_triple(StatId::kSpPresetup)},
+          {"sp_setup", make_triple(StatId::kSpSetup)},
+          {"sb_presetup", make_triple(StatId::kSbPresetup)},
+          {"sb_setup", make_triple(StatId::kSbSetup)},
+          {"base_ots", make_triple(StatId::kBaseOts)},
+          {"ot_extension_setup", make_triple(StatId::kOtExtensionSetup)},
+          {"preprocessing", make_triple(StatId::kPreprocessing)},
+          {"gates_setup", make_triple(StatId::kGatesSetup)},
+          {"gates_online", make_triple(StatId::kGatesOnline)},
+          {"evaluate", make_triple(StatId::kEvaluate)}};
+}
+
 void AccumulatedCommunicationStatistics::Add(const communication::TransportStatistics& statistics) {
   accumulators_[kIdxNumberOfMessagesSent](statistics.number_of_messages_sent);
   accumulators_[kIdxNumberOfMessagesReceived](statistics.number_of_messages_received);
@@ -127,6 +151,18 @@ std::string AccumulatedCommunicationStatistics::PrintHumanReadable() const {
                     static_cast<std::size_t>(
                         boost::accumulators::mean(accumulators_[kIdxNumberOfMessagesReceived])));
   return ss.str();
+}
+
+boost::json::object AccumulatedCommunicationStatistics::ToJson() const {
+  return {
+      {"bytes_sent",
+       static_cast<std::size_t>(boost::accumulators::mean(accumulators_[kIdxNumberOfBytesSent]))},
+      {"num_messages_sent", static_cast<std::size_t>(boost::accumulators::mean(
+                                accumulators_[kIdxNumberOfMessagesSent]))},
+      {"bytes_received", static_cast<std::size_t>(
+                             boost::accumulators::mean(accumulators_[kIdxNumberOfBytesReceived]))},
+      {"num_messages_received", static_cast<std::size_t>(boost::accumulators::mean(
+                                    accumulators_[kIdxNumberOfMessagesReceived]))}};
 }
 
 std::string PrintMotionInfo() {

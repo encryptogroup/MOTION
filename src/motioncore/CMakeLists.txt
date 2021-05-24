@@ -210,6 +210,8 @@ target_link_libraries(motion
         Threads::Threads
         OpenSSL::Crypto
         OpenSSL::SSL
+        PUBLIC
+        Boost::json
         )
 
 install(TARGETS motion

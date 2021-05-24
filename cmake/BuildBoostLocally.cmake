@@ -10,9 +10,9 @@ set(Boost_LIB_DIR ${Boost_INSTALL}/lib)
 set(Boost_INCLUDE_DIRS ${Boost_INSTALL}/include)
 
 list(APPEND Boost_SANITIZER_FLAGS "")
-if(MOTION_ENABLE_SANITIZERS)
+if (MOTION_ENABLE_SANITIZERS)
     list(APPEND Boost_SANITIZER_FLAGS "context-impl=ucontext")
-endif()
+endif ()
 
 if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
     set(Boost_BUILD_TYPE "release")
@@ -26,7 +26,7 @@ ExternalProject_Add(external_boost
         URL_HASH SHA256=${Boost_URL_HASH_SHA256}
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ./bootstrap.sh
-        --with-libraries=context,fiber,log,filesystem,system,thread,program_options
+        --with-libraries=context,fiber,log,filesystem,system,thread,program_options,json
         --prefix=<INSTALL_DIR>
         BUILD_COMMAND
         env -u CPATH -u C_INCLUDE_PATH ./b2 install link=static variant=${Boost_BUILD_TYPE} ${Boost_SANITIZER_FLAGS} threading=multi -j 10 define=BOOST_LOG_USE_NATIVE_SYSLOG define=BOOST_ERROR_CODE_HEADER_ONLY
@@ -82,3 +82,9 @@ set_property(TARGET boost::program_options PROPERTY IMPORTED_LOCATION ${Boost_LI
 set_property(TARGET boost::program_options PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
 add_dependencies(boost::program_options external_boost)
 add_library(Boost::program_options ALIAS boost::program_options)
+
+add_library(boost::json STATIC IMPORTED GLOBAL)
+set_property(TARGET boost::json PROPERTY IMPORTED_LOCATION ${Boost_LIB_DIR}/libboost_json.a)
+set_property(TARGET boost::json PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+add_dependencies(boost::json external_boost)
+add_library(Boost::json ALIAS boost::json)

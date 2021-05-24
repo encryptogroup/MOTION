@@ -28,6 +28,7 @@ find_package(Boost QUIET ${REQUIRED_BOOST_VERSION}
         context
         fiber
         filesystem
+        json
         log
         log_setup
         program_options
