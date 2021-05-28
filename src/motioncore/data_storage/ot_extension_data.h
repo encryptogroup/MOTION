@@ -44,7 +44,7 @@ namespace encrypto::motion {
 
 class FiberCondition;
 
-enum OtExtensionDataType : uint {
+enum OtExtensionDataType : unsigned int {
   kReceptionMask = 0,
   kReceptionCorrection = 1,
   kSendMessage = 2,

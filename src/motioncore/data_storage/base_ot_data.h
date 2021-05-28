@@ -36,7 +36,7 @@ namespace encrypto::motion {
 
 class FiberCondition;
 
-enum BaseOtDataType : uint { kHL17R = 0, kHL17S = 1, kBaseOtInvalidDataType = 2 };
+enum BaseOtDataType : unsigned int { kHL17R = 0, kHL17S = 1, kBaseOtInvalidDataType = 2 };
 
 struct BaseOtReceiverData {
   BaseOtReceiverData();

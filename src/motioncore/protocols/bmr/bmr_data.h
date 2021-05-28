@@ -36,7 +36,7 @@ namespace encrypto::motion::proto::bmr {
 
 class Condition;
 
-enum DataType : uint { kInputStep0 = 0, kInputStep1 = 1, kAndGate = 2 };
+enum DataType : unsigned int { kInputStep0 = 0, kInputStep1 = 1, kAndGate = 2 };
 
 struct Data {
   void MessageReceived(const std::uint8_t* message, const DataType type, const std::size_t i);

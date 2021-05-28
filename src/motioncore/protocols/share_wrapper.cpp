@@ -449,8 +449,8 @@ ShareWrapper ShareWrapper::Out(std::size_t output_owner) const {
       break;
     }
     default: {
-      throw std::runtime_error(
-          fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(share_->GetProtocol())));
+      throw std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
+                                           static_cast<unsigned int>(share_->GetProtocol())));
     }
   }
   return ShareWrapper(result);

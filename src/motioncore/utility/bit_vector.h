@@ -125,7 +125,7 @@ class BitVector {
   /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.
   /// \param number_of_bits
   /// \param value
-  explicit BitVector(uint number_of_bits, bool value = false)
+  explicit BitVector(unsigned int number_of_bits, bool value = false)
       : BitVector(static_cast<std::size_t>(number_of_bits), value) {}
 
   /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.

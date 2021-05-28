@@ -174,7 +174,7 @@ class SharingRandomnessGenerator {
 
   primitives::Prg prg_a, prg_b;
 
-  enum KeyType : uint {
+  enum KeyType : unsigned int {
     kArithmeticGmwKey = 0,
     kArithmeticGmwNonce = 1,
     kBooleanGmwKey = 2,

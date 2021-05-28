@@ -47,7 +47,7 @@ struct OtExtensionSenderData;
 class Logger;
 class BaseProvider;
 
-enum OtProtocol : uint {
+enum OtProtocol : unsigned int {
   kGOt = 0,   // general OT
   kROt = 1,   // random OT
   kXcOt = 2,  // XOR-correlated OT

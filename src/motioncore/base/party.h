@@ -82,7 +82,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -106,7 +106,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -130,7 +130,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -154,7 +154,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -182,7 +182,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -210,7 +210,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -257,7 +257,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -291,7 +291,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }
@@ -323,7 +323,7 @@ class Party {
       }
       default: {
         throw(std::runtime_error(
-            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+            fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
       }
     }
   }

@@ -44,7 +44,7 @@ void Prg::SetKey(const std::uint8_t* key) {
 void Prg::SetKey(const std::byte* key) { SetKey(reinterpret_cast<const std::uint8_t*>(key)); }
 
 std::vector<std::byte> Prg::Encrypt(const std::size_t bytes) {
-  const uint remainder = (bytes & 15u) > 0 ? 1 : 0;
+  const unsigned int remainder = (bytes & 15u) > 0 ? 1 : 0;
   const std::size_t number_of_blocks = (bytes / 16) + remainder + 1;
   const std::size_t byte_length = number_of_blocks * AES_BLOCK_SIZE;
   int length = static_cast<int>(bytes);
@@ -70,7 +70,7 @@ std::vector<std::byte> Prg::Encrypt(const std::size_t bytes) {
 }
 
 std::vector<std::byte> Prg::Encrypt(const std::byte* input, const std::size_t bytes) {
-  const uint remainder = (bytes & 15u) > 0 ? 1 : 0;
+  const unsigned int remainder = (bytes & 15u) > 0 ? 1 : 0;
   const std::size_t number_of_blocks = (bytes / 16) + remainder;
   int length = bytes;
 
