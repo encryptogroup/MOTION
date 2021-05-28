@@ -76,12 +76,12 @@ add_library(MOTION::motion ALIAS motion)
 file(TOUCH "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 target_sources(motion PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
 add_custom_target(motion_version
-                   COMMAND "${CMAKE_COMMAND}"
-                      "-DVERSION_CPP_IN:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/utility/version.cpp.in"
-                      "-P" "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cmake"
-                   DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/utility/version.cpp.in"
-                   BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/version.cpp.new"
-                   COMMENT "gather information about git repository and generating version.cpp")
+        COMMAND "${CMAKE_COMMAND}"
+        "-DVERSION_CPP_IN:FILEPATH=${CMAKE_CURRENT_SOURCE_DIR}/utility/version.cpp.in"
+        "-P" "${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.cmake"
+        DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/utility/version.cpp.in"
+        BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/version.cpp.new"
+        COMMENT "gather information about git repository and generating version.cpp")
 add_dependencies(motion motion_version)
 
 
@@ -126,7 +126,6 @@ endif ()
 #            )
 #endif ()
 
-
 target_compile_features(motion PUBLIC cxx_std_20)
 target_compile_options(motion PRIVATE
         ${MOTION_EXTRA_FLAGS}
@@ -136,6 +135,13 @@ target_compile_options(motion PRIVATE
         -ffunction-sections -march=native -ffast-math
         ${MOTION_VECT_COST_MODEL_GCC_FLAG}
         )
+
+if (WIN32)
+    target_link_libraries(motion PUBLIC wsock32 ws2_32)
+    target_include_directories(motion PUBLIC
+            $<INSTALL_INTERFACE:include>
+            $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>)
+endif ()
 
 # Prevent undefined references to `__log2_finite' and `__exp2_finite' when
 # compiling with clang.
