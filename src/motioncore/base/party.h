@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2021 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -30,6 +30,11 @@
 
 #include "base/backend.h"
 #include "base/configuration.h"
+#include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
+#include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
+#include "protocols/boolean_gmw/boolean_gmw_share.h"
+#include "protocols/boolean_gmw/boolean_gmw_wire.h"
+#include "protocols/share.h"
 #include "utility/typedefs.h"
 
 namespace encrypto::motion::communication {
@@ -222,6 +227,106 @@ class Party {
     }
   }
 
+  template <MpcProtocol P, typename T = std::uint8_t,
+            typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  SharePointer SharedIn(T input) {
+    switch (P) {
+      case MpcProtocol::kArithmeticConstant: {
+        static_assert(P != MpcProtocol::kArithmeticConstant, "Not implemented yet");
+      }
+      case MpcProtocol::kArithmeticGmw: {
+        encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
+
+        encrypto::motion::WirePointer wire =
+            std::make_shared<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(input, *backend_);
+        register_pointer->RegisterNextWire(wire);
+        wire->SetOnlineFinished();
+
+        return std::make_shared<encrypto::motion::proto::arithmetic_gmw::Share<T>>(wire);
+      }
+      case MpcProtocol::kBooleanGmw: {
+        throw std::runtime_error(
+            "Non-binary types have to be converted to BitVectors in BooleanGMW, "
+            "consider using TODO function for the input");
+      }
+      case MpcProtocol::kBmr: {
+        throw std::runtime_error(
+            "Non-binary types have to be converted to BitVectors in BMR, "
+            "consider using TODO function for the input");
+      }
+      default: {
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+      }
+    }
+  }
+
+  template <MpcProtocol P, typename T = std::uint8_t,
+      typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  SharePointer SharedIn(const std::vector<T>& input) {
+    switch (P) {
+      case MpcProtocol::kArithmeticConstant: {
+        static_assert(P != MpcProtocol::kArithmeticConstant, "Not implemented yet");
+      }
+      case MpcProtocol::kArithmeticGmw: {
+        encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
+
+        encrypto::motion::WirePointer wire =
+            std::make_shared<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(input, *backend_);
+        register_pointer->RegisterNextWire(wire);
+        wire->SetOnlineFinished();
+
+        return std::make_shared<encrypto::motion::proto::arithmetic_gmw::Share<T>>(wire);
+      }
+      case MpcProtocol::kBooleanGmw: {
+        throw std::runtime_error(
+            "Non-binary types have to be converted to BitVectors in BooleanGMW, "
+            "consider using TODO function for the input");
+      }
+      case MpcProtocol::kBmr: {
+        throw std::runtime_error(
+            "Non-binary types have to be converted to BitVectors in BMR, "
+            "consider using TODO function for the input");
+      }
+      default: {
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+      }
+    }
+  }
+
+  template <MpcProtocol P>
+  SharePointer SharedIn(const std::vector<BitVector<>>& input) {
+    static_assert(P != MpcProtocol::kArithmeticGmw);
+    static_assert(P != MpcProtocol::kArithmeticConstant);
+
+    switch (P) {
+      case MpcProtocol::kBooleanConstant: {
+        static_assert(P != MpcProtocol::kBooleanConstant, "Not implemented yet");
+      }
+      case MpcProtocol::kBooleanGmw: {
+        std::vector<encrypto::motion::WirePointer> wires(input.size());
+        encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
+
+        for (std::size_t i = 0; i < wires.size(); i++) {
+          wires[i] =
+              std::make_shared<encrypto::motion::proto::boolean_gmw::Wire>(input[i], *backend_);
+          register_pointer->RegisterNextWire(wires[i]);
+          wires[i]->SetOnlineFinished();
+        }
+
+        return std::make_shared<encrypto::motion::proto::boolean_gmw::Share>(wires);
+      }
+      case MpcProtocol::kBmr: {
+        static_assert(P != MpcProtocol::kBmr, "Not implemented yet");
+      }
+      default: {
+        throw(std::runtime_error(
+            fmt::format("Unknown MPC protocol with id {}", static_cast<uint>(P))));
+      }
+    }
+  }
+
   SharePointer Xor(const SharePointer& a, const SharePointer& b);
 
   SharePointer Out(SharePointer parent, std::size_t output_owner);
@@ -275,8 +380,8 @@ class Party {
 /// @param port TCP port offset.
 /// @param logging Enables/disables logging completely.
 std::vector<std::unique_ptr<Party>> MakeLocallyConnectedParties(const std::size_t number_of_parties,
-                                                            std::uint16_t port,
-                                                            const bool logging = false);
+                                                                std::uint16_t port,
+                                                                const bool logging = false);
 
 using PartyPointer = std::unique_ptr<Party>;
 
