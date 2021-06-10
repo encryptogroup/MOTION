@@ -436,7 +436,7 @@ void GOt128Sender::SendMessages() const {
 GOt128Receiver::GOt128Receiver(
     const std::size_t ot_id, const std::size_t number_of_ots, OtExtensionReceiverData& data,
     const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
-    : BasicOtReceiver(ot_id, number_of_ots, 128, kFixedXcOt128, send_function, data),
+    : BasicOtReceiver(ot_id, number_of_ots, 128, kGOt, send_function, data),
       outputs_(number_of_ots) {
   data_.message_type.emplace(ot_id, OtMessageType::kBlock128);
   sender_message_future_ = data_.RegisterForBlock128SenderMessage(ot_id, 2 * number_of_ots);
