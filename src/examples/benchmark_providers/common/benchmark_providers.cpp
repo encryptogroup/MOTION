@@ -233,12 +233,11 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
     }
     case Provider::kROt: {
       if (my_id == 0) {
-        auto ot{
-            ot_provider.RegisterReceive(bit_size, batch_size, encrypto::motion::OtProtocol::kROt)};
+        auto ot{ot_provider.RegisterReceiveROt(batch_size, bit_size)};
         backend->OtExtensionSetup();
         (void)ot->GetOutputs();
       } else {
-        auto ot{ot_provider.RegisterSend(bit_size, batch_size, encrypto::motion::OtProtocol::kROt)};
+        auto ot{ot_provider.RegisterSendROt(batch_size, bit_size)};
         backend->OtExtensionSetup();
         ot->GetOutputs();
       }
