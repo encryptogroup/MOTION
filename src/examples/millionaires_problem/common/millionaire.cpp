@@ -56,12 +56,9 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
   
   // find the max id and value among all parties' inputs
   for (std::size_t i = 1; i != input_values.size(); ++i) {
-    // The comparison can not be used twice (for value sorting and index) so we
-    // duplicate it
     auto comparison = max_val > input_values[i];
-    auto comparison2 = max_val > input_values[i];
     max_val = comparison.Mux(max_val.Get(), input_values[i].Get());
-    max_id = comparison2.Mux(max_id.Get(), indices[i].Get());
+    max_id = comparison.Mux(max_id.Get(), indices[i].Get());
   }
   
   // construct an output gate. This is slit in two expressions to avoid a wrong
