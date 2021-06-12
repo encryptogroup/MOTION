@@ -24,6 +24,16 @@
 
 #include <boost/fiber/condition_variable.hpp>
 #include <boost/fiber/mutex.hpp>
+
+// Undefine Windows macros that collide with function names in MOTION.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
+#ifdef GetMessage
+#undef GetMessage
+#endif
+
 #include <future>
 #include <iostream>
 #include <mutex>

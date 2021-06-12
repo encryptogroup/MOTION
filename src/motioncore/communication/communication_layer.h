@@ -28,6 +28,15 @@
 #include <memory>
 #include <vector>
 
+// Undefine Windows macros that collide with function names in MOTION.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
+#ifdef GetMessage
+#undef GetMessage
+#endif
+
 #include "fbs_headers/message_generated.h"
 #include "transport.h"
 

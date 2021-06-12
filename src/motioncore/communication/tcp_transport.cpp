@@ -35,6 +35,11 @@
 #include <boost/asio/write.hpp>
 #include <boost/system/error_code.hpp>
 
+// Undefine Windows macros that collide with function names in MOTION.
+#ifdef SendMessage
+#undef SendMessage
+#endif
+
 using boost::asio::ip::tcp;
 
 namespace encrypto::motion::communication {
