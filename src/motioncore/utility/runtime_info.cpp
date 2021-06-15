@@ -25,6 +25,16 @@
 #include <cassert>
 #include <fstream>
 
+// So that 'DWORD' in boost/process/detail/windows/handles.hpp is declared
+#ifdef __MINGW32__
+#include <windows.h>
+#endif
+
+// Because __kernel_entry in boost/process/detail/windows/handle_workaround.hpp isn't defined.
+#ifndef __kernel_entry
+#define __kernel_entry
+#endif
+
 #include <boost/process/child.hpp>
 #include <boost/process/io.hpp>
 #include <boost/process/pipe.hpp>
