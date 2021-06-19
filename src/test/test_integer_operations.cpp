@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2021 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -1052,6 +1052,158 @@ TYPED_TEST(SecureUintTest, AsUintInBmr) {
   }
   for (auto& t : threads)
     if (t.joinable()) t.join();
+}
+
+template <typename T>
+struct PartySharedInTest : public testing::Test {};
+
+TYPED_TEST_SUITE(PartySharedInTest, all_uints);
+
+TYPED_TEST(PartySharedInTest, SharedInArithmeticGmw) {
+  using T = TypeParam;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  std::mt19937 mersenne_twister(sizeof(T));
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto random = std::bind(distribution, mersenne_twister);
+  auto test_number_of_parties = std::vector<std::size_t>{2, 4, 6};
+
+  for (auto number_of_parties : test_number_of_parties) {
+    std::vector<T> input;
+    T subtract = 0;
+
+    const T expected = random();
+    for (std::size_t i = 0; i < number_of_parties - 1; i++) {
+      input.push_back(random());
+      subtract += input.at(i);
+    }
+    input.push_back(static_cast<T>(expected - subtract));
+
+    std::vector<PartyPointer> parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+
+    std::vector<std::thread> threads;
+    for (auto party_id = 0u; party_id < number_of_parties; ++party_id) {
+      threads.emplace_back([party_id, expected, &parties, &input]() {
+        const auto my_id = parties.at(party_id)->GetConfiguration()->GetMyId();
+        encrypto::motion::SecureUnsignedInteger share =
+            parties.at(my_id)->SharedIn<kArithmeticGmw>(input.at(my_id));
+        auto share_output = share.Out();
+
+        parties.at(my_id)->Run();
+        const T result = share_output.As<T>();
+
+        EXPECT_EQ(result, expected);
+        parties.at(my_id)->Finish();
+      });
+    }
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  }
+}
+
+TYPED_TEST(PartySharedInTest, SharedInVectorArithmeticGmw) {
+  using T = TypeParam;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  std::mt19937 mersenne_twister(sizeof(T));
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto random = std::bind(distribution, mersenne_twister);
+  const auto input_size = 10;
+  auto test_number_of_parties = std::vector<std::size_t>{2, 4, 6};
+
+  for (auto number_of_parties : test_number_of_parties) {
+    std::vector<std::vector<T>> input;
+    std::vector<T> expected(input_size, random()), subtract(input_size);
+
+    for (std::size_t i = 0; i < number_of_parties - 1; i++) {
+      std::vector<T> each_input(input_size, random());
+      input.push_back(each_input);
+      for (std::size_t j = 0; j < input_size; j++) {
+        subtract.at(j) += each_input.at(j);
+      }
+    }
+
+    std::vector<T> party_input;
+    for (std::size_t i = 0; i < input_size; i++) {
+      party_input.push_back(static_cast<T>(expected.at(i) - subtract.at(i)));
+    }
+    input.push_back(party_input);
+
+    std::vector<PartyPointer> parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+
+    std::vector<std::thread> threads;
+    for (auto party_id = 0u; party_id < parties.size(); ++party_id) {
+      threads.emplace_back([party_id, expected, &parties, &input]() {
+        const auto my_id = parties.at(party_id)->GetConfiguration()->GetMyId();
+        encrypto::motion::SecureUnsignedInteger share =
+            parties.at(my_id)->SharedIn<kArithmeticGmw>(input.at(my_id));
+        auto share_output = share.Out();
+
+        parties.at(my_id)->Run();
+        const std::vector<T> result = share_output.As<std::vector<T>>();
+
+        EXPECT_EQ(result.size(), expected.size());
+        for (std::size_t i = 0; i < result.size(); i++) EXPECT_EQ(result.at(i), expected.at(i));
+        parties.at(my_id)->Finish();
+      });
+    }
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  }
+}
+
+TYPED_TEST(PartySharedInTest, SharedInBooleanGmw) {
+  using T = TypeParam;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  std::mt19937 mersenne_twister(sizeof(T));
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto random = std::bind(distribution, mersenne_twister);
+  auto test_number_of_parties = std::vector<std::size_t>{2, 4, 6};
+
+  for (auto number_of_parties : test_number_of_parties) {
+    std::vector<T> input;
+    T subtract = 0;
+
+    const T expected = random();
+    for (std::size_t i = 0; i < number_of_parties - 1; i++) {
+      input.push_back(random());
+      subtract ^= input.at(i);
+    }
+    input.push_back(static_cast<T>(expected ^ subtract));
+
+    std::vector<PartyPointer> parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+
+    std::vector<std::thread> threads;
+    for (auto party_id = 0u; party_id < parties.size(); ++party_id) {
+      threads.emplace_back([party_id, expected, &parties, &input]() {
+        const auto my_id = parties.at(party_id)->GetConfiguration()->GetMyId();
+        encrypto::motion::SecureUnsignedInteger share =
+            parties.at(party_id)->SharedIn<kBooleanGmw>(encrypto::motion::ToInput(input.at(my_id)));
+        auto share_output = share.Out();
+
+        parties.at(my_id)->Run();
+        const T result = share_output.As<T>();
+
+        EXPECT_EQ(result, expected);
+        parties.at(my_id)->Finish();
+      });
+    }
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  }
 }
 
 }  // namespace
