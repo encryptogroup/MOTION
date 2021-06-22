@@ -158,6 +158,7 @@ Also, for further information see comments on the code and the doxygen documenta
   MOTION. Currently, the following applications are implemented and can be found in `src/examples/`:
   * AES-128 encryption
   * SHA-256 hashing
-  * **TODO (in work):** millionaires problem
+  * millionaires' problem: each party has an integer input (amount of money), the protocol yields the index of the party 
+  with the largest input (i.e., the richest party)
   * **TODO (in work, cleanup):** All the applications implemented in [HyCC](https://gitlab.com/securityengineering/HyCC) 
   via our HyCC adapter
