@@ -115,7 +115,7 @@ encrypto::motion::RunTimeStatistics EvaluateProtocol(
    * as a concatenation fill in.
    * */
   encrypto::motion::ShareWrapper full_zero = party->In<encrypto::motion::MpcProtocol::kBooleanGmw>(
-      encrypto::motion::BitVector<>(false), 0);
+      encrypto::motion::BitVector<>(1, false), 0);
 
   CrossTabsContext context = {party_0, party_1, categories, results, full_zero, number_of_bins};
   std::vector<encrypto::motion::SecureUnsignedInteger> output = CreateCrossTabsCircuit(context);

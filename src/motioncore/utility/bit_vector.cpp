@@ -1202,7 +1202,7 @@ std::vector<BitVector<Allocator>> ToInput(IntegralType integral_value) {
     static_assert(std::is_same_v<IntegralType, std::uint64_t>);
   }
   std::vector<BitVector<Allocator>> result;
-  for (auto i = 0ull; i < kBitLength; ++i) result.emplace_back(((integral_value >> i) & 1) == 1);
+  for (auto i = 0ull; i < kBitLength; ++i) result.emplace_back(1, ((integral_value >> i) & 1) == 1);
   return result;
 }
 
@@ -1229,7 +1229,7 @@ std::vector<BitVector<Allocator>> ToInput(const std::vector<IntegralType>& input
   std::vector<BitVector<Allocator>> result(kBitLength);
   for (auto i = 0ull; i < input_vector.size(); ++i) {
     for (auto j = 0ull; j < kBitLength; ++j) {
-      result.at(j).Append(((input_vector.at(i) >> j) & 1) == 1);
+      result.at(j).Append(BitVector<Allocator>(1, ((input_vector.at(i) >> j) & 1) == 1));
     }
   }
   return result;

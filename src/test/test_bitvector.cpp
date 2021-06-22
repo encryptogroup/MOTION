@@ -38,7 +38,7 @@ TEST(BitVector, Constructors) {
     EXPECT_EQ(bit_vector.GetSize(), 0);
   }
   {
-    auto bit_vector = encrypto::motion::BitVector<>(true);
+    auto bit_vector = encrypto::motion::BitVector<>(1, true);
     EXPECT_EQ(bit_vector.GetSize(), 1);
     EXPECT_EQ(bit_vector.Get(0), true);
   }

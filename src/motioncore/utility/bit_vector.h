@@ -100,11 +100,6 @@ class BitVector {
   template <typename OtherAllocator>
   BitVector<Allocator>& operator=(const BitVector<OtherAllocator>& other) noexcept;
 
-  /// \brief Initialize a BitVector to contain a single bit.
-  /// \param value
-  explicit BitVector(bool value) noexcept
-      : data_vector_{value ? kSetBitMask[0] : std::byte(0x00)}, bit_size_(1) {}
-
   /// \brief Initialize from a std::vector<bool>.
   /// \param data
   /// \note Initializing a BitVector this way is inefficient!
@@ -121,36 +116,6 @@ class BitVector {
   /// \param number_of_bits
   /// \param value
   explicit BitVector(std::size_t number_of_bits, bool value = false) noexcept;
-
-  /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.
-  /// \param number_of_bits
-  /// \param value
-  explicit BitVector(unsigned int number_of_bits, bool value = false)
-      : BitVector(static_cast<std::size_t>(number_of_bits), value) {}
-
-  /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.
-  /// \param number_of_bits
-  /// \param value
-  explicit BitVector(int number_of_bits, bool value = false)
-      : BitVector(static_cast<std::size_t>(number_of_bits), value) {}
-
-  /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.
-  /// \param number_of_bits
-  /// \param value
-  explicit BitVector(long number_of_bits, bool value = false)
-      : BitVector(static_cast<std::size_t>(number_of_bits), value) {}
-
-  /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.
-  /// \param number_of_bits
-  /// \param value
-  explicit BitVector(long long number_of_bits, bool value = false)
-      : BitVector(static_cast<std::size_t>(number_of_bits), value) {}
-
-  /// \brief Construct a BitVector with exactly \p number_of_bits bits set to \p value.
-  /// \param number_of_bits
-  /// \param value
-  explicit BitVector(long long unsigned int number_of_bits, bool value = false)
-      : BitVector(static_cast<std::size_t>(number_of_bits), value) {}
 
   /// \brief Initialize BitVector from buffer.
   /// \param buffer

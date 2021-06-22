@@ -44,7 +44,7 @@ using SharePointer = std::shared_ptr<Share>;
 class ConstantBooleanInputGate final : public Gate {
  public:
   ConstantBooleanInputGate(bool b, Backend& backend)
-      : ConstantBooleanInputGate(BitVector<>(b), backend) {}
+      : ConstantBooleanInputGate(BitVector<>(1, b), backend) {}
 
   ConstantBooleanInputGate(BitVector<>&& bv, Backend& backend)
       : ConstantBooleanInputGate(std::vector<BitVector<>>{std::move(bv)}, backend) {}
