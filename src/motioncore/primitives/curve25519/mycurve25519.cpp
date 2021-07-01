@@ -5223,25 +5223,15 @@ static void x25519_scalar_mult
   x25519_scalar_mult_generic(out, scalar, point);
 }
 
+#include <openssl/rand.h>
 #include "stdio.h"
 
 void RandomBytes(void* buf, size_t nbytes) {
-  FILE* f = fopen("/dev/urandom", "r");
-  if (f == NULL) {
-    perror("fopen(\"/dev/urandom\", \"r\")");
+  int random = RAND_bytes(reinterpret_cast<unsigned char*>(buf), nbytes);
+  if (random != 1) {
+    fprintf(stderr, "RAND_bytes failed");
     exit(1);
   }
-  size_t read = 0;
-  while (read < nbytes) {
-    size_t ret = fread((unsigned char*)buf + read, 1, nbytes - read, f);
-    if (ret == 0) {
-      fprintf(stderr, "fread from /dev/urandom failed");
-      exit(1);
-    }
-    read += ret;
-  }
-
-  fclose(f);
 }
 
 // added

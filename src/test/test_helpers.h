@@ -22,16 +22,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <openssl/rand.h>
 #include <algorithm>
 #include <limits>
-#include <random>
 #include <vector>
 
 template <typename T>
 inline T Rand() {
-  std::random_device rd("/dev/urandom");
-  std::uniform_int_distribution<T> dist(0, std::numeric_limits<T>::max());
-  return dist(rd);
+  unsigned char buf[sizeof(T)];
+  RAND_bytes(buf, sizeof(T));
+  return *reinterpret_cast<T*>(buf);
 }
 
 template <typename T>
