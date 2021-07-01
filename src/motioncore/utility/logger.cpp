@@ -66,7 +66,7 @@ Logger::Logger(std::size_t my_id, boost::log::trivial::severity_level severity_l
   const auto time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
   std::stringstream stream;
   std::tm temporary_time;
-  stream << std::put_time(localtime_r(&time, &temporary_time), "%Y.%m.%d--%H:%M:%S");
+  stream << std::put_time(localtime_r(&time, &temporary_time), "%Y.%m.%d--%H-%M-%S");
   const auto filename = fmt::format("log/id{}_{}_%N.log", my_id_, stream.str());
 
   std::lock_guard<std::mutex> lock(boost_log_core_mutex_);
