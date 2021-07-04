@@ -32,6 +32,8 @@
 
 using namespace encrypto::motion;
 
+auto random_value = std::mt19937{};
+
 TEST(ArithmeticGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   std::srand(std::time(nullptr));
@@ -47,7 +49,7 @@ TEST(ArithmeticGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
             std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+          party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
         }
 #pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
 #pragma omp single
@@ -108,7 +110,7 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
             std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+          party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
         }
 #pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
 #pragma omp single
@@ -201,7 +203,7 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
             std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+          party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
         }
 #pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
 #pragma omp single
@@ -316,7 +318,7 @@ TEST(ArithmeticGmw, Subtraction_1_1K_Simd_2_3_4_5_10_parties) {
             std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+          party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
         }
 #pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
 #pragma omp single
@@ -420,7 +422,7 @@ TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
           std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
       for (auto& party : motion_parties) {
         party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-        party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+        party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
       }
       std::vector<std::future<void>> futures;
       for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
@@ -501,7 +503,7 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
             std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(std::random_device{}() % 2 == 1);
+          party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
         }
 #pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
 #pragma omp single
