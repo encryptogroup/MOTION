@@ -22,6 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <boost/asio/thread_pool.hpp>
+
 #include "backend.h"
 #include "motion_base_provider.h"
 
@@ -33,7 +35,6 @@
 #include <span>
 
 #include <fmt/format.h>
-#include <boost/asio/thread_pool.hpp>
 
 #include "communication/communication_layer.h"
 #include "communication/message.h"
