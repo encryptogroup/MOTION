@@ -29,7 +29,7 @@
 #include <random>
 
 #include "condition.h"
-#include "primitives/random/aes128_ctr_rng.h"
+#include "primitives/random/default_rng.h"
 #include "typedefs.h"
 
 namespace encrypto::motion {
@@ -40,10 +40,12 @@ namespace encrypto::motion {
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
 std::vector<UnsignedIntegralType> RandomVector(std::size_t length) {
-  auto& rng = Aes128CtrRng::GetThreadInstance();
   const auto byte_size = sizeof(UnsignedIntegralType) * length;
   std::vector<UnsignedIntegralType> vec(length);
+
+  auto& rng = DefaultRng::GetThreadInstance();
   rng.RandomBytes(reinterpret_cast<std::byte*>(vec.data()), byte_size);
+
   return vec;
 }
 

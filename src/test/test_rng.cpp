@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Lennart Braun
+// Copyright (c) 2019-2021 Lennart Braun, Arianne Roselina Prananto
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -21,19 +21,46 @@
 // SOFTWARE.
 
 #include "gtest/gtest.h"
-
-#include "test_constants.h"
-
 #include "primitives/random/aes128_ctr_rng.h"
+#include "primitives/random/openssl_rng.h"
+#include "test_constants.h"
 
 // Test vectors from NIST FIPS 197, Appendix A
 
+#ifndef __MINGW32__
 TEST(Aes128CtrRng, NoTrivialOutput) {
-  alignas(16) std::array<std::byte, 10 * Aes128CtrRng::kBlockSize> output_0;
-  alignas(16) std::array<std::byte, 10 * Aes128CtrRng::kBlockSize> output_1;
-  Aes128CtrRng rng1;
-  Aes128CtrRng rng2;
-  auto& rngt = Aes128CtrRng::GetThreadInstance();
+  alignas(16) std::array<std::byte, 10 * encrypto::motion::Aes128CtrRng::kBlockSize> output_0;
+  alignas(16) std::array<std::byte, 10 * encrypto::motion::Aes128CtrRng::kBlockSize> output_1;
+  encrypto::motion::Aes128CtrRng rng1;
+  encrypto::motion::Aes128CtrRng rng2;
+  auto& rngt = encrypto::motion::Aes128CtrRng::GetThreadInstance();
+
+  rng1.RandomBlocksAligned(output_0.data(), 10);
+  rng1.RandomBlocksAligned(output_1.data(), 10);
+  // two subsequent queries do not return the same bytes
+  EXPECT_NE(output_0, output_1);
+
+  rng1.SampleKey();
+  rng1.RandomBlocksAligned(output_1.data(), 10);
+  // a new key results in different bytes
+  EXPECT_NE(output_0, output_1);
+
+  rng2.RandomBlocksAligned(output_1.data(), 10);
+  // a different RNG instance results in different bytes
+  EXPECT_NE(output_0, output_1);
+
+  // the thread RNG instance results in different bytes
+  rngt.RandomBlocksAligned(output_1.data(), 10);
+  EXPECT_NE(output_0, output_1);
+}
+#endif
+
+TEST(OpenSslRng, NoTrivialOutput) {
+  alignas(16) std::array<std::byte, 10 * encrypto::motion::OpenSslRng::kBlockSize> output_0;
+  alignas(16) std::array<std::byte, 10 * encrypto::motion::OpenSslRng::kBlockSize> output_1;
+  encrypto::motion::OpenSslRng rng1;
+  encrypto::motion::OpenSslRng rng2;
+  auto& rngt = encrypto::motion::OpenSslRng::GetThreadInstance();
 
   rng1.RandomBlocksAligned(output_0.data(), 10);
   rng1.RandomBlocksAligned(output_1.data(), 10);

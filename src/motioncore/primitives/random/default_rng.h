@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Lennart Braun
+// Copyright (c) 2021 Arianne Roselina Prananto
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,33 +20,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "block.h"
-#include <algorithm>
-#include <boost/algorithm/hex.hpp>
-#include <cassert>
-#include "primitives/random/default_rng.h"
+#pragma once
 
-
+#ifdef __MINGW32__
+#include "openssl_rng.h"
 namespace encrypto::motion {
-
-void Block128::SetToRandom() {
-  auto& rng = DefaultRng::GetThreadInstance();
-  rng.RandomBlocksAligned(byte_array.data(), 1);
-}
-
-std::string Block128::AsString() const {
-  std::string result;
-  result.reserve(2 * sizeof(byte_array));
-  boost::algorithm::hex(
-      reinterpret_cast<const std::uint8_t*>(byte_array.data()),
-      reinterpret_cast<const std::uint8_t*>(byte_array.data() + sizeof(byte_array)),
-      std::back_inserter(result));
-  return result;
-}
-
-void Block128Vector::SetToRandom() {
-  auto& rng = DefaultRng::GetThreadInstance();
-  rng.RandomBlocksAligned(reinterpret_cast<std::byte*>(block_vector.data()), block_vector.size());
-}
-
-}  // namespace encrypto::motion
+  using DefaultRng = OpenSslRng;
+}  //  namespace encrypto::motion
+#else
+#include "aes128_ctr_rng.h"
+namespace encrypto::motion {
+  using DefaultRng = Aes128CtrRng;
+}  //  namespace encrypto::motion
+#endif

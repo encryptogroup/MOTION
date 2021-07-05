@@ -23,7 +23,6 @@
 // SOFTWARE.
 
 #include "bit_vector.h"
-#include "primitives/random/aes128_ctr_rng.h"
 
 namespace encrypto::motion {
 
@@ -892,10 +891,10 @@ BitVector<Allocator> BitVector<Allocator>::RandomSeeded(const std::size_t size,
 
 template <typename Allocator>
 BitVector<Allocator> BitVector<Allocator>::SecureRandom(const std::size_t bit_size) noexcept {
-  auto& rng = Aes128CtrRng::GetThreadInstance();
   auto byte_size = BitsToBytes(bit_size);
-
   BitVector bit_vector(bit_size);
+
+  auto& rng = DefaultRng::GetThreadInstance();
   rng.RandomBytes(bit_vector.data_vector_.data(), byte_size);
   bit_vector.TruncateToFit();
 
