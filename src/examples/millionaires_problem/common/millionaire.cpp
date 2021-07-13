@@ -61,19 +61,15 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
     max_id = comparison.Mux(max_id.Get(), indices[i].Get());
   }
   
-  // construct an output gate. This is slit in two expressions to avoid a wrong
-  // tempate type deduction
-  mo::ShareWrapper& temp{max_id.Get()};
-  auto output = temp.Out();
+  // construct an output gate
+  auto output = max_id.Out();
   
   // run the protocol
   party->Run();
   party->Finish();
 
-  // retrieve the result in binary form
-  auto binary_output{output.As<std::vector<mo::BitVector<>>>()};
-  // convert the binary result to integer
-  auto result = mo::ToOutput<std::uint64_t>(binary_output);
+  // retrieve the result
+  auto result = output.As<std::uint64_t>();
   // print the result into the terminal
   std::cout << "Party " << result << " is the richest party." << std::endl;
 }
