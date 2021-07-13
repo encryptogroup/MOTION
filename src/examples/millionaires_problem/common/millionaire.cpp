@@ -75,5 +75,5 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
   // convert the binary result to integer
   auto result = mo::ToOutput<std::uint64_t>(binary_output);
   // print the result into the terminal
-  std::cout << "Party " << result << " is richer." << std::endl;
+  std::cout << "Party " << result << " is the richest party." << std::endl;
 }
