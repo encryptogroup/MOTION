@@ -14,7 +14,7 @@ This code is provided as an experimental implementation for testing purposes and
     or another compiler and standard library implementing C++20 including the filesystem library
   * `make`
   * `cmake`
-  * [`boost`](https://www.boost.org/) (version >=1.73.0)
+  * [`boost`](https://www.boost.org/) (version >=1.75.0)
   * `OpenMP`
   * [`OpenSSL`](https://www.openssl.org/) (version >=1.1.0)
 

@@ -20,8 +20,8 @@ find_package(Threads REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(OpenMP REQUIRED)
 
-# At least boost 1.73.0 is needed to use the C++20 standard.
-set(MOTION_Boost_VERSION "1.73.0")
+# At least boost 1.75.0 is needed to use Boost::json.
+set(MOTION_Boost_VERSION "1.75.0")
 list(APPEND MOTION_Boost_COMPONENTS
 	context
         fiber
