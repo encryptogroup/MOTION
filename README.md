@@ -17,6 +17,12 @@ This code is provided as an experimental implementation for testing purposes and
   * [`boost`](https://www.boost.org/) (version >=1.75.0)
   * `OpenMP`
   * [`OpenSSL`](https://www.openssl.org/) (version >=1.1.0)
+* For Windows, set these paths in PATH System Variable:
+  * `path\to\cmake\bin`
+  * `path\to\MinGW\bin`
+  * OpenSSL can be configured by setting these variables: `OPENSSL_ROOT_DIR`, `OPENSSL_INCLUDE_DIR`
+    , `OPENSSL_LIBRARIES`, `OPENSSL_CRYPTO_LIBRARY`, and `OPENSSL_SSL_LIBRARY` or pass them via `-DOPENSSL_ROOT_DIR`
+    etc. in `cmake ..`
 
 
 #### Building MOTION
@@ -35,6 +41,10 @@ This code is provided as an experimental implementation for testing purposes and
 4. Use CMake configure the build:
     ```
     cmake ..
+    ```
+   For Windows:
+    ```
+    cmake -G "MinGW Makefiles" ..
     ```
     This also initializes and updates the Git submodules of the dependencies
     located in `extern/`.
