@@ -4,14 +4,11 @@ list(APPEND CMAKE_MODULE_PATH "${MOTION_CMAKE_DIR}")
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(OTExtension)
-find_dependency(ENCRYPTO_utils)
-find_dependency(MIRACL)
-find_dependency(GMP)
-find_dependency(Threads)
+find_dependency(Boost ${MOTION_Boost_VERSION} QUIET REQUIRED COMPONENTS ${MOTION_Boost_COMPONENTS})
 find_dependency(flatbuffers)
 find_dependency(fmt)
+find_dependency(Threads)
 
 if(NOT TARGET MOTION::motion)
-    include("${ABY_CMAKE_DIR}/MOTIONTargets.cmake")
+    include("${MOTION_CMAKE_DIR}/MOTIONTargets.cmake")
 endif()

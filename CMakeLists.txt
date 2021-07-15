@@ -21,11 +21,9 @@ find_package(OpenSSL REQUIRED)
 find_package(OpenMP REQUIRED)
 
 # At least boost 1.73.0 is needed to use the C++20 standard.
-set(REQUIRED_BOOST_VERSION "1.73.0")
-
-find_package(Boost QUIET ${REQUIRED_BOOST_VERSION}
-        COMPONENTS
-        context
+set(MOTION_Boost_VERSION "1.73.0")
+list(APPEND MOTION_Boost_COMPONENTS
+	context
         fiber
         filesystem
         json
@@ -34,6 +32,10 @@ find_package(Boost QUIET ${REQUIRED_BOOST_VERSION}
         program_options
         system
         thread)
+
+find_package(Boost QUIET ${MOTION_Boost_VERSION}
+        COMPONENTS
+        ${MOTION_Boost_COMPONENTS})
 set(Boost_USE_STATIC_LIBS ON)
 
 set(MOTION_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
