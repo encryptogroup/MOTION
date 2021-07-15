@@ -29,7 +29,7 @@
 #include "utility/bit_vector.h"
 #include "utility/block.h"
 #include "utility/reusable_future.h"
-#include "utility/type_traits.hpp"
+#include "utility/type_traits.h"
 
 namespace encrypto::motion {
 
