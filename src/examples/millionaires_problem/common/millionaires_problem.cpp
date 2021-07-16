@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "millionaire.h"
+#include "millionaires_problem.h"
 
 #include <cstddef>
 #include <vector>

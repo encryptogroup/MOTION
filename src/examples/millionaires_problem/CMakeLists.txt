@@ -1,4 +1,4 @@
-add_executable(millionaires_problem millionaires_problem.cpp common/millionaire.cpp)
+add_executable(millionaires_problem millionaires_problem_main.cpp common/millionaires_problem.cpp)
 
 if (NOT MOTION_BUILD_BOOST_FROM_SOURCES)
     find_package(Boost
