@@ -28,8 +28,6 @@
 #include <vector>
 #include <limits>
 
-#include "algorithm/algorithm_description.h"
-#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/share_wrapper.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "utility/config.h"
@@ -55,7 +53,7 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
   mo::SecureUnsignedInteger max_id{indices[0]}, max_val{input_values[0]};
   
   // find the max id and value among all parties' inputs
-  for (std::size_t i = 1; i != input_values.size(); ++i) {
+  for (std::size_t i = 1; i < number_of_parties; ++i) {
     auto comparison = max_val > input_values[i];
     max_val = comparison.Mux(max_val.Get(), input_values[i].Get());
     max_id = comparison.Mux(max_id.Get(), indices[i].Get());

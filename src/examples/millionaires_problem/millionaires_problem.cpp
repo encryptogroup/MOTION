@@ -53,7 +53,6 @@ int main(int ac, char* av[]) {
 
   auto party  = CreateParty(user_options);
   size_t my_id = user_options["my-id"].as<std::size_t>();
-  //assert(my_id >= 0 && my_id <=1);
   uint32_t input = user_options["input"].as<std::uint32_t>();
   std::cout << "I'm Party " << my_id << " and my input is: " << input << std::endl;
 
