@@ -44,7 +44,7 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
   // share inputs
   // remark: the input values to other parties' input gates are considered as buffers 
   // and the values are simply ignored and overwritten later
-  for (std::size_t i = 0; i < number_of_parties; ++i) {
+  for (std::uint32_t i = 0; i < number_of_parties; ++i) {
     input_values[i] = party->In<mo::MpcProtocol::kBooleanGmw>(mo::ToInput(value), i);
     indices[i] = party->In<mo::MpcProtocol::kBooleanGmw>(mo::ToInput(i), 0);
   }
@@ -53,7 +53,7 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
   mo::SecureUnsignedInteger max_id{indices[0]}, max_val{input_values[0]};
   
   // find the max id and value among all parties' inputs
-  for (std::size_t i = 1; i < number_of_parties; ++i) {
+  for (std::uint32_t i = 1; i < number_of_parties; ++i) {
     auto comparison = max_val > input_values[i];
     max_val = comparison.Mux(max_val.Get(), input_values[i].Get());
     max_id = comparison.Mux(max_id.Get(), indices[i].Get());
@@ -67,7 +67,7 @@ void EvaluateProtocol(mo::PartyPointer& party, std::uint32_t value) {
   party->Finish();
 
   // retrieve the result
-  auto result = output.As<std::uint64_t>();
+  auto result = output.As<std::uint32_t>();
   // print the result into the terminal
   std::cout << "Party " << result << " is the richest party." << std::endl;
 }
