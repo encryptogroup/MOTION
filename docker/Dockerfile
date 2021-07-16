@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
   build-essential \
   libprotobuf-dev \
   protobuf-compiler \
-  software-properties-common
+  software-properties-common \
+  libgoogle-perftools-dev
 
 ADD install_dependencies.sh .
 RUN ["bash", "install_dependencies.sh"]
