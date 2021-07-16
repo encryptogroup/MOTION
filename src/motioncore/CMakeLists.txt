@@ -214,6 +214,14 @@ target_link_libraries(motion
         Boost::json
         )
 
+if (MOTION_LINK_TCMALLOC)
+	find_library(tcmalloc_minimal REQUIRED
+		NAMES tcmalloc_minimal libtcmalloc_minimal
+		PATHS ${TCMALLOC_ROOT}/lib
+		)
+	target_link_libraries(motion PRIVATE tcmalloc_minimal)
+endif ()
+
 install(TARGETS motion
         EXPORT "${PROJECT_NAME}Targets"
         ARCHIVE DESTINATION lib

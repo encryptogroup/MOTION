@@ -12,6 +12,7 @@ endif ()
 option(MOTION_BUILD_EXE "Build executables" OFF)
 option(MOTION_BUILD_TESTS "Build tests" OFF)
 option(MOTION_BUILD_DOC "Build documentation" OFF)
+option(MOTION_LINK_TCMALLOC "Link against tcmalloc" OFF)
 set(MOTION_USE_AVX OFF CACHE STRING "Use AVX/AVX2/AVX512/AVX512VAES instructions")
 set_property(CACHE MOTION_USE_AVX PROPERTY STRINGS OFF AVX AVX2 AVX512 AVX512VAES)
 
