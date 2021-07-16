@@ -26,6 +26,8 @@
 #include <memory>
 #include "rng.h"
 
+namespace encrypto::motion {
+
 // RNG implemented using AES128 in CTR mode
 class Aes128CtrRng : public Rng {
  public:
@@ -60,3 +62,5 @@ class Aes128CtrRng : public Rng {
   std::unique_ptr<Aes128CtrRngState> state_;
   static thread_local Aes128CtrRng thread_instance_;
 };
+
+}   //  namespace encrypto::motion

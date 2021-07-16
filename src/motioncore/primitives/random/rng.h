@@ -24,6 +24,8 @@
 
 #include <cstddef>
 
+namespace encrypto::motion {
+
 // abstract base class for a random number generator
 class Rng {
  public:
@@ -44,3 +46,5 @@ class Rng {
   virtual void RandomBlocksAligned(std::byte* output, std::size_t number_of_blocks) = 0;
   static constexpr std::size_t kBlockSize = 16;
 };
+
+}   //  namespace encrypto::motion

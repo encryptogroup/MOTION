@@ -25,6 +25,8 @@
 #include <fstream>
 #include "primitives/aes/aesni_primitives.h"
 
+namespace encrypto::motion {
+
 thread_local Aes128CtrRng Aes128CtrRng::thread_instance_;
 
 struct Aes128CtrRng::Aes128CtrRngState {
@@ -71,3 +73,5 @@ void Aes128CtrRng::RandomBytes(std::byte* output, std::size_t number_of_bytes) {
   std::copy(std::begin(extra_block), std::begin(extra_block) + remaining_bytes,
             output + number_of_bytes - remaining_bytes);
 }
+
+}   //  namespace encrypto::motion
