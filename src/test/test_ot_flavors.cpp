@@ -29,7 +29,6 @@
 #include "communication/communication_layer.h"
 #include "oblivious_transfer/base_ots/base_ot_provider.h"
 #include "oblivious_transfer/ot_flavors.h"
-#include "oblivious_transfer/ot_provider.h"
 #include "utility/block.h"
 
 class OtFlavorTest : public ::testing::Test {

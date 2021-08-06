@@ -33,7 +33,6 @@
 #include "communication/communication_layer.h"
 #include "communication/message.h"
 #include "oblivious_transfer/ot_flavors.h"
-#include "oblivious_transfer/ot_provider.h"
 #include "primitives/aes/aesni_primitives.h"
 #include "primitives/pseudo_random_generator.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
