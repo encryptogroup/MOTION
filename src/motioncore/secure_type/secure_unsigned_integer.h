@@ -104,6 +104,14 @@ class SecureUnsignedInteger {
 
   ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
+  /// \brief internally extracts the ShareWrapper/SharePointer from input and
+  /// calls ShareWrapper::Simdify(std::span<SharePointer> input)
+  static SecureUnsignedInteger Simdify(std::span<SecureUnsignedInteger> input);
+  //
+  /// \brief internally extracts shares from each entry in input and calls
+  /// Simdify(std::span<SecureUnsignedInteger> input) from the result
+  static SecureUnsignedInteger Simdify(std::vector<SecureUnsignedInteger>&& input);
+
   /// \brief decomposes this->share_->Get() into shares with exactly 1 SIMD value.
   /// See the description in ShareWrapper::Unsimdify for reference.
   std::vector<SecureUnsignedInteger> Unsimdify() const;

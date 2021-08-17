@@ -25,6 +25,7 @@
 #include "secure_unsigned_integer.h"
 
 #include <fmt/format.h>
+#include <iterator>
 
 #include "algorithm/algorithm_description.h"
 #include "base/backend.h"
@@ -256,6 +257,18 @@ std::string SecureUnsignedInteger::ConstructPath(const IntegerOperationType type
   }
   return fmt::format("{}/circuits/int/int_{}{}{}.bristol", kRootDir, operation_type_string,
                      bitlength, suffix);
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::Simdify(std::span<SecureUnsignedInteger> input) {
+  std::vector<SharePointer> input_as_shares;
+  input_as_shares.reserve(input.size());
+  std::transform(input.begin(), input.end(), std::back_inserter(input_as_shares),
+      [&](SecureUnsignedInteger& i)->SharePointer{return i.Get().Get();});
+  return SecureUnsignedInteger(ShareWrapper::Simdify(input_as_shares));
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::Simdify(std::vector<SecureUnsignedInteger>&& input) {
+  return Simdify(input);
 }
 
 std::vector<SecureUnsignedInteger> SecureUnsignedInteger::Unsimdify() const {
