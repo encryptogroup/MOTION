@@ -112,6 +112,14 @@ class SecureUnsignedInteger {
   /// Simdify(std::span<SecureUnsignedInteger> input) from the result
   static SecureUnsignedInteger Simdify(std::vector<SecureUnsignedInteger>&& input);
 
+  /// \brief constructs a SubsetGate that returns values stored at positions in this->share_.
+  /// Internally calls ShareWrapper Subset(std::span<std::size_t> positions).
+  SecureUnsignedInteger Subset(std::span<const size_t> positions);
+
+  /// \brief constructs a SubsetGate that returns values stored at positions in this->share_.
+  /// Internally calls SecureUnsignedInteger Subset(std::span<std::size_t> positions).
+  SecureUnsignedInteger Subset(std::vector<size_t>&& positions);
+
   /// \brief decomposes this->share_->Get() into shares with exactly 1 SIMD value.
   /// See the description in ShareWrapper::Unsimdify for reference.
   std::vector<SecureUnsignedInteger> Unsimdify() const;

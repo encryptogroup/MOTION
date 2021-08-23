@@ -271,6 +271,15 @@ SecureUnsignedInteger SecureUnsignedInteger::Simdify(std::vector<SecureUnsignedI
   return Simdify(input);
 }
 
+SecureUnsignedInteger SecureUnsignedInteger::Subset(std::span<const size_t> positions) {
+  ShareWrapper unwrap{this->Get()};
+  return SecureUnsignedInteger(unwrap.Subset(positions));
+}
+
+SecureUnsignedInteger SecureUnsignedInteger::Subset(std::vector<size_t>&& positions) {
+  return Subset(std::span<const std::size_t>(positions));
+}
+
 std::vector<SecureUnsignedInteger> SecureUnsignedInteger::Unsimdify() const {
   auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_->Get());
   auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);

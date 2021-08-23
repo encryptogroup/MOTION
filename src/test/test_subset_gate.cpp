@@ -29,6 +29,7 @@
 
 #include "base/party.h"
 #include "protocols/share_wrapper.h"
+#include "secure_type/secure_unsigned_integer.h"
 #include "test_constants.h"
 
 namespace {
@@ -293,6 +294,58 @@ TEST_P(ArithmeticSubsetTest, ArithmeticConstant) {
         this->CheckCorrectness(constant_share_subset[2].As<std::vector<uint32_t>>());
         this->CheckCorrectness(constant_share_subset[3].As<std::vector<uint64_t>>());
 
+        this->motion_parties_.at(party_id)->Finish();
+      }));
+    }
+    for (auto& f : futures) f.get();
+  } catch (std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
+}
+
+TEST_P(ArithmeticSubsetTest, SecureUnsignedInteger) {
+  try {
+    std::vector<std::future<void>> futures;
+    for (std::size_t party_id = 0; party_id < this->motion_parties_.size(); ++party_id) {
+      futures.push_back(std::async(std::launch::async, [party_id, this]() {
+        std::array<encrypto::motion::SecureUnsignedInteger, 4> share_input;
+        share_input[0] =
+            this->motion_parties_.at(party_id)->In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+                std::get<std::vector<uint8_t>>(this->plaintext_arithmetic_input_),
+                this->input_owner_);
+        share_input[1] =
+            this->motion_parties_.at(party_id)->In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+                std::get<std::vector<uint16_t>>(this->plaintext_arithmetic_input_),
+                this->input_owner_);
+        share_input[2] =
+            this->motion_parties_.at(party_id)->In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+                std::get<std::vector<uint32_t>>(this->plaintext_arithmetic_input_),
+                this->input_owner_);
+        share_input[3] =
+            this->motion_parties_.at(party_id)->In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+                std::get<std::vector<uint64_t>>(this->plaintext_arithmetic_input_),
+                this->input_owner_);
+
+        std::array<encrypto::motion::SecureUnsignedInteger, 4> share_subset;
+        std::transform(share_input.begin(), share_input.end(), share_subset.begin(),
+                       [this](encrypto::motion::SecureUnsignedInteger& share_wrapper) {
+                         return share_wrapper.Subset(this->positions_);
+                       });
+        std::array<encrypto::motion::SecureUnsignedInteger, 4> share_output;
+        std::transform(share_subset.begin(), share_subset.end(), share_output.begin(),
+                       [this](const encrypto::motion::SecureUnsignedInteger& share_wrapper) {
+                         return share_wrapper.Out();
+                       });
+
+        this->motion_parties_.at(party_id)->Run();
+
+        // input owner checks the correctness
+        if (party_id == this->input_owner_) {
+          this->CheckCorrectness(share_output[0].As<std::vector<uint8_t>>());
+          this->CheckCorrectness(share_output[1].As<std::vector<uint16_t>>());
+          this->CheckCorrectness(share_output[2].As<std::vector<uint32_t>>());
+          this->CheckCorrectness(share_output[3].As<std::vector<uint64_t>>());
+        }
         this->motion_parties_.at(party_id)->Finish();
       }));
     }
