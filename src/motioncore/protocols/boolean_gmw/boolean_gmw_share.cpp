@@ -26,8 +26,12 @@
 #include "boolean_gmw_wire.h"
 
 #include <cassert>
+#include <functional>
+#include <memory>
+#include <vector>
 
 #include "base/backend.h"
+#include "utility/bit_vector.h"
 #include "utility/config.h"
 #include "utility/typedefs.h"
 
@@ -86,6 +90,28 @@ std::size_t Share::GetNumberOfSimdValues() const noexcept {
   const auto gmw_wire = std::dynamic_pointer_cast<const boolean_gmw::Wire>(wires_.at(0));
   assert(gmw_wire);
   return gmw_wire->GetNumberOfSimdValues();
+}
+
+std::vector<std::reference_wrapper<const BitVector<>> > Share::GetValues() const {
+  std::vector<std::reference_wrapper<const BitVector<>> > result;
+  result.reserve(wires_.size());
+  for (const auto& wire : wires_) {
+    const auto gmw_wire = std::dynamic_pointer_cast<const boolean_gmw::Wire>(wire);
+    assert(gmw_wire);
+    result.emplace_back(gmw_wire->GetValues());
+  }
+  return result;
+}
+
+std::vector<std::reference_wrapper<BitVector<>> > Share::GetMutableValues() {
+  std::vector<std::reference_wrapper<BitVector<>> > result;
+  result.reserve(wires_.size());
+  for (auto& wire : wires_) {
+    auto gmw_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(wire);
+    assert(gmw_wire);
+    result.emplace_back(gmw_wire->GetMutableValues());
+  }
+  return result;
 }
 
 std::vector<std::shared_ptr<motion::Share>> Share::Split() const noexcept {

@@ -24,7 +24,10 @@
 
 #pragma once
 
+#include <functional>
+#include <vector>
 #include "protocols/share.h"
+#include "utility/bit_vector.h"
 
 namespace encrypto::motion::proto::boolean_gmw {
 
@@ -45,6 +48,10 @@ class Share final : public BooleanShare {
   CircuitType GetCircuitType() const noexcept final;
 
   std::size_t GetBitLength() const noexcept final { return wires_.size(); }
+
+  std::vector<std::reference_wrapper<const BitVector<>> > GetValues() const;
+
+  std::vector<std::reference_wrapper<BitVector<>> > GetMutableValues();
 
   std::vector<std::shared_ptr<motion::Share>> Split() const noexcept final;
 
