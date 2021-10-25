@@ -24,6 +24,7 @@
 
 #include "share_wrapper.h"
 
+#include <stdexcept>
 #include <typeinfo>
 
 #include "algorithm/algorithm_description.h"
@@ -199,14 +200,33 @@ ShareWrapper ShareWrapper::operator-(const ShareWrapper& other) const {
 ShareWrapper ShareWrapper::operator*(const ShareWrapper& other) const {
   assert(*other);
   assert(share_);
+  assert(share_->GetNumberOfSimdValues() == other->GetNumberOfSimdValues());
+  if (share_->GetProtocol() != MpcProtocol::kArithmeticGmw ||
+      other->GetProtocol() != MpcProtocol::kArithmeticGmw) {
+    if (share_->GetProtocol() == MpcProtocol::kBooleanGmw &&
+        other->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+      if (other->GetBitLength() == 8u) {
+        return HybridMul<std::uint8_t>(share_, *other);
+      } else if (other->GetBitLength() == 16u) {
+        return HybridMul<std::uint16_t>(share_, *other);
+      } else if (other->GetBitLength() == 32u) {
+        return HybridMul<std::uint32_t>(share_, *other);
+      } else if (other->GetBitLength() == 64u) {
+        return HybridMul<std::uint64_t>(share_, *other);
+      } else {
+        throw std::bad_cast();
+      }
+    } else if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw &&
+               other->GetProtocol() == MpcProtocol::kBooleanGmw) {
+      return other * *this;
+    } else {
+      throw std::runtime_error(
+          "Arithmetic primitive operations are only supported for arithmetic GMW shares");
+    }
+  }
+
   assert(share_->GetCircuitType() == other->GetCircuitType());
   assert(share_->GetBitLength() == other->GetBitLength());
-  assert(share_->GetNumberOfSimdValues() == other->GetNumberOfSimdValues());
-  if (share_->GetProtocol() != MpcProtocol::kArithmeticGmw &&
-      other->GetProtocol() != MpcProtocol::kArithmeticGmw) {
-    throw std::runtime_error(
-        "Arithmetic primitive operations are only supported for arithmetic GMW shares");
-  }
 
   if (share_ == other.share_) {  // squaring
     if (share_->GetBitLength() == 8u) {
@@ -854,6 +874,29 @@ ShareWrapper ShareWrapper::Mul(SharePointer share, SharePointer other) const {
 }
 
 template <typename T>
+ShareWrapper ShareWrapper::HybridMul(SharePointer share_bit, SharePointer share_integer) const {
+  if (!share_bit->IsConstant() && !share_integer->IsConstant()) {
+    auto bgmw_share{std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_bit)};
+    assert(bgmw_share);
+    auto wire_bit{bgmw_share->GetWires()[0]};
+    auto bgmw_wire_bit{std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(wire_bit)};
+
+    auto agmw_share = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(share_integer);
+    assert(agmw_share);
+    auto agmw_wire_integer{agmw_share->GetArithmeticWire()};
+
+    auto multiplication_gate{std::make_shared<proto::arithmetic_gmw::HybridMultiplicationGate<T>>(
+        bgmw_wire_bit, agmw_wire_integer)};
+    share_->GetRegister()->RegisterNextGate(multiplication_gate);
+    auto result{std::static_pointer_cast<Share>(multiplication_gate->GetOutputAsArithmeticShare())};
+
+    return ShareWrapper(result);
+  } else {
+    throw(std::runtime_error("Hybrid Multiplication is not implemented for constants, yet."));
+  }
+}
+
+template <typename T>
 ShareWrapper ShareWrapper::Square(SharePointer share) const {
   auto this_a = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(share);
   assert(this_a);
@@ -874,6 +917,15 @@ template ShareWrapper ShareWrapper::Mul<std::uint32_t>(SharePointer share,
                                                        SharePointer other) const;
 template ShareWrapper ShareWrapper::Mul<std::uint64_t>(SharePointer share,
                                                        SharePointer other) const;
+
+template ShareWrapper ShareWrapper::HybridMul<std::uint8_t>(SharePointer share,
+                                                            SharePointer other) const;
+template ShareWrapper ShareWrapper::HybridMul<std::uint16_t>(SharePointer share,
+                                                             SharePointer other) const;
+template ShareWrapper ShareWrapper::HybridMul<std::uint32_t>(SharePointer share,
+                                                             SharePointer other) const;
+template ShareWrapper ShareWrapper::HybridMul<std::uint64_t>(SharePointer share,
+                                                             SharePointer other) const;
 
 ShareWrapper ShareWrapper::Subset(std::vector<std::size_t>&& positions) {
   return Subset(std::span<const std::size_t>(positions));

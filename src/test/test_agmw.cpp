@@ -23,6 +23,8 @@
 // SOFTWARE.
 
 #include <gtest/gtest.h>
+#include <future>
+
 #include "base/party.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_gate.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
@@ -598,4 +600,106 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
     template_test(static_cast<std::uint32_t>(0));
     template_test(static_cast<std::uint64_t>(0));
   }
+}
+
+template <typename T>
+class TypedAgmwTest : public testing::Test {
+ public:
+  void SetUp() override {
+    GenerateParties(false);
+    GenerateRandomValues();
+  }
+
+ protected:
+  void GenerateParties(bool online_after_setup) {
+    parties_ = std::move(MakeLocallyConnectedParties(2, kPortOffset));
+    for (auto& party : parties_) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(online_after_setup);
+    }
+  }
+
+  void GenerateRandomValues() {
+    std::mt19937_64 random(0);
+    std::uniform_int_distribution<T> value_dist;
+    std::bernoulli_distribution bool_dist;
+
+    bit_ = bool_dist(random);
+    bits_1k_.Reserve(vector_size_);
+    while (bits_1k_.GetSize() < vector_size_) bits_1k_.Append(bool_dist(random));
+
+    T value_ = value_dist(random);
+    values_1k_.reserve(vector_size_);
+    while (values_1k_.size() < vector_size_) values_1k_.emplace_back(value_dist(random));
+  }
+
+  T value_;
+  std::vector<T> values_1k_;
+  bool bit_;
+  encrypto::motion::BitVector<> bits_1k_;
+  std::vector<encrypto::motion::PartyPointer> parties_;
+
+  std::size_t vector_size_{1000};
+};
+
+using IntegerTypes = ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
+TYPED_TEST_SUITE(TypedAgmwTest, IntegerTypes);
+
+TYPED_TEST(TypedAgmwTest, HybridMultiplication_1_1K_Simd_2_parties) {
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  std::srand(std::time(nullptr));
+  std::vector<std::future<void>> futures;
+
+  for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+    futures.push_back(std::async(std::launch::async, [this, party_id]() {
+      encrypto::motion::ShareWrapper share_value_1, share_values_1K, share_bit_1, share_bits_1K;
+      // If my input - real input, otherwise a dummy 0 (-vector).
+      // Should not make any difference, just for consistency...
+      TypeParam my_value_1 = party_id == 0 ? this->value_ : 0;
+      std::vector<TypeParam> my_values_1K =
+          party_id == 0 ? this->values_1k_ : std::vector<TypeParam>(this->values_1k_.size(), 0);
+
+      share_value_1 =
+          this->parties_.at(party_id)->template In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+              my_value_1, 0);
+      share_values_1K =
+          this->parties_.at(party_id)->template In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+              my_values_1K, 0);
+
+      bool my_bit_1 = party_id == 0 ? this->bit_ : false;
+      auto my_bits_1K = party_id == 0
+                            ? this->bits_1k_
+                            : encrypto::motion::BitVector<>(this->bits_1k_.GetSize(), false);
+
+      share_bit_1 =
+          this->parties_.at(party_id)->template In<encrypto::motion::MpcProtocol::kBooleanGmw>(
+              my_bit_1, 0);
+      share_bits_1K =
+          this->parties_.at(party_id)->template In<encrypto::motion::MpcProtocol::kBooleanGmw>(
+              my_bits_1K, 0);
+
+      auto share_mul_1 = share_bit_1 * share_value_1;
+      auto share_mul_1K = share_bits_1K * share_values_1K;
+
+      auto share_output_1 = share_mul_1.Out();
+      auto share_output_1K = share_mul_1K.Out();
+
+      this->parties_.at(party_id)->Run();
+
+      TypeParam circuit_result_1 = share_output_1.As<TypeParam>();
+      TypeParam expected_result_1 = this->bit_ ? this->value_ : 0;
+      EXPECT_EQ(circuit_result_1, expected_result_1);
+
+      std::vector<TypeParam> circuit_result_1K{share_output_1K.As<std::vector<TypeParam>>()};
+      std::vector<TypeParam> expected_result_1K;
+      expected_result_1K.reserve(circuit_result_1K.size());
+      for (std::size_t i = 0; i < this->values_1k_.size(); ++i) {
+        expected_result_1K.emplace_back(this->bits_1k_[i] ? this->values_1k_[i] : 0);
+      }
+      EXPECT_EQ(circuit_result_1K, expected_result_1K);
+
+      this->parties_.at(party_id)->Finish();
+    }));
+  }
+  for (auto& future : futures) future.get();
 }

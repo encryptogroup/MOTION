@@ -95,6 +95,7 @@ class ShareWrapper {
     return *this;
   }
 
+
   ShareWrapper operator==(const ShareWrapper& other) const;
 
   // use this as the selection bit
@@ -209,6 +210,9 @@ class ShareWrapper {
 
   template <typename T>
   ShareWrapper Mul(SharePointer share, SharePointer other) const;
+
+  template <typename T>
+  ShareWrapper HybridMul(SharePointer share, SharePointer other) const;
 
   template <typename T>
   ShareWrapper Square(SharePointer share) const;
