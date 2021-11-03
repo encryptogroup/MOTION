@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "utility/bit_vector.h"
+#include "utility/fiber_waitable.h"
 
 namespace encrypto::motion {
 
@@ -36,7 +37,7 @@ class Ot {
   virtual std::vector<std::byte> Receive(size_t) = 0;
 };
 
-class RandomOt {
+class RandomOt : public FiberOnlineWaitable {
  public:
   virtual ~RandomOt() = default;
 
