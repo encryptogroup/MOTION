@@ -46,6 +46,7 @@
 #include "multiplication_triple/sp_provider.h"
 #include "oblivious_transfer/base_ots/base_ot_provider.h"
 #include "oblivious_transfer/ot_provider.h"
+#include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
 #include "protocols/bmr/bmr_gate.h"
 #include "protocols/bmr/bmr_provider.h"
 #include "protocols/bmr/bmr_share.h"
@@ -304,6 +305,205 @@ SharePointer Backend::BmrOutput(const SharePointer& parent, std::size_t output_o
   RegisterGate(ouput_gate_cast);
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsShare());
 }
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwInput(std::size_t party_id, T input) {
+  std::vector<T> input_vector{input};
+  return ArithmeticGmwInput(party_id, std::move(input_vector));
+}
+
+template SharePointer Backend::ArithmeticGmwInput<std::uint8_t>(std::size_t party_id,
+                                                                std::uint8_t input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint16_t>(std::size_t party_id,
+                                                                 std::uint16_t input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint32_t>(std::size_t party_id,
+                                                                 std::uint32_t input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint64_t>(std::size_t party_id,
+                                                                 std::uint64_t input);
+template SharePointer Backend::ArithmeticGmwInput<__uint128_t>(std::size_t party_id,
+                                                               __uint128_t input);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwInput(std::size_t party_id, const std::vector<T>& input_vector) {
+  auto input_gate =
+      std::make_shared<proto::arithmetic_gmw::InputGate<T>>(input_vector, party_id, *this);
+  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
+  RegisterInputGate(input_gate_cast);
+  return std::static_pointer_cast<Share>(input_gate->GetOutputAsArithmeticShare());
+}
+
+template SharePointer Backend::ArithmeticGmwInput<std::uint8_t>(
+    std::size_t party_id, const std::vector<std::uint8_t>& input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint16_t>(
+    std::size_t party_id, const std::vector<std::uint16_t>& input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint32_t>(
+    std::size_t party_id, const std::vector<std::uint32_t>& input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint64_t>(
+    std::size_t party_id, const std::vector<std::uint64_t>& input);
+template SharePointer Backend::ArithmeticGmwInput<__uint128_t>(
+    std::size_t party_id, const std::vector<__uint128_t>& input);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwInput(std::size_t party_id, std::vector<T>&& input_vector) {
+  auto input_gate = std::make_shared<proto::arithmetic_gmw::InputGate<T>>(std::move(input_vector),
+                                                                          party_id, *this);
+  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
+  RegisterInputGate(input_gate_cast);
+  return std::static_pointer_cast<Share>(input_gate->GetOutputAsArithmeticShare());
+}
+
+template SharePointer Backend::ArithmeticGmwInput<std::uint8_t>(std::size_t party_id,
+                                                                std::vector<std::uint8_t>&& input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint16_t>(
+    std::size_t party_id, std::vector<std::uint16_t>&& input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint32_t>(
+    std::size_t party_id, std::vector<std::uint32_t>&& input);
+template SharePointer Backend::ArithmeticGmwInput<std::uint64_t>(
+    std::size_t party_id, std::vector<std::uint64_t>&& input);
+template SharePointer Backend::ArithmeticGmwInput<__uint128_t>(std::size_t party_id,
+                                                               std::vector<__uint128_t>&& input);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwOutput(const proto::arithmetic_gmw::SharePointer<T>& parent,
+                                          std::size_t output_owner) {
+  assert(parent);
+  auto output_gate = std::make_shared<proto::arithmetic_gmw::OutputGate<T>>(parent, output_owner);
+  auto out_gate_cast = std::static_pointer_cast<Gate>(output_gate);
+  RegisterGate(out_gate_cast);
+  return std::static_pointer_cast<Share>(output_gate->GetOutputAsArithmeticShare());
+}
+
+template SharePointer Backend::ArithmeticGmwOutput<std::uint8_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& parent, std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<std::uint16_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& parent, std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<std::uint32_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& parent, std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<std::uint64_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& parent, std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<__uint128_t>(
+    const proto::arithmetic_gmw::SharePointer<__uint128_t>& parent, std::size_t output_owner);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwOutput(const SharePointer& parent, std::size_t output_owner) {
+  assert(parent);
+  auto casted_parent_pointer = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(parent);
+  assert(casted_parent_pointer);
+  return ArithmeticGmwOutput(casted_parent_pointer, output_owner);
+}
+
+template SharePointer Backend::ArithmeticGmwOutput<std::uint8_t>(const SharePointer& parent,
+                                                                 std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<std::uint16_t>(const SharePointer& parent,
+                                                                  std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<std::uint32_t>(const SharePointer& parent,
+                                                                  std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<std::uint64_t>(const SharePointer& parent,
+                                                                  std::size_t output_owner);
+template SharePointer Backend::ArithmeticGmwOutput<__uint128_t>(const SharePointer& parent,
+                                                                std::size_t output_owner);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwAddition(const proto::arithmetic_gmw::SharePointer<T>& a,
+                                            const proto::arithmetic_gmw::SharePointer<T>& b) {
+  assert(a);
+  assert(b);
+  auto wire_a = a->GetArithmeticWire();
+  auto wire_b = b->GetArithmeticWire();
+  auto addition_gate = std::make_shared<proto::arithmetic_gmw::AdditionGate<T>>(wire_a, wire_b);
+  auto addition_gate_cast = std::static_pointer_cast<Gate>(addition_gate);
+  RegisterGate(addition_gate_cast);
+  return std::static_pointer_cast<Share>(addition_gate->GetOutputAsArithmeticShare());
+}
+
+template SharePointer Backend::ArithmeticGmwAddition<std::uint8_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& b);
+template SharePointer Backend::ArithmeticGmwAddition<std::uint16_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& b);
+template SharePointer Backend::ArithmeticGmwAddition<std::uint32_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& b);
+template SharePointer Backend::ArithmeticGmwAddition<std::uint64_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& b);
+template SharePointer Backend::ArithmeticGmwAddition<__uint128_t>(
+    const proto::arithmetic_gmw::SharePointer<__uint128_t>& a,
+    const proto::arithmetic_gmw::SharePointer<__uint128_t>& b);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwAddition(const SharePointer& a, const SharePointer& b) {
+  assert(a);
+  assert(b);
+  auto casted_parent_a_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(a);
+  auto casted_parent_b_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(b);
+  assert(casted_parent_a_ptr);
+  assert(casted_parent_b_ptr);
+  return ArithmeticGmwAddition(casted_parent_a_ptr, casted_parent_b_ptr);
+}
+
+template SharePointer Backend::ArithmeticGmwAddition<std::uint8_t>(const SharePointer& a,
+                                                                   const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwAddition<std::uint16_t>(const SharePointer& a,
+                                                                    const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwAddition<std::uint32_t>(const SharePointer& a,
+                                                                    const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwAddition<std::uint64_t>(const SharePointer& a,
+                                                                    const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwAddition<__uint128_t>(const SharePointer& a,
+                                                                  const SharePointer& b);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwSubtraction(const proto::arithmetic_gmw::SharePointer<T>& a,
+                                               const proto::arithmetic_gmw::SharePointer<T>& b) {
+  assert(a);
+  assert(b);
+  auto wire_a = a->GetArithmeticWire();
+  auto wire_b = b->GetArithmeticWire();
+  auto sub_gate = std::make_shared<proto::arithmetic_gmw::SubtractionGate<T>>(wire_a, wire_b);
+  auto sub_gate_cast = std::static_pointer_cast<Gate>(sub_gate);
+  RegisterGate(sub_gate_cast);
+  return std::static_pointer_cast<Share>(sub_gate->GetOutputAsArithmeticShare());
+}
+
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint8_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint16_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint32_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint64_t>(
+    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& a,
+    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<__uint128_t>(
+    const proto::arithmetic_gmw::SharePointer<__uint128_t>& a,
+    const proto::arithmetic_gmw::SharePointer<__uint128_t>& b);
+
+template <typename T>
+SharePointer Backend::ArithmeticGmwSubtraction(const SharePointer& a, const SharePointer& b) {
+  assert(a);
+  assert(b);
+  auto casted_parent_a_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(a);
+  auto casted_parent_b_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(b);
+  assert(casted_parent_a_ptr);
+  assert(casted_parent_b_ptr);
+  return ArithmeticGmwSubtraction(casted_parent_a_ptr, casted_parent_b_ptr);
+}
+
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint8_t>(const SharePointer& a,
+                                                                      const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint16_t>(const SharePointer& a,
+                                                                       const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint32_t>(const SharePointer& a,
+                                                                       const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<std::uint64_t>(const SharePointer& a,
+                                                                       const SharePointer& b);
+template SharePointer Backend::ArithmeticGmwSubtraction<__uint128_t>(const SharePointer& a,
+                                                                     const SharePointer& b);
 
 void Backend::Synchronize() { communication_layer_.Synchronize(); }
 

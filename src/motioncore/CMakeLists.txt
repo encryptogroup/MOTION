@@ -37,6 +37,9 @@ add_library(motion
         primitives/sharing_randomness_generator.cpp
         primitives/random/aes128_ctr_rng.cpp
         primitives/random/openssl_rng.cpp
+        protocols/arithmetic_gmw/arithmetic_gmw_gate.cpp
+        protocols/arithmetic_gmw/arithmetic_gmw_share.cpp
+        protocols/arithmetic_gmw/arithmetic_gmw_wire.cpp
         protocols/bmr/bmr_data.cpp
         protocols/bmr/bmr_gate.cpp
         protocols/bmr/bmr_provider.cpp

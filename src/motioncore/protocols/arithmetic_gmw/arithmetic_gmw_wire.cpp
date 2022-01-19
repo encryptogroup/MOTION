@@ -22,47 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include "protocols/wire.h"
+#include "arithmetic_gmw_wire.h"
 
 namespace encrypto::motion::proto::arithmetic_gmw {
 
-// Allow only unsigned integers for Arithmetic wires.
 template <typename T>
-class Wire final : public motion::Wire {
-  using Base = motion::Wire;
-
- public:
-  using value_type = T;
-
-  Wire(Backend& backend, std::size_t number_of_simd);
-
-  Wire(std::vector<T>&& values, Backend& backend);
-
-  Wire(const std::vector<T>& values, Backend& backend);
-
-  Wire(T t, Backend& backend);
-
-  ~Wire() final = default;
-
-  MpcProtocol GetProtocol() const final { return MpcProtocol::kArithmeticGmw; }
-
-  CircuitType GetCircuitType() const final { return CircuitType::kArithmetic; }
-
-  const std::vector<T>& GetValues() const { return values_; }
-
-  std::vector<T>& GetMutableValues() { return values_; }
-
-  std::size_t GetBitLength() const final { return sizeof(T) * 8; }
-
-  bool IsConstant() const noexcept final { return false; }
-
- private:
-  std::vector<T> values_;
-};
+Wire<T>::Wire(Backend& backend, std::size_t number_of_simd) : Base(backend, number_of_simd) {}
 
 template <typename T>
-using WirePointer = std::shared_ptr<Wire<T>>;
+Wire<T>::Wire(std::vector<T>&& values, Backend& backend)
+    : Base(backend, values.size()), values_(std::move(values)) {}
+
+template <typename T>
+Wire<T>::Wire(const std::vector<T>& values, Backend& backend)
+    : Base(backend, values.size()), values_(values) {}
+
+template <typename T>
+Wire<T>::Wire(T t, Backend& backend) : Base(backend, 1), values_({t}) {}
+
+template class Wire<std::uint8_t>;
+template class Wire<std::uint16_t>;
+template class Wire<std::uint32_t>;
+template class Wire<std::uint64_t>;
+template class Wire<__uint128_t>;
 
 }  // namespace encrypto::motion::proto::arithmetic_gmw

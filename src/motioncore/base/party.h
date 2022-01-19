@@ -168,7 +168,7 @@ class Party {
         return backend_->ConstantArithmeticGmwInput(input);
       }
       case MpcProtocol::kArithmeticGmw: {
-        return backend_->ArithmeticGmwInput(party_id, input);
+        return backend_->ArithmeticGmwInput<T>(party_id, input);
       }
       case MpcProtocol::kBooleanGmw: {
         throw std::runtime_error(
@@ -196,7 +196,7 @@ class Party {
         return backend_->ConstantArithmeticGmwInput(std::move(input));
       }
       case MpcProtocol::kArithmeticGmw: {
-        return backend_->ArithmeticGmwInput(party_id, std::move(input));
+        return backend_->ArithmeticGmwInput<T>(party_id, std::move(input));
       }
       case MpcProtocol::kBooleanGmw: {
         throw(std::runtime_error(
