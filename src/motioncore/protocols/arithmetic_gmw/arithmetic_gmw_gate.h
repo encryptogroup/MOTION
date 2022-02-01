@@ -70,6 +70,8 @@ class InputGate final : public motion::InputGate {
   // non-interactive input sharing based on distributed in advance randomness seeds
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   // perhaps, we should return a copy of the pointer and not move it for the case we need it
   // multiple times
   arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare();
@@ -97,6 +99,8 @@ class OutputGate final : public motion::OutputGate {
   void EvaluateSetup() final override;
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   // perhaps, we should return a copy of the pointer and not move it for the  case we need it
   // multiple times
   arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare();
@@ -119,6 +123,8 @@ class AdditionGate final : public motion::TwoGate {
   void EvaluateSetup() final override;
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   // perhaps, we should return a copy of the pointer and not move it for the case we need it
   // multiple times
   arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare();
@@ -135,6 +141,8 @@ class SubtractionGate final : public motion::TwoGate {
 
   void EvaluateSetup() final override;
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   // perhaps, we should return a copy of the pointer and not move it for the case we need it
   // multiple times
@@ -153,6 +161,8 @@ class MultiplicationGate final : public motion::TwoGate {
 
   void EvaluateSetup() final override;
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   // perhaps, we should return a copy of the pointer and not move it for the case we need it
   // multiple times
@@ -179,8 +189,9 @@ class HybridMultiplicationGate final : public motion::TwoGate {
   ~HybridMultiplicationGate() final = default;
 
   void EvaluateSetup() final override;
-
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -203,6 +214,8 @@ class SquareGate final : public motion::OneGate {
 
   void EvaluateSetup() final override;
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   // perhaps, we should return a copy of the pointer and not move it for the case we need it
   // multiple times

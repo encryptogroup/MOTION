@@ -82,6 +82,10 @@ class Gate {
 
   bool AreDependenciesReady() { return wire_dependencies_.size() == number_of_ready_dependencies_; }
 
+  virtual bool NeedsSetup() const { return true; }
+
+  virtual bool NeedsOnline() const { return true; }
+
   void SetSetupIsReady();
 
   void SetOnlineIsReady();

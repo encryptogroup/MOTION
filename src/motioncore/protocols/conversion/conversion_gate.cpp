@@ -81,13 +81,10 @@ BmrToBooleanGmwGate::BmrToBooleanGmwGate(const SharePointer& parent)
   }
 }
 
-void BmrToBooleanGmwGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void BmrToBooleanGmwGate::EvaluateSetup() {}
 
 void BmrToBooleanGmwGate::EvaluateOnline() {
-  WaitSetup();
+  // nothing to setup, no need to wait/check
   if constexpr (kDebug) {
     GetLogger().LogDebug(fmt::format(
         "Start evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
@@ -118,8 +115,6 @@ void BmrToBooleanGmwGate::EvaluateOnline() {
     GetLogger().LogDebug(fmt::format(
         "Finished evaluating online phase of BMR to Boolean GMW Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const proto::boolean_gmw::SharePointer BmrToBooleanGmwGate::GetOutputAsGmwShare() const {
@@ -194,8 +189,6 @@ void BooleanGmwToBmrGate::EvaluateSetup() {
     GetLogger().LogDebug(fmt::format(
         "Finished evaluating setup phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void BooleanGmwToBmrGate::EvaluateOnline() {
@@ -306,8 +299,6 @@ void BooleanGmwToBmrGate::EvaluateOnline() {
     GetLogger().LogDebug(fmt::format(
         "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const proto::bmr::SharePointer BooleanGmwToBmrGate::GetOutputAsBmrShare() const {
@@ -385,18 +376,10 @@ ArithmeticGmwToBmrGate::ArithmeticGmwToBmrGate(const SharePointer& parent)
   }
 }
 
-void ArithmeticGmwToBmrGate::EvaluateSetup() {
-  if constexpr (kDebug) {
-    GetLogger().LogDebug(fmt::format(
-        "Nothing to do in the setup phase of Arithmetic GMW to BMR Gate with id#{}", gate_id_));
-  }
-
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void ArithmeticGmwToBmrGate::EvaluateSetup() {}
 
 void ArithmeticGmwToBmrGate::EvaluateOnline() {
-  WaitSetup();
+  // nothing to setup, no need to wait/check
   if constexpr (kDebug) {
     GetLogger().LogDebug(fmt::format(
         "Start evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
@@ -438,8 +421,6 @@ void ArithmeticGmwToBmrGate::EvaluateOnline() {
     GetLogger().LogDebug(fmt::format(
         "Finished evaluating online phase of Boolean GMW to BMR Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const proto::bmr::SharePointer ArithmeticGmwToBmrGate::GetOutputAsBmrShare() const {

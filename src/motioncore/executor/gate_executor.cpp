@@ -55,8 +55,18 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
 
   // Evaluate the setup phase of all the gates
   for (auto& gate : register_.GetGates()) {
-    fiber_pool.post([&] { gate->EvaluateSetup(); });
+    if (gate->NeedsSetup()) {
+      fiber_pool.post([&] {
+        gate->EvaluateSetup();
+        gate->SetSetupIsReady();
+        register_.IncrementEvaluatedGatesSetupCounter();
+      });
+    } else {
+      gate->SetSetupIsReady();
+      register_.IncrementEvaluatedGatesSetupCounter();
+    }
   }
+
   register_.GetGatesSetupDoneCondition()->Wait();
   assert(register_.GetNumberOfEvaluatedGateSetups() == register_.GetTotalNumberOfGates());
 
@@ -67,8 +77,18 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
 
   // Evaluate the online phase of all the gates
   for (auto& gate : register_.GetGates()) {
-    fiber_pool.post([&] { gate->EvaluateOnline(); });
+    if (gate->NeedsOnline()) {
+      fiber_pool.post([&] {
+        gate->EvaluateOnline();
+        gate->SetOnlineIsReady();
+        register_.IncrementEvaluatedGatesOnlineCounter();
+      });
+    } else {
+      gate->SetOnlineIsReady();
+      register_.IncrementEvaluatedGatesOnlineCounter();
+    }
   }
+
   register_.GetGatesOnlineDoneCondition()->Wait();
   assert(register_.GetNumberOfEvaluatedGates() == register_.GetTotalNumberOfGates());
 
@@ -101,11 +121,24 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
 
   // Evaluate all the gates
   for (auto& gate : register_.GetGates()) {
-    fiber_pool.post([&] {
-      gate->EvaluateSetup();
-      // XXX: maybe insert a 'yield' here?
-      gate->EvaluateOnline();
-    });
+    if (gate->NeedsSetup() || gate->NeedsOnline()) {
+      fiber_pool.post([&] {
+        gate->EvaluateSetup();
+        gate->SetSetupIsReady();
+        register_.IncrementEvaluatedGatesSetupCounter();
+
+        // XXX: maybe insert a 'yield' here?
+        gate->EvaluateOnline();
+        gate->SetOnlineIsReady();
+        register_.IncrementEvaluatedGatesOnlineCounter();
+      });
+    } else {
+      gate->SetSetupIsReady();
+      register_.IncrementEvaluatedGatesSetupCounter();
+
+      gate->SetOnlineIsReady();
+      register_.IncrementEvaluatedGatesOnlineCounter();
+    }
   }
 
   preprocessing_future.get();

@@ -97,6 +97,8 @@ class OutputGate final : public motion::OutputGate {
 
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   const bmr::SharePointer GetOutputAsBmrShare() const;
 
   const motion::SharePointer GetOutputAsShare() const;

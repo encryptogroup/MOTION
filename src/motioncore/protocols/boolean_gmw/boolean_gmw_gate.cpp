@@ -91,15 +91,11 @@ void InputGate::InitializationHelper() {
   }
 }
 
-void InputGate::EvaluateSetup() {
-  GetBaseProvider().WaitForSetup();
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void InputGate::EvaluateSetup() {}
 
 void InputGate::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
+  // nothing to setup, no need to wait/check
+  GetBaseProvider().WaitForSetup();
 
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
@@ -157,8 +153,6 @@ void InputGate::EvaluateOnline() {
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(fmt::format("Evaluated Boolean InputGate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const boolean_gmw::SharePointer InputGate::GetOutputAsGmwShare() {
@@ -231,16 +225,10 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   }
 }
 
-void OutputGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void OutputGate::EvaluateSetup() {}
 
 void OutputGate::EvaluateOnline() {
-  // setup needs to be done first
-  WaitSetup();
-  assert(setup_is_ready_);
-
+  // nothing to setup, no need to wait/check
   // data we need repeatedly
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
@@ -346,8 +334,6 @@ void OutputGate::EvaluateOnline() {
   if constexpr (kDebug) {
     GetLogger().LogDebug(fmt::format("Evaluated Boolean OutputGate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const boolean_gmw::SharePointer OutputGate::GetOutputAsGmwShare() const {
@@ -406,15 +392,10 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   }
 }
 
-void XorGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void XorGate::EvaluateSetup() {}
 
 void XorGate::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
-
+  // nothing to setup, no need to wait/check
   for (auto& wire : parent_a_) {
     wire->GetIsReadyCondition().Wait();
   }
@@ -442,8 +423,6 @@ void XorGate::EvaluateOnline() {
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW XOR Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const boolean_gmw::SharePointer XorGate::GetOutputAsGmwShare() const {
@@ -496,15 +475,10 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   }
 }
 
-void InvGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void InvGate::EvaluateSetup() {}
 
 void InvGate::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
-
+  // nothing to setup, no need to wait/check
   for (auto i = 0ull; i < parent_.size(); ++i) {
     auto wire = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_.at(i));
     assert(wire);
@@ -519,8 +493,6 @@ void InvGate::EvaluateOnline() {
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW INV Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const boolean_gmw::SharePointer InvGate::GetOutputAsGmwShare() const {
@@ -546,7 +518,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
 
   auto number_of_wires = parent_a_.size();
   auto number_of_simd_values = a->GetNumberOfSimdValues();
-
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
 
@@ -605,13 +576,10 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   }
 }
 
-void AndGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void AndGate::EvaluateSetup() {}
 
 void AndGate::EvaluateOnline() {
-  WaitSetup();
+  // nothing to setup, no need to wait/check
   for (auto& wire : parent_a_) {
     wire->GetIsReadyCondition().Wait();
   }
@@ -694,8 +662,6 @@ void AndGate::EvaluateOnline() {
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const boolean_gmw::SharePointer AndGate::GetOutputAsGmwShare() const {
@@ -780,13 +746,10 @@ MuxGate::MuxGate(const motion::SharePointer& a, const motion::SharePointer& b,
   }
 }
 
-void MuxGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void MuxGate::EvaluateSetup() {}
 
 void MuxGate::EvaluateOnline() {
-  WaitSetup();
+  // nothing to setup, no need to wait/check
   for (auto& wire : parent_a_) {
     wire->GetIsReadyCondition().Wait();
   }
@@ -872,8 +835,6 @@ void MuxGate::EvaluateOnline() {
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW AND Gate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const boolean_gmw::SharePointer MuxGate::GetOutputAsGmwShare() const {

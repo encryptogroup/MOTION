@@ -60,6 +60,8 @@ class BmrToBooleanGmwGate final : public OneGate {
 
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   const proto::boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 
   const SharePointer GetOutputAsShare() const;
@@ -101,6 +103,8 @@ class ArithmeticGmwToBmrGate final : public OneGate {
   void EvaluateSetup() final override;
 
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   const proto::bmr::SharePointer GetOutputAsBmrShare() const;
 

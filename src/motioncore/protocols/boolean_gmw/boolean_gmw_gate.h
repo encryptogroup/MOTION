@@ -51,6 +51,8 @@ class InputGate final : public motion::InputGate {
 
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   const boolean_gmw::SharePointer GetOutputAsGmwShare();
 
  protected:
@@ -76,6 +78,8 @@ class OutputGate final : public motion::OutputGate {
 
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 
   const motion::SharePointer GetOutputAsShare() const;
@@ -99,6 +103,8 @@ class XorGate final : public TwoGate {
 
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 
   const motion::SharePointer GetOutputAsShare() const;
@@ -118,6 +124,8 @@ class InvGate final : public OneGate {
 
   void EvaluateOnline() final override;
 
+  bool NeedsSetup() const override { return false; }
+
   const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 
   const motion::SharePointer GetOutputAsShare() const;
@@ -136,6 +144,8 @@ class AndGate final : public TwoGate {
   void EvaluateSetup() final override;
 
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 
@@ -167,6 +177,8 @@ class MuxGate final : public ThreeGate {
   void EvaluateSetup() final override;
 
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
 
   const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 

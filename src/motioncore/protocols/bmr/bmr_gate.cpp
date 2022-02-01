@@ -162,8 +162,6 @@ void InputGate::EvaluateSetup() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating setup phase of bmr::InputGate with id#{}", gate_id_));
   }
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void InputGate::EvaluateOnline() {
@@ -308,8 +306,6 @@ void InputGate::EvaluateOnline() {
   }
 
   assert(!online_is_ready_);
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const bmr::SharePointer InputGate::GetOutputAsBmrShare() const {
@@ -400,15 +396,10 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   }
 }
 
-void OutputGate::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void OutputGate::EvaluateSetup() {}
 
 void OutputGate::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
-
+  // nothing to setup, no need to wait/check
   std::size_t i;
 
   if constexpr (kDebug) {
@@ -453,9 +444,6 @@ void OutputGate::EvaluateOnline() {
     GetLogger().LogDebug(
         fmt::format("Evaluated online phase of BMR OutputGate with id#{}", gate_id_));
   }
-
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const bmr::SharePointer OutputGate::GetOutputAsBmrShare() const {
@@ -537,8 +525,6 @@ void XorGate::EvaluateSetup() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating setup phase of BMR XOR Gate with id#{}", gate_id_));
   }
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void XorGate::EvaluateOnline() {
@@ -577,9 +563,6 @@ void XorGate::EvaluateOnline() {
   }
 
   assert(!online_is_ready_);
-
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const bmr::SharePointer XorGate::GetOutputAsBmrShare() const {
@@ -662,8 +645,6 @@ void InvGate::EvaluateSetup() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating setup phase of BMR INV Gate with id#{}", gate_id_));
   }
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void InvGate::EvaluateOnline() {
@@ -699,9 +680,6 @@ void InvGate::EvaluateOnline() {
   }
 
   assert(!online_is_ready_);
-
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const bmr::SharePointer InvGate::GetOutputAsBmrShare() const {
@@ -1131,8 +1109,6 @@ void AndGate::EvaluateSetup() {
     GetLogger().LogDebug(
         fmt::format("Finished evaluating setup phase of BMR AND Gate with id#{}", gate_id_));
   }
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 void AndGate::EvaluateOnline() {
@@ -1262,9 +1238,6 @@ void AndGate::EvaluateOnline() {
   }
 
   assert(!online_is_ready_);
-
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const bmr::SharePointer AndGate::GetOutputAsBmrShare() const {

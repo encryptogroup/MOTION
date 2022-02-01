@@ -235,9 +235,6 @@ void SimdifyGate::EvaluateSetup() {
       out->SetSetupIsReady();
     }
   }
-
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 template <typename WireType>
@@ -382,8 +379,6 @@ void SimdifyGate::EvaluateOnline() {
     default:
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 SharePointer SimdifyGate::GetOutputAsShare() {

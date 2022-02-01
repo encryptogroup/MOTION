@@ -243,9 +243,6 @@ void SubsetGate::EvaluateSetup() {
       out->SetSetupIsReady();
     }
   }
-
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 template <typename WireType>
@@ -390,8 +387,6 @@ void SubsetGate::EvaluateOnline() {
     default:
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SubsetGate"));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 const SharePointer SubsetGate::GetOutputAsShare() {

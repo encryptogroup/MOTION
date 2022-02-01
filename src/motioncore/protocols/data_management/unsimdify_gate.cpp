@@ -212,9 +212,6 @@ void UnsimdifyGate::EvaluateSetup() {
       }
     }
   }
-
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
 }
 
 template <typename WireType>
@@ -350,8 +347,6 @@ void UnsimdifyGate::EvaluateOnline() {
     default:
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in UnsimdifyGate"));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {

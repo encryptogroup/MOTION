@@ -98,14 +98,10 @@ class GmwToArithmeticGate final : public OneGate {
 
   ~GmwToArithmeticGate() final = default;
 
-  void EvaluateSetup() final {
-    SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGatesSetupCounter();
-  }
+  void EvaluateSetup() final {}
 
   void EvaluateOnline() final {
-    WaitSetup();
-    assert(setup_is_ready_);
+    // nothing to setup, no need to wait/check
 
     // wait for the parent wires to obtain their values
     for (const auto& wire : parent_) {
@@ -164,9 +160,9 @@ class GmwToArithmeticGate final : public OneGate {
     }
 
     GetLogger().LogDebug(fmt::format("Evaluated B2AGate with id#{}", gate_id_));
-    SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
+
+  bool NeedsSetup() const override { return false; }
 
   const proto::arithmetic_gmw::SharePointer<T> GetOutputAsArithmeticShare() const {
     auto arithmetic_wire =

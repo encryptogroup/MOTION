@@ -60,16 +60,13 @@ class ConstantBooleanInputGate final : public Gate {
 
   void InitializationHelper();
 
-  void EvaluateSetup() final override {
-    SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGatesSetupCounter();
-  }
+  void EvaluateSetup() final override {}
 
-  void EvaluateOnline() final override {
-    WaitSetup();
-    SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesOnlineCounter();
-  }
+  void EvaluateOnline() final override {}
+
+  bool NeedsSetup() const override { return false; }
+
+  bool NeedsOnline() const override { return false; }
 
   motion::SharePointer GetOutputAsShare() const;
 };
@@ -100,16 +97,13 @@ class ConstantArithmeticInputGate final : public Gate {
         "Allocated a ConstantArithmeticInputGate with following properties: {}", gate_info));
   }
 
-  void EvaluateSetup() final override {
-    SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGatesSetupCounter();
-  };
+  void EvaluateSetup() final override {}
 
-  void EvaluateOnline() final override {
-    WaitSetup();
-    SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesOnlineCounter();
-  };
+  void EvaluateOnline() final override {}
+
+  bool NeedsSetup() const override { return false; }
+
+  bool NeedsOnline() const override { return false; }
 
   motion::SharePointer GetOutputAsShare() const;
 };
@@ -160,15 +154,10 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
 
   ~ConstantArithmeticAdditionGate() final = default;
 
-  void EvaluateSetup() final override {
-    SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGatesSetupCounter();
-  }
+  void EvaluateSetup() final override {}
 
   void EvaluateOnline() final override {
-    WaitSetup();
-    assert(setup_is_ready_);
-
+    // nothing to setup, no need to wait/check
     parent_a_.at(0)->GetIsReadyCondition().Wait();
     parent_b_.at(0)->GetIsReadyCondition().Wait();
 
@@ -196,9 +185,9 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
 
     GetLogger().LogDebug(
         fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
-    SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
+
+  bool NeedsSetup() const override { return false; }
 
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times
@@ -260,15 +249,10 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
 
   ~ConstantArithmeticMultiplicationGate() final = default;
 
-  void EvaluateSetup() final override {
-    SetSetupIsReady();
-    GetRegister().IncrementEvaluatedGatesSetupCounter();
-  }
+  void EvaluateSetup() final override {}
 
   void EvaluateOnline() final override {
-    WaitSetup();
-    assert(setup_is_ready_);
-
+    // nothing to setup, no need to wait/check
     parent_a_.at(0)->GetIsReadyCondition().Wait();
     parent_b_.at(0)->GetIsReadyCondition().Wait();
 
@@ -291,9 +275,9 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
 
     GetLogger().LogDebug(
         fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
-    SetOnlineIsReady();
-    GetRegister().IncrementEvaluatedGatesOnlineCounter();
   }
+
+  bool NeedsSetup() const override { return false; }
 
   // perhaps, we should return a copy of the pointer and not move it for the
   // case we need it multiple times

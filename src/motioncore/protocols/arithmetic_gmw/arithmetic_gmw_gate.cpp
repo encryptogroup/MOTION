@@ -78,16 +78,12 @@ void InputGate<T>::InitializationHelper() {
 }
 
 template <typename T>
-void InputGate<T>::EvaluateSetup() {
-  GetBaseProvider().WaitForSetup();
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void InputGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void InputGate<T>::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
+  // nothing to setup, no need to wait/check
+  GetBaseProvider().WaitForSetup();
 
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
@@ -140,8 +136,6 @@ void InputGate<T>::EvaluateOnline() {
   my_wire->GetMutableValues() = std::move(result);
 
   GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::InputGate with id#{}", gate_id_));
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 // perhaps, we should return a copy of the pointer and not move it for the
@@ -239,16 +233,11 @@ OutputGate<T>::OutputGate(const motion::SharePointer& parent, std::size_t output
 }
 
 template <typename T>
-void OutputGate<T>::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void OutputGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void OutputGate<T>::EvaluateOnline() {
-  // setup needs to be done first
-  WaitSetup();
-  assert(setup_is_ready_);
+  // nothing to setup, no need to wait/check
 
   // data we need repeatedly
   auto& communication_layer = GetCommunicationLayer();
@@ -330,8 +319,6 @@ void OutputGate<T>::EvaluateOnline() {
   if constexpr (kDebug) {
     GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::OutputGate with id#{}", gate_id_));
   }
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 template <typename T>
@@ -383,16 +370,11 @@ AdditionGate<T>::AdditionGate(const arithmetic_gmw::WirePointer<T>& a,
 }
 
 template <typename T>
-void AdditionGate<T>::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void AdditionGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void AdditionGate<T>::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
-
+  // nothing to setup, no need to wait/check
   parent_a_.at(0)->GetIsReadyCondition().Wait();
   parent_b_.at(0)->GetIsReadyCondition().Wait();
 
@@ -409,8 +391,6 @@ void AdditionGate<T>::EvaluateOnline() {
   arithmetic_wire->GetMutableValues() = std::move(output);
 
   GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 template <typename T>
@@ -462,16 +442,11 @@ SubtractionGate<T>::SubtractionGate(const arithmetic_gmw::WirePointer<T>& a,
 }
 
 template <typename T>
-void SubtractionGate<T>::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void SubtractionGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void SubtractionGate<T>::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
-
+  // nothing to setup, no need to wait/check
   parent_a_.at(0)->GetIsReadyCondition().Wait();
   parent_b_.at(0)->GetIsReadyCondition().Wait();
 
@@ -488,8 +463,6 @@ void SubtractionGate<T>::EvaluateOnline() {
 
   GetLogger().LogDebug(
       fmt::format("Evaluated arithmetic_gmw::SubtractionGate with id#{}", gate_id_));
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 template <typename T>
@@ -555,15 +528,11 @@ MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& 
 }
 
 template <typename T>
-void MultiplicationGate<T>::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void MultiplicationGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void MultiplicationGate<T>::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
+  // nothing to setup, no need to wait/check
   parent_a_.at(0)->GetIsReadyCondition().Wait();
   parent_b_.at(0)->GetIsReadyCondition().Wait();
 
@@ -638,8 +607,6 @@ void MultiplicationGate<T>::EvaluateOnline() {
 
   GetLogger().LogDebug(
       fmt::format("Evaluated arithmetic_gmw::MultiplicationGate with id#{}", gate_id_));
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 template <typename T>
@@ -705,15 +672,11 @@ HybridMultiplicationGate<T>::HybridMultiplicationGate(boolean_gmw::WirePointer& 
 }
 
 template <typename T>
-void HybridMultiplicationGate<T>::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void HybridMultiplicationGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void HybridMultiplicationGate<T>::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
+  // nothing to setup, no need to wait/check
   parent_a_.at(0)->GetIsReadyCondition().Wait();
   parent_b_.at(0)->GetIsReadyCondition().Wait();
 
@@ -764,8 +727,6 @@ void HybridMultiplicationGate<T>::EvaluateOnline() {
 
   GetLogger().LogDebug(
       fmt::format("Evaluated arithmetic_gmw::HybridMultiplicationGate with id#{}", gate_id_));
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 template <typename T>
@@ -818,15 +779,11 @@ SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->
 }
 
 template <typename T>
-void SquareGate<T>::EvaluateSetup() {
-  SetSetupIsReady();
-  GetRegister().IncrementEvaluatedGatesSetupCounter();
-}
+void SquareGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void SquareGate<T>::EvaluateOnline() {
-  WaitSetup();
-  assert(setup_is_ready_);
+  // nothing to setup, no need to wait/check
   parent_.at(0)->GetIsReadyCondition().Wait();
 
   auto& sp_provider = GetSpProvider();
@@ -878,8 +835,6 @@ void SquareGate<T>::EvaluateOnline() {
   }
 
   GetLogger().LogDebug(fmt::format("Evaluated arithmetic_gmw::SquareGate with id#{}", gate_id_));
-  SetOnlineIsReady();
-  GetRegister().IncrementEvaluatedGatesOnlineCounter();
 }
 
 template <typename T>
