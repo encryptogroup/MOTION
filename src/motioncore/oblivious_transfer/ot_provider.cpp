@@ -240,7 +240,7 @@ void OtProviderFromOtExtension::SendSetup() {
 
   // transpose the bit matrix
   // XXX: figure out how the result looks like
-  BitMatrix::SenderTransposeAndEncrypt(
+  BitMatrix::SenderTranspose128AndEncrypt(
       pointers, ot_extension_sender_data.y0, ot_extension_sender_data.y1, base_ots_receiver_data.c,
       prg_fixed_key, bit_size_padded, ot_extension_sender_data.bitlengths);
   /*
@@ -369,9 +369,9 @@ void OtProviderFromOtExtension::ReceiveSetup() {
   motion_base_provider_.Setup();
   const auto& fixed_key_aes_key = motion_base_provider_.GetAesFixedKey();
   prg_fixed_key.SetKey(fixed_key_aes_key.data());
-  BitMatrix::ReceiverTransposeAndEncrypt(pointers, ot_extension_receiver_data.outputs,
-                                         prg_fixed_key, bit_size_padded,
-                                         ot_extension_receiver_data.bitlengths);
+  BitMatrix::ReceiverTranspose128AndEncrypt(pointers, ot_extension_receiver_data.outputs,
+                                            prg_fixed_key, bit_size_padded,
+                                            ot_extension_receiver_data.bitlengths);
   /*BitMatrix::TransposeUsingBitSlicing(pointers, bit_size_padded);
   for (i = 0; i < ot_extension_receiver_data.outputs.size(); ++i) {
     const auto row_i = i % kKappa;
