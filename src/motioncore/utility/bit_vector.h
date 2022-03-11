@@ -41,18 +41,18 @@ namespace encrypto::motion {
 
 // bitmask to set a specific bit in a byte
 constexpr std::byte kSetBitMask[] = {
-    std::byte(0b10000000), std::byte(0b01000000), std::byte(0b00100000), std::byte(0b00010000),
-    std::byte(0b00001000), std::byte(0b00000100), std::byte(0b00000010), std::byte(0b00000001)};
+    std::byte(0b00000001), std::byte(0b00000010), std::byte(0b00000100), std::byte(0b00001000),
+    std::byte(0b00010000), std::byte(0b00100000), std::byte(0b01000000), std::byte(0b10000000)};
 
 // bitmask to unset a specific bit in a byte
 constexpr std::byte kUnsetBitMask[] = {
-    std::byte(0b01111111), std::byte(0b10111111), std::byte(0b11011111), std::byte(0b11101111),
-    std::byte(0b11110111), std::byte(0b11111011), std::byte(0b11111101), std::byte(0b11111110)};
+    std::byte(0b11111110), std::byte(0b11111101), std::byte(0b11111011), std::byte(0b11110111),
+    std::byte(0b11101111), std::byte(0b11011111), std::byte(0b10111111), std::byte(0b01111111)};
 
-// bitmask to truncate the a byte
+// bitmask to truncate a byte to the first n bits
 constexpr std::byte TruncationBitMask[] = {
-    std::byte(0b10000000), std::byte(0b11000000), std::byte(0b11100000), std::byte(0b111110000),
-    std::byte(0b11111000), std::byte(0b11111100), std::byte(0b11111110), std::byte(0b11111111)};
+    std::byte(0b00000000), std::byte(0b00000001), std::byte(0b00000011), std::byte(0b00000111),
+    std::byte(0b00001111), std::byte(0b00011111), std::byte(0b00111111), std::byte(0b01111111)};
 
 class BitSpan;
 
@@ -67,6 +67,7 @@ class BitVector {
   friend class BitSpan;
 
  public:
+  using allocator = Allocator;
   // Default constructor, results in an empty vector
   BitVector() noexcept : bit_size_(0){};
 
@@ -94,11 +95,25 @@ class BitVector {
       : data_vector_(bit_vector.data_vector_.cbegin(), bit_vector.data_vector_.cend()),
         bit_size_(bit_vector.bit_size_) {}
 
+  /// \brief Move from a BitVector with different allocator. Falls back to copy constructor.
+  /// \tparam OtherAllocator
+  /// \param other
+  template <typename OtherAllocator>
+  BitVector(BitVector<OtherAllocator>&& bit_vector) noexcept : BitVector(bit_vector) {}
+
   /// \brief Copy-assign from BitVector with different allocator.
   /// \tparam OtherAllocator
   /// \param other
   template <typename OtherAllocator>
   BitVector<Allocator>& operator=(const BitVector<OtherAllocator>& other) noexcept;
+
+  /// \brief Move-assign from BitVector with different allocator. Falls back to copy-assign.
+  /// \tparam OtherAllocator
+  /// \param other
+  template <typename OtherAllocator>
+  BitVector<Allocator>& operator=(BitVector<OtherAllocator>&& other) noexcept {
+    return *this = other;
+  }
 
   /// \brief Initialize from a std::vector<bool>.
   /// \param data
@@ -217,6 +232,10 @@ class BitVector {
   /// in this.
   /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
   void Copy(const std::size_t dest_from, const std::size_t dest_to, const BitVector& other);
+
+  /// \brief copies the first (dest_to - dest_from) bits from data to the bits [dest_from, dest_to)
+  /// in this.
+  void Copy(const std::size_t dest_from, const std::size_t dest_to, const std::byte* data);
 
   /// \brief copies other to this[dest_from...dest_from+GetSize()].
   /// \throws an std::out_of_range exception if this is smaller than other.
@@ -394,6 +413,8 @@ class BitVector {
 
   /// \brief Returns true if Allocator is aligned allocator.
   static constexpr bool IsAligned() noexcept { return std::is_same_v<Allocator, AlignedAllocator>; }
+
+  std::size_t HammingWeight() const;
 
  private:
   std::vector<std::byte, Allocator> data_vector_;
@@ -751,7 +772,7 @@ class BitSpan {
 
   /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
   /// in this.
-  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  /// \throws std::out_of_range if accessing invalid positions in this or other.
   template <typename BitVectorType>
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorType& other);
 
@@ -777,6 +798,8 @@ class BitSpan {
   /// \brief copies other to this[dest_from...dest_from+GetSize()].
   /// \throws an std::out_of_range exception if this is smaller than other.
   void Copy(const std::size_t dest_from, BitSpan&& other);
+
+  std::size_t HammingWeight() const;
 
  private:
   std::byte* pointer_;
