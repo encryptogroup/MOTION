@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019-2021 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -249,8 +249,12 @@ std::string BitMatrix::AsString() const {
   return s;
 }
 
+// XXX: adjust to little endian encoding in BitVector or remove, since we can use other methods via
+// simde
 void BitMatrix::Transpose128RowsInplace(std::array<std::byte*, 128>& matrix,
                                         std::size_t number_of_columns) {
+  throw std::logic_error("Currently unusable; do not use");
+
   constexpr std::size_t kBlkSize = 128;
   constexpr std::size_t kBitsInByte = 8;
 
@@ -408,14 +412,16 @@ void BitMatrix::Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64
 
 void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
                                          std::size_t number_of_colums) {
-#define INP(r, c)                                     \
-  reinterpret_cast<const std::uint8_t* __restrict__>( \
-      __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
-#define OUT(r, c) output[(r)*kNumberOfRows / 8 + (c) / 8]
+  auto inp = [&matrix](auto r, auto c) {
+    return reinterpret_cast<const std::uint8_t* __restrict__>(
+        __builtin_assume_aligned(matrix.at(r), 16))[c / 8];
+  };
 
   constexpr std::uint64_t kNumberOfRows = 128;
   std::vector<std::uint8_t, boost::alignment::aligned_allocator<std::uint8_t, 16>> output(
       ((kNumberOfRows * number_of_colums) + 7) / 8, 0);
+
+  auto out = [&output](auto r, auto c) { return &output[(r)*kNumberOfRows / 8 + (c) / 8]; };
 
   uint64_t rr, cc;
   int i;
@@ -433,21 +439,21 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
   for (rr = 0; rr <= kNumberOfRows - 32; rr += 8) {
     for (cc = 0; cc < number_of_colums; cc += 64) {
       vec = _mm512_set_epi8(
-          INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
-          INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
-          INP(rr + 50, cc), INP(rr + 51, cc), INP(rr + 52, cc), INP(rr + 53, cc), INP(rr + 54, cc),
-          INP(rr + 55, cc), INP(rr + 39, cc), INP(rr + 40, cc), INP(rr + 41, cc), INP(rr + 42, cc),
-          INP(rr + 43, cc), INP(rr + 44, cc), INP(rr + 45, cc), INP(rr + 46, cc), INP(rr + 32, cc),
-          INP(rr + 33, cc), INP(rr + 34, cc), INP(rr + 35, cc), INP(rr + 36, cc), INP(rr + 37, cc),
-          INP(rr + 38, cc), INP(rr + 39, cc), INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc),
-          INP(rr + 27, cc), INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
-          INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc), INP(rr + 20, cc),
-          INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc), INP(rr + 8, cc), INP(rr + 9, cc),
-          INP(rr + 10, cc), INP(rr + 11, cc), INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc),
-          INP(rr + 15, cc), INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-          INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+          inp(rr + 56, cc), inp(rr + 57, cc), inp(rr + 58, cc), inp(rr + 59, cc), inp(rr + 60, cc),
+          inp(rr + 61, cc), inp(rr + 62, cc), inp(rr + 63, cc), inp(rr + 48, cc), inp(rr + 49, cc),
+          inp(rr + 50, cc), inp(rr + 51, cc), inp(rr + 52, cc), inp(rr + 53, cc), inp(rr + 54, cc),
+          inp(rr + 55, cc), inp(rr + 39, cc), inp(rr + 40, cc), inp(rr + 41, cc), inp(rr + 42, cc),
+          inp(rr + 43, cc), inp(rr + 44, cc), inp(rr + 45, cc), inp(rr + 46, cc), inp(rr + 32, cc),
+          inp(rr + 33, cc), inp(rr + 34, cc), inp(rr + 35, cc), inp(rr + 36, cc), inp(rr + 37, cc),
+          inp(rr + 38, cc), inp(rr + 39, cc), inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc),
+          inp(rr + 27, cc), inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
+          inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc), inp(rr + 20, cc),
+          inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc), inp(rr + 8, cc), inp(rr + 9, cc),
+          inp(rr + 10, cc), inp(rr + 11, cc), inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc),
+          inp(rr + 15, cc), inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
+          inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
       for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
-        OUT(cc + i, rr) = _mm512_movepi64_mask(vec);
+        out(cc + i, rr) = _mm512_movepi64_mask(vec);
       }
     }
   }
@@ -458,16 +464,16 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
   __m256i vec;
   for (rr = 0; rr <= kNumberOfRows - 32; rr += 32) {
     for (cc = 0; cc < number_of_colums; cc += 8) {
-      vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
-                            INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
-                            INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
-                            INP(rr + 20, cc), INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc),
-                            INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
-                            INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
-                            INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-                            INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      vec = _mm256_set_epi8(inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc), inp(rr + 27, cc),
+                            inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
+                            inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc),
+                            inp(rr + 20, cc), inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc),
+                            inp(rr + 8, cc), inp(rr + 9, cc), inp(rr + 10, cc), inp(rr + 11, cc),
+                            inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc), inp(rr + 15, cc),
+                            inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
+                            inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
-        *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
+        *(uint32_t*)out(cc + i, rr) = _mm256_movemask_epi8(vec);
         // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
         // kNumberOfRows) * 16 + rr / 8;
         //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
@@ -479,12 +485,12 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
   // Do the main body in 16x8 blocks:
   for (rr = 0; rr <= kNumberOfRows - 16; rr += 16) {
     for (cc = 0; cc < number_of_colums; cc += 8) {
-      vec = _mm_set_epi8(INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
-                         INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
-                         INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-                         INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      vec = _mm_set_epi8(inp(rr + 15, cc), inp(rr + 14, cc), inp(rr + 13, cc), inp(rr + 12, cc),
+                         inp(rr + 11, cc), inp(rr + 10, cc), inp(rr + 9, cc), inp(rr + 8, cc),
+                         inp(rr + 7, cc), inp(rr + 6, cc), inp(rr + 5, cc), inp(rr + 4, cc),
+                         inp(rr + 3, cc), inp(rr + 2, cc), inp(rr + 1, cc), inp(rr + 0, cc));
       for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
-        *(uint16_t * __restrict__) & OUT(cc + i, rr) = _mm_movemask_epi8(vec);
+        *(uint16_t* __restrict__)out(cc + 7 - i, rr) = _mm_movemask_epi8(vec);
         // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
         // kNumberOfRows) * 16 + rr / 8;
         //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
@@ -508,16 +514,18 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
   // }
 }
 
-void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
-                                          std::vector<BitVector<>>& y0,
-                                          std::vector<BitVector<>>& y1, const BitVector<> choices,
-                                          primitives::Prg& prg_fixed_key,
-                                          const std::size_t number_of_colums,
-                                          const std::vector<std::size_t>& bitlengths) {
+// TODO : All *TransposeAndEncrypt functions need to be restructured and modularized.
+//  e.g. the matrix transposition should be moved to a separate (inline) function without adding
+//  extra computation overhead and that the used functions need to be properly tested.
+void BitMatrix::SenderTranspose128AndEncrypt(
+    const std::array<const std::byte*, 128>& matrix, std::vector<BitVector<>>& y0,
+    std::vector<BitVector<>>& y1, const BitVector<> choices, primitives::Prg& prg_fixed_key,
+    const std::size_t number_of_colums, const std::vector<std::size_t>& bitlengths) {
   constexpr std::size_t kKappa{128}, kNumberOfRows{128};
-#define INP(r, c)                                     \
-  reinterpret_cast<const std::uint8_t* __restrict__>( \
-      __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
+  auto inp = [&matrix](auto r, auto c) {
+    return reinterpret_cast<const std::uint8_t* __restrict__>(
+        __builtin_assume_aligned(matrix.at(r), 16))[c / 8];
+  };
   assert(y0.size() == y1.size());
 
   const std::size_t original_size{y0.size()}, difference{number_of_colums - original_size};
@@ -545,19 +553,19 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
   for (r = 0; r <= kNumberOfRows - 32; r += 8) {
     for (c = 0; c < number_of_colums; c += 64) {
       vec = _mm512_set_epi8(
-          INP(r + 56, c), INP(r + 57, c), INP(r + 58, c), INP(r + 59, c), INP(r + 60, c),
-          INP(r + 61, c), INP(r + 62, c), INP(r + 63, c), INP(r + 48, c), INP(r + 49, c),
-          INP(r + 50, c), INP(r + 51, c), INP(r + 52, c), INP(r + 53, c), INP(r + 54, c),
-          INP(r + 55, c), INP(r + 39, c), INP(r + 40, c), INP(r + 41, c), INP(r + 42, c),
-          INP(r + 43, c), INP(r + 44, c), INP(r + 45, c), INP(r + 46, c), INP(r + 32, c),
-          INP(r + 33, c), INP(r + 34, c), INP(r + 35, c), INP(r + 36, c), INP(r + 37, c),
-          INP(r + 38, c), INP(r + 39, c), INP(r + 24, c), INP(r + 25, c), INP(r + 26, c),
-          INP(r + 27, c), INP(r + 28, c), INP(r + 29, c), INP(r + 30, c), INP(r + 31, c),
-          INP(r + 16, c), INP(r + 17, c), INP(r + 18, c), INP(r + 19, c), INP(r + 20, c),
-          INP(r + 21, c), INP(r + 22, c), INP(r + 23, c), INP(r + 8, c), INP(r + 9, c),
-          INP(r + 10, c), INP(r + 11, c), INP(r + 12, c), INP(r + 13, c), INP(r + 14, c),
-          INP(r + 15, c), INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
-          INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
+          inp(r + 56, c), inp(r + 57, c), inp(r + 58, c), inp(r + 59, c), inp(r + 60, c),
+          inp(r + 61, c), inp(r + 62, c), inp(r + 63, c), inp(r + 48, c), inp(r + 49, c),
+          inp(r + 50, c), inp(r + 51, c), inp(r + 52, c), inp(r + 53, c), inp(r + 54, c),
+          inp(r + 55, c), inp(r + 39, c), inp(r + 40, c), inp(r + 41, c), inp(r + 42, c),
+          inp(r + 43, c), inp(r + 44, c), inp(r + 45, c), inp(r + 46, c), inp(r + 32, c),
+          inp(r + 33, c), inp(r + 34, c), inp(r + 35, c), inp(r + 36, c), inp(r + 37, c),
+          inp(r + 38, c), inp(r + 39, c), inp(r + 24, c), inp(r + 25, c), inp(r + 26, c),
+          inp(r + 27, c), inp(r + 28, c), inp(r + 29, c), inp(r + 30, c), inp(r + 31, c),
+          inp(r + 16, c), inp(r + 17, c), inp(r + 18, c), inp(r + 19, c), inp(r + 20, c),
+          inp(r + 21, c), inp(r + 22, c), inp(r + 23, c), inp(r + 8, c), inp(r + 9, c),
+          inp(r + 10, c), inp(r + 11, c), inp(r + 12, c), inp(r + 13, c), inp(r + 14, c),
+          inp(r + 15, c), inp(r + 0, c), inp(r + 1, c), inp(r + 2, c), inp(r + 3, c),
+          inp(r + 4, c), inp(r + 5, c), inp(r + 6, c), inp(r + 7, c));
       for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
         OUT(c + i, r) = _mm512_movepi64_mask(vec);
       }
@@ -570,14 +578,14 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
   __m256i vec;
   for (r = 0; r <= kNumberOfRows - 32; r += 32) {
     for (c = 0; c < number_of_colums; c += 8) {
-      vec = _mm256_set_epi8(INP(r + 24, c), INP(r + 25, c), INP(r + 26, c), INP(r + 27, c),
-                            INP(r + 28, c), INP(r + 29, c), INP(r + 30, c), INP(r + 31, c),
-                            INP(r + 16, c), INP(r + 17, c), INP(r + 18, c), INP(r + 19, c),
-                            INP(r + 20, c), INP(r + 21, c), INP(r + 22, c), INP(r + 23, c),
-                            INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
-                            INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
-                            INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
-                            INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
+      vec = _mm256_set_epi8(inp(r + 24, c), inp(r + 25, c), inp(r + 26, c), inp(r + 27, c),
+                            inp(r + 28, c), inp(r + 29, c), inp(r + 30, c), inp(r + 31, c),
+                            inp(r + 16, c), inp(r + 17, c), inp(r + 18, c), inp(r + 19, c),
+                            inp(r + 20, c), inp(r + 21, c), inp(r + 22, c), inp(r + 23, c),
+                            inp(r + 8, c), inp(r + 9, c), inp(r + 10, c), inp(r + 11, c),
+                            inp(r + 12, c), inp(r + 13, c), inp(r + 14, c), inp(r + 15, c),
+                            inp(r + 0, c), inp(r + 1, c), inp(r + 2, c), inp(r + 3, c),
+                            inp(r + 4, c), inp(r + 5, c), inp(r + 6, c), inp(r + 7, c));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
         *(uint32_t*)&OUT(c + i, r) = _mm256_movemask_epi8(vec);
         // const auto pos = ((c + i) % kNumberOfRows) * number_of_blocks * 16 + (c / kNumberOfRows)
@@ -594,12 +602,12 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
     auto c_old{c};
     for (r = 0; r <= kNumberOfRows - 16; r += 16) {
       for (c = c_old; c == c_old || (c % 128 != 0); c += 8) {
-        vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
-                           INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
-                           INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
-                           INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
+        vec = _mm_set_epi8(inp(r + 15, c), inp(r + 14, c), inp(r + 13, c), inp(r + 12, c),
+                           inp(r + 11, c), inp(r + 10, c), inp(r + 9, c), inp(r + 8, c),
+                           inp(r + 7, c), inp(r + 6, c), inp(r + 5, c), inp(r + 4, c),
+                           inp(r + 3, c), inp(r + 2, c), inp(r + 1, c), inp(r + 0, c));
         for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
-          *reinterpret_cast<std::uint16_t* __restrict__>(y0[c + i].GetMutableData().data() +
+          *reinterpret_cast<std::uint16_t* __restrict__>(y0[c + 7 - i].GetMutableData().data() +
                                                          r / 8) = _mm_movemask_epi8(vec);
         }
       }
@@ -637,15 +645,16 @@ void BitMatrix::SenderTransposeAndEncrypt(const std::array<const std::byte*, 128
 #endif
 }
 
-void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 128>& matrix,
-                                            std::vector<BitVector<>>& output,
-                                            primitives::Prg& prg_fixed_key,
-                                            const std::size_t number_of_colums,
-                                            const std::vector<std::size_t>& bitlengths) {
+void BitMatrix::ReceiverTranspose128AndEncrypt(const std::array<const std::byte*, 128>& matrix,
+                                               std::vector<BitVector<>>& output,
+                                               primitives::Prg& prg_fixed_key,
+                                               const std::size_t number_of_colums,
+                                               const std::vector<std::size_t>& bitlengths) {
   constexpr std::size_t kKappa{128}, kNumberOfRows{128};
-#define INP(r, c)                                     \
-  reinterpret_cast<const std::uint8_t* __restrict__>( \
-      __builtin_assume_aligned(matrix.at(r), 16))[c / 8]
+  auto inp = [&matrix](auto r, auto c) {
+    return reinterpret_cast<const std::uint8_t* __restrict__>(
+        __builtin_assume_aligned(matrix.at(r), 16))[c / 8];
+  };
 
   const std::size_t original_size{output.size()}, difference{number_of_colums - original_size};
   if (difference) {
@@ -670,19 +679,19 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
   for (rr = 0; rr <= kNumberOfRows - 32; rr += 8) {
     for (cc = 0; cc < number_of_colums; cc += 64) {
       vec = _mm512_set_epi8(
-          INP(rr + 56, cc), INP(rr + 57, cc), INP(rr + 58, cc), INP(rr + 59, cc), INP(rr + 60, cc),
-          INP(rr + 61, cc), INP(rr + 62, cc), INP(rr + 63, cc), INP(rr + 48, cc), INP(rr + 49, cc),
-          INP(rr + 50, cc), INP(rr + 51, cc), INP(rr + 52, cc), INP(rr + 53, cc), INP(rr + 54, cc),
-          INP(rr + 55, cc), INP(rr + 39, cc), INP(rr + 40, cc), INP(rr + 41, cc), INP(rr + 42, cc),
-          INP(rr + 43, cc), INP(rr + 44, cc), INP(rr + 45, cc), INP(rr + 46, cc), INP(rr + 32, cc),
-          INP(rr + 33, cc), INP(rr + 34, cc), INP(rr + 35, cc), INP(rr + 36, cc), INP(rr + 37, cc),
-          INP(rr + 38, cc), INP(rr + 39, cc), INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc),
-          INP(rr + 27, cc), INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
-          INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc), INP(rr + 20, cc),
-          INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc), INP(rr + 8, cc), INP(rr + 9, cc),
-          INP(rr + 10, cc), INP(rr + 11, cc), INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc),
-          INP(rr + 15, cc), INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-          INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+          inp(rr + 56, cc), inp(rr + 57, cc), inp(rr + 58, cc), inp(rr + 59, cc), inp(rr + 60, cc),
+          inp(rr + 61, cc), inp(rr + 62, cc), inp(rr + 63, cc), inp(rr + 48, cc), inp(rr + 49, cc),
+          inp(rr + 50, cc), inp(rr + 51, cc), inp(rr + 52, cc), inp(rr + 53, cc), inp(rr + 54, cc),
+          inp(rr + 55, cc), inp(rr + 39, cc), inp(rr + 40, cc), inp(rr + 41, cc), inp(rr + 42, cc),
+          inp(rr + 43, cc), inp(rr + 44, cc), inp(rr + 45, cc), inp(rr + 46, cc), inp(rr + 32, cc),
+          inp(rr + 33, cc), inp(rr + 34, cc), inp(rr + 35, cc), inp(rr + 36, cc), inp(rr + 37, cc),
+          inp(rr + 38, cc), inp(rr + 39, cc), inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc),
+          inp(rr + 27, cc), inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
+          inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc), inp(rr + 20, cc),
+          inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc), inp(rr + 8, cc), inp(rr + 9, cc),
+          inp(rr + 10, cc), inp(rr + 11, cc), inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc),
+          inp(rr + 15, cc), inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
+          inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
       for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
         OUT(cc + i, rr) = _mm512_movepi64_mask(vec);
       }
@@ -695,14 +704,14 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
   __m256i vec;
   for (rr = 0; rr <= kNumberOfRows - 32; rr += 32) {
     for (cc = 0; cc < number_of_colums; cc += 8) {
-      vec = _mm256_set_epi8(INP(rr + 24, cc), INP(rr + 25, cc), INP(rr + 26, cc), INP(rr + 27, cc),
-                            INP(rr + 28, cc), INP(rr + 29, cc), INP(rr + 30, cc), INP(rr + 31, cc),
-                            INP(rr + 16, cc), INP(rr + 17, cc), INP(rr + 18, cc), INP(rr + 19, cc),
-                            INP(rr + 20, cc), INP(rr + 21, cc), INP(rr + 22, cc), INP(rr + 23, cc),
-                            INP(rr + 8, cc), INP(rr + 9, cc), INP(rr + 10, cc), INP(rr + 11, cc),
-                            INP(rr + 12, cc), INP(rr + 13, cc), INP(rr + 14, cc), INP(rr + 15, cc),
-                            INP(rr + 0, cc), INP(rr + 1, cc), INP(rr + 2, cc), INP(rr + 3, cc),
-                            INP(rr + 4, cc), INP(rr + 5, cc), INP(rr + 6, cc), INP(rr + 7, cc));
+      vec = _mm256_set_epi8(inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc), inp(rr + 27, cc),
+                            inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
+                            inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc),
+                            inp(rr + 20, cc), inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc),
+                            inp(rr + 8, cc), inp(rr + 9, cc), inp(rr + 10, cc), inp(rr + 11, cc),
+                            inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc), inp(rr + 15, cc),
+                            inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
+                            inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
       for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
         *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
         // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
@@ -719,12 +728,12 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
     auto c_old{c};
     for (r = 0; r <= kNumberOfRows - 16; r += 16) {
       for (c = c_old; c == c_old || (c % 128 != 0); c += 8) {
-        vec = _mm_set_epi8(INP(r + 8, c), INP(r + 9, c), INP(r + 10, c), INP(r + 11, c),
-                           INP(r + 12, c), INP(r + 13, c), INP(r + 14, c), INP(r + 15, c),
-                           INP(r + 0, c), INP(r + 1, c), INP(r + 2, c), INP(r + 3, c),
-                           INP(r + 4, c), INP(r + 5, c), INP(r + 6, c), INP(r + 7, c));
+        vec = _mm_set_epi8(inp(r + 15, c), inp(r + 14, c), inp(r + 13, c), inp(r + 12, c),
+                           inp(r + 11, c), inp(r + 10, c), inp(r + 9, c), inp(r + 8, c),
+                           inp(r + 7, c), inp(r + 6, c), inp(r + 5, c), inp(r + 4, c),
+                           inp(r + 3, c), inp(r + 2, c), inp(r + 1, c), inp(r + 0, c));
         for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
-          *reinterpret_cast<std::uint16_t* __restrict__>(output[c + i].GetMutableData().data() +
+          *reinterpret_cast<std::uint16_t* __restrict__>(output[c + 7 - i].GetMutableData().data() +
                                                          r / 8) = _mm_movemask_epi8(vec);
         }
       }
@@ -746,6 +755,153 @@ void BitMatrix::ReceiverTransposeAndEncrypt(const std::array<const std::byte*, 1
     }
   }
 #endif
+}
+
+void BitMatrix::SenderTranspose256AndEncrypt(
+    const std::array<const std::byte*, 256>& matrix, std::vector<std::vector<BitVector<>>>& y,
+    const BitVector<> choices, std::vector<BitVector<>> x_a, primitives::Prg& prg_fixed_key,
+    const std::size_t number_of_colums, const std::vector<std::size_t>& bitlengths) {
+  std::size_t n;
+  constexpr std::size_t kKappa{256}, kNumberOfRows{256};
+  auto inp = [&matrix](auto r, auto c) {
+    return reinterpret_cast<const std::uint8_t* __restrict__>(
+        __builtin_assume_aligned(matrix.at(r), 16))[c / 8];
+  };
+
+  const std::size_t original_size = y.at(0).size();
+  for (n = 1; n < y.size(); n++) {
+    assert(original_size == y.at(n).size());
+  }
+
+  const std::size_t difference{number_of_colums - original_size};
+  if (difference) {
+    for (n = 0; n < y.size(); n++) {
+      y.at(n).resize(number_of_colums);
+    }
+  }
+
+  // do a bit wise AND between choices and the generated x_a
+  std::vector<BitVector<>> choices_and_x_a;
+  for (n = 0; n < x_a.size(); n++) {
+    choices_and_x_a.push_back(choices & x_a.at(n));
+  }
+
+  for (auto& block_vector : y.at(0))
+    block_vector = BitVector(std::vector<std::byte>(kKappa / 8), kKappa);
+
+  std::uint64_t r{0}, c{0};
+  int i{0};
+
+  assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
+
+  __m128i vec;
+  primitives::Prg prg_var_key;
+  // process 256x256 blocks
+  while (c < number_of_colums) {
+    auto c_old{c};
+    for (r = 0; r <= kNumberOfRows - 16; r += 16) {
+      for (c = c_old; c == c_old || (c % 256 != 0); c += 8) {
+        vec = _mm_set_epi8(inp(r + 15, c), inp(r + 14, c), inp(r + 13, c), inp(r + 12, c),
+                           inp(r + 11, c), inp(r + 10, c), inp(r + 9, c), inp(r + 8, c),
+                           inp(r + 7, c), inp(r + 6, c), inp(r + 5, c), inp(r + 4, c),
+                           inp(r + 3, c), inp(r + 2, c), inp(r + 1, c), inp(r + 0, c));
+        for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
+          *reinterpret_cast<std::uint16_t* __restrict__>(
+              y.at(0)[c + 7 - i].GetMutableData().data() + r / 8) = _mm_movemask_epi8(vec);
+        }
+      }
+    }
+    for (; c_old < c && c_old < original_size; ++c_old) {
+      //  copy the content of y[0] to all y[n]
+      for (n = 0; n < y.size() - 1; n++) {
+        y.at(n + 1)[c_old] = y.at(n)[c_old];
+      }
+
+      for (n = 0; n < y.size(); n++) {
+        y.at(n)[c_old] ^= choices_and_x_a.at(n);
+        assert(y.at(n)[c_old].GetSize() == 256);
+      }
+
+      // bit length of the OT
+      const auto bitlength = bitlengths[c_old];
+
+      // compute the sender outputs
+      if (bitlength <= kKappa) {
+        for (n = 0; n < y.size(); n++) {
+          // the bit length is smaller than 256 bit
+          prg_fixed_key.Mmo(y.at(n)[c_old].GetMutableData().data());
+          y.at(n)[c_old].Resize(bitlength);
+        }
+      } else {
+        // string OT with bit length > 256 bit
+        // -> do seed compression and send later only 256 bit seeds
+        for (n = 0; n < y.size(); n++) {
+          prg_fixed_key.Mmo(y.at(n)[c_old].GetMutableData().data());
+          prg_var_key.SetKey(y.at(n)[c_old].GetData().data());
+          y.at(n)[c_old] = BitVector<>(prg_var_key.Encrypt(BitsToBytes(bitlength)), bitlength);
+        }
+      }
+    }
+  }
+}
+
+void BitMatrix::ReceiverTranspose256AndEncrypt(const std::array<const std::byte*, 256>& matrix,
+                                               std::vector<BitVector<>>& output,
+                                               primitives::Prg& prg_fixed_key,
+                                               const std::size_t number_of_columns,
+                                               const std::vector<std::size_t>& bitlengths) {
+  constexpr std::size_t kKappa{256}, kNumberOfRows{256};
+  auto inp = [&matrix](auto r, auto c) {
+    return reinterpret_cast<const std::uint8_t* __restrict__>(
+        __builtin_assume_aligned(matrix.at(r), 16))[c / 8];
+  };
+
+  const std::size_t original_size{output.size()}, difference{number_of_columns - original_size};
+  if (difference) {
+    output.resize(number_of_columns);
+  }
+
+  for (auto& block_vector : output)
+    block_vector = BitVector(std::vector<std::byte>(kKappa / 8), kKappa);
+
+  std::uint64_t r{0}, c{0};
+  int i{0};
+
+  assert(kNumberOfRows % 8 == 0 && number_of_columns % 8 == 0);
+
+  __m128i vec;
+  primitives::Prg prg_var_key;
+  // process 256x256 blocks
+  while (c < number_of_columns) {
+    auto c_old{c};
+    for (r = 0; r <= kNumberOfRows - 16; r += 16) {
+      for (c = c_old; c == c_old || (c % 256 != 0); c += 8) {
+        vec = _mm_set_epi8(inp(r + 15, c), inp(r + 14, c), inp(r + 13, c), inp(r + 12, c),
+                           inp(r + 11, c), inp(r + 10, c), inp(r + 9, c), inp(r + 8, c),
+                           inp(r + 7, c), inp(r + 6, c), inp(r + 5, c), inp(r + 4, c),
+                           inp(r + 3, c), inp(r + 2, c), inp(r + 1, c), inp(r + 0, c));
+        for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
+          *reinterpret_cast<std::uint16_t* __restrict__>(output[c + 7 - i].GetMutableData().data() +
+                                                         r / 8) = _mm_movemask_epi8(vec);
+        }
+      }
+    }
+    // XXX
+    for (; c_old < c && c_old < original_size; ++c_old) {
+      auto& o = output[c_old];
+      assert(o.GetSize() == 256);
+      const std::size_t bitlength = bitlengths[c_old];
+
+      if (bitlength <= kKappa) {
+        prg_fixed_key.Mmo(o.GetMutableData().data());
+        o.Resize(bitlength);
+      } else {
+        prg_fixed_key.Mmo(o.GetMutableData().data());
+        prg_var_key.SetKey(o.GetData().data());
+        o = BitVector<>(prg_var_key.Encrypt(BitsToBytes(bitlength)), bitlength);
+      }
+    }
+  }
 }
 
 bool BitMatrix::operator==(const BitMatrix& other) const {
