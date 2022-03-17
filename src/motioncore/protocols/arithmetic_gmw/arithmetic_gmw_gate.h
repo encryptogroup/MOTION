@@ -300,7 +300,7 @@ class HybridMultiplicationGate final : public motion::TwoGate {
   std::unique_ptr<AcOtSender<T>> ot_sender_;
 };
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+template <typename T>
 class SquareGate final : public motion::OneGate {
  public:
   SquareGate(const arithmetic_gmw::WirePointer<T>& a);
