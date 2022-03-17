@@ -167,7 +167,7 @@ class MultiplicationGate final : public motion::TwoGate {
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class HybridMultiplicationGate final : public motion::TwoGate {
  public:
-  HybridMultiplicationGate(encrypto::motion::proto::boolean_gmw::WirePointer& bit,
+  HybridMultiplicationGate(boolean_gmw::WirePointer& bit,
                            arithmetic_gmw::WirePointer<T>& integer)
       : TwoGate(bit->GetBackend()) {
     // this gate works only for two parties
@@ -228,9 +228,9 @@ class HybridMultiplicationGate final : public motion::TwoGate {
     parent_b_.at(0)->GetIsReadyCondition().Wait();
 
     const auto bw =
-        std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(parent_a_.at(0));
+        std::dynamic_pointer_cast<boolean_gmw::Wire>(parent_a_.at(0));
     assert(bw);
-    const auto aw = std::dynamic_pointer_cast<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
+    const auto aw = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(
         parent_b_.at(0));
     assert(aw);
 
