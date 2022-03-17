@@ -34,6 +34,7 @@
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "primitives/sharing_randomness_generator.h"
+#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "utility/fiber_condition.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
@@ -654,6 +655,132 @@ template class MultiplicationGate<std::uint16_t>;
 template class MultiplicationGate<std::uint32_t>;
 template class MultiplicationGate<std::uint64_t>;
 // template class MultiplicationGate<__uint128_t>; not yet supported
+
+template <typename T>
+HybridMultiplicationGate<T>::HybridMultiplicationGate(boolean_gmw::WirePointer& bit,
+                                                      arithmetic_gmw::WirePointer<T>& integer)
+    : TwoGate(bit->GetBackend()) {
+  // this gate works only for two parties
+  assert(GetCommunicationLayer().GetNumberOfParties() == 2);
+  parent_a_ = {std::static_pointer_cast<motion::Wire>(bit)};
+  parent_b_ = {std::static_pointer_cast<motion::Wire>(integer)};
+
+  assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
+  assert(parent_a_.at(0)->GetBitLength() == 1);
+
+  requires_online_interaction_ = true;
+  gate_type_ = GateType::kInteractive;
+
+  gate_id_ = GetRegister().NextGateId();
+
+  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
+  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
+
+  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
+  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
+
+  const std::size_t number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
+  {
+    auto w = std::static_pointer_cast<motion::Wire>(
+        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, number_of_simd_values));
+    GetRegister().RegisterNextWire(w);
+    output_wires_ = {std::move(w)};
+  }
+
+  const std::size_t number_of_parties{GetCommunicationLayer().GetNumberOfParties()};
+  const std::size_t my_id = GetCommunicationLayer().GetMyId();
+
+  for (std::size_t i = 0; i < number_of_parties; ++i) {
+    if (i == my_id) continue;
+    ot_sender_ = GetOtProvider(i).template RegisterSendAcOt<T>(number_of_simd_values);
+    ot_receiver_ = GetOtProvider(i).template RegisterReceiveAcOt<T>(number_of_simd_values);
+  }
+
+  auto gate_info =
+      fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
+                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+  GetLogger().LogDebug(fmt::format(
+      "Created an arithmetic_gmw::HybridMultiplicationGate with following properties: {}",
+      gate_info));
+}
+
+template <typename T>
+void HybridMultiplicationGate<T>::EvaluateSetup() {
+  SetSetupIsReady();
+  GetRegister().IncrementEvaluatedGatesSetupCounter();
+}
+
+template <typename T>
+void HybridMultiplicationGate<T>::EvaluateOnline() {
+  WaitSetup();
+  assert(setup_is_ready_);
+  parent_a_.at(0)->GetIsReadyCondition().Wait();
+  parent_b_.at(0)->GetIsReadyCondition().Wait();
+
+  const auto bw = std::dynamic_pointer_cast<boolean_gmw::Wire>(parent_a_.at(0));
+  assert(bw);
+  const auto aw = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(parent_b_.at(0));
+  assert(aw);
+
+  auto a_out = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+  assert(a_out);
+  a_out->GetMutableValues().reserve(aw->GetNumberOfSimdValues());
+
+  auto& bv = bw->GetValues();
+  auto& av = aw->GetValues();
+
+  std::vector<T> ot_data;
+  ot_data.reserve(bv.GetSize());
+  for (std::size_t i = 0; i != bv.GetSize(); ++i) {
+    // (-1)^<b>_i^B * <v>_i^A + r as AC-OT msgs for party i-1
+    ot_data.emplace_back(bv[i] ? -av[i] : av[i]);
+    // Locally calculate <b>_i^B * <v>_i^A
+    a_out->GetMutableValues().emplace_back(bv[i] ? av[i] : static_cast<T>(0));
+  }
+
+  // AcOt Send and Recieve
+
+  ot_sender_->WaitSetup();
+  ot_sender_->SetCorrelations(ot_data);
+  ot_sender_->SendMessages();
+
+  ot_receiver_->WaitSetup();
+  ot_receiver_->SetChoices(bv);
+  ot_receiver_->SendCorrections();
+
+  const std::size_t number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
+
+  ot_sender_->ComputeOutputs();
+  ot_receiver_->ComputeOutputs();
+
+  // parse OT outputs
+  std::vector<T> ot_sender_output{ot_sender_->GetOutputs()};
+  std::vector<T> ot_receiver_output{ot_receiver_->GetOutputs()};
+
+  // Compute the result
+  for (std::size_t simd_i = 0; simd_i < number_of_simd_values; ++simd_i) {
+    a_out->GetMutableValues()[simd_i] += ot_receiver_output[simd_i] - ot_sender_output[simd_i];
+  }
+
+  GetLogger().LogDebug(
+      fmt::format("Evaluated arithmetic_gmw::HybridMultiplicationGate with id#{}", gate_id_));
+  SetOnlineIsReady();
+  GetRegister().IncrementEvaluatedGatesOnlineCounter();
+}
+
+template <typename T>
+arithmetic_gmw::SharePointer<T> HybridMultiplicationGate<T>::GetOutputAsArithmeticShare() {
+  auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
+  assert(arithmetic_wire);
+  auto result = std::make_shared<arithmetic_gmw::Share<T>>(arithmetic_wire);
+  return result;
+}
+
+template class HybridMultiplicationGate<std::uint8_t>;
+template class HybridMultiplicationGate<std::uint16_t>;
+template class HybridMultiplicationGate<std::uint32_t>;
+template class HybridMultiplicationGate<std::uint64_t>;
+// template class HybridMultiplicationGate<__uint128_t>; not yet supported
 
 template <typename T>
 SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->GetBackend()) {
