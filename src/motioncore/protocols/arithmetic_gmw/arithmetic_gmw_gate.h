@@ -164,6 +164,8 @@ class MultiplicationGate final : public motion::TwoGate {
   std::size_t number_of_mts_, mt_offset_;
 };
 
+// Multiplication of an arithmetic share with a boolean bit.
+// Based on [ST21]: https://iacr.org/2021/029.pdf
 template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
 class HybridMultiplicationGate final : public motion::TwoGate {
  public:
