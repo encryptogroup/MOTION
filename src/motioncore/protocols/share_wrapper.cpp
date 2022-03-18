@@ -201,10 +201,16 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper& other) const {
   assert(*other);
   assert(share_);
   assert(share_->GetNumberOfSimdValues() == other->GetNumberOfSimdValues());
-  if (share_->GetProtocol() != MpcProtocol::kArithmeticGmw ||
-      other->GetProtocol() != MpcProtocol::kArithmeticGmw) {
-    if (share_->GetProtocol() == MpcProtocol::kBooleanGmw &&
-        other->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+  bool lhs_is_arith = share_->GetProtocol() == MpcProtocol::kArithmeticGmw ||
+                      share_->GetProtocol() == MpcProtocol::kArithmeticConstant;
+  bool rhs_is_arith = other->GetProtocol() == MpcProtocol::kArithmeticGmw ||
+                      other->GetProtocol() == MpcProtocol::kArithmeticConstant;
+  bool lhs_is_bool = share_->GetProtocol() == MpcProtocol::kBooleanGmw ||
+                     share_->GetProtocol() == MpcProtocol::kBooleanConstant;
+  bool rhs_is_bool = other->GetProtocol() == MpcProtocol::kBooleanGmw ||
+                     other->GetProtocol() == MpcProtocol::kBooleanConstant;
+  if ( !lhs_is_arith || !rhs_is_arith) {
+    if (lhs_is_bool && rhs_is_arith) {
       if (other->GetBitLength() == 8u) {
         return HybridMul<std::uint8_t>(share_, *other);
       } else if (other->GetBitLength() == 16u) {
@@ -216,8 +222,7 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper& other) const {
       } else {
         throw std::bad_cast();
       }
-    } else if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw &&
-               other->GetProtocol() == MpcProtocol::kBooleanGmw) {
+    } else if (lhs_is_arith && rhs_is_bool) {
       return other * *this;
     } else {
       throw std::runtime_error(
