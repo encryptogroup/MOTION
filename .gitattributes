@@ -1,2 +1,4 @@
 * text=auto
+*.bristol lf
+*.stats lf
 *.sh text eol=lf
