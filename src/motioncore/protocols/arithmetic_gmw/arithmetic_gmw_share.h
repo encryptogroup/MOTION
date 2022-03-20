@@ -63,8 +63,6 @@ class Share final : public motion::Share {
 
   std::vector<motion::WirePointer>& GetMutableWires() noexcept final { return wires_; }
 
-  const bool& Finished();
-
   const std::vector<T>& GetValue() const;
 
   std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }

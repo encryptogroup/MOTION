@@ -103,11 +103,6 @@ CircuitType Share<T>::GetCircuitType() const noexcept {
 }
 
 template <typename T>
-const bool& Share<T>::Finished() {
-  return wires_.at(0)->IsReady();
-}
-
-template <typename T>
 const std::vector<T>& Share<T>::GetValue() const {
   auto wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(wires_.at(0));
   assert(wire);

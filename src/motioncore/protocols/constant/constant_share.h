@@ -121,8 +121,6 @@ class ConstantArithmeticShare : public motion::Share {
 
   std::vector<WirePointer>& GetMutableWires() noexcept final { return wires_; }
 
-  const bool& Finished() { return wires_.at(0)->IsReady(); }
-
   const std::vector<T>& GetValue() const {
     auto wire = std::dynamic_pointer_cast<ConstantArithmeticWirePointer<T>>(wires_.at(0));
     assert(wire);
