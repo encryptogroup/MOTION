@@ -428,59 +428,6 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
 
   assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
 
-  // constexpr auto block_size = kNumberOfRows * kNumberOfRows;
-  // const auto number_of_blocks = kNumberOfRows * number_of_colums / block_size;
-
-//#define MOTION_AVX2
-#if false && defined(MOTION_AVX512)
-  static_assert(false, "Bitsliced transposition with AVX512 is currently buggy (both at compile- and runtime) and thus disabled.");
-  // TODO: not tested yet
-  __m512i vec;
-  for (rr = 0; rr <= kNumberOfRows - 32; rr += 8) {
-    for (cc = 0; cc < number_of_colums; cc += 64) {
-      vec = _mm512_set_epi8(
-          inp(rr + 56, cc), inp(rr + 57, cc), inp(rr + 58, cc), inp(rr + 59, cc), inp(rr + 60, cc),
-          inp(rr + 61, cc), inp(rr + 62, cc), inp(rr + 63, cc), inp(rr + 48, cc), inp(rr + 49, cc),
-          inp(rr + 50, cc), inp(rr + 51, cc), inp(rr + 52, cc), inp(rr + 53, cc), inp(rr + 54, cc),
-          inp(rr + 55, cc), inp(rr + 39, cc), inp(rr + 40, cc), inp(rr + 41, cc), inp(rr + 42, cc),
-          inp(rr + 43, cc), inp(rr + 44, cc), inp(rr + 45, cc), inp(rr + 46, cc), inp(rr + 32, cc),
-          inp(rr + 33, cc), inp(rr + 34, cc), inp(rr + 35, cc), inp(rr + 36, cc), inp(rr + 37, cc),
-          inp(rr + 38, cc), inp(rr + 39, cc), inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc),
-          inp(rr + 27, cc), inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
-          inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc), inp(rr + 20, cc),
-          inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc), inp(rr + 8, cc), inp(rr + 9, cc),
-          inp(rr + 10, cc), inp(rr + 11, cc), inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc),
-          inp(rr + 15, cc), inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
-          inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
-      for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
-        out(cc + i, rr) = _mm512_movepi64_mask(vec);
-      }
-    }
-  }
-#elif false && defined(MOTION_AVX2)
-  static_assert(false,
-                "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
-                "runtime) and thus disabled.");
-  __m256i vec;
-  for (rr = 0; rr <= kNumberOfRows - 32; rr += 32) {
-    for (cc = 0; cc < number_of_colums; cc += 8) {
-      vec = _mm256_set_epi8(inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc), inp(rr + 27, cc),
-                            inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
-                            inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc),
-                            inp(rr + 20, cc), inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc),
-                            inp(rr + 8, cc), inp(rr + 9, cc), inp(rr + 10, cc), inp(rr + 11, cc),
-                            inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc), inp(rr + 15, cc),
-                            inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
-                            inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
-      for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
-        *(uint32_t*)out(cc + i, rr) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
-        // kNumberOfRows) * 16 + rr / 8;
-        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
-      }
-    }
-  }
-#else
   __m128i vec;
   // Do the main body in 16x8 blocks:
   for (rr = 0; rr <= kNumberOfRows - 16; rr += 16) {
@@ -491,13 +438,9 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
                          inp(rr + 3, cc), inp(rr + 2, cc), inp(rr + 1, cc), inp(rr + 0, cc));
       for (i = 0; i < 8; vec = _mm_slli_epi64(vec, 1), ++i) {
         *(uint16_t* __restrict__)out(cc + 7 - i, rr) = _mm_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
-        // kNumberOfRows) * 16 + rr / 8;
-        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
       }
     }
   }
-#endif
 
   for (auto j = 0ull; j < number_of_colums; ++j) {
     std::copy(reinterpret_cast<const std::uint8_t* __restrict__>(output.data()) + j * 16,
@@ -506,12 +449,6 @@ void BitMatrix::TransposeUsingBitSlicing(std::array<std::byte*, 128>& matrix,
                   __builtin_assume_aligned(matrix.at(j % kNumberOfRows), 16)) +
                   (j / kNumberOfRows) * 16);
   }
-
-  // for (auto j = 0ull; j < kNumberOfRows; ++j) {
-  // std::copy(output.data() + j * 16 * number_of_blocks, output.data() + (j + 1) * 16 *
-  // number_of_blocks,
-  //          reinterpret_cast<std::uint8_t*>(matrix.at(j)));
-  // }
 }
 
 // TODO : All *TransposeAndEncrypt functions need to be restructured and modularized.
@@ -542,59 +479,6 @@ void BitMatrix::SenderTranspose128AndEncrypt(
 
   assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
 
-//#define MOTION_AVX2
-// this is pretty broken
-#if false && defined(MOTION_AVX512)
-  static_assert(false,
-                "Bitsliced transposition with AVX512 is currently buggy (both at compile- and "
-                "runtime) and thus disabled.");
-  // TODO: not tested yet
-  __m512i vec;
-  for (r = 0; r <= kNumberOfRows - 32; r += 8) {
-    for (c = 0; c < number_of_colums; c += 64) {
-      vec = _mm512_set_epi8(
-          inp(r + 56, c), inp(r + 57, c), inp(r + 58, c), inp(r + 59, c), inp(r + 60, c),
-          inp(r + 61, c), inp(r + 62, c), inp(r + 63, c), inp(r + 48, c), inp(r + 49, c),
-          inp(r + 50, c), inp(r + 51, c), inp(r + 52, c), inp(r + 53, c), inp(r + 54, c),
-          inp(r + 55, c), inp(r + 39, c), inp(r + 40, c), inp(r + 41, c), inp(r + 42, c),
-          inp(r + 43, c), inp(r + 44, c), inp(r + 45, c), inp(r + 46, c), inp(r + 32, c),
-          inp(r + 33, c), inp(r + 34, c), inp(r + 35, c), inp(r + 36, c), inp(r + 37, c),
-          inp(r + 38, c), inp(r + 39, c), inp(r + 24, c), inp(r + 25, c), inp(r + 26, c),
-          inp(r + 27, c), inp(r + 28, c), inp(r + 29, c), inp(r + 30, c), inp(r + 31, c),
-          inp(r + 16, c), inp(r + 17, c), inp(r + 18, c), inp(r + 19, c), inp(r + 20, c),
-          inp(r + 21, c), inp(r + 22, c), inp(r + 23, c), inp(r + 8, c), inp(r + 9, c),
-          inp(r + 10, c), inp(r + 11, c), inp(r + 12, c), inp(r + 13, c), inp(r + 14, c),
-          inp(r + 15, c), inp(r + 0, c), inp(r + 1, c), inp(r + 2, c), inp(r + 3, c),
-          inp(r + 4, c), inp(r + 5, c), inp(r + 6, c), inp(r + 7, c));
-      for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
-        OUT(c + i, r) = _mm512_movepi64_mask(vec);
-      }
-    }
-  }
-#elif false && defined(MOTION_AVX2)
-  static_assert(false,
-                "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
-                "runtime) and thus disabled.");
-  __m256i vec;
-  for (r = 0; r <= kNumberOfRows - 32; r += 32) {
-    for (c = 0; c < number_of_colums; c += 8) {
-      vec = _mm256_set_epi8(inp(r + 24, c), inp(r + 25, c), inp(r + 26, c), inp(r + 27, c),
-                            inp(r + 28, c), inp(r + 29, c), inp(r + 30, c), inp(r + 31, c),
-                            inp(r + 16, c), inp(r + 17, c), inp(r + 18, c), inp(r + 19, c),
-                            inp(r + 20, c), inp(r + 21, c), inp(r + 22, c), inp(r + 23, c),
-                            inp(r + 8, c), inp(r + 9, c), inp(r + 10, c), inp(r + 11, c),
-                            inp(r + 12, c), inp(r + 13, c), inp(r + 14, c), inp(r + 15, c),
-                            inp(r + 0, c), inp(r + 1, c), inp(r + 2, c), inp(r + 3, c),
-                            inp(r + 4, c), inp(r + 5, c), inp(r + 6, c), inp(r + 7, c));
-      for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
-        *(uint32_t*)&OUT(c + i, r) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((c + i) % kNumberOfRows) * number_of_blocks * 16 + (c / kNumberOfRows)
-        // * 16 + r / 8;
-        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
-      }
-    }
-  }
-#else
   __m128i vec;
   primitives::Prg prg_var_key;
   // process 128x128 blocks
@@ -612,7 +496,6 @@ void BitMatrix::SenderTranspose128AndEncrypt(
         }
       }
     }
-    // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
       auto& out0 = y0[c_old];
       auto& out1 = y1[c_old];
@@ -642,7 +525,6 @@ void BitMatrix::SenderTranspose128AndEncrypt(
       }
     }
   }
-#endif
 }
 
 void BitMatrix::ReceiverTranspose128AndEncrypt(const std::array<const std::byte*, 128>& matrix,
@@ -669,58 +551,6 @@ void BitMatrix::ReceiverTranspose128AndEncrypt(const std::array<const std::byte*
 
   assert(kNumberOfRows % 8 == 0 && number_of_colums % 8 == 0);
 
-//#define MOTION_AVX2
-#if false && defined(MOTION_AVX512)
-  static_assert(false,
-                "Bitsliced transposition with AVX512 is currently buggy (both at compile- and "
-                "runtime) and thus disabled.");
-  // TODO: not tested yet
-  __m512i vec;
-  for (rr = 0; rr <= kNumberOfRows - 32; rr += 8) {
-    for (cc = 0; cc < number_of_colums; cc += 64) {
-      vec = _mm512_set_epi8(
-          inp(rr + 56, cc), inp(rr + 57, cc), inp(rr + 58, cc), inp(rr + 59, cc), inp(rr + 60, cc),
-          inp(rr + 61, cc), inp(rr + 62, cc), inp(rr + 63, cc), inp(rr + 48, cc), inp(rr + 49, cc),
-          inp(rr + 50, cc), inp(rr + 51, cc), inp(rr + 52, cc), inp(rr + 53, cc), inp(rr + 54, cc),
-          inp(rr + 55, cc), inp(rr + 39, cc), inp(rr + 40, cc), inp(rr + 41, cc), inp(rr + 42, cc),
-          inp(rr + 43, cc), inp(rr + 44, cc), inp(rr + 45, cc), inp(rr + 46, cc), inp(rr + 32, cc),
-          inp(rr + 33, cc), inp(rr + 34, cc), inp(rr + 35, cc), inp(rr + 36, cc), inp(rr + 37, cc),
-          inp(rr + 38, cc), inp(rr + 39, cc), inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc),
-          inp(rr + 27, cc), inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
-          inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc), inp(rr + 20, cc),
-          inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc), inp(rr + 8, cc), inp(rr + 9, cc),
-          inp(rr + 10, cc), inp(rr + 11, cc), inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc),
-          inp(rr + 15, cc), inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
-          inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
-      for (i = 0; i < 64; vec = _mm512_slli_epi64(vec, 1), ++i) {
-        OUT(cc + i, rr) = _mm512_movepi64_mask(vec);
-      }
-    }
-  }
-#elif false && defined(MOTION_AVX2)
-  static_assert(false,
-                "Bitsliced transposition with AVX2 is currently buggy (both at compile- and "
-                "runtime) and thus disabled.");
-  __m256i vec;
-  for (rr = 0; rr <= kNumberOfRows - 32; rr += 32) {
-    for (cc = 0; cc < number_of_colums; cc += 8) {
-      vec = _mm256_set_epi8(inp(rr + 24, cc), inp(rr + 25, cc), inp(rr + 26, cc), inp(rr + 27, cc),
-                            inp(rr + 28, cc), inp(rr + 29, cc), inp(rr + 30, cc), inp(rr + 31, cc),
-                            inp(rr + 16, cc), inp(rr + 17, cc), inp(rr + 18, cc), inp(rr + 19, cc),
-                            inp(rr + 20, cc), inp(rr + 21, cc), inp(rr + 22, cc), inp(rr + 23, cc),
-                            inp(rr + 8, cc), inp(rr + 9, cc), inp(rr + 10, cc), inp(rr + 11, cc),
-                            inp(rr + 12, cc), inp(rr + 13, cc), inp(rr + 14, cc), inp(rr + 15, cc),
-                            inp(rr + 0, cc), inp(rr + 1, cc), inp(rr + 2, cc), inp(rr + 3, cc),
-                            inp(rr + 4, cc), inp(rr + 5, cc), inp(rr + 6, cc), inp(rr + 7, cc));
-      for (i = 0; i < 8; vec = _mm256_slli_epi64(vec, 1), ++i) {
-        *(uint32_t*)&OUT(cc + i, rr) = _mm256_movemask_epi8(vec);
-        // const auto pos = ((cc + i) % kNumberOfRows) * number_of_blocks * 16 + (cc /
-        // kNumberOfRows) * 16 + rr / 8;
-        //*(uint16_t*)&output[pos] = _mm_movemask_epi8(vec);
-      }
-    }
-  }
-#else
   __m128i vec;
   primitives::Prg prg_var_key;
   // process 128x128 blocks
@@ -738,7 +568,6 @@ void BitMatrix::ReceiverTranspose128AndEncrypt(const std::array<const std::byte*
         }
       }
     }
-    // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
       auto& o = output[c_old];
       assert(o.GetSize() == 128);
@@ -754,7 +583,6 @@ void BitMatrix::ReceiverTranspose128AndEncrypt(const std::array<const std::byte*
       }
     }
   }
-#endif
 }
 
 void BitMatrix::SenderTranspose256AndEncrypt(
@@ -886,7 +714,6 @@ void BitMatrix::ReceiverTranspose256AndEncrypt(const std::array<const std::byte*
         }
       }
     }
-    // XXX
     for (; c_old < c && c_old < original_size; ++c_old) {
       auto& o = output[c_old];
       assert(o.GetSize() == 256);
