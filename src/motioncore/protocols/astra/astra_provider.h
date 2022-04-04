@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2022 Oliver Schick
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -22,11 +22,52 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+
 #pragma once
 
-#include <initializer_list>
+#include <cstdint>
+#include <map>
+#include <mutex>
 
-constexpr auto kTestIterations = 1u;  // increase if needed
-constexpr auto kDetailedLoggingEnabled = false;
-constexpr auto kPortOffset = 17777u;
-constexpr auto kNumberOfPartiesList = {2u, 3u, 4u, 5u, 10u};
+#include "utility/reusable_future.h"
+
+namespace encrypto::motion::communication {
+
+class CommunicationLayer;
+
+}  // namespace encrypto::motion::communication
+
+namespace encrypto::motion::proto::astra {
+
+class Condition;
+
+enum DataType : unsigned int { 
+    kInput, 
+    kMultiplySetup, 
+    kMultiplyOnline,
+    kDotProductSetup,
+    kDotProductOnline
+};
+
+class Provider {
+ public:
+  Provider(communication::CommunicationLayer& communication_layer);
+  ~Provider() = default;
+  
+  using Promise = ReusableFiberPromise<std::vector<uint8_t>>;
+  using Future = ReusableFiberFuture<std::vector<uint8_t>>;
+      
+  void PostData(std::size_t gate_id, std::vector<uint8_t>&& data);
+  
+  Future RegisterReceivingGate(std::size_t gate_id);
+  
+  std::size_t UnregisterReceivingGate(std::size_t gate_id);
+
+ private:
+  
+  communication::CommunicationLayer& communication_layer_;
+  std::map<std::size_t, Promise> messages_;
+  std::mutex m_;
+};
+
+}  // namespace encrypto::motion::proto::bmr

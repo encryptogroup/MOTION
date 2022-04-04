@@ -111,6 +111,15 @@ void BaseProvider::Setup() {
     // initialize randomness generator of the other party
     their_randomness_generators_.at(party_id)->Initialize(their_seed->data());
   }
+  // initialize global randomness generator
+  // TODO: Generate random seed and share with other peers, instead of fixed key
+  global_randomness_generator_ = std::make_unique<primitives::SharingRandomnessGenerator>(-1);
+  unsigned char global_seed[] = { 1,  2,  3,  4,  5,  6,  7,  8,
+                                  9, 10, 11, 12, 13, 14, 15, 16,
+                                 17, 18, 19, 20, 21, 22, 23, 24,
+                                 25, 26, 27, 28, 29, 30, 31, 32};
+  global_randomness_generator_->Initialize(global_seed);
+  
   {
     std::scoped_lock lock(setup_ready_cond_->GetMutex());
     setup_ready_ = true;

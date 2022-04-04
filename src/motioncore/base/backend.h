@@ -53,6 +53,16 @@ class Provider;
 
 }  // namespace encrypto::motion::proto::bmr
 
+namespace encrypto::motion::proto::astra {
+    
+class Provider;
+template<typename T> 
+class Share;
+template<typename T>
+using SharePointer = std::shared_ptr<Share<T>>;
+    
+} // namespace encrypto::motion::proto::astra
+
 namespace encrypto::motion {
 
 class OtProvider;
@@ -206,9 +216,33 @@ class Backend : public std::enable_shared_from_this<Backend> {
   template <typename T>
   SharePointer ArithmeticGmwSubtraction(const proto::arithmetic_gmw::SharePointer<T>& a,
                                         const proto::arithmetic_gmw::SharePointer<T>& b);
-
+                                        
   template <typename T>
   SharePointer ArithmeticGmwSubtraction(const SharePointer& a, const SharePointer& b);
+
+  template <typename T>
+  SharePointer AstraInput(std::size_t party_id, T input = 0);
+
+  template <typename T>
+  SharePointer AstraOutput(const proto::astra::SharePointer<T>& parent,
+                                   std::size_t output_owner);
+
+  template <typename T>
+  SharePointer AstraOutput(const SharePointer& parent, std::size_t output_owner);
+
+  template <typename T>
+  SharePointer AstraAddition(const proto::astra::SharePointer<T>& a,
+                                     const proto::astra::SharePointer<T>& b);
+
+  template <typename T>
+  SharePointer AstraAddition(const SharePointer& a, const SharePointer& b);
+
+  template <typename T>
+  SharePointer AstraSubtraction(const proto::astra::SharePointer<T>& a,
+                                        const proto::astra::SharePointer<T>& b);
+
+  template <typename T>
+  SharePointer AstraSubtraction(const SharePointer& a, const SharePointer& b);
 
   /// \brief Blocking wait for synchronizing between parties. Called in Clear() and Reset()
   void Synchronize();
@@ -228,6 +262,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
   BaseProvider& GetBaseProvider() { return *motion_base_provider_; };
 
   proto::bmr::Provider& GetBmrProvider() { return *bmr_provider_; };
+  
+  proto::astra::Provider& GetAstraProvider() { return *astra_provider_; };
 
   auto& GetBaseOtProvider() { return base_ot_provider_; };
 
@@ -259,6 +295,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::shared_ptr<SpProvider> sp_provider_;
   std::shared_ptr<SbProvider> sb_provider_;
   std::unique_ptr<proto::bmr::Provider> bmr_provider_;
+  std::unique_ptr<proto::astra::Provider> astra_provider_;
 
   bool require_base_ots_{false};
   bool base_ots_finished_{false};

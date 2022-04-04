@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2022 Oliver Schick
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -20,13 +20,44 @@
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
 
 #pragma once
 
-#include <initializer_list>
+#include "protocols/wire.h"
 
-constexpr auto kTestIterations = 1u;  // increase if needed
-constexpr auto kDetailedLoggingEnabled = false;
-constexpr auto kPortOffset = 17777u;
-constexpr auto kNumberOfPartiesList = {2u, 3u, 4u, 5u, 10u};
+namespace encrypto::motion::proto::astra {
+    
+template<typename T>
+class Wire final : public motion::Wire {
+  using Base = motion::Wire;
+ public:
+ 
+ Wire() = default;
+ 
+  Wire(Backend& backend, const T& value, const T& lambda_x_0, const T& lambda_x_1);
+  
+  ~Wire() = default;
+  
+  MpcProtocol GetProtocol() const final { return MpcProtocol::kAstra; }
+  
+  CircuitType GetCircuitType() const final { return CircuitType::kArithmetic; }
+
+  virtual bool IsConstant() const noexcept final { return false; };
+  
+  virtual std::size_t GetBitLength() const final { return sizeof(T) * CHAR_BIT; };
+  
+  const T& GetValue() const { return value_; }
+  
+  T& GetMutableValue() { return value_; }
+  
+  std::array<T, 2>& GetMutableLambdas() { return lambda_x_i_; }
+  
+ //private:
+  T value_;
+  std::array<T, 2> lambda_x_i_;
+};
+
+template<typename T>
+using WirePointer = std::shared_ptr<astra::Wire<T>>;
+    
+} // namespace encrypto::motion::proto::astra

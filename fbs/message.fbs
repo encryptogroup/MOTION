@@ -15,6 +15,12 @@ enum MessageType : ubyte {
   kBmrAndGate = 11,                      // publishes garbled tables corresponding to a gate (n_wires * n_simd * 3 rows)
   kSharedBitsMask = 12,
   kSharedBitsReconstruct = 13,
+  kAstraInputGate = 14,
+  kAstraOutputGate = 15,
+  kAstraSetupMultiplyGate = 16,
+  kAstraOnlineMultiplyGate = 17,
+  kAstraSetupDotProductGate = 18,
+  kAstraOnlineDotProductGate = 19,
   // add new message types here
   }
 

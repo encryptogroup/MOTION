@@ -60,6 +60,9 @@ class BaseProvider {
   primitives::SharingRandomnessGenerator& GetTheirRandomnessGenerator(std::size_t party_id) {
     return *their_randomness_generators_[party_id];
   }
+  primitives::SharingRandomnessGenerator& GetGlobalRandomnessGenerator() {
+    return *global_randomness_generator_;
+  }
 
  private:
   communication::CommunicationLayer& communication_layer_;
@@ -69,6 +72,7 @@ class BaseProvider {
   std::vector<std::uint8_t> aes_fixed_key_;
   std::vector<std::unique_ptr<primitives::SharingRandomnessGenerator>> my_randomness_generators_;
   std::vector<std::unique_ptr<primitives::SharingRandomnessGenerator>> their_randomness_generators_;
+  std::unique_ptr<primitives::SharingRandomnessGenerator> global_randomness_generator_;
 
   std::atomic_flag execute_setup_flag_ = ATOMIC_FLAG_INIT;
   bool setup_ready_;

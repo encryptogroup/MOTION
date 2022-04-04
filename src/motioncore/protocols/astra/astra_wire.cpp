@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2022 Oliver Schick
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -20,13 +20,20 @@
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
 
-#pragma once
+#include "astra_wire.h"
 
-#include <initializer_list>
+namespace encrypto::motion::proto::astra {
 
-constexpr auto kTestIterations = 1u;  // increase if needed
-constexpr auto kDetailedLoggingEnabled = false;
-constexpr auto kPortOffset = 17777u;
-constexpr auto kNumberOfPartiesList = {2u, 3u, 4u, 5u, 10u};
+template<typename T>
+Wire<T>::Wire(Backend& backend, const T& value, const T& lambda_x_0, const T& lambda_x_1)
+  : Base(backend, 1), value_{value}, lambda_x_i_{lambda_x_0, lambda_x_1} {}
+  
+
+template class Wire<std::uint8_t>;
+template class Wire<std::uint16_t>;
+template class Wire<std::uint32_t>;
+template class Wire<std::uint64_t>;
+template class Wire<__uint128_t>;
+    
+} // namespace encrypto::motion::proto::astra

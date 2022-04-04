@@ -1,0 +1,8 @@
+namespace encrypto.motion.communication;
+
+table AstraMessage {
+  gate_id:uint64;       // gate id
+  payload:[ubyte];      // value
+}
+
+root_type AstraMessage;
