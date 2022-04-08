@@ -29,6 +29,7 @@
 #include <map>
 #include <mutex>
 
+#include "communication/fbs_headers/message_generated.h"
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion::communication {
@@ -57,9 +58,11 @@ class Provider {
   using Promise = ReusableFiberPromise<std::vector<uint8_t>>;
   using Future = ReusableFiberFuture<std::vector<uint8_t>>;
       
-  void PostData(std::size_t gate_id, std::vector<uint8_t>&& data);
+  void PostData(communication::MessageType const& type, std::size_t gate_id, std::vector<uint8_t>&& data);
   
   Future RegisterReceivingGate(std::size_t gate_id);
+  
+  Future RegisterOnlineReceivingMultiplicationGate(std::size_t gate_id);
   
   std::size_t UnregisterReceivingGate(std::size_t gate_id);
 
@@ -67,6 +70,7 @@ class Provider {
   
   communication::CommunicationLayer& communication_layer_;
   std::map<std::size_t, Promise> messages_;
+  std::map<std::size_t, Promise> online_multiplication_messages_;
   std::mutex m_;
 };
 

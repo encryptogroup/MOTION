@@ -50,11 +50,12 @@ class MessageHandler : public communication::MessageHandler {
 void MessageHandler::ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& raw_message) {
   assert(!raw_message.empty());
   auto message = communication::GetMessage(reinterpret_cast<std::uint8_t*>(raw_message.data()));
+  auto message_type = message->message_type();
   auto astra_message = communication::GetAstraMessage(message->payload()->data());
   auto gate_id = astra_message->gate_id();
   auto astra_data = astra_message->payload();
   std::vector<uint8_t> d(astra_data->data(), astra_data->data() + astra_data->size());
-  provider_.PostData(gate_id, std::move(d));
+  provider_.PostData(message_type, gate_id, std::move(d));
 }
 
 
@@ -70,15 +71,29 @@ Provider::Provider(communication::CommunicationLayer& communication_layer)
        communication::MessageType::kAstraSetupDotProductGate, communication::MessageType::kAstraOnlineDotProductGate});    
 }
 
-void Provider::PostData(std::size_t gate_id, std::vector<uint8_t>&& data) {
+void Provider::PostData(communication::MessageType const& type, std::size_t gate_id, std::vector<uint8_t>&& data) {
+  using communication::MessageType;
   std::lock_guard<std::mutex> lock{m_};
-  auto [it, _] = messages_.try_emplace(gate_id);
-  it->second.set_value(std::move(data));
+  if(type == MessageType::kAstraOnlineMultiplyGate || type == MessageType::kAstraOnlineDotProductGate) {
+    auto [it, _] = online_multiplication_messages_.try_emplace(gate_id);
+    it->second.set_value(std::move(data));
+  }
+  else {
+    auto [it, _] = messages_.try_emplace(gate_id);
+    it->second.set_value(std::move(data));
+  }
 }
 
 Provider::Future Provider::RegisterReceivingGate(std::size_t gate_id) {
   std::lock_guard<std::mutex> lock{m_};
   auto [it, _] = messages_.try_emplace(gate_id);
+  return it->second.get_future();
+  
+}
+
+Provider::Future Provider::RegisterOnlineReceivingMultiplicationGate(std::size_t gate_id) {
+  std::lock_guard<std::mutex> lock{m_};
+  auto [it, _] = online_multiplication_messages_.try_emplace(gate_id);
   return it->second.get_future();
   
 }

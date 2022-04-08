@@ -43,6 +43,8 @@ set(MOTION_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(MOTION_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(MOTION_EXTERN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/extern")
 
+set(CMAKE_CXX_FLAGS "-g -rdynamic")
+
 if ("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
     # Set build type to `Release` if non was specified:
     if (NOT CMAKE_BUILD_TYPE)

@@ -353,6 +353,38 @@ ShareWrapper ShareWrapper::Mux(const ShareWrapper& a, const ShareWrapper& b) con
   }
 }
 
+ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) {
+  assert(a.size() == b.size());
+  assert(a.size() > 0);
+  assert(*a[0]);
+  assert(*b[0]);
+  assert(a[0]->GetCircuitType() == b[0]->GetCircuitType());
+  assert(a[0]->GetBitLength() == b[0]->GetBitLength());
+  for(auto i = 1u; i != a.size(); ++i) {
+    assert(*a[i]);
+    assert(*b[i]);
+    assert(a[i]->GetCircuitType() == b[i]->GetCircuitType());
+    assert(a[i]->GetBitLength() == b[i]->GetBitLength());
+    assert(a[i-1]->GetCircuitType() == a[i]->GetCircuitType());
+    assert(b[i-1]->GetCircuitType() == b[i]->GetCircuitType());
+    assert(a[i-1]->GetBitLength() == a[i]->GetBitLength());
+    assert(b[i-1]->GetBitLength() == b[i]->GetBitLength());
+  }
+
+  auto bit_length = a[0]->GetBitLength();
+  if (bit_length == 8u) {
+    return a[0].DotProduct<std::uint8_t>(a, b);
+  } else if (bit_length == 16u) {
+    return a[0].DotProduct<std::uint16_t>(a, b);
+  } else if (bit_length == 32u) {
+    return a[0].DotProduct<std::uint32_t>(a, b);
+  } else if (bit_length == 64u) {
+    return a[0].DotProduct<std::uint64_t>(a, b);
+  } else {
+    throw std::bad_cast();
+  }
+}
+
 template <MpcProtocol P>
 ShareWrapper ShareWrapper::Convert() const {
   constexpr auto kArithmeticGmw = MpcProtocol::kArithmeticGmw;
@@ -1050,6 +1082,7 @@ template ShareWrapper ShareWrapper::Mul<std::uint32_t>(SharePointer share,
 template ShareWrapper ShareWrapper::Mul<std::uint64_t>(SharePointer share,
                                                        SharePointer other) const;
 
+<<<<<<< HEAD
 template ShareWrapper ShareWrapper::HybridMul<std::uint8_t>(SharePointer share,
                                                             SharePointer other) const;
 template ShareWrapper ShareWrapper::HybridMul<std::uint16_t>(SharePointer share,
@@ -1058,6 +1091,44 @@ template ShareWrapper ShareWrapper::HybridMul<std::uint32_t>(SharePointer share,
                                                              SharePointer other) const;
 template ShareWrapper ShareWrapper::HybridMul<std::uint64_t>(SharePointer share,
                                                              SharePointer other) const;
+template<typename T>                                                       
+ShareWrapper ShareWrapper::DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const {
+  switch(a[0]->GetProtocol()) {
+    case MpcProtocol::kAstra: {
+      std::vector<WirePointer> a_input;
+      std::vector<WirePointer> b_input;
+      a_input.reserve(a.size());
+      b_input.reserve(b.size());
+      
+      for(auto i = 0u; i != a.size(); ++i) {
+        auto share_a = std::dynamic_pointer_cast<proto::astra::Share<T>>(a[i].share_);
+        assert(share_a);
+        a_input.emplace_back(share_a->GetAstraWire());
+  
+        auto share_b = std::dynamic_pointer_cast<proto::astra::Share<T>>(b[i].share_);
+        assert(share_b);
+        b_input.emplace_back(share_b->GetAstraWire());
+      }
+      auto dot_product_gate =
+          std::make_shared<proto::astra::DotProductGate<T>>(std::move(a_input), std::move(b_input));
+      share_->GetRegister()->RegisterNextGate(dot_product_gate);
+      auto result =
+        std::static_pointer_cast<Share>(dot_product_gate->GetOutputAsAstraShare());
+      return ShareWrapper(result);
+    }
+    default:
+      throw std::invalid_argument("Unsupported Arithmetic protocol in ShareWrapper::DotProduct");
+  }
+}
+
+template ShareWrapper ShareWrapper::DotProduct<std::uint8_t>(std::span<ShareWrapper> a, 
+                                                             std::span<ShareWrapper> b) const;
+template ShareWrapper ShareWrapper::DotProduct<std::uint16_t>(std::span<ShareWrapper> a,
+                                                              std::span<ShareWrapper> b) const;
+template ShareWrapper ShareWrapper::DotProduct<std::uint32_t>(std::span<ShareWrapper> a,
+                                                              std::span<ShareWrapper> b) const;
+template ShareWrapper ShareWrapper::DotProduct<std::uint64_t>(std::span<ShareWrapper> a,
+                                                              std::span<ShareWrapper> b) const;
 
 ShareWrapper ShareWrapper::Subset(std::vector<std::size_t>&& positions) {
   return Subset(std::span<const std::size_t>(positions));

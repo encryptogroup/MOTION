@@ -51,10 +51,23 @@ class Wire final : public motion::Wire {
   T& GetMutableValue() { return value_; }
   
   std::array<T, 2>& GetMutableLambdas() { return lambda_x_i_; }
+
+  void SetSetupIsReady() {
+    {
+      std::scoped_lock lock(setup_ready_condition_->GetMutex());
+      setup_ready_ = true;
+    }
+    setup_ready_condition_->NotifyAll();
+  }
+
+  const auto& GetSetupReadyCondition() const { return setup_ready_condition_; }
   
  //private:
   T value_;
   std::array<T, 2> lambda_x_i_;
+
+  std::atomic<bool> setup_ready_{false};
+  std::unique_ptr<FiberCondition> setup_ready_condition_;
 };
 
 template<typename T>

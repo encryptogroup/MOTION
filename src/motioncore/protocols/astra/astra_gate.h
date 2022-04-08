@@ -123,7 +123,7 @@ template<typename T>
 class DotProductGate final : public TwoGate {
   using Base = motion::TwoGate;
  public:
-  DotProductGate(const std::vector<motion::WirePointer>& vector_a, const std::vector<motion::WirePointer>& vector_b);
+  DotProductGate(std::vector<motion::WirePointer> vector_a, std::vector<motion::WirePointer> vector_b);
 
   ~DotProductGate() final = default;
 

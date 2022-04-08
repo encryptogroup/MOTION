@@ -94,6 +94,8 @@ class ShareWrapper {
     *this = *this * other;
     return *this;
   }
+  
+  friend ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b);
 
 
   ShareWrapper operator==(const ShareWrapper& other) const;
@@ -216,6 +218,9 @@ class ShareWrapper {
 
   template <typename T>
   ShareWrapper Square(SharePointer share) const;
+  
+  template <typename T>
+  ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const;
 
   ShareWrapper ArithmeticGmwToBmr() const;
 
@@ -227,5 +232,7 @@ class ShareWrapper {
 
   void ShareConsistencyCheck() const;
 };
+
+ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b);
 
 }  // namespace encrypto::motion

@@ -61,7 +61,7 @@ class Share final : public motion::Share {
 
   const T& GetValue() const;
 
-  std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
+  std::size_t GetBitLength() const noexcept final { return sizeof(T) * CHAR_BIT; }
 
   std::vector<std::shared_ptr<Base>> Split() const noexcept final;
 
