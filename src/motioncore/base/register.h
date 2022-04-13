@@ -91,9 +91,17 @@ class Register {
 
   void IncrementEvaluatedGatesOnlineCounter();
 
-  std::size_t GetNumberOfEvaluatedGateSetups() const { return evaluated_gates_setup_; }
+  void CheckSetupCondition();
 
-  std::size_t GetNumberOfEvaluatedGates() const { return evaluated_gates_online_; }
+  void CheckOnlineCondition();
+
+  std::size_t GetNumberOfGatesSetup() const { return gates_setup_; }
+
+  std::size_t GetNumberOfGatesOnline() const { return gates_online_; }
+
+  std::size_t GetNumberOfEvaluatedGatesSetup() const { return evaluated_gates_setup_; }
+
+  std::size_t GetNumberOfEvaluatedGatesOnline() const { return evaluated_gates_online_; }
 
   std::size_t GetTotalNumberOfGates() const { return global_gate_id_ - gate_id_offset_; }
 
@@ -128,8 +136,11 @@ class Register {
   std::size_t global_arithmetic_gmw_sharing_id_ = 0, global_boolean_gmw_sharing_id_ = 0;
   std::size_t gate_id_offset_ = 0, wire_id_offset_ = 0;
 
-  std::atomic<std::size_t> evaluated_gates_online_ = 0;
+  std::atomic<std::size_t> gates_setup_ = 0;
+  std::atomic<std::size_t> gates_online_ = 0;
+
   std::atomic<std::size_t> evaluated_gates_setup_ = 0;
+  std::atomic<std::size_t> evaluated_gates_online_ = 0;
   // flags which should be changed to true as soon as the counters above reach
   // gates_.size(); need to be protected using the mutexes from the conditions below
   bool gates_setup_done_flag_ = false;

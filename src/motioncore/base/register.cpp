@@ -76,6 +76,12 @@ std::size_t Register::NextBooleanGmwSharingId(std::size_t number_of_parallel_val
 
 void Register::RegisterNextGate(GatePointer gate) {
   assert(gate != nullptr);
+  if (gate->NeedsSetup()) {
+    gates_setup_++;
+  }
+  if (gate->NeedsOnline()) {
+    gates_online_++;
+  }
   gates_.push_back(gate);
 }
 
@@ -112,8 +118,17 @@ std::int64_t Register::GetNextGateFromActiveQueue() {
 }
 
 void Register::IncrementEvaluatedGatesSetupCounter() {
-  auto number_of_evaluated_gates_setup = ++evaluated_gates_setup_;
-  if (number_of_evaluated_gates_setup == gates_.size()) {
+  ++evaluated_gates_setup_;
+  CheckSetupCondition();
+}
+
+void Register::IncrementEvaluatedGatesOnlineCounter() {
+  ++evaluated_gates_online_;
+  CheckOnlineCondition();
+}
+
+void Register::CheckSetupCondition() {
+  if (evaluated_gates_setup_ == gates_setup_) {
     {
       std::scoped_lock lock(gates_setup_done_condition_->GetMutex());
       gates_setup_done_flag_ = true;
@@ -122,9 +137,8 @@ void Register::IncrementEvaluatedGatesSetupCounter() {
   }
 }
 
-void Register::IncrementEvaluatedGatesOnlineCounter() {
-  auto number_of_evaluated_gates_setup = ++evaluated_gates_online_;
-  if (number_of_evaluated_gates_setup == gates_.size()) {
+void Register::CheckOnlineCondition() {
+  if (evaluated_gates_online_ == gates_online_) {
     {
       std::scoped_lock lock(gates_online_done_condition_->GetMutex());
       gates_online_done_flag_ = true;
@@ -134,12 +148,13 @@ void Register::IncrementEvaluatedGatesOnlineCounter() {
 }
 
 void Register::Reset() {
-  if (evaluated_gates_online_ != gates_.size()) {
+  if (evaluated_gates_setup_ != gates_setup_ || evaluated_gates_online_ != gates_online_) {
     throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
 
   assert(active_gates_.empty());
-  assert(evaluated_gates_online_ == gates_.size());
+  assert(evaluated_gates_setup_ == gates_setup_);
+  assert(evaluated_gates_online_ == gates_online_);
   if (!gates_.empty()) {
     gate_id_offset_ = global_gate_id_;
   }
@@ -159,11 +174,12 @@ void Register::Reset() {
 }
 
 void Register::Clear() {
-  if (evaluated_gates_online_ != gates_.size()) {
+  if (evaluated_gates_setup_ != gates_setup_ || evaluated_gates_online_ != gates_online_) {
     throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
   assert(active_gates_.empty());
-  assert(evaluated_gates_online_ == gates_.size());
+  assert(evaluated_gates_setup_ == gates_setup_);
+  assert(evaluated_gates_online_ == gates_online_);
   for (auto& gate : gates_) {
     gate->Clear();
   }

@@ -62,13 +62,14 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
         register_.IncrementEvaluatedGatesSetupCounter();
       });
     } else {
+      // cannot be done earlier because output wires did not yet exist
       gate->SetSetupIsReady();
-      register_.IncrementEvaluatedGatesSetupCounter();
     }
   }
 
+  register_.CheckSetupCondition();
   register_.GetGatesSetupDoneCondition()->Wait();
-  assert(register_.GetNumberOfEvaluatedGateSetups() == register_.GetTotalNumberOfGates());
+  assert(register_.GetNumberOfEvaluatedGatesSetup() == register_.GetNumberOfGatesSetup());
 
   statistics.RecordEnd<RunTimeStatistics::StatisticsId::kGatesSetup>();
 
@@ -84,13 +85,14 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
         register_.IncrementEvaluatedGatesOnlineCounter();
       });
     } else {
+      // cannot be done earlier because output wires did not yet exist
       gate->SetOnlineIsReady();
-      register_.IncrementEvaluatedGatesOnlineCounter();
     }
   }
 
+  register_.CheckOnlineCondition();
   register_.GetGatesOnlineDoneCondition()->Wait();
-  assert(register_.GetNumberOfEvaluatedGates() == register_.GetTotalNumberOfGates());
+  assert(register_.GetNumberOfGatesOnline() == register_.GetNumberOfGatesOnline());
 
   statistics.RecordEnd<RunTimeStatistics::StatisticsId::kGatesOnline>();
 
@@ -125,25 +127,28 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
       fiber_pool.post([&] {
         gate->EvaluateSetup();
         gate->SetSetupIsReady();
-        register_.IncrementEvaluatedGatesSetupCounter();
+        if (gate->NeedsSetup()) {
+          register_.IncrementEvaluatedGatesSetupCounter();
+        }
 
         // XXX: maybe insert a 'yield' here?
         gate->EvaluateOnline();
         gate->SetOnlineIsReady();
-        register_.IncrementEvaluatedGatesOnlineCounter();
+        if (gate->NeedsOnline()) {
+          register_.IncrementEvaluatedGatesOnlineCounter();
+        }
       });
     } else {
+      // cannot be done earlier because output wires did not yet exist
       gate->SetSetupIsReady();
-      register_.IncrementEvaluatedGatesSetupCounter();
-
       gate->SetOnlineIsReady();
-      register_.IncrementEvaluatedGatesOnlineCounter();
     }
   }
 
   preprocessing_future.get();
 
   // we have to wait until all gates are evaluated before we close the pool
+  register_.CheckOnlineCondition();
   register_.GetGatesOnlineDoneCondition()->Wait();
   fiber_pool.join();
 
