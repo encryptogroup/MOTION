@@ -38,7 +38,7 @@ class InputGate final : public motion::InputGate {
   using Base = motion::InputGate;
 
  public:
-  InputGate(const T& input, std::size_t input_owner, Backend& backend);
+  InputGate(std::vector<T> input, std::size_t input_owner, Backend& backend);
 
   ~InputGate() final = default;
 

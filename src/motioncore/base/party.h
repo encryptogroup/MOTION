@@ -175,7 +175,7 @@ class Party {
         return backend_->ArithmeticGmwInput<T>(party_id, input);
       }
       case MpcProtocol::kAstra: {
-          return backend_->AstraInput<T>(party_id, input.at(0));
+          return backend_->AstraInput<T>(party_id, input);
       }
       case MpcProtocol::kBooleanGmw: {
         throw std::runtime_error(
@@ -206,7 +206,7 @@ class Party {
         return backend_->ArithmeticGmwInput<T>(party_id, std::move(input));
       }
       case MpcProtocol::kAstra: {
-          return backend_->AstraInput<T>(party_id, input.at(0));
+          return backend_->AstraInput<T>(party_id, std::move(input));
       }
       case MpcProtocol::kBooleanGmw: {
         throw(std::runtime_error(

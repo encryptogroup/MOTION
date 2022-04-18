@@ -96,13 +96,6 @@ bool Share<T>::Finished() {
 }
 
 template <typename T>
-const T& Share<T>::GetValue() const {
-  auto wire = std::dynamic_pointer_cast<astra::Wire<T>>(wires_.at(0));
-  assert(wire);
-  return wire->GetValue();
-}
-
-template <typename T>
 std::vector<std::shared_ptr<motion::Share>> Share<T>::Split() const noexcept {
   std::vector<std::shared_ptr<Base>> v;
   v.reserve(wires_.size());

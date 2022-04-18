@@ -222,6 +222,9 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   template <typename T>
   SharePointer AstraInput(std::size_t party_id, T input = 0);
+  
+  template <typename T>
+  SharePointer AstraInput(std::size_t party_id, std::vector<T> input);
 
   template <typename T>
   SharePointer AstraOutput(const proto::astra::SharePointer<T>& parent,

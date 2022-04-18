@@ -29,6 +29,7 @@
 #include "astra_provider.h"
 #include "astra_share.h"
 #include "astra_wire.h"
+#include "astra_data.h"
 #include "communication/astra_message.h"
 #include "primitives/sharing_randomness_generator.h"
 #include "utility/helpers.h"
@@ -46,7 +47,72 @@ void printState(std::size_t gate_id, std::size_t party_id, std::string msg) {
     //std::cout << boost::stacktrace::stacktrace() << std::endl;
     std::cout << "(gate=" << gate_id << ", party=" << party_id << "): " << msg << std::endl;
 }
+
+struct AssertionError {};
+
+void assert_impl(bool b) {
+  if(!b) {
+    std::lock_guard<std::mutex> lock{m};
+    std::cout << boost::stacktrace::stacktrace() << std::endl;
+    throw AssertionError{};
+  }
+}
+
+#undef assert
+#define assert(a) assert_impl(static_cast<bool>((a))) 
+
+template<typename T>
+struct debug_map_t {
+    
+  using Data = encrypto::motion::proto::astra::Data<T>;
+    
+  debug_map_t() = default;
+  
+  T GetRealValue(std::size_t gate_id) {
+    std::lock_guard<std::mutex> lock{m};
+    Data d = data.at(gate_id);
+    return d.value - d.lambda1 - d.lambda2;
+  }
+  
+  void MergeData(std::size_t gate_id, Data d) {
+    std::lock_guard<std::mutex> lock{m};
+    auto [it, was_inserted] = data.insert({gate_id, d});
+    if(!was_inserted) {
+      if(d.value != 0) {
+        assert(it->second.value == 0 || it->second.value == d.value);
+        it->second.value = d.value;
+      }
+      if(d.lambda1 != 0) {
+        assert(it->second.lambda1 == 0 || it->second.lambda1 == d.lambda1);
+        it->second.lambda1 = d.lambda1;
+      }
+      if(d.lambda2 != 0) {
+        assert(it->second.lambda2 == 0 || it->second.lambda2 == d.lambda2);
+        it->second.lambda2 = d.lambda2;
+      }
+    }
+    if(it->second.value != 0 && it->second.lambda1 != 0 && it->second.lambda2 != 0) {
+      std::cout << (uint16_t) (it->second.value - it->second.lambda1 - it->second.lambda2) << std::endl;
+    }
+  }
+    
+  std::map<std::size_t, Data> data;
+};
+
+template<typename T>
+debug_map_t<T> debug_map;
 //********************************************************************************************
+
+template <typename UnsignedIntegralType,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
+inline std::vector<UnsignedIntegralType> ByteVectorConvert(const std::vector<std::uint8_t>& buffer) {
+  assert(buffer.size() % sizeof(UnsignedIntegralType) ==
+         0);  // buffer length is multiple of the element size
+  std::vector<UnsignedIntegralType> result(buffer.size() / sizeof(UnsignedIntegralType));
+  std::copy(buffer.data(), buffer.data() + buffer.size(),
+            reinterpret_cast<std::uint8_t*>(result.data()));
+  return result;
+}
 
 namespace encrypto::motion::proto::astra {
     
@@ -72,15 +138,23 @@ uint64_t GetRandomValue(std::size_t key_id) {
 }
     
 template<typename T>
-InputGate<T>::InputGate(const T& input, std::size_t input_owner, Backend& backend) 
+InputGate<T>::InputGate(std::vector<T> input, std::size_t input_owner, Backend& backend) 
 : Base(backend) {
+  
   input_owner_id_ = input_owner;
   gate_id_ = GetRegister().NextGateId();
   requires_online_interaction_ = true;
   
   auto my_id = GetCommunicationLayer().GetMyId();
 
-  auto w = std::make_shared<astra::Wire<T>>(backend_, (my_id == input_owner ? input : 0), 0, 0);
+  std::shared_ptr<astra::Wire<T>> w;
+  std::vector<Data<T>> d;
+  d.reserve(input.size());
+  for(auto&& e : input) {
+    d.emplace_back(my_id == input_owner ? std::move(e) : 0, 0, 0);
+  }
+  w = std::make_shared<astra::Wire<T>>(backend_, std::move(d));
+  
   GetRegister().RegisterNextWire(w);
   output_wires_ = {std::move(w)};
   
@@ -98,25 +172,46 @@ void InputGate<T>::EvaluateSetup() {
   
   auto out_wire = std::dynamic_pointer_cast<astra::Wire<T>>(output_wires_.at(0));
   assert(out_wire);
-  auto& lambdas = out_wire->GetMutableLambdas();
+  auto& values = out_wire->GetMutableValues();
+  
   switch(input_owner_id_) {
     case 0:
       switch(my_id) {
         case 0: {
           auto& rng1 = GetBaseProvider().GetMyRandomnessGenerator(1);
           auto& rng2 = GetBaseProvider().GetMyRandomnessGenerator(2);
-          lambdas[0] = rng1.template GetUnsigned<T>(gate_id_);
-          lambdas[1] = rng2.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms1 = rng1.template GetUnsigned<T>(gate_id_, values.size());
+          std::vector<T> randoms2 = rng2.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms1.size() == values.size());
+          assert(randoms2.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms1.at(i);
+            v.lambda2 = randoms2.at(i);
+          }
           break;
         }
         case 1: {
           auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-          lambdas[0] = rng0.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms0.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms0.at(i);
+          }
           break;
         }
         case 2: {
           auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-          lambdas[1] = rng0.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms0.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda2 = randoms0.at(i);
+          }
           break;
         }
       }
@@ -126,20 +221,41 @@ void InputGate<T>::EvaluateSetup() {
         case 0: {
           auto& rng1 = GetBaseProvider().GetMyRandomnessGenerator(1);
           auto& rng_global = GetBaseProvider().GetGlobalRandomnessGenerator();
-          lambdas[0] = rng1.template GetUnsigned<T>(gate_id_);
-          lambdas[1] = rng_global.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms1 = rng1.template GetUnsigned<T>(gate_id_, values.size());
+          std::vector<T> randoms_global = rng_global.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms1.size() == values.size());
+          assert(randoms_global.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms1.at(i);
+            v.lambda2 = randoms_global.at(i);
+          }
           break;
         }
         case 1: {
           auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
           auto& rng_global = GetBaseProvider().GetGlobalRandomnessGenerator();
-          lambdas[0] = rng0.template GetUnsigned<T>(gate_id_);
-          lambdas[1] = rng_global.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, values.size());
+          std::vector<T> randoms_global = rng_global.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms0.size() == values.size());
+          assert(randoms_global.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms0.at(i);
+            v.lambda2 = randoms_global.at(i);
+          }
           break;
         }
         case 2: {
           auto& rng_global = GetBaseProvider().GetGlobalRandomnessGenerator();
-          lambdas[1] = rng_global.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms_global = rng_global.template GetUnsigned<T>(gate_id_, values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda2 = randoms_global.at(i);
+          }
           break;
         }
       }
@@ -149,20 +265,42 @@ void InputGate<T>::EvaluateSetup() {
         case 0: {
           auto& rng_global = GetBaseProvider().GetGlobalRandomnessGenerator();
           auto& rng2 = GetBaseProvider().GetMyRandomnessGenerator(2);
-          lambdas[0] = rng_global.template GetUnsigned<T>(gate_id_);
-          lambdas[1] = rng2.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms_global = rng_global.template GetUnsigned<T>(gate_id_, values.size());
+          std::vector<T> randoms2 = rng2.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms_global.size() == values.size());
+          assert(randoms2.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms_global.at(i);
+            v.lambda2 = randoms2.at(i);
+          }
           break;
         }
         case 1: {
           auto& rng_global = GetBaseProvider().GetGlobalRandomnessGenerator();
-          lambdas[0] = rng_global.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms_global = rng_global.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms_global.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms_global.at(i);
+          }
           break;
         }
         case 2: {
           auto& rng_global = GetBaseProvider().GetGlobalRandomnessGenerator();
           auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-          lambdas[0] = rng_global.template GetUnsigned<T>(gate_id_);
-          lambdas[1] = rng0.template GetUnsigned<T>(gate_id_);
+          std::vector<T> randoms_global = rng_global.template GetUnsigned<T>(gate_id_, values.size());
+          std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, values.size());
+          assert(randoms_global.size() == values.size());
+          assert(randoms0.size() == values.size());
+          
+          for(auto i = 0u; i != values.size(); ++i) {
+            auto& v = values.at(i);
+            v.lambda1 = randoms_global.at(i);
+            v.lambda2 = randoms0.at(i);
+          }
           break;
         }
       }
@@ -180,23 +318,32 @@ void InputGate<T>::EvaluateOnline() {
   
   auto out_wire = std::dynamic_pointer_cast<astra::Wire<T>>(output_wires_.at(0));
   assert(out_wire);
-  auto& value = out_wire->GetMutableValue();
+  auto& values = out_wire->GetMutableValues();
   
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
   
   if(static_cast<std::size_t>(input_owner_id_) == my_id) {
-    auto const& lambdas = out_wire->GetMutableLambdas();
-    T lambda_x = lambdas[0] + lambdas[1];
-    value += lambda_x;
+    std::vector<T> buffer(values.size());
+    for(auto i = 0u; i != values.size(); ++i) {
+      auto& v = values.at(i);
+      T lambda_x = v.lambda1 + v.lambda2;
+      v.value += lambda_x;
+      buffer.at(i) = v.value;
+    }
     
-    auto payload = ToByteVector(std::vector<T>{value});
+    auto payload = ToByteVector(buffer);
     auto message = communication::BuildAstraInputMessage(gate_id_, payload);
     communication_layer.BroadcastMessage(std::move(message)); 
   }
   else if(my_id != 0) {
-    value = FromByteVector<T>(input_future_.get())[0];
+    auto buffer = ByteVectorConvert<T>(input_future_.get());
+    assert(buffer.size() == values.size());
+    for(auto i = 0u; i != buffer.size(); ++i) {
+      values.at(i).value = std::move(buffer.at(i));
+    }
   }
+  
   backend_.GetAstraProvider().UnregisterReceivingGate(gate_id_);
   
   GetLogger().LogDebug(fmt::format("Evaluated astra::InputGate with id#{}", gate_id_));
@@ -216,7 +363,6 @@ template class InputGate<std::uint16_t>;
 template class InputGate<std::uint32_t>;
 template class InputGate<std::uint64_t>;
 template class InputGate<__uint128_t>;
-
   
 //TODO: Implement sending output only to one party
 template<typename T>
@@ -241,7 +387,8 @@ OutputGate<T>::OutputGate(const astra::WirePointer<T>& parent, std::size_t outpu
   RegisterWaitingFor(parent_.at(0)->GetWireId());
   parent_.at(0)->RegisterWaitingGate(gate_id_);
   
-  auto w = std::make_shared<astra::Wire<T>>(backend_, 0, 0, 0);
+  std::vector<Data<T>> v(parent->GetNumberOfSimdValues());
+  auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
   output_wires_ = {std::move(w)};
 }
@@ -272,44 +419,67 @@ void OutputGate<T>::EvaluateOnline() {
   auto in_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_.at(0));
   assert(in_wire);
   
-  auto& out_value = out_wire->GetMutableValue();
-  auto const& lambdas = in_wire->GetMutableLambdas();
-  auto const& value = in_wire->GetMutableValue();
+  auto& out_values = out_wire->GetMutableValues();
+  auto const& in_values = in_wire->GetValues();
+  assert(in_values.size() == out_values.size());
+  
   
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
 
   switch(my_id) {
     case 0: {
-      auto payload = ToByteVector(std::vector<T>{lambdas[0]});
+      std::vector<T> message_lambda1s(in_values.size());
+      for(auto i = 0u; i != message_lambda1s.size(); ++i) {
+        message_lambda1s.at(i) = in_values.at(i).lambda1;
+      }
+      auto payload = ToByteVector(message_lambda1s);
       auto message = communication::BuildAstraOutputMessage(gate_id_, payload);
       communication_layer.SendMessage(2, std::move(message));
         
-      auto received_value = FromByteVector<T>(output_future_.get())[0];
-      out_value = received_value - lambdas[0] - lambdas[1];
+      auto received_values = ByteVectorConvert<T>(output_future_.get());
+      assert(received_values.size() == in_values.size());
+      for(auto i = 0u; i != received_values.size(); ++i) {
+        auto& in = in_values.at(i);
+        out_values.at(i).value = received_values.at(i) - in.lambda1 - in.lambda2;
+      }
       break;
     }
     case 1: {
-      auto payload = ToByteVector(std::vector<T>{value});
+      std::vector<T> message_values(in_values.size());
+      for(auto i = 0u; i != message_values.size(); ++i) {
+        message_values.at(i) = in_values.at(i).value;
+      }
+      auto payload = ToByteVector(message_values);
       auto message = communication::BuildAstraOutputMessage(gate_id_, payload);
       communication_layer.SendMessage(0, std::move(message));
         
-      auto received_lambda = FromByteVector<T>(output_future_.get())[0];
-      out_value = value - lambdas[0] - received_lambda;
+      auto received_lambda2s = ByteVectorConvert<T>(output_future_.get());
+      assert(received_lambda2s.size() == in_values.size());
+      for(auto i = 0u; i != received_lambda2s.size(); ++i) {
+        auto& in = in_values.at(i);
+        out_values.at(i).value = in.value - in.lambda1 - received_lambda2s.at(i);
+      }
       break;
     }
     case 2: {
-      auto payload = ToByteVector(std::vector<T>{lambdas[1]});
+      std::vector<T> message_lambda2s(in_values.size());
+      for(auto i = 0u; i != message_lambda2s.size(); ++i) {
+        message_lambda2s.at(i) = in_values.at(i).lambda2;
+      }
+      auto payload = ToByteVector(message_lambda2s);
       auto message = communication::BuildAstraOutputMessage(gate_id_, payload);
       communication_layer.SendMessage(1, std::move(message));
         
-      auto received_lambda = FromByteVector<T>(output_future_.get())[0];
-      out_value = value - received_lambda - lambdas[1];
+      auto received_lambda1s = ByteVectorConvert<T>(output_future_.get());
+      assert(received_lambda1s.size() == in_values.size());
+      for(auto i = 0u; i != received_lambda1s.size(); ++i) {
+        auto& in = in_values.at(i);
+        out_values.at(i).value = in.value - received_lambda1s.at(i) - in.lambda2;
+      }
       break;
     }
     default: {
-      //suppress warning
-      (void) out_value;
       assert(false);
     }
   }
@@ -338,8 +508,9 @@ template class OutputGate<__uint128_t>;
 template<typename T>
 AdditionGate<T>::AdditionGate(const astra::WirePointer<T>& a, const astra::WirePointer<T>& b)
 : TwoGate(a->GetBackend()) {
-  parent_a_ = {a};
-  parent_b_ = {b};
+  assert(a->GetNumberOfSimdValues() == b->GetNumberOfSimdValues());
+  parent_a_ = {std::move(a)};
+  parent_b_ = {std::move(b)};
   
   requires_online_interaction_ = false;
   gate_type_ = GateType::kNonInteractive;
@@ -350,7 +521,8 @@ AdditionGate<T>::AdditionGate(const astra::WirePointer<T>& a, const astra::WireP
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
   
-  auto w = std::make_shared<astra::Wire<T>>(backend_, 0, 0, 0);
+  std::vector<Data<T>> v(parent_a_.at(0)->GetNumberOfSimdValues());
+  auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
   output_wires_ = {std::move(w)};
 
@@ -372,24 +544,45 @@ void AdditionGate<T>::EvaluateSetup() {
   a_wire->GetSetupReadyCondition()->Wait();
   b_wire->GetSetupReadyCondition()->Wait();
   
-  auto& out_lambdas = out_wire->GetMutableLambdas();
-  auto const& a_lambdas = a_wire->GetMutableLambdas();
-  auto const& b_lambdas = b_wire->GetMutableLambdas();
+  auto& out_values = out_wire->GetMutableValues();
+  auto const& a_values = a_wire->GetMutableValues();
+  auto const& b_values = b_wire->GetMutableValues();
+  
+  assert(out_values.size() == a_values.size());
+  assert(a_values.size() == b_values.size());
   
   auto my_id = GetCommunicationLayer().GetMyId();
   
   switch(my_id) {
     case 0: {
-      out_lambdas[0] = a_lambdas[0] + b_lambdas[0];
-      out_lambdas[1] = a_lambdas[1] + b_lambdas[1];
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+        
+        out.lambda1 = a.lambda1 + b.lambda1;
+        out.lambda2 = a.lambda2 + b.lambda2;
+      }
       break;
     }
     case 1: {
-      out_lambdas[0] = a_lambdas[0] + b_lambdas[0];
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+        
+        out.lambda1 = a.lambda1 + b.lambda1;
+      }
       break;
     }
     case 2: {
-      out_lambdas[1] = a_lambdas[1] + b_lambdas[1];
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+        
+        out.lambda2 = a.lambda2 + b.lambda2;
+      }
       break;
     }
   }
@@ -412,15 +605,20 @@ void AdditionGate<T>::EvaluateOnline() {
   auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(0));
   assert(b_wire);
   
-  auto& out_value = out_wire->GetMutableValue();
-  auto const& a_value = a_wire->GetMutableValue();
-  auto const& b_value = b_wire->GetMutableValue();
+  auto& out_values = out_wire->GetMutableValues();
+  auto const& a_values = a_wire->GetMutableValues();
+  auto const& b_values = b_wire->GetMutableValues();
   
   auto my_id = GetCommunicationLayer().GetMyId();
   
-  //Online Phase according to paper
   if(my_id != 0) {
-    out_value = a_value + b_value;
+    for(auto i = 0u; i != out_values.size(); ++i) {
+      auto& out = out_values.at(i);
+      auto& a = a_values.at(i);
+      auto& b = b_values.at(i);
+    
+      out.value = a.value + b.value;
+    }
   }
   
   GetLogger().LogDebug(fmt::format("Evaluated astra::AdditionGate with id#{}", gate_id_));
@@ -444,8 +642,9 @@ template class AdditionGate<__uint128_t>;
 template<typename T>
 SubtractionGate<T>::SubtractionGate(const astra::WirePointer<T>& a, const astra::WirePointer<T>& b)
 : TwoGate(a->GetBackend()) {
-  parent_a_ = {a};
-  parent_b_ = {b};
+  assert(a->GetNumberOfSimdValues() == b->GetNumberOfSimdValues());
+  parent_a_ = {std::move(a)};
+  parent_b_ = {std::move(b)};
   
   requires_online_interaction_ = false;
   gate_type_ = GateType::kNonInteractive;
@@ -456,7 +655,8 @@ SubtractionGate<T>::SubtractionGate(const astra::WirePointer<T>& a, const astra:
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
   
-  auto w = std::make_shared<astra::Wire<T>>(backend_, 0, 0, 0);
+  std::vector<Data<T>> v(parent_a_.at(0)->GetNumberOfSimdValues());
+  auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
   output_wires_ = {std::move(w)};
 
@@ -478,24 +678,42 @@ void SubtractionGate<T>::EvaluateSetup() {
   a_wire->GetSetupReadyCondition()->Wait();
   b_wire->GetSetupReadyCondition()->Wait();
   
-  auto& out_lambdas = out_wire->GetMutableLambdas();
-  auto const& a_lambdas = a_wire->GetMutableLambdas();
-  auto const& b_lambdas = b_wire->GetMutableLambdas();
+  auto& out_values = out_wire->GetMutableValues();
+  auto const& a_values = a_wire->GetMutableValues();
+  auto const& b_values = b_wire->GetMutableValues();
   
   auto my_id = GetCommunicationLayer().GetMyId();
   
   switch(my_id) {
     case 0: {
-      out_lambdas[0] = a_lambdas[0] - b_lambdas[0];
-      out_lambdas[1] = a_lambdas[1] - b_lambdas[1];
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+      
+        out.lambda1 = a.lambda1 - b.lambda1;
+        out.lambda2 = a.lambda2 - b.lambda2;
+      }
       break;
     }
     case 1: {
-      out_lambdas[0] = a_lambdas[0] - b_lambdas[0];
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+      
+        out.lambda1 = a.lambda1 - b.lambda1;
+      }
       break;
     }
     case 2: {
-      out_lambdas[1] = a_lambdas[1] - b_lambdas[1];
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+      
+        out.lambda2 = a.lambda2 - b.lambda2;
+      }
       break;
     }
   }
@@ -519,14 +737,20 @@ void SubtractionGate<T>::EvaluateOnline() {
   auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(0));
   assert(b_wire);
   
-  auto& out_value = out_wire->GetMutableValue();
-  auto const& a_value = a_wire->GetMutableValue();
-  auto const& b_value = b_wire->GetMutableValue();
+  auto& out_values = out_wire->GetMutableValues();
+  auto const& a_values = a_wire->GetMutableValues();
+  auto const& b_values = b_wire->GetMutableValues();
   
   auto my_id = GetCommunicationLayer().GetMyId();
 
   if(my_id != 0) {
-    out_value = a_value - b_value;
+    for(auto i = 0u; i != out_values.size(); ++i) {
+      auto& out = out_values.at(i);
+      auto& a = a_values.at(i);
+      auto& b = b_values.at(i);
+      
+      out.value = a.value - b.value;
+    }
   }
   
   GetLogger().LogDebug(fmt::format("Evaluated astra::SubtractionGate with id#{}", gate_id_));
@@ -550,8 +774,9 @@ template class SubtractionGate<__uint128_t>;
 template<typename T>
 MultiplicationGate<T>::MultiplicationGate(const astra::WirePointer<T>& a, const astra::WirePointer<T>& b)
 : TwoGate(a->GetBackend()) {
-  parent_a_ = {a};
-  parent_b_ = {b};
+  assert(a->GetNumberOfSimdValues() == b->GetNumberOfSimdValues());
+  parent_a_ = {std::move(a)};
+  parent_b_ = {std::move(b)};
   
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
@@ -562,7 +787,8 @@ MultiplicationGate<T>::MultiplicationGate(const astra::WirePointer<T>& a, const 
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
   
-  auto w = std::make_shared<astra::Wire<T>>(backend_, 0, 0, 0);
+  std::vector<Data<T>> v(parent_a_.at(0)->GetNumberOfSimdValues());
+  auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
   output_wires_ = {std::move(w)};
   
@@ -590,7 +816,7 @@ void MultiplicationGate<T>::EvaluateSetup() {
   a_wire->GetSetupReadyCondition()->Wait();
   b_wire->GetSetupReadyCondition()->Wait();
     
-  auto& out_lambdas = out_wire->GetMutableLambdas();
+  auto& out_values = out_wire->GetMutableValues();
   
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
@@ -599,35 +825,69 @@ void MultiplicationGate<T>::EvaluateSetup() {
     case 0: {
       auto& rng1 = GetBaseProvider().GetMyRandomnessGenerator(1);
       auto& rng2 = GetBaseProvider().GetMyRandomnessGenerator(2);
-      out_lambdas[0] = rng1.template GetUnsigned<T>(gate_id_);
-      out_lambdas[1] = rng2.template GetUnsigned<T>(gate_id_);
+      std::vector<T> randoms1 = rng1.template GetUnsigned<T>(gate_id_, 2*out_values.size());
+      std::vector<T> randoms2 = rng2.template GetUnsigned<T>(gate_id_, out_values.size());
+      assert(randoms1.size() == 2*out_values.size());
+      assert(randoms2.size() == out_values.size());
           
-      auto const& a_lambdas = a_wire->GetMutableLambdas();
-      auto const& b_lambdas = b_wire->GetMutableLambdas();
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        out.lambda1 = randoms1.at(i);
+        out.lambda2 = randoms2.at(i);
+      }
           
-      T gamma_ab_1 = rng1.template GetUnsigned<T>(gate_id_);
-      T lambda_a = a_lambdas[0] + a_lambdas[1];
-      T lambda_b = b_lambdas[0] + b_lambdas[1];
-      T gamma_ab = lambda_a * lambda_b;
-      T gamma_ab_2 = gamma_ab - gamma_ab_1;
-          
-      auto payload = ToByteVector(std::vector<T>{gamma_ab_2});
+      auto const& a_values = a_wire->GetMutableValues();
+      auto const& b_values = b_wire->GetMutableValues();
+    
+      
+      std::vector<T> message_gamma_ab_2;
+      message_gamma_ab_2.reserve(out_values.size());
+      
+      for(auto  i = 0u; i != out_values.size(); ++i) {
+        auto& a = a_values.at(i);
+        auto& b = b_values.at(i);
+        
+        T gamma_ab_1 = randoms1.at(i + out_values.size());
+        T lambda_a = a.lambda1 + a.lambda2;
+        T lambda_b = b.lambda1 + b.lambda2;
+        T gamma_ab = lambda_a * lambda_b;
+        T gamma_ab_2 = gamma_ab - gamma_ab_1;
+        message_gamma_ab_2.emplace_back(std::move(gamma_ab_2));
+      }
+      assert(message_gamma_ab_2.size() == out_values.size());
+      
+      auto payload = ToByteVector(message_gamma_ab_2);
       auto message = communication::BuildAstraSetupMultiplyMessage(gate_id_, payload);
       communication_layer.SendMessage(2, std::move(message));
       break;
     }
     case 1: {
       auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-      out_lambdas[0] = rng0.template GetUnsigned<T>(gate_id_);
-      //We store gamma_ab_1 in the free out_lambda space
-      out_lambdas[1] = rng0.template GetUnsigned<T>(gate_id_);
+      std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, 2*out_values.size());
+      assert(randoms0.size() == 2*out_values.size());
+      
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        out.lambda1 = randoms0.at(i);
+        // We store gamma_ab_1 in the free out.lambda2 space
+        out.lambda2 = randoms0.at(i + out_values.size());
+      }
       break;
     }
     case 2: {
       auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-      out_lambdas[1] = rng0.template GetUnsigned<T>(gate_id_);
-      //We store gamma_ab_2 in the free out_lambda space
-      out_lambdas[0] = FromByteVector<T>(multiply_future_.get())[0];
+      std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, out_values.size());
+      assert(randoms0.size() == out_values.size());
+      
+      std::vector<T> message_gamma_ab_2 = ByteVectorConvert<T>(multiply_future_.get());
+      assert(message_gamma_ab_2.size() == out_values.size());
+      
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        out.lambda2 = randoms0.at(i);
+        //We store gamma_ab_2 in the free out.lambda1 space
+        out.lambda1 = message_gamma_ab_2.at(i);
+      }
       backend_.GetAstraProvider().UnregisterReceivingGate(gate_id_);
       break;
     }
@@ -656,38 +916,71 @@ void MultiplicationGate<T>::EvaluateOnline() {
   auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(0));
   assert(b_wire);
   
-  auto& out_value = out_wire->GetMutableValue();
-  auto const& a_value = a_wire->GetMutableValue();
-  auto const& b_value = b_wire->GetMutableValue();
-    
-  auto& out_lambdas = out_wire->GetMutableLambdas();
-  auto const& a_lambdas = a_wire->GetMutableLambdas();
-  auto const& b_lambdas = b_wire->GetMutableLambdas();
+  auto& out_values = out_wire->GetMutableValues();
+  auto const& a_values = a_wire->GetMutableValues();
+  auto const& b_values = b_wire->GetMutableValues();
   
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
   
-  //Online phase according to paper
   if(my_id != 0) {
     switch(my_id) {
       case 1: {
-        out_value = -(a_value * b_lambdas[0]) - b_value * a_lambdas[0] + out_lambdas[0] + out_lambdas[1];
+        for(auto i = 0u; i != out_values.size(); ++i) {
+          auto& out = out_values.at(i);
+          auto const& a = a_values.at(i);
+          auto const& b = b_values.at(i);
+          auto const& gamma_ab_1 = out.lambda2;
+          
+          out.value = -(a.value * b.lambda1) - b.value * a.lambda1 + out.lambda1 + gamma_ab_1;
+        }
         
-        auto payload = ToByteVector(std::vector<T>{out_value});
+        std::vector<T> message_values;
+        message_values.reserve(out_values.size());
+        for(auto i = 0u; i != out_values.size(); ++i) {
+          message_values.emplace_back(out_values.at(i).value);
+        }
+        assert(message_values.size() == out_values.size());
+        
+        auto payload = ToByteVector(message_values);
         auto message = communication::BuildAstraOnlineMultiplyMessage(gate_id_, payload);
         communication_layer.SendMessage(2, std::move(message));
         
-        out_value += FromByteVector<T>(multiply_future_.get())[0];
+        message_values = ByteVectorConvert<T>(multiply_future_.get());
+        assert(message_values.size() == out_values.size());
+        
+        for(auto i = 0u; i != out_values.size(); ++i) {
+          out_values.at(i).value += message_values.at(i);
+        }
         break;
       }
       case 2: {
-        out_value = a_value * b_value - a_value * b_lambdas[1] - b_value * a_lambdas[1] + out_lambdas[1] + out_lambdas[0];
+        for(auto i = 0u; i != out_values.size(); ++i) {
+          auto& out = out_values.at(i);
+          auto const& a = a_values.at(i);
+          auto const& b = b_values.at(i);
+          auto const& gamma_ab_2 = out.lambda1;
+          
+          out.value = a.value * b.value - a.value * b.lambda2 - b.value * a.lambda2 + out.lambda2 + gamma_ab_2;
+        }
         
-        auto payload = ToByteVector(std::vector<T>{out_value});
+        std::vector<T> message_values;
+        message_values.reserve(out_values.size());
+        for(auto i = 0u; i != out_values.size(); ++i) {
+          message_values.emplace_back(out_values.at(i).value);
+        }
+        assert(message_values.size() == out_values.size());
+        
+        auto payload = ToByteVector(message_values);
         auto message = communication::BuildAstraOnlineMultiplyMessage(gate_id_, payload);
         communication_layer.SendMessage(1, std::move(message));
         
-        out_value += FromByteVector<T>(multiply_future_.get())[0];
+        message_values = ByteVectorConvert<T>(multiply_future_.get());
+        assert(message_values.size() == out_values.size());
+        
+        for(auto i = 0u; i != out_values.size(); ++i) {
+          out_values.at(i).value += message_values.at(i);
+        }
         break;
       }
     }
@@ -713,28 +1006,29 @@ template class MultiplicationGate<__uint128_t>;
 
 template<typename T>
 DotProductGate<T>::DotProductGate(std::vector<motion::WirePointer> vector_a, std::vector<motion::WirePointer> vector_b)
-: Base(vector_a.at(0)->GetBackend()) {
+: Base( (assert(vector_a.size() > 0), assert(vector_a.size() == vector_b.size()), vector_a[0]->GetBackend()) ) {
   parent_a_ = std::move(vector_a);
   parent_b_ = std::move(vector_b);
-  
-  assert(parent_a_.size() > 0);
-  assert(parent_a_.size() == parent_b_.size());
   
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
   
+  auto number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
   for(auto&& pa : parent_a_) {
+    assert(pa->GetNumberOfSimdValues() == number_of_simd_values);
     RegisterWaitingFor(pa->GetWireId());
     pa->RegisterWaitingGate(gate_id_);
   }
   
   for(auto&& pb : parent_b_) {
+    assert(pb->GetNumberOfSimdValues() == number_of_simd_values);
     RegisterWaitingFor(pb->GetWireId());
     pb->RegisterWaitingGate(gate_id_);
   }
   
-  auto w = std::make_shared<astra::Wire<T>>(backend_, 0, 0, 0);
+  std::vector<Data<T>> v(number_of_simd_values);
+  auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
   output_wires_ = {std::move(w)};
   
@@ -749,10 +1043,9 @@ void DotProductGate<T>::EvaluateSetup() {
   auto out_wire = std::dynamic_pointer_cast<astra::Wire<T>>(output_wires_.at(0));
   assert(out_wire);
   
-  auto& out_lambdas = out_wire->GetMutableLambdas();
+  auto& out_values = out_wire->GetMutableValues();
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
-  
   
   for(auto i = 0u; i != parent_a_.size(); ++i) {
     auto a_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_a_.at(i));
@@ -768,47 +1061,78 @@ void DotProductGate<T>::EvaluateSetup() {
     case 0: {
       auto& rng1 = GetBaseProvider().GetMyRandomnessGenerator(1);
       auto& rng2 = GetBaseProvider().GetMyRandomnessGenerator(2);
-      out_lambdas[0] = rng1.template GetUnsigned<T>(gate_id_);
-      out_lambdas[1] = rng2.template GetUnsigned<T>(gate_id_);
-      T gamma_ab_1 = rng1.template GetUnsigned<T>(gate_id_);
-      T gamma_ab{0};
-  
-      for(auto i = 0u; i != parent_a_.size(); ++i) {
-        auto a_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_a_.at(i));
-        assert(a_wire);
-        auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(i));
-        assert(b_wire);
+      std::vector<T> randoms1 = rng1.template GetUnsigned<T>(gate_id_, 2*out_values.size());
+      std::vector<T> randoms2 = rng2.template GetUnsigned<T>(gate_id_, out_values.size());
+      assert(randoms1.size() == 2*out_values.size());
+      assert(randoms2.size() == out_values.size());
+      
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
         
-        auto const& a_lambdas = a_wire->GetMutableLambdas();
-        auto const& b_lambdas = b_wire->GetMutableLambdas();
-        //Compute gamma_ab
-        T lambda_a = a_lambdas[0] + a_lambdas[1];
-        T lambda_b = b_lambdas[0] + b_lambdas[1];
-        gamma_ab += lambda_a * lambda_b;
+        out.lambda1 = randoms1.at(i);
+        out.lambda2 = randoms2.at(i);
       }
-      T gamma_ab_2 = gamma_ab - gamma_ab_1;
+      
+      std::vector<T> message_gamma_ab_2;
+      message_gamma_ab_2.reserve(out_values.size());
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        T gamma_ab_1 = randoms1.at(i + out_values.size());
+        T gamma_ab{0};
+  
+        for(auto j = 0u; j != parent_a_.size(); ++j) {
+          auto a_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_a_.at(j));
+          assert(a_wire);
+          auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(j));
+          assert(b_wire);
+          
+          auto const& a = a_wire->GetValues().at(i);
+          auto const& b = b_wire->GetValues().at(i);
+          //Compute gamma_ab
+          T lambda_a = a.lambda1 + a.lambda2;
+          T lambda_b = b.lambda1 + b.lambda2;
+          gamma_ab += lambda_a * lambda_b;
+        }
+        message_gamma_ab_2.emplace_back(gamma_ab - gamma_ab_1);
+      }
+      assert(message_gamma_ab_2.size() == out_values.size());
         
-      auto payload = ToByteVector(std::vector<T>{gamma_ab_2});
+      auto payload = ToByteVector(message_gamma_ab_2);
       auto message = communication::BuildAstraSetupDotProductMessage(gate_id_, payload);
       communication_layer.SendMessage(2, std::move(message));
       break;
     }
     case 1: {
       auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-      out_lambdas[0] = rng0.template GetUnsigned<T>(gate_id_);
-      //We store gamma_ab_1 in the free out_lambda space
-      out_lambdas[1] = rng0.template GetUnsigned<T>(gate_id_);
+      std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, 2*out_values.size());
+      assert(randoms0.size() == 2*out_values.size());
+      
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        out.lambda1 = randoms0.at(i);
+        //We store gamma_ab_1 in the free out_lambda space
+        out.lambda2 = randoms0.at(i + out_values.size());
+      }
       break;
     }
     case 2: {
       auto& rng0 = GetBaseProvider().GetTheirRandomnessGenerator(0);
-      out_lambdas[1] = rng0.template GetUnsigned<T>(gate_id_);
-      //We store gamma_ab_2 in the free out_lambda space
-      out_lambdas[0] = FromByteVector<T>(dot_product_future_.get())[0];
+      std::vector<T> randoms0 = rng0.template GetUnsigned<T>(gate_id_, out_values.size());
+      assert(randoms0.size() == out_values.size());
+      
+      std::vector<T> message_gamma_ab_2 = ByteVectorConvert<T>(dot_product_future_.get());
+      assert(message_gamma_ab_2.size() == out_values.size());
+      for(auto i = 0u; i != out_values.size(); ++i) {
+        auto& out = out_values.at(i);
+        out.lambda2 = randoms0.at(i);
+        //We store gamma_ab_2 in the free out_lambda space
+        out.lambda1 = message_gamma_ab_2.at(i);
+      }
+      
       backend_.GetAstraProvider().UnregisterReceivingGate(gate_id_);
       break;
     }
   }
+  
   if(my_id == 1 || my_id == 2) {
     dot_product_future_ = backend_.GetAstraProvider().RegisterOnlineReceivingMultiplicationGate(gate_id_);
   }
@@ -821,6 +1145,13 @@ template<typename T>
 void DotProductGate<T>::EvaluateOnline() {
   WaitSetup();
   assert(setup_is_ready_);
+    
+using namespace std::literals;
+  
+  for(auto i = 0u; i != parent_a_.size(); ++i) {
+    parent_a_.at(i)->GetIsReadyCondition().Wait();
+    parent_b_.at(i)->GetIsReadyCondition().Wait();
+  }
   
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
@@ -828,58 +1159,65 @@ void DotProductGate<T>::EvaluateOnline() {
   if(my_id != 0) {
     auto out_wire = std::dynamic_pointer_cast<astra::Wire<T>>(output_wires_.at(0));
     assert(out_wire);
-    auto& out_value = out_wire->GetMutableValue();
-    auto& out_lambdas = out_wire->GetMutableLambdas();
-    
-    out_value = 0;
-    for(std::size_t i = 0; i != parent_a_.size(); ++i) {
-      auto a_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_a_.at(i));
-      assert(a_wire);
-      auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(i));
-      assert(b_wire);
-      
-      a_wire->GetIsReadyCondition().Wait();
-      b_wire->GetIsReadyCondition().Wait();
-      
-      auto const& a_value = a_wire->GetMutableValue();
-      auto const& b_value = b_wire->GetMutableValue();
-      auto const& a_lambdas = a_wire->GetMutableLambdas();
-      auto const& b_lambdas = b_wire->GetMutableLambdas();
-      
-      switch(my_id) {
-        case 1:
-          out_value += -(a_value * b_lambdas[0]) - b_value * a_lambdas[0];
-          break;
-        case 2:
-          out_value += a_value * b_value - a_value * b_lambdas[1] - b_value * a_lambdas[1];
-          break;
+    auto& out_values = out_wire->GetMutableValues();
+    std::vector<T> message_values;
+    message_values.reserve(out_values.size());
+    for(auto i = 0u; i != out_values.size(); ++i) {
+      auto& out = out_values.at(i);
+      out.value = 0u;
+      for(auto j = 0u; j != parent_a_.size(); ++j) {
+        auto a_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_a_.at(j));
+        assert(a_wire);
+        auto b_wire = std::dynamic_pointer_cast<astra::Wire<T>>(parent_b_.at(j));
+        assert(b_wire);
+          
+        auto const& a = a_wire->GetValues().at(i);
+        auto const& b = b_wire->GetValues().at(i);
+          
+        switch(my_id) {
+          case 1: {
+            out.value += -(a.value * b.lambda1) - b.value * a.lambda1;
+            break;
+          }
+          case 2: {
+            out.value += a.value * b.value - a.value * b.lambda2 - b.value * a.lambda2;
+            break;
+          }
+          default: {
+            assert(false);
+          }
+        }
       }
+      out.value += out.lambda1 + out.lambda2;
+      message_values.emplace_back(out.value);
     }
+    assert(message_values.size() == out_values.size());
+    
+    auto payload = ToByteVector(message_values);
+    auto message = communication::BuildAstraOnlineDotProductMessage(gate_id_, payload);
     
     switch(my_id) {
       case 1: {
-        out_value += out_lambdas[0] + out_lambdas[1];
-          
-        auto payload = ToByteVector(std::vector<T>{out_value});
-        auto message = communication::BuildAstraOnlineDotProductMessage(gate_id_, payload);
         communication_layer.SendMessage(2, std::move(message));
-          
-        out_value += FromByteVector<T>(dot_product_future_.get())[0];
         break;
       }
       case 2: {
-        out_value += out_lambdas[1] + out_lambdas[0];
-          
-        auto payload = ToByteVector(std::vector<T>{out_value});
-        auto message = communication::BuildAstraOnlineDotProductMessage(gate_id_, payload);
         communication_layer.SendMessage(1, std::move(message));
-        
-        out_value += FromByteVector<T>(dot_product_future_.get())[0];
         break;
       }
+      default: {
+        assert(false);
+      }
+    }
+    
+    message_values = ByteVectorConvert<T>(dot_product_future_.get());
+    assert(message_values.size() == out_values.size());
+    
+    for(auto i = 0u; i != out_values.size(); ++i) {
+      out_values.at(i).value += message_values.at(i);
     }
   }
-  
+   
   GetLogger().LogDebug(fmt::format("Evaluated astra::DotProductGate with id#{}", gate_id_));
   SetOnlineIsReady();
   GetRegister().IncrementEvaluatedGatesOnlineCounter();
@@ -896,5 +1234,5 @@ template class DotProductGate<std::uint16_t>;
 template class DotProductGate<std::uint32_t>;
 template class DotProductGate<std::uint64_t>;
 template class DotProductGate<__uint128_t>;
-  
+
 } //namespace encrypto::motion::proto::astra

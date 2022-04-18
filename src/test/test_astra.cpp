@@ -87,12 +87,12 @@ TEST(Astra, InputOutput_1_3_parties) {
               motion_parties.at(party_id)->In<kAstra>(input_1K, input_owner);
 
           auto share_output_1 = share_input_1.Out(output_owner);
-          //auto share_output_1K = share_input_1K.Out(output_owner);
+          auto share_output_1K = share_input_1K.Out(output_owner);
 
           motion_parties.at(party_id)->Run(1);
 
           EXPECT_EQ(share_output_1.As<T>(), global_input_1);
-          //EXPECT_EQ(share_output_1K.As<std::vector<T>>(), global_input_1K);
+          EXPECT_EQ(share_output_1K.As<std::vector<T>>(), global_input_1K);
           
           motion_parties.at(party_id)->Finish();
         }
@@ -135,7 +135,8 @@ TEST(Astra, Addition_1_3_parties) {
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          std::vector<encrypto::motion::ShareWrapper> share_input_1, share_input_1K;
+          std::vector<encrypto::motion::ShareWrapper> share_input_1; 
+          std::vector<encrypto::motion::ShareWrapper> share_input_1K;
           for (auto j = 0u; j < number_of_parties; ++j) {
             // If my input - real input, otherwise a dummy 0 (-vector).
             // Should not make any difference, just for consistency...
@@ -148,21 +149,21 @@ TEST(Astra, Addition_1_3_parties) {
           }
 
           auto share_add_1 = share_input_1.at(0) + share_input_1.at(1);
-          //auto share_add_1K = share_input_1K.at(0) + share_input_1K.at(1);
+          auto share_add_1K = share_input_1K.at(0) + share_input_1K.at(1);
 
           for (auto j = 2u; j < number_of_parties; ++j) {
             share_add_1 += share_input_1.at(j);
-            //share_add_1K += share_input_1K.at(j);
+            share_add_1K += share_input_1K.at(j);
           }
 
           //auto share_output_1 = share_add_1.Out(output_owner);
           //auto share_output_1K = share_add_1K.Out(output_owner);
 
           auto share_output_1_all = share_add_1.Out();
-          //auto share_output_1K_all = share_add_1K.Out();
+          auto share_output_1K_all = share_add_1K.Out();
 
           motion_parties.at(party_id)->Run(1);
-
+          
           /*
           if (party_id == output_owner) {
             T circuit_result_1 = share_output_1.As<T>();
@@ -183,13 +184,13 @@ TEST(Astra, Addition_1_3_parties) {
             T expected_result_1 = SumReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
             
-            /*
+           
             const std::vector<T>& circuit_result_1K = share_output_1K_all.As<std::vector<T>>();
             const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
             }
-            */
+           
           }
           motion_parties.at(party_id)->Finish();
         }
@@ -200,10 +201,10 @@ TEST(Astra, Addition_1_3_parties) {
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {
     // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    //template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint8_t>(0));
     template_test(static_cast<std::uint16_t>(0));
-    //template_test(static_cast<std::uint32_t>(0));
-    //template_test(static_cast<std::uint64_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
   }
 }
 
@@ -245,18 +246,18 @@ TEST(Astra, Subtraction_1_3_parties) {
           }
 
           auto share_sub_1 = share_input_1.at(0) - share_input_1.at(1);
-          //auto share_sub_1K = share_input_1K.at(0) - share_input_1K.at(1);
+          auto share_sub_1K = share_input_1K.at(0) - share_input_1K.at(1);
 
           for (auto j = 2u; j < number_of_parties; ++j) {
             share_sub_1 -= share_input_1.at(j);
-            //share_sub_1K -= share_input_1K.at(j);
+            share_sub_1K -= share_input_1K.at(j);
           }
 
           //auto share_output_1 = share_sub_1.Out(output_owner);
           //auto share_output_1K = share_sub_1K.Out(output_owner);
 
           auto share_output_1_all = share_sub_1.Out();
-          //auto share_output_1K_all = share_sub_1K.Out();
+          auto share_output_1K_all = share_sub_1K.Out();
 
           motion_parties.at(party_id)->Run(1);
 
@@ -280,13 +281,13 @@ TEST(Astra, Subtraction_1_3_parties) {
             T expected_result_1 = SubReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
             
-            /*
+            
             const std::vector<T>& circuit_result_1K = share_output_1K_all.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
+            const std::vector<T> expected_result_1K = std::move(RowSubReduction(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
             }
-            */
+            
           }
           motion_parties.at(party_id)->Finish();
         }
@@ -336,23 +337,23 @@ TEST(Astra, Multiplication_1_3_parties) {
             const std::vector<T>& my_input_100 = party_id == j ? input_100.at(j) : kZeroV_100;
 
             share_input_1.push_back(motion_parties.at(party_id)->In<kAstra>(my_input_1, j));
-            /*share_input_100.push_back(
-                motion_parties.at(party_id)->In<kAstra>(my_input_100, j));*/
+            share_input_100.push_back(
+                motion_parties.at(party_id)->In<kAstra>(my_input_100, j));
           }
 
           auto share_multiplication_1 = share_input_1.at(0) * share_input_1.at(1);
-          //auto share_multiplication_100 = share_input_100.at(0) * share_input_100.at(1);
+          auto share_multiplication_100 = share_input_100.at(0) * share_input_100.at(1);
 
           for (auto j = 2u; j < number_of_parties; ++j) {
             share_multiplication_1 *= share_input_1.at(j);
-            //share_multiplication_100 *= share_input_100.at(j);
+            share_multiplication_100 *= share_input_100.at(j);
           }
 
           //auto share_output_1 = share_multiplication_1.Out(output_owner);
           //auto share_output_1K = share_multiplication_100.Out(output_owner);
 
           auto share_output_1_all = share_multiplication_1.Out();
-          //auto share_output_100_all = share_multiplication_100.Out();
+          auto share_output_100_all = share_multiplication_100.Out();
 
           motion_parties.at(party_id)->Run();
           
@@ -374,6 +375,12 @@ TEST(Astra, Multiplication_1_3_parties) {
             T circuit_result_1 = share_output_1_all.As<T>();
             T expected_result_1 = MulReduction(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
+
+            const std::vector<T> circuit_result_100 = share_output_100_all.As<std::vector<T>>();
+            const std::vector<T> expected_result_100 = std::move(RowMulReduction(input_100));
+            for (auto i = 0u; i < circuit_result_100.size(); ++i) {
+              EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
+            }
           }
           motion_parties.at(party_id)->Finish();
         }));
@@ -383,10 +390,10 @@ TEST(Astra, Multiplication_1_3_parties) {
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {
     // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    //template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint8_t>(0));
     template_test(static_cast<std::uint16_t>(0));
-    //template_test(static_cast<std::uint32_t>(0));
-    //template_test(static_cast<std::uint64_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
   }
 }
 
@@ -469,9 +476,9 @@ TEST(Astra, DotProduct_1_3_parties) {
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {
     // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    //template_test(static_cast<std::uint8_t>(0));
+    template_test(static_cast<std::uint8_t>(0));
     template_test(static_cast<std::uint16_t>(0));
-    //template_test(static_cast<std::uint32_t>(0));
-    //template_test(static_cast<std::uint64_t>(0));
+    template_test(static_cast<std::uint32_t>(0));
+    template_test(static_cast<std::uint64_t>(0));
   }
 }

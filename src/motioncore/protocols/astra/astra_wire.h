@@ -24,6 +24,7 @@
 #pragma once
 
 #include "protocols/wire.h"
+#include "astra_data.h"
 
 namespace encrypto::motion::proto::astra {
     
@@ -31,10 +32,12 @@ template<typename T>
 class Wire final : public motion::Wire {
   using Base = motion::Wire;
  public:
+  using value_type = Data<T>;
  
  Wire() = default;
  
-  Wire(Backend& backend, const T& value, const T& lambda_x_0, const T& lambda_x_1);
+  Wire(Backend& backend, std::vector<Data<T>> values);
+  Wire(Backend& backend, std::size_t number_of_simd);
   
   ~Wire() = default;
   
@@ -46,11 +49,9 @@ class Wire final : public motion::Wire {
   
   virtual std::size_t GetBitLength() const final { return sizeof(T) * CHAR_BIT; };
   
-  const T& GetValue() const { return value_; }
+  const std::vector<Data<T>>& GetValues() const { return values_; }
   
-  T& GetMutableValue() { return value_; }
-  
-  std::array<T, 2>& GetMutableLambdas() { return lambda_x_i_; }
+  std::vector<Data<T>>& GetMutableValues() { return values_; }
 
   void SetSetupIsReady() {
     {
@@ -62,9 +63,8 @@ class Wire final : public motion::Wire {
 
   const auto& GetSetupReadyCondition() const { return setup_ready_condition_; }
   
- //private:
-  T value_;
-  std::array<T, 2> lambda_x_i_;
+ private:
+  std::vector<Data<T>> values_;
 
   std::atomic<bool> setup_ready_{false};
   std::unique_ptr<FiberCondition> setup_ready_condition_;

@@ -22,14 +22,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 
 #include "astra_wire.h"
+#include "astra_data.h"
 
 namespace encrypto::motion::proto::astra {
 
 template<typename T>
-Wire<T>::Wire(Backend& backend, const T& value, const T& lambda_x_0, const T& lambda_x_1)
-  : Base(backend, 1), value_{value}, lambda_x_i_{lambda_x_0, lambda_x_1}, 
+Wire<T>::Wire(Backend& backend, std::vector<Data<T>> values)
+  : Base(backend, values.size()), values_{std::move(values)}, 
     setup_ready_condition_{std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); })} {   
 }
+
+template<typename T>
+Wire<T>::Wire(Backend& backend, std::size_t number_of_simd)
+  : Base(backend, number_of_simd) {}
 
 template class Wire<std::uint8_t>;
 template class Wire<std::uint16_t>;

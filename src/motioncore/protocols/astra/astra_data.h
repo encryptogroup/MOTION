@@ -23,56 +23,15 @@
 
 #pragma once
 
-#include "astra_wire.h"
-#include "astra_data.h"
-#include "protocols/share.h"
-
-
 namespace encrypto::motion::proto::astra {
-    
-template <typename T>
-class Share final : public motion::Share {
-  using Base = motion::Share;
 
- public:
-  Share(const motion::WirePointer& wire);
-  Share(const astra::WirePointer<T>& wire);
-  Share(const std::vector<astra::WirePointer<T>>& wires);
-  Share(const std::vector<motion::WirePointer>& wires);
-
-  ~Share() override = default;
-
-  std::size_t GetNumberOfSimdValues() const noexcept final;
-
-  MpcProtocol GetProtocol() const noexcept final;
-
-  CircuitType GetCircuitType() const noexcept final;
-
-  const astra::WirePointer<T> GetAstraWire() {
-    auto wire = std::dynamic_pointer_cast<astra::Wire<T>>(wires_.at(0));
-    assert(wire);
-    return wire;
-  }
-
-  const std::vector<motion::WirePointer>& GetWires() const noexcept final { return wires_; }
-
-  std::vector<motion::WirePointer>& GetMutableWires() noexcept final { return wires_; }
-
-  bool Finished();
-
-  std::size_t GetBitLength() const noexcept final { return sizeof(T) * CHAR_BIT; }
-
-  std::vector<std::shared_ptr<Base>> Split() const noexcept final;
-
-  std::shared_ptr<Base> GetWire(std::size_t i) const override;
-
-  Share(Share&) = delete;
-
- private:
-  Share() = default;
+template<typename T>
+struct Data {
+  Data() : value{}, lambda1{}, lambda2{} {}
+  Data(T v, T l1, T l2) : value{v}, lambda1{l1}, lambda2{l2} {}
+  T value;
+  T lambda1;
+  T lambda2;
 };
-
-template <typename T>
-using SharePointer = std::shared_ptr<Share<T>>;
 
 }  // namespace encrypto::motion::proto::astra

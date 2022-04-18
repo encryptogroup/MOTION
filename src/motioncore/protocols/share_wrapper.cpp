@@ -739,7 +739,7 @@ T ShareWrapper::As() const {
     } else if (share_->GetProtocol() == MpcProtocol::kAstra) {
       auto astra_wire = std::dynamic_pointer_cast<proto::astra::Wire<T>>(share_->GetWires()[0]);
       assert(astra_wire);
-      return astra_wire->GetValue();
+      return astra_wire->GetValues()[0].value;
     } else {
       throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
     }
@@ -767,7 +767,12 @@ T ShareWrapper::As() const {
           std::dynamic_pointer_cast<proto::astra::Wire<typename T::value_type>>(
               share_->GetWires()[0]);
       assert(astra_wire);
-      return {astra_wire->GetValue()};
+      auto const& values = astra_wire->GetValues();
+      T result(values.size());
+      for(auto i = 0u; i != result.size(); ++i) {
+        result[i] = values[i].value;
+      }
+      return result;
     } else {
       throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
     }

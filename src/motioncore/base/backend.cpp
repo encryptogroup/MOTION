@@ -484,17 +484,10 @@ template SharePointer Backend::ArithmeticGmwSubtraction<std::uint64_t>(const Sha
                                                                        const SharePointer& b);
 template SharePointer Backend::ArithmeticGmwSubtraction<__uint128_t>(const SharePointer& a,
                                                                      const SharePointer& b);
-                                                                     
-                                                                     
-                                                                     
-//****************************************************************************************
 
 template <typename T>
 SharePointer Backend::AstraInput(std::size_t party_id, T input) {
-  auto input_gate = std::make_shared<proto::astra::InputGate<T>>(input, party_id, *this);
-  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
-  return std::static_pointer_cast<Share>(input_gate->GetOutputAsAstraShare());
+  return AstraInput(party_id, std::vector<T>(input));
 }
 
 template SharePointer Backend::AstraInput<std::uint8_t>(std::size_t party_id, std::uint8_t input);
@@ -502,6 +495,20 @@ template SharePointer Backend::AstraInput<std::uint16_t>(std::size_t party_id, s
 template SharePointer Backend::AstraInput<std::uint32_t>(std::size_t party_id, std::uint32_t input);
 template SharePointer Backend::AstraInput<std::uint64_t>(std::size_t party_id, std::uint64_t input);
 template SharePointer Backend::AstraInput<__uint128_t>(std::size_t party_id, __uint128_t input);
+
+template <typename T>
+SharePointer Backend::AstraInput(std::size_t party_id, std::vector<T> input) {
+  auto input_gate = std::make_shared<proto::astra::InputGate<T>>(std::move(input), party_id, *this);
+  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
+  RegisterInputGate(input_gate_cast);
+  return std::static_pointer_cast<Share>(input_gate->GetOutputAsAstraShare());
+}
+
+template SharePointer Backend::AstraInput<std::uint8_t>(std::size_t party_id, std::vector<std::uint8_t> input);
+template SharePointer Backend::AstraInput<std::uint16_t>(std::size_t party_id, std::vector<std::uint16_t> input);
+template SharePointer Backend::AstraInput<std::uint32_t>(std::size_t party_id, std::vector<std::uint32_t> input);
+template SharePointer Backend::AstraInput<std::uint64_t>(std::size_t party_id, std::vector<std::uint64_t> input);
+template SharePointer Backend::AstraInput<__uint128_t>(std::size_t party_id, std::vector<__uint128_t> input);
 
 template <typename T>
 SharePointer Backend::AstraOutput(const proto::astra::SharePointer<T>& parent,
