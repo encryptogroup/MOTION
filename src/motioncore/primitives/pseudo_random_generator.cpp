@@ -23,6 +23,7 @@
 // SOFTWARE.
 
 #include "pseudo_random_generator.h"
+
 #include <cstdint>
 
 #include "aes/aesni_primitives.h"
@@ -34,7 +35,7 @@ void Prg::SetKey(const std::uint8_t* key) {
   std::copy(key, key + AES_BLOCK_SIZE, reinterpret_cast<std::uint8_t*>(key_.data()));
   if (1 != EVP_EncryptInit_ex(ctx_.get(), EVP_aes_128_ecb(), NULL,
                               reinterpret_cast<const unsigned char*>(key_.data()), nullptr)) {
-    throw(std::runtime_error(fmt::format("Could not re-initialize EVP context")));
+    throw std::runtime_error("Could not re-initialize EVP context");
   }
   std::copy(key, key + kAesKeySize128, reinterpret_cast<std::uint8_t*>(round_keys_.data()));
   AesniKeyExpansion128(round_keys_.data());
@@ -63,7 +64,7 @@ std::vector<std::byte> Prg::Encrypt(const std::size_t bytes) {
   if (1 != EVP_EncryptUpdate(ctx_.get(), reinterpret_cast<std::uint8_t*>(output.data()), &length,
                              reinterpret_cast<std::uint8_t*>(input.data()),
                              number_of_blocks * AES_BLOCK_SIZE)) {
-    throw(std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
+    throw std::runtime_error("Could not EVP_EncryptUpdate");
   }
 
   return output;
@@ -85,7 +86,7 @@ std::vector<std::byte> Prg::Encrypt(const std::byte* input, const std::size_t by
   if (1 != EVP_EncryptUpdate(ctx_.get(), reinterpret_cast<std::uint8_t*>(output.data()), &length,
                              reinterpret_cast<const std::uint8_t*>(input),
                              number_of_blocks * AES_BLOCK_SIZE)) {
-    throw(std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
+    throw std::runtime_error("Could not EVP_EncryptUpdate");
   }
 
   return output;
@@ -129,7 +130,7 @@ static void EncryptBlock(EVP_CIPHER_CTX* ctx, const std::byte* in, std::byte* ou
   int outl;
   if (1 != EVP_EncryptUpdate(ctx, reinterpret_cast<std::uint8_t*>(output), &outl,
                              reinterpret_cast<const std::uint8_t*>(in), AES_BLOCK_SIZE)) {
-    throw(std::runtime_error(fmt::format("Could not EVP_EncryptUpdate")));
+    throw std::runtime_error("Could not EVP_EncryptUpdate");
   }
 }
 
