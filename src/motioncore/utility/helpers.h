@@ -69,7 +69,7 @@ template <typename UnsignedIntegralType,
 inline std::vector<UnsignedIntegralType> FromByteVector(const std::vector<std::uint8_t>& buffer) {
   assert(buffer.size() % sizeof(UnsignedIntegralType) ==
          0);  // buffer length is multiple of the element size
-  std::vector<UnsignedIntegralType> result(sizeof(UnsignedIntegralType) * buffer.size());
+  std::vector<UnsignedIntegralType> result(buffer.size() / sizeof(UnsignedIntegralType));
   std::copy(buffer.data(), buffer.data() + buffer.size(),
             reinterpret_cast<std::uint8_t*>(result.data()));
   return result;
