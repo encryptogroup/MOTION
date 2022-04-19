@@ -22,463 +22,293 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <algorithm>
 #include <gtest/gtest.h>
+#include <algorithm>
+
 #include "base/party.h"
-#include "protocols/astra/astra_gate.h"
-#include "protocols/astra/astra_wire.h"
 #include "protocols/share_wrapper.h"
 #include "test_constants.h"
 #include "test_helpers.h"
 
-#include <stdio.h>
-#include <execinfo.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-#define BOOST_STACKTRACE_USE_ADDR2LINE
-#include <boost/stacktrace.hpp>
-
-void handler(int sig) {
-  std::cout << boost::stacktrace::stacktrace() << std::endl;
-  exit(1);
-}
-
-using namespace encrypto::motion;
-
-auto rand_val = std::mt19937{};
-
 constexpr std::size_t kAll = std::numeric_limits<std::int64_t>::max();
+constexpr auto kAstra = encrypto::motion::MpcProtocol::kAstra;
 
-TEST(Astra, InputOutput_1_3_parties) {
-  signal(SIGSEGV, handler);
-  constexpr auto kAstra = encrypto::motion::MpcProtocol::kAstra;
-  
-  std::srand(std::time(nullptr));
-  auto template_test = [](auto template_variable) {
-    for (auto number_of_parties : {3u}) {
-      std::size_t input_owner = std::rand() % number_of_parties,
-                  output_owner = kAll;
-      using T = decltype(template_variable);
-      T global_input_1 = Rand<T>();
-      std::vector<T> global_input_1K = ::RandomVector<T>(1000);
-      try {
-        std::vector<PartyPointer> motion_parties(
-            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
-        for (auto& party : motion_parties) {
-          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(rand_val() % 2 == 1);
+namespace mo = encrypto::motion;
+
+template <typename T>
+class AstraTest : public ::testing::Test {
+ protected:
+  void SetUp() override { InstantiateParties(); }
+
+  void InstantiateParties() {
+    parties_ = std::move(mo::MakeLocallyConnectedParties(number_of_parties_, kPortOffset));
+    for (auto& party : parties_) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(false);
+    }
+  }
+
+  void GenerateDiverseInputs() {
+    zeros_single_.resize(1, 0);
+    zeros_simd_.resize(number_of_simd_, 0);
+
+    std::mt19937_64 mt(seed_);
+    std::uniform_int_distribution<T> dist;
+
+    for (T& t : inputs_single_) t = dist(mt);
+
+    for (auto& v : inputs_simd_) {
+      v.resize(number_of_simd_);
+      for (T& t : v) t = dist(mt);
+    }
+  }
+
+  void ShareDiverseInputs() {
+    for (std::size_t input_owner : {0, 1, 2}) {
+      for (std::size_t party_id : {0, 1, 2}) {
+        if (party_id == input_owner) {
+          shared_inputs_single_[party_id][input_owner] =
+              parties_.at(party_id)->template In<kAstra>(inputs_single_[input_owner], input_owner);
+          shared_inputs_simd_[party_id][input_owner] =
+              parties_.at(party_id)->template In<kAstra>(inputs_simd_[input_owner], input_owner);
+        } else {
+          shared_inputs_single_[party_id][input_owner] =
+              parties_.at(party_id)->template In<kAstra>(zeros_single_, input_owner);
+          shared_inputs_simd_[party_id][input_owner] =
+              parties_.at(party_id)->template In<kAstra>(zeros_simd_, input_owner);
         }
-#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(motion_parties.size())
-        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          T input_1 = 0u;
-          std::vector<T> input_1K(global_input_1K.size(), 0u);
-          if (party_id == input_owner) {
-            input_1 = global_input_1;
-            input_1K = global_input_1K;
-          }
-
-          encrypto::motion::ShareWrapper share_input_1 =
-              motion_parties.at(party_id)->In<kAstra>(input_1, input_owner);
-          encrypto::motion::ShareWrapper share_input_1K =
-              motion_parties.at(party_id)->In<kAstra>(input_1K, input_owner);
-
-          auto share_output_1 = share_input_1.Out(output_owner);
-          auto share_output_1K = share_input_1K.Out(output_owner);
-
-          motion_parties.at(party_id)->Run(1);
-
-          EXPECT_EQ(share_output_1.As<T>(), global_input_1);
-          EXPECT_EQ(share_output_1K.As<std::vector<T>>(), global_input_1K);
-          
-          motion_parties.at(party_id)->Finish();
-        }
-      } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
       }
     }
-  };
-  for (auto i = 0ull; i < kTestIterations; ++i) {
-    // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    template_test(static_cast<std::uint8_t>(0));
-    template_test(static_cast<std::uint16_t>(0));
-    template_test(static_cast<std::uint32_t>(0));
-    template_test(static_cast<std::uint64_t>(0));
   }
+
+  void GenerateDotProductInputs() {
+    zeros_single_.resize(1, 0);
+    zeros_simd_.resize(number_of_simd_, 0);
+
+    std::mt19937_64 mt(seed_);
+    std::uniform_int_distribution<T> dist;
+
+    for (auto& v : inputs_dot_product_single_) {
+      v.resize(dot_product_vector_size_);
+      for (T& t : v) t = dist(mt);
+    }
+
+    for (auto& vv : inputs_dot_product_simd_) {
+      vv.resize(dot_product_vector_size_);
+      for (auto& v : vv) {
+        v.resize(number_of_simd_);
+        for (T& t : v) t = dist(mt);
+      }
+    }
+  }
+
+  void ShareDotProductInputs() {
+    constexpr std::size_t input_owner = 0;
+    for (std::size_t party_id : {0, 1, 2}) {
+      for (std::size_t vector_i : {0, 1}) {
+        shared_dot_product_inputs_single_[party_id][vector_i].resize(dot_product_vector_size_);
+        shared_dot_product_inputs_simd_[party_id][vector_i].resize(dot_product_vector_size_);
+        for (std::size_t element_j = 0; element_j < dot_product_vector_size_; ++element_j) {
+          shared_dot_product_inputs_single_[party_id][vector_i][element_j] =
+              parties_.at(party_id)->template In<kAstra>(
+                  inputs_dot_product_single_[vector_i][element_j], input_owner);
+          shared_dot_product_inputs_simd_[party_id][vector_i][element_j] =
+              parties_.at(party_id)->template In<kAstra>(
+                  inputs_dot_product_simd_[vector_i][element_j], input_owner);
+        }
+      }
+    }
+  }
+
+  static constexpr T seed_{0};
+  static constexpr std::size_t number_of_simd_{1000};
+  static constexpr std::size_t dot_product_vector_size_{100};
+
+  std::array<T, 3> inputs_single_;
+  std::array<std::vector<T>, 3> inputs_simd_;
+  std::array<std::vector<T>, 2> inputs_dot_product_single_;
+  std::array<std::vector<std::vector<T>>, 2> inputs_dot_product_simd_;
+
+  std::vector<T> zeros_single_;
+  std::vector<T> zeros_simd_;
+
+  static constexpr std::size_t number_of_parties_{3};
+  std::vector<mo::PartyPointer> parties_;
+
+  std::array<std::array<mo::ShareWrapper, 3>, 3> shared_inputs_single_;
+  std::array<std::array<mo::ShareWrapper, 3>, 3> shared_inputs_simd_;
+
+  std::array<std::array<std::vector<mo::ShareWrapper>, 2>, 3> shared_dot_product_inputs_single_;
+  std::array<std::array<std::vector<mo::ShareWrapper>, 2>, 3> shared_dot_product_inputs_simd_;
+};
+
+using UintTypes = ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
+TYPED_TEST_SUITE(AstraTest, UintTypes);
+
+TYPED_TEST(AstraTest, InputOutput) {
+  this->GenerateDiverseInputs();
+  this->ShareDiverseInputs();
+  std::array<std::future<void>, 3> futures;
+  for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+    futures[party_id] = std::async([this, party_id]() {
+      std::array<mo::ShareWrapper, 3> share_output_single, share_output_simd;
+      for (std::size_t other_party_id = 0; other_party_id < this->number_of_parties_;
+           ++other_party_id) {
+        share_output_single[other_party_id] =
+            this->shared_inputs_single_[party_id][other_party_id].Out(kAll);
+        share_output_simd[other_party_id] =
+            this->shared_inputs_simd_[party_id][other_party_id].Out(kAll);
+      }
+
+      this->parties_[party_id]->Run();
+
+      for (std::size_t input_owner = 0; input_owner < this->number_of_parties_; ++input_owner) {
+        EXPECT_EQ(share_output_single[input_owner].template As<TypeParam>(),
+                  this->inputs_single_[input_owner]);
+        EXPECT_EQ(share_output_simd[input_owner].template As<std::vector<TypeParam>>(),
+                  this->inputs_simd_[input_owner]);
+      }
+      this->parties_[party_id]->Finish();
+    });
+  }
+  for (auto& f : futures) f.get();
 }
 
-TEST(Astra, Addition_1_3_parties) {
-  constexpr auto kAstra = encrypto::motion::MpcProtocol::kAstra;
-  
-  std::srand(std::time(nullptr));
-  auto template_test = [](auto template_variable) {
-    using T = decltype(template_variable);
-    const std::vector<T> kZeroV_1K(1000, 0);
-    for (auto number_of_parties : {3u}) {
-      std::size_t output_owner = kAll;
-      std::vector<T> input_1 = ::RandomVector<T>(number_of_parties);
-      std::vector<std::vector<T>> input_1K(number_of_parties);
-      for (auto& v : input_1K) {
-        v = ::RandomVector<T>(1000);
+TYPED_TEST(AstraTest, Addition) {
+  this->GenerateDiverseInputs();
+  this->ShareDiverseInputs();
+  std::array<std::future<void>, 3> futures;
+  for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+    futures[party_id] = std::async([this, party_id]() {
+      auto share_add_single = this->shared_inputs_single_[party_id][0] +
+                              this->shared_inputs_single_[party_id][1] +
+                              this->shared_inputs_single_[party_id][2];
+      auto share_add_simd = this->shared_inputs_simd_[party_id][0] +
+                            this->shared_inputs_simd_[party_id][1] +
+                            this->shared_inputs_simd_[party_id][2];
+
+      auto share_output_single_all = share_add_single.Out();
+      auto share_output_simd_all = share_add_simd.Out();
+
+      this->parties_[party_id]->Run();
+
+      {
+        TypeParam circuit_result_single = share_output_single_all.template As<TypeParam>();
+        TypeParam expected_result_single = mo::SumReduction<TypeParam>(this->inputs_single_);
+        EXPECT_EQ(circuit_result_single, expected_result_single);
+
+        const std::vector<TypeParam> circuit_result_simd =
+            share_output_simd_all.template As<std::vector<TypeParam>>();
+        const std::vector<TypeParam> expected_result_simd =
+            std::move(mo::RowSumReduction<TypeParam>(this->inputs_simd_));
+        EXPECT_EQ(circuit_result_simd, expected_result_simd);
       }
-      try {
-        std::vector<PartyPointer> motion_parties(
-            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
-        for (auto& party : motion_parties) {
-          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(rand_val() % 2 == 1);
-        }
-#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(motion_parties.size())
-        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          std::vector<encrypto::motion::ShareWrapper> share_input_1; 
-          std::vector<encrypto::motion::ShareWrapper> share_input_1K;
-          for (auto j = 0u; j < number_of_parties; ++j) {
-            // If my input - real input, otherwise a dummy 0 (-vector).
-            // Should not make any difference, just for consistency...
-            const T my_input_1 = party_id == j ? input_1.at(j) : 0;
-            const std::vector<T>& my_input_1K = party_id == j ? input_1K.at(j) : kZeroV_1K;
-
-            share_input_1.push_back(motion_parties.at(party_id)->In<kAstra>(my_input_1, j));
-            share_input_1K.push_back(
-                motion_parties.at(party_id)->In<kAstra>(my_input_1K, j));
-          }
-
-          auto share_add_1 = share_input_1.at(0) + share_input_1.at(1);
-          auto share_add_1K = share_input_1K.at(0) + share_input_1K.at(1);
-
-          for (auto j = 2u; j < number_of_parties; ++j) {
-            share_add_1 += share_input_1.at(j);
-            share_add_1K += share_input_1K.at(j);
-          }
-
-          //auto share_output_1 = share_add_1.Out(output_owner);
-          //auto share_output_1K = share_add_1K.Out(output_owner);
-
-          auto share_output_1_all = share_add_1.Out();
-          auto share_output_1K_all = share_add_1K.Out();
-
-          motion_parties.at(party_id)->Run(1);
-          
-          /*
-          if (party_id == output_owner) {
-            T circuit_result_1 = share_output_1.As<T>();
-            T expected_result_1 = SumReduction(input_1);
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-
-            
-            const std::vector<T>& circuit_result_1K = share_output_1K.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
-            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
-              EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
-            }
-            
-          }
-          */
-          {
-            T circuit_result_1 = share_output_1_all.As<T>();
-            T expected_result_1 = SumReduction(input_1);
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-            
-           
-            const std::vector<T>& circuit_result_1K = share_output_1K_all.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
-            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
-              EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
-            }
-           
-          }
-          motion_parties.at(party_id)->Finish();
-        }
-      } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
-      }
-    }
-  };
-  for (auto i = 0ull; i < kTestIterations; ++i) {
-    // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    template_test(static_cast<std::uint8_t>(0));
-    template_test(static_cast<std::uint16_t>(0));
-    template_test(static_cast<std::uint32_t>(0));
-    template_test(static_cast<std::uint64_t>(0));
+      this->parties_[party_id]->Finish();
+    });
   }
+  for (auto& f : futures) f.get();
 }
 
-TEST(Astra, Subtraction_1_3_parties) {
-  constexpr auto kAstra = encrypto::motion::MpcProtocol::kAstra;
-  
-  std::srand(std::time(nullptr));
-  auto template_test = [](auto template_variable) {
-    using T = decltype(template_variable);
-    const std::vector<T> kZeroV_1K(1000, 0);
-    for (auto number_of_parties : {3u}) {
-      std::size_t output_owner = kAll;
-      std::vector<T> input_1 = ::RandomVector<T>(number_of_parties);
-      std::vector<std::vector<T>> input_1K(number_of_parties);
-      for (auto& v : input_1K) {
-        v = ::RandomVector<T>(1000);
+TYPED_TEST(AstraTest, Subtraction) {
+  this->GenerateDiverseInputs();
+  this->ShareDiverseInputs();
+  std::array<std::future<void>, 3> futures;
+  for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+    futures[party_id] = std::async([this, party_id]() {
+      auto share_sub_single = this->shared_inputs_single_[party_id][0] -
+                              this->shared_inputs_single_[party_id][1] -
+                              this->shared_inputs_single_[party_id][2];
+      auto share_sub_simd = this->shared_inputs_simd_[party_id][0] -
+                            this->shared_inputs_simd_[party_id][1] -
+                            this->shared_inputs_simd_[party_id][2];
+
+      auto share_output_single_all = share_sub_single.Out();
+      auto share_output_simd_all = share_sub_simd.Out();
+
+      this->parties_[party_id]->Run();
+
+      {
+        TypeParam circuit_result_single = share_output_single_all.template As<TypeParam>();
+        TypeParam expected_result_single = mo::SubReduction<TypeParam>(this->inputs_single_);
+        EXPECT_EQ(circuit_result_single, expected_result_single);
+
+        const std::vector<TypeParam> circuit_result_simd =
+            share_output_simd_all.template As<std::vector<TypeParam>>();
+        const std::vector<TypeParam> expected_result_simd =
+            std::move(mo::RowSubReduction<TypeParam>(this->inputs_simd_));
+        EXPECT_EQ(circuit_result_simd, expected_result_simd);
       }
-      try {
-        std::vector<PartyPointer> motion_parties(
-            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
-        for (auto& party : motion_parties) {
-          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetConfiguration()->SetOnlineAfterSetup(rand_val() % 2 == 1);
-        }
-#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
-#pragma omp single
-#pragma omp taskloop num_tasks(motion_parties.size())
-        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          std::vector<encrypto::motion::ShareWrapper> share_input_1, share_input_1K;
-          for (auto j = 0u; j < number_of_parties; ++j) {
-            // If my input - real input, otherwise a dummy 0 (-vector).
-            // Should not make any difference, just for consistency...
-            const T my_input_1 = party_id == j ? input_1.at(j) : 0;
-            const std::vector<T>& my_input_1K = party_id == j ? input_1K.at(j) : kZeroV_1K;
-
-            share_input_1.push_back(motion_parties.at(party_id)->In<kAstra>(my_input_1, j));
-            share_input_1K.push_back(
-                motion_parties.at(party_id)->In<kAstra>(my_input_1K, j));
-          }
-
-          auto share_sub_1 = share_input_1.at(0) - share_input_1.at(1);
-          auto share_sub_1K = share_input_1K.at(0) - share_input_1K.at(1);
-
-          for (auto j = 2u; j < number_of_parties; ++j) {
-            share_sub_1 -= share_input_1.at(j);
-            share_sub_1K -= share_input_1K.at(j);
-          }
-
-          //auto share_output_1 = share_sub_1.Out(output_owner);
-          //auto share_output_1K = share_sub_1K.Out(output_owner);
-
-          auto share_output_1_all = share_sub_1.Out();
-          auto share_output_1K_all = share_sub_1K.Out();
-
-          motion_parties.at(party_id)->Run(1);
-
-          /*
-          if (party_id == output_owner) {
-            T circuit_result_1 = share_output_1.As<T>();
-            T expected_result_1 = SumReduction(input_1);
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-
-            
-            const std::vector<T>& circuit_result_1K = share_output_1K.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
-            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
-              EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
-            }
-            
-          }
-          */
-          {
-            T circuit_result_1 = share_output_1_all.As<T>();
-            T expected_result_1 = SubReduction(input_1);
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-            
-            
-            const std::vector<T>& circuit_result_1K = share_output_1K_all.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSubReduction(input_1K));
-            for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
-              EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
-            }
-            
-          }
-          motion_parties.at(party_id)->Finish();
-        }
-      } catch (std::exception& e) {
-        std::cerr << e.what() << std::endl;
-      }
-    }
-  };
-  for (auto i = 0ull; i < kTestIterations; ++i) {
-    // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    template_test(static_cast<std::uint8_t>(0));
-    template_test(static_cast<std::uint16_t>(0));
-    template_test(static_cast<std::uint32_t>(0));
-    template_test(static_cast<std::uint64_t>(0));
+      this->parties_[party_id]->Finish();
+    });
   }
+  for (auto& f : futures) f.get();
 }
 
-TEST(Astra, Multiplication_1_3_parties) {
-  constexpr auto kAstra = encrypto::motion::MpcProtocol::kAstra;
-  std::srand(0);
-  auto template_test = [](auto template_variable) {
-    using T = decltype(template_variable);
-    const std::vector<T> kZeroV_100(100, 0);
-    for (auto number_of_parties : {3u}) {
-      std::size_t output_owner = std::rand() % number_of_parties;
-      std::vector<T> input_1 = ::RandomVector<T>(number_of_parties);
-      std::vector<std::vector<T>> input_100(number_of_parties);
-      for (auto& v : input_100) {
-        v = ::RandomVector<T>(100);
+TYPED_TEST(AstraTest, Multiplication) {
+  this->GenerateDiverseInputs();
+  this->ShareDiverseInputs();
+  std::array<std::future<void>, 3> futures;
+  for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+    futures[party_id] = std::async([this, party_id]() {
+      auto share_mul_single = this->shared_inputs_single_[party_id][0] *
+                              this->shared_inputs_single_[party_id][1] *
+                              this->shared_inputs_single_[party_id][2];
+      auto share_mul_simd = this->shared_inputs_simd_[party_id][0] *
+                            this->shared_inputs_simd_[party_id][1] *
+                            this->shared_inputs_simd_[party_id][2];
+
+      auto share_output_single_all = share_mul_single.Out();
+      auto share_output_simd_all = share_mul_simd.Out();
+
+      this->parties_[party_id]->Run();
+
+      {
+        TypeParam circuit_result_single = share_output_single_all.template As<TypeParam>();
+        TypeParam expected_result_single = mo::MulReduction<TypeParam>(this->inputs_single_);
+        EXPECT_EQ(circuit_result_single, expected_result_single);
+
+        const std::vector<TypeParam> circuit_result_simd =
+            share_output_simd_all.template As<std::vector<TypeParam>>();
+        const std::vector<TypeParam> expected_result_simd =
+            std::move(mo::RowMulReduction<TypeParam>(this->inputs_simd_));
+        EXPECT_EQ(circuit_result_simd, expected_result_simd);
       }
-      std::vector<PartyPointer> motion_parties(
-          std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
-      for (auto& party : motion_parties) {
-        party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-        party->GetConfiguration()->SetOnlineAfterSetup(rand_val() % 2 == 1);
-      }
-      std::vector<std::future<void>> futures;
-      for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-        futures.emplace_back(std::async(std::launch::async, [party_id, output_owner,
-                                                             number_of_parties, &motion_parties,
-                                                             input_1, input_100, kZeroV_100] {
-          std::vector<encrypto::motion::ShareWrapper> share_input_1, share_input_100;
-          for (auto j = 0u; j < number_of_parties; ++j) {
-            // If my input - real input, otherwise a dummy 0 (-vector).
-            // Should not make any difference, just for consistency...
-            const T my_input_1 = party_id == j ? input_1.at(j) : 0;
-            const std::vector<T>& my_input_100 = party_id == j ? input_100.at(j) : kZeroV_100;
-
-            share_input_1.push_back(motion_parties.at(party_id)->In<kAstra>(my_input_1, j));
-            share_input_100.push_back(
-                motion_parties.at(party_id)->In<kAstra>(my_input_100, j));
-          }
-
-          auto share_multiplication_1 = share_input_1.at(0) * share_input_1.at(1);
-          auto share_multiplication_100 = share_input_100.at(0) * share_input_100.at(1);
-
-          for (auto j = 2u; j < number_of_parties; ++j) {
-            share_multiplication_1 *= share_input_1.at(j);
-            share_multiplication_100 *= share_input_100.at(j);
-          }
-
-          //auto share_output_1 = share_multiplication_1.Out(output_owner);
-          //auto share_output_1K = share_multiplication_100.Out(output_owner);
-
-          auto share_output_1_all = share_multiplication_1.Out();
-          auto share_output_100_all = share_multiplication_100.Out();
-
-          motion_parties.at(party_id)->Run();
-          
-          /*
-          if (party_id == output_owner) {
-            T circuit_result_1 = share_output_1.As<T>();
-            T expected_result_1 = MulReduction(input_1);
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-            
-            const std::vector<T> circuit_result_100 = share_output_1K.As<std::vector<T>>();
-            const std::vector<T> expected_result_100 = std::move(RowMulReduction(input_100));
-            for (auto i = 0u; i < circuit_result_100.size(); ++i) {
-              EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
-            }
-            
-          }
-          */
-          {
-            T circuit_result_1 = share_output_1_all.As<T>();
-            T expected_result_1 = MulReduction(input_1);
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-
-            const std::vector<T> circuit_result_100 = share_output_100_all.As<std::vector<T>>();
-            const std::vector<T> expected_result_100 = std::move(RowMulReduction(input_100));
-            for (auto i = 0u; i < circuit_result_100.size(); ++i) {
-              EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
-            }
-          }
-          motion_parties.at(party_id)->Finish();
-        }));
-      }
-      for (auto& f : futures) f.get();
-    }
-  };
-  for (auto i = 0ull; i < kTestIterations; ++i) {
-    // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    template_test(static_cast<std::uint8_t>(0));
-    template_test(static_cast<std::uint16_t>(0));
-    template_test(static_cast<std::uint32_t>(0));
-    template_test(static_cast<std::uint64_t>(0));
+      this->parties_[party_id]->Finish();
+    });
   }
+  for (auto& f : futures) f.get();
 }
 
-TEST(Astra, DotProduct_1_3_parties) {
-  constexpr auto kAstra = encrypto::motion::MpcProtocol::kAstra;
-  constexpr auto kDimension = 4;
-  std::srand(0);
-  auto template_test = [](auto template_variable) {
-    using T = decltype(template_variable);
-    for (auto number_of_parties : {3u}) {
-      std::size_t output_owner = std::rand() % number_of_parties;
-      std::vector<std::vector<T>> input_1(number_of_parties);
-      for(auto& v : input_1) {
-        v = ::RandomVector<T>(kDimension);
+TYPED_TEST(AstraTest, DotPdoruct) {
+  this->GenerateDotProductInputs();
+  this->ShareDotProductInputs();
+  std::array<std::future<void>, 3> futures;
+  for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+    futures[party_id] = std::async([this, party_id]() {
+      auto share_dp_single = mo::DotProduct(this->shared_dot_product_inputs_single_[party_id][0],
+                                            this->shared_dot_product_inputs_single_[party_id][1]);
+      auto share_dp_simd = mo::DotProduct(this->shared_dot_product_inputs_simd_[party_id][0],
+                                          this->shared_dot_product_inputs_simd_[party_id][1]);
+
+      auto share_output_single_all = share_dp_single.Out();
+      auto share_output_simd_all = share_dp_simd.Out();
+
+      this->parties_[party_id]->Run();
+
+      {
+        TypeParam circuit_result_single = share_output_single_all.template As<TypeParam>();
+        TypeParam expected_result_single = mo::DotProduct<TypeParam>(
+            this->inputs_dot_product_single_[0], this->inputs_dot_product_single_[1]);
+        EXPECT_EQ(circuit_result_single, expected_result_single);
+
+        const std::vector<TypeParam> circuit_result_simd =
+            share_output_simd_all.template As<std::vector<TypeParam>>();
+        const std::vector<TypeParam> expected_result_simd = std::move(mo::RowDotProduct<TypeParam>(
+            this->inputs_dot_product_simd_[0], this->inputs_dot_product_simd_[1]));
+        EXPECT_EQ(circuit_result_simd, expected_result_simd);
       }
-      std::vector<std::vector<T>> extra_input_1(number_of_parties - 2);
-      for(auto& v : extra_input_1) {
-        v = ::RandomVector<T>(kDimension - 1);
-      }
-      std::vector<PartyPointer> motion_parties(
-          std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
-      for (auto& party : motion_parties) {
-        party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-        party->GetConfiguration()->SetOnlineAfterSetup(rand_val() % 2 == 1);
-      }
-      std::vector<std::future<void>> futures;
-      for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-        futures.emplace_back(std::async(std::launch::async, [party_id, output_owner,
-                                                             number_of_parties, &motion_parties,
-                                                             input_1, extra_input_1] {
-          std::vector<std::vector<encrypto::motion::ShareWrapper>> share_input_1(number_of_parties);
-          for (auto i = 0u; i != number_of_parties; ++i) {
-            std::vector<T> const& my_input_1 = input_1.at(i);
-            for(auto j = 0u; j != kDimension; ++j) {
-              share_input_1.at(i).push_back(motion_parties.at(party_id)->In<kAstra>(my_input_1.at(j), i));
-            }
-          }
-
-          auto share_dot_product_1 = encrypto::motion::DotProduct(share_input_1.at(0), share_input_1.at(1));
-
-          for (auto j = 2u; j < number_of_parties; ++j) {
-            std::vector<encrypto::motion::ShareWrapper> d;
-            d.push_back(share_dot_product_1);
-            for(auto e : extra_input_1.at(j - 2)) {
-              d.push_back(motion_parties.at(party_id)->In<kAstra>(e, 0));
-            }
-            share_dot_product_1 = encrypto::motion::DotProduct(d, share_input_1.at(j));
-          }
-
-
-          auto share_output_1_all = share_dot_product_1.Out();
-
-          motion_parties.at(party_id)->Run();
-          
-          {
-            T circuit_result_1 = share_output_1_all.As<T>();
-            auto dot_product = [](std::vector<T> const& a, std::vector<T> const& b) {
-              T result = 0;
-              for(auto i = 0u; i != a.size(); ++i) {
-                result += a[i] * b[i];
-              }
-              return result;
-            };
-            T expected_result_1 = dot_product(input_1.at(0), input_1.at(1));
-            for(auto j = 2u; j < number_of_parties; ++j) {
-              std::vector<T> d;
-              d.push_back(expected_result_1);
-              for(auto e : extra_input_1.at(j - 2)) {
-                d.push_back(e);
-              }
-              expected_result_1 = dot_product(d, input_1.at(j));
-            }
-            EXPECT_EQ(circuit_result_1, expected_result_1);
-          }
-          motion_parties.at(party_id)->Finish();
-        }));
-      }
-      for (auto& f : futures) f.get();
-    }
-  };
-  for (auto i = 0ull; i < kTestIterations; ++i) {
-    // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    template_test(static_cast<std::uint8_t>(0));
-    template_test(static_cast<std::uint16_t>(0));
-    template_test(static_cast<std::uint32_t>(0));
-    template_test(static_cast<std::uint64_t>(0));
+      this->parties_[party_id]->Finish();
+    });
   }
+  for (auto& f : futures) f.get();
 }
