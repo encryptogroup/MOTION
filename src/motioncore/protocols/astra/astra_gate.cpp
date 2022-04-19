@@ -332,7 +332,7 @@ void InputGate<T>::EvaluateOnline() {
       buffer.at(i) = v.value;
     }
     
-    auto payload = ToByteVector(buffer);
+    auto payload = ToByteVector<T>(buffer);
     auto message = communication::BuildAstraInputMessage(gate_id_, payload);
     communication_layer.BroadcastMessage(std::move(message)); 
   }
@@ -384,9 +384,6 @@ OutputGate<T>::OutputGate(const astra::WirePointer<T>& parent, std::size_t outpu
   gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
   
-  RegisterWaitingFor(parent_.at(0)->GetWireId());
-  parent_.at(0)->RegisterWaitingGate(gate_id_);
-  
   std::vector<Data<T>> v(parent->GetNumberOfSimdValues());
   auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
@@ -433,7 +430,7 @@ void OutputGate<T>::EvaluateOnline() {
       for(auto i = 0u; i != message_lambda1s.size(); ++i) {
         message_lambda1s.at(i) = in_values.at(i).lambda1;
       }
-      auto payload = ToByteVector(message_lambda1s);
+      auto payload = ToByteVector<T>(message_lambda1s);
       auto message = communication::BuildAstraOutputMessage(gate_id_, payload);
       communication_layer.SendMessage(2, std::move(message));
         
@@ -450,7 +447,7 @@ void OutputGate<T>::EvaluateOnline() {
       for(auto i = 0u; i != message_values.size(); ++i) {
         message_values.at(i) = in_values.at(i).value;
       }
-      auto payload = ToByteVector(message_values);
+      auto payload = ToByteVector<T>(message_values);
       auto message = communication::BuildAstraOutputMessage(gate_id_, payload);
       communication_layer.SendMessage(0, std::move(message));
         
@@ -467,7 +464,7 @@ void OutputGate<T>::EvaluateOnline() {
       for(auto i = 0u; i != message_lambda2s.size(); ++i) {
         message_lambda2s.at(i) = in_values.at(i).lambda2;
       }
-      auto payload = ToByteVector(message_lambda2s);
+      auto payload = ToByteVector<T>(message_lambda2s);
       auto message = communication::BuildAstraOutputMessage(gate_id_, payload);
       communication_layer.SendMessage(1, std::move(message));
         
@@ -515,11 +512,6 @@ AdditionGate<T>::AdditionGate(const astra::WirePointer<T>& a, const astra::WireP
   requires_online_interaction_ = false;
   gate_type_ = GateType::kNonInteractive;
   gate_id_ = GetRegister().NextGateId();
-  
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
   
   std::vector<Data<T>> v(parent_a_.at(0)->GetNumberOfSimdValues());
   auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
@@ -650,11 +642,6 @@ SubtractionGate<T>::SubtractionGate(const astra::WirePointer<T>& a, const astra:
   gate_type_ = GateType::kNonInteractive;
   gate_id_ = GetRegister().NextGateId();
   
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
-  
   std::vector<Data<T>> v(parent_a_.at(0)->GetNumberOfSimdValues());
   auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
@@ -782,11 +769,6 @@ MultiplicationGate<T>::MultiplicationGate(const astra::WirePointer<T>& a, const 
   gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
   
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
-  
   std::vector<Data<T>> v(parent_a_.at(0)->GetNumberOfSimdValues());
   auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
   GetRegister().RegisterNextWire(w);
@@ -856,7 +838,7 @@ void MultiplicationGate<T>::EvaluateSetup() {
       }
       assert(message_gamma_ab_2.size() == out_values.size());
       
-      auto payload = ToByteVector(message_gamma_ab_2);
+      auto payload = ToByteVector<T>(message_gamma_ab_2);
       auto message = communication::BuildAstraSetupMultiplyMessage(gate_id_, payload);
       communication_layer.SendMessage(2, std::move(message));
       break;
@@ -942,7 +924,7 @@ void MultiplicationGate<T>::EvaluateOnline() {
         }
         assert(message_values.size() == out_values.size());
         
-        auto payload = ToByteVector(message_values);
+        auto payload = ToByteVector<T>(message_values);
         auto message = communication::BuildAstraOnlineMultiplyMessage(gate_id_, payload);
         communication_layer.SendMessage(2, std::move(message));
         
@@ -971,7 +953,7 @@ void MultiplicationGate<T>::EvaluateOnline() {
         }
         assert(message_values.size() == out_values.size());
         
-        auto payload = ToByteVector(message_values);
+        auto payload = ToByteVector<T>(message_values);
         auto message = communication::BuildAstraOnlineMultiplyMessage(gate_id_, payload);
         communication_layer.SendMessage(1, std::move(message));
         
@@ -1013,19 +995,8 @@ DotProductGate<T>::DotProductGate(std::vector<motion::WirePointer> vector_a, std
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
-  
+
   auto number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
-  for(auto&& pa : parent_a_) {
-    assert(pa->GetNumberOfSimdValues() == number_of_simd_values);
-    RegisterWaitingFor(pa->GetWireId());
-    pa->RegisterWaitingGate(gate_id_);
-  }
-  
-  for(auto&& pb : parent_b_) {
-    assert(pb->GetNumberOfSimdValues() == number_of_simd_values);
-    RegisterWaitingFor(pb->GetWireId());
-    pb->RegisterWaitingGate(gate_id_);
-  }
   
   std::vector<Data<T>> v(number_of_simd_values);
   auto w = std::make_shared<astra::Wire<T>>(backend_, std::move(v));
@@ -1096,7 +1067,7 @@ void DotProductGate<T>::EvaluateSetup() {
       }
       assert(message_gamma_ab_2.size() == out_values.size());
         
-      auto payload = ToByteVector(message_gamma_ab_2);
+      auto payload = ToByteVector<T>(message_gamma_ab_2);
       auto message = communication::BuildAstraSetupDotProductMessage(gate_id_, payload);
       communication_layer.SendMessage(2, std::move(message));
       break;
@@ -1146,7 +1117,7 @@ void DotProductGate<T>::EvaluateOnline() {
   WaitSetup();
   assert(setup_is_ready_);
     
-using namespace std::literals;
+//using namespace std::literals;
   
   for(auto i = 0u; i != parent_a_.size(); ++i) {
     parent_a_.at(i)->GetIsReadyCondition().Wait();
@@ -1193,7 +1164,7 @@ using namespace std::literals;
     }
     assert(message_values.size() == out_values.size());
     
-    auto payload = ToByteVector(message_values);
+    auto payload = ToByteVector<T>(message_values);
     auto message = communication::BuildAstraOnlineDotProductMessage(gate_id_, payload);
     
     switch(my_id) {

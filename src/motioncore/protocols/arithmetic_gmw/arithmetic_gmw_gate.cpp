@@ -25,8 +25,9 @@
 #include "arithmetic_gmw_gate.h"
 
 #include <flatbuffers/flatbuffers.h>
+#include <cmath>
 #include <fmt/format.h>
-#include <math.h>
+#include <span>
 
 #include "base/backend.h"
 #include "base/register.h"
@@ -275,7 +276,8 @@ void OutputGate<T>::EvaluateOnline() {
       const auto output_message = output_message_futures_.at(i > my_id ? i - 1 : i).get();
       auto message = communication::GetMessage(output_message.data());
 
-      shared_outputs.push_back(FromByteVector<T>(*message->payload()));
+      const auto& fb_vector{*output_message_pointer->wires()->Get(0)->payload()};
+      shared_outputs.push_back(FromByteVector<T>(std::span(fb_vector.Data(), fb_vector.size())));
       assert(shared_outputs[i].size() == parent_[0]->GetNumberOfSimdValues());
     }
 
@@ -373,7 +375,7 @@ void AdditionGate<T>::EvaluateOnline() {
   assert(wire_b);
 
   std::vector<T> output;
-  output = RestrictAddVectors(wire_a->GetValues(), wire_b->GetValues());
+  output = RestrictAddVectors<T>(wire_a->GetValues(), wire_b->GetValues());
 
   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
   arithmetic_wire->GetMutableValues() = std::move(output);
@@ -440,7 +442,7 @@ void SubtractionGate<T>::EvaluateOnline() {
   assert(wire_a);
   assert(wire_b);
 
-  std::vector<T> output = SubVectors(wire_a->GetValues(), wire_b->GetValues());
+  std::vector<T> output = SubVectors<T>(wire_a->GetValues(), wire_b->GetValues());
 
   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
   arithmetic_wire->GetMutableValues() = std::move(output);
