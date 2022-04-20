@@ -91,7 +91,7 @@ TEST(BitMatrix, Transpose128) {
 }
  */
 
-TEST(BitMatrix, Transpose128InPlaceOnRawPointers) {
+TEST(BitMatrix, DISABLED_Transpose128InPlaceOnRawPointers) {
   constexpr std::size_t kM = 128;
   constexpr auto kBitsInBlock = kM * kM;
   for (auto test_iterations = 0ull; test_iterations < kTestIterations; ++test_iterations) {
