@@ -32,10 +32,20 @@ ConstantBooleanInputGate::ConstantBooleanInputGate(std::vector<BitVector<>>&& v,
     : Gate(backend) {
   assert(output_wires_.empty());
   output_wires_.reserve(v.size());
-  for (std::size_t i = 0; i < v.size(); ++i) {
-    output_wires_.emplace_back(std::make_shared<ConstantBooleanWire>(std::move(v[i]), backend));
+
+  gate_id_ = GetRegister().NextGateId();
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Created a ConstantBooleanInputGate with global id {}", gate_id_));
   }
-  InitializationHelper();
+
+  for (const auto& i : v) {
+    output_wires_.emplace_back(GetRegister().EmplaceWire<ConstantBooleanWire>(i, backend));
+  }
+
+  auto gate_info = fmt::format("gate id {}", gate_id_);
+  GetLogger().LogDebug(
+      fmt::format("Allocated a ConstantBooleanInputGate with following properties: {}", gate_info));
 }
 
 ConstantBooleanInputGate::ConstantBooleanInputGate(const std::vector<BitVector<>>& v,
@@ -43,20 +53,16 @@ ConstantBooleanInputGate::ConstantBooleanInputGate(const std::vector<BitVector<>
     : Gate(backend) {
   assert(output_wires_.empty());
   output_wires_.reserve(v.size());
-  for (std::size_t i = 0; i < v.size(); ++i) {
-    output_wires_.emplace_back(std::make_shared<ConstantBooleanWire>(v[i], backend));
-  }
-  InitializationHelper();
-}
 
-void ConstantBooleanInputGate::InitializationHelper() {
   gate_id_ = GetRegister().NextGateId();
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
         fmt::format("Created a ConstantBooleanInputGate with global id {}", gate_id_));
   }
 
-  for (auto& w : output_wires_) GetRegister().RegisterNextWire(w);
+  for (const auto& i : v) {
+    output_wires_.emplace_back(GetRegister().EmplaceWire<ConstantBooleanWire>(i, backend));
+  }
 
   auto gate_info = fmt::format("gate id {}", gate_id_);
   GetLogger().LogDebug(
@@ -72,16 +78,40 @@ ConstantArithmeticInputGate<T>::ConstantArithmeticInputGate(const std::vector<T>
                                                             Backend& backend)
     : Gate(backend) {
   assert(output_wires_.empty());
-  output_wires_.emplace_back(std::make_shared<ConstantArithmeticWire<T>>(v, backend));
-  InitializationHelper();
+  static_assert(!std::is_same_v<T, bool>);
+
+  gate_id_ = GetRegister().NextGateId();
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Created a ConstantArithmeticInputGate with global id {}", gate_id_));
+  }
+
+  output_wires_.emplace_back(
+      GetRegister().template EmplaceWire<ConstantArithmeticWire<T>>(v, backend));
+
+  auto gate_info = fmt::format("uint{}_t type, gate id {}", sizeof(T) * 8, gate_id_);
+  GetLogger().LogDebug(fmt::format(
+      "Allocated a ConstantArithmeticInputGate with following properties: {}", gate_info));
 }
 
 template <typename T>
 ConstantArithmeticInputGate<T>::ConstantArithmeticInputGate(std::vector<T>&& v, Backend& backend)
     : Gate(backend) {
   assert(output_wires_.empty());
-  output_wires_.emplace_back(std::make_shared<ConstantArithmeticWire<T>>(std::move(v), backend));
-  InitializationHelper();
+  static_assert(!std::is_same_v<T, bool>);
+
+  gate_id_ = GetRegister().NextGateId();
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Created a ConstantArithmeticInputGate with global id {}", gate_id_));
+  }
+
+  output_wires_.emplace_back(
+      GetRegister().template EmplaceWire<ConstantArithmeticWire<T>>(v, backend));
+
+  auto gate_info = fmt::format("uint{}_t type, gate id {}", sizeof(T) * 8, gate_id_);
+  GetLogger().LogDebug(fmt::format(
+      "Allocated a ConstantArithmeticInputGate with following properties: {}", gate_info));
 }
 
 template <typename T>

@@ -168,16 +168,15 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   SharePointer ConstantArithmeticGmwInput(const std::vector<T>& input_vector) {
-    auto input_gate = std::make_shared<proto::ConstantArithmeticInputGate<T>>(input_vector, *this);
-    RegisterGate(input_gate);
+    auto input_gate =
+        register_->EmplaceGate<proto::ConstantArithmeticInputGate<T>>(input_vector, *this);
     return std::static_pointer_cast<Share>(input_gate->GetOutputAsShare());
   }
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   SharePointer ConstantArithmeticGmwInput(std::vector<T>&& input_vector) {
     auto input_gate =
-        std::make_shared<proto::ConstantArithmeticInputGate<T>>(std::move(input_vector), *this);
-    RegisterGate(input_gate);
+        register_->EmplaceGate<proto::ConstantArithmeticInputGate<T>>(input_vector, *this);
     return std::static_pointer_cast<Share>(input_gate->GetOutputAsShare());
   }
 

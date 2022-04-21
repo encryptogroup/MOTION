@@ -282,9 +282,7 @@ SecureUnsignedInteger SecureUnsignedInteger::Subset(std::vector<size_t>&& positi
 }
 
 std::vector<SecureUnsignedInteger> SecureUnsignedInteger::Unsimdify() const {
-  auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_->Get());
-  auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);
-  share_->Get()->GetRegister()->RegisterNextGate(unsimdify_gate_cast);
+  auto unsimdify_gate = share_->Get()->GetRegister()->EmplaceGate<UnsimdifyGate>(share_->Get());
   std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
   std::vector<SecureUnsignedInteger> result(shares.size());
   std::transform(shares.begin(), shares.end(), result.begin(),

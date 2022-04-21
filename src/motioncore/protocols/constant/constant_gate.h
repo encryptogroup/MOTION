@@ -58,8 +58,6 @@ class ConstantBooleanInputGate final : public Gate {
 
   ~ConstantBooleanInputGate() final = default;
 
-  void InitializationHelper();
-
   void EvaluateSetup() final override {}
 
   void EvaluateOnline() final override {}
@@ -80,22 +78,6 @@ class ConstantArithmeticInputGate final : public Gate {
   ConstantArithmeticInputGate(std::vector<T>&& v, Backend& backend);
 
   ~ConstantArithmeticInputGate() final = default;
-
-  void InitializationHelper() {
-    static_assert(!std::is_same_v<T, bool>);
-
-    gate_id_ = GetRegister().NextGateId();
-    if constexpr (kVerboseDebug) {
-      GetLogger().LogTrace(
-          fmt::format("Created a ConstantArithmeticInputGate with global id {}", gate_id_));
-    }
-
-    for (auto& w : output_wires_) GetRegister().RegisterNextWire(w);
-
-    auto gate_info = fmt::format("uint{}_t type, gate id {}", sizeof(T) * 8, gate_id_);
-    GetLogger().LogDebug(fmt::format(
-        "Allocated a ConstantArithmeticInputGate with following properties: {}", gate_info));
-  }
 
   void EvaluateSetup() final override {}
 
@@ -140,8 +122,8 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
     {
-      auto w = std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues());
-      GetRegister().RegisterNextWire(w);
+      auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+          backend_, a->GetNumberOfSimdValues());
       output_wires_ = {std::move(w)};
     }
 
@@ -235,8 +217,8 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
     {
-      auto w = std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues());
-      GetRegister().RegisterNextWire(w);
+      auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+          backend_, a->GetNumberOfSimdValues());
       output_wires_ = {std::move(w)};
     }
 

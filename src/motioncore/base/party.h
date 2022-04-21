@@ -239,8 +239,8 @@ class Party {
         encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
 
         encrypto::motion::WirePointer wire =
-            std::make_shared<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(input, *backend_);
-        register_pointer->RegisterNextWire(wire);
+            register_pointer->EmplaceWire<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
+                input, *backend_);
         wire->SetOnlineFinished();
 
         return std::make_shared<encrypto::motion::proto::arithmetic_gmw::Share<T>>(wire);
@@ -263,7 +263,7 @@ class Party {
   }
 
   template <MpcProtocol P, typename T = std::uint8_t,
-      typename = std::enable_if_t<std::is_unsigned_v<T>>>
+            typename = std::enable_if_t<std::is_unsigned_v<T>>>
   SharePointer SharedIn(const std::vector<T>& input) {
     switch (P) {
       case MpcProtocol::kArithmeticConstant: {
@@ -273,8 +273,8 @@ class Party {
         encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
 
         encrypto::motion::WirePointer wire =
-            std::make_shared<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(input, *backend_);
-        register_pointer->RegisterNextWire(wire);
+            register_pointer->EmplaceWire<encrypto::motion::proto::arithmetic_gmw::Wire<T>>(
+                input, *backend_);
         wire->SetOnlineFinished();
 
         return std::make_shared<encrypto::motion::proto::arithmetic_gmw::Share<T>>(wire);
@@ -310,9 +310,8 @@ class Party {
         encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
 
         for (std::size_t i = 0; i < wires.size(); i++) {
-          wires[i] =
-              std::make_shared<encrypto::motion::proto::boolean_gmw::Wire>(input[i], *backend_);
-          register_pointer->RegisterNextWire(wires[i]);
+          wires[i] = register_pointer->EmplaceWire<encrypto::motion::proto::boolean_gmw::Wire>(
+              input[i], *backend_);
           wires[i]->SetOnlineFinished();
         }
 

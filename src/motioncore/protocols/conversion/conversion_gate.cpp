@@ -64,11 +64,10 @@ BmrToBooleanGmwGate::BmrToBooleanGmwGate(const SharePointer& parent)
   // create output wires
   auto number_of_wires = parent_.size();
   output_wires_.reserve(number_of_wires);
+
   for (size_t i = 0; i < number_of_wires; ++i) {
-    auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-        std::make_shared<proto::boolean_gmw::Wire>(backend_, parent->GetNumberOfSimdValues())));
-    assert(w);
-    GetRegister().RegisterNextWire(w);
+    output_wires_.emplace_back(GetRegister().EmplaceWire<proto::boolean_gmw::Wire>(
+        backend_, parent->GetNumberOfSimdValues()));
   }
 
   if constexpr (kDebug) {
@@ -150,8 +149,7 @@ BooleanGmwToBmrGate::BooleanGmwToBmrGate(const SharePointer& parent)
 
   output_wires_.resize(parent_.size());
   for (auto& w : output_wires_) {
-    w = std::make_shared<proto::bmr::Wire>(backend_, parent->GetNumberOfSimdValues());
-    GetRegister().RegisterNextWire(w);
+    w = GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, number_of_simd);
   }
 
   assert(gate_id_ >= 0);
@@ -346,10 +344,9 @@ ArithmeticGmwToBmrGate::ArithmeticGmwToBmrGate(const SharePointer& parent)
   std::vector<SecureUnsignedInteger> shares;
   shares.reserve(number_of_parties);
   // each party re-shares its arithmetic GMW share in BMR
-  for (auto party_id = 0ull; party_id < number_of_parties; ++party_id) {
-    const auto input_gate =
-        std::make_shared<proto::bmr::InputGate>(number_of_simd, bitlength, party_id, backend_);
-    GetRegister().RegisterNextInputGate(input_gate);
+  for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
+    const auto input_gate = GetRegister().EmplaceGate<proto::bmr::InputGate>(
+        number_of_simd, bitlength, party_id, backend_);
     // the party owning the share takes the input promise to assign its input when the parent wires
     // are online-ready
     if (party_id == my_id) input_promise_ = &input_gate->GetInputPromise();

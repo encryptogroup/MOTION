@@ -54,11 +54,10 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
           fmt::format("Input share in UnsimdifyGate#{} has no wires", gate_id_));
     }
   }
-  const std::size_t number_of_simd{parent_[0]->GetNumberOfSimdValues()};
   const MpcProtocol protocol{parent_[0]->GetProtocol()};
   if constexpr (kDebug) {
     for (std::size_t i = 1; i < parent_.size(); ++i) {
-      if (parent_[i]->GetNumberOfSimdValues() != number_of_simd) {
+      if (parent_[i]->GetNumberOfSimdValues() != parent_[0]->GetNumberOfSimdValues()) {
         throw std::invalid_argument(fmt::format(
             "Input wires have different numbers of SIMD values in UnsimdifyGate#{}", GetId()));
       }
@@ -81,39 +80,34 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
   }
 
   // Register output wires.
-  const std::size_t input_number_of_simd_values{parent_[0]->GetNumberOfSimdValues()};
-  const std::size_t number_of_output_wires{parent_.size() * input_number_of_simd_values};
+  const std::size_t number_of_output_wires{parent_.size() * parent_[0]->GetNumberOfSimdValues()};
   output_wires_.reserve(number_of_output_wires);
   for (size_t i = 0; i < number_of_output_wires; ++i) {
     switch (protocol) {
       case encrypto::motion::MpcProtocol::kArithmeticConstant: {
         switch (parent_[0]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint8_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint8_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint16_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint16_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint32_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint32_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint64_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint64_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           default:
@@ -126,31 +120,27 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
       case encrypto::motion::MpcProtocol::kArithmeticGmw: {
         switch (parent_[0]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint8_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint8_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint16_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint16_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint32_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint32_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint64_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint64_t>>(
+                    backend_, std::size_t(1)));
             break;
           }
           default:
@@ -161,24 +151,18 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
         break;
       }
       case encrypto::motion::MpcProtocol::kBmr: {
-        auto& w = output_wires_.emplace_back(
-            std::static_pointer_cast<Wire>(std::make_shared<proto::bmr::Wire>(backend_, 1)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, std::size_t(1)));
         break;
       }
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::ConstantBooleanWire>(backend_, 1)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::ConstantBooleanWire>(backend_, std::size_t(1)));
         break;
       }
       case encrypto::motion::MpcProtocol::kBooleanGmw: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::boolean_gmw::Wire>(backend_, 1)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::boolean_gmw::Wire>(backend_, std::size_t(1)));
         break;
       }
       default:
@@ -193,14 +177,12 @@ void UnsimdifyGate::EvaluateSetup() {
         fmt::format("Nothing to do in the setup phase of UnsimdifyGate with id#{}", gate_id_));
   }
 
-  const std::size_t input_number_of_simd{parent_[0]->GetNumberOfSimdValues()};
-
   if (parent_[0]->GetProtocol() == MpcProtocol::kBmr) {
     for (std::size_t i = 0; i < parent_.size(); ++i) {
       auto in = std::dynamic_pointer_cast<proto::bmr::Wire>(parent_[i]);
       assert(in);
       in->GetSetupReadyCondition()->Wait();
-      for (std::size_t j = 0; j < input_number_of_simd; ++j) {
+      for (std::size_t j = 0; j < parent_[0]->GetNumberOfSimdValues(); ++j) {
         auto out =
             std::dynamic_pointer_cast<proto::bmr::Wire>(output_wires_[j * parent_.size() + i]);
         assert(out);
@@ -350,9 +332,9 @@ void UnsimdifyGate::EvaluateOnline() {
 }
 
 std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {
-  const std::size_t input_number_of_simd = parent_[0]->GetNumberOfSimdValues();
-  std::vector<encrypto::motion::SharePointer> result(input_number_of_simd);
-  for (std::size_t i = 0; i < input_number_of_simd; ++i) {
+  std::vector<encrypto::motion::SharePointer> result(parent_[0]->GetNumberOfSimdValues());
+
+  for (std::size_t i = 0; i < parent_[0]->GetNumberOfSimdValues(); ++i) {
     encrypto::motion::SharePointer share{nullptr};
     std::vector<encrypto::motion::WirePointer> output_wires(
         output_wires_.begin() + parent_.size() * i,

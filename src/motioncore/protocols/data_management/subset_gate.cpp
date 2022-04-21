@@ -88,41 +88,32 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
   // Register output wires.
   const std::size_t number_of_wires{parent_.size()};
   output_wires_.reserve(number_of_wires);
-  const std::size_t output_number_of_simd_values{position_ids_.size()};
   for (size_t i = 0; i < number_of_wires; ++i) {
     switch (protocol) {
       case encrypto::motion::MpcProtocol::kArithmeticConstant: {
         switch (parent_[i]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint8_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint8_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint16_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint16_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint32_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint32_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint64_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint64_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           default:
@@ -135,35 +126,27 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
       case encrypto::motion::MpcProtocol::kArithmeticGmw: {
         switch (parent_[i]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint8_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint8_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint16_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint16_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint32_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint32_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint64_t>>(
-                    backend_, output_number_of_simd_values)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint64_t>>(
+                    backend_, position_ids_.size()));
             break;
           }
           default:
@@ -174,24 +157,18 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
         break;
       }
       case encrypto::motion::MpcProtocol::kBmr: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::bmr::Wire>(backend_, output_number_of_simd_values)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, position_ids_.size()));
         break;
       }
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::ConstantBooleanWire>(backend_, output_number_of_simd_values)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::ConstantBooleanWire>(backend_, position_ids_.size()));
         break;
       }
       case encrypto::motion::MpcProtocol::kBooleanGmw: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::boolean_gmw::Wire>(backend_, output_number_of_simd_values)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::boolean_gmw::Wire>(backend_, position_ids_.size()));
         break;
       }
       default:

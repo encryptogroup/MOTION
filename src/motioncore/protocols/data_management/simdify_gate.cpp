@@ -99,35 +99,27 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
       case encrypto::motion::MpcProtocol::kArithmeticConstant: {
         switch (parent_[0]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint8_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint8_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint16_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint16_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint32_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint32_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::ConstantArithmeticWire<std::uint64_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<std::uint64_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           default:
@@ -140,35 +132,27 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
       case encrypto::motion::MpcProtocol::kArithmeticGmw: {
         switch (parent_[0]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint8_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint8_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint16_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint16_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint32_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint32_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::arithmetic_gmw::Wire<std::uint64_t>>(
-                    backend_, output_number_of_simd_values_)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<std::uint64_t>>(
+                    backend_, output_number_of_simd_values_));
             break;
           }
           default:
@@ -179,24 +163,18 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
         break;
       }
       case encrypto::motion::MpcProtocol::kBmr: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::bmr::Wire>(backend_, output_number_of_simd_values_)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, output_number_of_simd_values_));
         break;
       }
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::ConstantBooleanWire>(backend_, output_number_of_simd_values_)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(GetRegister().EmplaceWire<proto::ConstantBooleanWire>(
+            backend_, output_number_of_simd_values_));
         break;
       }
       case encrypto::motion::MpcProtocol::kBooleanGmw: {
-        auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-            std::make_shared<proto::boolean_gmw::Wire>(backend_, output_number_of_simd_values_)));
-        assert(w);
-        GetRegister().RegisterNextWire(w);
+        output_wires_.emplace_back(GetRegister().EmplaceWire<proto::boolean_gmw::Wire>(
+            backend_, output_number_of_simd_values_));
         break;
       }
       default:

@@ -57,21 +57,18 @@ class GmwToArithmeticGate final : public OneGate {
     gate_type_ = GateType::kInteractive;
 
     // create the output wire
-    output_wires_.emplace_back(
-        std::make_shared<proto::arithmetic_gmw::Wire<T>>(backend_, number_of_simd));
-    GetRegister().RegisterNextWire(output_wires_.at(0));
+    output_wires_.emplace_back(GetRegister().template EmplaceWire<proto::arithmetic_gmw::Wire<T>>(
+        backend_, number_of_simd));
 
     std::vector<WirePointer> dummy_wires;
     dummy_wires.reserve(number_of_simd);
     for (std::size_t i = 0; i < bit_size; ++i) {
-      auto w = std::make_shared<proto::boolean_gmw::Wire>(backend_, number_of_simd);
-      GetRegister().RegisterNextWire(w);
-      dummy_wires.emplace_back(std::move(w));
+      dummy_wires.emplace_back(
+          GetRegister().template EmplaceWire<proto::boolean_gmw::Wire>(backend_, number_of_simd));
     }
     ts_ = std::make_shared<proto::boolean_gmw::Share>(dummy_wires);
     // also create an output gate for the ts
-    ts_output_ = std::make_shared<proto::boolean_gmw::OutputGate>(ts_);
-    GetRegister().RegisterNextGate(ts_output_);
+    ts_output_ = GetRegister().template EmplaceGate<proto::boolean_gmw::OutputGate>(ts_);
 
     // register the required number of shared bits
     number_of_sbs_ = number_of_simd * bit_size;

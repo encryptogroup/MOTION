@@ -86,10 +86,10 @@ void InputGate::InitializationHelper() {
   gate_id_ = GetRegister().NextGateId();
 
   output_wires_.reserve(bit_size_);
-  for (std::size_t i = 0; i < bit_size_; ++i)
-    output_wires_.emplace_back(std::make_shared<bmr::Wire>(backend_, number_of_simd_));
-
-  for (auto& w : output_wires_) GetRegister().RegisterNextWire(w);
+  for (std::size_t i = 0; i < bit_size_; ++i) {
+    output_wires_.emplace_back(
+        GetRegister().template EmplaceWire<bmr::Wire>(backend_, number_of_simd_));
+  }
 
   const auto my_id = GetCommunicationLayer().GetMyId();
 
@@ -361,13 +361,12 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   assert(!dummy_bitvector.Empty());
 
   for (auto& w : gmw_wires) {
-    w = std::make_shared<boolean_gmw::Wire>(dummy_bitvector, backend_);
-    GetRegister().RegisterNextWire(w);
+    w = GetRegister().EmplaceWire<boolean_gmw::Wire>(dummy_bitvector, backend_);
   }
 
   gmw_output_share_ = std::make_shared<boolean_gmw::Share>(gmw_wires);
-  output_gate_ = std::make_shared<boolean_gmw::OutputGate>(gmw_output_share_, output_owner_);
-  GetRegister().RegisterNextGate(output_gate_);
+  output_gate_ =
+      GetRegister().EmplaceGate<boolean_gmw::OutputGate>(gmw_output_share_, output_owner_);
 
   gate_id_ = GetRegister().NextGateId();
 
@@ -382,11 +381,8 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   const std::size_t number_of_simd{parent_[0]->GetNumberOfSimdValues()};
   assert(!output_.empty());
   for (auto& wire : output_wires_) {
-    wire = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<bmr::Wire>(backend_, number_of_simd));
+    wire = GetRegister().EmplaceWire<bmr::Wire>(backend_, number_of_simd);
   }
-
-  for (auto& wire : output_wires_) GetRegister().RegisterNextWire(wire);
 
   if constexpr (kDebug) {
     auto gate_info =
@@ -487,8 +483,7 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   output_wires_.resize(parent_a_.size());
   const motion::BitVector tmp_bv(a->GetNumberOfSimdValues());
   for (auto& w : output_wires_) {
-    w = std::make_shared<bmr::Wire>(tmp_bv, backend_);
-    GetRegister().RegisterNextWire(w);
+    w = GetRegister().EmplaceWire<bmr::Wire>(tmp_bv, backend_);
   }
 
   if constexpr (kDebug) {
@@ -598,8 +593,7 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   output_wires_.resize(parent_.size());
   const motion::BitVector tmp_bv(parent->GetNumberOfSimdValues());
   for (auto& w : output_wires_) {
-    w = std::make_shared<bmr::Wire>(tmp_bv, backend_);
-    GetRegister().RegisterNextWire(w);
+    w = GetRegister().EmplaceWire<bmr::Wire>(tmp_bv, backend_);
   }
 
   if constexpr (kDebug) {
@@ -730,8 +724,7 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   output_wires_.resize(number_of_wires);
   const motion::BitVector tmp_bv(number_of_simd);
   for (auto& w : output_wires_) {
-    w = std::make_shared<bmr::Wire>(tmp_bv, backend_);
-    GetRegister().RegisterNextWire(w);
+    w = GetRegister().template EmplaceWire<bmr::Wire>(tmp_bv, backend_);
   }
 
   sender_ots_1_.resize(number_of_parties);

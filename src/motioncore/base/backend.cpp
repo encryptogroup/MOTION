@@ -181,17 +181,14 @@ SharePointer Backend::BooleanGmwInput(std::size_t party_id, BitVector<>&& input)
 }
 
 SharePointer Backend::BooleanGmwInput(std::size_t party_id, std::span<const BitVector<>> input) {
-  const auto input_gate = std::make_shared<proto::boolean_gmw::InputGate>(input, party_id, *this);
-  const auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+  const auto input_gate =
+      register_->EmplaceGate<proto::boolean_gmw::InputGate>(input, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsGmwShare());
 }
 
 SharePointer Backend::BooleanGmwInput(std::size_t party_id, std::vector<BitVector<>>&& input) {
   const auto input_gate =
-      std::make_shared<proto::boolean_gmw::InputGate>(std::move(input), party_id, *this);
-  const auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+      register_->EmplaceGate<proto::boolean_gmw::InputGate>(input, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsGmwShare());
 }
 
@@ -199,8 +196,7 @@ SharePointer Backend::BooleanGmwXor(const proto::boolean_gmw::SharePointer& a,
                                     const proto::boolean_gmw::SharePointer& b) {
   assert(a);
   assert(b);
-  const auto xor_gate = std::make_shared<proto::boolean_gmw::XorGate>(a, b);
-  RegisterGate(xor_gate);
+  const auto xor_gate = register_->EmplaceGate<proto::boolean_gmw::XorGate>(a, b);
   return xor_gate->GetOutputAsShare();
 }
 
@@ -218,8 +214,7 @@ SharePointer Backend::BooleanGmwAnd(const proto::boolean_gmw::SharePointer& a,
                                     const proto::boolean_gmw::SharePointer& b) {
   assert(a);
   assert(b);
-  const auto and_gate = std::make_shared<proto::boolean_gmw::AndGate>(a, b);
-  RegisterGate(and_gate);
+  const auto and_gate = register_->EmplaceGate<proto::boolean_gmw::AndGate>(a, b);
   return and_gate->GetOutputAsShare();
 }
 
@@ -239,8 +234,7 @@ SharePointer Backend::BooleanGmwMux(const proto::boolean_gmw::SharePointer& a,
   assert(a);
   assert(b);
   assert(selection);
-  const auto mux_gate = std::make_shared<proto::boolean_gmw::MuxGate>(a, b, selection);
-  RegisterGate(mux_gate);
+  const auto mux_gate = register_->EmplaceGate<proto::boolean_gmw::MuxGate>(a, b, selection);
   return mux_gate->GetOutputAsShare();
 }
 
@@ -260,9 +254,8 @@ SharePointer Backend::BooleanGmwMux(const SharePointer& a, const SharePointer& b
 
 SharePointer Backend::BooleanGmwOutput(const SharePointer& parent, std::size_t output_owner) {
   assert(parent);
-  const auto output_gate = std::make_shared<proto::boolean_gmw::OutputGate>(parent, output_owner);
-  const auto ouput_gate_cast = std::static_pointer_cast<Gate>(output_gate);
-  RegisterGate(ouput_gate_cast);
+  const auto output_gate =
+      register_->EmplaceGate<proto::boolean_gmw::OutputGate>(parent, output_owner);
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsShare());
 }
 
@@ -279,25 +272,18 @@ SharePointer Backend::BmrInput(std::size_t party_id, BitVector<>&& input) {
 }
 
 SharePointer Backend::BmrInput(std::size_t party_id, std::span<const BitVector<>> input) {
-  const auto input_gate = std::make_shared<proto::bmr::InputGate>(input, party_id, *this);
-  const auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+  const auto input_gate = register_->EmplaceGate<proto::bmr::InputGate>(input, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsBmrShare());
 }
 
 SharePointer Backend::BmrInput(std::size_t party_id, std::vector<BitVector<>>&& input) {
-  const auto input_gate =
-      std::make_shared<proto::bmr::InputGate>(std::move(input), party_id, *this);
-  const auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+  const auto input_gate = register_->EmplaceGate<proto::bmr::InputGate>(input, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsBmrShare());
 }
 
 SharePointer Backend::BmrOutput(const SharePointer& parent, std::size_t output_owner) {
   assert(parent);
-  const auto output_gate = std::make_shared<proto::bmr::OutputGate>(parent, output_owner);
-  const auto ouput_gate_cast = std::static_pointer_cast<Gate>(output_gate);
-  RegisterGate(ouput_gate_cast);
+  const auto output_gate = register_->EmplaceGate<proto::bmr::OutputGate>(parent, output_owner);
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsShare());
 }
 
@@ -321,9 +307,7 @@ template SharePointer Backend::ArithmeticGmwInput<__uint128_t>(std::size_t party
 template <typename T>
 SharePointer Backend::ArithmeticGmwInput(std::size_t party_id, const std::vector<T>& input_vector) {
   auto input_gate =
-      std::make_shared<proto::arithmetic_gmw::InputGate<T>>(input_vector, party_id, *this);
-  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+      register_->EmplaceGate<proto::arithmetic_gmw::InputGate<T>>(input_vector, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsArithmeticShare());
 }
 
@@ -340,10 +324,8 @@ template SharePointer Backend::ArithmeticGmwInput<__uint128_t>(
 
 template <typename T>
 SharePointer Backend::ArithmeticGmwInput(std::size_t party_id, std::vector<T>&& input_vector) {
-  auto input_gate = std::make_shared<proto::arithmetic_gmw::InputGate<T>>(std::move(input_vector),
-                                                                          party_id, *this);
-  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+  auto input_gate =
+      register_->EmplaceGate<proto::arithmetic_gmw::InputGate<T>>(input_vector, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsArithmeticShare());
 }
 
@@ -362,9 +344,8 @@ template <typename T>
 SharePointer Backend::ArithmeticGmwOutput(const proto::arithmetic_gmw::SharePointer<T>& parent,
                                           std::size_t output_owner) {
   assert(parent);
-  auto output_gate = std::make_shared<proto::arithmetic_gmw::OutputGate<T>>(parent, output_owner);
-  auto out_gate_cast = std::static_pointer_cast<Gate>(output_gate);
-  RegisterGate(out_gate_cast);
+  auto output_gate =
+      register_->EmplaceGate<proto::arithmetic_gmw::OutputGate<T>>(parent, output_owner);
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsArithmeticShare());
 }
 
@@ -405,9 +386,8 @@ SharePointer Backend::ArithmeticGmwAddition(const proto::arithmetic_gmw::SharePo
   assert(b);
   auto wire_a = a->GetArithmeticWire();
   auto wire_b = b->GetArithmeticWire();
-  auto addition_gate = std::make_shared<proto::arithmetic_gmw::AdditionGate<T>>(wire_a, wire_b);
-  auto addition_gate_cast = std::static_pointer_cast<Gate>(addition_gate);
-  RegisterGate(addition_gate_cast);
+  auto addition_gate =
+      register_->EmplaceGate<proto::arithmetic_gmw::AdditionGate<T>>(wire_a, wire_b);
   return std::static_pointer_cast<Share>(addition_gate->GetOutputAsArithmeticShare());
 }
 
@@ -456,9 +436,7 @@ SharePointer Backend::ArithmeticGmwSubtraction(const proto::arithmetic_gmw::Shar
   assert(b);
   auto wire_a = a->GetArithmeticWire();
   auto wire_b = b->GetArithmeticWire();
-  auto sub_gate = std::make_shared<proto::arithmetic_gmw::SubtractionGate<T>>(wire_a, wire_b);
-  auto sub_gate_cast = std::static_pointer_cast<Gate>(sub_gate);
-  RegisterGate(sub_gate_cast);
+  auto sub_gate = register_->EmplaceGate<proto::arithmetic_gmw::SubtractionGate<T>>(wire_a, wire_b);
   return std::static_pointer_cast<Share>(sub_gate->GetOutputAsArithmeticShare());
 }
 

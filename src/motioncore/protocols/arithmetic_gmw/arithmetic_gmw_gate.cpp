@@ -65,11 +65,7 @@ void InputGate<T>::InitializationHelper() {
     GetLogger().LogTrace(
         fmt::format("Created an arithmetic_gmw::InputGate with global id {}", gate_id_));
   }
-  output_wires_ = {std::static_pointer_cast<motion::Wire>(
-      std::make_shared<arithmetic_gmw::Wire<T>>(input_, backend_))};
-  for (auto& w : output_wires_) {
-    GetRegister().RegisterNextWire(w);
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(input_, backend_)};
 
   auto gate_info =
       fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, input_owner_id_);
@@ -198,12 +194,8 @@ OutputGate<T>::OutputGate(const arithmetic_gmw::WirePointer<T>& parent, std::siz
   RegisterWaitingFor(parent_.at(0)->GetWireId());
   parent_.at(0)->RegisterWaitingGate(gate_id_);
 
-  {
-    auto w = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, parent->GetNumberOfSimdValues()));
-    GetRegister().RegisterNextWire(w);
-    output_wires_ = {std::move(w)};
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+      backend_, parent->GetNumberOfSimdValues())};
 
   // Tell the DataStorages that we want to receive OutputMessages from the
   // other parties.
@@ -355,12 +347,8 @@ AdditionGate<T>::AdditionGate(const arithmetic_gmw::WirePointer<T>& a,
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-  {
-    auto w = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues()));
-    GetRegister().RegisterNextWire(w);
-    output_wires_ = {std::move(w)};
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+      backend_, a->GetNumberOfSimdValues())};
 
   auto gate_info =
       fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
@@ -427,12 +415,8 @@ SubtractionGate<T>::SubtractionGate(const arithmetic_gmw::WirePointer<T>& a,
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-  {
-    auto w = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues()));
-    GetRegister().RegisterNextWire(w);
-    output_wires_ = {std::move(w)};
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+      backend_, a->GetNumberOfSimdValues())};
 
   auto gate_info =
       fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
@@ -491,16 +475,13 @@ MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& 
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
 
-  d_ = std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues());
-  GetRegister().RegisterNextWire(d_);
-  e_ = std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues());
-  GetRegister().RegisterNextWire(e_);
+  d_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
+                                                                   a->GetNumberOfSimdValues());
+  e_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
+                                                                   a->GetNumberOfSimdValues());
 
-  d_output_ = std::make_shared<OutputGate<T>>(d_);
-  e_output_ = std::make_shared<OutputGate<T>>(e_);
-
-  GetRegister().RegisterNextGate(d_output_);
-  GetRegister().RegisterNextGate(e_output_);
+  d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
+  e_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(e_);
 
   gate_id_ = GetRegister().NextGateId();
 
@@ -510,12 +491,8 @@ MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& 
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-  {
-    auto w = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues()));
-    GetRegister().RegisterNextWire(w);
-    output_wires_ = {std::move(w)};
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+      backend_, a->GetNumberOfSimdValues())};
 
   number_of_mts_ = parent_a_.at(0)->GetNumberOfSimdValues();
   mt_offset_ = GetMtProvider().template RequestArithmeticMts<T>(number_of_mts_);
@@ -646,21 +623,18 @@ HybridMultiplicationGate<T>::HybridMultiplicationGate(boolean_gmw::WirePointer& 
   RegisterWaitingFor(parent_b_.at(0)->GetWireId());
   parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
-  const std::size_t number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
-  {
-    auto w = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, number_of_simd_values));
-    GetRegister().RegisterNextWire(w);
-    output_wires_ = {std::move(w)};
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+      backend_, parent_a_[0]->GetNumberOfSimdValues())};
 
   const std::size_t number_of_parties{GetCommunicationLayer().GetNumberOfParties()};
   const std::size_t my_id = GetCommunicationLayer().GetMyId();
 
   for (std::size_t i = 0; i < number_of_parties; ++i) {
     if (i == my_id) continue;
-    ot_sender_ = GetOtProvider(i).template RegisterSendAcOt<T>(number_of_simd_values);
-    ot_receiver_ = GetOtProvider(i).template RegisterReceiveAcOt<T>(number_of_simd_values);
+    ot_sender_ =
+        GetOtProvider(i).template RegisterSendAcOt<T>(parent_a_[0]->GetNumberOfSimdValues());
+    ot_receiver_ =
+        GetOtProvider(i).template RegisterReceiveAcOt<T>(parent_a_[0]->GetNumberOfSimdValues());
   }
 
   auto gate_info =
@@ -711,8 +685,6 @@ void HybridMultiplicationGate<T>::EvaluateOnline() {
   ot_receiver_->SetChoices(bv);
   ot_receiver_->SendCorrections();
 
-  const std::size_t number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
-
   ot_sender_->ComputeOutputs();
   ot_receiver_->ComputeOutputs();
 
@@ -721,7 +693,7 @@ void HybridMultiplicationGate<T>::EvaluateOnline() {
   std::vector<T> ot_receiver_output{ot_receiver_->GetOutputs()};
 
   // Compute the result
-  for (std::size_t simd_i = 0; simd_i < number_of_simd_values; ++simd_i) {
+  for (std::size_t simd_i = 0; simd_i < parent_a_[0]->GetNumberOfSimdValues(); ++simd_i) {
     a_out->GetMutableValues()[simd_i] += ot_receiver_output[simd_i] - ot_sender_output[simd_i];
   }
 
@@ -750,24 +722,17 @@ SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
 
-  d_ = std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues());
-  GetRegister().RegisterNextWire(d_);
-
-  d_output_ = std::make_shared<OutputGate<T>>(d_);
-
-  GetRegister().RegisterNextGate(d_output_);
+  d_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
+                                                                   a->GetNumberOfSimdValues());
+  d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
 
   gate_id_ = GetRegister().NextGateId();
 
   RegisterWaitingFor(parent_.at(0)->GetWireId());
   parent_.at(0)->RegisterWaitingGate(gate_id_);
 
-  {
-    auto w = std::static_pointer_cast<motion::Wire>(
-        std::make_shared<arithmetic_gmw::Wire<T>>(backend_, a->GetNumberOfSimdValues()));
-    GetRegister().RegisterNextWire(w);
-    output_wires_ = {std::move(w)};
-  }
+  output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
+      backend_, a->GetNumberOfSimdValues())};
 
   number_of_sps_ = parent_.at(0)->GetNumberOfSimdValues();
   sp_offset_ = GetSpProvider().template RequestSps<T>(number_of_sps_);
@@ -794,9 +759,9 @@ void SquareGate<T>::EvaluateOnline() {
     assert(x);
     d_->GetMutableValues() = std::vector<T>(
         sps.a.begin() + sp_offset_, sps.a.begin() + sp_offset_ + x->GetNumberOfSimdValues());
-    const auto number_of_simd_values{d_->GetNumberOfSimdValues()};
     T* __restrict__ d_v{d_->GetMutableValues().data()};
     const T* __restrict__ x_v{x->GetValues().data()};
+    const auto number_of_simd_values{x->GetNumberOfSimdValues()};
     std::transform(x_v, x_v + number_of_simd_values, d_v, d_v,
                    [](const T& a, const T& b) { return a + b; });
     d_->SetOnlineFinished();
