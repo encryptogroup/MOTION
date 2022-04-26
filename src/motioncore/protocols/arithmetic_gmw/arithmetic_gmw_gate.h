@@ -183,8 +183,8 @@ class MultiplicationGate final : public motion::TwoGate {
 template <typename T>
 class HybridMultiplicationGate final : public motion::TwoGate {
  public:
-  HybridMultiplicationGate(boolean_gmw::WirePointer& bit,
-                           arithmetic_gmw::WirePointer<T>& integer);
+  HybridMultiplicationGate(const boolean_gmw::WirePointer& bit,
+                           const arithmetic_gmw::WirePointer<T>& integer);
 
   ~HybridMultiplicationGate() final = default;
 

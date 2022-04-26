@@ -601,8 +601,8 @@ template class MultiplicationGate<std::uint64_t>;
 // template class MultiplicationGate<__uint128_t>; not yet supported
 
 template <typename T>
-HybridMultiplicationGate<T>::HybridMultiplicationGate(boolean_gmw::WirePointer& bit,
-                                                      arithmetic_gmw::WirePointer<T>& integer)
+HybridMultiplicationGate<T>::HybridMultiplicationGate(const boolean_gmw::WirePointer& bit,
+                                                      const arithmetic_gmw::WirePointer<T>& integer)
     : TwoGate(bit->GetBackend()) {
   // this gate works only for two parties
   assert(GetCommunicationLayer().GetNumberOfParties() == 2);
