@@ -42,16 +42,9 @@ DummyTransport::MakeTransportPair() {
   return std::make_pair(std::move(transport_0), std::move(transport_1));
 }
 
-void DummyTransport::SendMessage(std::vector<std::uint8_t>&& message) {
+void DummyTransport::SendMessage(std::span<const std::uint8_t> message) {
   auto message_size = message.size();
-  send_queue_->enqueue(std::move(message));
-  statistics_.number_of_messages_sent += 1;
-  statistics_.number_of_bytes_sent += message_size;
-}
-
-void DummyTransport::SendMessage(const std::vector<std::uint8_t>& message) {
-  auto message_size = message.size();
-  send_queue_->enqueue(message);
+  send_queue_->enqueue(std::vector(message.begin(), message.end()));
   statistics_.number_of_messages_sent += 1;
   statistics_.number_of_bytes_sent += message_size;
 }

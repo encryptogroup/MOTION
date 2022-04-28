@@ -30,13 +30,14 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+
+#include "communication/fbs_headers/message_generated.h"
 #include "utility/bit_vector.h"
+#include "utility/reusable_future.h"
 
 namespace encrypto::motion {
 
 class FiberCondition;
-
-enum BaseOtDataType : unsigned int { kHL17R = 0, kHL17S = 1, kBaseOtInvalidDataType = 2 };
 
 struct BaseOtReceiverData {
   BaseOtReceiverData();
@@ -44,10 +45,6 @@ struct BaseOtReceiverData {
 
   BitVector<> c;  /// choice bits
   std::array<std::array<std::byte, 16>, 128> messages_c;
-
-  std::vector<std::array<std::byte, 32>> S;
-  boost::container::vector<bool> received_S;
-  std::vector<std::unique_ptr<FiberCondition>> received_S_condition;
 
   // number of used rows;
   std::size_t consumed_offset{0};
@@ -63,10 +60,6 @@ struct BaseOtSenderData {
   std::array<std::array<std::byte, 16>, 128> messages_0;
   std::array<std::array<std::byte, 16>, 128> messages_1;
 
-  std::vector<std::array<std::byte, 32>> R;
-  boost::container::vector<bool> received_R;
-  std::vector<std::unique_ptr<FiberCondition>> received_R_condition;
-
   // number of used rows;
   std::size_t consumed_offset{0};
 
@@ -75,9 +68,6 @@ struct BaseOtSenderData {
 };
 
 struct BaseOtData {
-  void MessageReceived(const std::uint8_t* message, const BaseOtDataType type,
-                       const std::size_t ot_id = 0);
-
   BaseOtReceiverData& GetReceiverData() { return receiver_data; }
   const BaseOtReceiverData& GetReceiverData() const { return receiver_data; }
   BaseOtSenderData& GetSenderData() { return sender_data; }
@@ -85,6 +75,9 @@ struct BaseOtData {
 
   BaseOtReceiverData receiver_data;
   BaseOtSenderData sender_data;
+
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> receiver_futures;
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> sender_futures;
 };
 
 }  // namespace encrypto::motion

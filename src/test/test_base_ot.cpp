@@ -47,12 +47,15 @@ TEST(ObliviousTransfer, BaseOt) {
     v.resize(number_of_parties);
   }
 
+  for (auto& party : motion_parties) party->GetBackend()->GetBaseOtProvider()->PreSetup();
+
   std::vector<std::future<void>> futures;
   futures.reserve(number_of_parties);
 
-  for (auto i = 0u; i < number_of_parties; ++i) {
+  for (std::size_t i = 0; i < number_of_parties; ++i) {
     futures.emplace_back(
-        std::async(std::launch::async, [&motion_parties, i, number_of_parties, &base_ots]() {
+        std::async(std::launch::async, [&motion_parties, i]() {
+          motion_parties.at(i)->GetBackend()->Synchronize();
           motion_parties.at(i)->GetBackend()->ComputeBaseOts();
           motion_parties.at(i)->Finish();
         }));

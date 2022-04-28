@@ -167,26 +167,19 @@ class SbProviderFromSps final : public SbProvider {
   void RegisterForMessages();
   void ComputeSbs() noexcept;
 
-  // void ReconstructionHelper(
-  //     std::vector<std::uint16_t>& ds_8, std::vector<std::uint32_t>& ds_16,
-  //     std::vector<std::uint64_t>& ds_32,
-  //     std::function<void(std::size_t, const std::vector<uint8_t>&)> send_fctn,
-  //     std::vector<ReusableFuture<std::vector<std::uint8_t>>>& futures);
-
   void ParseOutputs();
 
   communication::CommunicationLayer& communication_layer_;
   std::size_t number_of_parties_;
   std::shared_ptr<SpProvider> sp_provider_;
-  std::vector<std::unique_ptr<SharedBitsData>> data_;
 
   std::size_t offset_sps_16_;
   std::size_t offset_sps_32_;
   std::size_t offset_sps_64_;
   std::size_t offset_sps_128_;
 
-  std::vector<ReusableFuture<std::vector<uint8_t>>> mask_message_futures_;
-  std::vector<ReusableFuture<std::vector<uint8_t>>> reconstruct_message_futures_;
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> mask_message_futures_;
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> reconstruct_message_futures_;
 
   const std::size_t kMaxBatchSize{10'000};
 

@@ -23,59 +23,17 @@
 // SOFTWARE.
 
 #include "base_ot_data.h"
+
 #include "utility/fiber_condition.h"
 
 namespace encrypto::motion {
 
-BaseOtReceiverData::BaseOtReceiverData() : received_S(128, false) {
-  for (auto i = 0; i < 128; ++i) {
-    received_S_condition.emplace_back(
-        std::make_unique<FiberCondition>([this, i]() { return received_S.at(i); }));
-  }
-  S.resize(128);
-
+BaseOtReceiverData::BaseOtReceiverData() {
   is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
 }
 
-BaseOtSenderData::BaseOtSenderData() : received_R(128, false) {
-  for (auto i = 0; i < 128; ++i) {
-    received_R_condition.emplace_back(
-        std::make_unique<FiberCondition>([this, i]() { return received_R.at(i); }));
-  }
-  R.resize(128);
-
+BaseOtSenderData::BaseOtSenderData(){
   is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
-}
-
-void BaseOtData::MessageReceived(const std::uint8_t* message, const BaseOtDataType type,
-                                 const std::size_t ot_id) {
-  switch (type) {
-    case BaseOtDataType::kHL17R: {
-      {
-        std::scoped_lock lock(sender_data.received_R_condition.at(ot_id)->GetMutex());
-        std::copy(message, message + sender_data.R.at(ot_id).size(),
-                  reinterpret_cast<std::uint8_t*>(sender_data.R.at(ot_id).data()));
-        sender_data.received_R.at(ot_id) = true;
-      }
-      sender_data.received_R_condition.at(ot_id)->NotifyOne();
-      break;
-    }
-    case BaseOtDataType::kHL17S: {
-      {
-        std::scoped_lock lock(receiver_data.received_S_condition.at(ot_id)->GetMutex());
-        std::copy(message, message + receiver_data.S.at(ot_id).size(),
-                  reinterpret_cast<std::uint8_t*>(receiver_data.S.at(ot_id).begin()));
-        receiver_data.received_S.at(ot_id) = true;
-      }
-      receiver_data.received_S_condition.at(ot_id)->NotifyOne();
-      break;
-    }
-    default: {
-      throw std::runtime_error(
-          fmt::format("DataStorage::BaseOTsReceived: unknown data type {}; data_type must be <{}",
-                      type, BaseOtDataType::kBaseOtInvalidDataType));
-    }
-  }
 }
 
 }  // namespace encrypto::motion

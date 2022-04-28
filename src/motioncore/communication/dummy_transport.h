@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <flatbuffers/flatbuffers.h>
+
 #include "transport.h"
 #include "utility/synchronized_queue.h"
 
@@ -37,8 +39,7 @@ class DummyTransport : public Transport {
   MakeTransportPair();
 
   // send a message
-  void SendMessage(std::vector<std::uint8_t>&& message) override;
-  void SendMessage(const std::vector<std::uint8_t>& message) override;
+  void SendMessage(std::span<const std::uint8_t> message) override;
 
   // check if a new message is available
   bool Available() const override;

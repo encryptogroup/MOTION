@@ -25,15 +25,22 @@
 #pragma once
 
 #include <flatbuffers/flatbuffers.h>
+#include <span>
 
 #include "fbs_headers/message_generated.h"
 
 namespace encrypto::motion::communication {
 
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type);
+
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, std::size_t message_id,
+                                            std::span<const uint8_t> payload);
+
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
+                                            std::span<const uint8_t> payload);
+
 flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
                                             const std::vector<uint8_t>* payload);
-flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t* payload,
-                                            std::size_t size);
 
 // Give a human readable representation of MessageType values
 std::string to_string(MessageType message_type);

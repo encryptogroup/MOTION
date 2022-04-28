@@ -31,7 +31,6 @@
 #include <span>
 
 #include "base/motion_base_provider.h"
-#include "communication/fbs_headers/output_message_generated.h"
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "protocols/gate.h"

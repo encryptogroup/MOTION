@@ -30,6 +30,7 @@
 #include "data_storage/base_ot_data.h"
 #include "utility/bit_vector.h"
 #include "utility/constants.h"
+#include "utility/reusable_future.h"
 
 namespace encrypto::motion::communication {
 
@@ -65,8 +66,10 @@ class BaseOtProvider {
   std::pair<ReceiverMessage, SenderMessage> ExportBaseOts(std::size_t party_id);
   BaseOtData& GetBaseOtsData(std::size_t party_id) { return data_.at(party_id); }
   const BaseOtData& GetBaseOtsData(std::size_t party_id) const { return data_.at(party_id); }
+  void PreSetup();
 
  private:
+  std::vector<std::size_t> number_of_ots_;
   communication::CommunicationLayer& communication_layer_;
   std::size_t number_of_parties_;
   std::size_t my_id_;

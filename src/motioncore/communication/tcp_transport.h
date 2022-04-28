@@ -45,8 +45,7 @@ class TcpTransport : public Transport {
   // Destructor needs to be defined in implementation due to pimpl
   ~TcpTransport();
 
-  void SendMessage(std::vector<std::uint8_t>&& message) override;
-  void SendMessage(const std::vector<std::uint8_t>& message) override;
+  void SendMessage(std::span<const std::uint8_t> message) override;
 
   bool Available() const override;
   std::optional<std::vector<std::uint8_t>> ReceiveMessage() override;

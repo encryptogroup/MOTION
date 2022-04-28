@@ -23,14 +23,13 @@
 // SOFTWARE.
 
 #include "sb_provider.h"
+
 #include <cassert>
 #include <memory>
 #include <type_traits>
+
 #include "communication/communication_layer.h"
-#include "communication/fbs_headers/shared_bits_message_generated.h"
-#include "communication/message_handler.h"
-#include "communication/shared_bits_message.h"
-#include "data_storage/shared_bits_data.h"
+#include "communication/message.h"
 #include "sb_impl.h"
 #include "sp_provider.h"
 #include "statistics/run_time_statistics.h"
@@ -48,41 +47,6 @@ SbProvider::SbProvider(const std::size_t my_id) : my_id_(my_id) {
   finished_condition_ = std::make_shared<FiberCondition>([this]() { return finished_; });
 }
 
-class SbMessageHandler : public communication::MessageHandler {
- public:
-  SbMessageHandler(SharedBitsData& data) : data_(data) {}
-
-  // method which is called with received messages of the type the handler is registered for
-  void ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& message);
-
- private:
-  SharedBitsData& data_;
-};
-
-void SbMessageHandler::ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& raw_message) {
-  assert(!raw_message.empty());
-  auto message = communication::GetMessage(raw_message.data());
-  auto message_type = message->message_type();
-  auto sb_message_payload =
-      communication::GetSharedBitsMessage(message->payload()->data())->payload();
-  switch (message_type) {
-    case communication::MessageType::kSharedBitsMask: {
-      data_.MessageReceived(SharedBitsMessageType::kMaskMessage, sb_message_payload->data(),
-                            sb_message_payload->size());
-      break;
-    }
-    case communication::MessageType::kSharedBitsReconstruct: {
-      data_.MessageReceived(SharedBitsMessageType::kReconstructMessage, sb_message_payload->data(),
-                            sb_message_payload->size());
-      break;
-    }
-    default: {
-      assert(false);
-      break;
-    }
-  }
-}
-
 SbProviderFromSps::SbProviderFromSps(communication::CommunicationLayer& communication_layer,
                                      std::shared_ptr<SpProvider> sp_provider, Logger& logger,
                                      RunTimeStatistics& run_time_statistics)
@@ -90,31 +54,10 @@ SbProviderFromSps::SbProviderFromSps(communication::CommunicationLayer& communic
       communication_layer_(communication_layer),
       number_of_parties_(communication_layer_.GetNumberOfParties()),
       sp_provider_(sp_provider),
-      data_(number_of_parties_),
       logger_(logger),
-      run_time_statistics_(run_time_statistics) {
-  // TODO: register message handler
-  auto my_id = communication_layer.GetMyId();
-  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
-    if (party_id == my_id) {
-      continue;
-    }
-    data_.at(party_id) = std::make_unique<SharedBitsData>();
-  }
-  communication_layer_.RegisterMessageHandler(
-      [this](std::size_t party_id) {
-        return std::make_shared<SbMessageHandler>(*data_.at(party_id));
-      },
-      {communication::MessageType::kSharedBitsMask,
-       communication::MessageType::kSharedBitsReconstruct});
-}
+      run_time_statistics_(run_time_statistics) {}
 
-SbProviderFromSps::~SbProviderFromSps() {
-  // deregister message handler
-  communication_layer_.DeregisterMessageHandler(
-      {communication::MessageType::kSharedBitsMask,
-       communication::MessageType::kSharedBitsReconstruct});
-}
+SbProviderFromSps::~SbProviderFromSps() {}
 
 void SbProviderFromSps::PreSetup() {
   if (!NeedSbs()) {
@@ -169,22 +112,10 @@ void SbProviderFromSps::RegisterSps() {
 }
 
 void SbProviderFromSps::RegisterForMessages() {
-  std::size_t expected_message_size =
-      number_of_sbs_8_ * 2 + number_of_sbs_16_ * 4 + number_of_sbs_32_ * 8 + number_of_sbs_64_ * 16;
-
-  auto number_of_parties = communication_layer_.GetNumberOfParties();
-  reconstruct_message_futures_.reserve(number_of_parties);
-  for (std::size_t i = 0; i < number_of_parties; ++i) {
-    if (i == my_id_) {
-      mask_message_futures_.emplace_back();
-      reconstruct_message_futures_.emplace_back();
-      continue;
-    }
-    auto& sb_data = *data_.at(i);
-    mask_message_futures_.emplace_back(sb_data.RegisterForMaskMessage(expected_message_size));
-    reconstruct_message_futures_.emplace_back(
-        sb_data.RegisterForReconstructMessage(expected_message_size));
-  }
+  mask_message_futures_ = communication_layer_.GetMessageManager().RegisterReceiveAll(
+      communication::MessageType::kSharedBitsMask, 0);
+  reconstruct_message_futures_ = communication_layer_.GetMessageManager().RegisterReceiveAll(
+      communication::MessageType::kSharedBitsReconstruct, 0);
 }
 
 template <typename T>
@@ -224,11 +155,15 @@ static std::vector<std::uint8_t> Scatter(std::vector<std::uint16_t>& ds_8,
   auto size_32 = GetByteSize(ds_32);
   [[maybe_unused]] auto size_64 = GetByteSize(ds_64);
 
-  assert(buffer.size() == size_8 + size_16 + size_32 + size_64);
-  auto start_8 = reinterpret_cast<const std::uint16_t*>(buffer.data());
-  auto start_16 = reinterpret_cast<const std::uint32_t*>(buffer.data() + size_8);
-  auto start_32 = reinterpret_cast<const std::uint64_t*>(buffer.data() + size_8 + size_16);
-  auto start_64 = reinterpret_cast<const __uint128_t*>(buffer.data() + size_8 + size_16 + size_32);
+  assert(communication::GetMessage(buffer.data())->payload()->size() ==
+         size_8 + size_16 + size_32 + size_64);
+
+  const std::uint8_t* pointer{communication::GetMessage(buffer.data())->payload()->data()};
+
+  auto start_8 = reinterpret_cast<const std::uint16_t*>(pointer);
+  auto start_16 = reinterpret_cast<const std::uint32_t*>(pointer + size_8);
+  auto start_32 = reinterpret_cast<const std::uint64_t*>(pointer + size_8 + size_16);
+  auto start_64 = reinterpret_cast<const __uint128_t*>(pointer + size_8 + size_16 + size_32);
   std::copy(start_8, start_8 + ds_8.size(), ds_8.begin());
   std::copy(start_16, start_16 + ds_16.size(), ds_16.begin());
   std::copy(start_32, start_32 + ds_32.size(), ds_32.begin());
@@ -242,7 +177,7 @@ static void ReconstructionHelper(
     std::vector<std::uint64_t>& xs_32, std::vector<__uint128_t>& xs_64,
     std::size_t number_of_parties,
     std::function<void(const std::vector<uint8_t>&)> broadcast_function,
-    std::vector<ReusableFuture<std::vector<std::uint8_t>>>& futures) {
+    std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>>& futures) {
   // Gather all shared in a single buffer
   auto xs = Gather(xs_8, xs_16, xs_32, xs_64);
 
@@ -257,7 +192,7 @@ static void ReconstructionHelper(
 
   // collect the other shares
   std::vector<std::vector<std::uint8_t>> received_xs;
-  received_xs.reserve(number_of_parties);
+  received_xs.reserve(number_of_parties - 1);
   std::transform(futures.begin(), futures.end(), std::back_inserter(received_xs), [](auto& f) {
     if (f.valid())
       return f.get();
@@ -291,13 +226,14 @@ void SbProviderFromSps::ComputeSbs() noexcept {
   auto sps_128 = sp_provider_->GetSps<__uint128_t>(offset_sps_128_, number_of_sbs_64_);
 
   auto broadcast_mask = [this](const auto& buffer) {
-    auto mask_builder = communication::BuildSharedBitsMaskMessage(buffer);
-    communication_layer_.BroadcastMessage(std::move(mask_builder));
+    auto msg{communication::BuildMessage(communication::MessageType::kSharedBitsMask, buffer)};
+    communication_layer_.BroadcastMessage(msg.Release());
   };
 
   auto broadcast_reconstruct = [this](const auto& buffer) {
-    auto mask_builder = communication::BuildSharedBitsReconstructMessage(buffer);
-    communication_layer_.BroadcastMessage(std::move(mask_builder));
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kSharedBitsReconstruct, buffer)};
+    communication_layer_.BroadcastMessage(msg.Release());
   };
 
   auto [wb1_8, wb2_8] = detail::compute_sbs_phase_1<std::uint8_t>(number_of_sbs_8_, my_id_, sps_16);

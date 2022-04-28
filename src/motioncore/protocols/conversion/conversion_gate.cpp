@@ -27,9 +27,8 @@
 #include <cassert>
 
 #include "base/backend.h"
-#include "communication/bmr_message.h"
 #include "communication/communication_layer.h"
-#include "protocols/bmr/bmr_data.h"
+#include "communication/message.h"
 #include "protocols/bmr/bmr_gate.h"
 #include "protocols/bmr/bmr_provider.h"
 #include "protocols/bmr/bmr_share.h"
@@ -131,7 +130,6 @@ const SharePointer BmrToBooleanGmwGate::GetOutputAsShare() const {
 BooleanGmwToBmrGate::BooleanGmwToBmrGate(const SharePointer& parent)
     : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
-  const auto number_of_simd{parent->GetNumberOfSimdValues()};
 
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
@@ -149,16 +147,14 @@ BooleanGmwToBmrGate::BooleanGmwToBmrGate(const SharePointer& parent)
 
   output_wires_.resize(parent_.size());
   for (auto& w : output_wires_) {
-    w = GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, number_of_simd);
+    w = GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, parent_[0]->GetNumberOfSimdValues());
   }
 
   assert(gate_id_ >= 0);
 
   auto& bmr_provider = backend_.GetBmrProvider();
-  received_public_keys_ =
-      bmr_provider.RegisterForInputKeys(gate_id_, number_of_simd * output_wires_.size());
-  received_public_values_ =
-      bmr_provider.RegisterForInputPublicValues(gate_id_, number_of_simd * output_wires_.size());
+  received_public_keys_ = bmr_provider.RegisterForInputKeys(gate_id_);
+  received_public_values_ = bmr_provider.RegisterForInputPublicValues(gate_id_);
 
   if constexpr (kDebug) {
     auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
@@ -205,7 +201,7 @@ void BooleanGmwToBmrGate::EvaluateOnline() {
   BitVector<> buffer;
 
   // mask and publish inputs
-  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+  for (std::size_t i = 0; i < output_wires_.size(); ++i) {
     auto gmw_input = std::dynamic_pointer_cast<const proto::boolean_gmw::Wire>(parent_.at(i));
     assert(gmw_input);
     auto bmr_output = std::dynamic_pointer_cast<proto::bmr::Wire>(output_wires_.at(i));
@@ -215,35 +211,40 @@ void BooleanGmwToBmrGate::EvaluateOnline() {
         gmw_input->GetValues() ^ bmr_output->GetPermutationBits();
     buffer.Append(bmr_output->GetPublicValues());
   }
-  const std::vector<std::uint8_t> payload_pub_vals(
-      reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()),
-      reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()) + buffer.GetData().size());
-  communication_layer.BroadcastMessage(
-      communication::BuildBmrInput0Message(gate_id_, payload_pub_vals));
+
+  std::span payload_pub_vals(reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()),
+                             buffer.GetData().size());
+  auto msg_pub_vals{communication::BuildMessage(communication::MessageType::kBmrInputGate0,
+                                                gate_id_, payload_pub_vals)};
+  communication_layer.BroadcastMessage(msg_pub_vals.Release());
 
   // receive masked values if not my input
-  for (auto party_id = 0ull; party_id < number_of_parties; ++party_id) {
+  for (std::size_t party_id = 0; party_id < number_of_parties; ++party_id) {
     if (party_id == my_id) continue;
-    buffer = received_public_values_.at(party_id).get();
-    for (auto i = 0ull; i < output_wires_.size(); ++i) {
-      auto bmr_output = std::dynamic_pointer_cast<proto::bmr::Wire>(output_wires_.at(i));
+    auto public_values_message{
+        received_public_values_[party_id > my_id ? party_id - 1 : party_id].get()};
+    auto pointer{const_cast<std::uint8_t*>(
+        communication::GetMessage(public_values_message.data())->payload()->data())};
+    BitSpan public_values_span(pointer, number_of_wires * number_of_simd);
+    for (std::size_t i = 0; i < number_of_wires; ++i) {
+      auto bmr_output = std::dynamic_pointer_cast<proto::bmr::Wire>(output_wires_[i]);
       assert(bmr_output);
       bmr_output->GetMutablePublicValues() ^=
-          buffer.Subset(i * number_of_simd, (i + 1) * number_of_simd);
+          public_values_span.Subset(i * number_of_simd, (i + 1) * number_of_simd);
     }
   }
 
   // rearrange keys corresponding to the public values into one buffer
   Block128Vector my_keys_buffer(number_of_wires * number_of_simd);
-  for (auto wire_i = 0ull; wire_i < number_of_wires; ++wire_i) {
-    const auto wire = std::dynamic_pointer_cast<const proto::bmr::Wire>(output_wires_.at(wire_i));
+  for (std::size_t wire_i = 0; wire_i < number_of_wires; ++wire_i) {
+    const auto wire = std::dynamic_pointer_cast<const proto::bmr::Wire>(output_wires_[wire_i]);
     assert(wire);
     const auto& keys = wire->GetSecretKeys();
     // copy the "0 keys" into the buffer
     std::copy(std::begin(keys), std::end(keys),
               std::begin(my_keys_buffer) + wire_i * number_of_simd);
     const auto& public_values = wire->GetPublicValues();
-    for (auto simd_j = 0ull; simd_j < number_of_simd; ++simd_j) {
+    for (std::size_t simd_j = 0; simd_j < number_of_simd; ++simd_j) {
       // xor the offset on a key if the corresponding public value is 1
       if (public_values[simd_j]) {
         my_keys_buffer.at(wire_i * number_of_simd + simd_j) ^= R;
@@ -252,10 +253,11 @@ void BooleanGmwToBmrGate::EvaluateOnline() {
   }
 
   // send the selected keys to all other parties
-  const std::vector<std::uint8_t> payload(
-      reinterpret_cast<const std::uint8_t*>(my_keys_buffer.data()),
-      reinterpret_cast<const std::uint8_t*>(my_keys_buffer.data()) + my_keys_buffer.ByteSize());
-  communication_layer.BroadcastMessage(communication::BuildBmrInput1Message(gate_id_, payload));
+  std::span my_keys_payload(reinterpret_cast<const std::uint8_t*>(my_keys_buffer.data()),
+                            my_keys_buffer.ByteSize());
+  auto my_keys_msg{communication::BuildMessage(communication::MessageType::kBmrInputGate1, gate_id_,
+                                               my_keys_payload)};
+  communication_layer.BroadcastMessage(my_keys_msg.Release());
 
   // index function for the public/active keys stored in the wires
   const auto public_key_index = [number_of_parties](auto simd_i, auto party_i) {
@@ -279,15 +281,18 @@ void BooleanGmwToBmrGate::EvaluateOnline() {
       }
     } else {
       // other party: we copy the received keys to the right position
-      auto received_keys_buffer = received_public_keys_.at(party_i).get();
-      assert(received_keys_buffer.size() == number_of_wires * number_of_simd);
+      auto received_keys_buffer =
+          received_public_keys_.at(party_i > my_id ? party_i - 1 : party_i).get();
+      const std::uint8_t* pointer{
+          communication::GetMessage(received_keys_buffer.data())->payload()->data()};
       for (auto wire_j = 0ull; wire_j < number_of_wires; ++wire_j) {
         auto wire = std::dynamic_pointer_cast<proto::bmr::Wire>(output_wires_.at(wire_j));
         assert(wire);
         auto& public_keys = wire->GetMutablePublicKeys();
         for (auto simd_k = 0ull; simd_k < number_of_simd; ++simd_k) {
-          public_keys.at(public_key_index(simd_k, party_i)) =
-              received_keys_buffer.at(wire_j * number_of_simd + simd_k);
+          std::copy_n(reinterpret_cast<const std::byte*>(pointer) +
+                          Block128::size() * (wire_j * number_of_simd + simd_k),
+                      Block128::size(), public_keys[public_key_index(simd_k, party_i)].data());
         }
       }
     }

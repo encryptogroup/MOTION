@@ -96,7 +96,7 @@ std::size_t Backend::NextGateId() const { return register_->NextGateId(); }
 
 // TODO: remove this method
 void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder&& message) {
-  communication_layer_.SendMessage(party_id, std::move(message));
+  communication_layer_.SendMessage(party_id, message.Release());
 }
 
 void Backend::RegisterGate(const GatePointer& gate) { register_->RegisterGate(gate); }
@@ -136,6 +136,12 @@ void Backend::RunPreprocessing() {
   if (needs_sps) {
     sp_provider_->PreSetup();
   }
+
+  if (NeedOts()) {
+    base_ot_provider_->PreSetup();
+  }
+
+  communication_layer_.Synchronize();
 
   if (NeedOts()) {
     OtExtensionSetup();

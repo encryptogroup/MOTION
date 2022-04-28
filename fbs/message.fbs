@@ -36,6 +36,8 @@ enum MessageType : ubyte {
 //
 table Message {
   message_type:MessageType;
+  // If this id is not used - set to default, then it's likely not stored at all.
+  message_id:uint64 = 0;
   payload:[ubyte];
 }
 

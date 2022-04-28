@@ -28,47 +28,13 @@
 #include "base/configuration.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "communication/fbs_headers/base_ot_generated.h"
 #include "communication/fbs_headers/message_generated.h"
-#include "communication/message_handler.h"
+#include "communication/message_manager.h"
 #include "data_storage/base_ot_data.h"
 #include "utility/fiber_condition.h"
 #include "utility/logger.h"
 
 namespace encrypto::motion {
-
-// Handler for messages of type BaseROTMessageSender, BaseROTMessageReceiver
-class BaseOtMessageHandler : public communication::MessageHandler {
- public:
-  // Create a handler object for a given party
-  BaseOtMessageHandler(std::shared_ptr<Logger> logger, BaseOtData& base_ots_data)
-      : logger_(logger), base_ots_data_(base_ots_data) {}
-
-  // Method which is called on received messages.
-  void ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& message) override;
-
-  BaseOtData& GetBaseOtsData() { return base_ots_data_; };
-
- private:
-  std::shared_ptr<Logger> logger_;
-  BaseOtData& base_ots_data_;
-};
-
-void BaseOtMessageHandler::ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& raw_message) {
-  assert(!raw_message.empty());
-  auto message = communication::GetMessage(raw_message.data());
-  auto base_ot_message = communication::GetBaseROtMessage(message->payload()->data());
-  auto base_ot_id = base_ot_message->base_ot_id();
-  if (message->message_type() == communication::MessageType::kBaseROtMessageReceiver) {
-    base_ots_data_.MessageReceived(base_ot_message->buffer()->data(), BaseOtDataType::kHL17R,
-                                   base_ot_id);
-  } else if (message->message_type() == communication::MessageType::kBaseROtMessageSender) {
-    base_ots_data_.MessageReceived(base_ot_message->buffer()->data(), BaseOtDataType::kHL17S,
-                                   base_ot_id);
-  } else {
-    throw std::logic_error("BaseOtMessageHandler registered for wrong MessageType");
-  }
-}
 
 // Implementation of BaseOtProvider: -------------------------------------------
 
@@ -79,19 +45,26 @@ BaseOtProvider::BaseOtProvider(communication::CommunicationLayer& communication_
       my_id_(communication_layer.GetMyId()),
       data_(number_of_parties_),
       logger_(logger),
-      finished_(false) {
-  communication_layer_.RegisterMessageHandler(
-      [this, &logger](auto party_id) {
-        return std::make_shared<BaseOtMessageHandler>(logger, data_.at(party_id));
-      },
-      {communication::MessageType::kBaseROtMessageSender,
-       communication::MessageType::kBaseROtMessageReceiver});
-}
+      finished_(false) {}
 
-BaseOtProvider::~BaseOtProvider() {
-  communication_layer_.DeregisterMessageHandler(
-      {communication::MessageType::kBaseROtMessageSender,
-       communication::MessageType::kBaseROtMessageReceiver});
+BaseOtProvider::~BaseOtProvider() {}
+
+void BaseOtProvider::PreSetup() {
+  number_of_ots_.resize(number_of_parties_ - 1, kKappa);
+  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
+    if (party_id == my_id_) continue;
+    std::size_t index{party_id > my_id_ ? party_id - 1 : party_id};
+    data_[party_id].receiver_futures.reserve(number_of_ots_[index]);
+    data_[party_id].sender_futures.reserve(number_of_ots_[index]);
+    for (std::size_t i = 0; i < number_of_ots_[index]; ++i) {
+      data_[party_id].receiver_futures.emplace_back(
+          communication_layer_.GetMessageManager().RegisterReceive(
+              party_id, communication::MessageType::kBaseROtMessageReceiver, i));
+      data_[party_id].sender_futures.emplace_back(
+          communication_layer_.GetMessageManager().RegisterReceive(
+              party_id, communication::MessageType::kBaseROtMessageSender, i));
+    }
+  }
 }
 
 void BaseOtProvider::ComputeBaseOts() {
@@ -114,7 +87,7 @@ void BaseOtProvider::ComputeBaseOts() {
     }
 
     auto send_function = [this, i](flatbuffers::FlatBufferBuilder&& message) {
-      communication_layer_.SendMessage(i, std::move(message));
+      communication_layer_.SendMessage(i, message.Release());
     };
 
     auto& base_ots_data = data_.at(i);

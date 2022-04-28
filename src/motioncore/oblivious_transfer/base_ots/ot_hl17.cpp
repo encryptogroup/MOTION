@@ -28,7 +28,7 @@
 #include <cstdint>
 
 #include "base/backend.h"
-#include "communication/base_ot_message.h"
+#include "communication/message.h"
 #include "data_storage/base_ot_data.h"
 #include "primitives/blake2b.h"
 #include "utility/helpers.h"
@@ -59,8 +59,7 @@ void HashPoint(curve25519::ge_p3& output, const curve25519::ge_p3& input) {
   curve25519::x25519_ge_scalarmult_base(&output, hash_output.data());
 }
 
-void OtHL17::Send0(SenderState& state,
-                   std::array<std::byte, kCurve25519GeByteSize>& message_output) {
+void OtHL17::Send0(SenderState& state, std::span<std::uint8_t> message_output) {
   // sample y <- Zp
   curve25519::sc_random(state.y);
 
@@ -77,10 +76,10 @@ void OtHL17::Send1(SenderState& state) {
 }
 
 std::pair<std::vector<std::byte>, std::vector<std::byte>> OtHL17::Send2(
-    SenderState& state, const std::array<std::byte, kCurve25519GeByteSize>& message_input) {
+    SenderState& state, std::span<const std::uint8_t> message_input) {
+  assert(message_input.size() == kCurve25519GeByteSize);
   // assert R in GG
-  if (!x25519_ge_frombytes_vartime(&state.R,
-                                   reinterpret_cast<const std::uint8_t*>(message_input.data()))) {
+  if (!x25519_ge_frombytes_vartime(&state.R, message_input.data())) {
     throw std::runtime_error("Base OT: R is not in G - abort");
   }
 
@@ -138,9 +137,9 @@ void OtHL17::Receive0(ReceiverState& state, bool choice) {
   curve25519::sc_random(state.x);
 }
 
-void OtHL17::Receive1(ReceiverState& state,
-                      std::array<std::byte, kCurve25519GeByteSize>& message_output,
-                      const std::array<std::byte, kCurve25519GeByteSize>& message_input) {
+void OtHL17::Receive1(ReceiverState& state, std::span<std::uint8_t> message_output,
+                      std::span<const std::uint8_t> message_input) {
+  assert(message_input.size() == kCurve25519GeByteSize);
   // recv S
   auto res = curve25519::x25519_ge_frombytes_vartime(
       &state.S, reinterpret_cast<const std::uint8_t*>(message_input.data()));
@@ -201,22 +200,25 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OtHL17::S
 
   auto& base_ots_sender = base_ots_data_.GetSenderData();
 
-  std::vector<std::array<std::byte, kCurve25519GeByteSize>> messages_s0(number_of_ots);
+  std::vector<std::array<std::uint8_t, kCurve25519GeByteSize>> messages_s0(number_of_ots);
   std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> output(number_of_ots);
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
-    Send0(states.at(i), messages_s0.at(i));
+    Send0(states[i], messages_s0[i]);
   }
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
-    send_function_(communication::BuildBaseROtMessageSender(messages_s0.at(i).data(),
-                                                            messages_s0.at(i).size(), i));
-    Send1(states.at(i));
+    std::span s(reinterpret_cast<const std::uint8_t*>(messages_s0[i].data()),
+                messages_s0[i].size());
+    auto msg{communication::BuildMessage(communication::MessageType::kBaseROtMessageSender, i, s)};
+    send_function_(std::move(msg));
+    Send1(states[i]);
   }
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
-    base_ots_sender.received_R_condition.at(i)->Wait();
-    output.at(i) = Send2(states.at(i), base_ots_sender.R.at(i));
+    auto raw_message{base_ots_data_.receiver_futures[i].get()};
+    auto payload{communication::GetMessage(raw_message.data())->payload()};
+    output.at(i) = Send2(states.at(i), std::span(payload->data(), payload->size()));
   }
 
   base_ots_sender.is_ready = true;
@@ -231,18 +233,22 @@ std::vector<std::vector<std::byte>> OtHL17::Receive(const BitVector<>& choices) 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
     states.emplace_back(i);
   }
-  std::vector<std::array<std::byte, kCurve25519GeByteSize>> messages_r1(number_of_ots);
+  std::vector<std::array<std::uint8_t, kCurve25519GeByteSize>> messages_r1(number_of_ots);
   std::vector<std::vector<std::byte>> output(number_of_ots);
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
     Receive0(states.at(i), choices.Get(i));
-    base_ots_receiver.received_S_condition.at(i)->Wait();
   }
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {
-    Receive1(states.at(i), messages_r1.at(i), base_ots_receiver.S.at(i));
-    send_function_(communication::BuildBaseROtMessageReceiver(messages_r1.at(i).data(),
-                                                              messages_r1.at(i).size(), i));
+    auto raw_message{base_ots_data_.sender_futures[i].get()};
+    auto payload{communication::GetMessage(raw_message.data())->payload()};
+    Receive1(states[i], messages_r1[i], std::span(payload->data(), payload->size()));
+    std::span s(reinterpret_cast<const std::uint8_t*>(messages_r1[i].data()),
+                messages_r1[i].size());
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kBaseROtMessageReceiver, i, s)};
+    send_function_(std::move(msg));
   }
 
   for (std::size_t i = 0; i < number_of_ots; ++i) {

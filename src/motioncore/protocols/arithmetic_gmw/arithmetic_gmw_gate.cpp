@@ -24,13 +24,15 @@
 
 #include "arithmetic_gmw_gate.h"
 
+#include <flatbuffers/flatbuffers.h>
 #include <fmt/format.h>
 #include <math.h>
 
 #include "base/backend.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "communication/output_message.h"
+#include "communication/message.h"
+#include "communication/message_manager.h"
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "primitives/sharing_randomness_generator.h"
@@ -200,8 +202,8 @@ OutputGate<T>::OutputGate(const arithmetic_gmw::WirePointer<T>& parent, std::siz
   // Tell the DataStorages that we want to receive OutputMessages from the
   // other parties.
   if (is_my_output_) {
-    auto& base_provider = GetBaseProvider();
-    output_message_futures_ = base_provider.RegisterForOutputMessages(gate_id_);
+    output_message_futures_ = GetCommunicationLayer().GetMessageManager().RegisterReceiveAll(
+        communication::MessageType::kOutputMessage, gate_id_);
   }
 
   if constexpr (kDebug) {
@@ -247,14 +249,16 @@ void OutputGate<T>::EvaluateOnline() {
   // we need to send shares to one other party:
   if (!is_my_output_) {
     auto payload = ToByteVector(output);
-    auto output_message = motion::communication::BuildOutputMessage(gate_id_, payload);
-    communication_layer.SendMessage(output_owner_, std::move(output_message));
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, payload)};
+    communication_layer.SendMessage(output_owner_, msg.Release());
   }
   // we need to send shares to all other parties:
   else if (output_owner_ == kAll) {
     auto payload = ToByteVector(output);
-    auto output_message = motion::communication::BuildOutputMessage(gate_id_, payload);
-    communication_layer.BroadcastMessage(std::move(output_message));
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, payload)};
+    communication_layer.BroadcastMessage(msg.Release());
   }
 
   // we receive shares from other parties
@@ -268,14 +272,10 @@ void OutputGate<T>::EvaluateOnline() {
         shared_outputs.push_back(output);
         continue;
       }
-      const auto output_message = output_message_futures_.at(i).get();
+      const auto output_message = output_message_futures_.at(i > my_id ? i - 1 : i).get();
       auto message = communication::GetMessage(output_message.data());
-      auto output_message_pointer = communication::GetOutputMessage(message->payload()->data());
-      assert(output_message_pointer);
-      assert(output_message_pointer->wires()->size() == 1);
 
-      shared_outputs.push_back(
-          FromByteVector<T>(*output_message_pointer->wires()->Get(0)->payload()));
+      shared_outputs.push_back(FromByteVector<T>(*message->payload()));
       assert(shared_outputs[i].size() == parent_[0]->GetNumberOfSimdValues());
     }
 

@@ -41,8 +41,8 @@ flatbuffers::FlatBufferBuilder BuildHelloMessage(uint16_t source_id, uint16_t de
       fixed_key_aes_seed, online_after_setup, motion_version);
   FinishHelloMessageBuffer(builder_hello_message, hello_message_root);
 
-  return BuildMessage(MessageType::kHelloMessage, builder_hello_message.GetBufferPointer(),
-                      builder_hello_message.GetSize());
+  return BuildMessage(MessageType::kHelloMessage, std::span(builder_hello_message.GetBufferPointer(),
+                      builder_hello_message.GetSize()));
 }
 
 }  // namespace encrypto::motion::communication

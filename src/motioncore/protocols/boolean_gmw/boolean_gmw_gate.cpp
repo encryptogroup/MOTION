@@ -31,7 +31,8 @@
 #include "base/backend.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "communication/output_message.h"
+#include "communication/message.h"
+#include "communication/message_manager.h"
 #include "multiplication_triple/mt_provider.h"
 #include "primitives/sharing_randomness_generator.h"
 #include "utility/helpers.h"
@@ -205,8 +206,8 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   // Tell the DataStorages that we want to receive OutputMessages from the
   // other parties.
   if (is_my_output_) {
-    auto& base_provider = GetBaseProvider();
-    output_message_futures_ = base_provider.RegisterForOutputMessages(gate_id_);
+    output_message_futures_ = GetCommunicationLayer().GetMessageManager().RegisterReceiveAll(
+        communication::MessageType::kOutputMessage, gate_id_);
   }
 
   if constexpr (kDebug) {
@@ -240,24 +241,29 @@ void OutputGate::EvaluateOnline() {
     output.emplace_back(gmw_wire->GetValues());
   }
 
+  const std::size_t bit_size = output.at(0).GetSize();
+
   // we need to send shares
   if (!is_my_output_ || output_owner_ == kAll) {
     // prepare payloads
-    std::vector<std::vector<uint8_t>> payloads;
-    auto byte_size = output.at(0).GetData().size();
-    for (std::size_t i = 0; i < number_of_wires; ++i) {
-      const auto data_pointer = reinterpret_cast<const uint8_t*>(output.at(i).GetData().data());
-      payloads.emplace_back(data_pointer, data_pointer + byte_size);
-    }
+    BitVector<> buffer;
+    buffer.Reserve(bit_size * number_of_wires);
+    for (auto& o : output) buffer.Append(o);
     // we need to send shares to one other party:
     if (!is_my_output_) {
-      auto output_message = communication::BuildOutputMessage(gate_id_, payloads);
-      communication_layer.SendMessage(output_owner_, std::move(output_message));
+      std::span s(reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()),
+                  buffer.GetData().size());
+      auto msg{
+          communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, s)};
+      communication_layer.SendMessage(output_owner_, msg.Release());
     }
     // we need to send shares to all other parties:
     else if (output_owner_ == kAll) {
-      auto output_message = communication::BuildOutputMessage(gate_id_, payloads);
-      communication_layer.BroadcastMessage(std::move(output_message));
+      std::span s(reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()),
+                  buffer.GetData().size());
+      auto msg{
+          communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, s)};
+      communication_layer.BroadcastMessage(msg.Release());
     }
   }
 
@@ -274,18 +280,17 @@ void OutputGate::EvaluateOnline() {
       shared_outputs.at(i).reserve(number_of_wires);
 
       // Retrieve the received messsage or wait until it has arrived.
-      const auto output_message = output_message_futures_.at(i).get();
+      const auto output_message = output_message_futures_[i > my_id ? i - 1 : i].get();
       auto message = communication::GetMessage(output_message.data());
-      auto output_message_pointer = communication::GetOutputMessage(message->payload()->data());
-      assert(output_message_pointer);
-      assert(output_message_pointer->wires()->size() == number_of_wires);
+      BitSpan bit_span(const_cast<std::uint8_t*>(message->payload()->data()),
+                       bit_size * number_of_wires);
 
       // handle each wire
       for (std::size_t j = 0; j < number_of_wires; ++j) {
-        auto payload = output_message_pointer->wires()->Get(j)->payload();
-        auto ptr = reinterpret_cast<const std::byte*>(payload->data());
-        // load payload into a vector of bytes ...
-        std::vector<std::byte> byte_vector(ptr, ptr + payload->size());
+        // copy the subset to a bit vector
+        auto subset_bv = bit_span.Subset(j * bit_size, (j + 1) * bit_size);
+        // steal the data
+        auto byte_vector = std::move(subset_bv.GetMutableData());
         // ... and construct a new BitVector
         shared_outputs.at(i).emplace_back(std::move(byte_vector),
                                           parent_.at(0)->GetNumberOfSimdValues());

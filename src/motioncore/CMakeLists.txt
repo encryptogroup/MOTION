@@ -4,24 +4,17 @@ add_library(motion
         base/backend.cpp
         base/configuration.cpp
         base/motion_base_provider.cpp
-        base/output_message_handler.cpp
         base/party.cpp
         base/register.cpp
-        communication/base_ot_message.cpp
-        communication/bmr_message.cpp
         communication/communication_layer.cpp
         communication/dummy_transport.cpp
+        communication/message_manager.cpp
         communication/hello_message.cpp
         communication/message.cpp
-        communication/ot_extension_message.cpp
-        communication/output_message.cpp
-        communication/shared_bits_message.cpp
-        communication/sync_handler.cpp
         communication/tcp_transport.cpp
         communication/transport.cpp
         data_storage/base_ot_data.cpp
         data_storage/ot_extension_data.cpp
-        data_storage/shared_bits_data.cpp
         executor/gate_executor.cpp
         multiplication_triple/mt_provider.cpp
         multiplication_triple/sb_provider.cpp
@@ -40,7 +33,6 @@ add_library(motion
         protocols/arithmetic_gmw/arithmetic_gmw_gate.cpp
         protocols/arithmetic_gmw/arithmetic_gmw_share.cpp
         protocols/arithmetic_gmw/arithmetic_gmw_wire.cpp
-        protocols/bmr/bmr_data.cpp
         protocols/bmr/bmr_gate.cpp
         protocols/bmr/bmr_provider.cpp
         protocols/bmr/bmr_share.cpp

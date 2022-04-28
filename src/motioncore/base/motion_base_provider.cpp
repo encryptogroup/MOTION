@@ -21,62 +21,18 @@
 // SOFTWARE.
 
 #include "motion_base_provider.h"
-#include "output_message_handler.h"
 
 #include "communication/communication_layer.h"
 #include "communication/fbs_headers/hello_message_generated.h"
 #include "communication/fbs_headers/message_generated.h"
 #include "communication/hello_message.h"
-#include "communication/message_handler.h"
+#include "communication/message_manager.h"
 #include "primitives/sharing_randomness_generator.h"
 #include "utility/fiber_condition.h"
 #include "utility/logger.h"
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion {
-
-// Handler for messages of type HelloMessage
-struct HelloMessageHandler : public communication::MessageHandler {
-  // Create a handler object for a given party
-  HelloMessageHandler(std::size_t number_of_parties, std::shared_ptr<Logger> logger)
-      : logger_(logger),
-        fixed_key_aes_seed_promises(number_of_parties),
-        randomness_sharing_seed_promises(number_of_parties) {
-    std::transform(std::begin(fixed_key_aes_seed_promises), std::end(fixed_key_aes_seed_promises),
-                   std::back_inserter(fixed_key_aes_seed_futures),
-                   [](auto& p) { return p.get_future(); });
-    std::transform(std::begin(randomness_sharing_seed_promises),
-                   std::end(randomness_sharing_seed_promises),
-                   std::back_inserter(randomness_sharing_seed_futures),
-                   [](auto& p) { return p.get_future(); });
-  }
-
-  // Method which is called on received messages.
-  void ReceivedMessage(std::size_t party_id, std::vector<std::uint8_t>&& message) override;
-
-  ReusableFuture<std::vector<std::uint8_t>> GetRandomnessSharingSeedFuture();
-
-  std::shared_ptr<Logger> logger_;
-  std::vector<ReusablePromise<std::vector<std::uint8_t>>> fixed_key_aes_seed_promises;
-  std::vector<ReusableFuture<std::vector<std::uint8_t>>> fixed_key_aes_seed_futures;
-  std::vector<ReusablePromise<std::vector<std::uint8_t>>> randomness_sharing_seed_promises;
-  std::vector<ReusableFuture<std::vector<std::uint8_t>>> randomness_sharing_seed_futures;
-};
-
-void HelloMessageHandler::ReceivedMessage(std::size_t party_id,
-                                          std::vector<std::uint8_t>&& hello_message) {
-  assert(!hello_message.empty());
-  auto message = communication::GetMessage(reinterpret_cast<std::uint8_t*>(hello_message.data()));
-  auto hello_message_pointer = communication::GetHelloMessage(message->payload()->data());
-
-  auto* fb_vec = hello_message_pointer->input_sharing_seed();
-  randomness_sharing_seed_promises.at(party_id).set_value(
-      std::vector(std::begin(*fb_vec), std::end(*fb_vec)));
-
-  fb_vec = hello_message_pointer->fixed_key_aes_seed();
-  fixed_key_aes_seed_promises.at(party_id).set_value(
-      std::vector(std::begin(*fb_vec), std::end(*fb_vec)));
-}
 
 BaseProvider::BaseProvider(communication::CommunicationLayer& communication_layer,
                            std::shared_ptr<Logger> logger)
@@ -86,29 +42,12 @@ BaseProvider::BaseProvider(communication::CommunicationLayer& communication_laye
       my_id_(communication_layer_.GetMyId()),
       my_randomness_generators_(number_of_parties_),
       their_randomness_generators_(number_of_parties_),
-      hello_message_handler_(std::make_shared<HelloMessageHandler>(number_of_parties_, logger_)),
-      output_message_handlers_(number_of_parties_),
       setup_ready_(false),
-      setup_ready_cond_(std::make_unique<FiberCondition>([this] { return setup_ready_; })) {
-  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
-    if (party_id == my_id_) {
-      continue;
-    }
-    output_message_handlers_.at(party_id) =
-        std::make_shared<OutputMessageHandler>(party_id, nullptr);
-  }
-  // register handler
-  communication_layer_.RegisterMessageHandler([this](auto) { return hello_message_handler_; },
-                                              {communication::MessageType::kHelloMessage});
-  communication_layer_.RegisterMessageHandler(
-      [this](std::size_t party_id) { return output_message_handlers_.at(party_id); },
-      {communication::MessageType::kOutputMessage});
-}
+      setup_ready_cond_(std::make_unique<FiberCondition>([this] { return setup_ready_; })),
+      hello_message_futures_(communication_layer_.GetMessageManager().RegisterReceiveAll(
+          communication::MessageType::kHelloMessage, 0)) {}
 
-BaseProvider::~BaseProvider() {
-  communication_layer_.DeregisterMessageHandler(
-      {communication::MessageType::kHelloMessage, communication::MessageType::kOutputMessage});
-}
+BaseProvider::~BaseProvider() {}
 
 void BaseProvider::Setup() {
   bool setup_started = execute_setup_flag_.test_and_set();
@@ -141,7 +80,7 @@ void BaseProvider::Setup() {
     auto msg_builder = communication::BuildHelloMessage(
         my_id_, party_id, number_of_parties_, &my_seeds.at(party_id), &aes_fixed_key_,
         /* TODO: configuration_->GetOnlineAfterSetup()*/ true, kVersion);
-    communication_layer_.SendMessage(party_id, std::move(msg_builder));
+    communication_layer_.SendMessage(party_id, msg_builder.Release());
   }
   // initialize my randomness generators
   for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
@@ -160,13 +99,17 @@ void BaseProvider::Setup() {
     if (party_id == my_id_) {
       continue;
     }
-    auto aes_key = hello_message_handler_->fixed_key_aes_seed_futures.at(party_id).get();
+    auto& f{hello_message_futures_[party_id > my_id_ ? party_id - 1 : party_id]};
+    auto bytes{f.get()};
+    auto message{communication::GetMessage(bytes.data())};
+    auto hello_message{communication::GetHelloMessage(message->payload()->data())};
+    auto aes_key = hello_message->fixed_key_aes_seed();
     // add received share to the fixed aes key
-    std::transform(std::begin(aes_fixed_key_), std::end(aes_fixed_key_), std::begin(aes_key),
-                   std::begin(aes_fixed_key_), [](auto a, auto b) { return a ^ b; });
-    auto their_seed = hello_message_handler_->randomness_sharing_seed_futures.at(party_id).get();
+    std::transform(aes_fixed_key_.data(), aes_fixed_key_.data() + aes_fixed_key_.size(),
+                   aes_key->data(), aes_fixed_key_.data(), [](auto a, auto b) { return a ^ b; });
+    auto their_seed = hello_message->input_sharing_seed();
     // initialize randomness generator of the other party
-    their_randomness_generators_.at(party_id)->Initialize(their_seed.data());
+    their_randomness_generators_.at(party_id)->Initialize(their_seed->data());
   }
   {
     std::scoped_lock lock(setup_ready_cond_->GetMutex());
@@ -181,18 +124,5 @@ void BaseProvider::Setup() {
 }
 
 void BaseProvider::WaitForSetup() const { setup_ready_cond_->Wait(); }
-
-std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> BaseProvider::RegisterForOutputMessages(
-    std::size_t gate_id) {
-  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> futures(number_of_parties_);
-  for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
-    if (party_id == my_id_) {
-      continue;
-    }
-    futures.at(party_id) =
-        output_message_handlers_.at(party_id)->register_for_output_message(gate_id);
-  }
-  return futures;
-}
 
 }  // namespace encrypto::motion
