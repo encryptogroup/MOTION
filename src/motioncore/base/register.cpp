@@ -45,7 +45,6 @@ Register::Register(std::shared_ptr<Logger> logger) : logger_(std::move(logger)) 
 }
 
 Register::~Register() {
-  input_gates_.clear();
   gates_.clear();
   wires_.clear();
 }
@@ -159,7 +158,6 @@ void Register::Reset() {
 
   wires_.clear();
   gates_.clear();
-  input_gates_.clear();
 
   evaluated_gates_setup_ = 0;
   evaluated_gates_online_ = 0;

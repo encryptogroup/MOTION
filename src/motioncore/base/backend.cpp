@@ -160,10 +160,6 @@ const GatePointer& Backend::GetGate(std::size_t gate_id) const {
   return register_->GetGate(gate_id);
 }
 
-const std::vector<GatePointer>& Backend::GetInputGates() const {
-  return register_->GetInputGates();
-}
-
 void Backend::Reset() { register_->Reset(); }
 
 void Backend::Clear() { register_->Clear(); }

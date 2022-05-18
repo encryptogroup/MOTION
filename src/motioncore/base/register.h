@@ -84,8 +84,6 @@ class Register {
     return gates_.at(gate_id - gate_id_offset_);
   }
 
-  const auto& GetInputGates() const { return input_gates_; }
-
   auto& GetGates() const { return gates_; }
 
   void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
@@ -165,7 +163,6 @@ class Register {
   std::queue<std::size_t> active_gates_;
   std::mutex active_queue_mutex_;
 
-  std::vector<GatePointer> input_gates_;
   std::vector<GatePointer> gates_;
 
   std::vector<WirePointer> wires_;
