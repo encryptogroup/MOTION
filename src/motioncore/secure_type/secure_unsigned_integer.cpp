@@ -253,7 +253,8 @@ std::string SecureUnsignedInteger::ConstructPath(const IntegerOperationType type
       break;
     }
     default:
-      throw std::runtime_error(fmt::format("Invalid integer operation required: {}", type));
+      throw std::runtime_error(
+          fmt::format("Invalid integer operation required: {}", to_string(type)));
   }
   return fmt::format("{}/circuits/int/int_{}{}{}.bristol", kRootDir, operation_type_string,
                      bitlength, suffix);
@@ -263,7 +264,7 @@ SecureUnsignedInteger SecureUnsignedInteger::Simdify(std::span<SecureUnsignedInt
   std::vector<SharePointer> input_as_shares;
   input_as_shares.reserve(input.size());
   std::transform(input.begin(), input.end(), std::back_inserter(input_as_shares),
-      [&](SecureUnsignedInteger& i)->SharePointer{return i.Get().Get();});
+                 [&](SecureUnsignedInteger& i) -> SharePointer { return i.Get().Get(); });
   return SecureUnsignedInteger(ShareWrapper::Simdify(input_as_shares));
 }
 
@@ -313,7 +314,7 @@ T SecureUnsignedInteger::As() const {
     } else {
       throw std::invalid_argument(
           fmt::format("Unsupported output type in SecureUnsignedInteger::As<{}>() for {} Protocol",
-                      typeid(T).name(), share_->Get()->GetProtocol()));
+                      typeid(T).name(), to_string(share_->Get()->GetProtocol())));
     }
   } else {
     throw std::invalid_argument("Unsupported protocol for SecureUnsignedInteger::As()");

@@ -440,8 +440,9 @@ MessageHandler& CommunicationLayer::GetMessageHandler(std::size_t party_id,
   const auto& map = implementation_->message_handlers_.at(party_id);
   auto iterator = map.find(message_type);
   if (iterator == map.end()) {
-    throw std::logic_error(fmt::format(
-        "no message_handler registered for message_type {} and party {}", message_type, party_id));
+    throw std::logic_error(
+        fmt::format("no message_handler registered for message_type {} and party {}",
+                    EnumNameMessageType(message_type), party_id));
   }
   return *iterator->second;
 }
