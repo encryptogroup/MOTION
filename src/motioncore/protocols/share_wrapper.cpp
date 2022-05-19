@@ -367,7 +367,7 @@ ShareWrapper ShareWrapper::Convert() const {
       return BooleanGmwToBmr();
     }
   } else {
-    throw std::runtime_error("Unkown MpcProtocol");
+    throw std::runtime_error("Unknown MpcProtocol");
   }
 }
 
