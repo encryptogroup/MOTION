@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -33,6 +33,7 @@
 namespace encrypto::motion {
 
 struct AlgorithmDescription;
+class Backend;
 class FiberCondition;
 class Gate;
 using GatePointer = std::shared_ptr<Gate>;
@@ -61,9 +62,23 @@ class Register {
 
   std::size_t NextBooleanGmwSharingId(std::size_t number_of_parallel_values);
 
-  void RegisterNextGate(GatePointer gate);
+  template <typename T, typename... Args>
+  std::shared_ptr<T> EmplaceGate(Args&&... args) {
+    auto gate = std::make_shared<T>(std::forward<Args&&>(args)...);
+    RegisterGate(gate);
+    return gate;
+  }
 
-  void RegisterNextInputGate(GatePointer gate);
+  void RegisterGate(const GatePointer& gate);
+
+  template <typename T, typename... Args>
+  std::shared_ptr<T> EmplaceWire(Args&&... args) {
+    auto wire = std::make_shared<T>(std::forward<Args&&>(args)...);
+    RegisterWire(wire);
+    return wire;
+  }
+
+  void RegisterWire(const WirePointer& wire) { wires_.push_back(wire); }
 
   const GatePointer& GetGate(std::size_t gate_id) const {
     return gates_.at(gate_id - gate_id_offset_);
@@ -74,8 +89,6 @@ class Register {
   auto& GetGates() const { return gates_; }
 
   void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
-
-  void RegisterNextWire(WirePointer wire) { wires_.push_back(wire); }
 
   WirePointer GetWire(std::size_t wire_id) const { return wires_.at(wire_id - wire_id_offset_); }
 

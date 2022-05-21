@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -74,7 +74,7 @@ std::size_t Register::NextBooleanGmwSharingId(std::size_t number_of_parallel_val
   return old_id;
 }
 
-void Register::RegisterNextGate(GatePointer gate) {
+void Register::RegisterGate(const GatePointer& gate) {
   assert(gate != nullptr);
   if (gate->NeedsSetup()) {
     gates_setup_++;
@@ -83,12 +83,6 @@ void Register::RegisterNextGate(GatePointer gate) {
     gates_online_++;
   }
   gates_.push_back(gate);
-}
-
-void Register::RegisterNextInputGate(GatePointer gate) {
-  RegisterNextGate(gate);
-  assert(gate != nullptr);
-  input_gates_.push_back(gate);
 }
 
 void Register::AddToActiveQueue(std::size_t gate_id) {

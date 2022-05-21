@@ -99,12 +99,7 @@ void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder&& messag
   communication_layer_.SendMessage(party_id, std::move(message));
 }
 
-void Backend::RegisterInputGate(const InputGatePointer& input_gate) {
-  auto gate = std::static_pointer_cast<Gate>(input_gate);
-  register_->RegisterNextInputGate(gate);
-}
-
-void Backend::RegisterGate(const GatePointer& gate) { register_->RegisterNextGate(gate); }
+void Backend::RegisterGate(const GatePointer& gate) { register_->RegisterGate(gate); }
 
 // TODO: move this to OtProvider(Wrapper)
 bool Backend::NeedOts() {

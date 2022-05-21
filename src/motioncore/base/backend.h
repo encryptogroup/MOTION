@@ -104,8 +104,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder&& message);
 
-  void RegisterInputGate(const InputGatePointer& input_gate);
-
   void RegisterGate(const GatePointer& gate);
 
   void RunPreprocessing();
