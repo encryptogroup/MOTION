@@ -45,18 +45,19 @@ BaseOtProvider::BaseOtProvider(communication::CommunicationLayer& communication_
       my_id_(communication_layer.GetMyId()),
       data_(number_of_parties_),
       logger_(logger),
-      finished_(false) {}
+      finished_(false) {
+  number_of_ots_.resize(number_of_parties_ - 1, 0);
+}
 
 BaseOtProvider::~BaseOtProvider() {}
 
 void BaseOtProvider::PreSetup() {
-  number_of_ots_.resize(number_of_parties_ - 1, kKappa);
   for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
     if (party_id == my_id_) continue;
-    std::size_t index{party_id > my_id_ ? party_id - 1 : party_id};
-    data_[party_id].receiver_futures.reserve(number_of_ots_[index]);
-    data_[party_id].sender_futures.reserve(number_of_ots_[index]);
-    for (std::size_t i = 0; i < number_of_ots_[index]; ++i) {
+    std::size_t remapped_party_id{party_id > my_id_ ? party_id - 1 : party_id};
+    data_[party_id].receiver_futures.reserve(number_of_ots_[remapped_party_id]);
+    data_[party_id].sender_futures.reserve(number_of_ots_[remapped_party_id]);
+    for (std::size_t i = 0; i < number_of_ots_[remapped_party_id]; ++i) {
       data_[party_id].receiver_futures.emplace_back(
           communication_layer_.GetMessageManager().RegisterReceive(
               party_id, communication::MessageType::kBaseROtMessageReceiver, i));
@@ -92,25 +93,29 @@ void BaseOtProvider::ComputeBaseOts() {
 
     auto& base_ots_data = data_.at(i);
     base_ots.emplace_back(std::make_unique<OtHL17>(send_function, base_ots_data));
+    std::size_t remapped_party_id{i > my_id_ ? i - 1 : i};
 
     if (!base_ots_data.GetReceiverData().is_ready) {
-      task_futures.emplace_back(std::async(std::launch::async, [this, &base_ots, i] {
-        auto choices = BitVector<>::SecureRandom(128);
-        auto chosen_messages = base_ots[i]->Receive(choices);  // sender base ots
-        auto& receiver_data = data_[i].GetReceiverData();
-        receiver_data.c = std::move(choices);
-        for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
-          auto b = receiver_data.messages_c.at(i).begin();
-          std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
-        }
-        std::scoped_lock lock(receiver_data.is_ready_condition->GetMutex());
-        receiver_data.is_ready = true;
-      }));
+      task_futures.emplace_back(
+          std::async(std::launch::async, [this, &base_ots, i, remapped_party_id] {
+            auto choices = BitVector<>::SecureRandom(number_of_ots_.at(remapped_party_id));
+            auto chosen_messages = base_ots[i]->Receive(choices);  // sender base ots
+            auto& receiver_data = data_[i].GetReceiverData();
+            receiver_data.c = std::move(choices);
+            for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
+              auto b = receiver_data.messages_c.at(i).begin();
+              std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
+            }
+            std::scoped_lock lock(receiver_data.is_ready_condition->GetMutex());
+            receiver_data.is_ready = true;
+          }));
     }
 
     if (!base_ots_data.GetSenderData().is_ready) {
-      task_futures.emplace_back(std::async(std::launch::async, [this, &base_ots, i] {
-        auto both_messages = base_ots[i]->Send(128);  // receiver base ots
+      task_futures.emplace_back(std::async(std::launch::async, [this, &base_ots, i,
+                                                                remapped_party_id] {
+        auto both_messages =
+            base_ots[i]->Send(number_of_ots_.at(remapped_party_id));  // receiver base ots
         auto& sender_data = data_[i].GetSenderData();
         for (std::size_t i = 0; i < both_messages.size(); ++i) {
           auto b = sender_data.messages_0.at(i).begin();

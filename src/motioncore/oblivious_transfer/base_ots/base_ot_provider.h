@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -44,7 +44,7 @@ class Configuration;
 class Logger;
 class Register;
 
-using BaseOtMessages = std::array<std::array<std::byte, 16>, kKappa>;
+using BaseOtMessages = std::vector<std::array<std::byte, 16>>;
 
 struct SenderMessage {
   BaseOtMessages messages_0;
@@ -67,6 +67,32 @@ class BaseOtProvider {
   BaseOtData& GetBaseOtsData(std::size_t party_id) { return data_.at(party_id); }
   const BaseOtData& GetBaseOtsData(std::size_t party_id) const { return data_.at(party_id); }
   void PreSetup();
+
+  /// \brief Add the number of Base OTs for each party. Must be called before PreSetup()
+  std::vector<std::size_t> AddNumberOfOts(std::size_t number_of_ots) {
+    std::vector<std::size_t> offsets(number_of_parties_, 0);
+
+    for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
+      if (party_id == my_id_) {
+        continue;
+      }
+      std::size_t remapped_party_id{party_id > my_id_ ? party_id - 1 : party_id};
+      number_of_ots_.at(remapped_party_id) += number_of_ots;
+      offsets.at(party_id) = data_.at(party_id).total_number_ots;
+      data_.at(party_id).AddNumberOfOts(number_of_ots);
+    }
+    return offsets;
+  }
+
+  /// \brief Add the number of Base OTs for party with this id. Must be called before PreSetup()
+  std::size_t AddNumberOfOts(std::size_t number_of_ots, std::size_t party_id) {
+    assert(party_id < number_of_parties_);
+    std::size_t remapped_party_id{party_id > my_id_ ? party_id - 1 : party_id};
+    number_of_ots_.at(remapped_party_id) += number_of_ots;
+    auto offset = data_.at(party_id).total_number_ots;
+    data_.at(party_id).AddNumberOfOts(number_of_ots);
+    return offset;
+  }
 
  private:
   std::vector<std::size_t> number_of_ots_;
