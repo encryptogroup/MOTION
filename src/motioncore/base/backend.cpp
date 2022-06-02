@@ -104,11 +104,11 @@ void Backend::RegisterGate(const GatePointer& gate) { register_->RegisterGate(ga
 // TODO: move this to OtProvider(Wrapper)
 bool Backend::NeedOts() {
   auto& ot_providers = ot_provider_manager_->GetProviders();
-  for (auto party_id = 0ull; party_id < communication_layer_.GetNumberOfParties(); ++party_id) {
-    if (party_id == communication_layer_.GetMyId()) continue;
-    if (ot_providers.at(party_id)->GetNumOtsReceiver() > 0 ||
-        ot_providers.at(party_id)->GetNumOtsSender() > 0)
+  for (auto& ot_provider : ot_providers) {
+    if (ot_provider != nullptr && ot_provider->GetPartyId() != communication_layer_.GetMyId() &&
+        ot_provider->HasWork()) {
       return true;
+    }
   }
   return false;
 }
@@ -138,6 +138,13 @@ void Backend::RunPreprocessing() {
   }
 
   if (NeedOts()) {
+    // add base ots and set offsets (to differentiate between 1oo2-OT and 1ooN-OT's Base OTs
+    auto offsets = base_ot_provider_->AddNumberOfOts(kKappa);
+    for (std::size_t i = 0; i < communication_layer_.GetNumberOfParties(); ++i) {
+      if (communication_layer_.GetMyId() != i) {
+        GetOtProvider(i).SetBaseOtOffset(offsets.at(i));
+      }
+    }
     base_ot_provider_->PreSetup();
   }
 

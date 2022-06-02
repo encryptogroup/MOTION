@@ -67,6 +67,7 @@ class OtFlavorTest : public ::testing::Test {
 
   void RunOtExtensionSetup() {
     for (std::size_t i = 0; i < 2; ++i) {
+      base_ot_providers_[i]->AddNumberOfOts(encrypto::motion::kKappa);
       base_ot_providers_[i]->PreSetup();
     }
 

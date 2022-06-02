@@ -222,6 +222,14 @@ class OtProvider {
 
   [[nodiscard]] std::size_t GetNumOtsSender() const { return sender_provider_.GetNumOts(); }
 
+  [[nodiscard]] bool HasWork() const { return (GetNumOtsReceiver() > 0 || GetNumOtsSender() > 0); }
+
+  void SetBaseOtOffset(std::size_t offset) { offset_ = offset; }
+
+  [[nodiscard]] std::size_t GetBaseOtOffset() const { return offset_; }
+
+  std::size_t GetPartyId();
+
   virtual void SendSetup() = 0;
   virtual void ReceiveSetup() = 0;
 
@@ -243,6 +251,7 @@ class OtProvider {
   OtExtensionData& data_;
   OtProviderReceiver receiver_provider_;
   OtProviderSender sender_provider_;
+  std::size_t offset_{0};
 };
 
 class OtProviderFromFile : public OtProvider {

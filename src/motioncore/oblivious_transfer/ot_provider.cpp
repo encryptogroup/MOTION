@@ -48,6 +48,8 @@ OtProvider::OtProvider(OtExtensionData& data, std::size_t party_id)
   }
 }
 
+std::size_t OtProvider::GetPartyId() { return data_.party_id; }
+
 void OtProvider::WaitSetup() const {
   data_.receiver_data.setup_finished_condition->Wait();
   data_.sender_data.setup_finished_condition->Wait();
@@ -195,10 +197,11 @@ void OtProviderFromOtExtension::SendSetup() {
 
   // PRG which is used to expand the keys we got from the base OTs
   primitives::Prg prgs_variable_key;
-  //// fill the rows of the matrix
+
+  // fill the rows of the matrix, offset to differentiate other providers' base ots
   for (i = 0; i < kKappa; ++i) {
     // use the key we got from the base OTs as seed
-    prgs_variable_key.SetKey(base_ots_receiver_data.messages_c.at(i).data());
+    prgs_variable_key.SetKey(base_ots_receiver_data.messages_c.at(offset_ + i).data());
     // change the offset in the output stream since we might have already used
     // the same base OTs previously
     prgs_variable_key.SetOffset(base_ots_receiver_data.consumed_offset);
@@ -214,7 +217,7 @@ void OtProviderFromOtExtension::SendSetup() {
 
   for (i = 0; i < ot_extension_sender_data.u_futures.size(); ++i) {
     auto raw_message{ot_extension_sender_data.u_futures[i].get()};
-    if (base_ots_receiver_data.c[i]) {
+    if (base_ots_receiver_data.c[offset_ + i]) {
       BitSpan bit_span_u(const_cast<std::uint8_t*>(
                              communication::GetMessage(raw_message.data())->payload()->data()),
                          bit_size);
@@ -239,8 +242,9 @@ void OtProviderFromOtExtension::SendSetup() {
   // transpose the bit matrix
   // XXX: figure out how the result looks like
   BitMatrix::SenderTranspose128AndEncrypt(
-      pointers, ot_extension_sender_data.y0, ot_extension_sender_data.y1, base_ots_receiver_data.c,
-      prg_fixed_key, bit_size_padded, ot_extension_sender_data.bitlengths);
+      pointers, ot_extension_sender_data.y0, ot_extension_sender_data.y1,
+      base_ots_receiver_data.c.Subset(offset_, offset_ + kKappa), prg_fixed_key, bit_size_padded,
+      ot_extension_sender_data.bitlengths);
 
   // we are done with the setup for the sender side
   {
@@ -283,11 +287,12 @@ void OtProviderFromOtExtension::ReceiveSetup() {
 
   // PRG which is used to expand the keys we got from the base OTs
   primitives::Prg prg_fixed_key, prg_variable_key;
-  // fill the rows of the matrix
+
+  // fill the rows of the matrix, offset to differentiate other providers' base ots
   for (i = 0; i < kKappa; ++i) {
     // generate rows of the matrix using the corresponding 0 key
     // T[j] = Prg(s_{j,0})
-    prg_variable_key.SetKey(base_ots_sender_data.messages_0.at(i).data());
+    prg_variable_key.SetKey(base_ots_sender_data.messages_0.at(offset_ + i).data());
     // change the offset in the output stream since we might have already used
     // the same base OTs previously
     prg_variable_key.SetOffset(base_ots_sender_data.consumed_offset);
@@ -301,7 +306,7 @@ void OtProviderFromOtExtension::ReceiveSetup() {
 
     // now mask the result with random stream expanded from the 1 key
     // u_j = u_j XOR Prg(s_{j,1})
-    prg_variable_key.SetKey(base_ots_sender_data.messages_1.at(i).data());
+    prg_variable_key.SetKey(base_ots_sender_data.messages_1.at(offset_ + i).data());
     prg_variable_key.SetOffset(base_ots_sender_data.consumed_offset);
     u ^= AlignedBitVector(prg_variable_key.Encrypt(byte_size), bit_size);
 
@@ -349,7 +354,7 @@ std::unique_ptr<ROtSender> OtProviderSender::RegisterROt(const std::size_t numbe
   auto ot = std::make_unique<ROtSender>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
     if (data_.logger) {
-      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XcOt",
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender ROt",
                                          party_id_, number_of_ots, bitlength));
     }
   }

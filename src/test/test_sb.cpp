@@ -49,19 +49,20 @@ void TemplateTest() {
 
         std::vector<std::future<void>> futures;
         futures.reserve(number_of_parties);
-        for (auto& party : motion_parties) {
-          futures.emplace_back(std::async(std::launch::async, [&party] {
-            auto& backend = party->GetBackend();
+        for (std::size_t j = 0; j < number_of_parties; ++j) {
+          futures.emplace_back(std::async(std::launch::async, [&motion_parties, j] {
+            auto& backend = motion_parties.at(j)->GetBackend();
             auto& sp_provider = backend->GetSpProvider();
             auto& sb_provider = backend->GetSbProvider();
             sb_provider->PreSetup();
             sp_provider->PreSetup();
+            backend->GetBaseOtProvider()->AddNumberOfOts(encrypto::motion::kKappa);
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             sp_provider->Setup();
             sb_provider->Setup();
-            party->Finish();
+            motion_parties.at(j)->Finish();
           }));
         }
         std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });
