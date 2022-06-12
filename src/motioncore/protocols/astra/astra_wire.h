@@ -31,7 +31,7 @@ template<typename T>
 class Wire final : public motion::Wire {
   using Base = motion::Wire;
  public:
-  // TODO(oliver): each party always has exactly 2 values. Would it be better to store 2 elements?
+  // TODO(oliver): each party always has exactly 2 values. Store 2 elements and inline?
   struct Data {
     Data() : value{}, lambda1{}, lambda2{} {}
     Data(T v, T l1, T l2) : value{v}, lambda1{l1}, lambda2{l2} {}
@@ -55,7 +55,7 @@ class Wire final : public motion::Wire {
 
   virtual bool IsConstant() const noexcept final { return false; };
   
-  virtual std::size_t GetBitLength() const final { return sizeof(T) * CHAR_BIT; };
+  virtual std::size_t GetBitLength() const final { return sizeof(T) * 8; };
   
   const std::vector<Data>& GetValues() const { return values_; }
   

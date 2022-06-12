@@ -792,7 +792,7 @@ void MultiplicationGate<T>::EvaluateSetup() {
         auto& a = a_values[i];
         auto& b = b_values[i];
 
-        T gamma_ab_1 = randoms1.at(i + out_values.size());
+        T gamma_ab_1 = randoms1[i + out_values.size()];
         T lambda_a = a.lambda1 + a.lambda2;
         T lambda_b = b.lambda1 + b.lambda2;
         T gamma_ab = lambda_a * lambda_b;
@@ -816,7 +816,7 @@ void MultiplicationGate<T>::EvaluateSetup() {
         auto& out = out_values[i];
         out.lambda1 = randoms0[i];
         // We store gamma_ab_1 in the free out.lambda2 space
-        out.lambda2 = randoms0.at(i + out_values.size());
+        out.lambda2 = randoms0[i + out_values.size()];
       }
       break;
     }
@@ -1022,7 +1022,7 @@ void DotProductGate<T>::EvaluateSetup() {
       std::vector<T> message_gamma_ab_2;
       message_gamma_ab_2.reserve(out_values.size());
       for (auto i = 0u; i != out_values.size(); ++i) {
-        T gamma_ab_1 = randoms1.at(i + out_values.size());
+        T gamma_ab_1 = randoms1[i + out_values.size()];
         T gamma_ab{0};
 
         for (auto j = 0u; j != parent_a_.size(); ++j) {
@@ -1057,7 +1057,7 @@ void DotProductGate<T>::EvaluateSetup() {
         auto& out = out_values[i];
         out.lambda1 = randoms0[i];
         // We store gamma_ab_1 in the free out_lambda space
-        out.lambda2 = randoms0.at(i + out_values.size());
+        out.lambda2 = randoms0[i + out_values.size()];
       }
       break;
     }
