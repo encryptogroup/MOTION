@@ -26,7 +26,7 @@
 #include "base/backend.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "communication/output_message.h"
+#include "communication/message.h"
 #include "protocols/astra/astra_wire.h"
 
 namespace encrypto::motion::proto::astra { 
@@ -48,7 +48,7 @@ class InputGate final : public motion::InputGate {
   astra::SharePointer<T> GetOutputAsAstraShare();
   
  private:
-  motion::ReusableFiberFuture<std::vector<uint8_t>> input_future_; 
+  motion::ReusableFiberFuture<std::vector<std::uint8_t>> input_future_;
 };
 
 template <typename T>
@@ -68,7 +68,7 @@ class OutputGate final : public motion::OutputGate {
   astra::SharePointer<T> GetOutputAsAstraShare();
   
  private:
-  motion::ReusableFiberFuture<std::vector<uint8_t>> output_future_; 
+  motion::ReusableFiberFuture<std::vector<std::uint8_t>> output_future_;
 };
 
 template<typename T>
@@ -116,7 +116,8 @@ class MultiplicationGate final : public TwoGate {
   astra::SharePointer<T> GetOutputAsAstraShare();
   
  private:
-  motion::ReusableFiberFuture<std::vector<uint8_t>> multiply_future_; 
+  motion::ReusableFiberFuture<std::vector<std::uint8_t>> multiply_future_setup_;
+  motion::ReusableFiberFuture<std::vector<std::uint8_t>> multiply_future_online_;
 };
 
 template<typename T>
@@ -135,7 +136,8 @@ class DotProductGate final : public TwoGate {
   astra::SharePointer<T> GetOutputAsAstraShare();
   
  private:
-  motion::ReusableFiberFuture<std::vector<uint8_t>> dot_product_future_; 
+  motion::ReusableFiberFuture<std::vector<std::uint8_t>> dot_product_future_setup_;
+  motion::ReusableFiberFuture<std::vector<std::uint8_t>> dot_product_future_online_;
 };
 
     

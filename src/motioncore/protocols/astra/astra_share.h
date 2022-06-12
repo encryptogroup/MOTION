@@ -24,7 +24,6 @@
 #pragma once
 
 #include "astra_wire.h"
-#include "astra_data.h"
 #include "protocols/share.h"
 
 

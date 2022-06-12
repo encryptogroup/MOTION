@@ -249,14 +249,14 @@ void OutputGate<T>::EvaluateOnline() {
 
   // we need to send shares to one other party:
   if (!is_my_output_) {
-    auto payload = ToByteVector(output);
+    auto payload = ToByteVector<T>(output);
     auto msg{
         communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, payload)};
     communication_layer.SendMessage(output_owner_, msg.Release());
   }
   // we need to send shares to all other parties:
   else if (output_owner_ == kAll) {
-    auto payload = ToByteVector(output);
+    auto payload = ToByteVector<T>(output);
     auto msg{
         communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, payload)};
     communication_layer.BroadcastMessage(msg.Release());
@@ -276,7 +276,7 @@ void OutputGate<T>::EvaluateOnline() {
       const auto output_message = output_message_futures_.at(i > my_id ? i - 1 : i).get();
       auto message = communication::GetMessage(output_message.data());
 
-      const auto& fb_vector{*output_message_pointer->wires()->Get(0)->payload()};
+      const auto& fb_vector{*message->payload()};
       shared_outputs.push_back(FromByteVector<T>(std::span(fb_vector.Data(), fb_vector.size())));
       assert(shared_outputs[i].size() == parent_[0]->GetNumberOfSimdValues());
     }

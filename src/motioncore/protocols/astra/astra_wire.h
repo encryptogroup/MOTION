@@ -24,7 +24,6 @@
 #pragma once
 
 #include "protocols/wire.h"
-#include "astra_data.h"
 
 namespace encrypto::motion::proto::astra {
     
@@ -32,11 +31,20 @@ template<typename T>
 class Wire final : public motion::Wire {
   using Base = motion::Wire;
  public:
-  using value_type = Data<T>;
+  // TODO(oliver): each party always has exactly 2 values. Would it be better to store 2 elements?
+  struct Data {
+    Data() : value{}, lambda1{}, lambda2{} {}
+    Data(T v, T l1, T l2) : value{v}, lambda1{l1}, lambda2{l2} {}
+    T value;
+    T lambda1;
+    T lambda2;
+  };
+
+  using value_type = Data;
  
  Wire() = default;
  
-  Wire(Backend& backend, std::vector<Data<T>> values);
+  Wire(Backend& backend, std::vector<Data> values);
   Wire(Backend& backend, std::size_t number_of_simd);
   
   ~Wire() = default;
@@ -49,9 +57,9 @@ class Wire final : public motion::Wire {
   
   virtual std::size_t GetBitLength() const final { return sizeof(T) * CHAR_BIT; };
   
-  const std::vector<Data<T>>& GetValues() const { return values_; }
+  const std::vector<Data>& GetValues() const { return values_; }
   
-  std::vector<Data<T>>& GetMutableValues() { return values_; }
+  std::vector<Data>& GetMutableValues() { return values_; }
 
   void SetSetupIsReady() {
     {
@@ -64,7 +72,7 @@ class Wire final : public motion::Wire {
   const auto& GetSetupReadyCondition() const { return setup_ready_condition_; }
   
  private:
-  std::vector<Data<T>> values_;
+  std::vector<Data> values_;
 
   std::atomic<bool> setup_ready_{false};
   std::unique_ptr<FiberCondition> setup_ready_condition_;

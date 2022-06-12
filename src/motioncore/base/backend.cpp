@@ -48,7 +48,6 @@
 #include "oblivious_transfer/ot_provider.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
 #include "protocols/astra/astra_gate.h"
-#include "protocols/astra/astra_provider.h"
 #include "protocols/astra/astra_share.h"
 #include "protocols/bmr/bmr_gate.h"
 #include "protocols/bmr/bmr_provider.h"
@@ -88,8 +87,7 @@ Backend::Backend(communication::CommunicationLayer& communication_layer,
   sb_provider_ = std::make_shared<SbProviderFromSps>(communication_layer_, sp_provider_, *logger_,
                                                      run_time_statistics_.back());
   bmr_provider_ = std::make_unique<proto::bmr::Provider>(communication_layer_);
-  
-  astra_provider_ = std::make_unique<proto::astra::Provider>(communication_layer_);
+
   communication_layer_.Start();
 }
 
@@ -498,25 +496,27 @@ template SharePointer Backend::AstraInput<__uint128_t>(std::size_t party_id, __u
 
 template <typename T>
 SharePointer Backend::AstraInput(std::size_t party_id, std::vector<T> input) {
-  auto input_gate = std::make_shared<proto::astra::InputGate<T>>(std::move(input), party_id, *this);
-  auto input_gate_cast = std::static_pointer_cast<InputGate>(input_gate);
-  RegisterInputGate(input_gate_cast);
+  auto input_gate =
+      register_->EmplaceGate<proto::astra::InputGate<T>>(std::move(input), party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsAstraShare());
 }
 
-template SharePointer Backend::AstraInput<std::uint8_t>(std::size_t party_id, std::vector<std::uint8_t> input);
-template SharePointer Backend::AstraInput<std::uint16_t>(std::size_t party_id, std::vector<std::uint16_t> input);
-template SharePointer Backend::AstraInput<std::uint32_t>(std::size_t party_id, std::vector<std::uint32_t> input);
-template SharePointer Backend::AstraInput<std::uint64_t>(std::size_t party_id, std::vector<std::uint64_t> input);
-template SharePointer Backend::AstraInput<__uint128_t>(std::size_t party_id, std::vector<__uint128_t> input);
+template SharePointer Backend::AstraInput<std::uint8_t>(std::size_t party_id,
+                                                        std::vector<std::uint8_t> input);
+template SharePointer Backend::AstraInput<std::uint16_t>(std::size_t party_id,
+                                                         std::vector<std::uint16_t> input);
+template SharePointer Backend::AstraInput<std::uint32_t>(std::size_t party_id,
+                                                         std::vector<std::uint32_t> input);
+template SharePointer Backend::AstraInput<std::uint64_t>(std::size_t party_id,
+                                                         std::vector<std::uint64_t> input);
+template SharePointer Backend::AstraInput<__uint128_t>(std::size_t party_id,
+                                                       std::vector<__uint128_t> input);
 
 template <typename T>
 SharePointer Backend::AstraOutput(const proto::astra::SharePointer<T>& parent,
-                                          std::size_t output_owner) {
+                                  std::size_t output_owner) {
   assert(parent);
-  auto output_gate = std::make_shared<proto::astra::OutputGate<T>>(parent, output_owner);
-  auto out_gate_cast = std::static_pointer_cast<Gate>(output_gate);
-  RegisterGate(out_gate_cast);
+  auto output_gate = register_->EmplaceGate<proto::astra::OutputGate<T>>(parent, output_owner);
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsAstraShare());
 }
 
@@ -536,30 +536,28 @@ SharePointer Backend::AstraOutput(const SharePointer& parent, std::size_t output
   assert(parent);
   auto casted_parent_pointer = std::dynamic_pointer_cast<proto::astra::Share<T>>(parent);
   assert(casted_parent_pointer);
-  return AstraOutput(casted_parent_pointer, output_owner);
+  return AstraOutput<T>(casted_parent_pointer, output_owner);
 }
 
 template SharePointer Backend::AstraOutput<std::uint8_t>(const SharePointer& parent,
-                                                                 std::size_t output_owner);
+                                                         std::size_t output_owner);
 template SharePointer Backend::AstraOutput<std::uint16_t>(const SharePointer& parent,
-                                                                  std::size_t output_owner);
+                                                          std::size_t output_owner);
 template SharePointer Backend::AstraOutput<std::uint32_t>(const SharePointer& parent,
-                                                                  std::size_t output_owner);
+                                                          std::size_t output_owner);
 template SharePointer Backend::AstraOutput<std::uint64_t>(const SharePointer& parent,
-                                                                  std::size_t output_owner);
+                                                          std::size_t output_owner);
 template SharePointer Backend::AstraOutput<__uint128_t>(const SharePointer& parent,
-                                                                std::size_t output_owner);
+                                                        std::size_t output_owner);
 
 template <typename T>
 SharePointer Backend::AstraAddition(const proto::astra::SharePointer<T>& a,
-                                            const proto::astra::SharePointer<T>& b) {
+                                    const proto::astra::SharePointer<T>& b) {
   assert(a);
   assert(b);
   auto wire_a = a->GetAstraWire();
   auto wire_b = b->GetAstraWire();
-  auto addition_gate = std::make_shared<proto::astra::AdditionGate<T>>(wire_a, wire_b);
-  auto addition_gate_cast = std::static_pointer_cast<Gate>(addition_gate);
-  RegisterGate(addition_gate_cast);
+  auto addition_gate = register_->EmplaceGate<proto::astra::AdditionGate<T>>(wire_a, wire_b);
   return std::static_pointer_cast<Share>(addition_gate->GetOutputAsAstraShare());
 }
 
@@ -591,26 +589,24 @@ SharePointer Backend::AstraAddition(const SharePointer& a, const SharePointer& b
 }
 
 template SharePointer Backend::AstraAddition<std::uint8_t>(const SharePointer& a,
-                                                                   const SharePointer& b);
+                                                           const SharePointer& b);
 template SharePointer Backend::AstraAddition<std::uint16_t>(const SharePointer& a,
-                                                                    const SharePointer& b);
+                                                            const SharePointer& b);
 template SharePointer Backend::AstraAddition<std::uint32_t>(const SharePointer& a,
-                                                                    const SharePointer& b);
+                                                            const SharePointer& b);
 template SharePointer Backend::AstraAddition<std::uint64_t>(const SharePointer& a,
-                                                                    const SharePointer& b);
+                                                            const SharePointer& b);
 template SharePointer Backend::AstraAddition<__uint128_t>(const SharePointer& a,
-                                                                  const SharePointer& b);
+                                                          const SharePointer& b);
 
 template <typename T>
 SharePointer Backend::AstraSubtraction(const proto::astra::SharePointer<T>& a,
-                                               const proto::astra::SharePointer<T>& b) {
+                                       const proto::astra::SharePointer<T>& b) {
   assert(a);
   assert(b);
   auto wire_a = a->GetAstraWire();
   auto wire_b = b->GetAstraWire();
-  auto sub_gate = std::make_shared<proto::astra::SubtractionGate<T>>(wire_a, wire_b);
-  auto sub_gate_cast = std::static_pointer_cast<Gate>(sub_gate);
-  RegisterGate(sub_gate_cast);
+  auto sub_gate = register_->EmplaceGate<proto::astra::SubtractionGate<T>>(wire_a, wire_b);
   return std::static_pointer_cast<Share>(sub_gate->GetOutputAsAstraShare());
 }
 
@@ -642,16 +638,15 @@ SharePointer Backend::AstraSubtraction(const SharePointer& a, const SharePointer
 }
 
 template SharePointer Backend::AstraSubtraction<std::uint8_t>(const SharePointer& a,
-                                                                      const SharePointer& b);
+                                                              const SharePointer& b);
 template SharePointer Backend::AstraSubtraction<std::uint16_t>(const SharePointer& a,
-                                                                       const SharePointer& b);
+                                                               const SharePointer& b);
 template SharePointer Backend::AstraSubtraction<std::uint32_t>(const SharePointer& a,
-                                                                       const SharePointer& b);
+                                                               const SharePointer& b);
 template SharePointer Backend::AstraSubtraction<std::uint64_t>(const SharePointer& a,
-                                                                       const SharePointer& b);
+                                                               const SharePointer& b);
 template SharePointer Backend::AstraSubtraction<__uint128_t>(const SharePointer& a,
-                                                                     const SharePointer& b);
-
+                                                             const SharePointer& b);
 
 void Backend::Synchronize() { communication_layer_.Synchronize(); }
 

@@ -54,8 +54,7 @@ class Provider;
 }  // namespace encrypto::motion::proto::bmr
 
 namespace encrypto::motion::proto::astra {
-    
-class Provider;
+
 template<typename T> 
 class Share;
 template<typename T>
@@ -265,8 +264,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   BaseProvider& GetBaseProvider() { return *motion_base_provider_; };
 
   proto::bmr::Provider& GetBmrProvider() { return *bmr_provider_; };
-  
-  proto::astra::Provider& GetAstraProvider() { return *astra_provider_; };
 
   auto& GetBaseOtProvider() { return base_ot_provider_; };
 
@@ -298,7 +295,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::shared_ptr<SpProvider> sp_provider_;
   std::shared_ptr<SbProvider> sb_provider_;
   std::unique_ptr<proto::bmr::Provider> bmr_provider_;
-  std::unique_ptr<proto::astra::Provider> astra_provider_;
 
   bool require_base_ots_{false};
   bool base_ots_finished_{false};

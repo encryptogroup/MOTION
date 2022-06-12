@@ -158,7 +158,6 @@ void CommunicationLayer::CommunicationLayerImplementation::ReceiveTask(
       break;
     }
     auto raw_message = std::move(*raw_message_opt);
-
     flatbuffers::Verifier verifier(reinterpret_cast<std::uint8_t*>(raw_message.data()),
                                    raw_message.size());
     if (!VerifyMessageBuffer(verifier)) {

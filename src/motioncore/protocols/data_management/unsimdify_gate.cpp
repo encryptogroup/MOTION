@@ -155,37 +155,29 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
       case encrypto::motion::MpcProtocol::kAstra: {
         switch (parent_[0]->GetBitLength()) {
           case 8: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::astra::Wire<std::uint8_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::astra::Wire<std::uint8_t>>(backend_, 1));
             break;
           }
           case 16: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::astra::Wire<std::uint16_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::astra::Wire<std::uint16_t>>(backend_, 1));
             break;
           }
           case 32: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::astra::Wire<std::uint32_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::astra::Wire<std::uint32_t>>(backend_, 1));
             break;
           }
           case 64: {
-            auto& w = output_wires_.emplace_back(std::static_pointer_cast<Wire>(
-                std::make_shared<proto::astra::Wire<std::uint64_t>>(backend_, 1)));
-            assert(w);
-            GetRegister().RegisterNextWire(w);
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::astra::Wire<std::uint64_t>>(backend_, 1));
             break;
           }
           default:
-            throw std::invalid_argument(fmt::format(
-                "Trying to create a proto::astra::Share with invalid bitlength: {}",
-                parent_[i]->GetBitLength()));
+            throw std::invalid_argument(
+                fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
+                            parent_[i]->GetBitLength()));
         }
         break;
       }
@@ -255,8 +247,7 @@ void ArithmeticGmwUnsimdifyOnline(WirePointer parent_wire, std::span<WirePointer
 
 template <typename T>
 void AstraUnsimdifyOnline(WirePointer parent_wire, std::span<WirePointer> output_wires) {
-  ArithmeticUnsimdifyOnlineImplementation<proto::astra::Wire<T>>(parent_wire,
-                                                                 output_wires);
+  ArithmeticUnsimdifyOnlineImplementation<proto::astra::Wire<T>>(parent_wire, output_wires);
 }
 
 template <typename T>
@@ -347,9 +338,9 @@ void UnsimdifyGate::EvaluateOnline() {
           break;
         }
         default:
-          throw std::invalid_argument(fmt::format(
-              "Trying to create a proto::astra::Share with invalid bitlength: {}",
-              output_wires_[0]->GetBitLength()));
+          throw std::invalid_argument(
+              fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
+                          output_wires_[0]->GetBitLength()));
       }
       break;
     }
@@ -507,9 +498,9 @@ std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {
             break;
           }
           default:
-            throw std::invalid_argument(fmt::format(
-                "Trying to create a proto::astra::Share with invalid bitlength: {}",
-                output_wires_[0]->GetBitLength()));
+            throw std::invalid_argument(
+                fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
+                            output_wires_[0]->GetBitLength()));
         }
         break;
       }

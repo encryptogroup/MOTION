@@ -36,7 +36,6 @@ add_library(motion
         protocols/astra/astra_gate.cpp
         protocols/astra/astra_wire.cpp
         protocols/astra/astra_share.cpp
-        protocols/astra/astra_provider.cpp
         protocols/bmr/bmr_gate.cpp
         protocols/bmr/bmr_provider.cpp
         protocols/bmr/bmr_share.cpp

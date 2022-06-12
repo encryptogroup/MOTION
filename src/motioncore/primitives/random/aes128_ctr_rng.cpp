@@ -21,8 +21,11 @@
 // SOFTWARE.
 
 #include "aes128_ctr_rng.h"
+
 #include <openssl/rand.h>
+#include <array>
 #include <fstream>
+
 #include "primitives/aes/aesni_primitives.h"
 
 namespace encrypto::motion {
@@ -74,4 +77,4 @@ void Aes128CtrRng::RandomBytes(std::byte* output, std::size_t number_of_bytes) {
             output + number_of_bytes - remaining_bytes);
 }
 
-}   //  namespace encrypto::motion
+}  //  namespace encrypto::motion
