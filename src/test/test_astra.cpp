@@ -49,7 +49,7 @@ class AstraTest : public ::testing::Test {
   }
 
   void GenerateDiverseInputs() {
-    zeros_single_.resize(1, 0);
+    zeros_single_.emplace_back(0);
     zeros_simd_.resize(number_of_simd_, 0);
 
     std::mt19937_64 mt(seed_);
@@ -82,7 +82,7 @@ class AstraTest : public ::testing::Test {
   }
 
   void GenerateDotProductInputs() {
-    zeros_single_.resize(1, 0);
+    zeros_single_.emplace_back(0);
     zeros_simd_.resize(number_of_simd_, 0);
 
     std::mt19937_64 mt(seed_);
