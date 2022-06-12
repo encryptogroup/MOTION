@@ -31,7 +31,7 @@ template<typename T>
 class Wire final : public motion::Wire {
   using Base = motion::Wire;
  public:
-  // TODO(oliver): each party always has exactly 2 values. Store 2 elements and inline?
+  // TODO(oliver): each party always has exactly 2 values. Store 2 elements?
   struct Data {
     Data() : value{}, lambda1{}, lambda2{} {}
     Data(T v, T l1, T l2) : value{v}, lambda1{l1}, lambda2{l2} {}
