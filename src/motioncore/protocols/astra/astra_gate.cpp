@@ -28,7 +28,6 @@
 #include "astra_gate.h"
 #include "astra_share.h"
 #include "astra_wire.h"
-#include "communication/astra_message.h"
 #include "communication/message_manager.h"
 #include "primitives/sharing_randomness_generator.h"
 #include "utility/helpers.h"
