@@ -148,11 +148,11 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
 
           if (party_id == output_owner) {
             T circuit_result_1 = share_output_1.As<T>();
-            T expected_result_1 = SumReduction(input_1);
+            T expected_result_1 = SumReduction<T>(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = share_output_1K.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
+            const std::vector<T> expected_result_1K = std::move(RowSumReduction<T>(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
             }
@@ -160,11 +160,11 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
 
           {
             T circuit_result_1 = share_output_1_all.As<T>();
-            T expected_result_1 = SumReduction(input_1);
+            T expected_result_1 = SumReduction<T>(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = share_output_1K_all.As<std::vector<T>>();
-            const std::vector<T> expected_result_1K = std::move(RowSumReduction(input_1K));
+            const std::vector<T> expected_result_1K = std::move(RowSumReduction<T>(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
             }
@@ -256,11 +256,11 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
                     share_output_1K->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = SumReduction(input_1) + const_input_1.at(0);
+            T expected_result_1 = SumReduction<T>(input_1) + const_input_1.at(0);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
-            const auto temporary_result{RowSumReduction(input_1K)};
+            const auto temporary_result{RowSumReduction<T>(input_1K)};
             const auto expected_result_1K{AddVectors(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
@@ -276,11 +276,11 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
                     share_output_1K_all->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = SumReduction(input_1) + const_input_1.at(0);
+            T expected_result_1 = SumReduction<T>(input_1) + const_input_1.at(0);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
-            const auto temporary_result{RowSumReduction(input_1K)};
+            const auto temporary_result{RowSumReduction<T>(input_1K)};
             const auto expected_result_1K{AddVectors(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
@@ -363,11 +363,11 @@ TEST(ArithmeticGmw, Subtraction_1_1K_Simd_2_3_4_5_10_parties) {
                     share_output_1K->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = SubReduction(input_1);
+            T expected_result_1 = SubReduction<T>(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = wire_1K->GetValues();
-            const std::vector<T> expected_result_1K = std::move(RowSubReduction(input_1K));
+            const std::vector<T> expected_result_1K = std::move(RowSubReduction<T>(input_1K));
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
             }
@@ -382,11 +382,11 @@ TEST(ArithmeticGmw, Subtraction_1_1K_Simd_2_3_4_5_10_parties) {
                     share_output_1K_all->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = SubReduction(input_1);
+            T expected_result_1 = SubReduction<T>(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = wire_1K->GetValues();
-            const std::vector<T> expected_result_1K = RowSubReduction(input_1K);
+            const std::vector<T> expected_result_1K = RowSubReduction<T>(input_1K);
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K.at(i), expected_result_1K.at(i));
             }
@@ -461,11 +461,11 @@ TEST(ArithmeticGmw, Multiplication_1_100_Simd_2_3_parties) {
 
           if (party_id == output_owner) {
             T circuit_result_1 = share_output_1.As<T>();
-            T expected_result_1 = MulReduction(input_1);
+            T expected_result_1 = MulReduction<T>(input_1);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T> circuit_result_100 = share_output_1K.As<std::vector<T>>();
-            const std::vector<T> expected_result_100 = std::move(RowMulReduction(input_100));
+            const std::vector<T> expected_result_100 = std::move(RowMulReduction<T>(input_100));
             for (auto i = 0u; i < circuit_result_100.size(); ++i) {
               EXPECT_EQ(circuit_result_100.at(i), expected_result_100.at(i));
             }
@@ -556,11 +556,11 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
                     share_output_1K->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = SumReduction(input_1) * const_input_1.at(0);
+            T expected_result_1 = SumReduction<T>(input_1) * const_input_1.at(0);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
-            const auto temporary_result{RowSumReduction(input_1K)};
+            const auto temporary_result{RowSumReduction<T>(input_1K)};
             const auto expected_result_1K{MultiplyVectors(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
@@ -576,11 +576,11 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
                     share_output_1K_all->GetWires().at(0));
 
             T circuit_result_1 = wire_1->GetValues().at(0);
-            T expected_result_1 = SumReduction(input_1) * const_input_1.at(0);
+            T expected_result_1 = SumReduction<T>(input_1) * const_input_1.at(0);
             EXPECT_EQ(circuit_result_1, expected_result_1);
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
-            const auto temporary_result{RowSumReduction(input_1K)};
+            const auto temporary_result{RowSumReduction<T>(input_1K)};
             const auto expected_result_1K{MultiplyVectors(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);

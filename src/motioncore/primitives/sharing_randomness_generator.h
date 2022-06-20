@@ -64,6 +64,10 @@ class SharingRandomnessGenerator {
   SharingRandomnessGenerator(std::size_t party_id);
 
   void Initialize(const unsigned char seed[SharingRandomnessGenerator::kMasterSeedByteLength]);
+  
+  static std::unique_ptr<SharingRandomnessGenerator> GetInstance(
+    std::vector<unsigned char>& input_sharing_seed, MpcProtocol protocol_id, size_t party_id);
+
 
   ~SharingRandomnessGenerator() = default;
 

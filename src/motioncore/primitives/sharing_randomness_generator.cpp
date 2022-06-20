@@ -22,6 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include "blake2b.h"
 #include "sharing_randomness_generator.h"
 
 namespace encrypto::motion::primitives {
@@ -63,6 +64,18 @@ void SharingRandomnessGenerator::Initialize(
     initialized_ = true;
   }
   initialized_condition_->NotifyAll();
+}
+
+std::unique_ptr<SharingRandomnessGenerator> SharingRandomnessGenerator::GetInstance(
+           std::vector<unsigned char>& input_sharing_seed, MpcProtocol protocol_id, size_t party_id) {
+  std::unique_ptr<SharingRandomnessGenerator> result = std::make_unique<SharingRandomnessGenerator>(party_id);
+  assert(static_cast<size_t>(protocol_id) < 256u);
+  input_sharing_seed.emplace_back(static_cast<unsigned char>(protocol_id));
+  
+  std::uint8_t seed[kMasterSeedByteLength];
+  Blake2b(input_sharing_seed.data(), seed, input_sharing_seed.size());
+  result->Initialize(seed);
+  return result;
 }
 
 BitVector<> SharingRandomnessGenerator::GetBits(const std::size_t gate_id,

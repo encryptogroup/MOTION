@@ -32,6 +32,7 @@ namespace encrypto::motion::communication {
 flatbuffers::FlatBufferBuilder BuildHelloMessage(
     const uint16_t source_id = 0, uint16_t destination_id = 0, uint16_t number_of_parties = 0,
     const std::vector<uint8_t>* input_sharing_seed = nullptr,
+    const std::vector<uint8_t>* global_sharing_seed = nullptr,
     const std::vector<uint8_t>* fixed_key_aes_seed = nullptr, bool online_after_setup = false,
     float motion_version = kVersion);
 

@@ -71,6 +71,7 @@ void BaseProvider::Setup() {
   std::vector<std::vector<std::uint8_t>> my_seeds;
   std::generate_n(std::back_inserter(my_seeds), number_of_parties_,
                   [] { return RandomVector<std::uint8_t>(32); });
+  std::vector<std::uint8_t> global_seed = RandomVector<std::uint8_t>(32);
 
   // prepare and send HelloMessage
   for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
@@ -78,7 +79,7 @@ void BaseProvider::Setup() {
       continue;
     }
     auto msg_builder = communication::BuildHelloMessage(
-        my_id_, party_id, number_of_parties_, &my_seeds.at(party_id), &aes_fixed_key_,
+        my_id_, party_id, number_of_parties_, &my_seeds.at(party_id), &global_seed, &aes_fixed_key_,
         /* TODO: configuration_->GetOnlineAfterSetup()*/ true, kVersion);
     communication_layer_.SendMessage(party_id, msg_builder.Release());
   }
@@ -103,7 +104,11 @@ void BaseProvider::Setup() {
     auto bytes{f.get()};
     auto message{communication::GetMessage(bytes.data())};
     auto hello_message{communication::GetHelloMessage(message->payload()->data())};
+    auto global_sharing_seed = hello_message->global_sharing_seed();
     auto aes_key = hello_message->fixed_key_aes_seed();
+    // add received share to the global seed
+    std::transform(global_seed.data(), global_seed.data() + global_seed.size(),
+                   global_sharing_seed->data(), global_seed.data(), [](auto a, auto b) { return a ^ b; });
     // add received share to the fixed aes key
     std::transform(aes_fixed_key_.data(), aes_fixed_key_.data() + aes_fixed_key_.size(),
                    aes_key->data(), aes_fixed_key_.data(), [](auto a, auto b) { return a ^ b; });
@@ -112,13 +117,8 @@ void BaseProvider::Setup() {
     their_randomness_generators_.at(party_id)->Initialize(their_seed->data());
   }
   // initialize global randomness generator
-  // TODO: Generate random seed and share with other peers, instead of fixed key
   global_randomness_generator_ = std::make_unique<primitives::SharingRandomnessGenerator>(-1);
-  unsigned char global_seed[] = { 1,  2,  3,  4,  5,  6,  7,  8,
-                                  9, 10, 11, 12, 13, 14, 15, 16,
-                                 17, 18, 19, 20, 21, 22, 23, 24,
-                                 25, 26, 27, 28, 29, 30, 31, 32};
-  global_randomness_generator_->Initialize(global_seed);
+  global_randomness_generator_->Initialize(global_seed.data());
   
   {
     std::scoped_lock lock(setup_ready_cond_->GetMutex());
