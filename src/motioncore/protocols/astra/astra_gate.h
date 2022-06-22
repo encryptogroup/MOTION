@@ -64,6 +64,8 @@ class OutputGate final : public motion::OutputGate {
 
   void EvaluateSetup() final override;
   void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
   
   astra::SharePointer<T> GetOutputAsAstraShare();
   
