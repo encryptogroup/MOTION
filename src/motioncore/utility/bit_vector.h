@@ -516,10 +516,9 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
                     bit_vectors.size(), kBitLength));
   }
 
-  const auto number_of_simd{bit_vectors.at(0).GetSize()};
-  assert(number_of_simd > 0u);
+  assert(bit_vectors.at(0).GetSize() > 0u);
   for ([[maybe_unused]] auto i = 0ull; i < bit_vectors.size(); ++i)
-    assert(bit_vectors.at(i).GetSize() == number_of_simd);
+    assert(bit_vectors.at(i).GetSize() == bit_vectors.at(0).GetSize());
 
   UnsignedIntegralType output_value{0};
   // Converting values in a BitVector to UnsignedIntegralType
