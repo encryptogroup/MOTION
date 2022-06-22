@@ -36,27 +36,6 @@ static std::mutex m;
 
 namespace encrypto::motion::proto::astra {
 
-// Simple randomness generation for testing purposes
-constexpr std::size_t kKey_0_1 = 0;
-constexpr std::size_t kKey_1_0 = 1;
-constexpr std::size_t kKey_0_2 = 2;
-constexpr std::size_t kKey_2_0 = 3;
-constexpr std::size_t kKey_1_2 = 4;
-constexpr std::size_t kKey_2_1 = 5;
-constexpr std::size_t kKeyP_0 = 6;
-constexpr std::size_t kKeyP_1 = 7;
-constexpr std::size_t kKeyP_2 = 8;
-
-uint64_t GetRandomValue(std::size_t key_id) {
-  static std::mt19937_64 mt_64[9] = {std::mt19937_64{0}, std::mt19937_64{0}, std::mt19937_64{1},
-                                     std::mt19937_64{1}, std::mt19937_64{2}, std::mt19937_64{2},
-                                     std::mt19937_64{3}, std::mt19937_64{3}, std::mt19937_64{3}};
-  std::lock_guard<std::mutex> lock{m};
-  static std::uniform_int_distribution<uint64_t> ui(std::numeric_limits<std::size_t>::min(),
-                                                    std::numeric_limits<std::size_t>::max());
-  return ui(mt_64[key_id]);
-}
-
 template <typename T>
 InputGate<T>::InputGate(std::vector<T> input, std::size_t input_owner, Backend& backend)
     : Base(backend) {

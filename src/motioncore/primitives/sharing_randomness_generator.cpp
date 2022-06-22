@@ -22,8 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "blake2b.h"
 #include "sharing_randomness_generator.h"
+#include "blake2b.h"
+
+#include <openssl/aes.h>
+
+#include "utility/helpers.h"
 
 namespace encrypto::motion::primitives {
 
@@ -64,18 +68,6 @@ void SharingRandomnessGenerator::Initialize(
     initialized_ = true;
   }
   initialized_condition_->NotifyAll();
-}
-
-std::unique_ptr<SharingRandomnessGenerator> SharingRandomnessGenerator::GetInstance(
-           std::vector<unsigned char>& input_sharing_seed, MpcProtocol protocol_id, size_t party_id) {
-  std::unique_ptr<SharingRandomnessGenerator> result = std::make_unique<SharingRandomnessGenerator>(party_id);
-  assert(static_cast<size_t>(protocol_id) < 256u);
-  input_sharing_seed.emplace_back(static_cast<unsigned char>(protocol_id));
-  
-  std::uint8_t seed[kMasterSeedByteLength];
-  Blake2b(input_sharing_seed.data(), seed, input_sharing_seed.size());
-  result->Initialize(seed);
-  return result;
 }
 
 BitVector<> SharingRandomnessGenerator::GetBits(const std::size_t gate_id,
@@ -168,5 +160,88 @@ void SharingRandomnessGenerator::ResetBitPool() {
   random_bits_offset_ += random_bits_used_;
   random_bits_used_ = 0;
 }
+
+template <typename T>
+T SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id) {
+  initialized_condition_->Wait();
+
+  std::byte input[AES_BLOCK_SIZE];
+
+  std::copy(std::begin(aes_ctr_nonce_arithmetic_), std::end(aes_ctr_nonce_arithmetic_),
+            reinterpret_cast<std::uint8_t*>(input));
+  std::copy(reinterpret_cast<const std::byte*>(&gate_id),
+            reinterpret_cast<const std::byte*>(&gate_id) + sizeof(gate_id),
+            input + SharingRandomnessGenerator::kCounterOffset);
+
+  auto output = prg_a.Encrypt(input, AES_BLOCK_SIZE);
+
+  // combine resulting randomness xored with the gate_id, which is the actual
+  // input to AES-CTR
+  __uint128_t result = reinterpret_cast<std::uint64_t*>(output.data())[0],
+              modulus = std::numeric_limits<T>::max();
+  result <<= 64;
+  result ^= reinterpret_cast<std::uint64_t*>(output.data())[1] ^ gate_id;
+  result %= modulus;
+
+  return static_cast<T>(result);  // static-cast the result to the smaller
+                                  // ring
+}
+
+template std::uint8_t SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id);
+template std::uint16_t SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id);
+template std::uint32_t SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id);
+template std::uint64_t SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id);
+template uint128_t SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id);
+
+template <typename T>
+std::vector<T> SharingRandomnessGenerator::GetUnsigned(std::size_t gate_id,
+                                                       std::size_t number_of_gates) {
+  if (number_of_gates == 0) {
+    return {};  // return an empty vector if number_of_gates is zero
+  }
+
+  initialized_condition_->Wait();
+
+  // Pre-initialize output vector
+  std::vector<T> results;
+  results.reserve(number_of_gates);
+
+  auto size_in_bytes = AES_BLOCK_SIZE * (number_of_gates);
+  std::vector<std::byte> input(size_in_bytes + AES_BLOCK_SIZE);
+
+  auto gate_id_copy = gate_id;
+  for (auto i = 0u; i < number_of_gates; ++i, ++gate_id_copy) {
+    std::copy(std::begin(aes_ctr_nonce_arithmetic_), std::end(aes_ctr_nonce_arithmetic_),
+              reinterpret_cast<std::uint8_t*>(input.data()) + i * AES_BLOCK_SIZE);
+    std::copy(reinterpret_cast<std::byte*>(&gate_id_copy),
+              reinterpret_cast<std::byte*>(&gate_id_copy) + sizeof(gate_id_copy),
+              input.data() + i * AES_BLOCK_SIZE + SharingRandomnessGenerator::kCounterOffset);
+  }
+
+  auto output = prg_a.Encrypt(input.data(), number_of_gates * AES_BLOCK_SIZE);
+  __uint128_t modulus = std::numeric_limits<T>::max(), single_result;
+  // combine resulting randomness xored with the gate_id, which is the actual
+  // input to AES-CTR
+  for (auto i = 0u; i < number_of_gates; ++i) {
+    single_result = reinterpret_cast<std::uint64_t*>(output.data())[i * 2];
+    single_result <<= 64;
+    single_result ^= reinterpret_cast<std::uint64_t*>(output.data())[i * 2 + 1] ^ gate_id++;
+    single_result %= modulus;
+    results.push_back(static_cast<T>(single_result));  // static-cast the result to the smaller ring
+  }
+
+  return results;
+}
+
+template std::vector<std::uint8_t> SharingRandomnessGenerator::GetUnsigned(
+    std::size_t gate_id, std::size_t number_of_gates);
+template std::vector<std::uint16_t> SharingRandomnessGenerator::GetUnsigned(
+    std::size_t gate_id, std::size_t number_of_gates);
+template std::vector<std::uint32_t> SharingRandomnessGenerator::GetUnsigned(
+    std::size_t gate_id, std::size_t number_of_gates);
+template std::vector<std::uint64_t> SharingRandomnessGenerator::GetUnsigned(
+    std::size_t gate_id, std::size_t number_of_gates);
+template std::vector<uint128_t> SharingRandomnessGenerator::GetUnsigned(
+    std::size_t gate_id, std::size_t number_of_gates);
 
 }  // namespace encrypto::motion::primitives
