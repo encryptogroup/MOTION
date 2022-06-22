@@ -279,7 +279,7 @@ TYPED_TEST(SecureUintTest, AdditionInBmr) {
 
       const T result_check = raw_global_input.at(0) + raw_global_input.at(1);
       const auto result_check_simd =
-          encrypto::motion::AddVectors(raw_global_input_simd.at(0), raw_global_input_simd.at(1));
+          encrypto::motion::AddVectors<T>(raw_global_input_simd.at(0), raw_global_input_simd.at(1));
       std::vector<encrypto::motion::BitVector<>> output, output_simd;
       for (auto i = 0ull; i < kNumberOfWires; ++i) {
         auto wire_single = std::dynamic_pointer_cast<encrypto::motion::proto::bmr::Wire>(

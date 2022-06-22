@@ -261,7 +261,7 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
             const auto temporary_result{RowSumReduction<T>(input_1K)};
-            const auto expected_result_1K{AddVectors(const_input_1K, temporary_result)};
+            const auto expected_result_1K{AddVectors<T>(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
             }
@@ -281,7 +281,7 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
             const auto temporary_result{RowSumReduction<T>(input_1K)};
-            const auto expected_result_1K{AddVectors(const_input_1K, temporary_result)};
+            const auto expected_result_1K{AddVectors<T>(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
             }
@@ -561,7 +561,7 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
             const auto temporary_result{RowSumReduction<T>(input_1K)};
-            const auto expected_result_1K{MultiplyVectors(const_input_1K, temporary_result)};
+            const auto expected_result_1K{MultiplyVectors<T>(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
             }
@@ -581,7 +581,7 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
 
             const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
             const auto temporary_result{RowSumReduction<T>(input_1K)};
-            const auto expected_result_1K{MultiplyVectors(const_input_1K, temporary_result)};
+            const auto expected_result_1K{MultiplyVectors<T>(const_input_1K, temporary_result)};
             for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
               EXPECT_EQ(circuit_result_1K, expected_result_1K);
             }

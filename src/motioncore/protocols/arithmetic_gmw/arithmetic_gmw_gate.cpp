@@ -442,6 +442,8 @@ void SubtractionGate<T>::EvaluateOnline() {
   assert(wire_a);
   assert(wire_b);
 
+
+
   std::vector<T> output = SubVectors<T>(wire_a->GetValues(), wire_b->GetValues());
 
   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));

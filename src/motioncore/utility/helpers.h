@@ -72,12 +72,12 @@ inline std::vector<UnsignedIntegralType> FromByteVector(std::span<const std::uin
 /// \return A vector containing at position i the sum the ith element in a and b.
 /// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline std::vector<T> AddVectors(std::span<const T> a, std::span<const T> b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
-  std::vector<T> result = a;
+  std::vector<T> result(a.begin(), a.end());
 #pragma omp simd
   for (auto j = 0ull; j < result.size(); ++j) {
     result[j] += b[j];  // TODO: implement using AVX2 and AVX512
@@ -92,7 +92,7 @@ inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& 
 /// \return A vector containing at position i the difference the ith element in a and b.
 /// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline std::vector<T> SubVectors(std::span<const T> a, std::span<const T> b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -111,7 +111,7 @@ inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& 
 /// \return A vector containing at position i the product the ith element in a and b.
 /// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
+inline std::vector<T> MultiplyVectors(std::span<const T> a, std::span<const T> b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -131,7 +131,7 @@ inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
 ///         at position i of the input vectors.
 /// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
-inline std::vector<T> AddVectors(std::vector<std::vector<T>>& vectors) {
+inline std::vector<T> AddVectors(std::span<const std::vector<T>> vectors) {
   if (vectors.size() == 0) {
     return {};
   }  // if empty input vector
