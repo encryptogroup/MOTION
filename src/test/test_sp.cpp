@@ -52,7 +52,7 @@ void TemplateTest() {
             auto& backend = motion_parties.at(j)->GetBackend();
             auto& sp_provider = backend->GetSpProvider();
             sp_provider->PreSetup();
-            backend->GetBaseOtProvider()->AddNumberOfOts(encrypto::motion::kKappa);
+            backend->GetOtProviderManager()->PreSetup();
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();

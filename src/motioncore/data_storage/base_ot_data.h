@@ -43,7 +43,7 @@ struct BaseOtReceiverData {
   BaseOtReceiverData();
   ~BaseOtReceiverData() = default;
 
-  void AddNumberOfOts(std::size_t number_of_ots);
+  void Add(std::size_t number_of_ots);
 
   BitVector<> c;  /// choice bits
   std::vector<std::array<std::byte, 16>> messages_c;
@@ -59,7 +59,7 @@ struct BaseOtSenderData {
   BaseOtSenderData();
   ~BaseOtSenderData() = default;
 
-  void AddNumberOfOts(std::size_t number_of_ots);
+  void Add(std::size_t number_of_ots);
 
   std::vector<std::array<std::byte, 16>> messages_0;
   std::vector<std::array<std::byte, 16>> messages_1;
@@ -77,10 +77,10 @@ struct BaseOtData {
   BaseOtSenderData& GetSenderData() { return sender_data; }
   const BaseOtSenderData& GetSenderData() const { return sender_data; }
 
-  void AddNumberOfOts(std::size_t number_of_ots) {
+  void Add(std::size_t number_of_ots) {
     total_number_ots += number_of_ots;
-    receiver_data.AddNumberOfOts(number_of_ots);
-    sender_data.AddNumberOfOts(number_of_ots);
+    receiver_data.Add(number_of_ots);
+    sender_data.Add(number_of_ots);
   }
 
   BaseOtReceiverData receiver_data;

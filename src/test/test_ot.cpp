@@ -91,8 +91,11 @@ TEST(ObliviousTransfer, Random1oo2OtsFromOtExtension) {
                 }
               }
             }
-            motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->AddNumberOfOts(
-                encrypto::motion::kKappa);
+            for (std::size_t party_id = 0; party_id < motion_parties.size(); ++party_id) {
+              if (party_id != i) {
+                motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
+              }
+            }
             motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
             motion_parties.at(i)->GetBackend()->Synchronize();
             motion_parties.at(i)->GetBackend()->OtExtensionSetup();
@@ -201,8 +204,11 @@ TEST(ObliviousTransfer, General1oo2OtsFromOtExtension) {
                 }
               }
             }
-            motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->AddNumberOfOts(
-                encrypto::motion::kKappa);
+            for (std::size_t party_id = 0; party_id < motion_parties.size(); ++party_id) {
+              if (party_id != i) {
+                motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
+              }
+            }
             motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
             motion_parties.at(i)->GetBackend()->Synchronize();
             motion_parties.at(i)->GetBackend()->OtExtensionSetup();
@@ -320,8 +326,11 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
             }
           }
         }
-        motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->AddNumberOfOts(
-            encrypto::motion::kKappa);
+        for (std::size_t party_id = 0; party_id < motion_parties.size(); ++party_id) {
+          if (party_id != i) {
+            motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
+          }
+        }
         motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
         motion_parties.at(i)->GetBackend()->Synchronize();
         motion_parties.at(i)->GetBackend()->OtExtensionSetup();
@@ -381,84 +390,6 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
         }
       }
     }
-  }
-}
-
-/// @brief Test whether each party has the right number and the right part of base OTs.
-/// Say there are 3 parties that are going to do some communications as senders/receivers that
-/// would need different number of base OTs. In this example, party 0 needs 128 and 256 base OTs
-/// to use 1oo2-OT and 1ooN-OT with party 1 and 2 respectively, and then it needs another 256 and
-/// 128 base OTs to use 1ooN-OT and 1oo2-OT to party 1 and 2 respectively.
-///
-/// AddNumberOfOts() outputs the offsets of base OTs (the first index) that are requested from
-/// party 0 for each communication. In the end, party 0 will have the offset 0 for the 1oo2-OT
-/// with party 1 and for the 1ooN-OT with party 2, the offset 128 for the 1ooN-OT with party 1,
-/// and the offset 256 for the 1oo2-OT with party 2.
-TEST(ObliviousTransfer, DISABLED_BaseOtOffset) {
-  constexpr std::size_t kNumberOfParties{3};
-  std::array<std::vector<std::size_t>, 2> number_of_base_ots{{{0, 128, 256}, {0, 256, 128}}};
-
-  try {
-    std::vector<std::thread> threads(kNumberOfParties);
-    std::vector<std::vector<std::size_t>> actual_offsets(kNumberOfParties);
-
-    for (auto i = 0ull; i < kNumberOfParties; ++i) {
-      actual_offsets.at(i).resize(kNumberOfParties);
-    }
-
-    std::vector<encrypto::motion::PartyPointer> motion_parties(
-        std::move(encrypto::motion::MakeLocallyConnectedParties(kNumberOfParties, kPortOffset)));
-    for (auto& party : motion_parties) {
-      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-    }
-
-    for (auto i = 0u; i < motion_parties.size(); ++i) {
-      for (auto j = 0u; j < motion_parties.size(); ++j) {
-        if (i != j) {
-          auto offset = motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->AddNumberOfOts(
-              number_of_base_ots.at(i).at(j), j);
-          if (number_of_base_ots.at(i).at(j) == 128) {
-            motion_parties.at(i)->GetBackend()->GetOtProvider(j).SetBaseOtOffset(offset);
-          } else if (number_of_base_ots.at(i).at(j) == 256) {
-            // motion_parties.at(i)->GetBackend()->GetKK13OtProvider(j).SetBaseOtOffset(offset);
-          }
-        }
-      }
-    }
-
-    for (auto i = 0u; i < motion_parties.size(); ++i) {
-      threads.at(i) = std::thread([i, &motion_parties, &actual_offsets, number_of_base_ots]() {
-        for (auto j = 0u; j < motion_parties.size(); ++j) {
-          if (i != j) {
-            if (number_of_base_ots.at(i).at(j) == 128) {
-              actual_offsets.at(i).at(j) =
-                  motion_parties.at(i)->GetBackend()->GetOtProvider(j).GetBaseOtOffset();
-            } else if (number_of_base_ots.at(i).at(j) == 256) {
-              /* actual_offsets.at(i).at(j) =
-                  motion_parties.at(i)->GetBackend()->GetKK13OtProvider(j).GetBaseOtOffset(); */
-            }
-          }
-        }
-        motion_parties.at(i)->Finish();
-      });
-    }
-
-    for (auto& t : threads) {
-      if (t.joinable()) t.join();
-    }
-
-    for (auto i = 0u; i < motion_parties.size(); ++i) {
-      std::size_t expected_offset = 0;
-      for (auto j = 0u, l = 0u; j < motion_parties.size(); ++j) {
-        if (i != j) {
-          expected_offset += (l == 0) ? 0 : number_of_base_ots.at(i).at(l - 1);
-          ASSERT_EQ(expected_offset, actual_offsets.at(i).at(j));
-          ++l;
-        }
-      }
-    }
-  } catch (std::exception& e) {
-    std::cerr << e.what() << std::endl;
   }
 }
 

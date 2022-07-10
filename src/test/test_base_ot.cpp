@@ -57,7 +57,7 @@ TEST(ObliviousTransfer, BaseOt) {
     }
 
     for (std::size_t i = 0; i < number_of_parties; ++i) {
-      motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->AddNumberOfOts(num_base_ots);
+      motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->Request(num_base_ots);
       motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
     }
 

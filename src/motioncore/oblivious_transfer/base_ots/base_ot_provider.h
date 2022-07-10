@@ -67,32 +67,13 @@ class BaseOtProvider {
   BaseOtData& GetBaseOtsData(std::size_t party_id) { return data_.at(party_id); }
   const BaseOtData& GetBaseOtsData(std::size_t party_id) const { return data_.at(party_id); }
   void PreSetup();
+  bool HasWork();
 
   /// \brief Add the number of Base OTs for each party. Must be called before PreSetup()
-  std::vector<std::size_t> AddNumberOfOts(std::size_t number_of_ots) {
-    std::vector<std::size_t> offsets(number_of_parties_, 0);
-
-    for (std::size_t party_id = 0; party_id < number_of_parties_; ++party_id) {
-      if (party_id == my_id_) {
-        continue;
-      }
-      std::size_t remapped_party_id{party_id > my_id_ ? party_id - 1 : party_id};
-      number_of_ots_.at(remapped_party_id) += number_of_ots;
-      offsets.at(party_id) = data_.at(party_id).total_number_ots;
-      data_.at(party_id).AddNumberOfOts(number_of_ots);
-    }
-    return offsets;
-  }
+  std::vector<std::size_t> Request(std::size_t number_of_ots);
 
   /// \brief Add the number of Base OTs for party with this id. Must be called before PreSetup()
-  std::size_t AddNumberOfOts(std::size_t number_of_ots, std::size_t party_id) {
-    assert(party_id < number_of_parties_);
-    std::size_t remapped_party_id{party_id > my_id_ ? party_id - 1 : party_id};
-    number_of_ots_.at(remapped_party_id) += number_of_ots;
-    auto offset = data_.at(party_id).total_number_ots;
-    data_.at(party_id).AddNumberOfOts(number_of_ots);
-    return offset;
-  }
+  std::size_t Request(std::size_t number_of_ots, std::size_t party_id);
 
  private:
   std::vector<std::size_t> number_of_ots_;

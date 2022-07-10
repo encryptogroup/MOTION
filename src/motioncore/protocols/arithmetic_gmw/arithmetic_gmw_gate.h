@@ -201,8 +201,8 @@ class HybridMultiplicationGate final : public motion::TwoGate {
   HybridMultiplicationGate(Gate&) = delete;
 
  private:
-  std::unique_ptr<AcOtReceiver<T>> ot_receiver_;
-  std::unique_ptr<AcOtSender<T>> ot_sender_;
+  std::unique_ptr<BasicOtReceiver> ot_receiver_;
+  std::unique_ptr<BasicOtSender> ot_sender_;
 };
 
 template <typename T>

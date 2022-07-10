@@ -32,7 +32,7 @@ BaseOtReceiverData::BaseOtReceiverData() {
   is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
 }
 
-void BaseOtReceiverData::AddNumberOfOts(std::size_t number_of_ots) {
+void BaseOtReceiverData::Add(std::size_t number_of_ots) {
   messages_c.resize(messages_c.size() + number_of_ots);
 }
 
@@ -40,7 +40,7 @@ BaseOtSenderData::BaseOtSenderData() {
   is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
 }
 
-void BaseOtSenderData::AddNumberOfOts(std::size_t number_of_ots) {
+void BaseOtSenderData::Add(std::size_t number_of_ots) {
   messages_0.resize(messages_0.size() + number_of_ots);
   messages_1.resize(messages_1.size() + number_of_ots);
 }

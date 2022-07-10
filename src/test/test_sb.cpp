@@ -56,7 +56,7 @@ void TemplateTest() {
             auto& sb_provider = backend->GetSbProvider();
             sb_provider->PreSetup();
             sp_provider->PreSetup();
-            backend->GetBaseOtProvider()->AddNumberOfOts(encrypto::motion::kKappa);
+            backend->GetOtProviderManager()->PreSetup();
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();

@@ -138,13 +138,10 @@ void Backend::RunPreprocessing() {
   }
 
   if (NeedOts()) {
-    // add base ots and set offsets (to differentiate between 1oo2-OT and 1ooN-OT's Base OTs
-    auto offsets = base_ot_provider_->AddNumberOfOts(kKappa);
-    for (std::size_t i = 0; i < communication_layer_.GetNumberOfParties(); ++i) {
-      if (communication_layer_.GetMyId() != i) {
-        GetOtProvider(i).SetBaseOtOffset(offsets.at(i));
-      }
-    }
+    ot_provider_manager_->PreSetup();
+  }
+
+  if (base_ot_provider_->HasWork()) {
     base_ot_provider_->PreSetup();
   }
 
@@ -493,8 +490,6 @@ void Backend::ComputeBaseOts() {
   run_time_statistics_.back().RecordStart<RunTimeStatistics::StatisticsId::kBaseOts>();
   base_ot_provider_->ComputeBaseOts();
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kBaseOts>();
-
-  base_ots_finished_ = true;
 }
 
 void Backend::ImportBaseOts(std::size_t i, const ReceiverMessage& messages) {
@@ -511,13 +506,7 @@ std::pair<ReceiverMessage, SenderMessage> Backend::ExportBaseOts(std::size_t i) 
 
 // TODO: move to OtProvider(Wrapper)
 void Backend::OtExtensionSetup() {
-  require_base_ots_ = true;
-
-  if (ot_extension_finished_) {
-    return;
-  }
-
-  if (!base_ots_finished_) {
+  if (base_ot_provider_->HasWork()) {
     ComputeBaseOts();
   }
 
@@ -543,7 +532,6 @@ void Backend::OtExtensionSetup() {
   }
 
   std::for_each(task_futures.begin(), task_futures.end(), [](auto& f) { f.get(); });
-  ot_extension_finished_ = true;
 
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kOtExtensionSetup>();
 

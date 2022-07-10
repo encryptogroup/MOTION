@@ -127,6 +127,7 @@ struct OtExtensionData {
   OtExtensionSenderData sender_data;
 
   std::size_t party_id{std::numeric_limits<std::size_t>::max()};
+  std::size_t base_ot_offset{std::numeric_limits<std::size_t>::max()};
   std::function<void(flatbuffers::FlatBufferBuilder&&)> send_function;
   communication::MessageManager& message_manager;
   std::shared_ptr<Logger> logger;

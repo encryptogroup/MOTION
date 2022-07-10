@@ -233,6 +233,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   OtProvider& GetOtProvider(std::size_t party_id);
 
+  std::unique_ptr<OtProviderManager>& GetOtProviderManager() {return ot_provider_manager_;}
+
   auto& GetMtProvider() { return mt_provider_; };
 
   auto& GetSpProvider() { return sp_provider_; };
@@ -259,10 +261,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::shared_ptr<SpProvider> sp_provider_;
   std::shared_ptr<SbProvider> sb_provider_;
   std::unique_ptr<proto::bmr::Provider> bmr_provider_;
-
-  bool require_base_ots_{false};
-  bool base_ots_finished_{false};
-  bool ot_extension_finished_{false};
 
   bool NeedOts();
 };

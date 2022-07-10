@@ -54,7 +54,7 @@ TEST(MultiplicationTriples, Binary) {
             auto& backend = motion_parties.at(j)->GetBackend();
             auto& mt_provider = backend->GetMtProvider();
             mt_provider->PreSetup();
-            backend->GetBaseOtProvider()->AddNumberOfOts(encrypto::motion::kKappa);
+            backend->GetOtProviderManager()->PreSetup();
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
@@ -112,7 +112,7 @@ void TemplateTestInteger() {
             auto& backend = motion_parties.at(j)->GetBackend();
             auto& mt_provider = backend->GetMtProvider();
             mt_provider->PreSetup();
-            backend->GetBaseOtProvider()->AddNumberOfOts(encrypto::motion::kKappa);
+            backend->GetOtProviderManager()->PreSetup();
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();

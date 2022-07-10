@@ -67,7 +67,7 @@ class OtFlavorTest : public ::testing::Test {
 
   void RunOtExtensionSetup() {
     for (std::size_t i = 0; i < 2; ++i) {
-      base_ot_providers_[i]->AddNumberOfOts(encrypto::motion::kKappa);
+      ot_provider_wrappers_[i]->PreSetup();
       base_ot_providers_[i]->PreSetup();
     }
 
@@ -169,22 +169,26 @@ TYPED_TEST(AcOtTest, AcOt) {
   constexpr std::size_t kNumberOfOts = 1000;
   const auto correlations = encrypto::motion::RandomVector<TypeParam>(kNumberOfOts);
   const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
-  auto ot_sender = this->GetSenderProvider().template RegisterSendAcOt<TypeParam>(kNumberOfOts);
+  auto ot_sender = this->GetSenderProvider().RegisterSendAcOt(kNumberOfOts, sizeof(TypeParam) * 8);
   auto ot_receiver =
-      this->GetReceiverProvider().template RegisterReceiveAcOt<TypeParam>(kNumberOfOts);
+      this->GetReceiverProvider().RegisterReceiveAcOt(kNumberOfOts, sizeof(TypeParam) * 8);
+
+  auto casted_ot_sender{dynamic_cast<encrypto::motion::AcOtSender<TypeParam>*>(ot_sender.get())};
+  auto casted_ot_receiver{
+      dynamic_cast<encrypto::motion::AcOtReceiver<TypeParam>*>(ot_receiver.get())};
 
   this->RunOtExtensionSetup();
 
-  ot_sender->SetCorrelations(correlations);
-  ot_sender->SendMessages();
+  casted_ot_sender->SetCorrelations(correlations);
+  casted_ot_sender->SendMessages();
 
-  ot_receiver->SetChoices(choice_bits);
-  ot_receiver->SendCorrections();
+  casted_ot_receiver->SetChoices(choice_bits);
+  casted_ot_receiver->SendCorrections();
 
-  ot_sender->ComputeOutputs();
-  ot_receiver->ComputeOutputs();
-  const auto sender_output = ot_sender->GetOutputs();
-  const auto receiver_output = ot_receiver->GetOutputs();
+  casted_ot_sender->ComputeOutputs();
+  casted_ot_receiver->ComputeOutputs();
+  const auto sender_output = casted_ot_sender->GetOutputs();
+  const auto receiver_output = casted_ot_receiver->GetOutputs();
 
   EXPECT_EQ(sender_output.size(), kNumberOfOts);
   EXPECT_EQ(receiver_output.size(), kNumberOfOts);
@@ -204,22 +208,26 @@ TYPED_TEST(AcOtTest, VectorAcOt) {
   const auto correlations = encrypto::motion::RandomVector<TypeParam>(kNumberOfOts * kVectorSize);
   const auto choice_bits = encrypto::motion::BitVector<>::SecureRandom(kNumberOfOts);
   auto ot_sender =
-      this->GetSenderProvider().template RegisterSendAcOt<TypeParam>(kNumberOfOts, kVectorSize);
-  auto ot_receiver = this->GetReceiverProvider().template RegisterReceiveAcOt<TypeParam>(
-      kNumberOfOts, kVectorSize);
+      this->GetSenderProvider().RegisterSendAcOt(kNumberOfOts, sizeof(TypeParam) * 8, kVectorSize);
+  auto ot_receiver = this->GetReceiverProvider().RegisterReceiveAcOt(
+      kNumberOfOts, sizeof(TypeParam) * 8, kVectorSize);
+
+  auto casted_ot_sender{dynamic_cast<encrypto::motion::AcOtSender<TypeParam>*>(ot_sender.get())};
+  auto casted_ot_receiver{
+      dynamic_cast<encrypto::motion::AcOtReceiver<TypeParam>*>(ot_receiver.get())};
 
   this->RunOtExtensionSetup();
 
-  ot_sender->SetCorrelations(correlations);
-  ot_sender->SendMessages();
+  casted_ot_sender->SetCorrelations(correlations);
+  casted_ot_sender->SendMessages();
 
-  ot_receiver->SetChoices(choice_bits);
-  ot_receiver->SendCorrections();
+  casted_ot_receiver->SetChoices(choice_bits);
+  casted_ot_receiver->SendCorrections();
 
-  ot_sender->ComputeOutputs();
-  ot_receiver->ComputeOutputs();
-  const auto sender_output = ot_sender->GetOutputs();
-  const auto receiver_output = ot_receiver->GetOutputs();
+  casted_ot_sender->ComputeOutputs();
+  casted_ot_receiver->ComputeOutputs();
+  const auto sender_output = casted_ot_sender->GetOutputs();
+  const auto receiver_output = casted_ot_receiver->GetOutputs();
 
   EXPECT_EQ(sender_output.size(), kNumberOfOts * kVectorSize);
   EXPECT_EQ(receiver_output.size(), kNumberOfOts * kVectorSize);
