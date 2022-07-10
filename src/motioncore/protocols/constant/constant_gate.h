@@ -226,7 +226,7 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
     GetLogger().LogDebug(fmt::format(
-        "Created an ConstantArithmeticAdditionGate with following properties: {}", gate_info));
+        "Created an ConstantArithmeticMultiplicationGate with following properties: {}", gate_info));
   }
 
   ~ConstantArithmeticMultiplicationGate() final = default;
@@ -256,7 +256,7 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     arithmetic_wire->GetMutableValues() = std::move(output);
 
     GetLogger().LogDebug(
-        fmt::format("Evaluated arithmetic_gmw::AdditionGate with id#{}", gate_id_));
+        fmt::format("Evaluated arithmetic_gmw::MultiplicationGate with id#{}", gate_id_));
   }
 
   bool NeedsSetup() const override { return false; }

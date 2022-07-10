@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -32,8 +32,17 @@ BaseOtReceiverData::BaseOtReceiverData() {
   is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
 }
 
-BaseOtSenderData::BaseOtSenderData(){
+void BaseOtReceiverData::Add(std::size_t number_of_ots) {
+  messages_c.resize(messages_c.size() + number_of_ots);
+}
+
+BaseOtSenderData::BaseOtSenderData() {
   is_ready_condition = std::make_unique<FiberCondition>([this]() { return is_ready.load(); });
+}
+
+void BaseOtSenderData::Add(std::size_t number_of_ots) {
+  messages_0.resize(messages_0.size() + number_of_ots);
+  messages_1.resize(messages_1.size() + number_of_ots);
 }
 
 }  // namespace encrypto::motion

@@ -90,15 +90,25 @@ void SpProviderFromOts::Setup() {
     if (i == my_id_) {
       continue;
     }
-    for (auto& ot : ots_sender_8_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_sender_8_.at(i)) {
+      dynamic_cast<AcOtSender<std::uint8_t>*>(ot.get())->SendMessages();
+    }
     for (auto& ot : ots_receiver_8_.at(i)) ot->SendCorrections();
-    for (auto& ot : ots_sender_16_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_sender_16_.at(i)) {
+      dynamic_cast<AcOtSender<std::uint16_t>*>(ot.get())->SendMessages();
+    }
     for (auto& ot : ots_receiver_16_.at(i)) ot->SendCorrections();
-    for (auto& ot : ots_sender_32_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_sender_32_.at(i)) {
+      dynamic_cast<AcOtSender<std::uint32_t>*>(ot.get())->SendMessages();
+    }
     for (auto& ot : ots_receiver_32_.at(i)) ot->SendCorrections();
-    for (auto& ot : ots_sender_64_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_sender_64_.at(i)) {
+      dynamic_cast<AcOtSender<std::uint64_t>*>(ot.get())->SendMessages();
+    }
     for (auto& ot : ots_receiver_64_.at(i)) ot->SendCorrections();
-    for (auto& ot : ots_sender_128_.at(i)) ot->SendMessages();
+    for (auto& ot : ots_sender_128_.at(i)) {
+      dynamic_cast<AcOtSender<__uint128_t>*>(ot.get())->SendMessages();
+    }
     for (auto& ot : ots_receiver_128_.at(i)) ot->SendCorrections();
   }
 
@@ -127,14 +137,15 @@ static void GenerateRandomPairs(SpVector<T>& sps, std::size_t number_of_sps) {
 
 template <typename T>
 static void RegisterHelperSend(OtProvider& ot_provider,
-                               std::list<std::unique_ptr<AcOtSender<T>>>& ots_sender,
+                               std::list<std::unique_ptr<BasicOtSender>>& ots_sender,
                                std::size_t max_batch_size, const SpVector<T>& sps,
                                std::size_t number_of_sps) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
 
   for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
     const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
-    auto ot_to_send = ot_provider.RegisterSendAcOt<T>(batch_size * bit_size);
+    auto ptr{ot_provider.RegisterSendAcOt(batch_size * bit_size, sizeof(T) * 8)};
+    auto ot_to_send = dynamic_cast<AcOtSender<T>*>(ptr.get());
     std::vector<T> vector_to_send;
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
@@ -143,21 +154,22 @@ static void RegisterHelperSend(OtProvider& ot_provider,
       }
     }
     ot_to_send->SetCorrelations(std::move(vector_to_send));
-    ots_sender.emplace_back(std::move(ot_to_send));
+    ots_sender.emplace_back(std::move(ptr));
     sp_id += batch_size;
   }
 }
 
 template <typename T>
 static void RegisterHelperReceptor(OtProvider& ot_provider,
-                                   std::list<std::unique_ptr<AcOtReceiver<T>>>& ots_receiver,
+                                   std::list<std::unique_ptr<BasicOtReceiver>>& ots_receiver,
                                    std::size_t max_batch_size, const SpVector<T>& sps,
                                    std::size_t number_of_sps) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
 
   for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
     const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
-    auto ot_to_receive = ot_provider.RegisterReceiveAcOt<T>(batch_size * bit_size);
+    auto ptr{ot_provider.RegisterReceiveAcOt(batch_size * bit_size, sizeof(T) * 8)};
+    auto ot_to_receive = dynamic_cast<AcOtReceiver<T>*>(ptr.get());
     BitVector<> choices;
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
@@ -166,7 +178,7 @@ static void RegisterHelperReceptor(OtProvider& ot_provider,
       }
     }
     ot_to_receive->SetChoices(std::move(choices));
-    ots_receiver.emplace_back(std::move(ot_to_receive));
+    ots_receiver.emplace_back(std::move(ptr));
     sp_id += batch_size;
   }
 }
@@ -211,14 +223,14 @@ void SpProviderFromOts::RegisterOts() {
 }
 
 template <typename T>
-static void ParseHelperSend(std::list<std::unique_ptr<AcOtSender<T>>>& ots_sender,
+static void ParseHelperSend(std::list<std::unique_ptr<BasicOtSender>>& ots_sender,
                             std::size_t max_batch_size, SpVector<T>& sps,
                             std::size_t number_of_sps) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
 
   for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
     const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
-    const auto& ot_to_send = ots_sender.front();
+    const auto& ot_to_send = dynamic_cast<AcOtSender<T>*>(ots_sender.front().get());
     ot_to_send->ComputeOutputs();
     const auto output_to_send = ot_to_send->GetOutputs();
     for (auto j = 0ull; j < batch_size; ++j) {
@@ -232,14 +244,14 @@ static void ParseHelperSend(std::list<std::unique_ptr<AcOtSender<T>>>& ots_sende
 }
 
 template <typename T>
-static void ParseHelperReceive(std::list<std::unique_ptr<AcOtReceiver<T>>>& ots_receiver,
+static void ParseHelperReceive(std::list<std::unique_ptr<BasicOtReceiver>>& ots_receiver,
                                std::size_t max_batch_size, SpVector<T>& sps,
                                std::size_t number_of_sps) {
   constexpr std::size_t bit_size = sizeof(T) * 8;
 
   for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
     const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
-    const auto& ot_to_receive = ots_receiver.front();
+    const auto& ot_to_receive = dynamic_cast<AcOtReceiver<T>*>(ots_receiver.front().get());
     ot_to_receive->ComputeOutputs();
     const auto output_to_receive = ot_to_receive->GetOutputs();
     for (auto j = 0ull; j < batch_size; ++j) {

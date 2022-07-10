@@ -636,9 +636,9 @@ HybridMultiplicationGate<T>::HybridMultiplicationGate(const boolean_gmw::WirePoi
   for (std::size_t i = 0; i < number_of_parties; ++i) {
     if (i == my_id) continue;
     ot_sender_ =
-        GetOtProvider(i).template RegisterSendAcOt<T>(parent_a_[0]->GetNumberOfSimdValues());
+        GetOtProvider(i).RegisterSendAcOt(parent_a_[0]->GetNumberOfSimdValues(), sizeof(T) * 8);
     ot_receiver_ =
-        GetOtProvider(i).template RegisterReceiveAcOt<T>(parent_a_[0]->GetNumberOfSimdValues());
+        GetOtProvider(i).RegisterReceiveAcOt(parent_a_[0]->GetNumberOfSimdValues(), sizeof(T) * 8);
   }
 
   auto gate_info =
@@ -681,20 +681,25 @@ void HybridMultiplicationGate<T>::EvaluateOnline() {
 
   // AcOt Send and Recieve
 
-  ot_sender_->WaitSetup();
-  ot_sender_->SetCorrelations(ot_data);
-  ot_sender_->SendMessages();
+  auto casted_ot_sender{dynamic_cast<AcOtSender<T>*>(ot_sender_.get())};
+  auto casted_ot_receiver{dynamic_cast<AcOtReceiver<T>*>(ot_receiver_.get())};
+  assert(casted_ot_sender);
+  assert(casted_ot_receiver);
 
-  ot_receiver_->WaitSetup();
-  ot_receiver_->SetChoices(bv);
-  ot_receiver_->SendCorrections();
+  casted_ot_sender->WaitSetup();
+  casted_ot_sender->SetCorrelations(ot_data);
+  casted_ot_sender->SendMessages();
 
-  ot_sender_->ComputeOutputs();
-  ot_receiver_->ComputeOutputs();
+  casted_ot_receiver->WaitSetup();
+  casted_ot_receiver->SetChoices(bv);
+  casted_ot_receiver->SendCorrections();
+
+  casted_ot_sender->ComputeOutputs();
+  casted_ot_receiver->ComputeOutputs();
 
   // parse OT outputs
-  std::vector<T> ot_sender_output{ot_sender_->GetOutputs()};
-  std::vector<T> ot_receiver_output{ot_receiver_->GetOutputs()};
+  std::vector<T> ot_sender_output{casted_ot_sender->GetOutputs()};
+  std::vector<T> ot_receiver_output{casted_ot_receiver->GetOutputs()};
 
   // Compute the result
   for (std::size_t simd_i = 0; simd_i < parent_a_[0]->GetNumberOfSimdValues(); ++simd_i) {

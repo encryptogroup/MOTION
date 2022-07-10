@@ -77,25 +77,30 @@ TEST(ObliviousTransfer, Random1oo2OtsFromOtExtension) {
     }
 
     for (auto i = 0u; i < motion_parties.size(); ++i) {
-      threads.at(i) = std::thread([&bitlength, &ots_in_batch, &sender_ot, &receiver_ot,
-                                   &motion_parties, i, number_of_parties]() {
-        motion_parties.at(i)->GetBackend()->GetBaseProvider().Setup();
-        for (auto j = 0u; j < motion_parties.size(); ++j) {
-          if (i != j) {
-            auto& ot_provider = motion_parties.at(i)->GetBackend()->GetOtProvider(j);
-            for (auto k = 0ull; k < kNumberOfOts; ++k) {
-              sender_ot.at(i).at(j).push_back(
-                  ot_provider.RegisterSendROt(ots_in_batch.at(k), bitlength.at(k)));
-              receiver_ot.at(i).at(j).push_back(
-                  ot_provider.RegisterReceiveROt(ots_in_batch.at(k), bitlength.at(k)));
+      threads.at(i) =
+          std::thread([&bitlength, &ots_in_batch, &sender_ot, &receiver_ot, &motion_parties, i]() {
+            motion_parties.at(i)->GetBackend()->GetBaseProvider().Setup();
+            for (auto j = 0u; j < motion_parties.size(); ++j) {
+              if (i != j) {
+                auto& ot_provider = motion_parties.at(i)->GetBackend()->GetOtProvider(j);
+                for (auto k = 0ull; k < kNumberOfOts; ++k) {
+                  sender_ot.at(i).at(j).push_back(
+                      ot_provider.RegisterSendROt(ots_in_batch.at(k), bitlength.at(k)));
+                  receiver_ot.at(i).at(j).push_back(
+                      ot_provider.RegisterReceiveROt(ots_in_batch.at(k), bitlength.at(k)));
+                }
+              }
             }
-          }
-        }
-        motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
-        motion_parties.at(i)->GetBackend()->Synchronize();
-        motion_parties.at(i)->GetBackend()->OtExtensionSetup();
-        motion_parties.at(i)->Finish();
-      });
+            for (std::size_t party_id = 0; party_id < motion_parties.size(); ++party_id) {
+              if (party_id != i) {
+                motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
+              }
+            }
+            motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
+            motion_parties.at(i)->GetBackend()->Synchronize();
+            motion_parties.at(i)->GetBackend()->OtExtensionSetup();
+            motion_parties.at(i)->Finish();
+          });
     }
 
     for (auto& t : threads) {
@@ -197,6 +202,11 @@ TEST(ObliviousTransfer, General1oo2OtsFromOtExtension) {
                   receiver_ot.at(i).at(j).push_back(
                       ot_provider.RegisterReceiveGOt(ots_in_batch.at(k), bitlength.at(k)));
                 }
+              }
+            }
+            for (std::size_t party_id = 0; party_id < motion_parties.size(); ++party_id) {
+              if (party_id != i) {
+                motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
               }
             }
             motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
@@ -316,6 +326,11 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
             }
           }
         }
+        for (std::size_t party_id = 0; party_id < motion_parties.size(); ++party_id) {
+          if (party_id != i) {
+            motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
+          }
+        }
         motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
         motion_parties.at(i)->GetBackend()->Synchronize();
         motion_parties.at(i)->GetBackend()->OtExtensionSetup();
@@ -377,4 +392,5 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
     }
   }
 }
+
 }  // namespace

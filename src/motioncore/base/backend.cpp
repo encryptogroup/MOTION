@@ -107,11 +107,11 @@ void Backend::RegisterGate(const GatePointer& gate) { register_->RegisterGate(ga
 // TODO: move this to OtProvider(Wrapper)
 bool Backend::NeedOts() {
   auto& ot_providers = ot_provider_manager_->GetProviders();
-  for (auto party_id = 0ull; party_id < communication_layer_.GetNumberOfParties(); ++party_id) {
-    if (party_id == communication_layer_.GetMyId()) continue;
-    if (ot_providers.at(party_id)->GetNumOtsReceiver() > 0 ||
-        ot_providers.at(party_id)->GetNumOtsSender() > 0)
+  for (auto& ot_provider : ot_providers) {
+    if (ot_provider != nullptr && ot_provider->GetPartyId() != communication_layer_.GetMyId() &&
+        ot_provider->HasWork()) {
       return true;
+    }
   }
   return false;
 }
@@ -141,6 +141,10 @@ void Backend::RunPreprocessing() {
   }
 
   if (NeedOts()) {
+    ot_provider_manager_->PreSetup();
+  }
+
+  if (base_ot_provider_->HasWork()) {
     base_ot_provider_->PreSetup();
   }
 
@@ -654,8 +658,6 @@ void Backend::ComputeBaseOts() {
   run_time_statistics_.back().RecordStart<RunTimeStatistics::StatisticsId::kBaseOts>();
   base_ot_provider_->ComputeBaseOts();
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kBaseOts>();
-
-  base_ots_finished_ = true;
 }
 
 void Backend::ImportBaseOts(std::size_t i, const ReceiverMessage& messages) {
@@ -672,13 +674,7 @@ std::pair<ReceiverMessage, SenderMessage> Backend::ExportBaseOts(std::size_t i) 
 
 // TODO: move to OtProvider(Wrapper)
 void Backend::OtExtensionSetup() {
-  require_base_ots_ = true;
-
-  if (ot_extension_finished_) {
-    return;
-  }
-
-  if (!base_ots_finished_) {
+  if (base_ot_provider_->HasWork()) {
     ComputeBaseOts();
   }
 
@@ -704,7 +700,6 @@ void Backend::OtExtensionSetup() {
   }
 
   std::for_each(task_futures.begin(), task_futures.end(), [](auto& f) { f.get(); });
-  ot_extension_finished_ = true;
 
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kOtExtensionSetup>();
 

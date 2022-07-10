@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -43,8 +43,10 @@ struct BaseOtReceiverData {
   BaseOtReceiverData();
   ~BaseOtReceiverData() = default;
 
+  void Add(std::size_t number_of_ots);
+
   BitVector<> c;  /// choice bits
-  std::array<std::array<std::byte, 16>, 128> messages_c;
+  std::vector<std::array<std::byte, 16>> messages_c;
 
   // number of used rows;
   std::size_t consumed_offset{0};
@@ -57,8 +59,10 @@ struct BaseOtSenderData {
   BaseOtSenderData();
   ~BaseOtSenderData() = default;
 
-  std::array<std::array<std::byte, 16>, 128> messages_0;
-  std::array<std::array<std::byte, 16>, 128> messages_1;
+  void Add(std::size_t number_of_ots);
+
+  std::vector<std::array<std::byte, 16>> messages_0;
+  std::vector<std::array<std::byte, 16>> messages_1;
 
   // number of used rows;
   std::size_t consumed_offset{0};
@@ -73,11 +77,19 @@ struct BaseOtData {
   BaseOtSenderData& GetSenderData() { return sender_data; }
   const BaseOtSenderData& GetSenderData() const { return sender_data; }
 
+  void Add(std::size_t number_of_ots) {
+    total_number_ots += number_of_ots;
+    receiver_data.Add(number_of_ots);
+    sender_data.Add(number_of_ots);
+  }
+
   BaseOtReceiverData receiver_data;
   BaseOtSenderData sender_data;
 
   std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> receiver_futures;
   std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> sender_futures;
+
+  std::size_t total_number_ots{0};
 };
 
 }  // namespace encrypto::motion

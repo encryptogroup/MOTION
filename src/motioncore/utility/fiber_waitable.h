@@ -1,6 +1,8 @@
 // MIT License
 //
-// Copyright (c) 2018 Lennart Braun
+// Copyright (c) 2021 Oleksandr Tkachenko, Lennart Braun
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -22,30 +24,41 @@
 
 #pragma once
 
-#include <array>
-#include <vector>
-
-#include "utility/bit_vector.h"
-#include "utility/fiber_waitable.h"
+#include <atomic>
+#include <memory>
 
 namespace encrypto::motion {
 
-class Ot {
+class FiberCondition;
+
+class FiberSetupWaitable {
  public:
-  virtual ~Ot() = default;
-  virtual void Send(const std::vector<std::vector<std::byte>>&) = 0;
-  virtual std::vector<std::byte> Receive(size_t) = 0;
+  FiberSetupWaitable();
+
+  void WaitSetup() const;
+
+  void SetSetupIsReady();
+
+  bool IsSetupReady() { return setup_ready_; }
+
+ protected:
+  std::atomic<bool> setup_ready_{false};
+  std::shared_ptr<FiberCondition> setup_ready_condition_;
 };
 
-class RandomOt : public FiberOnlineWaitable {
+class FiberOnlineWaitable {
  public:
-  virtual ~RandomOt() = default;
+  FiberOnlineWaitable();
 
-  /**
-   * Send/receive parts of the random OT protocol (batch version).
-   */
-  virtual std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> Send(size_t) = 0;
-  virtual std::vector<std::vector<std::byte>> Receive(const BitVector<>&) = 0;
+  void WaitOnline() const;
+
+  void SetOnlineIsReady();
+
+  bool IsOnlineReady() { return online_ready_; }
+
+ protected:
+  std::atomic<bool> online_ready_{false};
+  std::shared_ptr<FiberCondition> online_ready_condition_;
 };
 
 }  // namespace encrypto::motion

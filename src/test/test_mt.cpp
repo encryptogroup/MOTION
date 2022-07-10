@@ -49,16 +49,17 @@ TEST(MultiplicationTriples, Binary) {
 
         std::vector<std::future<void>> futures;
         futures.reserve(number_of_parties);
-        for (auto& party : motion_parties) {
-          futures.emplace_back(std::async(std::launch::async, [&party] {
-            auto& backend = party->GetBackend();
+        for (std::size_t j = 0; j < number_of_parties; ++j) {
+          futures.emplace_back(std::async(std::launch::async, [&motion_parties, j] {
+            auto& backend = motion_parties.at(j)->GetBackend();
             auto& mt_provider = backend->GetMtProvider();
             mt_provider->PreSetup();
+            backend->GetOtProviderManager()->PreSetup();
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             mt_provider->Setup();
-            party->Finish();
+            motion_parties.at(j)->Finish();
           }));
         }
 
@@ -106,16 +107,17 @@ void TemplateTestInteger() {
 
         std::vector<std::future<void>> futures;
         futures.reserve(number_of_parties);
-        for (auto& party : motion_parties) {
-          futures.emplace_back(std::async(std::launch::async, [&party] {
-            auto& backend = party->GetBackend();
+        for (std::size_t j = 0; j < number_of_parties; ++j) {
+          futures.emplace_back(std::async(std::launch::async, [&motion_parties, j] {
+            auto& backend = motion_parties.at(j)->GetBackend();
             auto& mt_provider = backend->GetMtProvider();
             mt_provider->PreSetup();
+            backend->GetOtProviderManager()->PreSetup();
             backend->GetBaseOtProvider()->PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             mt_provider->Setup();
-            party->Finish();
+            motion_parties.at(j)->Finish();
           }));
         }
         std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });

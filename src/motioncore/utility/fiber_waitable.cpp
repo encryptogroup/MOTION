@@ -1,6 +1,8 @@
 // MIT License
 //
-// Copyright (c) 2018 Lennart Braun
+// Copyright (c) 2021 Oleksandr Tkachenko, Lennart Braun
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -20,32 +22,40 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
+#include "fiber_waitable.h"
 
-#include <array>
-#include <vector>
-
-#include "utility/bit_vector.h"
-#include "utility/fiber_waitable.h"
+#include "fiber_condition.h"
 
 namespace encrypto::motion {
 
-class Ot {
- public:
-  virtual ~Ot() = default;
-  virtual void Send(const std::vector<std::vector<std::byte>>&) = 0;
-  virtual std::vector<std::byte> Receive(size_t) = 0;
-};
+FiberSetupWaitable::FiberSetupWaitable() {
+  setup_ready_condition_ =
+      std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); });
+}
 
-class RandomOt : public FiberOnlineWaitable {
- public:
-  virtual ~RandomOt() = default;
+void FiberSetupWaitable::WaitSetup() const { setup_ready_condition_->Wait(); }
 
-  /**
-   * Send/receive parts of the random OT protocol (batch version).
-   */
-  virtual std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> Send(size_t) = 0;
-  virtual std::vector<std::vector<std::byte>> Receive(const BitVector<>&) = 0;
-};
+void FiberSetupWaitable::SetSetupIsReady() {
+  {
+    std::scoped_lock lock(setup_ready_condition_->GetMutex());
+    setup_ready_.store(true);
+  }
+  setup_ready_condition_->NotifyAll();
+}
+
+FiberOnlineWaitable::FiberOnlineWaitable() {
+  online_ready_condition_ =
+      std::make_unique<FiberCondition>([this]() { return online_ready_.load(); });
+}
+
+void FiberOnlineWaitable::WaitOnline() const { online_ready_condition_->Wait(); }
+
+void FiberOnlineWaitable::SetOnlineIsReady() {
+  {
+    std::scoped_lock lock(online_ready_condition_->GetMutex());
+    online_ready_.store(true);
+  }
+  online_ready_condition_->NotifyAll();
+}
 
 }  // namespace encrypto::motion

@@ -65,7 +65,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           mt_provider->RequestArithmeticMts<std::uint64_t>(batch_size);
           break;
         default:
-          throw std::invalid_argument("Unkown bitlength");
+          throw std::invalid_argument("Unknown bitlength");
       }
       mt_provider->PreSetup();
       backend->OtExtensionSetup();
@@ -157,7 +157,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           }
           break;
         default:
-          throw std::invalid_argument("Unkown bitlength");
+          throw std::invalid_argument("Unknown bitlength");
       }
       break;
     }
@@ -258,7 +258,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           sb_provider->RequestSbs<std::uint64_t>(batch_size);
           break;
         default:
-          throw std::invalid_argument("Unkown bitlength");
+          throw std::invalid_argument("Unknown bitlength");
       }
       sb_provider->PreSetup();
       sp_provider->PreSetup();
@@ -282,7 +282,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           sp_provider->RequestSps<std::uint64_t>(batch_size);
           break;
         default:
-          throw std::invalid_argument("Unkown bitlength");
+          throw std::invalid_argument("Unknown bitlength");
       }
       sp_provider->PreSetup();
       backend->OtExtensionSetup();
