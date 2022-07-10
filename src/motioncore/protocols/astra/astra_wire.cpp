@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2022 Oliver Schick
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -20,13 +20,25 @@
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
 
-#pragma once
+#include "astra_wire.h"
 
-#include <initializer_list>
+namespace encrypto::motion::proto::astra {
 
-constexpr auto kTestIterations = 1u;  // increase if needed
-constexpr auto kDetailedLoggingEnabled = false;
-constexpr auto kPortOffset = 17777u;
-constexpr auto kNumberOfPartiesList = {2u, 3u, 4u, 5u, 10u};
+template<typename T>
+Wire<T>::Wire(Backend& backend, std::vector<Data> values)
+  : Base(backend, values.size()), values_{std::move(values)}, 
+    setup_ready_condition_{std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); })} {   
+}
+
+template<typename T>
+Wire<T>::Wire(Backend& backend, std::size_t number_of_simd)
+  : Base(backend, number_of_simd) {}
+
+template class Wire<std::uint8_t>;
+template class Wire<std::uint16_t>;
+template class Wire<std::uint32_t>;
+template class Wire<std::uint64_t>;
+template class Wire<__uint128_t>;
+    
+} // namespace encrypto::motion::proto::astra

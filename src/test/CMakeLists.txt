@@ -1,6 +1,7 @@
 add_executable(motiontest
         test_aesni.cpp
         test_agmw.cpp
+        test_astra.cpp
         test_base_ot.cpp
         test_bgmw.cpp
         test_bitmatrix.cpp
@@ -29,5 +30,5 @@ add_executable(motiontest
 target_link_libraries(motiontest PRIVATE
         MOTION::motion
         OpenMP::OpenMP_CXX
-        gtest
+        gtest dl
         )

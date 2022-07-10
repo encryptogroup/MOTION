@@ -27,6 +27,8 @@
 #include <bit>
 #include <span>
 
+#include "primitives/random/default_rng.h"
+
 namespace encrypto::motion {
 
 auto constexpr NumberOfBitsToNumberOfBytes(std::size_t number_of_bits) {

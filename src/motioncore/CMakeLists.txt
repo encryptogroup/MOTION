@@ -33,6 +33,9 @@ add_library(motion
         protocols/arithmetic_gmw/arithmetic_gmw_gate.cpp
         protocols/arithmetic_gmw/arithmetic_gmw_share.cpp
         protocols/arithmetic_gmw/arithmetic_gmw_wire.cpp
+        protocols/astra/astra_gate.cpp
+        protocols/astra/astra_wire.cpp
+        protocols/astra/astra_share.cpp
         protocols/bmr/bmr_gate.cpp
         protocols/bmr/bmr_provider.cpp
         protocols/bmr/bmr_share.cpp

@@ -68,6 +68,7 @@ class Party {
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
+    static_assert(P != MpcProtocol::kAstra);
     switch (P) {
       case MpcProtocol::kBooleanConstant: {
         // TODO implement
@@ -92,6 +93,7 @@ class Party {
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
+    static_assert(P != MpcProtocol::kAstra);
     switch (P) {
       case MpcProtocol::kBooleanConstant: {
         // TODO implement
@@ -116,6 +118,7 @@ class Party {
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
+    static_assert(P != MpcProtocol::kAstra);
     switch (P) {
       case MpcProtocol::kBooleanConstant: {
         // TODO implement
@@ -140,6 +143,7 @@ class Party {
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
+    static_assert(P != MpcProtocol::kAstra);
     switch (P) {
       case MpcProtocol::kBooleanConstant: {
         // TODO implement
@@ -170,6 +174,9 @@ class Party {
       case MpcProtocol::kArithmeticGmw: {
         return backend_->ArithmeticGmwInput<T>(party_id, input);
       }
+      case MpcProtocol::kAstra: {
+          return backend_->AstraInput<T>(party_id, input);
+      }
       case MpcProtocol::kBooleanGmw: {
         throw std::runtime_error(
             "Non-binary types have to be converted to BitVectors in BooleanGMW, "
@@ -197,6 +204,9 @@ class Party {
       }
       case MpcProtocol::kArithmeticGmw: {
         return backend_->ArithmeticGmwInput<T>(party_id, std::move(input));
+      }
+      case MpcProtocol::kAstra: {
+          return backend_->AstraInput<T>(party_id, std::move(input));
       }
       case MpcProtocol::kBooleanGmw: {
         throw(std::runtime_error(
@@ -245,6 +255,9 @@ class Party {
 
         return std::make_shared<encrypto::motion::proto::arithmetic_gmw::Share<T>>(wire);
       }
+      case MpcProtocol::kAstra: {
+        static_assert(P != MpcProtocol::kAstra, "Not implemented yet");
+      }
       case MpcProtocol::kBooleanGmw: {
         throw std::runtime_error(
             "Non-binary types have to be converted to BitVectors in BooleanGMW, "
@@ -279,6 +292,9 @@ class Party {
 
         return std::make_shared<encrypto::motion::proto::arithmetic_gmw::Share<T>>(wire);
       }
+      case MpcProtocol::kAstra: {
+        static_assert(P != MpcProtocol::kAstra, "Not implemented yet");
+      }
       case MpcProtocol::kBooleanGmw: {
         throw std::runtime_error(
             "Non-binary types have to be converted to BitVectors in BooleanGMW, "
@@ -300,6 +316,7 @@ class Party {
   SharePointer SharedIn(std::span<const BitVector<>> input) {
     static_assert(P != MpcProtocol::kArithmeticGmw);
     static_assert(P != MpcProtocol::kArithmeticConstant);
+    static_assert(P != MpcProtocol::kAstra);
 
     switch (P) {
       case MpcProtocol::kBooleanConstant: {

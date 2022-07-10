@@ -1,4 +1,4 @@
-add_executable(motion_benchmark conditional_fiber.cpp)
+add_executable(motion_benchmark conditional_fiber.cpp element_access_in_vector.cpp)
 
 target_link_libraries(motion_benchmark
         MOTION::motion

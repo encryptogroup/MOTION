@@ -154,8 +154,8 @@ TEST(SharedBitsImplementation, Helper) {
     shares_a.push_back(std::move(sp_vector.a));
     shares_c.push_back(std::move(sp_vector.c));
   }
-  auto reconstructed_a = encrypto::motion::AddVectors(shares_a);
-  auto reconstructed_c = encrypto::motion::AddVectors(shares_c);
+  auto reconstructed_a = encrypto::motion::AddVectors<std::uint16_t>(shares_a);
+  auto reconstructed_c = encrypto::motion::AddVectors<std::uint16_t>(shares_c);
   EXPECT_EQ(plain_sps.a, reconstructed_a);
   EXPECT_EQ(plain_sps.c, reconstructed_c);
 }
@@ -187,14 +187,14 @@ TEST(SharedBitsImplementation, Phase1) {
         std::all_of(wb1s.at(i).cbegin(), wb1s.at(i).cend(), [](auto a) { return (a & 1) == 0; }));
   }
 
-  auto a = encrypto::motion::AddVectors(wb1s);
+  auto a = encrypto::motion::AddVectors<std::uint16_t>(wb1s);
   reduce_mod(a, 10);
   // a is odd
   EXPECT_TRUE(std::all_of(a.cbegin(), a.cend(), [](auto a) { return (a & 1) == 1; }));
 
-  auto masked_a = encrypto::motion::AddVectors(wb2s);
+  auto masked_a = encrypto::motion::AddVectors<std::uint16_t>(wb2s);
   reduce_mod(masked_a, 10);
-  auto unmasked_masked_a = encrypto::motion::AddVectors(masked_a, plain_sps.a);
+  auto unmasked_masked_a = encrypto::motion::AddVectors<std::uint16_t>(masked_a, plain_sps.a);
   reduce_mod(unmasked_masked_a, 10);
   // check that a was masked correctly
   EXPECT_EQ(unmasked_masked_a, a);
@@ -218,7 +218,7 @@ TEST(SharedBitsImpl, Phase2) {
     wb2s.emplace_back(std::move(wb2));
   }
 
-  auto masked_a = encrypto::motion::AddVectors(wb2s);
+  auto masked_a = encrypto::motion::AddVectors<std::uint16_t>(wb2s);
   std::fill(wb2s.begin(), wb2s.end(), masked_a);
 
   for (std::size_t i = 0; i < kNumberOfParties; ++i) {
@@ -226,7 +226,7 @@ TEST(SharedBitsImpl, Phase2) {
                                                                 shared_sps.at(i));
   }
 
-  auto a = encrypto::motion::AddVectors(wb1s);
+  auto a = encrypto::motion::AddVectors<std::uint16_t>(wb1s);
   reduce_mod(a, 10);
   std::vector<std::uint16_t> a_squared_plain;
   std::transform(a.cbegin(), a.cend(), std::back_inserter(a_squared_plain),
@@ -234,7 +234,7 @@ TEST(SharedBitsImpl, Phase2) {
   reduce_mod(a_squared_plain, 10);
 
   // check that wb2 contains shares of a^2
-  auto a_squared = encrypto::motion::AddVectors(wb2s);
+  auto a_squared = encrypto::motion::AddVectors<std::uint16_t>(wb2s);
   reduce_mod(a_squared, 10);
   EXPECT_EQ(a_squared, a_squared_plain);
 }
@@ -257,7 +257,7 @@ TEST(SharedBitsImplementation, Phase3) {
     wb2s.emplace_back(std::move(wb2));
   }
 
-  auto masked_a = encrypto::motion::AddVectors(wb2s);
+  auto masked_a = encrypto::motion::AddVectors<std::uint16_t>(wb2s);
   std::fill(wb2s.begin(), wb2s.end(), masked_a);
 
   for (std::size_t i = 0; i < kNumberOfParties; ++i) {
@@ -265,7 +265,7 @@ TEST(SharedBitsImplementation, Phase3) {
                                                                 shared_sps.at(i));
   }
 
-  auto a_squared = encrypto::motion::AddVectors(wb2s);
+  auto a_squared = encrypto::motion::AddVectors<std::uint16_t>(wb2s);
   reduce_mod(a_squared, 10);
   std::fill(wb2s.begin(), wb2s.end(), a_squared);
 
@@ -275,7 +275,7 @@ TEST(SharedBitsImplementation, Phase3) {
                                                                 i);
   }
 
-  auto bits = encrypto::motion::AddVectors(sbs_8);
+  auto bits = encrypto::motion::AddVectors<std::uint8_t>(sbs_8);
   reduce_mod(bits, 8);
   EXPECT_TRUE(std::all_of(bits.cbegin(), bits.cend(), [](auto b) { return b == 0 || b == 1; }));
 }

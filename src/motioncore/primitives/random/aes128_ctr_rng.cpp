@@ -77,4 +77,4 @@ void Aes128CtrRng::RandomBytes(std::byte* output, std::size_t number_of_bytes) {
             output + number_of_bytes - remaining_bytes);
 }
 
-}   //  namespace encrypto::motion
+}  //  namespace encrypto::motion
