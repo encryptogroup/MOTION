@@ -155,7 +155,7 @@ class OneGate : public Gate {
 
   OneGate(OneGate&) = delete;
 
-  const std::vector<WirePointer>& GetParent() { return parent_; }
+  const std::vector<WirePointer>& GetParent() const { return parent_; }
 
  protected:
   std::vector<WirePointer> parent_;
@@ -231,8 +231,8 @@ class TwoGate : public Gate {
  public:
   ~TwoGate() override = default;
 
-  const std::vector<WirePointer>& GetParentA() { return parent_a_; }
-  const std::vector<WirePointer>& GetParentB() { return parent_b_; }
+  const std::vector<WirePointer>& GetParentA() const { return parent_a_; }
+  const std::vector<WirePointer>& GetParentB() const { return parent_b_; }
 };
 
 //
@@ -256,9 +256,9 @@ class ThreeGate : public Gate {
  public:
   ~ThreeGate() override = default;
 
-  const std::vector<WirePointer>& GetParentA() { return parent_a_; }
-  const std::vector<WirePointer>& GetParentB() { return parent_b_; }
-  const std::vector<WirePointer>& GetParentC() { return parent_c_; }
+  const std::vector<WirePointer>& GetParentA() const { return parent_a_; }
+  const std::vector<WirePointer>& GetParentB() const { return parent_b_; }
+  const std::vector<WirePointer>& GetParentC() const { return parent_c_; }
 };
 
 //
@@ -280,7 +280,7 @@ class NInputGate : public Gate {
  public:
   ~NInputGate() override = default;
 
-  const std::vector<WirePointer>& GetParents() { return parents_; }
+  const std::vector<WirePointer>& GetParents() const { return parents_; }
 };
 
 }  // namespace encrypto::motion
