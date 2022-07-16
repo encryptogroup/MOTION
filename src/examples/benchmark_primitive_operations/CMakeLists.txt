@@ -1,4 +1,6 @@
-add_executable(benchmark benchmark_main.cpp common/benchmark.cpp)
+add_executable(benchmark_primitive_operations
+        benchmark_primitive_operations_main.cpp
+        common/benchmark_primitive_operations.cpp)
 
 if (NOT MOTION_BUILD_BOOST_FROM_SOURCES)
     find_package(Boost
@@ -7,7 +9,7 @@ if (NOT MOTION_BUILD_BOOST_FROM_SOURCES)
             REQUIRED)
 endif ()
 
-target_link_libraries(benchmark
+target_link_libraries(benchmark_primitive_operations
         MOTION::motion
         Boost::program_options
         )
