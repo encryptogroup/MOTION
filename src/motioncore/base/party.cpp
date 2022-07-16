@@ -46,25 +46,6 @@ Party::~Party() {
   logger_->LogInfo("motion::Party has been deallocated");
 }
 
-SharePointer Party::Xor(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  assert(a->GetProtocol() != MpcProtocol::kArithmeticGmw);
-  assert(a->GetProtocol() == b->GetProtocol());
-  switch (a->GetProtocol()) {
-    case MpcProtocol::kBooleanGmw: {
-      return backend_->BooleanGmwXor(a, b);
-    }
-    case MpcProtocol::kBmr: {
-      throw std::runtime_error("BMR protocol is not implemented yet");
-      // TODO
-    }
-    default: {
-      throw(std::runtime_error("Unknown protocol"));
-    }
-  }
-}
-
 SharePointer Party::Out(SharePointer parent, std::size_t output_owner) {
   assert(parent);
   switch (parent->GetProtocol()) {
@@ -102,67 +83,6 @@ SharePointer Party::Out(SharePointer parent, std::size_t output_owner) {
   }
 }
 
-SharePointer Party::Add(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  assert(a->GetProtocol() == b->GetProtocol());
-
-  switch (a->GetProtocol()) {
-    case MpcProtocol::kArithmeticGmw: {
-      assert(a->GetBitLength() == b->GetBitLength());
-      switch (a->GetBitLength()) {
-        case 8u: {
-          return backend_->ArithmeticGmwAddition<std::uint8_t>(a, b);
-        }
-        case 16u: {
-          return backend_->ArithmeticGmwAddition<std::uint16_t>(a, b);
-        }
-        case 32u: {
-          return backend_->ArithmeticGmwAddition<std::uint32_t>(a, b);
-        }
-        case 64u: {
-          return backend_->ArithmeticGmwAddition<std::uint64_t>(a, b);
-        }
-        default: {
-          throw(std::runtime_error(
-              fmt::format("Unknown arithmetic ring of {} bilength", a->GetBitLength())));
-        }
-      }
-    }
-    case MpcProtocol::kBooleanGmw: {
-      throw(std::runtime_error("BooleanGMW addition gate is not implemented yet"));
-      // return BooleanGmwOutput(parent, output_owner);
-    }
-    case MpcProtocol::kBmr: {
-      throw(std::runtime_error("BMR addition gate is not implemented yet"));
-      // TODO
-    }
-    default: {
-      throw(std::runtime_error(
-          fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(a->GetProtocol()))));
-    }
-  }
-}
-
-SharePointer Party::And(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  assert(a->GetProtocol() != MpcProtocol::kArithmeticGmw);
-  assert(a->GetProtocol() == b->GetProtocol());
-  switch (a->GetProtocol()) {
-    case MpcProtocol::kBooleanGmw: {
-      return backend_->BooleanGmwAnd(a, b);
-    }
-    case MpcProtocol::kBmr: {
-      throw std::runtime_error("BMR protocol is not implemented yet");
-      // TODO
-    }
-    default: {
-      throw(std::runtime_error("Unknown protocol"));
-    }
-  }
-}
-
 void Party::Run(std::size_t repetitions) {
   logger_->LogDebug("Party run");
 
@@ -192,6 +112,7 @@ void Party::Run(std::size_t repetitions) {
 }
 
 void Party::Reset() {
+  logger_->LogError("Not yet implemented");
   backend_->Synchronize();
   logger_->LogDebug("Party reset");
   backend_->Reset();
@@ -200,6 +121,9 @@ void Party::Reset() {
 }
 
 void Party::Clear() {
+  logger_->LogDebug(
+      "Warning: the ::Clear() functionality is not fully implemented yet and may be buggy or not "
+      "working properly");
   backend_->Synchronize();
   logger_->LogDebug("Party clear");
   backend_->Clear();
@@ -216,16 +140,16 @@ void Party::EvaluateCircuit() {
 }
 
 void Party::Finish() {
-  if (!finished_) {
+  bool finished = finished_.exchange(true);
+  if (!finished) {
     communication_layer_->Shutdown();
     logger_->LogInfo(fmt::format("Finished evaluating {} gates",
                                  backend_->GetRegister()->GetTotalNumberOfGates()));
-    finished_ = true;
   }
 }
 
 std::vector<std::unique_ptr<Party>> MakeLocallyConnectedParties(const std::size_t number_of_parties,
-                                                            std::uint16_t, const bool) {
+                                                                std::uint16_t, const bool) {
   if (number_of_parties < 2) {
     throw(std::runtime_error(
         fmt::format("Can generate only >= 2 local parties, current input: {}", number_of_parties)));

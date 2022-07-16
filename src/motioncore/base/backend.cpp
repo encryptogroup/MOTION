@@ -95,15 +95,6 @@ Backend::~Backend() = default;
 
 const LoggerPointer& Backend::GetLogger() const noexcept { return logger_; }
 
-std::size_t Backend::NextGateId() const { return register_->NextGateId(); }
-
-// TODO: remove this method
-void Backend::Send(std::size_t party_id, flatbuffers::FlatBufferBuilder&& message) {
-  communication_layer_.SendMessage(party_id, message.Release());
-}
-
-void Backend::RegisterGate(const GatePointer& gate) { register_->RegisterGate(gate); }
-
 // TODO: move this to OtProvider(Wrapper)
 bool Backend::NeedOts() {
   auto& ot_providers = ot_provider_manager_->GetProviders();
@@ -199,66 +190,6 @@ SharePointer Backend::BooleanGmwInput(std::size_t party_id, std::vector<BitVecto
   const auto input_gate =
       register_->EmplaceGate<proto::boolean_gmw::InputGate>(input, party_id, *this);
   return std::static_pointer_cast<Share>(input_gate->GetOutputAsGmwShare());
-}
-
-SharePointer Backend::BooleanGmwXor(const proto::boolean_gmw::SharePointer& a,
-                                    const proto::boolean_gmw::SharePointer& b) {
-  assert(a);
-  assert(b);
-  const auto xor_gate = register_->EmplaceGate<proto::boolean_gmw::XorGate>(a, b);
-  return xor_gate->GetOutputAsShare();
-}
-
-SharePointer Backend::BooleanGmwXor(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  const auto casted_a = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(a);
-  const auto casted_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(b);
-  assert(casted_a);
-  assert(casted_b);
-  return BooleanGmwXor(casted_a, casted_b);
-}
-
-SharePointer Backend::BooleanGmwAnd(const proto::boolean_gmw::SharePointer& a,
-                                    const proto::boolean_gmw::SharePointer& b) {
-  assert(a);
-  assert(b);
-  const auto and_gate = register_->EmplaceGate<proto::boolean_gmw::AndGate>(a, b);
-  return and_gate->GetOutputAsShare();
-}
-
-SharePointer Backend::BooleanGmwAnd(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  const auto casted_a = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(a);
-  const auto casted_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(b);
-  assert(casted_a);
-  assert(casted_b);
-  return BooleanGmwAnd(casted_a, casted_b);
-}
-
-SharePointer Backend::BooleanGmwMux(const proto::boolean_gmw::SharePointer& a,
-                                    const proto::boolean_gmw::SharePointer& b,
-                                    const proto::boolean_gmw::SharePointer& selection) {
-  assert(a);
-  assert(b);
-  assert(selection);
-  const auto mux_gate = register_->EmplaceGate<proto::boolean_gmw::MuxGate>(a, b, selection);
-  return mux_gate->GetOutputAsShare();
-}
-
-SharePointer Backend::BooleanGmwMux(const SharePointer& a, const SharePointer& b,
-                                    const SharePointer& selection) {
-  assert(a);
-  assert(b);
-  assert(selection);
-  const auto casted_a = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(a);
-  const auto casted_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(b);
-  const auto casted_selection = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(selection);
-  assert(casted_a);
-  assert(casted_b);
-  assert(casted_selection);
-  return BooleanGmwMux(casted_a, casted_b, casted_selection);
 }
 
 SharePointer Backend::BooleanGmwOutput(const SharePointer& parent, std::size_t output_owner) {
@@ -389,105 +320,6 @@ template SharePointer Backend::ArithmeticGmwOutput<__uint128_t>(const SharePoint
                                                                 std::size_t output_owner);
 
 template <typename T>
-SharePointer Backend::ArithmeticGmwAddition(const proto::arithmetic_gmw::SharePointer<T>& a,
-                                            const proto::arithmetic_gmw::SharePointer<T>& b) {
-  assert(a);
-  assert(b);
-  auto wire_a = a->GetArithmeticWire();
-  auto wire_b = b->GetArithmeticWire();
-  auto addition_gate =
-      register_->EmplaceGate<proto::arithmetic_gmw::AdditionGate<T>>(wire_a, wire_b);
-  return std::static_pointer_cast<Share>(addition_gate->GetOutputAsArithmeticShare());
-}
-
-template SharePointer Backend::ArithmeticGmwAddition<std::uint8_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& b);
-template SharePointer Backend::ArithmeticGmwAddition<std::uint16_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& b);
-template SharePointer Backend::ArithmeticGmwAddition<std::uint32_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& b);
-template SharePointer Backend::ArithmeticGmwAddition<std::uint64_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& b);
-template SharePointer Backend::ArithmeticGmwAddition<__uint128_t>(
-    const proto::arithmetic_gmw::SharePointer<__uint128_t>& a,
-    const proto::arithmetic_gmw::SharePointer<__uint128_t>& b);
-
-template <typename T>
-SharePointer Backend::ArithmeticGmwAddition(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  auto casted_parent_a_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(a);
-  auto casted_parent_b_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(b);
-  assert(casted_parent_a_ptr);
-  assert(casted_parent_b_ptr);
-  return ArithmeticGmwAddition(casted_parent_a_ptr, casted_parent_b_ptr);
-}
-
-template SharePointer Backend::ArithmeticGmwAddition<std::uint8_t>(const SharePointer& a,
-                                                                   const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwAddition<std::uint16_t>(const SharePointer& a,
-                                                                    const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwAddition<std::uint32_t>(const SharePointer& a,
-                                                                    const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwAddition<std::uint64_t>(const SharePointer& a,
-                                                                    const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwAddition<__uint128_t>(const SharePointer& a,
-                                                                  const SharePointer& b);
-
-template <typename T>
-SharePointer Backend::ArithmeticGmwSubtraction(const proto::arithmetic_gmw::SharePointer<T>& a,
-                                               const proto::arithmetic_gmw::SharePointer<T>& b) {
-  assert(a);
-  assert(b);
-  auto wire_a = a->GetArithmeticWire();
-  auto wire_b = b->GetArithmeticWire();
-  auto sub_gate = register_->EmplaceGate<proto::arithmetic_gmw::SubtractionGate<T>>(wire_a, wire_b);
-  return std::static_pointer_cast<Share>(sub_gate->GetOutputAsArithmeticShare());
-}
-
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint8_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint8_t>& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint16_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint16_t>& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint32_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint32_t>& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint64_t>(
-    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& a,
-    const proto::arithmetic_gmw::SharePointer<std::uint64_t>& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<__uint128_t>(
-    const proto::arithmetic_gmw::SharePointer<__uint128_t>& a,
-    const proto::arithmetic_gmw::SharePointer<__uint128_t>& b);
-
-template <typename T>
-SharePointer Backend::ArithmeticGmwSubtraction(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  auto casted_parent_a_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(a);
-  auto casted_parent_b_ptr = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(b);
-  assert(casted_parent_a_ptr);
-  assert(casted_parent_b_ptr);
-  return ArithmeticGmwSubtraction(casted_parent_a_ptr, casted_parent_b_ptr);
-}
-
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint8_t>(const SharePointer& a,
-                                                                      const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint16_t>(const SharePointer& a,
-                                                                       const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint32_t>(const SharePointer& a,
-                                                                       const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<std::uint64_t>(const SharePointer& a,
-                                                                       const SharePointer& b);
-template SharePointer Backend::ArithmeticGmwSubtraction<__uint128_t>(const SharePointer& a,
-                                                                     const SharePointer& b);
-
-template <typename T>
 SharePointer Backend::AstraInput(std::size_t party_id, T input) {
   return AstraInput(party_id, std::vector<T>(input));
 }
@@ -554,104 +386,6 @@ template SharePointer Backend::AstraOutput<std::uint64_t>(const SharePointer& pa
 template SharePointer Backend::AstraOutput<__uint128_t>(const SharePointer& parent,
                                                         std::size_t output_owner);
 
-template <typename T>
-SharePointer Backend::AstraAddition(const proto::astra::SharePointer<T>& a,
-                                    const proto::astra::SharePointer<T>& b) {
-  assert(a);
-  assert(b);
-  auto wire_a = a->GetAstraWire();
-  auto wire_b = b->GetAstraWire();
-  auto addition_gate = register_->EmplaceGate<proto::astra::AdditionGate<T>>(wire_a, wire_b);
-  return std::static_pointer_cast<Share>(addition_gate->GetOutputAsAstraShare());
-}
-
-template SharePointer Backend::AstraAddition<std::uint8_t>(
-    const proto::astra::SharePointer<std::uint8_t>& a,
-    const proto::astra::SharePointer<std::uint8_t>& b);
-template SharePointer Backend::AstraAddition<std::uint16_t>(
-    const proto::astra::SharePointer<std::uint16_t>& a,
-    const proto::astra::SharePointer<std::uint16_t>& b);
-template SharePointer Backend::AstraAddition<std::uint32_t>(
-    const proto::astra::SharePointer<std::uint32_t>& a,
-    const proto::astra::SharePointer<std::uint32_t>& b);
-template SharePointer Backend::AstraAddition<std::uint64_t>(
-    const proto::astra::SharePointer<std::uint64_t>& a,
-    const proto::astra::SharePointer<std::uint64_t>& b);
-template SharePointer Backend::AstraAddition<__uint128_t>(
-    const proto::astra::SharePointer<__uint128_t>& a,
-    const proto::astra::SharePointer<__uint128_t>& b);
-
-template <typename T>
-SharePointer Backend::AstraAddition(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  auto casted_parent_a_ptr = std::dynamic_pointer_cast<proto::astra::Share<T>>(a);
-  auto casted_parent_b_ptr = std::dynamic_pointer_cast<proto::astra::Share<T>>(b);
-  assert(casted_parent_a_ptr);
-  assert(casted_parent_b_ptr);
-  return AstraAddition(casted_parent_a_ptr, casted_parent_b_ptr);
-}
-
-template SharePointer Backend::AstraAddition<std::uint8_t>(const SharePointer& a,
-                                                           const SharePointer& b);
-template SharePointer Backend::AstraAddition<std::uint16_t>(const SharePointer& a,
-                                                            const SharePointer& b);
-template SharePointer Backend::AstraAddition<std::uint32_t>(const SharePointer& a,
-                                                            const SharePointer& b);
-template SharePointer Backend::AstraAddition<std::uint64_t>(const SharePointer& a,
-                                                            const SharePointer& b);
-template SharePointer Backend::AstraAddition<__uint128_t>(const SharePointer& a,
-                                                          const SharePointer& b);
-
-template <typename T>
-SharePointer Backend::AstraSubtraction(const proto::astra::SharePointer<T>& a,
-                                       const proto::astra::SharePointer<T>& b) {
-  assert(a);
-  assert(b);
-  auto wire_a = a->GetAstraWire();
-  auto wire_b = b->GetAstraWire();
-  auto sub_gate = register_->EmplaceGate<proto::astra::SubtractionGate<T>>(wire_a, wire_b);
-  return std::static_pointer_cast<Share>(sub_gate->GetOutputAsAstraShare());
-}
-
-template SharePointer Backend::AstraSubtraction<std::uint8_t>(
-    const proto::astra::SharePointer<std::uint8_t>& a,
-    const proto::astra::SharePointer<std::uint8_t>& b);
-template SharePointer Backend::AstraSubtraction<std::uint16_t>(
-    const proto::astra::SharePointer<std::uint16_t>& a,
-    const proto::astra::SharePointer<std::uint16_t>& b);
-template SharePointer Backend::AstraSubtraction<std::uint32_t>(
-    const proto::astra::SharePointer<std::uint32_t>& a,
-    const proto::astra::SharePointer<std::uint32_t>& b);
-template SharePointer Backend::AstraSubtraction<std::uint64_t>(
-    const proto::astra::SharePointer<std::uint64_t>& a,
-    const proto::astra::SharePointer<std::uint64_t>& b);
-template SharePointer Backend::AstraSubtraction<__uint128_t>(
-    const proto::astra::SharePointer<__uint128_t>& a,
-    const proto::astra::SharePointer<__uint128_t>& b);
-
-template <typename T>
-SharePointer Backend::AstraSubtraction(const SharePointer& a, const SharePointer& b) {
-  assert(a);
-  assert(b);
-  auto casted_parent_a_ptr = std::dynamic_pointer_cast<proto::astra::Share<T>>(a);
-  auto casted_parent_b_ptr = std::dynamic_pointer_cast<proto::astra::Share<T>>(b);
-  assert(casted_parent_a_ptr);
-  assert(casted_parent_b_ptr);
-  return AstraSubtraction(casted_parent_a_ptr, casted_parent_b_ptr);
-}
-
-template SharePointer Backend::AstraSubtraction<std::uint8_t>(const SharePointer& a,
-                                                              const SharePointer& b);
-template SharePointer Backend::AstraSubtraction<std::uint16_t>(const SharePointer& a,
-                                                               const SharePointer& b);
-template SharePointer Backend::AstraSubtraction<std::uint32_t>(const SharePointer& a,
-                                                               const SharePointer& b);
-template SharePointer Backend::AstraSubtraction<std::uint64_t>(const SharePointer& a,
-                                                               const SharePointer& b);
-template SharePointer Backend::AstraSubtraction<__uint128_t>(const SharePointer& a,
-                                                             const SharePointer& b);
-
 void Backend::Synchronize() { communication_layer_.Synchronize(); }
 
 void Backend::ComputeBaseOts() {
@@ -660,19 +394,7 @@ void Backend::ComputeBaseOts() {
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kBaseOts>();
 }
 
-void Backend::ImportBaseOts(std::size_t i, const ReceiverMessage& messages) {
-  base_ot_provider_->ImportBaseOts(i, messages);
-}
-
-void Backend::ImportBaseOts(std::size_t i, const SenderMessage& messages) {
-  base_ot_provider_->ImportBaseOts(i, messages);
-}
-
-std::pair<ReceiverMessage, SenderMessage> Backend::ExportBaseOts(std::size_t i) {
-  return base_ot_provider_->ExportBaseOts(i);
-}
-
-// TODO: move to OtProvider(Wrapper)
+// TODO: move to OtProviderManager::Setup()
 void Backend::OtExtensionSetup() {
   if (base_ot_provider_->HasWork()) {
     ComputeBaseOts();

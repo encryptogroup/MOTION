@@ -344,13 +344,7 @@ class Party {
     }
   }
 
-  SharePointer Xor(const SharePointer& a, const SharePointer& b);
-
   SharePointer Out(SharePointer parent, std::size_t output_owner);
-
-  SharePointer Add(const SharePointer& a, const SharePointer& b);
-
-  SharePointer And(const SharePointer& a, const SharePointer& b);
 
   /// \brief Evaluates the constructed gates a predefined number of times.
   /// This is realized via repeatedly calling Party::Clear() after each evaluation.

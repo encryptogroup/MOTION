@@ -109,12 +109,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   const RegisterPointer& GetRegister() const noexcept { return register_; }
 
-  std::size_t NextGateId() const;
-
-  void Send(std::size_t party_id, flatbuffers::FlatBufferBuilder&& message);
-
-  void RegisterGate(const GatePointer& gate);
-
   void RunPreprocessing();
 
   void EvaluateSequential();
@@ -138,23 +132,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   SharePointer BooleanGmwInput(std::size_t party_id, std::span<const BitVector<>> input);
 
   SharePointer BooleanGmwInput(std::size_t party_id, std::vector<BitVector<>>&& input);
-
-  SharePointer BooleanGmwXor(const proto::boolean_gmw::SharePointer& a,
-                             const proto::boolean_gmw::SharePointer& b);
-
-  SharePointer BooleanGmwXor(const SharePointer& a, const SharePointer& b);
-
-  SharePointer BooleanGmwAnd(const proto::boolean_gmw::SharePointer& a,
-                             const proto::boolean_gmw::SharePointer& b);
-
-  SharePointer BooleanGmwAnd(const SharePointer& a, const SharePointer& b);
-
-  SharePointer BooleanGmwMux(const proto::boolean_gmw::SharePointer& a,
-                             const proto::boolean_gmw::SharePointer& b,
-                             const proto::boolean_gmw::SharePointer& selection);
-
-  SharePointer BooleanGmwMux(const SharePointer& a, const SharePointer& b,
-                             const SharePointer& selection);
 
   SharePointer BooleanGmwOutput(const SharePointer& parent, std::size_t output_owner);
 
@@ -206,20 +183,6 @@ class Backend : public std::enable_shared_from_this<Backend> {
   SharePointer ArithmeticGmwOutput(const SharePointer& parent, std::size_t output_owner);
 
   template <typename T>
-  SharePointer ArithmeticGmwAddition(const proto::arithmetic_gmw::SharePointer<T>& a,
-                                     const proto::arithmetic_gmw::SharePointer<T>& b);
-
-  template <typename T>
-  SharePointer ArithmeticGmwAddition(const SharePointer& a, const SharePointer& b);
-
-  template <typename T>
-  SharePointer ArithmeticGmwSubtraction(const proto::arithmetic_gmw::SharePointer<T>& a,
-                                        const proto::arithmetic_gmw::SharePointer<T>& b);
-                                        
-  template <typename T>
-  SharePointer ArithmeticGmwSubtraction(const SharePointer& a, const SharePointer& b);
-
-  template <typename T>
   SharePointer AstraInput(std::size_t party_id, T input = 0);
   
   template <typename T>
@@ -232,30 +195,10 @@ class Backend : public std::enable_shared_from_this<Backend> {
   template <typename T>
   SharePointer AstraOutput(const SharePointer& parent, std::size_t output_owner);
 
-  template <typename T>
-  SharePointer AstraAddition(const proto::astra::SharePointer<T>& a,
-                                     const proto::astra::SharePointer<T>& b);
-
-  template <typename T>
-  SharePointer AstraAddition(const SharePointer& a, const SharePointer& b);
-
-  template <typename T>
-  SharePointer AstraSubtraction(const proto::astra::SharePointer<T>& a,
-                                        const proto::astra::SharePointer<T>& b);
-
-  template <typename T>
-  SharePointer AstraSubtraction(const SharePointer& a, const SharePointer& b);
-
   /// \brief Blocking wait for synchronizing between parties. Called in Clear() and Reset()
   void Synchronize();
 
   void ComputeBaseOts();
-
-  void ImportBaseOts(std::size_t i, const ReceiverMessage& messages);
-
-  void ImportBaseOts(std::size_t i, const SenderMessage& messages);
-
-  std::pair<ReceiverMessage, SenderMessage> ExportBaseOts(std::size_t i);
 
   void OtExtensionSetup();
 
