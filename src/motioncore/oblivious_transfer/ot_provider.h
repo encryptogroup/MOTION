@@ -84,6 +84,7 @@ class GOtReceiver;
 class OtVector {
  public:
   OtVector() = delete;
+  virtual ~OtVector() = default;
 
   [[nodiscard]] std::size_t GetOtId() const noexcept { return ot_id_; }
   [[nodiscard]] std::size_t GetNumOts() const noexcept { return number_of_ots_; }
