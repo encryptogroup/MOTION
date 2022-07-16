@@ -44,9 +44,6 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
     : OneGate(parent->GetBackend()), position_ids_(std::move(position_ids)) {
   parent_ = parent->GetWires();
 
-  // Initialize this gate
-  gate_id_ = GetRegister().NextGateId();
-
   if constexpr (kDebug) {
     if (parent_.empty()) {
       throw std::invalid_argument(

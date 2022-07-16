@@ -110,8 +110,6 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
     // needs some mediocre implementation effort if implemented with a deferred inputs option
     assert(!parent_a_.at(0)->IsConstant() && parent_b_.at(0)->IsConstant());
 
-    gate_id_ = GetRegister().NextGateId();
-
     {
       auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
           backend_, a->GetNumberOfSimdValues());
@@ -195,8 +193,6 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     // TODO: a separate gate for this probably rather rare case
     // needs some mediocre implementation effort if implemented with a deferred inputs option
     assert(!parent_a_.at(0)->IsConstant() && parent_b_.at(0)->IsConstant());
-    gate_id_ = GetRegister().NextGateId();
-
     {
       auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
           backend_, a->GetNumberOfSimdValues());

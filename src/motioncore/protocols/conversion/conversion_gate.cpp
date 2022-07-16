@@ -51,8 +51,6 @@ BmrToBooleanGmwGate::BmrToBooleanGmwGate(const SharePointer& parent)
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBmr);
 
-  gate_id_ = GetRegister().NextGateId();
-
   // create output wires
   auto number_of_wires = parent_.size();
   output_wires_.reserve(number_of_wires);
@@ -128,8 +126,6 @@ BooleanGmwToBmrGate::BooleanGmwToBmrGate(const SharePointer& parent)
   assert(parent_.at(0)->GetBitLength() > 0);
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBooleanGmw);
-
-  gate_id_ = GetRegister().NextGateId();
 
   output_wires_.resize(parent_.size());
   for (auto& w : output_wires_) {
@@ -310,8 +306,6 @@ ArithmeticGmwToBmrGate::ArithmeticGmwToBmrGate(const SharePointer& parent)
   assert(parent_[0]->GetBitLength() > 0);
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kArithmeticGmw);
-
-  gate_id_ = GetRegister().NextGateId();
 
   // ArithmeticGmwToBmrGate does not own its output wires, since these are the output wires of the
   // last BMR addition circuit. Thus, Gate::SetOnlineReady should not mark the output wires

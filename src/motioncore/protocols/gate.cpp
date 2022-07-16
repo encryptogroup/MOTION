@@ -66,6 +66,7 @@ void Gate::Clear() {
 
 Gate::Gate(Backend& backend)
     : backend_(backend),
+      gate_id_(backend.GetRegister()->NextGateId()),
       setup_is_ready_condition_([this] { return setup_is_ready_.load(); }),
       online_is_ready_condition_([this] { return online_is_ready_.load(); }) {}
 

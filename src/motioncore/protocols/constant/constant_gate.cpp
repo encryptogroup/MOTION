@@ -32,8 +32,6 @@ ConstantBooleanInputGate::ConstantBooleanInputGate(std::vector<BitVector<>>&& v,
     : Gate(backend) {
   assert(output_wires_.empty());
   output_wires_.reserve(v.size());
-
-  gate_id_ = GetRegister().NextGateId();
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
         fmt::format("Created a ConstantBooleanInputGate with global id {}", gate_id_));
@@ -53,8 +51,6 @@ ConstantBooleanInputGate::ConstantBooleanInputGate(const std::vector<BitVector<>
     : Gate(backend) {
   assert(output_wires_.empty());
   output_wires_.reserve(v.size());
-
-  gate_id_ = GetRegister().NextGateId();
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
         fmt::format("Created a ConstantBooleanInputGate with global id {}", gate_id_));
@@ -79,8 +75,6 @@ ConstantArithmeticInputGate<T>::ConstantArithmeticInputGate(const std::vector<T>
     : Gate(backend) {
   assert(output_wires_.empty());
   static_assert(!std::is_same_v<T, bool>);
-
-  gate_id_ = GetRegister().NextGateId();
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
         fmt::format("Created a ConstantArithmeticInputGate with global id {}", gate_id_));
@@ -99,8 +93,6 @@ ConstantArithmeticInputGate<T>::ConstantArithmeticInputGate(std::vector<T>&& v, 
     : Gate(backend) {
   assert(output_wires_.empty());
   static_assert(!std::is_same_v<T, bool>);
-
-  gate_id_ = GetRegister().NextGateId();
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
         fmt::format("Created a ConstantArithmeticInputGate with global id {}", gate_id_));

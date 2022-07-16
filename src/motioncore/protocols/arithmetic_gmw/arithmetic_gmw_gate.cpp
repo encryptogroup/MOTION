@@ -62,7 +62,6 @@ template <typename T>
 void InputGate<T>::InitializationHelper() {
   static_assert(!std::is_same_v<T, bool>);
 
-  gate_id_ = GetRegister().NextGateId();
   arithmetic_sharing_id_ = GetRegister().NextArithmeticSharingId(input_.size());
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
@@ -188,7 +187,6 @@ OutputGate<T>::OutputGate(const arithmetic_gmw::WirePointer<T>& parent, std::siz
   }
 
   output_owner_ = output_owner;
-  gate_id_ = GetRegister().NextGateId();
   is_my_output_ = my_id == static_cast<std::size_t>(output_owner_) ||
                   static_cast<std::size_t>(output_owner_) == kAll;
 
@@ -333,8 +331,6 @@ AdditionGate<T>::AdditionGate(const arithmetic_gmw::WirePointer<T>& a,
 
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
 
-  gate_id_ = GetRegister().NextGateId();
-
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
 
@@ -391,8 +387,6 @@ SubtractionGate<T>::SubtractionGate(const arithmetic_gmw::WirePointer<T>& a,
   parent_b_ = {std::static_pointer_cast<motion::Wire>(b)};
 
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
-
-  gate_id_ = GetRegister().NextGateId();
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
@@ -460,8 +454,6 @@ MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& 
 
   d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
   e_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(e_);
-
-  gate_id_ = GetRegister().NextGateId();
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
@@ -584,8 +576,6 @@ HybridMultiplicationGate<T>::HybridMultiplicationGate(const boolean_gmw::WirePoi
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
   assert(parent_a_.at(0)->GetBitLength() == 1);
 
-  gate_id_ = GetRegister().NextGateId();
-
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, parent_a_[0]->GetNumberOfSimdValues())};
 
@@ -690,8 +680,6 @@ SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->
   d_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
                                                                    a->GetNumberOfSimdValues());
   d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
-
-  gate_id_ = GetRegister().NextGateId();
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};

@@ -81,8 +81,6 @@ void InputGate::InitializationHelper() {
         fmt::format("Invalid input owner: {} of {}", input_owner_id_, number_of_parties));
   }
 
-  gate_id_ = GetRegister().NextGateId();
-
   output_wires_.reserve(bit_size_);
   for (std::size_t i = 0; i < bit_size_; ++i) {
     output_wires_.emplace_back(
@@ -373,8 +371,6 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   output_gate_ =
       GetRegister().EmplaceGate<boolean_gmw::OutputGate>(gmw_output_share_, output_owner_);
 
-  gate_id_ = GetRegister().NextGateId();
-
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == kAll;
 
@@ -464,8 +460,6 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   assert(parent_a_.at(0)->GetBitLength() > 0);
   assert(parent_a_.at(0)->GetProtocol() == parent_b_.at(0)->GetProtocol());
   assert(parent_a_.at(0)->GetProtocol() == MpcProtocol::kBmr);
-
-  gate_id_ = GetRegister().NextGateId();
 
   output_wires_.resize(parent_a_.size());
   const motion::BitVector tmp_bv(a->GetNumberOfSimdValues());
@@ -566,8 +560,6 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   assert(parent_.at(0)->GetBitLength() > 0);
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBmr);
-
-  gate_id_ = GetRegister().NextGateId();
 
   output_wires_.resize(parent_.size());
   const motion::BitVector tmp_bv(parent->GetNumberOfSimdValues());
@@ -677,8 +669,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   assert(parent_a_.at(0)->GetBitLength() > 0);
   assert(parent_a_.at(0)->GetProtocol() == parent_b_.at(0)->GetProtocol());
   assert(parent_a_.at(0)->GetProtocol() == MpcProtocol::kBmr);
-
-  gate_id_ = GetRegister().NextGateId();
 
   auto& communication_layer = GetCommunicationLayer();
   const auto my_id = communication_layer.GetMyId();

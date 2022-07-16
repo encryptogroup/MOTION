@@ -71,9 +71,6 @@ class GmwToArithmeticGate final : public OneGate {
     number_of_sbs_ = number_of_simd * bit_size;
     sb_offset_ = GetSbProvider().template RequestSbs<T>(number_of_sbs_);
 
-    // register this gate
-    gate_id_ = GetRegister().NextGateId();
-
     if constexpr (kDebug) {
       auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
       for (const auto& wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));

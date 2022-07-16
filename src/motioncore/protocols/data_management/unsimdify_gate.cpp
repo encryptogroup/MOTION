@@ -45,9 +45,6 @@ namespace encrypto::motion {
 UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
 
-  // Initialize this gate
-  gate_id_ = GetRegister().NextGateId();
-
   if constexpr (kDebug) {
     if (parent_.empty()) {
       throw std::invalid_argument(

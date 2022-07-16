@@ -62,8 +62,6 @@ void InputGate::InitializationHelper() {
                                          communication_layer.GetNumberOfParties()));
   }
 
-  gate_id_ = _register.NextGateId();
-
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
@@ -185,7 +183,6 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   }
 
   output_owner_ = output_owner;
-  gate_id_ = GetRegister().NextGateId();
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == kAll;
 
@@ -348,9 +345,6 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_a_.at(0)->GetBitLength() > 0);
 
-  auto& _register = GetRegister();
-  gate_id_ = _register.NextGateId();
-
   auto number_of_wires = parent_a_.size();
 
   // create output wires
@@ -418,9 +412,6 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
 
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
-
-  auto& _register = GetRegister();
-  gate_id_ = _register.NextGateId();
 
   auto number_of_wires = parent_.size();
 
@@ -503,8 +494,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
 
   d_output_ = _register.EmplaceGate<OutputGate>(d_);
   e_output_ = _register.EmplaceGate<OutputGate>(e_);
-
-  gate_id_ = _register.NextGateId();
 
   // create output wires
   output_wires_.reserve(number_of_wires);
@@ -636,9 +625,6 @@ MuxGate::MuxGate(const motion::SharePointer& a, const motion::SharePointer& b,
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_c_.size() == 1);
   assert(parent_a_.at(0)->GetBitLength() > 0);
-
-  auto& _register = GetRegister();
-  gate_id_ = _register.NextGateId();
 
   auto number_of_wires = parent_a_.size();
   auto number_of_simd_values = a->GetNumberOfSimdValues();

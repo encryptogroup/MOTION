@@ -46,9 +46,6 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
     : OneGate(parents[0]->GetBackend()), number_of_input_shares_(parents.size()) {
   const std::size_t number_of_input_wires{parents[0]->GetWires().size()};
 
-  // Initialize this gate
-  gate_id_ = GetRegister().NextGateId();
-
   for (std::size_t i = 0; i < parents.size(); ++i) {
     output_number_of_simd_values_ += parents[i]->GetNumberOfSimdValues();
   }
