@@ -491,7 +491,8 @@ inline std::vector<T> RowDotProduct(std::span<const std::vector<T>> a,
   std::size_t row_size{a[0].size()};
   std::vector<T> result(row_size, 0);
   for (std::size_t i = 0; i < a.size(); ++i) {
-    assert(a[i].size() == b[i].size() == row_size);
+    assert(a[i].size() == b[i].size());
+    assert(a[i].size() == row_size);
     for (std::size_t j = 0; j < row_size; ++j) {
       result[j] += a[i][j] * b[i][j];
     }
