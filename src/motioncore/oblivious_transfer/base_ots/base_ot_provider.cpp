@@ -68,9 +68,9 @@ void BaseOtProvider::PreSetup() {
   }
 }
 
-bool BaseOtProvider::HasWork(){
-  for(auto n : number_of_ots_){
-    if(n != 0) return true;
+bool BaseOtProvider::HasWork() {
+  for (auto n : number_of_ots_) {
+    if (n != 0) return true;
   }
   return false;
 }
@@ -173,6 +173,8 @@ void BaseOtProvider::ComputeBaseOts() {
 }
 
 void BaseOtProvider::ImportBaseOts(std::size_t party_id, const ReceiverMessage& messages) {
+  // TODO
+  throw std::runtime_error("Not completely implemented yet");
   auto& receiver_data = data_.at(party_id).GetReceiverData();
   if (receiver_data.is_ready)
     throw std::runtime_error(
@@ -189,6 +191,8 @@ void BaseOtProvider::ImportBaseOts(std::size_t party_id, const ReceiverMessage& 
 }
 
 void BaseOtProvider::ImportBaseOts(std::size_t party_id, const SenderMessage& messages) {
+  // TODO
+  throw std::runtime_error("Not completely implemented yet");
   auto& sender_data = data_.at(party_id).GetSenderData();
   if (sender_data.is_ready)
     throw std::runtime_error(
@@ -205,6 +209,8 @@ void BaseOtProvider::ImportBaseOts(std::size_t party_id, const SenderMessage& me
 }
 
 std::pair<ReceiverMessage, SenderMessage> BaseOtProvider::ExportBaseOts(std::size_t party_id) {
+  // TODO
+  throw std::runtime_error("Not completely implemented yet");
   if (party_id == my_id_)
     throw std::runtime_error("Base OTs export is only possible for other parties");
 
