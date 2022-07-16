@@ -32,8 +32,6 @@
 #include "primitives/sharing_randomness_generator.h"
 #include "utility/helpers.h"
 
-static std::mutex m;
-
 namespace encrypto::motion::proto::astra {
 
 template <typename T>
