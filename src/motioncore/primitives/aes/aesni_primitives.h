@@ -58,6 +58,24 @@ void AesniCtrStreamSingleBlock128Unaligned(const void* round_keys, std::uint64_t
 // * round_keys and output are 16B aligned
 void AesniTmmoBatch4(const void* round_keys, void* input, __uint128_t tweak);
 
+// Compute the fixed-key contruction TMMO^\pi from Guo et al.
+// (https://eprint.iacr.org/2019/074) on six input blocks inplace as described in
+//
+// TMMO^\pi(x, i) = \pi(\pi(x) ^ i) ^ \pi(x)
+//
+// * round_keys and output are 16B-bit aligned
+// TODO tests
+void AesniTmmoBatch6(const void* round_keys, void* input, __uint128_t tweak);
+
+// Compute the fixed-key contruction TMMO^\pi from Guo et al.
+// (https://eprint.iacr.org/2019/074) on six input blocks inplace as described in
+//
+// TMMO^\pi(x, i) = \pi(\pi(x) ^ i) ^ \pi(x)
+//
+// * round_keys and output are 16B-bit aligned
+// TODO tests
+void AesniTmmoBatch3(const void* round_keys, void* input, __uint128_t tweak);
+
 // Compute the fixed-key contruction MMO^\pi from Guo et al.
 // (https://eprint.iacr.org/2019/074).
 //

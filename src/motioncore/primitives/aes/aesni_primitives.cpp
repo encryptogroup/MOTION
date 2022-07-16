@@ -277,6 +277,111 @@ void AesniTmmoBatch4(const void* round_keys_input, void* input, __uint128_t twea
   for (std::size_t j = 0; j < 4; ++j) input_pointer[j] = _mm_xor_si128(wb_2[j], wb_1[j]);
 }
 
+void AesniTmmoBatch6(const void* round_keys_input, void* input, __uint128_t tweak) {
+  alignas(16) std::array<__m128i, kAesNumRoundKeys128> round_keys;
+  alignas(16) std::array<__m128i, 6> wb_1;
+  alignas(16) std::array<__m128i, 6> wb_2;
+
+  // copy the round keys onto the stack
+  // -> compiler will put them into registers
+  std::copy(reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_input, kAesBlockSize)),
+            reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_input, kAesBlockSize)) +
+                kAesNumRoundKeys128,
+            round_keys.data());
+  auto input_pointer = reinterpret_cast<__m128i*>(input);
+  auto tweak_pointer = reinterpret_cast<__m128i*>(&tweak);
+
+  // compute wb_1 <- \pi(x)
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_xor_si128(input_pointer[j], round_keys[0]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[1]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[2]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[3]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[4]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[5]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[6]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[7]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[8]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[9]);
+  for (std::size_t j = 0; j < 6; ++j) wb_1[j] = _mm_aesenclast_si128(wb_1[j], round_keys[10]);
+
+  // compute wb_2 <- \pi(\pi(x) ^ i)
+  tweak *= 3;
+  tweak -= 3;
+  wb_2[0] = _mm_xor_si128(wb_1[0], *tweak_pointer);
+  wb_2[1] = _mm_xor_si128(wb_1[1], *tweak_pointer);
+  ++tweak;
+  wb_2[2] = _mm_xor_si128(wb_1[2], *tweak_pointer);
+  wb_2[3] = _mm_xor_si128(wb_1[3], *tweak_pointer);
+  ++tweak;
+  wb_2[4] = _mm_xor_si128(wb_1[4], *tweak_pointer);
+  wb_2[5] = _mm_xor_si128(wb_1[5], *tweak_pointer);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_xor_si128(wb_2[j], round_keys[0]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[1]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[2]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[3]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[4]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[5]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[6]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[7]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[8]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[9]);
+  for (std::size_t j = 0; j < 6; ++j) wb_2[j] = _mm_aesenclast_si128(wb_2[j], round_keys[10]);
+
+  // store \pi(\pi(x) ^ i) ^ \pi(x)
+  for (std::size_t j = 0; j < 6; ++j) input_pointer[j] = _mm_xor_si128(wb_2[j], wb_1[j]);
+}
+
+void AesniTmmoBatch3(const void* round_keys_input, void* input, __uint128_t tweak) {
+  alignas(16) std::array<__m128i, kAesNumRoundKeys128> round_keys;
+  alignas(16) std::array<__m128i, 3> wb_1;
+  alignas(16) std::array<__m128i, 3> wb_2;
+
+  // copy the round keys onto the stack
+  // -> compiler will put them into registers
+  std::copy(reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_input, kAesBlockSize)),
+            reinterpret_cast<__m128i*>(__builtin_assume_aligned(round_keys_input, kAesBlockSize)) +
+                kAesNumRoundKeys128,
+            round_keys.data());
+  auto input_pointer = reinterpret_cast<__m128i*>(input);
+  auto tweak_pointer = reinterpret_cast<__m128i*>(&tweak);
+
+  // compute wb_1 <- \pi(x)
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_xor_si128(input_pointer[j], round_keys[0]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[1]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[2]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[3]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[4]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[5]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[6]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[7]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[8]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenc_si128(wb_1[j], round_keys[9]);
+  for (std::size_t j = 0; j < 3; ++j) wb_1[j] = _mm_aesenclast_si128(wb_1[j], round_keys[10]);
+
+  // compute wb_2 <- \pi(\pi(x) ^ i)
+  tweak *= 3;
+  tweak -= 3;
+  wb_2[0] = _mm_xor_si128(wb_1[0], *tweak_pointer);
+  ++tweak;
+  wb_2[1] = _mm_xor_si128(wb_1[1], *tweak_pointer);
+  ++tweak;
+  wb_2[2] = _mm_xor_si128(wb_1[2], *tweak_pointer);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_xor_si128(wb_2[j], round_keys[0]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[1]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[2]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[3]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[4]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[5]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[6]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[7]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[8]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenc_si128(wb_2[j], round_keys[9]);
+  for (std::size_t j = 0; j < 3; ++j) wb_2[j] = _mm_aesenclast_si128(wb_2[j], round_keys[10]);
+
+  // store \pi(\pi(x) ^ i) ^ \pi(x)
+  for (std::size_t j = 0; j < 3; ++j) input_pointer[j] = _mm_xor_si128(wb_2[j], wb_1[j]);
+}
+
 void AesniMmoSingle(const void* round_keys_input, void* input) {
   alignas(16) __m128i input_block;
   alignas(16) __m128i wb_1;
