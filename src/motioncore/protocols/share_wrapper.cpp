@@ -848,7 +848,9 @@ template std::vector<std::uint64_t> ShareWrapper::As() const;
 
 template <typename T>
 ShareWrapper ShareWrapper::Add(SharePointer share, SharePointer other) const {
-  assert(share->GetProtocol() == other->GetProtocol());
+  assert(share->GetProtocol() == other->GetProtocol() ||
+         (share->GetCircuitType() == other->GetCircuitType() &&
+          share->IsConstant() != other->IsConstant()));
   switch (share->GetProtocol()) {
     case MpcProtocol::kArithmeticGmw: {
       if (!share->IsConstant() && !other->IsConstant()) {
@@ -965,7 +967,9 @@ template ShareWrapper ShareWrapper::Sub<std::uint64_t>(SharePointer share,
 
 template <typename T>
 ShareWrapper ShareWrapper::Mul(SharePointer share, SharePointer other) const {
-  assert(share->GetProtocol() == other->GetProtocol());
+  assert(share->GetProtocol() == other->GetProtocol() ||
+         (share->GetCircuitType() == other->GetCircuitType() &&
+          share->IsConstant() != other->IsConstant()));
   switch (share->GetProtocol()) {
     case MpcProtocol::kArithmeticGmw: {
       if (!share->IsConstant() && !other->IsConstant()) {
