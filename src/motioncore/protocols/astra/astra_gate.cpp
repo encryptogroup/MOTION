@@ -39,7 +39,6 @@ InputGate<T>::InputGate(std::vector<T> input, std::size_t input_owner, Backend& 
     : Base(backend) {
   input_owner_id_ = input_owner;
   gate_id_ = GetRegister().NextGateId();
-  requires_online_interaction_ = true;
 
   auto my_id = static_cast<std::int64_t>(GetCommunicationLayer().GetMyId());
 
@@ -293,8 +292,6 @@ OutputGate<T>::OutputGate(const astra::WirePointer<T>& parent, std::size_t outpu
 
   parent_ = {parent};
   output_owner_ = output_owner;
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   std::vector<typename astra::Wire<T>::value_type> v(parent->GetNumberOfSimdValues());
@@ -443,8 +440,6 @@ AdditionGate<T>::AdditionGate(const astra::WirePointer<T>& a, const astra::WireP
   parent_a_ = {std::move(a)};
   parent_b_ = {std::move(b)};
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   std::vector<typename astra::Wire<T>::value_type> v(parent_a_.at(0)->GetNumberOfSimdValues());
@@ -571,8 +566,6 @@ SubtractionGate<T>::SubtractionGate(const astra::WirePointer<T>& a, const astra:
   parent_a_ = {std::move(a)};
   parent_b_ = {std::move(b)};
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   std::vector<typename astra::Wire<T>::value_type> v(parent_a_.at(0)->GetNumberOfSimdValues());
@@ -698,8 +691,6 @@ MultiplicationGate<T>::MultiplicationGate(const astra::WirePointer<T>& a,
   parent_a_ = {std::move(a)};
   parent_b_ = {std::move(b)};
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   std::vector<typename astra::Wire<T>::value_type> v(parent_a_.at(0)->GetNumberOfSimdValues());
@@ -937,8 +928,6 @@ DotProductGate<T>::DotProductGate(std::vector<motion::WirePointer> vector_a,
   parent_a_ = std::move(vector_a);
   parent_b_ = std::move(vector_b);
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   auto number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();

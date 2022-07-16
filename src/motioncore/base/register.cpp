@@ -84,32 +84,6 @@ void Register::RegisterGate(const GatePointer& gate) {
   gates_.push_back(gate);
 }
 
-void Register::AddToActiveQueue(std::size_t gate_id) {
-  std::scoped_lock lock(active_queue_mutex_);
-  active_gates_.push(gate_id);
-  if constexpr (kVerboseDebug) {
-    logger_->LogTrace(fmt::format("Added gate #{} to the active queue", gate_id));
-  }
-}
-
-void Register::ClearActiveQueue() {
-  logger_->LogDebug("Clearing active queue");
-  std::scoped_lock lock(active_queue_mutex_);
-  active_gates_ = {};
-}
-
-std::int64_t Register::GetNextGateFromActiveQueue() {
-  std::scoped_lock lock(active_queue_mutex_);
-  if (active_gates_.empty()) {
-    return -1;
-  } else {
-    const auto gate_id = active_gates_.front();
-    assert(gate_id < static_cast<std::size_t>(std::numeric_limits<std::int64_t>::max()));
-    active_gates_.pop();
-    return static_cast<std::int64_t>(gate_id);
-  }
-}
-
 void Register::IncrementEvaluatedGatesSetupCounter() {
   ++evaluated_gates_setup_;
   CheckSetupCondition();

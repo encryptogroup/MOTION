@@ -46,9 +46,7 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
     : OneGate(parents[0]->GetBackend()), number_of_input_shares_(parents.size()) {
   const std::size_t number_of_input_wires{parents[0]->GetWires().size()};
 
-  // Initialize this gate.
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
+  // Initialize this gate
   gate_id_ = GetRegister().NextGateId();
 
   for (std::size_t i = 0; i < parents.size(); ++i) {
@@ -85,12 +83,6 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
         }
       }
     }
-  }
-
-  // Register this gate as waiting for the wires.
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
   }
 
   // Register output wires.

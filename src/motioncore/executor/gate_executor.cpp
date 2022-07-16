@@ -100,11 +100,6 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
 
   fiber_pool.join();
 
-  // XXX: since we never pop elements from the active queue, clear it manually for now
-  // otherwise there will be complains that it is not empty upon repeated execution
-  // -> maybe remove the active queue in the future
-  register_.ClearActiveQueue();
-
   statistics.RecordEnd<RunTimeStatistics::StatisticsId::kEvaluate>();
 }
 
@@ -151,11 +146,6 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
   register_.CheckOnlineCondition();
   register_.GetGatesOnlineDoneCondition()->Wait();
   fiber_pool.join();
-
-  // XXX: since we never pop elements from the active queue, clear it manually for now
-  // otherwise there will be complains that it is not empty upon repeated execution
-  // -> maybe remove the active queue in the future
-  register_.ClearActiveQueue();
 
   statistics.RecordEnd<RunTimeStatistics::StatisticsId::kEvaluate>();
 }

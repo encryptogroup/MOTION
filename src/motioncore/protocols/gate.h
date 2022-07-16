@@ -76,12 +76,6 @@ class Gate {
 
   void Clear();
 
-  void RegisterWaitingFor(std::size_t wire_id);
-
-  void SignalDependencyIsReady();
-
-  bool AreDependenciesReady() { return wire_dependencies_.size() == number_of_ready_dependencies_; }
-
   virtual bool NeedsSetup() const { return true; }
 
   virtual bool NeedsOnline() const { return true; }
@@ -104,19 +98,14 @@ class Gate {
   std::vector<WirePointer> output_wires_;
   Backend& backend_;
   std::int64_t gate_id_ = -1;
-  std::unordered_set<std::size_t> wire_dependencies_;
 
-  GateType gate_type_ = GateType::kInvalid;
   std::atomic<bool> setup_is_ready_ = false;
   std::atomic<bool> online_is_ready_ = false;
-  std::atomic<bool> requires_online_interaction_ = false;
-
-  std::atomic<bool> added_to_active_queue_ = false;
 
   FiberCondition setup_is_ready_condition_;
   FiberCondition online_is_ready_condition_;
 
-  std::atomic<std::size_t> number_of_ready_dependencies_ = 0;
+  bool own_output_wires_{true};
 
   Gate(Backend& backend);
 
@@ -129,7 +118,6 @@ class Gate {
   SbProvider& GetSbProvider();
   communication::CommunicationLayer& GetCommunicationLayer();
   OtProvider& GetOtProvider(const std::size_t i);
-  bool own_output_wires_{true};
 
  private:
   void IfReadyAddToProcessingQueue();
@@ -178,7 +166,7 @@ class InputGate : public OneGate {
  protected:
   ~InputGate() override = default;
 
-  InputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::kInput; }
+  InputGate(Backend& backend) : OneGate(backend) {}
 
   InputGate(InputGate&) = delete;
 
@@ -203,7 +191,7 @@ class OutputGate : public OneGate {
 
   OutputGate(OutputGate&) = delete;
 
-  OutputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::kInteractive; }
+  OutputGate(Backend& backend) : OneGate(backend) {}
 
  protected:
   std::int64_t output_owner_ = -1;

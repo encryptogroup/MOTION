@@ -188,14 +188,9 @@ OutputGate<T>::OutputGate(const arithmetic_gmw::WirePointer<T>& parent, std::siz
   }
 
   output_owner_ = output_owner;
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
   is_my_output_ = my_id == static_cast<std::size_t>(output_owner_) ||
                   static_cast<std::size_t>(output_owner_) == kAll;
-
-  RegisterWaitingFor(parent_.at(0)->GetWireId());
-  parent_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, parent->GetNumberOfSimdValues())};
@@ -338,16 +333,7 @@ AdditionGate<T>::AdditionGate(const arithmetic_gmw::WirePointer<T>& a,
 
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
-
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
@@ -406,16 +392,7 @@ SubtractionGate<T>::SubtractionGate(const arithmetic_gmw::WirePointer<T>& a,
 
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
-
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
@@ -476,9 +453,6 @@ MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& 
 
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
-
   d_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
                                                                    a->GetNumberOfSimdValues());
   e_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
@@ -488,12 +462,6 @@ MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& 
   e_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(e_);
 
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
@@ -616,16 +584,7 @@ HybridMultiplicationGate<T>::HybridMultiplicationGate(const boolean_gmw::WirePoi
   assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
   assert(parent_a_.at(0)->GetBitLength() == 1);
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
-
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, parent_a_[0]->GetNumberOfSimdValues())};
@@ -728,17 +687,11 @@ template <typename T>
 SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->GetBackend()) {
   parent_ = {std::static_pointer_cast<motion::Wire>(a)};
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
-
   d_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
                                                                    a->GetNumberOfSimdValues());
   d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
 
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_.at(0)->GetWireId());
-  parent_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};

@@ -52,11 +52,7 @@ class Wire {
 
   virtual ~Wire();
 
-  void RegisterWaitingGate(std::size_t gate_id);
-
   void SetOnlineFinished();
-
-  const auto& GetWaitingGatesIds() const noexcept { return waiting_gate_ids_; }
 
   const std::atomic<bool>& IsReady() const noexcept;
 
@@ -83,7 +79,7 @@ class Wire {
   Backend& backend_;
 
   /// Number of values that are _logically_ processed in parallel
-  std::size_t n_simd_ = 0;
+  std::size_t number_of_simd_ = 0;
 
   // is ready flag is needed for callbacks, i.e.,
   // gates will wait for wires to be evaluated to proceed with their evaluation
@@ -93,11 +89,7 @@ class Wire {
 
   std::int64_t wire_id_ = -1;
 
-  std::unordered_set<std::size_t> waiting_gate_ids_;
-
   Wire(Backend& backend, std::size_t number_of_simd);
-
-  static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
 
   virtual void DynamicClear(){};
 

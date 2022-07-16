@@ -86,17 +86,7 @@ class Register {
 
   auto& GetGates() const { return gates_; }
 
-  void UnregisterGate(std::size_t gate_id) { gates_.at(gate_id) = nullptr; }
-
   WirePointer GetWire(std::size_t wire_id) const { return wires_.at(wire_id - wire_id_offset_); }
-
-  void UnregisterWire(std::size_t wire_id) { wires_.at(wire_id) = nullptr; }
-
-  void AddToActiveQueue(std::size_t gate_id);
-
-  void ClearActiveQueue();
-
-  std::int64_t GetNextGateFromActiveQueue();
 
   void IncrementEvaluatedGatesSetupCounter();
 
@@ -161,9 +151,6 @@ class Register {
   // conditions which enable waiting for the above flags to change to true
   std::shared_ptr<FiberCondition> gates_setup_done_condition_;
   std::shared_ptr<FiberCondition> gates_online_done_condition_;
-
-  std::queue<std::size_t> active_gates_;
-  std::mutex active_queue_mutex_;
 
   std::vector<GatePointer> gates_;
 

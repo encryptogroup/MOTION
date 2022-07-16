@@ -110,16 +110,7 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
     // needs some mediocre implementation effort if implemented with a deferred inputs option
     assert(!parent_a_.at(0)->IsConstant() && parent_b_.at(0)->IsConstant());
 
-    requires_online_interaction_ = false;
-    gate_type_ = GateType::kNonInteractive;
-
     gate_id_ = GetRegister().NextGateId();
-
-    RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-    parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-    RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-    parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
     {
       auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
@@ -204,17 +195,7 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     // TODO: a separate gate for this probably rather rare case
     // needs some mediocre implementation effort if implemented with a deferred inputs option
     assert(!parent_a_.at(0)->IsConstant() && parent_b_.at(0)->IsConstant());
-
-    requires_online_interaction_ = false;
-    gate_type_ = GateType::kNonInteractive;
-
     gate_id_ = GetRegister().NextGateId();
-
-    RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-    parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-    RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-    parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
     {
       auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(

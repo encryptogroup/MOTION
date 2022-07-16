@@ -185,16 +185,9 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   }
 
   output_owner_ = output_owner;
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == kAll;
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());  // mark this gate as waiting for @param wire
-    wire->RegisterWaitingGate(gate_id_);    // register this gate in @param wire as waiting
-  }
 
   // create output wires
   output_wires_.reserve(number_of_wires);
@@ -355,21 +348,8 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   assert(parent_a_.size() == parent_b_.size());
   assert(parent_a_.at(0)->GetBitLength() > 0);
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
-
   auto& _register = GetRegister();
   gate_id_ = _register.NextGateId();
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   auto number_of_wires = parent_a_.size();
 
@@ -439,16 +419,8 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   assert(parent_.size() > 0);
   assert(parent_.at(0)->GetBitLength() > 0);
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
-
   auto& _register = GetRegister();
   gate_id_ = _register.NextGateId();
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   auto number_of_wires = parent_.size();
 
@@ -512,8 +484,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
 
   auto number_of_wires = parent_a_.size();
   auto number_of_simd_values = a->GetNumberOfSimdValues();
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
 
   std::vector<motion::WirePointer> dummy_wires_e(number_of_wires), dummy_wires_d(number_of_wires);
 
@@ -527,6 +497,7 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
     w = _register.EmplaceWire<boolean_gmw::Wire>(backend_, number_of_simd_values);
   }
 
+  // TODO: replace Gate objects with Futures from CommunicationManager
   d_ = std::make_shared<boolean_gmw::Share>(dummy_wires_d);
   e_ = std::make_shared<boolean_gmw::Share>(dummy_wires_e);
 
@@ -534,16 +505,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   e_output_ = _register.EmplaceGate<OutputGate>(e_);
 
   gate_id_ = _register.NextGateId();
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   // create output wires
   output_wires_.reserve(number_of_wires);
@@ -676,26 +637,8 @@ MuxGate::MuxGate(const motion::SharePointer& a, const motion::SharePointer& b,
   assert(parent_c_.size() == 1);
   assert(parent_a_.at(0)->GetBitLength() > 0);
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
-
   auto& _register = GetRegister();
   gate_id_ = _register.NextGateId();
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_c_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   auto number_of_wires = parent_a_.size();
   auto number_of_simd_values = a->GetNumberOfSimdValues();

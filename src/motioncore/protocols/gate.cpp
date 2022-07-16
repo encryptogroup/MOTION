@@ -33,16 +33,6 @@
 
 namespace encrypto::motion {
 
-void Gate::RegisterWaitingFor(std::size_t wire_id) {
-  std::scoped_lock lock(mutex_);
-  wire_dependencies_.insert(wire_id);
-}
-
-void Gate::SignalDependencyIsReady() {
-  number_of_ready_dependencies_++;
-  IfReadyAddToProcessingQueue();
-}
-
 void Gate::SetSetupIsReady() {
   {
     std::scoped_lock lock(setup_is_ready_condition_.GetMutex());
@@ -69,19 +59,9 @@ void Gate::WaitSetup() const { setup_is_ready_condition_.Wait(); }
 
 void Gate::WaitOnline() const { online_is_ready_condition_.Wait(); }
 
-void Gate::IfReadyAddToProcessingQueue() {
-  std::scoped_lock lock(mutex_);
-  if (AreDependenciesReady() && !added_to_active_queue_) {
-    GetRegister().AddToActiveQueue(gate_id_);
-    added_to_active_queue_ = true;
-  }
-}
-
 void Gate::Clear() {
   setup_is_ready_ = false;
   online_is_ready_ = false;
-  added_to_active_queue_ = false;
-  number_of_ready_dependencies_ = 0;
 }
 
 Gate::Gate(Backend& backend)

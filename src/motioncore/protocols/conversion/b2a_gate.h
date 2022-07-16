@@ -53,9 +53,6 @@ class GmwToArithmeticGate final : public OneGate {
       assert(wire->GetProtocol() == MpcProtocol::kBooleanGmw);
     }
 
-    requires_online_interaction_ = true;
-    gate_type_ = GateType::kInteractive;
-
     // create the output wire
     output_wires_.emplace_back(GetRegister().template EmplaceWire<proto::arithmetic_gmw::Wire<T>>(
         backend_, number_of_simd));
@@ -76,12 +73,6 @@ class GmwToArithmeticGate final : public OneGate {
 
     // register this gate
     gate_id_ = GetRegister().NextGateId();
-
-    // register this gate with the parent wires
-    for (auto& wire : parent_) {
-      RegisterWaitingFor(wire->GetWireId());
-      wire->RegisterWaitingGate(gate_id_);
-    }
 
     if constexpr (kDebug) {
       auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);

@@ -45,9 +45,7 @@ namespace encrypto::motion {
 UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBackend()) {
   parent_ = parent->GetWires();
 
-  // Initialize this gate.
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
+  // Initialize this gate
   gate_id_ = GetRegister().NextGateId();
 
   if constexpr (kDebug) {
@@ -73,12 +71,6 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
           fmt::format("Got {} arithmetic input wires in UnsimdifyGate#{}, only one is allowed",
                       parent_.size(), GetId()));
     }
-  }
-
-  // Register this gate as waiting for the wires.
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
   }
 
   // Register output wires.

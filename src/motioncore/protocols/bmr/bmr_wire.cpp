@@ -55,7 +55,7 @@ Wire::Wire(bool value, Backend& backend)
 
 void Wire::InitializationHelperBmr() {
   const auto number_of_parties = backend_.GetCommunicationLayer().GetNumberOfParties();
-  public_keys_.resize(n_simd_ * number_of_parties);
+  public_keys_.resize(number_of_simd_ * number_of_parties);
 
   setup_ready_cond_ = std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); });
 }
@@ -63,7 +63,7 @@ void Wire::InitializationHelperBmr() {
 void Wire::GenerateRandomPrivateKeys() { secret_0_keys_.SetToRandom(); }
 
 void Wire::GenerateRandomPermutationBits() {
-  shared_permutation_bits_ = BitVector<>::SecureRandom(n_simd_);
+  shared_permutation_bits_ = BitVector<>::SecureRandom(number_of_simd_);
 }
 
 }  // namespace encrypto::motion::proto::bmr

@@ -346,8 +346,6 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
   output_owner_ = output_owner;
   output_.resize(parent_.size());
   output_wires_.resize(parent_.size());
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
 
   auto& communication_layer = GetCommunicationLayer();
   const auto my_id = communication_layer.GetMyId();
@@ -376,11 +374,6 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
       GetRegister().EmplaceGate<boolean_gmw::OutputGate>(gmw_output_share_, output_owner_);
 
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());  // mark this gate as waiting for @param wire
-    wire->RegisterWaitingGate(gate_id_);    // register this gate in @param wire as waiting
-  }
 
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == kAll;
@@ -472,20 +465,7 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   assert(parent_a_.at(0)->GetProtocol() == parent_b_.at(0)->GetProtocol());
   assert(parent_a_.at(0)->GetProtocol() == MpcProtocol::kBmr);
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
-
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   output_wires_.resize(parent_a_.size());
   const motion::BitVector tmp_bv(a->GetNumberOfSimdValues());
@@ -587,15 +567,7 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBmr);
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
-
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   output_wires_.resize(parent_.size());
   const motion::BitVector tmp_bv(parent->GetNumberOfSimdValues());
@@ -706,9 +678,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   assert(parent_a_.at(0)->GetProtocol() == parent_b_.at(0)->GetProtocol());
   assert(parent_a_.at(0)->GetProtocol() == MpcProtocol::kBmr);
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
-
   gate_id_ = GetRegister().NextGateId();
 
   auto& communication_layer = GetCommunicationLayer();
@@ -717,16 +686,6 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   const auto number_of_simd{parent_a_.at(0)->GetNumberOfSimdValues()};
   const auto number_of_wires{parent_a_.size()};
   const auto size_of_all_garbled_tables = number_of_wires * number_of_simd * 4 * number_of_parties;
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   output_wires_.resize(number_of_wires);
   const motion::BitVector tmp_bv(number_of_simd);

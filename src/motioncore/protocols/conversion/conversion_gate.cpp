@@ -51,14 +51,7 @@ BmrToBooleanGmwGate::BmrToBooleanGmwGate(const SharePointer& parent)
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBmr);
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   // create output wires
   auto number_of_wires = parent_.size();
@@ -136,14 +129,7 @@ BooleanGmwToBmrGate::BooleanGmwToBmrGate(const SharePointer& parent)
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBooleanGmw);
 
-  requires_online_interaction_ = false;
-  gate_type_ = GateType::kNonInteractive;
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   output_wires_.resize(parent_.size());
   for (auto& w : output_wires_) {
@@ -325,19 +311,12 @@ ArithmeticGmwToBmrGate::ArithmeticGmwToBmrGate(const SharePointer& parent)
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kArithmeticGmw);
 
-  requires_online_interaction_ = true;
-  gate_type_ = GateType::kInteractive;
   gate_id_ = GetRegister().NextGateId();
 
   // ArithmeticGmwToBmrGate does not own its output wires, since these are the output wires of the
   // last BMR addition circuit. Thus, Gate::SetOnlineReady should not mark the output wires
   // online-ready.
   own_output_wires_ = false;
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   assert(gate_id_ >= 0);
   const auto& communication_layer = GetCommunicationLayer();
