@@ -35,7 +35,7 @@ class Register;
 // Evaluates all registered gates.
 class GateExecutor {
  public:
-  GateExecutor(Register&, std::function<void()> preprocessing_function, std::shared_ptr<Logger>);
+  GateExecutor(Register&, std::function<void()> presetup_function, std::shared_ptr<Logger>);
 
   // Run the setup phases first for all gates before starting with the online
   // phases.
@@ -45,7 +45,10 @@ class GateExecutor {
 
  private:
   Register& register_;
-  std::function<void()> preprocessing_function_;
+  // Presetup function is run prior to the setup function and is used to provide information about
+  // objects that will be used in the setup phase, eg a multiplication triple registers an
+  // oblivious transfer object and an OT provider registers base OT objects.
+  std::function<void()> presetup_function_;
   std::shared_ptr<Logger> logger_;
 };
 

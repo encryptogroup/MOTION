@@ -30,16 +30,16 @@
 
 namespace encrypto::motion {
 
-GateExecutor::GateExecutor(Register& reg, std::function<void(void)> preprocessing_function,
+GateExecutor::GateExecutor(Register& reg, std::function<void(void)> presetup_function,
                            std::shared_ptr<Logger> logger)
     : register_(reg),
-      preprocessing_function_(std::move(preprocessing_function)),
+      presetup_function_(std::move(presetup_function)),
       logger_(std::move(logger)) {}
 
 void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
   statistics.RecordStart<RunTimeStatistics::StatisticsId::kEvaluate>();
 
-  preprocessing_function_();
+  presetup_function_();
 
   if (logger_) {
     logger_->LogInfo(
@@ -110,7 +110,7 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
   statistics.RecordStart<RunTimeStatistics::StatisticsId::kEvaluate>();
 
   // Run preprocessing setup in a separate thread
-  auto preprocessing_future = std::async(std::launch::async, [this] { preprocessing_function_(); });
+  auto preprocessing_future = std::async(std::launch::async, [this] { presetup_function_(); });
 
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
