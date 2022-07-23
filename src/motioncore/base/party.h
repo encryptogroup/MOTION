@@ -55,13 +55,11 @@ class Party {
   // Let's make only Configuration be copyable
   Party(Party& party) = delete;
 
-  Party(std::unique_ptr<communication::CommunicationLayer> parties);
+  Party(std::unique_ptr<communication::CommunicationLayer> communication_layer);
 
   ~Party();
 
   ConfigurationPointer GetConfiguration() { return configuration_; }
-
-  communication::CommunicationLayer& GetCommunicationLayer() { return *communication_layer_; }
 
   template <MpcProtocol P>
   SharePointer In(std::span<const BitVector<>> input,
@@ -81,9 +79,41 @@ class Party {
       case MpcProtocol::kBmr: {
         return backend_->BmrInput(party_id, input);
       }
+      case MpcProtocol::kGarbledCircuit: {
+        return backend_->GarbledCircuitInput(party_id, input);
+      }
       default: {
         throw(std::runtime_error(
             fmt::format("Unknown MPC protocol with id {}", static_cast<unsigned int>(P))));
+      }
+    }
+  }
+
+  template <MpcProtocol P>
+  std::pair<SharePointer, ReusableFiberPromise<std::vector<BitVector<>>>*> In(
+      std::size_t input_owner_id, std::size_t number_of_wires, std::size_t number_of_simd) {
+    switch (P) {
+      case MpcProtocol::kBooleanConstant: {
+        // TODO implement
+        static_assert(P != MpcProtocol::kBooleanConstant, "Not implemented yet");
+        // return backend_->BooleanGmwInput(party_id, input);
+      }
+      case MpcProtocol::kBooleanGmw: {
+        // TODO implement
+        static_assert(P != MpcProtocol::kBooleanGmw, "Not implemented yet");
+        // return backend_->BooleanGmwInput(party_id, input);
+      }
+      case MpcProtocol::kBmr: {
+        // TODO implement
+        static_assert(P != MpcProtocol::kBmr, "Not implemented yet");
+        // return backend_->BmrInput(party_id, input);
+      }
+      case MpcProtocol::kGarbledCircuit: {
+        return backend_->GarbledCircuitInput(input_owner_id, number_of_wires, number_of_simd);
+      }
+      default: {
+        throw std::runtime_error(fmt::format("Unknown or unimplemented MPC protocol with id {}",
+                                             static_cast<unsigned int>(P)));
       }
     }
   }
@@ -105,6 +135,9 @@ class Party {
       }
       case MpcProtocol::kBmr: {
         return backend_->BmrInput(party_id, input);
+      }
+      case MpcProtocol::kGarbledCircuit: {
+        return backend_->GarbledCircuitInput(party_id, input);
       }
       default: {
         throw(std::runtime_error(
@@ -175,7 +208,7 @@ class Party {
         return backend_->ArithmeticGmwInput<T>(party_id, input);
       }
       case MpcProtocol::kAstra: {
-          return backend_->AstraInput<T>(party_id, input);
+        return backend_->AstraInput<T>(party_id, input);
       }
       case MpcProtocol::kBooleanGmw: {
         throw std::runtime_error(
@@ -206,7 +239,7 @@ class Party {
         return backend_->ArithmeticGmwInput<T>(party_id, std::move(input));
       }
       case MpcProtocol::kAstra: {
-          return backend_->AstraInput<T>(party_id, std::move(input));
+        return backend_->AstraInput<T>(party_id, std::move(input));
       }
       case MpcProtocol::kBooleanGmw: {
         throw(std::runtime_error(
@@ -376,12 +409,10 @@ class Party {
   auto& GetBackend() { return backend_; }
 
  private:
-  std::unique_ptr<communication::CommunicationLayer> communication_layer_;
   ConfigurationPointer configuration_;
   std::shared_ptr<Logger> logger_;
   BackendPointer backend_;
   std::atomic<bool> finished_ = false;
-  std::atomic<bool> connected_ = false;
 
   void EvaluateCircuit();
 };

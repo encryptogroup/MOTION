@@ -21,6 +21,19 @@ enum MessageType : ubyte {
   kAstraOnlineMultiplyGate = 17,
   kAstraSetupDotProductGate = 18,
   kAstraOnlineDotProductGate = 19,
+  kGarbledCircuitSetup = 20,
+  // #simd concatenated tuples of 8-byte garbled rows of form
+  // [row0 || row1 || row2]_simd=0 || [row0 || row1 || row2]_simd=1 || ...
+  // Compressed garbled control bits for determining which linear combination
+  // of the garbled rows needs to be used for producing the result of the AND gate.
+  // These are concatenated 5-bit codewords: [cw_0] || ... || [cw_last].
+  kGarbledCircuitGarbledTables = 21,
+  // concatenated permutation bits
+  // [p_simd0 || ... || p_simdlast]_wire0 || [p_simd0 || ... || p_simdlast]_wirelast
+  kGarbledCircuitOutput = 22,
+  // #wires * #simd labels of form
+  // [l_simd0 || ... || l_simdlast]_wire0 || [l_simd0 || ... || l_simdlast]_wirelast
+  kGarbledCircuitInput = 23,
   // add new message types here
   }
 

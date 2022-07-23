@@ -50,6 +50,7 @@
 #include "protocols/data_management/simdify_gate.h"
 #include "protocols/data_management/subset_gate.h"
 #include "protocols/data_management/unsimdify_gate.h"
+#include "protocols/garbled_circuit/garbled_circuit_provider.h"
 #include "secure_type/secure_unsigned_integer.h"
 
 namespace encrypto::motion {
@@ -58,21 +59,34 @@ using SharePointer = std::shared_ptr<Share>;
 
 ShareWrapper ShareWrapper::operator~() const {
   assert(share_);
-  if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+  if (share_->GetCircuitType() == CircuitType::kArithmetic) {
     throw std::runtime_error(
-        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+        "Boolean primitive operations are not supported for arithmetic circuits");
   }
 
-  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
-    auto gmw_share = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
-    assert(gmw_share);
-    auto inv_gate = share_->GetRegister()->EmplaceGate<proto::boolean_gmw::InvGate>(gmw_share);
-    return ShareWrapper(inv_gate->GetOutputAsShare());
-  } else {
-    auto bmr_share = std::dynamic_pointer_cast<proto::bmr::Share>(share_);
-    assert(bmr_share);
-    auto inv_gate = share_->GetRegister()->EmplaceGate<proto::bmr::InvGate>(bmr_share);
-    return ShareWrapper(inv_gate->GetOutputAsShare());
+  switch (share_->GetProtocol()) {
+    case MpcProtocol::kBmr: {
+      auto bmr_share = std::dynamic_pointer_cast<proto::bmr::Share>(share_);
+      assert(bmr_share);
+      auto inv_gate =
+          share_->GetBackend().GetRegister()->EmplaceGate<proto::bmr::InvGate>(bmr_share);
+      return ShareWrapper(inv_gate->GetOutputAsShare());
+    }
+    case MpcProtocol::kBooleanGmw: {
+      auto gmw_share = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
+      assert(gmw_share);
+      auto inv_gate =
+          share_->GetBackend().GetRegister()->EmplaceGate<proto::boolean_gmw::InvGate>(gmw_share);
+      return ShareWrapper(inv_gate->GetOutputAsShare());
+    }
+    case MpcProtocol::kGarbledCircuit: {
+      auto inv_gate = share_->GetBackend().GetGarbledCircuitProvider()->MakeInvGate(share_);
+      return ShareWrapper(inv_gate->GetOutputAsShare());
+    }
+    default:
+      throw std::runtime_error(
+          fmt::format("Unknown protocol for constructing an INV gate with id {}",
+                      static_cast<std::size_t>(share_->GetProtocol())));
   }
 }
 
@@ -82,27 +96,39 @@ ShareWrapper ShareWrapper::operator^(const ShareWrapper& other) const {
   assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
 
-  if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+  if (share_->GetCircuitType() == CircuitType::kArithmetic) {
     throw std::runtime_error(
-        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+        "Boolean primitive operations are not supported for arithmetic circuits");
   }
 
-  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
-    auto this_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
-    auto other_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(*other);
+  switch (share_->GetProtocol()) {
+    case MpcProtocol::kBmr: {
+      auto this_b = std::dynamic_pointer_cast<proto::bmr::Share>(share_);
+      auto other_b = std::dynamic_pointer_cast<proto::bmr::Share>(*other);
 
-    assert(this_b);
-    assert(other_b);
+      auto xor_gate =
+          share_->GetBackend().GetRegister()->EmplaceGate<proto::bmr::XorGate>(this_b, other_b);
+      return ShareWrapper(xor_gate->GetOutputAsShare());
+    }
+    case MpcProtocol::kBooleanGmw: {
+      auto this_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
+      auto other_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(*other);
 
-    auto xor_gate =
-        share_->GetRegister()->EmplaceGate<proto::boolean_gmw::XorGate>(this_b, other_b);
-    return ShareWrapper(xor_gate->GetOutputAsShare());
-  } else {
-    auto this_b = std::dynamic_pointer_cast<proto::bmr::Share>(share_);
-    auto other_b = std::dynamic_pointer_cast<proto::bmr::Share>(*other);
+      assert(this_b);
+      assert(other_b);
 
-    auto xor_gate = share_->GetRegister()->EmplaceGate<proto::bmr::XorGate>(this_b, other_b);
-    return ShareWrapper(xor_gate->GetOutputAsShare());
+      auto xor_gate = share_->GetBackend().GetRegister()->EmplaceGate<proto::boolean_gmw::XorGate>(
+          this_b, other_b);
+      return ShareWrapper(xor_gate->GetOutputAsShare());
+    }
+    case MpcProtocol::kGarbledCircuit: {
+      auto xor_gate = share_->GetBackend().GetGarbledCircuitProvider()->MakeXorGate(share_, *other);
+      return ShareWrapper(xor_gate->GetOutputAsShare());
+    }
+    default:
+      throw std::runtime_error(
+          fmt::format("Unknown protocol for constructing an XOR gate with id {}",
+                      static_cast<std::size_t>(share_->GetProtocol())));
   }
 }
 
@@ -112,22 +138,36 @@ ShareWrapper ShareWrapper::operator&(const ShareWrapper& other) const {
   assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
 
-  if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+  if (share_->GetCircuitType() == CircuitType::kArithmetic) {
     throw std::runtime_error(
-        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+        "Boolean primitive operations are not supported for arithmetic circuits");
   }
 
-  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
-    auto this_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
-    auto other_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(*other);
-    auto and_gate =
-        share_->GetRegister()->EmplaceGate<proto::boolean_gmw::AndGate>(this_b, other_b);
-    return ShareWrapper(and_gate->GetOutputAsShare());
-  } else {
-    auto this_b = std::dynamic_pointer_cast<proto::bmr::Share>(share_);
-    auto other_b = std::dynamic_pointer_cast<proto::bmr::Share>(*other);
-    auto and_gate = share_->GetRegister()->EmplaceGate<proto::bmr::AndGate>(this_b, other_b);
-    return ShareWrapper(and_gate->GetOutputAsShare());
+  switch (share_->GetProtocol()) {
+    case MpcProtocol::kBmr: {
+      auto this_b = std::dynamic_pointer_cast<proto::bmr::Share>(share_);
+      auto other_b = std::dynamic_pointer_cast<proto::bmr::Share>(*other);
+
+      auto and_gate =
+          share_->GetBackend().GetRegister()->EmplaceGate<proto::bmr::AndGate>(this_b, other_b);
+      return ShareWrapper(and_gate->GetOutputAsShare());
+    }
+    case MpcProtocol::kBooleanGmw: {
+      auto this_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
+      auto other_b = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(*other);
+
+      auto and_gate = share_->GetBackend().GetRegister()->EmplaceGate<proto::boolean_gmw::AndGate>(
+          this_b, other_b);
+      return ShareWrapper(and_gate->GetOutputAsShare());
+    }
+    case MpcProtocol::kGarbledCircuit: {
+      auto and_gate = share_->GetBackend().GetGarbledCircuitProvider()->MakeAndGate(share_, *other);
+      return ShareWrapper(and_gate->GetOutputAsShare());
+    }
+    default:
+      throw std::runtime_error(
+          fmt::format("Unknown protocol for constructing an AND gate with id {}",
+                      static_cast<std::size_t>(share_->GetProtocol())));
   }
 }
 
@@ -137,9 +177,9 @@ ShareWrapper ShareWrapper::operator|(const ShareWrapper& other) const {
   assert(share_->GetProtocol() == other->GetProtocol());
   assert(share_->GetBitLength() == other->GetBitLength());
 
-  if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+  if (share_->GetCircuitType() == CircuitType::kArithmetic) {
     throw std::runtime_error(
-        "Boolean primitive operations are not supported for Arithmetic GMW shares");
+        "Boolean primitive operations are not supported for arithmetic circuits");
   }
 
   // OR operatinos is equal to NOT ( ( NOT a ) AND ( NOT b ) )
@@ -527,6 +567,10 @@ ShareWrapper ShareWrapper::Out(std::size_t output_owner) const {
       result = backend.BmrOutput(share_, output_owner);
       break;
     }
+    case MpcProtocol::kGarbledCircuit: {
+      result = backend.GarbledCircuitOutput(share_, output_owner);
+      break;
+    }
     default: {
       throw std::runtime_error(fmt::format("Unknown MPC protocol with id {}",
                                            static_cast<unsigned int>(share_->GetProtocol())));
@@ -537,6 +581,8 @@ ShareWrapper ShareWrapper::Out(std::size_t output_owner) const {
 
 std::vector<ShareWrapper> ShareWrapper::Split() const {
   std::vector<ShareWrapper> result;
+  if (!share_) return result;
+
   result.reserve(share_->GetWires().size());
   const auto split = share_->Split();
   for (const auto& s : split) result.emplace_back(s);
@@ -612,6 +658,9 @@ ShareWrapper ShareWrapper::Concatenate(std::span<const ShareWrapper> input) {
     }
     case MpcProtocol::kBmr: {
       return ShareWrapper(std::make_shared<proto::bmr::Share>(wires));
+    }
+    case MpcProtocol::kGarbledCircuit: {
+      return ShareWrapper(std::make_shared<proto::garbled_circuit::Share>(wires));
     }
     default: {
       throw std::runtime_error("Unknown MPC protocol");
@@ -795,6 +844,10 @@ bool ShareWrapper::As<bool>() const {
         std::dynamic_pointer_cast<proto::ConstantBooleanWire>(share_->GetWires()[0]);
     assert(constant_boolean_wire);
     return constant_boolean_wire->GetValues()[0];
+  } else if (share_->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+    auto gc_wire = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(share_->GetWires()[0]);
+    assert(gc_wire);
+    return gc_wire->CopyPermutationBits()[0];
   } else {
     throw std::invalid_argument("Unsupported Boolean protocol in ShareWrapper::As()");
   }
@@ -821,6 +874,10 @@ BitVector<> ShareWrapper::As() const {
         std::dynamic_pointer_cast<proto::ConstantBooleanWire>(share_->GetWires()[0]);
     assert(constant_boolean_wire);
     return constant_boolean_wire->GetValues();
+  } else if (share_->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+    auto gc_wire = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(share_->GetWires()[0]);
+    assert(gc_wire);
+    return gc_wire->CopyPermutationBits();
   } else {
     throw std::invalid_argument("Unsupported Boolean protocol in ShareWrapper::As()");
   }

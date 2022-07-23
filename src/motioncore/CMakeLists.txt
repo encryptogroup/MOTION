@@ -8,9 +8,10 @@ add_library(motion
         base/register.cpp
         communication/communication_layer.cpp
         communication/dummy_transport.cpp
-        communication/message_manager.cpp
+        communication/garbled_circuit_message.cpp
         communication/hello_message.cpp
         communication/message.cpp
+        communication/message_manager.cpp
         communication/tcp_transport.cpp
         communication/transport.cpp
         data_storage/base_ot_data.cpp
@@ -50,6 +51,10 @@ add_library(motion
         protocols/data_management/simdify_gate.cpp
         protocols/data_management/subset_gate.cpp
         protocols/data_management/unsimdify_gate.cpp
+        protocols/garbled_circuit/garbled_circuit_gate.cpp
+        protocols/garbled_circuit/garbled_circuit_provider.cpp
+        protocols/garbled_circuit/garbled_circuit_share.cpp
+        protocols/garbled_circuit/garbled_circuit_wire.cpp
         protocols/gate.cpp
         protocols/share.cpp
         protocols/share_wrapper.cpp

@@ -82,8 +82,6 @@ class InputGate final : public motion::InputGate {
   std::vector<T> input_;
 };
 
-constexpr std::size_t kAll = std::numeric_limits<std::int64_t>::max();
-
 template <typename T>
 class OutputGate final : public motion::OutputGate {
   using Base = motion::OutputGate;

@@ -47,20 +47,25 @@ using SharePointer = std::shared_ptr<Share>;
 
 }  // namespace encrypto::motion::proto::boolean_gmw
 
-namespace encrypto::motion::proto::bmr {
+namespace encrypto::motion::proto {
 
+namespace bmr {
 class Provider;
+}
+namespace garbled_circuit {
+class Provider;
+}
 
-}  // namespace encrypto::motion::proto::bmr
+}  // namespace encrypto::motion::proto
 
 namespace encrypto::motion::proto::astra {
 
-template<typename T> 
+template <typename T>
 class Share;
-template<typename T>
+template <typename T>
 using SharePointer = std::shared_ptr<Share<T>>;
-    
-} // namespace encrypto::motion::proto::astra
+
+}  // namespace encrypto::motion::proto::astra
 
 namespace encrypto::motion {
 
@@ -74,6 +79,7 @@ using GatePointer = std::shared_ptr<Gate>;
 class InputGate;
 using InputGatePointer = std::shared_ptr<InputGate>;
 
+class GarbledCircuitProvider;
 class MtProvider;
 class SpProvider;
 class SbProvider;
@@ -97,9 +103,10 @@ class GateExecutor;
 class Backend : public std::enable_shared_from_this<Backend> {
  public:
   Backend() = delete;
+  Backend(const Backend&) = delete;
 
-  Backend(communication::CommunicationLayer& communication_layer,
-          ConfigurationPointer& configuration, std::shared_ptr<Logger> logger);
+  Backend(std::unique_ptr<communication::CommunicationLayer> communication_layer,
+          ConfigurationPointer configuration, std::shared_ptr<Logger> logger);
 
   ~Backend();
 
@@ -184,16 +191,31 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   template <typename T>
   SharePointer AstraInput(std::size_t party_id, T input = 0);
-  
+
   template <typename T>
   SharePointer AstraInput(std::size_t party_id, std::vector<T> input);
 
   template <typename T>
-  SharePointer AstraOutput(const proto::astra::SharePointer<T>& parent,
-                                   std::size_t output_owner);
+  SharePointer AstraOutput(const proto::astra::SharePointer<T>& parent, std::size_t output_owner);
 
   template <typename T>
   SharePointer AstraOutput(const SharePointer& parent, std::size_t output_owner);
+
+  SharePointer GarbledCircuitInput(std::size_t party_id, bool input = false);
+
+  SharePointer GarbledCircuitInput(std::size_t party_id, const BitVector<>& input);
+
+  SharePointer GarbledCircuitInput(std::size_t party_id, BitVector<>&& input);
+
+  SharePointer GarbledCircuitInput(std::size_t party_id, std::span<const BitVector<>> input);
+
+  SharePointer GarbledCircuitInput(std::size_t party_id, std::vector<BitVector<>>&& input);
+
+  std::pair<SharePointer, ReusableFiberPromise<std::vector<BitVector<>>>*>
+  GarbledCircuitInput(std::size_t party_id, std::size_t number_of_wires,
+                      std::size_t number_of_simd);
+
+  SharePointer GarbledCircuitOutput(const SharePointer& parent, std::size_t output_owner);
 
   /// \brief Blocking wait for synchronizing between parties. Called in Clear() and Reset()
   void Synchronize();
@@ -202,23 +224,25 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   void OtExtensionSetup();
 
-  communication::CommunicationLayer& GetCommunicationLayer() { return communication_layer_; };
+  communication::CommunicationLayer& GetCommunicationLayer() { return *communication_layer_; }
 
-  BaseProvider& GetBaseProvider() { return *motion_base_provider_; };
+  BaseProvider& GetBaseProvider() { return *motion_base_provider_; }
 
-  proto::bmr::Provider& GetBmrProvider() { return *bmr_provider_; };
+  proto::bmr::Provider& GetBmrProvider() { return *bmr_provider_; }
 
-  auto& GetBaseOtProvider() { return base_ot_provider_; };
+  auto& GetBaseOtProvider() { return base_ot_provider_; }
 
   OtProvider& GetOtProvider(std::size_t party_id);
 
-  std::unique_ptr<OtProviderManager>& GetOtProviderManager() {return ot_provider_manager_;}
+  std::unique_ptr<OtProviderManager>& GetOtProviderManager() { return ot_provider_manager_; }
 
-  auto& GetMtProvider() { return mt_provider_; };
+  auto& GetMtProvider() { return mt_provider_; }
 
-  auto& GetSpProvider() { return sp_provider_; };
+  auto& GetSpProvider() { return sp_provider_; }
 
-  auto& GetSbProvider() { return sb_provider_; };
+  auto& GetSbProvider() { return sb_provider_; }
+
+  auto& GetGarbledCircuitProvider() { return garbled_circuit_provider_; }
 
   const auto& GetRunTimeStatistics() const { return run_time_statistics_; }
 
@@ -227,7 +251,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
  private:
   std::list<RunTimeStatistics> run_time_statistics_;
 
-  communication::CommunicationLayer& communication_layer_;
+  std::unique_ptr<communication::CommunicationLayer> communication_layer_;
   std::shared_ptr<Logger> logger_;
   ConfigurationPointer configuration_;
   RegisterPointer register_;
@@ -235,6 +259,7 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   std::unique_ptr<BaseProvider> motion_base_provider_;
   std::unique_ptr<BaseOtProvider> base_ot_provider_;
+  std::unique_ptr<proto::garbled_circuit::Provider> garbled_circuit_provider_;
   std::unique_ptr<OtProviderManager> ot_provider_manager_;
   std::shared_ptr<MtProvider> mt_provider_;
   std::shared_ptr<SpProvider> sp_provider_;

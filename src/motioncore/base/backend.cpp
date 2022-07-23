@@ -54,6 +54,10 @@
 #include "protocols/bmr/bmr_share.h"
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
 #include "protocols/boolean_gmw/boolean_gmw_share.h"
+#include "protocols/constant/constant_share.h"
+#include "protocols/garbled_circuit/garbled_circuit_gate.h"
+#include "protocols/garbled_circuit/garbled_circuit_provider.h"
+#include "protocols/garbled_circuit/garbled_circuit_share.h"
 #include "register.h"
 #include "statistics/run_time_statistics.h"
 #include "utility/constants.h"
@@ -62,36 +66,40 @@ using namespace std::chrono_literals;
 
 namespace encrypto::motion {
 
-Backend::Backend(communication::CommunicationLayer& communication_layer,
-                 ConfigurationPointer& configuration, std::shared_ptr<Logger> logger)
+Backend::Backend(std::unique_ptr<communication::CommunicationLayer> communication_layer,
+                 ConfigurationPointer configuration, std::shared_ptr<Logger> logger)
     : run_time_statistics_(1),
-      communication_layer_(communication_layer),
+      communication_layer_(std::move(communication_layer)),
       logger_(logger),
       configuration_(configuration),
       register_(std::make_shared<Register>(logger_)),
       gate_executor_(std::make_unique<GateExecutor>(
           *register_, [this] { RunPreprocessing(); }, logger_)) {
-  motion_base_provider_ = std::make_unique<BaseProvider>(communication_layer_, logger_);
-  base_ot_provider_ = std::make_unique<BaseOtProvider>(communication_layer, logger_);
-
-  communication_layer_.SetLogger(logger_);
-  auto my_id = communication_layer_.GetMyId();
+  motion_base_provider_ = std::make_unique<BaseProvider>(*communication_layer_, logger_);
+  base_ot_provider_ = std::make_unique<BaseOtProvider>(*communication_layer_, logger_);
+  communication_layer_->SetLogger(logger_);
+  auto my_id = communication_layer_->GetMyId();
 
   ot_provider_manager_ = std::make_unique<OtProviderManager>(
-      communication_layer_, *base_ot_provider_, *motion_base_provider_, logger_);
+      *communication_layer_, *base_ot_provider_, *motion_base_provider_, logger_);
 
   mt_provider_ = std::make_shared<MtProviderFromOts>(ot_provider_manager_->GetProviders(), my_id,
                                                      *logger_, run_time_statistics_.back());
   sp_provider_ = std::make_shared<SpProviderFromOts>(ot_provider_manager_->GetProviders(), my_id,
                                                      *logger_, run_time_statistics_.back());
-  sb_provider_ = std::make_shared<SbProviderFromSps>(communication_layer_, sp_provider_, *logger_,
+  sb_provider_ = std::make_shared<SbProviderFromSps>(*communication_layer_, sp_provider_, *logger_,
                                                      run_time_statistics_.back());
-  bmr_provider_ = std::make_unique<proto::bmr::Provider>(communication_layer_);
+  bmr_provider_ = std::make_unique<proto::bmr::Provider>(*communication_layer_);
+  if (communication_layer_->GetNumberOfParties() == 2) {
+    garbled_circuit_provider_ =
+        proto::garbled_circuit::Provider::MakeProvider(*communication_layer_);
+  }
 
-  communication_layer_.Start();
+  // TODO should probably throw if it has been already started
+  communication_layer_->Start();
 }
 
-Backend::~Backend() = default;
+Backend::~Backend() {}
 
 const LoggerPointer& Backend::GetLogger() const noexcept { return logger_; }
 
@@ -99,7 +107,7 @@ const LoggerPointer& Backend::GetLogger() const noexcept { return logger_; }
 bool Backend::NeedOts() {
   auto& ot_providers = ot_provider_manager_->GetProviders();
   for (auto& ot_provider : ot_providers) {
-    if (ot_provider != nullptr && ot_provider->GetPartyId() != communication_layer_.GetMyId() &&
+    if (ot_provider != nullptr && ot_provider->GetPartyId() != communication_layer_->GetMyId() &&
         ot_provider->HasWork()) {
       return true;
     }
@@ -139,17 +147,23 @@ void Backend::RunPreprocessing() {
     base_ot_provider_->PreSetup();
   }
 
-  communication_layer_.Synchronize();
+  communication_layer_->Synchronize();
 
   if (NeedOts()) {
     OtExtensionSetup();
   }
 
-  std::array<std::future<void>, 3> futures;
-  futures.at(0) = std::async(std::launch::async, [this] { mt_provider_->Setup(); });
-  futures.at(1) = std::async(std::launch::async, [this] { sp_provider_->Setup(); });
-  futures.at(2) = std::async(std::launch::async, [this] { sb_provider_->Setup(); });
-  std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });
+  std::vector<std::future<void>> futures;
+  futures.reserve(4);
+  futures.emplace_back(std::async(std::launch::async, [this] { mt_provider_->Setup(); }));
+  futures.emplace_back(std::async(std::launch::async, [this] { sp_provider_->Setup(); }));
+  futures.emplace_back(std::async(std::launch::async, [this] { sb_provider_->Setup(); }));
+  if (garbled_circuit_provider_ && garbled_circuit_provider_->HasWork()) {
+    futures.emplace_back(
+        std::async(std::launch::async, [this] { garbled_circuit_provider_->Setup(); }));
+  }
+
+  for (auto& f : futures) f.get();
 
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kPreprocessing>();
 }
@@ -386,7 +400,42 @@ template SharePointer Backend::AstraOutput<std::uint64_t>(const SharePointer& pa
 template SharePointer Backend::AstraOutput<__uint128_t>(const SharePointer& parent,
                                                         std::size_t output_owner);
 
-void Backend::Synchronize() { communication_layer_.Synchronize(); }
+SharePointer Backend::GarbledCircuitInput(std::size_t party_id,
+                                          std::span<const BitVector<>> input) {
+  bool is_garbler =
+      communication_layer_->GetMyId() == static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+  namespace gc = proto::garbled_circuit;
+  auto scast{[](auto p) { return static_pointer_cast<gc::InputGate>(p); }};
+  auto input_gate =
+      is_garbler
+          ? scast(GetRegister()->EmplaceGate<gc::InputGateGarbler>(input, party_id, *this))
+          : scast(GetRegister()->EmplaceGate<gc::InputGateEvaluator>(input, party_id, *this));
+  return std::static_pointer_cast<Share>(input_gate->GetOutputAsGarbledCircuitShare());
+}
+
+SharePointer Backend::GarbledCircuitInput(std::size_t party_id, std::vector<BitVector<>>&& input) {
+  return GarbledCircuitInput(party_id, std::span(input));
+}
+
+std::pair<SharePointer, ReusableFiberPromise<std::vector<BitVector<>>>*>
+Backend::GarbledCircuitInput(std::size_t input_owner_id, std::size_t number_of_wires,
+                             std::size_t number_of_simd) {
+  auto input_gate = GetGarbledCircuitProvider()->MakeInputGate(input_owner_id, number_of_wires,
+                                                               number_of_simd, *this);
+  bool my_input{input_owner_id == GetCommunicationLayer().GetMyId()};
+  auto input_promise_ptr = my_input ? &input_gate->GetInputPromise() : nullptr;
+  return std::pair(std::static_pointer_cast<Share>(input_gate->GetOutputAsGarbledCircuitShare()),
+                   input_promise_ptr);
+}
+
+SharePointer Backend::GarbledCircuitOutput(const SharePointer& parent, std::size_t output_owner) {
+  assert(parent);
+  const auto output_gate =
+      GetRegister()->EmplaceGate<proto::garbled_circuit::OutputGate>(parent, output_owner);
+  return output_gate->GetOutputAsConstantShare();
+}
+
+void Backend::Synchronize() { communication_layer_->Synchronize(); }
 
 void Backend::ComputeBaseOts() {
   run_time_statistics_.back().RecordStart<RunTimeStatistics::StatisticsId::kBaseOts>();
@@ -409,10 +458,10 @@ void Backend::OtExtensionSetup() {
   run_time_statistics_.back().RecordStart<RunTimeStatistics::StatisticsId::kOtExtensionSetup>();
 
   std::vector<std::future<void>> task_futures;
-  task_futures.reserve(2 * (communication_layer_.GetNumberOfParties() - 1));
+  task_futures.reserve(2 * (communication_layer_->GetNumberOfParties() - 1));
 
-  for (auto i = 0ull; i < communication_layer_.GetNumberOfParties(); ++i) {
-    if (i == communication_layer_.GetMyId()) {
+  for (auto i = 0ull; i < communication_layer_->GetNumberOfParties(); ++i) {
+    if (i == communication_layer_->GetMyId()) {
       continue;
     }
     task_futures.emplace_back(std::async(

@@ -1,0 +1,7 @@
+namespace encrypto.motion.communication;
+
+// message from garbler to evaluator
+table GarbledCircuitSetupMessage {
+  aes_key:[ubyte];              // 16-byte AES key for fixed key AES
+  hash_key:[ubyte];             // 16-byte hash key that is XORed with each input of the fixed-key AES
+}

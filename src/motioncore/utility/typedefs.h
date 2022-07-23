@@ -24,8 +24,6 @@
 
 #pragma once
 
-#include <fmt/format.h>
-
 #include <cstdint>
 #include <stdexcept>
 #include <string>
@@ -138,12 +136,15 @@ inline std::string to_string(IntegerOperationType p) {
 }
 
 enum class MpcProtocol : unsigned int {
+  // MPC protocols
   kArithmeticGmw,
+  kAstra,
   kBooleanGmw,
   kBmr,
+  kGarbledCircuit,
+  // Constants
   kArithmeticConstant,
   kBooleanConstant,
-  kAstra,
   kInvalid  // for checking whether the value is valid
 };
 
@@ -152,14 +153,20 @@ inline std::string to_string(MpcProtocol p) {
     case MpcProtocol::kArithmeticGmw: {
       return "ArithmeticGMW";
     }
+    case MpcProtocol::kAstra: {
+      return "Astra";
+    }
     case MpcProtocol::kBooleanGmw: {
       return "BooleanGMW";
     }
     case MpcProtocol::kBmr: {
       return "BMR";
     }
+    case MpcProtocol::kGarbledCircuit: {
+      return "GarbledCircuit";
+    }
     default:
-      return fmt::format("InvalidProtocol with value {}", static_cast<int>(p));
+      return std::string("InvalidProtocol with value ") + std::to_string(static_cast<int>(p));
   }
 }
 
@@ -170,16 +177,15 @@ enum class CircuitType : unsigned int {
 };
 
 enum class Role : unsigned int {
-  kServer,
-  kClient,
-  kInvalid  // for checking whether the value is valid
+  kServer = 0,
+  kClient = 1,
+  kInvalid = 2  // for checking whether the value is valid
 };
 
-enum class GateType : unsigned int {
-  kInput = 0,
-  kInteractive = 1,
-  kNonInteractive = 2,
-  kInvalid = 3
+enum class GarbledCircuitRole : unsigned int {
+  kGarbler = static_cast<unsigned int>(Role::kServer),
+  kEvaluator = static_cast<unsigned int>(Role::kClient),
+  kInvalid = 2  // for checking whether the value is valid
 };
 
 }  // namespace encrypto::motion

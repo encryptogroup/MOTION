@@ -30,6 +30,8 @@
 
 namespace encrypto::motion {
 
+// XXX this should be a class due to its many functions (see
+// https://google.github.io/styleguide/cppguide.html#Structs_vs._Classes).
 /// \brief Block of aligned 128 bit / 16 B.
 struct Block128 {
   // default constructor: uninitialized
@@ -164,8 +166,14 @@ struct Block128 {
   alignas(kBlockAlignment) std::array<std::byte, 16> byte_array;
 };
 
+// XXX this should be a class due to its many functions (see
+// https://google.github.io/styleguide/cppguide.html#Structs_vs._Classes).
 /// \brief Vector of 128 bit / 16 B blocks.
 struct Block128Vector {
+  static constexpr std::size_t kBlockAlignment = kAlignment;
+  using Allocator = boost::alignment::aligned_allocator<Block128, kBlockAlignment>;
+  using Container = std::vector<Block128, Allocator>;
+
   // create an empty vector
   Block128Vector() = default;
 
@@ -208,6 +216,19 @@ struct Block128Vector {
     auto input = reinterpret_cast<const std::byte*>(pointer);
     auto buffer = reinterpret_cast<std::byte*>(block_vector[0].data());
     std::copy(input, input + 16 * size, buffer);
+  }
+
+  /// \brief Creates initialized vector of \p size elements read from memory.
+  /// \param size
+  /// \param pointer Pointer to memory.
+  Block128Vector(Container::const_iterator source_begin, const Container::const_iterator source_end)
+      : block_vector(std::distance(source_begin, source_end)) {
+    auto this_begin = block_vector.begin();
+    while (source_begin != source_end) {
+      *this_begin = *source_begin;
+      std::advance(source_begin, 1);
+      std::advance(this_begin, 1);
+    }
   }
 
   /// \brief Access Block128 at \p index. Throws an exception if index is out of bounds.
@@ -318,11 +339,8 @@ struct Block128Vector {
     return result;
   }
 
-  static constexpr std::size_t kBlockAlignment = kAlignment;
-
   // underlying vector of blocks
-  std::vector<Block128, boost::alignment::aligned_allocator<Block128, kBlockAlignment>>
-      block_vector;
+  Container block_vector;
 };
 
 }  // namespace encrypto::motion

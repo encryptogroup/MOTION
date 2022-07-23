@@ -119,7 +119,6 @@ void Register::Reset() {
     throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
 
-  assert(active_gates_.empty());
   assert(evaluated_gates_setup_ == gates_setup_);
   assert(evaluated_gates_online_ == gates_online_);
   if (!gates_.empty()) {
@@ -145,7 +144,6 @@ void Register::Clear() {
   if (evaluated_gates_setup_ != gates_setup_ || evaluated_gates_online_ != gates_online_) {
     throw(std::runtime_error("Register::Reset evaluated_gates_ != gates_.size()"));
   }
-  assert(active_gates_.empty());
   assert(evaluated_gates_setup_ == gates_setup_);
   assert(evaluated_gates_online_ == gates_online_);
   for (auto& gate : gates_) {

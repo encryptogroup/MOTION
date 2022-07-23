@@ -53,7 +53,9 @@ SecureUnsignedInteger SecureUnsignedInteger::operator+(const SecureUnsignedInteg
     std::shared_ptr<AlgorithmDescription> addition_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(IntegerOperationType::kAdd, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(IntegerOperationType::kAdd, bitlength, "_depth");
@@ -85,7 +87,9 @@ SecureUnsignedInteger SecureUnsignedInteger::operator-(const SecureUnsignedInteg
     std::shared_ptr<AlgorithmDescription> subtraction_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(IntegerOperationType::kSub, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(IntegerOperationType::kSub, bitlength, "_depth");
@@ -118,7 +122,9 @@ SecureUnsignedInteger SecureUnsignedInteger::operator*(const SecureUnsignedInteg
     std::shared_ptr<AlgorithmDescription> multiplication_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(IntegerOperationType::kMul, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(IntegerOperationType::kMul, bitlength, "_depth");
@@ -151,7 +157,9 @@ SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteg
     std::shared_ptr<AlgorithmDescription> division_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(IntegerOperationType::kDiv, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(IntegerOperationType::kDiv, bitlength, "_depth");
@@ -183,7 +191,9 @@ ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(IntegerOperationType::kGt, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(IntegerOperationType::kGt, bitlength, "_depth");
@@ -302,10 +312,9 @@ struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
 
 template <typename T>
 T SecureUnsignedInteger::As() const {
-  if (share_->Get()->GetProtocol() == MpcProtocol::kArithmeticGmw)
+  if (share_->Get()->GetCircuitType() == CircuitType::kArithmetic)
     return share_->As<T>();
-  else if (share_->Get()->GetProtocol() == MpcProtocol::kBooleanGmw ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBmr) {
+  else if (share_->Get()->GetCircuitType() == CircuitType::kBoolean) {
     auto share_out = share_->As<std::vector<encrypto::motion::BitVector<>>>();
     if constexpr (std::is_unsigned<T>()) {
       return encrypto::motion::ToOutput<T>(share_out);

@@ -64,6 +64,9 @@ class CommunicationLayer {
                      std::shared_ptr<Logger> logger);
   ~CommunicationLayer();
 
+  CommunicationLayer() = delete;
+  CommunicationLayer(const CommunicationLayer&) = delete;
+
   std::size_t GetNumberOfParties() const { return number_of_parties_; }
   std::size_t GetMyId() const { return my_id_; }
 
@@ -81,6 +84,8 @@ class CommunicationLayer {
   void Shutdown();
 
   std::vector<TransportStatistics> GetTransportStatistics() const noexcept;
+
+  auto GetLogger() { return logger_; }
 
   void SetLogger(std::shared_ptr<Logger> logger);
 

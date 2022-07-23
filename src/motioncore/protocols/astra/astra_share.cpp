@@ -23,6 +23,7 @@
 
 #include "astra_share.h"
 
+#include <fmt/format.h>
 
 namespace encrypto::motion::proto::astra {
 

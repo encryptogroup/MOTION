@@ -34,12 +34,12 @@
 namespace encrypto::motion {
 
 Party::Party(std::unique_ptr<communication::CommunicationLayer> communication_layer)
-    : communication_layer_(std::move(communication_layer)),
-      configuration_(std::make_shared<Configuration>(communication_layer_->GetMyId(),
-                                                     communication_layer_->GetNumberOfParties())),
-      logger_(std::make_shared<Logger>(communication_layer_->GetMyId(),
+    : configuration_(std::make_shared<Configuration>(communication_layer->GetMyId(),
+                                                     communication_layer->GetNumberOfParties())),
+      logger_(std::make_shared<Logger>(communication_layer->GetMyId(),
                                        configuration_->GetLoggingSeverityLevel())),
-      backend_(std::make_shared<Backend>(*communication_layer_, configuration_, logger_)) {}
+      backend_(std::make_shared<Backend>(std::move(communication_layer), configuration_, logger_)) {
+}
 
 Party::~Party() {
   Finish();
@@ -89,8 +89,9 @@ void Party::Run(std::size_t repetitions) {
   // TODO: fix check if work exists s.t. it does not require knowledge about OT
   // internals etc.
   bool work_exists = backend_->GetRegister()->GetTotalNumberOfGates() > 0;
-  for (auto party_id = 0ull; party_id < communication_layer_->GetNumberOfParties(); ++party_id) {
-    if (party_id == communication_layer_->GetMyId()) {
+  for (auto party_id = 0ull; party_id < backend_->GetCommunicationLayer().GetNumberOfParties();
+       ++party_id) {
+    if (party_id == backend_->GetCommunicationLayer().GetMyId()) {
       continue;
     }
     work_exists |= backend_->GetOtProvider(party_id).GetNumOtsReceiver() > 0;
@@ -142,7 +143,7 @@ void Party::EvaluateCircuit() {
 void Party::Finish() {
   bool finished = finished_.exchange(true);
   if (!finished) {
-    communication_layer_->Shutdown();
+    backend_->GetCommunicationLayer().Shutdown();
     logger_->LogInfo(fmt::format("Finished evaluating {} gates",
                                  backend_->GetRegister()->GetTotalNumberOfGates()));
   }

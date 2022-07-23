@@ -41,18 +41,21 @@ class CommunicationLayer;
 
 namespace encrypto::motion {
 
-class BaseProvider;
-class OtProvider;
-class Wire;
-using WirePointer = std::shared_ptr<Wire>;
 class Backend;
-class Register;
+class BaseProvider;
 class Configuration;
 class Logger;
 class MtProvider;
+class OtProvider;
+class Register;
 class SbProvider;
 class SpProvider;
+class Wire;
+using WirePointer = std::shared_ptr<Wire>;
 
+namespace proto::garbled_circuit {
+class Provider;
+}
 //
 //  inputs are not defined in the Gate class but only in the child classes
 //
@@ -118,6 +121,7 @@ class Gate {
   SbProvider& GetSbProvider();
   communication::CommunicationLayer& GetCommunicationLayer();
   OtProvider& GetOtProvider(const std::size_t i);
+  proto::garbled_circuit::Provider& GetGarbledCircuitProvider();
 
  private:
   void IfReadyAddToProcessingQueue();
@@ -192,6 +196,8 @@ class OutputGate : public OneGate {
   OutputGate(OutputGate&) = delete;
 
   OutputGate(Backend& backend) : OneGate(backend) {}
+
+  static constexpr std::size_t kAll{std::numeric_limits<std::int64_t>::max()};
 
  protected:
   std::int64_t output_owner_ = -1;

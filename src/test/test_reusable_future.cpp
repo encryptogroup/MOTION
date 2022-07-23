@@ -22,6 +22,7 @@
 
 #include "gtest/gtest.h"
 
+#include "utility/fiber_waitable.h"
 #include "utility/reusable_future.h"
 
 using namespace encrypto::motion;
@@ -86,4 +87,30 @@ TEST(ReusableFuture, RetrieveFutureTwice) {
   ReusablePromise<int> promise;
   auto _ = promise.get_future();
   EXPECT_THROW(promise.get_future(), std::future_error);
+}
+
+TEST(WaitableFuture, Wait) {
+  class SetupWaitableClass : public encrypto::motion::FiberSetupWaitable {};
+
+  for (std::size_t i = 0; i < 1000u; ++i) {
+    SetupWaitableClass waitable;
+
+    std::atomic<bool> finished{false};
+    std::future<void> future = std::async(std::launch::async, [&waitable, &finished]() {
+      waitable.WaitSetup();
+      finished.store(true);
+    });
+    ASSERT_FALSE(finished);
+
+    waitable.SetSetupIsReady();
+
+    future.get();
+
+    ASSERT_TRUE(finished);
+
+    // should just through w/o waiting
+    waitable.WaitSetup();
+
+    ASSERT_TRUE(finished);
+  }
 }

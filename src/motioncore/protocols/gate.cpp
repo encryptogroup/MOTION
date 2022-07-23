@@ -90,4 +90,8 @@ SbProvider& Gate::GetSbProvider() { return *backend_.GetSbProvider(); }
 
 OtProvider& Gate::GetOtProvider(const std::size_t i) { return backend_.GetOtProvider(i); }
 
+proto::garbled_circuit::Provider& Gate::GetGarbledCircuitProvider() {
+  return *backend_.GetGarbledCircuitProvider();
+}
+
 }  // namespace encrypto::motion
