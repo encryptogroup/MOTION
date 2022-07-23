@@ -32,10 +32,6 @@
 #include "typedefs.h"
 
 namespace encrypto::motion {
-
-// just in case if we all of a sudden will decide to change the name
-constexpr std::string_view kFrameworkName{"MOTION"};
-
 // abbreviation for megabytes
 constexpr std::size_t kMb{1024 * 1024};
 
