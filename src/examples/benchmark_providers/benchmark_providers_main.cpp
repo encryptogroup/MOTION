@@ -102,7 +102,8 @@ int main(int ac, char* av[]) {
       auto statistics = BenchmarkProvider(party, combination.batch_size_, combination.provider_,
                                           combination.bit_size_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
     std::cout << encrypto::motion::PrintStatistics(

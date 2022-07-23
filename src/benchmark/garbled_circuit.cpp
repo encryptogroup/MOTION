@@ -32,7 +32,7 @@ static void BM_ThreeHalvesEvaluation(benchmark::State& state) {
   std::for_each(std::begin(communication_layers), std::end(communication_layers),
                 [](auto& cl) { cl->Start(); });
   encrypto::motion::proto::garbled_circuit::ThreeHalvesEvaluatorProvider provider(
-      *communication_layers[0]);
+      *communication_layers[1]);
 
   std::size_t number_of_simd = state.range(0);
   encrypto::motion::Block128Vector keys_a(number_of_simd), keys_b(number_of_simd),
@@ -78,8 +78,8 @@ static void BM_ThreeHalvesGarbling(benchmark::State& state) {
 
   std::size_t counter{0};
   for (auto _ : state) {
-    provider.Garble(keys_a, keys_b, keys_out, garbled_tables.GetData().data(), garbled_control_bits,
-                    0, 0);
+    provider.Garble(keys_a, keys_b, keys_out, garbled_tables.GetMutableData().data(),
+                    garbled_control_bits.GetMutableData().data(), 0, 0);
     counter += number_of_simd;
   }
 

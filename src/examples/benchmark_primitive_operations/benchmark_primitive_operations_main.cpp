@@ -131,7 +131,8 @@ int main(int ac, char* av[]) {
       auto statistics = EvaluateProtocol(party, combination.number_of_simd, combination.bit_size,
                                          combination.protocol, combination.operation_type);
       accumulated_statistics.Add(statistics);
-      auto communcation_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      auto communcation_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communcation_statistics);
     }
     std::cout << encrypto::motion::PrintStatistics(

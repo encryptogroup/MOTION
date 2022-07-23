@@ -70,7 +70,8 @@ int main(int ac, char* av[]) {
         EvaluateProtocol(party, number_of_bins, input_command_line, input_file_path, print_output);
     accumulated_statistics.Add(statistics);
 
-    auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+    auto communication_statistics =
+        party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
     accumulated_communication_statistics.Add(communication_statistics);
 
     std::cout << encrypto::motion::PrintStatistics(fmt::format("CrossTabs"), accumulated_statistics,

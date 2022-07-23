@@ -107,7 +107,8 @@ int main(int ac, char* av[]) {
       auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
                                          combination.protocol_, combination.operation_type_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
     std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),

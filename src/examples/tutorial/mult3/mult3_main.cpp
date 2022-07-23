@@ -85,7 +85,8 @@ int main(int ac, char* av[]) {
       throw std::invalid_argument("Invalid MPC protocol");
     }
 
-    auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+    auto communication_statistics =
+        party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
     accumulated_communication_statistics.Add(communication_statistics);
 
     std::cout << encrypto::motion::PrintStatistics(fmt::format("Mult3", protocol_string),

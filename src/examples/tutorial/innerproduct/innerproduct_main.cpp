@@ -76,13 +76,14 @@ int main(int ac, char* av[]) {
     auto protocol_iterator = protocol_conversion.find(protocol_string);
     if (protocol_iterator != protocol_conversion.end()) {
       protocol = protocol_iterator->second;
-      auto statistics = EvaluateProtocol(party, protocol, input_command_line, input_file_path,
-                                         print_output);
+      auto statistics =
+          EvaluateProtocol(party, protocol, input_command_line, input_file_path, print_output);
       accumulated_statistics.Add(statistics);
     } else {
       throw std::invalid_argument("Invalid MPC protocol");
     }
-    auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+    auto communication_statistics =
+        party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
     accumulated_communication_statistics.Add(communication_statistics);
 
     std::cout << encrypto::motion::PrintStatistics(fmt::format("Inner Product", protocol_string),

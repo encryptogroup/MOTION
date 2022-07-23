@@ -75,7 +75,8 @@ int main(int ac, char* av[]) {
       } else {
         throw std::invalid_argument("Only GMW or BMR is allowed");
       }
-      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
 
