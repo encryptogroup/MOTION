@@ -34,6 +34,8 @@ flatbuffers::FlatBufferBuilder BuildHelloMessage(
     const std::vector<uint8_t>* input_sharing_seed = nullptr,
     const std::vector<uint8_t>* global_sharing_seed = nullptr,
     const std::vector<uint8_t>* fixed_key_aes_seed = nullptr, bool online_after_setup = false,
-    float motion_version = kVersion);
+    std::uint16_t motion_version_major = kMotionVersionMajor,
+    std::uint16_t motion_version_minor = kMotionVersionMinor,
+    std::uint16_t motion_version_patch = kMotionVersionPatch);
 
 }  // namespace encrypto::motion::communication

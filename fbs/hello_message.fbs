@@ -8,7 +8,9 @@ table HelloMessage {
   global_sharing_seed:[ubyte]; //32-byte seed
   fixed_key_aes_seed:[ubyte]; //16-byte key
   online_after_setup:bool = false;
-  motion_version:float;
+  motion_version_major:uint16;
+  motion_version_minor:uint16;
+  motion_version_patch:uint16;
 }
 // MT/OT generation parameters?
 // other parameters?

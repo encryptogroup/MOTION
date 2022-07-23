@@ -35,7 +35,13 @@ namespace encrypto::motion {
 // clang-format off
 constexpr bool kDebug{@MOTION_DEBUG@};
 
-constexpr float kVersion{@MOTION_VERSION@};
+// increase if something is changed fundamentally in MOTION and/or breaks the API,
+// eg the backend class got replaced
+constexpr std::uint16_t kMotionVersionMajor{@MOTION_VERSION_MAJOR@};
+// increase on mainly externally visible changes implementing a feature, e.g., a new protocol
+constexpr std::uint16_t kMotionVersionMinor{@MOTION_VERSION_MINOR@};
+// increase on bug fixes and small improvements
+constexpr std::uint16_t kMotionVersionPatch{@MOTION_VERSION_PATCH@};
 constexpr std::string_view kRootDir{"@MOTION_ROOT_DIR@"};
 
 // alignment for data buffers

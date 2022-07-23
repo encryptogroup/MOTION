@@ -30,20 +30,22 @@
 
 namespace encrypto::motion::communication {
 
-flatbuffers::FlatBufferBuilder BuildHelloMessage(uint16_t source_id, uint16_t destination_id,
-                                                 uint16_t number_of_parties,
-                                                 const std::vector<uint8_t>* input_sharing_seed,
-                                                 const std::vector<uint8_t>* global_sharing_seed,
-                                                 const std::vector<uint8_t>* fixed_key_aes_seed,
-                                                 bool online_after_setup, float motion_version) {
+flatbuffers::FlatBufferBuilder BuildHelloMessage(
+    uint16_t source_id, uint16_t destination_id, uint16_t number_of_parties,
+    const std::vector<uint8_t>* input_sharing_seed, const std::vector<uint8_t>* global_sharing_seed,
+    const std::vector<uint8_t>* fixed_key_aes_seed, bool online_after_setup,
+    std::uint16_t motion_version_major, std::uint16_t motion_version_minor,
+    std::uint16_t motion_version_patch) {
   flatbuffers::FlatBufferBuilder builder_hello_message(256);
   auto hello_message_root = CreateHelloMessageDirect(
       builder_hello_message, source_id, destination_id, number_of_parties, input_sharing_seed,
-      global_sharing_seed, fixed_key_aes_seed, online_after_setup, motion_version);
+      global_sharing_seed, fixed_key_aes_seed, online_after_setup, motion_version_major,
+      motion_version_minor, motion_version_patch);
   FinishHelloMessageBuffer(builder_hello_message, hello_message_root);
 
-  return BuildMessage(MessageType::kHelloMessage, std::span(builder_hello_message.GetBufferPointer(),
-                      builder_hello_message.GetSize()));
+  return BuildMessage(
+      MessageType::kHelloMessage,
+      std::span(builder_hello_message.GetBufferPointer(), builder_hello_message.GetSize()));
 }
 
 }  // namespace encrypto::motion::communication
