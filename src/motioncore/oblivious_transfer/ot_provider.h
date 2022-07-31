@@ -30,6 +30,7 @@
 #include <unordered_map>
 
 #include <flatbuffers/flatbuffers.h>
+#include "utility/fiber_waitable.h"
 
 namespace encrypto::motion::communication {
 
@@ -103,7 +104,7 @@ class OtVector {
   OtExtensionData& data_;
 };
 
-class OtProviderSender {
+class OtProviderSender : public FiberSetupWaitable {
  public:
   OtProviderSender(OtExtensionData& data, std::size_t party_id)
       : data_(data), party_id_(party_id) {}
@@ -136,7 +137,7 @@ class OtProviderSender {
   std::size_t party_id_;
 };
 
-class OtProviderReceiver {
+class OtProviderReceiver : public FiberSetupWaitable {
  public:
   OtProviderReceiver(OtExtensionData& data, std::size_t party_id)
       : data_(data), party_id_(party_id) {}
@@ -169,7 +170,7 @@ class OtProviderReceiver {
 };
 
 // OtProvider encapsulates both sender and receiver interfaces for simplicity
-class OtProvider {
+class OtProvider : public FiberSetupWaitable {
  public:
   virtual ~OtProvider() = default;
 
@@ -266,8 +267,6 @@ class OtProvider {
   virtual void SendSetup() = 0;
   virtual void ReceiveSetup() = 0;
 
-  virtual void WaitSetup() const = 0;
-
   virtual void PreSetup() = 0;
 
   virtual void Clear() { throw std::runtime_error("not implemented"); }
@@ -348,8 +347,6 @@ class OtProviderFromOtExtension final : public OtProvider {
 
   std::size_t GetPartyId() final;
 
-  void WaitSetup() const final;
-
   void SetBaseOtOffset(std::size_t offset);
 
   std::size_t GetBaseOtOffset() const;
@@ -378,9 +375,9 @@ class OtProviderFromMultipleThirdParties : public OtProvider {
 
 class OtProviderManager {
  public:
-  OtProviderManager(communication::CommunicationLayer&, BaseOtProvider&, BaseProvider&,
-                    std::shared_ptr<Logger> logger);
+  OtProviderManager(communication::CommunicationLayer&, BaseOtProvider&, BaseProvider&);
   ~OtProviderManager();
+
   void PreSetup() {
     for (auto& provider : providers_) {
       if (provider) provider->PreSetup();
@@ -390,9 +387,10 @@ class OtProviderManager {
   std::vector<std::unique_ptr<OtProvider>>& GetProviders() { return providers_; }
   OtProvider& GetProvider(std::size_t party_id) { return *providers_.at(party_id); }
 
+  bool HasWork();
+
  private:
   communication::CommunicationLayer& communication_layer_;
-  std::size_t number_of_parties_;
   std::vector<std::unique_ptr<OtProvider>> providers_;
   std::vector<std::unique_ptr<OtExtensionData>> data_;
 };

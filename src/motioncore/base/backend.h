@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -69,10 +69,12 @@ using SharePointer = std::shared_ptr<Share<T>>;
 
 namespace encrypto::motion {
 
-class OtProvider;
-class OtProviderManager;
 class BaseOtProvider;
 class BaseProvider;
+class Kk13OtProvider;
+class Kk13OtProviderManager;
+class OtProvider;
+class OtProviderManager;
 
 class Gate;
 using GatePointer = std::shared_ptr<Gate>;
@@ -230,19 +232,23 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   proto::bmr::Provider& GetBmrProvider() { return *bmr_provider_; }
 
-  auto& GetBaseOtProvider() { return base_ot_provider_; }
+  BaseOtProvider& GetBaseOtProvider() { return *base_ot_provider_; }
 
   OtProvider& GetOtProvider(std::size_t party_id);
 
-  std::unique_ptr<OtProviderManager>& GetOtProviderManager() { return ot_provider_manager_; }
+  OtProviderManager& GetOtProviderManager() { return *ot_provider_manager_; }
 
-  auto& GetMtProvider() { return mt_provider_; }
+  Kk13OtProvider& GetKk13OtProvider(std::size_t party_id);
 
-  auto& GetSpProvider() { return sp_provider_; }
+  Kk13OtProviderManager& GetKk13OtProviderManager() { return *kk13_ot_provider_manager_; }
 
-  auto& GetSbProvider() { return sb_provider_; }
+  auto& GetMtProvider() { return *mt_provider_; }
 
-  auto& GetGarbledCircuitProvider() { return garbled_circuit_provider_; }
+  auto& GetSpProvider() { return *sp_provider_; }
+
+  auto& GetSbProvider() { return *sb_provider_; }
+
+  auto& GetGarbledCircuitProvider() { return *garbled_circuit_provider_; }
 
   const auto& GetRunTimeStatistics() const { return run_time_statistics_; }
 
@@ -261,12 +267,11 @@ class Backend : public std::enable_shared_from_this<Backend> {
   std::unique_ptr<BaseOtProvider> base_ot_provider_;
   std::unique_ptr<proto::garbled_circuit::Provider> garbled_circuit_provider_;
   std::unique_ptr<OtProviderManager> ot_provider_manager_;
+  std::unique_ptr<Kk13OtProviderManager> kk13_ot_provider_manager_;
   std::shared_ptr<MtProvider> mt_provider_;
   std::shared_ptr<SpProvider> sp_provider_;
   std::shared_ptr<SbProvider> sb_provider_;
   std::unique_ptr<proto::bmr::Provider> bmr_provider_;
-
-  bool NeedOts();
 };
 
 using BackendPointer = std::shared_ptr<Backend>;

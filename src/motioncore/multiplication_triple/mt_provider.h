@@ -171,7 +171,7 @@ class MtProvider {
 class MtProviderFromOts final : public MtProvider {
  public:
   MtProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& ot_providers, const std::size_t my_id,
-                    Logger& logger, RunTimeStatistics& run_time_statistics);
+                    std::shared_ptr<Logger> logger, RunTimeStatistics& run_time_statistics);
   ~MtProviderFromOts();
 
   void PreSetup() final override;
@@ -205,7 +205,7 @@ class MtProviderFromOts final : public MtProvider {
   // Should be divisible by 128
   static inline constexpr std::size_t kMaxBatchSize{128 * 128};
 
-  Logger& logger_;
+  std::shared_ptr<Logger> logger_;
   RunTimeStatistics& run_time_statistics_;
 };
 

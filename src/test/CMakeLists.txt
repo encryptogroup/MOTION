@@ -12,6 +12,8 @@ add_executable(motiontest
         test_dummy_transport.cpp
         test_garbled_circuit.cpp
         test_integer_operations.cpp
+        test_kk13_ot.cpp
+        test_kk13_ot_flavors.cpp
         test_low_depth_reduce.cpp
         test_misc.cpp
         test_motion_main.cpp

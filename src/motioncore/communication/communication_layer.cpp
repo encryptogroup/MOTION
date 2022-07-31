@@ -188,6 +188,9 @@ void CommunicationLayer::CommunicationLayerImplementation::ReceiveTask(
     } else if (message_type == MessageType::kSynchronizationMessage) {
       message_manager.GetSyncStates(party_id).enqueue(std::move(raw_message));
     } else {
+      assert(!message_manager.GetMessagePromises(party_id).empty());
+      assert(message_manager.GetMessagePromises(party_id).contains(message_type));
+      assert(message_manager.GetMessagePromises(party_id)[message_type].contains(message_id));
       message_manager.GetMessagePromises(party_id)[message_type][message_id]->set_value(
           std::move(raw_message));
     }

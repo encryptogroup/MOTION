@@ -30,6 +30,7 @@
 #include "data_storage/base_ot_data.h"
 #include "utility/bit_vector.h"
 #include "utility/constants.h"
+#include "utility/fiber_waitable.h"
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion::communication {
@@ -56,9 +57,9 @@ struct ReceiverMessage {
   BitVector<> c;
 };
 
-class BaseOtProvider {
+class BaseOtProvider : public FiberOnlineWaitable {
  public:
-  BaseOtProvider(communication::CommunicationLayer&, std::shared_ptr<Logger>);
+  BaseOtProvider(communication::CommunicationLayer&);
   ~BaseOtProvider();
   void ComputeBaseOts();
   void ImportBaseOts(std::size_t party_id, const ReceiverMessage& messages);
@@ -82,7 +83,6 @@ class BaseOtProvider {
   std::size_t my_id_;
   std::vector<BaseOtData> data_;
   std::shared_ptr<Logger> logger_;
-  bool finished_;
 
   Logger& GetLogger();
 };

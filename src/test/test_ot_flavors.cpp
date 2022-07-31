@@ -40,11 +40,11 @@ class OtFlavorTest : public ::testing::Test {
     ot_provider_wrappers_.resize(2);
     for (std::size_t i = 0; i < 2; ++i) {
       base_ot_providers_[i] =
-          std::make_unique<encrypto::motion::BaseOtProvider>(*communication_layers_[i], nullptr);
+          std::make_unique<encrypto::motion::BaseOtProvider>(*communication_layers_[i]);
       motion_base_providers_[i] =
-          std::make_unique<encrypto::motion::BaseProvider>(*communication_layers_[i], nullptr);
+          std::make_unique<encrypto::motion::BaseProvider>(*communication_layers_[i]);
       ot_provider_wrappers_[i] = std::make_unique<encrypto::motion::OtProviderManager>(
-          *communication_layers_[i], *base_ot_providers_[i], *motion_base_providers_[i], nullptr);
+          *communication_layers_[i], *base_ot_providers_[i], *motion_base_providers_[i]);
     }
   }
 

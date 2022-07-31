@@ -44,6 +44,7 @@ namespace encrypto::motion {
 class Backend;
 class BaseProvider;
 class Configuration;
+class Kk13OtProvider;
 class Logger;
 class MtProvider;
 class OtProvider;
@@ -120,8 +121,9 @@ class Gate {
   SpProvider& GetSpProvider();
   SbProvider& GetSbProvider();
   communication::CommunicationLayer& GetCommunicationLayer();
-  OtProvider& GetOtProvider(const std::size_t i);
+  OtProvider& GetOtProvider(std::size_t i);
   proto::garbled_circuit::Provider& GetGarbledCircuitProvider();
+  Kk13OtProvider& GetKk13OtProvider(std::size_t i);
 
  private:
   void IfReadyAddToProcessingQueue();

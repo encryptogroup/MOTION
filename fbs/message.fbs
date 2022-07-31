@@ -34,6 +34,10 @@ enum MessageType : ubyte {
   // #wires * #simd labels of form
   // [l_simd0 || ... || l_simdlast]_wire0 || [l_simd0 || ... || l_simdlast]_wirelast
   kGarbledCircuitInput = 23,
+  kKK13OtExtensionReceiverMasks = 24,
+  kKK13OtExtensionReceiverCorrections = 25,
+  kKK13OtExtensionSender = 26,
+  kKK13OtExtensionMaskSeed = 27,
   // add new message types here
   }
 

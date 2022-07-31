@@ -65,6 +65,8 @@ std::string RunTimeStatistics::PrintHumanReadable() const {
                     width)
      << fmt::format("OT Extension Setup  {:{}.3f} ms\n",
                     At(milliseconds, StatisticsId::kOtExtensionSetup), width)
+     << fmt::format("KK13 OT Extension Setup  {:{}.3f} ms\n",
+                    At(milliseconds, StatisticsId::kKK13OtExtensionSetup), width)
      << fmt::format("-------------------------\n")
      << fmt::format("Preprocessing Total {:{}.3f} ms\n",
                     At(milliseconds, StatisticsId::kPreprocessing), width)

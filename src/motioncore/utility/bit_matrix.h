@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -160,6 +160,10 @@ class BitMatrix {
   /// \pre The matrix has exactly 128 rows and at least 1 column.
   void Transpose128Rows();
 
+  /// \brief Transposes a matrix with exactly 256 columns (faster).
+  /// \pre The matrix has exactly 256 columns and at least 1 row.
+  void Transpose256Columns();
+
   /// \brief Transposes a matrix of 128 rows and arbitrary column size inplace.
   /// \param matrix
   /// \param number_of_columns
@@ -222,8 +226,9 @@ class BitMatrix {
   ///      - all vectors in y must be of equal size
   static void SenderTranspose256AndEncrypt(const std::array<const std::byte*, 256>& matrix,
                                            std::vector<std::vector<BitVector<>>>& y,
-                                           const BitVector<> choices, std::vector<BitVector<>> x_a,
-                                           primitives::Prg&, const std::size_t number_of_colums,
+                                           const BitVector<> choices,
+                                           std::vector<AlignedBitVector> x_a, primitives::Prg&,
+                                           const std::size_t number_of_colums,
                                            const std::vector<std::size_t>& bitlengths);
 
   /// \brief Transposes a matrix of 256 rows and arbitrary column size and encrypts it for the
@@ -264,6 +269,8 @@ class BitMatrix {
 
   // blockwise inplace
   void Transpose128RowsInternal();
+
+  void Transpose256ColumnsInternal();
 
   static void Transpose128x128InPlace(std::array<std::uint64_t*, 128>& rows_64_bit,
                                       std::array<std::uint32_t*, 128>& rows_32_bit);

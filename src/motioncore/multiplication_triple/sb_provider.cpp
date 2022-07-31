@@ -48,7 +48,8 @@ SbProvider::SbProvider(const std::size_t my_id) : my_id_(my_id) {
 }
 
 SbProviderFromSps::SbProviderFromSps(communication::CommunicationLayer& communication_layer,
-                                     std::shared_ptr<SpProvider> sp_provider, Logger& logger,
+                                     std::shared_ptr<SpProvider> sp_provider,
+                                     std::shared_ptr<Logger> logger,
                                      RunTimeStatistics& run_time_statistics)
     : SbProvider(communication_layer.GetMyId()),
       communication_layer_(communication_layer),
@@ -65,7 +66,7 @@ void SbProviderFromSps::PreSetup() {
   }
 
   if constexpr (kDebug) {
-    logger_.LogDebug("Start computing presetup for SBs");
+    logger_->LogDebug("Start computing presetup for SBs");
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kSbPresetup>();
 
@@ -74,7 +75,7 @@ void SbProviderFromSps::PreSetup() {
 
   run_time_statistics_.RecordEnd<RunTimeStatistics::StatisticsId::kSbPresetup>();
   if constexpr (kDebug) {
-    logger_.LogDebug("Finished computing presetup for SBs");
+    logger_->LogDebug("Finished computing presetup for SBs");
   }
 }
 
@@ -84,7 +85,7 @@ void SbProviderFromSps::Setup() {
   }
 
   if constexpr (kDebug) {
-    logger_.LogDebug("Start computing setup for SBs");
+    logger_->LogDebug("Start computing setup for SBs");
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kSbSetup>();
 
@@ -100,7 +101,7 @@ void SbProviderFromSps::Setup() {
 
   run_time_statistics_.RecordEnd<RunTimeStatistics::StatisticsId::kSbSetup>();
   if constexpr (kDebug) {
-    logger_.LogDebug("Finished computing setup for SBs");
+    logger_->LogDebug("Finished computing setup for SBs");
   }
 }
 

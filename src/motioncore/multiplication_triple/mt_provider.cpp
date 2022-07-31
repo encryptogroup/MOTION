@@ -64,7 +64,7 @@ MtProvider::MtProvider(const std::size_t my_id, const std::size_t number_of_part
 }
 
 MtProviderFromOts::MtProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& ot_providers,
-                                     const std::size_t my_id, Logger& logger,
+                                     const std::size_t my_id, std::shared_ptr<Logger> logger,
                                      RunTimeStatistics& run_time_statistics)
     : MtProvider(my_id, ot_providers.size()),
       ot_providers_(ot_providers),
@@ -89,7 +89,7 @@ void MtProviderFromOts::PreSetup() {
   }
 
   if constexpr (kDebug) {
-    logger_.LogDebug("Start computing presetup for MTs");
+    logger_->LogDebug("Start computing presetup for MTs");
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kMtPresetup>();
 
@@ -97,7 +97,7 @@ void MtProviderFromOts::PreSetup() {
 
   run_time_statistics_.RecordEnd<RunTimeStatistics::StatisticsId::kMtPresetup>();
   if constexpr (kDebug) {
-    logger_.LogDebug("Finished computing presetup for MTs");
+    logger_->LogDebug("Finished computing presetup for MTs");
   }
 }
 
@@ -108,7 +108,7 @@ void MtProviderFromOts::Setup() {
   }
 
   if constexpr (kDebug) {
-    logger_.LogDebug("Start computing setup for MTs");
+    logger_->LogDebug("Start computing setup for MTs");
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kMtSetup>();
 
@@ -151,7 +151,7 @@ void MtProviderFromOts::Setup() {
 
   run_time_statistics_.RecordEnd<RunTimeStatistics::StatisticsId::kMtSetup>();
   if constexpr (kDebug) {
-    logger_.LogDebug("Finished computing setup for MTs");
+    logger_->LogDebug("Finished computing setup for MTs");
   }
 }
 

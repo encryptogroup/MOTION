@@ -28,6 +28,7 @@
 #include "base/configuration.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
+#include "oblivious_transfer/1_out_of_n/kk13_ot_provider.h"
 #include "oblivious_transfer/ot_provider.h"
 #include "utility/logger.h"
 
@@ -88,15 +89,9 @@ void Party::Run(std::size_t repetitions) {
 
   // TODO: fix check if work exists s.t. it does not require knowledge about OT
   // internals etc.
-  bool work_exists = backend_->GetRegister()->GetTotalNumberOfGates() > 0;
-  for (auto party_id = 0ull; party_id < backend_->GetCommunicationLayer().GetNumberOfParties();
-       ++party_id) {
-    if (party_id == backend_->GetCommunicationLayer().GetMyId()) {
-      continue;
-    }
-    work_exists |= backend_->GetOtProvider(party_id).GetNumOtsReceiver() > 0;
-    work_exists |= backend_->GetOtProvider(party_id).GetNumOtsSender() > 0;
-  }
+  bool work_exists{backend_->GetOtProviderManager().HasWork() ||
+                   backend_->GetKk13OtProviderManager().HasWork() ||
+                   !backend_->GetRegister()->GetGates().empty()};
   if (!work_exists) {
     logger_->LogInfo("Party terminate: no work to do");
     return;

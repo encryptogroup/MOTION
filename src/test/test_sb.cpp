@@ -44,7 +44,7 @@ void TemplateTest() {
             encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset);
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetBackend()->GetSbProvider()->template RequestSbs<T>(kNumberOfSbs);
+          party->GetBackend()->GetSbProvider().template RequestSbs<T>(kNumberOfSbs);
         }
 
         std::vector<std::future<void>> futures;
@@ -52,28 +52,30 @@ void TemplateTest() {
         for (std::size_t j = 0; j < number_of_parties; ++j) {
           futures.emplace_back(std::async(std::launch::async, [&motion_parties, j] {
             auto& backend = motion_parties.at(j)->GetBackend();
+            backend->GetBaseProvider().Setup();
             auto& sp_provider = backend->GetSpProvider();
             auto& sb_provider = backend->GetSbProvider();
-            sb_provider->PreSetup();
-            sp_provider->PreSetup();
-            backend->GetOtProviderManager()->PreSetup();
-            backend->GetBaseOtProvider()->PreSetup();
+            sb_provider.PreSetup();
+            sp_provider.PreSetup();
+            backend->GetOtProviderManager().PreSetup();
+            backend->GetBaseOtProvider().PreSetup();
             backend->Synchronize();
+            backend->GetBaseOtProvider().ComputeBaseOts();
             backend->OtExtensionSetup();
-            sp_provider->Setup();
-            sb_provider->Setup();
+            sp_provider.Setup();
+            sb_provider.Setup();
             motion_parties.at(j)->Finish();
           }));
         }
         std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });
 
-        const auto& sb_provider_0 = motion_parties.at(0)->GetBackend()->GetSbProvider();
-        std::vector<T> a = sb_provider_0->template GetSbsAll<T>();
+        auto& sb_provider_0 = motion_parties.at(0)->GetBackend()->GetSbProvider();
+        std::vector<T> a = sb_provider_0.template GetSbsAll<T>();
         EXPECT_EQ(a.size(), kNumberOfSbs);
         for (std::size_t j = 1; j < motion_parties.size(); ++j) {
-          const auto& sb_provider_j = motion_parties.at(j)->GetBackend()->GetSbProvider();
+          auto& sb_provider_j = motion_parties.at(j)->GetBackend()->GetSbProvider();
           for (std::size_t k = 0; k < a.size(); ++k) {
-            a.at(k) += sb_provider_j->template GetSbsAll<T>().at(k);
+            a.at(k) += sb_provider_j.template GetSbsAll<T>().at(k);
           }
         }
         for (std::size_t k = 0; k < a.size(); ++k) {

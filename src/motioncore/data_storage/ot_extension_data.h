@@ -35,32 +35,17 @@
 #include <unordered_set>
 #include <vector>
 
-#include "communication/fbs_headers/message_generated.h"
-#include "communication/message_manager.h"
 #include "utility/bit_matrix.h"
 #include "utility/bit_vector.h"
 #include "utility/block.h"
-#include "utility/meta.hpp"
-#include "utility/reusable_future.h"
 
 namespace encrypto::motion {
 
 class FiberCondition;
 class Logger;
 
-enum class OtMessageType {
-  kGenericBoolean,
-  kBit,
-  kBlock128,
-  kUint8,
-  kUint16,
-  kUint32,
-  kUint64,
-  kUint128
-};
-
-struct OtExtensionReceiverData {
-  OtExtensionReceiverData();
+struct OtExtensionReceiverData : public FiberSetupWaitable {
+  OtExtensionReceiverData() = default;
   ~OtExtensionReceiverData() = default;
 
   // matrix of the OT extension scheme
@@ -77,16 +62,12 @@ struct OtExtensionReceiverData {
   // random choices from OT precomputation
   std::unique_ptr<AlignedBitVector> random_choices;
 
-  // flag and condition variable: is setup is done?
-  std::unique_ptr<FiberCondition> setup_finished_condition;
-  std::atomic<bool> setup_finished{false};
-
   // XXX: unused
   std::atomic<std::size_t> consumed_offset{0};
 };
 
-struct OtExtensionSenderData {
-  OtExtensionSenderData();
+struct OtExtensionSenderData : public FiberSetupWaitable {
+  OtExtensionSenderData() = default;
   ~OtExtensionSenderData() = default;
 
   // width of the bit matrix
@@ -102,10 +83,6 @@ struct OtExtensionSenderData {
 
   // bit length of every OT
   std::vector<std::size_t> bitlengths;
-
-  // flag and condition variable: is setup is done?
-  std::unique_ptr<FiberCondition> setup_finished_condition;
-  std::atomic<bool> setup_finished{false};
 
   // XXX: unused
   std::atomic<std::size_t> consumed_offset{0};

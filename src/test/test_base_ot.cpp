@@ -57,8 +57,8 @@ TEST(ObliviousTransfer, BaseOt) {
     }
 
     for (std::size_t i = 0; i < number_of_parties; ++i) {
-      motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->Request(num_base_ots);
-      motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
+      motion_parties.at(i)->GetBackend()->GetBaseOtProvider().Request(num_base_ots);
+      motion_parties.at(i)->GetBackend()->GetBaseOtProvider().PreSetup();
     }
 
     std::vector<std::future<void>> futures;
@@ -79,7 +79,7 @@ TEST(ObliviousTransfer, BaseOt) {
           continue;
         }
         auto& base_ots_data =
-            motion_parties.at(party_id)->GetBackend()->GetBaseOtProvider()->GetBaseOtsData(
+            motion_parties.at(party_id)->GetBackend()->GetBaseOtProvider().GetBaseOtsData(
                 other_id);
 
         const auto& base_ots_receiver = base_ots_data.GetReceiverData();

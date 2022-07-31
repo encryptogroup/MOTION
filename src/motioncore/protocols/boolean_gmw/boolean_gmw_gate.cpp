@@ -89,7 +89,7 @@ void InputGate::EvaluateSetup() {}
 
 void InputGate::EvaluateOnline() {
   // nothing to setup, no need to wait/check
-  GetBaseProvider().WaitForSetup();
+  GetBaseProvider().WaitSetup();
 
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();
@@ -504,7 +504,7 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
 
   auto& mt_provider = backend_.GetMtProvider();
   mt_bitlen_ = parent_a_.size() * parent_a_.at(0)->GetNumberOfSimdValues();
-  mt_offset_ = mt_provider->RequestBinaryMts(mt_bitlen_);
+  mt_offset_ = mt_provider.RequestBinaryMts(mt_bitlen_);
 
   if constexpr (kDebug) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,

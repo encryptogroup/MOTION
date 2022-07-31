@@ -42,7 +42,7 @@ void TemplateTest() {
             encrypto::motion::MakeLocallyConnectedParties(number_of_parties, kPortOffset);
         for (auto& party : motion_parties) {
           party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-          party->GetBackend()->GetSpProvider()->template RequestSps<T>(kNumSps);
+          party->GetBackend()->GetSpProvider().template RequestSps<T>(kNumSps);
         }
 
         std::vector<std::future<void>> futures;
@@ -50,28 +50,29 @@ void TemplateTest() {
         for (std::size_t j = 0; j < number_of_parties; ++j) {
           futures.emplace_back(std::async(std::launch::async, [&motion_parties, j] {
             auto& backend = motion_parties.at(j)->GetBackend();
+            backend->GetBaseProvider().Setup();
             auto& sp_provider = backend->GetSpProvider();
-            sp_provider->PreSetup();
-            backend->GetOtProviderManager()->PreSetup();
-            backend->GetBaseOtProvider()->PreSetup();
+            sp_provider.PreSetup();
+            backend->GetOtProviderManager().PreSetup();
+            backend->GetBaseOtProvider().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
-            sp_provider->Setup();
+            sp_provider.Setup();
             motion_parties.at(j)->Finish();
           }));
         }
         std::for_each(futures.begin(), futures.end(), [](auto& f) { f.get(); });
 
-        const auto& sp_provider_0 = motion_parties.at(0)->GetBackend()->GetSpProvider();
-        std::vector<T> a = sp_provider_0->template GetSpsAll<T>().a;
-        std::vector<T> c = sp_provider_0->template GetSpsAll<T>().c;
+        auto& sp_provider_0 = motion_parties.at(0)->GetBackend()->GetSpProvider();
+        std::vector<T> a = sp_provider_0.template GetSpsAll<T>().a;
+        std::vector<T> c = sp_provider_0.template GetSpsAll<T>().c;
         EXPECT_EQ(a.size(), kNumSps);
         EXPECT_EQ(c.size(), kNumSps);
         for (std::size_t j = 1; j < motion_parties.size(); ++j) {
-          const auto& sp_provider_j = motion_parties.at(j)->GetBackend()->GetSpProvider();
+          auto& sp_provider_j = motion_parties.at(j)->GetBackend()->GetSpProvider();
           for (std::size_t k = 0; k < a.size(); ++k) {
-            a.at(k) += sp_provider_j->template GetSpsAll<T>().a.at(k);
-            c.at(k) += sp_provider_j->template GetSpsAll<T>().c.at(k);
+            a.at(k) += sp_provider_j.template GetSpsAll<T>().a.at(k);
+            c.at(k) += sp_provider_j.template GetSpsAll<T>().c.at(k);
           }
         }
         for (std::size_t k = 0; k < a.size(); ++k) {

@@ -24,6 +24,9 @@
 
 #include <atomic>
 #include <memory>
+#include <vector>
+
+#include "utility/fiber_waitable.h"
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion::communication {
@@ -42,16 +45,13 @@ namespace encrypto::motion {
 
 class FiberCondition;
 class Logger;
-struct HelloMessageHandler;
-class OutputMessageHandler;
 
-class BaseProvider {
+class BaseProvider : public FiberSetupWaitable {
  public:
-  BaseProvider(communication::CommunicationLayer&, std::shared_ptr<Logger> logger);
+  BaseProvider(communication::CommunicationLayer&);
   ~BaseProvider();
 
   void Setup();
-  void WaitForSetup() const;
 
   const std::vector<std::uint8_t>& GetAesFixedKey() const { return aes_fixed_key_; }
   primitives::SharingRandomnessGenerator& GetMyRandomnessGenerator(std::size_t party_id) {
@@ -73,10 +73,6 @@ class BaseProvider {
   std::vector<std::unique_ptr<primitives::SharingRandomnessGenerator>> my_randomness_generators_;
   std::vector<std::unique_ptr<primitives::SharingRandomnessGenerator>> their_randomness_generators_;
   std::unique_ptr<primitives::SharingRandomnessGenerator> global_randomness_generator_;
-
-  std::atomic_flag execute_setup_flag_ = ATOMIC_FLAG_INIT;
-  bool setup_ready_;
-  std::unique_ptr<FiberCondition> setup_ready_cond_;
 
   std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> hello_message_futures_;
 };

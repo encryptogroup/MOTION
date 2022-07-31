@@ -41,6 +41,8 @@ class FiberSetupWaitable {
 
   bool IsSetupReady() { return setup_ready_; }
 
+  void ResetSetupIsReady() { setup_ready_.store(false); }
+
  protected:
   std::atomic<bool> setup_ready_{false};
   std::shared_ptr<FiberCondition> setup_ready_condition_;
@@ -55,6 +57,8 @@ class FiberOnlineWaitable {
   void SetOnlineIsReady();
 
   bool IsOnlineReady() { return online_ready_; }
+
+  void ResetOnlineIsReady() { online_ready_.store(false); }
 
  protected:
   std::atomic<bool> online_ready_{false};

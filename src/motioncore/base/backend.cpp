@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko, Lennart Braun
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -44,6 +44,7 @@
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sb_provider.h"
 #include "multiplication_triple/sp_provider.h"
+#include "oblivious_transfer/1_out_of_n/kk13_ot_provider.h"
 #include "oblivious_transfer/base_ots/base_ot_provider.h"
 #include "oblivious_transfer/ot_provider.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
@@ -75,19 +76,22 @@ Backend::Backend(std::unique_ptr<communication::CommunicationLayer> communicatio
       register_(std::make_shared<Register>(logger_)),
       gate_executor_(std::make_unique<GateExecutor>(
           *register_, [this] { RunPreprocessing(); }, logger_)) {
-  motion_base_provider_ = std::make_unique<BaseProvider>(*communication_layer_, logger_);
-  base_ot_provider_ = std::make_unique<BaseOtProvider>(*communication_layer_, logger_);
+  motion_base_provider_ = std::make_unique<BaseProvider>(*communication_layer_);
+  base_ot_provider_ = std::make_unique<BaseOtProvider>(*communication_layer_);
   communication_layer_->SetLogger(logger_);
   auto my_id = communication_layer_->GetMyId();
 
   ot_provider_manager_ = std::make_unique<OtProviderManager>(
-      *communication_layer_, *base_ot_provider_, *motion_base_provider_, logger_);
+      *communication_layer_, *base_ot_provider_, *motion_base_provider_);
+
+  kk13_ot_provider_manager_ = std::make_unique<Kk13OtProviderManager>(
+      *communication_layer_, *base_ot_provider_, *motion_base_provider_);
 
   mt_provider_ = std::make_shared<MtProviderFromOts>(ot_provider_manager_->GetProviders(), my_id,
-                                                     *logger_, run_time_statistics_.back());
+                                                     logger, run_time_statistics_.back());
   sp_provider_ = std::make_shared<SpProviderFromOts>(ot_provider_manager_->GetProviders(), my_id,
-                                                     *logger_, run_time_statistics_.back());
-  sb_provider_ = std::make_shared<SbProviderFromSps>(*communication_layer_, sp_provider_, *logger_,
+                                                     logger, run_time_statistics_.back());
+  sb_provider_ = std::make_shared<SbProviderFromSps>(*communication_layer_, sp_provider_, logger,
                                                      run_time_statistics_.back());
   bmr_provider_ = std::make_unique<proto::bmr::Provider>(*communication_layer_);
   if (communication_layer_->GetNumberOfParties() == 2) {
@@ -103,18 +107,6 @@ Backend::~Backend() {}
 
 const LoggerPointer& Backend::GetLogger() const noexcept { return logger_; }
 
-// TODO: move this to OtProvider(Wrapper)
-bool Backend::NeedOts() {
-  auto& ot_providers = ot_provider_manager_->GetProviders();
-  for (auto& ot_provider : ot_providers) {
-    if (ot_provider != nullptr && ot_provider->GetPartyId() != communication_layer_->GetMyId() &&
-        ot_provider->HasWork()) {
-      return true;
-    }
-  }
-  return false;
-}
-
 void Backend::RunPreprocessing() {
   logger_->LogInfo("Start preprocessing");
   run_time_statistics_.back().RecordStart<RunTimeStatistics::StatisticsId::kPreprocessing>();
@@ -122,24 +114,30 @@ void Backend::RunPreprocessing() {
   // TODO: should this be measured?
   motion_base_provider_->Setup();
 
+  // TODO: design and implement a dependency manager that automatically arranges and runs
+  // components depending on their dependencies
   // SB needs SP
   // SP needs OT
   // MT needs OT
 
-  const bool needs_mts = GetMtProvider()->NeedMts();
+  const bool needs_mts = mt_provider_->NeedMts();
   if (needs_mts) {
     mt_provider_->PreSetup();
   }
-  const bool needs_sbs = GetSbProvider()->NeedSbs();
+  const bool needs_sbs = sb_provider_->NeedSbs();
   if (needs_sbs) {
     sb_provider_->PreSetup();
   }
-  const bool needs_sps = GetSpProvider()->NeedSps();
+  const bool needs_sps = sp_provider_->NeedSps();
   if (needs_sps) {
     sp_provider_->PreSetup();
   }
 
-  if (NeedOts()) {
+  if (kk13_ot_provider_manager_->HasWork()) {
+    kk13_ot_provider_manager_->PreSetup();
+  }
+
+  if (ot_provider_manager_->HasWork()) {
     ot_provider_manager_->PreSetup();
   }
 
@@ -149,7 +147,11 @@ void Backend::RunPreprocessing() {
 
   communication_layer_->Synchronize();
 
-  if (NeedOts()) {
+  if(base_ot_provider_->HasWork()){
+    base_ot_provider_->ComputeBaseOts();
+  }
+
+  if (ot_provider_manager_->HasWork() || kk13_ot_provider_manager_->HasWork()) {
     OtExtensionSetup();
   }
 
@@ -420,8 +422,8 @@ SharePointer Backend::GarbledCircuitInput(std::size_t party_id, std::vector<BitV
 std::pair<SharePointer, ReusableFiberPromise<std::vector<BitVector<>>>*>
 Backend::GarbledCircuitInput(std::size_t input_owner_id, std::size_t number_of_wires,
                              std::size_t number_of_simd) {
-  auto input_gate = GetGarbledCircuitProvider()->MakeInputGate(input_owner_id, number_of_wires,
-                                                               number_of_simd, *this);
+  auto input_gate = GetGarbledCircuitProvider().MakeInputGate(input_owner_id, number_of_wires,
+                                                              number_of_simd, *this);
   bool my_input{input_owner_id == GetCommunicationLayer().GetMyId()};
   auto input_promise_ptr = my_input ? &input_gate->GetInputPromise() : nullptr;
   return std::pair(std::static_pointer_cast<Share>(input_gate->GetOutputAsGarbledCircuitShare()),
@@ -445,12 +447,6 @@ void Backend::ComputeBaseOts() {
 
 // TODO: move to OtProviderManager::Setup()
 void Backend::OtExtensionSetup() {
-  if (base_ot_provider_->HasWork()) {
-    ComputeBaseOts();
-  }
-
-  motion_base_provider_->Setup();
-
   if constexpr (kDebug) {
     logger_->LogDebug("Start computing setup for OTExtensions");
   }
@@ -464,10 +460,20 @@ void Backend::OtExtensionSetup() {
     if (i == communication_layer_->GetMyId()) {
       continue;
     }
-    task_futures.emplace_back(std::async(
-        std::launch::async, [this, i] { ot_provider_manager_->GetProvider(i).SendSetup(); }));
-    task_futures.emplace_back(std::async(
-        std::launch::async, [this, i] { ot_provider_manager_->GetProvider(i).ReceiveSetup(); }));
+    if (ot_provider_manager_->GetProvider(i).HasWork()) {
+      task_futures.emplace_back(std::async(
+          std::launch::async, [this, i] { ot_provider_manager_->GetProvider(i).SendSetup(); }));
+      task_futures.emplace_back(std::async(
+          std::launch::async, [this, i] { ot_provider_manager_->GetProvider(i).ReceiveSetup(); }));
+    }
+    if (kk13_ot_provider_manager_->GetProvider(i).HasWork()) {
+      task_futures.emplace_back(std::async(std::launch::async, [this, i] {
+        kk13_ot_provider_manager_->GetProvider(i).SendSetup();
+      }));
+      task_futures.emplace_back(std::async(std::launch::async, [this, i] {
+        kk13_ot_provider_manager_->GetProvider(i).ReceiveSetup();
+      }));
+    }
   }
 
   std::for_each(task_futures.begin(), task_futures.end(), [](auto& f) { f.get(); });
@@ -481,6 +487,10 @@ void Backend::OtExtensionSetup() {
 
 OtProvider& Backend::GetOtProvider(std::size_t party_id) {
   return ot_provider_manager_->GetProvider(party_id);
+}
+
+Kk13OtProvider& Backend::GetKk13OtProvider(std::size_t party_id) {
+  return kk13_ot_provider_manager_->GetProvider(party_id);
 }
 
 }  // namespace encrypto::motion

@@ -14,14 +14,14 @@ add_library(motion
         communication/message_manager.cpp
         communication/tcp_transport.cpp
         communication/transport.cpp
-        data_storage/base_ot_data.cpp
-        data_storage/ot_extension_data.cpp
         executor/gate_executor.cpp
         multiplication_triple/mt_provider.cpp
         multiplication_triple/sb_provider.cpp
         multiplication_triple/sp_provider.cpp
         oblivious_transfer/base_ots/base_ot_provider.cpp
         oblivious_transfer/base_ots/ot_hl17.cpp
+        oblivious_transfer/1_out_of_n/kk13_ot_flavors.cpp
+        oblivious_transfer/1_out_of_n/kk13_ot_provider.cpp
         oblivious_transfer/ot_flavors.cpp
         oblivious_transfer/ot_provider.cpp
         primitives/aes/aesni_primitives.cpp

@@ -42,6 +42,7 @@ struct RunTimeStatistics {
     kSpPresetup,
     kSpSetup,
     kOtExtensionSetup,
+    kKK13OtExtensionSetup,
     kPreprocessing,  // MTs, OTs etc.
     kGatesSetup,
     kGatesOnline,

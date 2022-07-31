@@ -32,6 +32,7 @@
 #include "data_storage/base_ot_data.h"
 #include "primitives/blake2b.h"
 #include "utility/helpers.h"
+#include "utility/reusable_future.h"
 
 namespace encrypto::motion {
 
@@ -198,7 +199,7 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OtHL17::S
     states.emplace_back(i);
   }
 
-  auto& base_ots_sender = base_ots_data_.GetSenderData();
+  auto& base_ots_sender = base_ots_data_.sender_data;
 
   std::vector<std::array<std::uint8_t, kCurve25519GeByteSize>> messages_s0(number_of_ots);
   std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> output(number_of_ots);
@@ -221,14 +222,14 @@ std::vector<std::pair<std::vector<std::byte>, std::vector<std::byte>>> OtHL17::S
     output.at(i) = Send2(states.at(i), std::span(payload->data(), payload->size()));
   }
 
-  base_ots_sender.is_ready = true;
+  base_ots_sender.SetOnlineIsReady();
 
   return output;
 }
 
 std::vector<std::vector<std::byte>> OtHL17::Receive(const BitVector<>& choices) {
   const auto number_of_ots = choices.GetSize();
-  auto& base_ots_receiver = base_ots_data_.GetReceiverData();
+  auto& base_ots_receiver = base_ots_data_.receiver_data;
   std::vector<ReceiverState> states;
   for (std::size_t i = 0; i < number_of_ots; ++i) {
     states.emplace_back(i);
@@ -255,7 +256,7 @@ std::vector<std::vector<std::byte>> OtHL17::Receive(const BitVector<>& choices) 
     output.at(i) = Receive2(states.at(i));
   }
 
-  base_ots_receiver.is_ready = true;
+  base_ots_receiver.SetOnlineIsReady();
 
   return output;
 }

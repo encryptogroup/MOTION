@@ -75,38 +75,7 @@ flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
 using namespace std::string_literals;
 
 std::string to_string(MessageType message_type) {
-  switch (message_type) {
-    case MessageType::kHelloMessage:
-      return "MessageType::HelloMessage"s;
-    case MessageType::kOutputMessage:
-      return "MessageType::OutputMessage"s;
-    case MessageType::kTerminationMessage:
-      return "MessageType::TerminationMessage"s;
-    case MessageType::kSynchronizationMessage:
-      return "MessageType::SynchronizationMessage"s;
-    case MessageType::kBaseROtMessageSender:
-      return "MessageType::BaseROtMessageSender"s;
-    case MessageType::kBaseROtMessageReceiver:
-      return "MessageType::BaseROtMessageReceiver"s;
-    case MessageType::kOtExtensionReceiverMasks:
-      return "MessageType::OtExtensionReceiverMasks"s;
-    case MessageType::kOtExtensionReceiverCorrections:
-      return "MessageType::OtExtensionReceiverCorrections"s;
-    case MessageType::kOtExtensionSender:
-      return "MessageType::OtExtensionSender"s;
-    case MessageType::kBmrInputGate0:
-      return "MessageType::BmrInputGate0"s;
-    case MessageType::kBmrInputGate1:
-      return "MessageType::BmrInputGate1"s;
-    case MessageType::kBmrAndGate:
-      return "MessageType::BmrAndGate"s;
-    case MessageType::kSharedBitsMask:
-      return "MessageType::SharedBitsMask"s;
-    case MessageType::kSharedBitsReconstruct:
-      return "MessageType::SharedBitsReconstruct"s;
-    default:
-      return "Unknown MessageType => update to_string function"s;
-  }
+  return std::string(EnumNameMessageType(message_type));
 }
 
 }  // namespace encrypto::motion::communication

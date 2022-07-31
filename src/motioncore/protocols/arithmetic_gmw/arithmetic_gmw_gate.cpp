@@ -81,7 +81,7 @@ void InputGate<T>::EvaluateSetup() {}
 template <typename T>
 void InputGate<T>::EvaluateOnline() {
   // nothing to setup, no need to wait/check
-  GetBaseProvider().WaitForSetup();
+  GetBaseProvider().WaitSetup();
 
   auto& communication_layer = GetCommunicationLayer();
   auto my_id = communication_layer.GetMyId();

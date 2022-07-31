@@ -38,14 +38,12 @@ namespace encrypto::motion {
 
 // Implementation of BaseOtProvider: -------------------------------------------
 
-BaseOtProvider::BaseOtProvider(communication::CommunicationLayer& communication_layer,
-                               std::shared_ptr<Logger> logger)
+BaseOtProvider::BaseOtProvider(communication::CommunicationLayer& communication_layer)
     : communication_layer_(communication_layer),
-      number_of_parties_(communication_layer.GetNumberOfParties()),
-      my_id_(communication_layer.GetMyId()),
+      number_of_parties_(communication_layer_.GetNumberOfParties()),
+      my_id_(communication_layer_.GetMyId()),
       data_(number_of_parties_),
-      logger_(logger),
-      finished_(false) {
+      logger_(communication_layer_.GetLogger()) {
   number_of_ots_.resize(number_of_parties_ - 1, 0);
 }
 
@@ -126,44 +124,36 @@ void BaseOtProvider::ComputeBaseOts() {
     base_ots.emplace_back(std::make_unique<OtHL17>(send_function, base_ots_data));
     std::size_t remapped_party_id{i > my_id_ ? i - 1 : i};
 
-    if (!base_ots_data.GetReceiverData().is_ready) {
-      task_futures.emplace_back(
-          std::async(std::launch::async, [this, &base_ots, i, remapped_party_id] {
-            auto choices = BitVector<>::SecureRandom(number_of_ots_.at(remapped_party_id));
-            auto chosen_messages = base_ots[i]->Receive(choices);  // sender base ots
-            auto& receiver_data = data_[i].GetReceiverData();
-            receiver_data.c = std::move(choices);
-            for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
-              auto b = receiver_data.messages_c.at(i).begin();
-              std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
-            }
-            std::scoped_lock lock(receiver_data.is_ready_condition->GetMutex());
-            receiver_data.is_ready = true;
-          }));
-    }
+    task_futures.emplace_back(
+        std::async(std::launch::async, [this, &base_ots, i, remapped_party_id] {
+          auto choices = BitVector<>::SecureRandom(number_of_ots_.at(remapped_party_id));
+          auto chosen_messages = base_ots[i]->Receive(choices);  // sender base ots
+          auto& receiver_data = data_[i].GetReceiverData();
+          receiver_data.c = std::move(choices);
+          for (std::size_t i = 0; i < chosen_messages.size(); ++i) {
+            auto b = receiver_data.messages_c.at(i).begin();
+            std::copy(chosen_messages.at(i).begin(), chosen_messages.at(i).begin() + 16, b);
+          }
+        }));
 
-    if (!base_ots_data.GetSenderData().is_ready) {
-      task_futures.emplace_back(std::async(std::launch::async, [this, &base_ots, i,
-                                                                remapped_party_id] {
-        auto both_messages =
-            base_ots[i]->Send(number_of_ots_.at(remapped_party_id));  // receiver base ots
-        auto& sender_data = data_[i].GetSenderData();
-        for (std::size_t i = 0; i < both_messages.size(); ++i) {
-          auto b = sender_data.messages_0.at(i).begin();
-          std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
-        }
-        for (std::size_t i = 0; i < both_messages.size(); ++i) {
-          auto b = sender_data.messages_1.at(i).begin();
-          std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
-        }
-        std::scoped_lock lock(sender_data.is_ready_condition->GetMutex());
-        sender_data.is_ready = true;
-      }));
-    }
+    task_futures.emplace_back(std::async(std::launch::async, [this, &base_ots, i,
+                                                              remapped_party_id] {
+      auto both_messages =
+          base_ots[i]->Send(number_of_ots_.at(remapped_party_id));  // receiver base ots
+      auto& sender_data = data_[i].GetSenderData();
+      for (std::size_t i = 0; i < both_messages.size(); ++i) {
+        auto b = sender_data.messages_0.at(i).begin();
+        std::copy(both_messages.at(i).first.begin(), both_messages.at(i).first.begin() + 16, b);
+      }
+      for (std::size_t i = 0; i < both_messages.size(); ++i) {
+        auto b = sender_data.messages_1.at(i).begin();
+        std::copy(both_messages.at(i).second.begin(), both_messages.at(i).second.begin() + 16, b);
+      }
+    }));
   }
 
   std::for_each(task_futures.begin(), task_futures.end(), [](auto& f) { f.get(); });
-  finished_ = true;
+  SetOnlineIsReady();
 
   if constexpr (kDebug) {
     if (logger_) {
@@ -172,69 +162,72 @@ void BaseOtProvider::ComputeBaseOts() {
   }
 }
 
-void BaseOtProvider::ImportBaseOts(std::size_t party_id, const ReceiverMessage& messages) {
+void BaseOtProvider::ImportBaseOts([[maybe_unused]] std::size_t party_id,
+                                   [[maybe_unused]] const ReceiverMessage& messages) {
   // TODO
-  throw std::runtime_error("Not completely implemented yet");
-  auto& receiver_data = data_.at(party_id).GetReceiverData();
-  if (receiver_data.is_ready)
-    throw std::runtime_error(
-        fmt::format("Found previously computed receiver base OTs for Party#{}", party_id));
+  throw std::runtime_error("Not completely implemented yet"); /*
+   auto& receiver_data = data_.at(party_id).GetReceiverData();
+   if (receiver_data.is_ready)
+     throw std::runtime_error(
+         fmt::format("Found previously computed receiver base OTs for Party#{}", party_id));
 
-  receiver_data.c = messages.c;
-  receiver_data.messages_c = messages.messages_c;
+   receiver_data.c = messages.c;
+   receiver_data.messages_c = messages.messages_c;
 
-  {
-    std::scoped_lock lock(receiver_data.is_ready_condition->GetMutex());
-    receiver_data.is_ready = true;
-  }
-  receiver_data.is_ready_condition->NotifyAll();
+   {
+     std::scoped_lock lock(receiver_data.is_ready_condition->GetMutex());
+     receiver_data.is_ready = true;
+   }
+   receiver_data.is_ready_condition->NotifyAll();*/
 }
 
-void BaseOtProvider::ImportBaseOts(std::size_t party_id, const SenderMessage& messages) {
+void BaseOtProvider::ImportBaseOts([[maybe_unused]] std::size_t party_id,
+                                   [[maybe_unused]] const SenderMessage& messages) {
   // TODO
-  throw std::runtime_error("Not completely implemented yet");
-  auto& sender_data = data_.at(party_id).GetSenderData();
-  if (sender_data.is_ready)
-    throw std::runtime_error(
-        fmt::format("Found previously computed sender base OTs for Party#{}", party_id));
+  throw std::runtime_error("Not completely implemented yet"); /*
+   auto& sender_data = data_.at(party_id).GetSenderData();
+   if (sender_data.is_ready)
+     throw std::runtime_error(
+         fmt::format("Found previously computed sender base OTs for Party#{}", party_id));
 
-  sender_data.messages_0 = messages.messages_0;
-  sender_data.messages_1 = messages.messages_1;
+   sender_data.messages_0 = messages.messages_0;
+   sender_data.messages_1 = messages.messages_1;
 
-  {
-    std::scoped_lock lock(sender_data.is_ready_condition->GetMutex());
-    sender_data.is_ready = true;
-  }
-  sender_data.is_ready_condition->NotifyAll();
+   {
+     std::scoped_lock lock(sender_data.is_ready_condition->GetMutex());
+     sender_data.is_ready = true;
+   }
+   sender_data.is_ready_condition->NotifyAll();*/
 }
 
-std::pair<ReceiverMessage, SenderMessage> BaseOtProvider::ExportBaseOts(std::size_t party_id) {
+std::pair<ReceiverMessage, SenderMessage> BaseOtProvider::ExportBaseOts(
+    [[maybe_unused]] std::size_t party_id) {
   // TODO
-  throw std::runtime_error("Not completely implemented yet");
-  if (party_id == my_id_)
-    throw std::runtime_error("Base OTs export is only possible for other parties");
+  throw std::runtime_error("Not completely implemented yet"); /*
+   if (party_id == my_id_)
+     throw std::runtime_error("Base OTs export is only possible for other parties");
 
-  auto& base_ot_data = data_.at(party_id);
-  auto& receiver_data = base_ot_data.GetReceiverData();
-  auto& sender_data = base_ot_data.GetSenderData();
+   auto& base_ot_data = data_.at(party_id);
+   auto& receiver_data = base_ot_data.GetReceiverData();
+   auto& sender_data = base_ot_data.GetSenderData();
 
-  if (!receiver_data.is_ready)
-    throw std::runtime_error(
-        fmt::format("Trying to export non-existing receiver base OTs for Party#{}", party_id));
+   if (!receiver_data.is_ready)
+     throw std::runtime_error(
+         fmt::format("Trying to export non-existing receiver base OTs for Party#{}", party_id));
 
-  if (!sender_data.is_ready)
-    throw std::runtime_error(
-        fmt::format("Trying to export non-existing sender base OTs for Party#{}", party_id));
+   if (!sender_data.is_ready)
+     throw std::runtime_error(
+         fmt::format("Trying to export non-existing sender base OTs for Party#{}", party_id));
 
-  std::pair<ReceiverMessage, SenderMessage> base_ots;
+   std::pair<ReceiverMessage, SenderMessage> base_ots;
 
-  std::get<0>(base_ots).c = receiver_data.c;
-  std::get<0>(base_ots).messages_c = receiver_data.messages_c;
+   std::get<0>(base_ots).c = receiver_data.c;
+   std::get<0>(base_ots).messages_c = receiver_data.messages_c;
 
-  std::get<1>(base_ots).messages_0 = sender_data.messages_0;
-  std::get<1>(base_ots).messages_1 = sender_data.messages_1;
+   std::get<1>(base_ots).messages_0 = sender_data.messages_0;
+   std::get<1>(base_ots).messages_1 = sender_data.messages_1;
 
-  return base_ots;
+   return base_ots;*/
 }
 
 }  // namespace encrypto::motion

@@ -96,8 +96,9 @@ TEST(ObliviousTransfer, Random1oo2OtsFromOtExtension) {
                 motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
               }
             }
-            motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
+            motion_parties.at(i)->GetBackend()->GetBaseOtProvider().PreSetup();
             motion_parties.at(i)->GetBackend()->Synchronize();
+            motion_parties.at(i)->GetBackend()->GetBaseOtProvider().ComputeBaseOts();
             motion_parties.at(i)->GetBackend()->OtExtensionSetup();
             motion_parties.at(i)->Finish();
           });
@@ -209,8 +210,9 @@ TEST(ObliviousTransfer, General1oo2OtsFromOtExtension) {
                 motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
               }
             }
-            motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
+            motion_parties.at(i)->GetBackend()->GetBaseOtProvider().PreSetup();
             motion_parties.at(i)->GetBackend()->Synchronize();
+            motion_parties.at(i)->GetBackend()->GetBaseOtProvider().ComputeBaseOts();
             motion_parties.at(i)->GetBackend()->OtExtensionSetup();
 
             for (auto j = 0u; j < motion_parties.size(); ++j) {
@@ -331,8 +333,9 @@ TEST(ObliviousTransfer, XorCorrelated1oo2OtsFromOtExtension) {
             motion_parties.at(i)->GetBackend()->GetOtProvider(party_id).PreSetup();
           }
         }
-        motion_parties.at(i)->GetBackend()->GetBaseOtProvider()->PreSetup();
+        motion_parties.at(i)->GetBackend()->GetBaseOtProvider().PreSetup();
         motion_parties.at(i)->GetBackend()->Synchronize();
+        motion_parties.at(i)->GetBackend()->GetBaseOtProvider().ComputeBaseOts();
         motion_parties.at(i)->GetBackend()->OtExtensionSetup();
         for (auto j = 0u; j < motion_parties.size(); ++j) {
           if (i != j) {

@@ -80,7 +80,7 @@ ShareWrapper ShareWrapper::operator~() const {
       return ShareWrapper(inv_gate->GetOutputAsShare());
     }
     case MpcProtocol::kGarbledCircuit: {
-      auto inv_gate = share_->GetBackend().GetGarbledCircuitProvider()->MakeInvGate(share_);
+      auto inv_gate = share_->GetBackend().GetGarbledCircuitProvider().MakeInvGate(share_);
       return ShareWrapper(inv_gate->GetOutputAsShare());
     }
     default:
@@ -122,7 +122,7 @@ ShareWrapper ShareWrapper::operator^(const ShareWrapper& other) const {
       return ShareWrapper(xor_gate->GetOutputAsShare());
     }
     case MpcProtocol::kGarbledCircuit: {
-      auto xor_gate = share_->GetBackend().GetGarbledCircuitProvider()->MakeXorGate(share_, *other);
+      auto xor_gate = share_->GetBackend().GetGarbledCircuitProvider().MakeXorGate(share_, *other);
       return ShareWrapper(xor_gate->GetOutputAsShare());
     }
     default:
@@ -161,7 +161,7 @@ ShareWrapper ShareWrapper::operator&(const ShareWrapper& other) const {
       return ShareWrapper(and_gate->GetOutputAsShare());
     }
     case MpcProtocol::kGarbledCircuit: {
-      auto and_gate = share_->GetBackend().GetGarbledCircuitProvider()->MakeAndGate(share_, *other);
+      auto and_gate = share_->GetBackend().GetGarbledCircuitProvider().MakeAndGate(share_, *other);
       return ShareWrapper(and_gate->GetOutputAsShare());
     }
     default:

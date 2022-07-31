@@ -27,6 +27,7 @@
 
 #include "base/backend.h"
 #include "base/register.h"
+#include "oblivious_transfer/1_out_of_n/kk13_ot_provider.h"
 #include "oblivious_transfer/ot_provider.h"
 #include "utility/condition.h"
 #include "utility/fiber_condition.h"
@@ -82,16 +83,20 @@ Logger& Gate::GetLogger() { return *backend_.GetLogger(); }
 
 BaseProvider& Gate::GetBaseProvider() { return backend_.GetBaseProvider(); }
 
-MtProvider& Gate::GetMtProvider() { return *backend_.GetMtProvider(); }
+MtProvider& Gate::GetMtProvider() { return backend_.GetMtProvider(); }
 
-SpProvider& Gate::GetSpProvider() { return *backend_.GetSpProvider(); }
+SpProvider& Gate::GetSpProvider() { return backend_.GetSpProvider(); }
 
-SbProvider& Gate::GetSbProvider() { return *backend_.GetSbProvider(); }
+SbProvider& Gate::GetSbProvider() { return backend_.GetSbProvider(); }
 
 OtProvider& Gate::GetOtProvider(const std::size_t i) { return backend_.GetOtProvider(i); }
 
 proto::garbled_circuit::Provider& Gate::GetGarbledCircuitProvider() {
-  return *backend_.GetGarbledCircuitProvider();
+  return backend_.GetGarbledCircuitProvider();
+}
+
+Kk13OtProvider& Gate::GetKk13OtProvider(const std::size_t i) {
+  return backend_.GetKk13OtProvider(i);
 }
 
 }  // namespace encrypto::motion

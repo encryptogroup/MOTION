@@ -338,7 +338,7 @@ TEST_P(GarbledCircuitTest, And) {
       if (party_id == this->garbler_id_) {
         random_offset =
             dynamic_cast<encrypto::motion::proto::garbled_circuit::ThreeHalvesGarblerProvider&>(
-                *this->parties_[party_id]->GetBackend()->GetGarbledCircuitProvider().get())
+                this->parties_[party_id]->GetBackend()->GetGarbledCircuitProvider())
                 .GetOffset();
       }
 

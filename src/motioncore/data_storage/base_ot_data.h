@@ -31,44 +31,35 @@
 #include <memory>
 #include <vector>
 
-#include "communication/fbs_headers/message_generated.h"
 #include "utility/bit_vector.h"
+#include "utility/fiber_waitable.h"
 #include "utility/reusable_future.h"
 
 namespace encrypto::motion {
 
 class FiberCondition;
 
-struct BaseOtReceiverData {
-  BaseOtReceiverData();
+struct BaseOtReceiverData : public FiberOnlineWaitable {
+  BaseOtReceiverData() = default;
   ~BaseOtReceiverData() = default;
 
-  void Add(std::size_t number_of_ots);
+  void Add(std::size_t number_of_ots) { messages_c.resize(messages_c.size() + number_of_ots); }
 
   BitVector<> c;  /// choice bits
   std::vector<std::array<std::byte, 16>> messages_c;
-
-  // number of used rows;
-  std::size_t consumed_offset{0};
-
-  std::atomic<bool> is_ready{false};
-  std::unique_ptr<FiberCondition> is_ready_condition;
 };
 
-struct BaseOtSenderData {
-  BaseOtSenderData();
+struct BaseOtSenderData : public FiberOnlineWaitable {
+  BaseOtSenderData() = default;
   ~BaseOtSenderData() = default;
 
-  void Add(std::size_t number_of_ots);
+  void Add(std::size_t number_of_ots) {
+    messages_0.resize(messages_0.size() + number_of_ots);
+    messages_1.resize(messages_1.size() + number_of_ots);
+  }
 
   std::vector<std::array<std::byte, 16>> messages_0;
   std::vector<std::array<std::byte, 16>> messages_1;
-
-  // number of used rows;
-  std::size_t consumed_offset{0};
-
-  std::unique_ptr<FiberCondition> is_ready_condition;
-  std::atomic<bool> is_ready{false};
 };
 
 struct BaseOtData {

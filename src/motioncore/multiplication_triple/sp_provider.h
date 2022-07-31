@@ -171,7 +171,7 @@ class SpProvider {
 class SpProviderFromOts final : public SpProvider {
  public:
   SpProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& ot_providers, const std::size_t my_id,
-                    Logger& logger, RunTimeStatistics& run_time_statistics);
+                    std::shared_ptr<Logger> logger, RunTimeStatistics& run_time_statistics);
 
   void PreSetup() final override;
 
@@ -203,7 +203,7 @@ class SpProviderFromOts final : public SpProvider {
 
   const std::size_t kMaxBatchSize{10'000};
 
-  Logger& logger_;
+  std::shared_ptr<Logger> logger_;
   RunTimeStatistics& run_time_statistics_;
 };
 

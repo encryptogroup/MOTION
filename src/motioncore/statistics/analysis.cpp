@@ -88,6 +88,8 @@ std::string AccumulatedRunTimeStatistics::PrintHumanReadable() const {
      << FormatLine("Base OTs", unit, At(accumulators_, StatId::kBaseOts), kFieldWidth)
      << FormatLine("OT Extension Setup", unit, At(accumulators_, StatId::kOtExtensionSetup),
                    kFieldWidth)
+     << FormatLine("KK13 OT Extension Setup", unit, At(accumulators_, StatId::kKK13OtExtensionSetup),
+                   kFieldWidth)
      << "---------------------------------------------------------------------------\n"
      << FormatLine("Preprocessing Total", unit, At(accumulators_, StatId::kPreprocessing),
                    kFieldWidth)
@@ -116,6 +118,7 @@ boost::json::object AccumulatedRunTimeStatistics::ToJson() const {
           {"sb_setup", make_triple(StatId::kSbSetup)},
           {"base_ots", make_triple(StatId::kBaseOts)},
           {"ot_extension_setup", make_triple(StatId::kOtExtensionSetup)},
+          {"kk13_ot_extension_setup", make_triple(StatId::kKK13OtExtensionSetup)},
           {"preprocessing", make_triple(StatId::kPreprocessing)},
           {"gates_setup", make_triple(StatId::kGatesSetup)},
           {"gates_online", make_triple(StatId::kGatesOnline)},

@@ -41,9 +41,9 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
   std::shared_ptr<encrypto::motion::Configuration> configuration{backend->GetConfiguration()};
   const auto my_id{configuration->GetMyId()};
   auto& ot_provider = my_id == 0 ? backend->GetOtProvider(1) : backend->GetOtProvider(0);
-  std::shared_ptr<encrypto::motion::SbProvider> sb_provider{backend->GetSbProvider()};
-  std::shared_ptr<encrypto::motion::SpProvider> sp_provider{backend->GetSpProvider()};
-  std::shared_ptr<encrypto::motion::MtProvider> mt_provider{backend->GetMtProvider()};
+  auto& sb_provider{backend->GetSbProvider()};
+  auto& sp_provider{backend->GetSpProvider()};
+  auto& mt_provider{backend->GetMtProvider()};
 
   std::list<encrypto::motion::RunTimeStatistics>& statistics =
       party->GetBackend()->GetMutableRunTimeStatistics();
@@ -53,34 +53,34 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
     case Provider::kAmt: {
       switch (bit_size) {
         case 8:
-          mt_provider->RequestArithmeticMts<std::uint8_t>(batch_size);
+          mt_provider.RequestArithmeticMts<std::uint8_t>(batch_size);
           break;
         case 16:
-          mt_provider->RequestArithmeticMts<std::uint16_t>(batch_size);
+          mt_provider.RequestArithmeticMts<std::uint16_t>(batch_size);
           break;
         case 32:
-          mt_provider->RequestArithmeticMts<std::uint32_t>(batch_size);
+          mt_provider.RequestArithmeticMts<std::uint32_t>(batch_size);
           break;
         case 64:
-          mt_provider->RequestArithmeticMts<std::uint64_t>(batch_size);
+          mt_provider.RequestArithmeticMts<std::uint64_t>(batch_size);
           break;
         default:
           throw std::invalid_argument("Unknown bitlength");
       }
-      mt_provider->PreSetup();
-      backend->GetOtProviderManager()->PreSetup();
+      mt_provider.PreSetup();
+      backend->GetOtProviderManager().PreSetup();
       backend->Synchronize();
       backend->OtExtensionSetup();
-      mt_provider->Setup();
+      mt_provider.Setup();
       break;
     }
     case Provider::kBmt: {
-      mt_provider->RequestBinaryMts(batch_size);
-      mt_provider->PreSetup();
-      backend->GetOtProviderManager()->PreSetup();
+      mt_provider.RequestBinaryMts(batch_size);
+      mt_provider.PreSetup();
+      backend->GetOtProviderManager().PreSetup();
       backend->Synchronize();
       backend->OtExtensionSetup();
-      mt_provider->Setup();
+      mt_provider.Setup();
       break;
     }
     case Provider::kAcOt: {
@@ -90,7 +90,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
             auto ot{ot_provider.RegisterReceiveAcOt(batch_size, sizeof(std::uint8_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtReceiver<std::uint8_t>*>(ot.get())};
             casted_ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SendCorrections();
@@ -99,7 +99,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           } else {
             auto ot{ot_provider.RegisterSendAcOt(batch_size, sizeof(std::uint8_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtSender<std::uint8_t>*>(ot.get())};
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SetCorrelations(std::vector<std::uint8_t>(batch_size, 0x42));
@@ -111,7 +111,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
             auto ot{ot_provider.RegisterReceiveAcOt(batch_size, sizeof(std::uint16_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtReceiver<std::uint16_t>*>(ot.get())};
             casted_ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SendCorrections();
@@ -120,7 +120,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           } else {
             auto ot{ot_provider.RegisterSendAcOt(batch_size, sizeof(std::uint16_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtSender<std::uint16_t>*>(ot.get())};
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SetCorrelations(std::vector<std::uint16_t>(batch_size, 0x42));
@@ -132,7 +132,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
             auto ot{ot_provider.RegisterReceiveAcOt(batch_size, sizeof(std::uint32_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtReceiver<std::uint32_t>*>(ot.get())};
             casted_ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SendCorrections();
@@ -141,7 +141,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           } else {
             auto ot{ot_provider.RegisterSendAcOt(batch_size, sizeof(std::uint32_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtSender<std::uint32_t>*>(ot.get())};
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SetCorrelations(std::vector<std::uint32_t>(batch_size, 0x42));
@@ -153,7 +153,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
             auto ot{ot_provider.RegisterReceiveAcOt(batch_size, sizeof(std::uint64_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtReceiver<std::uint64_t>*>(ot.get())};
             casted_ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SendCorrections();
@@ -162,7 +162,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           } else {
             auto ot{ot_provider.RegisterSendAcOt(batch_size, sizeof(std::uint64_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtSender<std::uint64_t>*>(ot.get())};
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SetCorrelations(std::vector<std::uint64_t>(batch_size, 0x42));
@@ -174,7 +174,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
             auto ot{ot_provider.RegisterReceiveAcOt(batch_size, sizeof(__uint128_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtReceiver<__uint128_t>*>(ot.get())};
             casted_ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SendCorrections();
@@ -183,7 +183,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           } else {
             auto ot{ot_provider.RegisterSendAcOt(batch_size, sizeof(__uint128_t) * 8)};
             auto casted_ot{dynamic_cast<encrypto::motion::AcOtSender<__uint128_t>*>(ot.get())};
-            backend->GetOtProviderManager()->PreSetup();
+            backend->GetOtProviderManager().PreSetup();
             backend->Synchronize();
             backend->OtExtensionSetup();
             casted_ot->SetCorrelations(std::vector<__uint128_t>(batch_size, 0x42));
@@ -200,7 +200,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
         if (my_id == 0) {
           auto ot{ot_provider.RegisterReceiveFixedXcOt128(batch_size)};
           ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SendCorrections();
@@ -208,7 +208,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           ot->GetOutputs();
         } else {
           auto ot{ot_provider.RegisterSendFixedXcOt128(batch_size)};
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           const auto b{encrypto::motion::Block128::MakeRandom()};
@@ -219,7 +219,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
         if (my_id == 0) {
           auto ot{ot_provider.RegisterReceiveXcOtBit(batch_size)};
           ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SendCorrections();
@@ -227,7 +227,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           ot->GetOutputs();
         } else {
           auto ot{ot_provider.RegisterSendXcOtBit(batch_size)};
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SetCorrelations(encrypto::motion::BitVector<>(batch_size));
@@ -243,7 +243,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
         if (my_id == 0) {
           auto ot{ot_provider.RegisterReceiveGOt128(batch_size)};
           ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SendCorrections();
@@ -251,7 +251,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           ot->GetOutputs();
         } else {
           auto ot{ot_provider.RegisterSendGOt128(batch_size)};
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SetInputs(encrypto::motion::Block128Vector(2 * batch_size,
@@ -262,7 +262,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
         if (my_id == 0) {
           auto ot{ot_provider.RegisterReceiveGOtBit(batch_size)};
           ot->SetChoices(encrypto::motion::BitVector<>(batch_size));
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SendCorrections();
@@ -270,7 +270,7 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
           ot->GetOutputs();
         } else {
           auto ot{ot_provider.RegisterSendGOtBit(batch_size)};
-          backend->GetOtProviderManager()->PreSetup();
+          backend->GetOtProviderManager().PreSetup();
           backend->Synchronize();
           backend->OtExtensionSetup();
           ot->SetInputs(encrypto::motion::BitVector<>(2 * batch_size));
@@ -284,13 +284,13 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
     case Provider::kROt: {
       if (my_id == 0) {
         auto ot{ot_provider.RegisterReceiveROt(batch_size, bit_size)};
-        backend->GetOtProviderManager()->PreSetup();
+        backend->GetOtProviderManager().PreSetup();
         backend->Synchronize();
         backend->OtExtensionSetup();
         (void)ot->GetOutputs();
       } else {
         auto ot{ot_provider.RegisterSendROt(batch_size, bit_size)};
-        backend->GetOtProviderManager()->PreSetup();
+        backend->GetOtProviderManager().PreSetup();
         backend->Synchronize();
         backend->OtExtensionSetup();
         ot->GetOutputs();
@@ -300,51 +300,51 @@ encrypto::motion::RunTimeStatistics BenchmarkProvider(encrypto::motion::PartyPoi
     case Provider::kSb: {
       switch (bit_size) {
         case 8:
-          sb_provider->RequestSbs<std::uint8_t>(batch_size);
+          sb_provider.RequestSbs<std::uint8_t>(batch_size);
           break;
         case 16:
-          sb_provider->RequestSbs<std::uint16_t>(batch_size);
+          sb_provider.RequestSbs<std::uint16_t>(batch_size);
           break;
         case 32:
-          sb_provider->RequestSbs<std::uint32_t>(batch_size);
+          sb_provider.RequestSbs<std::uint32_t>(batch_size);
           break;
         case 64:
-          sb_provider->RequestSbs<std::uint64_t>(batch_size);
+          sb_provider.RequestSbs<std::uint64_t>(batch_size);
           break;
         default:
           throw std::invalid_argument("Unknown bitlength");
       }
-      sb_provider->PreSetup();
-      sp_provider->PreSetup();
-      backend->GetOtProviderManager()->PreSetup();
+      sb_provider.PreSetup();
+      sp_provider.PreSetup();
+      backend->GetOtProviderManager().PreSetup();
       backend->Synchronize();
       backend->OtExtensionSetup();
-      sp_provider->Setup();
-      sb_provider->Setup();
+      sp_provider.Setup();
+      sb_provider.Setup();
       break;
     }
     case Provider::kSp: {
       switch (bit_size) {
         case 8:
-          sp_provider->RequestSps<std::uint8_t>(batch_size);
+          sp_provider.RequestSps<std::uint8_t>(batch_size);
           break;
         case 16:
-          sp_provider->RequestSps<std::uint16_t>(batch_size);
+          sp_provider.RequestSps<std::uint16_t>(batch_size);
           break;
         case 32:
-          sp_provider->RequestSps<std::uint32_t>(batch_size);
+          sp_provider.RequestSps<std::uint32_t>(batch_size);
           break;
         case 64:
-          sp_provider->RequestSps<std::uint64_t>(batch_size);
+          sp_provider.RequestSps<std::uint64_t>(batch_size);
           break;
         default:
           throw std::invalid_argument("Unknown bitlength");
       }
-      sp_provider->PreSetup();
-      backend->GetOtProviderManager()->PreSetup();
+      sp_provider.PreSetup();
+      backend->GetOtProviderManager().PreSetup();
       backend->Synchronize();
       backend->OtExtensionSetup();
-      sp_provider->Setup();
+      sp_provider.Setup();
       break;
     }
     default:

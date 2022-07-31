@@ -75,7 +75,7 @@ class BasicOtReceiver : public OtVector {
   bool corrections_sent_ = false;
 };
 
-// sender implementation of batched random generic bit ots
+// sender implementation of batched random generic OTs
 class ROtSender : public OtVector {
  public:
   ROtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
@@ -495,7 +495,7 @@ class GOt128Receiver : public BasicOtReceiver {
   bool outputs_computed_ = false;
 };
 
-// sender implementation of batched 1 bit string OT
+// sender implementation of batched string OT
 class GOtBitSender : public BasicOtSender {
  public:
   GOtBitSender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& datar);
@@ -542,7 +542,7 @@ class GOtSender : public BasicOtSender {
   mutable ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
-// receiver implementation of batched 1 bit string OT
+// receiver implementation of batched string OT
 class GOtBitReceiver : public BasicOtReceiver {
  public:
   GOtBitReceiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);

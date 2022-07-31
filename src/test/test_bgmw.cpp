@@ -67,7 +67,7 @@ TEST(BooleanGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
           auto share_output_1 = share_input_1.Out(output_owner);
           auto share_output_1K = share_input_1K.Out(output_owner);
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             auto wire_1 = std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(
@@ -188,7 +188,7 @@ TEST(BooleanGmw, Xor_64_bit_200_Simd_2_3_4_5_10_parties) {
 
           auto share_output = share_xor.Out(output_owner);
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             for (auto j = 0ull; j < global_input_200_64_bit.size(); ++j) {
@@ -610,14 +610,14 @@ TEST(BooleanGmw, And_1_bit_1_1K_Simd_2_3_parties) {
           // check multiplication triples
           if (party_id == 0) {
             encrypto::motion::BitVector<> a, b, c;
-            a = motion_parties.at(0)->GetBackend()->GetMtProvider()->GetBinaryAll().a;
-            b = motion_parties.at(0)->GetBackend()->GetMtProvider()->GetBinaryAll().b;
-            c = motion_parties.at(0)->GetBackend()->GetMtProvider()->GetBinaryAll().c;
+            a = motion_parties.at(0)->GetBackend()->GetMtProvider().GetBinaryAll().a;
+            b = motion_parties.at(0)->GetBackend()->GetMtProvider().GetBinaryAll().b;
+            c = motion_parties.at(0)->GetBackend()->GetMtProvider().GetBinaryAll().c;
 
             for (auto j = 1ull; j < motion_parties.size(); ++j) {
-              a ^= motion_parties.at(j)->GetBackend()->GetMtProvider()->GetBinaryAll().a;
-              b ^= motion_parties.at(j)->GetBackend()->GetMtProvider()->GetBinaryAll().b;
-              c ^= motion_parties.at(j)->GetBackend()->GetMtProvider()->GetBinaryAll().c;
+              a ^= motion_parties.at(j)->GetBackend()->GetMtProvider().GetBinaryAll().a;
+              b ^= motion_parties.at(j)->GetBackend()->GetMtProvider().GetBinaryAll().b;
+              c ^= motion_parties.at(j)->GetBackend()->GetMtProvider().GetBinaryAll().c;
             }
             EXPECT_EQ(c, a & b);
           }

@@ -39,7 +39,7 @@ BasicOtSender::BasicOtSender(std::size_t ot_id, std::size_t number_of_ots, std::
                                       bitlength);
 }
 
-void BasicOtSender::WaitSetup() const { data_.sender_data.setup_finished_condition->Wait(); }
+void BasicOtSender::WaitSetup() const { data_.sender_data.WaitSetup(); }
 
 // ---------- BasicOtReceiver ----------
 
@@ -50,10 +50,10 @@ BasicOtReceiver::BasicOtReceiver(std::size_t ot_id, std::size_t number_of_ots,
   data_.receiver_data.bitlengths.resize(ot_id + number_of_ots, bitlength);
 }
 
-void BasicOtReceiver::WaitSetup() const { data_.receiver_data.setup_finished_condition->Wait(); }
+void BasicOtReceiver::WaitSetup() const { data_.receiver_data.WaitSetup(); }
 
 void BasicOtReceiver::SendCorrections() {
-  assert(data_.receiver_data.setup_finished);
+  assert(data_.receiver_data.IsSetupReady());
   if (choices_.Empty()) {
     throw std::runtime_error("Choices in must be set before calling SendCorrections()");
   }
@@ -76,10 +76,9 @@ ROtSender::ROtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t b
                                       bitlength);
 }
 
-void ROtSender::WaitSetup() const { data_.sender_data.setup_finished_condition->Wait(); }
+void ROtSender::WaitSetup() const { data_.sender_data.WaitSetup(); }
 
 void ROtSender::ComputeOutputs() {
-  assert(data_.sender_data.setup_finished);
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -109,10 +108,9 @@ ROtReceiver::ROtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size
   data_.receiver_data.bitlengths.resize(ot_id + number_of_ots, bitlength);
 }
 
-void ROtReceiver::WaitSetup() const { data_.receiver_data.setup_finished_condition->Wait(); }
+void ROtReceiver::WaitSetup() const { data_.receiver_data.WaitSetup(); }
 
 void ROtReceiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -141,7 +139,6 @@ XcOtSender::XcOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t
           data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {}
 
 void XcOtSender::ComputeOutputs() {
-  assert(data_.sender_data.setup_finished);
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -175,7 +172,6 @@ void XcOtSender::ComputeOutputs() {
 }
 
 void XcOtSender::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
   BitVector<> buffer;
   buffer.Reserve(bitlength_ * number_of_ots_);
   for (std::size_t i = 0; i < number_of_ots_; ++i) {
@@ -200,11 +196,13 @@ XcOtReceiver::XcOtReceiver(const std::size_t ot_id, const std::size_t number_of_
 }
 
 void XcOtReceiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
+  assert(data_.receiver_data.IsSetupReady());
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
@@ -233,7 +231,6 @@ FixedXcOt128Sender::FixedXcOt128Sender(std::size_t ot_id, std::size_t number_of_
           data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {}
 
 void FixedXcOt128Sender::ComputeOutputs() {
-  assert(data_.sender_data.setup_finished);
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -266,7 +263,7 @@ void FixedXcOt128Sender::ComputeOutputs() {
 }
 
 void FixedXcOt128Sender::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
+  assert(data_.sender_data.IsSetupReady());
   Block128Vector buffer(number_of_ots_, correlation_);
   for (std::size_t i = 0; i < number_of_ots_; ++i) {
     buffer[i] ^= data_.sender_data.y0.at(ot_id_ + i).GetData().data();
@@ -290,11 +287,12 @@ FixedXcOt128Receiver::FixedXcOt128Receiver(const std::size_t ot_id, const std::s
 }
 
 void FixedXcOt128Receiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
@@ -321,7 +319,6 @@ XcOtBitSender::XcOtBitSender(const std::size_t ot_id, const std::size_t number_o
           data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {}
 
 void XcOtBitSender::ComputeOutputs() {
-  assert(data_.sender_data.setup_finished);
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -354,7 +351,8 @@ void XcOtBitSender::ComputeOutputs() {
 }
 
 void XcOtBitSender::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
+  WaitSetup();
+
   auto buffer = correlations_;
   for (std::size_t i = 0; i < number_of_ots_; ++i) {
     auto tmp = buffer[i];
@@ -380,11 +378,12 @@ XcOtBitReceiver::XcOtBitReceiver(std::size_t ot_id, const std::size_t number_of_
 }
 
 void XcOtBitReceiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
@@ -415,7 +414,6 @@ AcOtSender<T>::AcOtSender(std::size_t ot_id, std::size_t number_of_ots, std::siz
 
 template <typename T>
 void AcOtSender<T>::ComputeOutputs() {
-  assert(data_.sender_data.setup_finished);
   if (outputs_computed_) {
     // the work was already done
     return;
@@ -466,7 +464,7 @@ void AcOtSender<T>::ComputeOutputs() {
 
 template <typename T>
 void AcOtSender<T>::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
+  assert(data_.sender_data.IsSetupReady());
   auto buffer = correlations_;
   if (vector_size_ == 1) {
     for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
@@ -510,11 +508,12 @@ AcOtReceiver<T>::AcOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std:
 
 template <typename T>
 void AcOtReceiver<T>::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
@@ -573,7 +572,7 @@ GOt128Sender::GOt128Sender(std::size_t ot_id, std::size_t number_of_ots, OtExten
           data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {}
 
 void GOt128Sender::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
+  assert(data_.sender_data.IsSetupReady());
   Block128Vector buffer = std::move(inputs_);
   std::vector<std::uint8_t> corrections_message{corrections_future_.get()};
   auto pointer = const_cast<std::uint8_t*>(
@@ -606,11 +605,12 @@ GOt128Receiver::GOt128Receiver(const std::size_t ot_id, const std::size_t number
 }
 
 void GOt128Receiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in OT must be se(n)t before calling ComputeOutputs()");
@@ -638,7 +638,7 @@ GOtBitSender::GOtBitSender(std::size_t ot_id, std::size_t number_of_ots, OtExten
           data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {}
 
 void GOtBitSender::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
+  assert(data_.sender_data.IsSetupReady());
   auto buffer = std::move(inputs_);
 
   std::vector<std::uint8_t> corrections_message{corrections_future_.get()};
@@ -672,11 +672,12 @@ GOtBitReceiver::GOtBitReceiver(const std::size_t ot_id, const std::size_t number
 }
 
 void GOtBitReceiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in OT must be se(n)t before calling ComputeOutputs()");
@@ -704,7 +705,7 @@ GOtSender::GOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t b
           data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {}
 
 void GOtSender::SendMessages() const {
-  assert(data_.sender_data.setup_finished);
+  assert(data_.sender_data.IsSetupReady());
   auto inputs = std::move(inputs_);
 
   std::vector<std::uint8_t> corrections_message{corrections_future_.get()};
@@ -746,11 +747,12 @@ GOtReceiver::GOtReceiver(const std::size_t ot_id, const std::size_t number_of_ot
 }
 
 void GOtReceiver::ComputeOutputs() {
-  assert(data_.receiver_data.setup_finished);
   if (outputs_computed_) {
     // already done
     return;
   }
+
+  WaitSetup();
 
   if (!corrections_sent_) {
     throw std::runtime_error("Choices in OT must be se(n)t before calling ComputeOutputs()");

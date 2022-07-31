@@ -153,7 +153,7 @@ class SbProvider {
 class SbProviderFromSps final : public SbProvider {
  public:
   SbProviderFromSps(communication::CommunicationLayer& communication_layer,
-                    std::shared_ptr<SpProvider> sp_provider, Logger& logger,
+                    std::shared_ptr<SpProvider> sp_provider, std::shared_ptr<Logger> logger,
                     RunTimeStatistics& run_time_statistics);
   ~SbProviderFromSps();
 
@@ -183,7 +183,7 @@ class SbProviderFromSps final : public SbProvider {
 
   const std::size_t kMaxBatchSize{10'000};
 
-  Logger& logger_;
+  std::shared_ptr<Logger> logger_;
   RunTimeStatistics& run_time_statistics_;
 };
 

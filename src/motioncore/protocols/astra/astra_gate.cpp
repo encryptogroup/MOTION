@@ -67,7 +67,7 @@ InputGate<T>::InputGate(std::vector<T> input, std::size_t input_owner, Backend& 
 template <typename T>
 void InputGate<T>::EvaluateSetup() {
   auto my_id = GetCommunicationLayer().GetMyId();
-  GetBaseProvider().WaitForSetup();
+  GetBaseProvider().WaitSetup();
 
   auto out_wire = std::dynamic_pointer_cast<astra::Wire<T>>(output_wires_.at(0));
   assert(out_wire);

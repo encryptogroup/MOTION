@@ -199,6 +199,63 @@ void BitMatrix::Transpose128Rows() {
   number_of_columns_ = initial_number_of_rows;
 }
 
+void BitMatrix::Transpose256Columns() {
+  std::size_t number_of_rows = data_.size();
+  if (number_of_rows == 0 || number_of_columns_ != 256) {
+    return;
+  } else if (number_of_rows == 1) {
+    for (std::size_t i = 1; i < number_of_columns_; i++) {
+      data_.emplace_back(1, data_.at(0).Get(i));
+    }
+    data_.at(0).Resize(1, true);
+    return;
+  }
+
+  constexpr std::size_t block_size = 256;
+  const std::size_t initial_number_of_columns = number_of_columns_;
+  const std::size_t initial_number_of_rows = data_.size();
+
+  if (data_.size() % block_size > 0u) {
+    AlignedBitVector tmp(block_size);
+    data_.resize(data_.size() + block_size - (data_.size() % block_size), tmp);
+  }
+
+  std::size_t i, j;
+
+  // move the first blocks manually to reduce the memory overhead - prevent padding to a square
+  if (number_of_columns_ > number_of_rows) {
+    for (i = block_size; i < number_of_columns_; i += block_size) {
+#pragma omp for
+      for (j = 0; j < block_size; ++j) {
+        data_.emplace_back(data_.at(j).Subset(i, i + block_size));
+      }
+    }
+#pragma omp for
+    for (i = 0; i < block_size; ++i) {
+      data_.at(i).Resize(block_size, true);
+    }
+  } else if (number_of_columns_ < number_of_rows) {
+    for (i = block_size; i < data_.size(); i += block_size) {
+#pragma omp for
+      for (j = 0; j < block_size; ++j) {
+        data_.at(j).Append(data_.at(i + j));
+      }
+    }
+    data_.resize(block_size);
+  }
+
+  TransposeInternal();
+
+  // remove padding
+  data_.resize(initial_number_of_columns);
+
+  for (auto& block_vector : data_) {
+    block_vector.Resize(initial_number_of_rows, true);
+  }
+
+  number_of_columns_ = initial_number_of_rows;
+}
+
 void BitMatrix::Transpose128RowsInternal() {
   constexpr std::size_t kNumberOfColumns = 128;
   for (auto block_offset = 0u; block_offset < number_of_columns_;
@@ -587,7 +644,7 @@ void BitMatrix::ReceiverTranspose128AndEncrypt(const std::array<const std::byte*
 
 void BitMatrix::SenderTranspose256AndEncrypt(
     const std::array<const std::byte*, 256>& matrix, std::vector<std::vector<BitVector<>>>& y,
-    const BitVector<> choices, std::vector<BitVector<>> x_a, primitives::Prg& prg_fixed_key,
+    const BitVector<> choices, std::vector<AlignedBitVector> x_a, primitives::Prg& prg_fixed_key,
     const std::size_t number_of_colums, const std::vector<std::size_t>& bitlengths) {
   std::size_t n;
   constexpr std::size_t kKappa{256}, kNumberOfRows{256};

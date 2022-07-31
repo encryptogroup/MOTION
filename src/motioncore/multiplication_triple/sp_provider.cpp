@@ -40,7 +40,7 @@ SpProvider::SpProvider(const std::size_t my_id) : my_id_(my_id) {
 }
 
 SpProviderFromOts::SpProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& ot_providers,
-                                     const std::size_t my_id, Logger& logger,
+                                     const std::size_t my_id, std::shared_ptr<Logger> logger,
                                      RunTimeStatistics& run_time_statistics)
     : SpProvider(my_id),
       ot_providers_(ot_providers),
@@ -63,7 +63,7 @@ void SpProviderFromOts::PreSetup() {
   }
 
   if constexpr (kDebug) {
-    logger_.LogDebug("Start computing presetup for SPs");
+    logger_->LogDebug("Start computing presetup for SPs");
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kSpPresetup>();
 
@@ -71,7 +71,7 @@ void SpProviderFromOts::PreSetup() {
 
   run_time_statistics_.RecordEnd<RunTimeStatistics::StatisticsId::kSpPresetup>();
   if constexpr (kDebug) {
-    logger_.LogDebug("Finished computing presetup for SPs");
+    logger_->LogDebug("Finished computing presetup for SPs");
   }
 }
 
@@ -81,7 +81,7 @@ void SpProviderFromOts::Setup() {
   }
 
   if constexpr (kDebug) {
-    logger_.LogDebug("Start computing setup for SPs");
+    logger_->LogDebug("Start computing setup for SPs");
   }
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kSpSetup>();
 
@@ -121,7 +121,7 @@ void SpProviderFromOts::Setup() {
 
   run_time_statistics_.RecordEnd<RunTimeStatistics::StatisticsId::kSpSetup>();
   if constexpr (kDebug) {
-    logger_.LogDebug("Finished computing setup for SPs");
+    logger_->LogDebug("Finished computing setup for SPs");
   }
 }
 

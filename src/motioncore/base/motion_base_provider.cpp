@@ -34,32 +34,19 @@
 
 namespace encrypto::motion {
 
-BaseProvider::BaseProvider(communication::CommunicationLayer& communication_layer,
-                           std::shared_ptr<Logger> logger)
+BaseProvider::BaseProvider(communication::CommunicationLayer& communication_layer)
     : communication_layer_(communication_layer),
-      logger_(std::move(logger)),
+      logger_(communication_layer_.GetLogger()),
       number_of_parties_(communication_layer_.GetNumberOfParties()),
       my_id_(communication_layer_.GetMyId()),
       my_randomness_generators_(number_of_parties_),
       their_randomness_generators_(number_of_parties_),
-      setup_ready_(false),
-      setup_ready_cond_(std::make_unique<FiberCondition>([this] { return setup_ready_; })),
       hello_message_futures_(communication_layer_.GetMessageManager().RegisterReceiveAll(
           communication::MessageType::kHelloMessage, 0)) {}
 
 BaseProvider::~BaseProvider() {}
 
 void BaseProvider::Setup() {
-  bool setup_started = execute_setup_flag_.test_and_set();
-  if (setup_started) {
-    if constexpr (kDebug) {
-      if (logger_) {
-        logger_->LogDebug("BaseProvider::Setup: waiting for setup being completed");
-      }
-    }
-    setup_ready_cond_->Wait();
-    return;
-  }
   if constexpr (kDebug) {
     if (logger_) {
       logger_->LogDebug("BaseProvider::Setup: running setup");
@@ -122,18 +109,12 @@ void BaseProvider::Setup() {
   global_randomness_generator_ = std::make_unique<primitives::SharingRandomnessGenerator>(-1);
   global_randomness_generator_->Initialize(global_seed.data());
 
-  {
-    std::scoped_lock lock(setup_ready_cond_->GetMutex());
-    setup_ready_ = true;
-  }
-  setup_ready_cond_->NotifyAll();
+  SetSetupIsReady();
   if constexpr (kDebug) {
     if (logger_) {
       logger_->LogDebug("BaseProvider::Setup: setup completed");
     }
   }
 }
-
-void BaseProvider::WaitForSetup() const { setup_ready_cond_->Wait(); }
 
 }  // namespace encrypto::motion
