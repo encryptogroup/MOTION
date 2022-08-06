@@ -54,28 +54,28 @@ TEST(AlgorithmDescription, FromBristolFormatIntAdd8Size) {
   EXPECT_EQ(gate0.parent_a, 0);
   ASSERT_NO_THROW([&gate0]() { EXPECT_EQ(*gate0.parent_b, 8); }());
   EXPECT_EQ(gate0.output_wire, 42);
-  EXPECT_EQ(gate0.type, encrypto::motion::PrimitiveOperationType::kXor);
+  EXPECT_TRUE(gate0.type == encrypto::motion::PrimitiveOperationType::kXor);
   EXPECT_EQ(gate0.selection_bit.has_value(), false);
 
   const auto& gate1 = int_add8.gates.at(1);
   EXPECT_EQ(gate1.parent_a, 0);
   ASSERT_NO_THROW([&gate1]() { EXPECT_EQ(*gate1.parent_b, 8); }());
   EXPECT_EQ(gate1.output_wire, 16);
-  EXPECT_EQ(gate1.type, encrypto::motion::PrimitiveOperationType::kAnd);
+  EXPECT_TRUE(gate1.type == encrypto::motion::PrimitiveOperationType::kAnd);
   EXPECT_EQ(gate1.selection_bit.has_value(), false);
 
   const auto& gate32 = int_add8.gates.at(32);
   EXPECT_EQ(gate32.parent_a, 15);
   ASSERT_NO_THROW([&gate32]() { EXPECT_EQ(*gate32.parent_b, 40); }());
   EXPECT_EQ(gate32.output_wire, 41);
-  EXPECT_EQ(gate32.type, encrypto::motion::PrimitiveOperationType::kXor);
+  EXPECT_TRUE(gate32.type == encrypto::motion::PrimitiveOperationType::kXor);
   EXPECT_EQ(gate32.selection_bit.has_value(), false);
 
   const auto& gate33 = int_add8.gates.at(33);
   EXPECT_EQ(gate33.parent_a, 7);
   ASSERT_NO_THROW([&gate33]() { EXPECT_EQ(*gate33.parent_b, 41); }());
   EXPECT_EQ(gate33.output_wire, 49);
-  EXPECT_EQ(gate33.type, encrypto::motion::PrimitiveOperationType::kXor);
+  EXPECT_TRUE(gate33.type == encrypto::motion::PrimitiveOperationType::kXor);
   EXPECT_EQ(gate33.selection_bit.has_value(), false);
 }
 

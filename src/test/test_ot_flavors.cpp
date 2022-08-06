@@ -126,9 +126,9 @@ TEST_F(OtFlavorTest, FixedXcOt128) {
 
   for (std::size_t ot_i = 0; ot_i < kNumberOfOts; ++ot_i) {
     if (choice_bits.Get(ot_i)) {
-      ASSERT_EQ(receiver_output[ot_i], sender_output[ot_i] ^ correlation);
+      EXPECT_TRUE(receiver_output[ot_i] == (sender_output[ot_i] ^ correlation));
     } else {
-      ASSERT_EQ(receiver_output[ot_i], sender_output[ot_i]);
+      EXPECT_TRUE(receiver_output[ot_i] == sender_output[ot_i]);
     }
   }
 }
@@ -267,9 +267,9 @@ TEST_F(OtFlavorTest, GOt128) {
 
   for (std::size_t ot_i = 0; ot_i < kNumberOfOts; ++ot_i) {
     if (choice_bits.Get(ot_i)) {
-      ASSERT_EQ(receiver_output[ot_i], sender_input[2 * ot_i + 1]);
+      EXPECT_TRUE(receiver_output[ot_i] == sender_input[2 * ot_i + 1]);
     } else {
-      ASSERT_EQ(receiver_output[ot_i], sender_input[2 * ot_i]);
+      EXPECT_TRUE(receiver_output[ot_i] == sender_input[2 * ot_i]);
     }
   }
 }

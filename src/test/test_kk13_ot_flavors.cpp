@@ -139,7 +139,7 @@ TEST_P(Kk13OtFlavorTest, GKk13Ot128) {
   const auto receiver_output = ot_receiver->GetOutputs();
 
   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
-    ASSERT_EQ(receiver_output[ot_i], sender_input[number_of_messages_ * ot_i + choices_[ot_i]]);
+    ASSERT_TRUE(receiver_output[ot_i] == sender_input[number_of_messages_ * ot_i + choices_[ot_i]]);
   }
 }
 
