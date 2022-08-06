@@ -347,6 +347,36 @@ ShareWrapper ShareWrapper::operator==(const ShareWrapper& other) const {
   }
 }
 
+ShareWrapper ShareWrapper::operator>(const ShareWrapper& other) const {
+  if (other->GetBitLength() != share_->GetBitLength()) {
+    share_->GetBackend().GetLogger()->LogError(
+        fmt::format("Comparing shares of different bit lengths: this {} bits vs other "
+                    "share's {} bits",
+                    share_->GetBitLength(), other->GetBitLength()));
+  } else if (other->GetBitLength() == 0) {
+    share_->GetBackend().GetLogger()->LogError("Comparing shares of bit length 0 is not allowed");
+  }
+
+  assert(*other);
+  assert(share_);
+  if (share_->GetProtocol() != MpcProtocol::kArithmeticGmw ||
+      other->GetProtocol() != MpcProtocol::kArithmeticGmw) {
+    throw std::runtime_error("GreaterThan operation is only supported for arithmetic GMW shares");
+  }
+
+  if (share_->GetBitLength() == 8u) {
+    return GreaterThan<std::uint8_t>(share_, *other);
+  } else if (share_->GetBitLength() == 16u) {
+    return GreaterThan<std::uint16_t>(share_, *other);
+  } else if (share_->GetBitLength() == 32u) {
+    return GreaterThan<std::uint32_t>(share_, *other);
+  } else if (share_->GetBitLength() == 64u) {
+    return GreaterThan<std::uint64_t>(share_, *other);
+  } else {
+    throw std::bad_cast();
+  }
+}
+
 ShareWrapper ShareWrapper::Mux(const ShareWrapper& a, const ShareWrapper& b) const {
   assert(*a);
   assert(*b);
@@ -1088,6 +1118,42 @@ ShareWrapper ShareWrapper::Mul(SharePointer share, SharePointer other) const {
       throw std::invalid_argument("Unsupported Arithmetic protocol in ShareWrapper::Mul");
   }
 }
+
+template <typename T>
+ShareWrapper ShareWrapper::GreaterThan(SharePointer share, SharePointer other) const {
+  if (share_->GetCircuitType() != CircuitType::kArithmetic) {
+    throw std::invalid_argument("Trying to ShareWrapper::GreaterThan() with non-Arithmetic inputs");
+  } else if (share_->GetProtocol() != MpcProtocol::kArithmeticGmw) {
+    throw std::invalid_argument(
+        "ShareWrapper::GreaterThan() is implemented only for the arithmetic GMW protocol");
+  }
+
+  auto this_a = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(share);
+  assert(this_a);
+  auto this_wire_a = this_a->GetArithmeticWire();
+
+  auto other_a = std::dynamic_pointer_cast<proto::arithmetic_gmw::Share<T>>(other);
+  assert(other_a);
+  auto other_wire_a = other_a->GetArithmeticWire();
+
+  std::size_t l_s = 7;
+
+  auto greater_than_gate =
+      share_->GetRegister()->template EmplaceGate<proto::arithmetic_gmw::GreaterThanGate<T>>(
+          this_wire_a, other_wire_a, l_s);
+  auto result = std::static_pointer_cast<Share>(greater_than_gate->GetOutputAsGmwShare());
+
+  return ShareWrapper(result);
+}
+
+template ShareWrapper ShareWrapper::GreaterThan<std::uint8_t>(SharePointer share,
+                                                              SharePointer other) const;
+template ShareWrapper ShareWrapper::GreaterThan<std::uint16_t>(SharePointer share,
+                                                               SharePointer other) const;
+template ShareWrapper ShareWrapper::GreaterThan<std::uint32_t>(SharePointer share,
+                                                               SharePointer other) const;
+template ShareWrapper ShareWrapper::GreaterThan<std::uint64_t>(SharePointer share,
+                                                               SharePointer other) const;
 
 template <typename T>
 ShareWrapper ShareWrapper::HybridMul(SharePointer share_bit, SharePointer share_integer) const {

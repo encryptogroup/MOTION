@@ -603,6 +603,93 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
 }
 
 template <typename T>
+struct ArithmeticGmwTest : public testing::Test {};
+
+using all_uints = ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
+TYPED_TEST_SUITE(ArithmeticGmwTest, all_uints);
+
+
+TYPED_TEST(ArithmeticGmwTest, GreaterThan_1_1000_Simd_2_parties) {
+  using T = TypeParam;
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  auto number_of_parties = 2u;
+  const std::vector<T> kZeroV_1K(1000, 0);
+
+  // generate the input for both parties (smaller than 2^{bit_length - 1})
+  auto bit_length = sizeof(T) * 8;
+  std::mt19937 gen(std::random_device{}());
+  std::uniform_int_distribution<T> dist(0, pow(2, bit_length - 1));
+  std::vector<T> input_1(number_of_parties);
+  for (auto i = 0u; i < number_of_parties; i++) {
+    input_1.at(i) = dist(gen);
+  }
+
+  std::vector<std::vector<T>> input_1K(number_of_parties);
+  for (auto i = 0u; i < number_of_parties; i++) {
+    std::vector<T> each_input_1K(1000);
+    for (auto j = 0u; j < each_input_1K.size(); j++) {
+      each_input_1K.at(j) = dist(gen);
+    }
+    input_1K.at(i) = each_input_1K;
+  }
+
+  try {
+    std::vector<PartyPointer> motion_parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : motion_parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(random_value() % 2 == 1);
+    }
+
+    std::vector<std::thread> threads(number_of_parties);
+    for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+      threads.at(party_id) = std::thread([party_id, number_of_parties, &motion_parties, input_1,
+                                          input_1K, kZeroV_1K]() {
+        std::vector<encrypto::motion::ShareWrapper> share_input_1, share_input_1K;
+
+        for (auto j = 0u; j < number_of_parties; ++j) {
+          // if it is my party's turn, then give real input, otherwise a dummy 0
+          const T my_input_1 = (party_id == j) ? input_1.at(j) : 0;
+          const std::vector<T>& my_input_1K = (party_id == j) ? input_1K.at(j) : kZeroV_1K;
+
+          share_input_1.push_back(motion_parties.at(party_id)->In<kArithmeticGmw>(my_input_1, j));
+          share_input_1K.push_back(motion_parties.at(party_id)->In<kArithmeticGmw>(my_input_1K, j));
+        }
+
+        // use GreaterThan function
+        auto share_greater_than_1 = share_input_1.at(0) > share_input_1.at(1);
+        auto share_greater_than_1K = share_input_1K.at(0) > share_input_1K.at(1);
+
+        // construct an output gate for the output
+        auto share_output_1 = share_greater_than_1.Out();
+        auto share_output_1K = share_greater_than_1K.Out();
+
+        motion_parties.at(party_id)->Run();
+
+        // compare the outputs
+        auto circuit_result_1 = share_output_1.As<bool>();
+        auto expected_result_1 = input_1.at(0) > input_1.at(1);
+        EXPECT_EQ(circuit_result_1, expected_result_1);
+
+        const auto circuit_result_1K = share_output_1K.As<std::vector<BitVector<>>>();
+        for (auto i = 0u; i < input_1K.at(0).size(); ++i) {
+          auto expected_result_1K = input_1K.at(0).at(i) > input_1K.at(1).at(i);
+          EXPECT_EQ(circuit_result_1K.at(0).Get(i), expected_result_1K);
+        }
+
+        motion_parties.at(party_id)->Finish();
+      });
+    }
+
+    for (auto& t : threads) {
+      t.join();
+    }
+  } catch (std::exception& e) {
+    std::cerr << e.what() << std::endl;
+  }
+}
+
+template <typename T>
 class TypedAgmwTest : public testing::Test {
  public:
   void SetUp() override {

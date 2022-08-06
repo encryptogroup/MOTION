@@ -183,7 +183,10 @@ SecureUnsignedInteger SecureUnsignedInteger::operator/(const SecureUnsignedInteg
 }
 
 ShareWrapper SecureUnsignedInteger::operator>(const SecureUnsignedInteger& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
+  if (share_->Get()->GetCircuitType() == CircuitType::kArithmetic) {
+    if (share_->Get()->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+      return *share_ > *other.share_;
+    }
     // use primitive operation in arithmetic GMW
     throw std::runtime_error("Integer comparison is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType

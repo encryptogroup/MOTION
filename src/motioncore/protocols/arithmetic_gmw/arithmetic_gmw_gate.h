@@ -33,14 +33,21 @@
 #include "base/motion_base_provider.h"
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
+#include "oblivious_transfer/1_out_of_n/kk13_ot_flavors.h"
 #include "protocols/gate.h"
 #include "utility/reusable_future.h"
 
 //  Forward Declaration
 namespace encrypto::motion::proto::boolean_gmw {
-  class Wire;
-  using WirePointer = std::shared_ptr<boolean_gmw::Wire>;
-}
+
+class Wire;
+using WirePointer = std::shared_ptr<boolean_gmw::Wire>;
+
+class Share;
+using SharePointer = std::shared_ptr<boolean_gmw::Share>;
+
+}  // namespace encrypto::motion::proto::boolean_gmw
+
 namespace encrypto::motion::proto::arithmetic_gmw {
 
 //
@@ -226,6 +233,36 @@ class SquareGate final : public motion::OneGate {
   std::shared_ptr<OutputGate<T>> d_output_;
 
   std::size_t number_of_sps_, sp_offset_;
+};
+
+template <typename T>
+class GreaterThanGate final : public motion::TwoGate {
+ public:
+  GreaterThanGate(arithmetic_gmw::WirePointer<T>& a, arithmetic_gmw::WirePointer<T>& b,
+                  std::size_t l_s);
+
+  ~GreaterThanGate() override {}
+
+  void RunSender1ooNOt(encrypto::motion::BitVector<> messages, std::size_t ot_index);
+
+  BitVector<> RunReceiver1ooNOt(std::vector<std::uint8_t> selection_index, std::size_t ot_index);
+
+  bool NeedsSetup() const override { return false; }
+
+  void EvaluateSetup() override{};
+
+  void EvaluateOnline() override;
+
+  const boolean_gmw::SharePointer GetOutputAsGmwShare();
+
+  GreaterThanGate() = delete;
+  GreaterThanGate(Gate&) = delete;
+
+ private:
+  std::size_t number_of_parties_, number_of_simd_, my_id_, chunk_bit_length_;
+
+  std::vector<std::unique_ptr<GKk13OtBitReceiver>> ot_1oon_receiver_;
+  std::vector<std::unique_ptr<GKk13OtBitSender>> ot_1oon_sender_;
 };
 
 }  // namespace encrypto::motion::proto::arithmetic_gmw

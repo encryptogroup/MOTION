@@ -25,8 +25,8 @@
 #include "arithmetic_gmw_gate.h"
 
 #include <flatbuffers/flatbuffers.h>
-#include <cmath>
 #include <fmt/format.h>
+#include <cmath>
 #include <span>
 
 #include "base/backend.h"
@@ -38,6 +38,7 @@
 #include "multiplication_triple/sp_provider.h"
 #include "primitives/sharing_randomness_generator.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
+#include "protocols/boolean_gmw/boolean_gmw_share.h"
 #include "utility/fiber_condition.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
@@ -413,8 +414,6 @@ void SubtractionGate<T>::EvaluateOnline() {
   assert(wire_a);
   assert(wire_b);
 
-
-
   std::vector<T> output = SubVectors<T>(wire_a->GetValues(), wire_b->GetValues());
 
   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
@@ -765,5 +764,264 @@ template class SquareGate<std::uint16_t>;
 template class SquareGate<std::uint32_t>;
 template class SquareGate<std::uint64_t>;
 template class SquareGate<__uint128_t>;
+
+template <typename T>
+GreaterThanGate<T>::GreaterThanGate(arithmetic_gmw::WirePointer<T>& a,
+                                    arithmetic_gmw::WirePointer<T>& b, std::size_t l_s)
+    : TwoGate(a->GetBackend()), chunk_bit_length_(l_s) {
+  parent_a_ = {std::static_pointer_cast<motion::Wire>(a)};
+  parent_b_ = {std::static_pointer_cast<motion::Wire>(b)};
+
+  assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
+
+  // the plaintext numbers have to be smaller than 2^{bit_length - 1}
+  assert(parent_a_.at(0)->GetBitLength() == parent_b_.at(0)->GetBitLength());
+  auto bit_length = parent_a_.at(0)->GetBitLength();
+
+  const auto& communication_layer = GetCommunicationLayer();
+  number_of_parties_ = communication_layer.GetNumberOfParties();
+  number_of_simd_ = parent_a_.at(0)->GetNumberOfSimdValues();
+  my_id_ = communication_layer.GetMyId();
+
+  output_wires_ = {
+      GetRegister().template EmplaceWire<boolean_gmw::Wire>(backend_, number_of_simd_)};
+
+  auto number_of_intermediate_iterations = 0u;  // how many times while-loop will run
+  auto ot_bit_length = chunk_bit_length_ - 1;
+  if (my_id_ == 0) {
+    // register party 0 as receiver for 1ooN-OT
+    if (bit_length > chunk_bit_length_) {
+      number_of_intermediate_iterations = std::ceil(
+          static_cast<float>(bit_length - 1 - chunk_bit_length_) / (chunk_bit_length_ - 1));
+      ot_1oon_receiver_.push_back(
+          GetKk13OtProvider(1).RegisterReceiveGOtBit(number_of_simd_, pow(2, chunk_bit_length_)));
+    }
+
+    for (auto i = 0u; i < number_of_intermediate_iterations; i++) {
+      // number of messages of the last iterations
+      if (i == number_of_intermediate_iterations - 1) {
+        ot_bit_length =
+            bit_length - 2 - number_of_intermediate_iterations * (chunk_bit_length_ - 1);
+      }
+      ot_1oon_receiver_.push_back(
+          GetKk13OtProvider(1).RegisterReceiveGOtBit(number_of_simd_, 2 * pow(2, ot_bit_length)));
+    }
+  } else {
+    // register party 1 as sender for 1ooN-OT
+    if (bit_length > chunk_bit_length_) {
+      number_of_intermediate_iterations = std::ceil(
+          static_cast<float>(bit_length - 1 - chunk_bit_length_) / (chunk_bit_length_ - 1));
+      ot_1oon_sender_.push_back(
+          GetKk13OtProvider(0).RegisterSendGOtBit(number_of_simd_, pow(2, chunk_bit_length_)));
+    }
+
+    for (auto i = 0u; i < number_of_intermediate_iterations; i++) {
+      // number of messages of the last iterations
+      if (i == number_of_intermediate_iterations - 1) {
+        ot_bit_length =
+            bit_length - 2 - number_of_intermediate_iterations * (chunk_bit_length_ - 1);
+      }
+      ot_1oon_sender_.push_back(
+          GetKk13OtProvider(0).RegisterSendGOtBit(number_of_simd_, 2 * pow(2, ot_bit_length)));
+    }
+  }
+
+  auto gate_info =
+      fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
+                  parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+  GetLogger().LogDebug(fmt::format(
+      "Created an arithmetic_gmw::GreaterThanGate with following properties: {}", gate_info));
+}
+
+template <typename T>
+void GreaterThanGate<T>::RunSender1ooNOt(encrypto::motion::BitVector<> messages,
+                                         std::size_t ot_index) {
+  ot_1oon_sender_[ot_index]->WaitSetup();
+
+  ot_1oon_sender_[ot_index]->SetInputs(messages);
+  ot_1oon_sender_[ot_index]->SendMessages();
+}
+
+template <typename T>
+BitVector<> GreaterThanGate<T>::RunReceiver1ooNOt(std::vector<std::uint8_t> selection_index,
+                                               std::size_t ot_index) {
+  ot_1oon_receiver_[ot_index]->WaitSetup();
+
+  ot_1oon_receiver_[ot_index]->SetChoices(selection_index);
+  ot_1oon_receiver_[ot_index]->SendCorrections();
+
+  ot_1oon_receiver_[ot_index]->ComputeOutputs();
+  return ot_1oon_receiver_[ot_index]->GetOutputs();
+}
+
+template <typename T>
+void GreaterThanGate<T>::EvaluateOnline() {
+  WaitSetup();
+  assert(setup_is_ready_);
+
+  parent_a_.at(0)->GetIsReadyCondition().Wait();
+  parent_b_.at(0)->GetIsReadyCondition().Wait();
+
+  auto bit_length = parent_a_.at(0)->GetBitLength();
+
+  const auto a = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_a_.at(0));
+  const auto b = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_b_.at(0));
+  assert(a);
+  assert(b);
+
+  auto a_values = a->GetValues();
+  auto b_values = b->GetValues();
+
+  // some variables for the protocol
+  std::size_t number_of_messages, ot_index = 0;
+  BitVector<> r, c(number_of_simd_), messages;
+  std::vector<std::uint8_t> selection_index(number_of_simd_);
+
+  // step 3
+  std::vector<T> delta(number_of_simd_);
+  std::vector<BitSpan> delta_bs(number_of_simd_);
+  for (auto i = 0u; i < number_of_simd_; i++) {
+    delta.at(i) = b_values.at(i) - a_values.at(i);
+    delta_bs.at(i) = BitSpan(reinterpret_cast<std::byte*>(&delta.at(i)), sizeof(delta.at(i)) * 8);
+  }
+
+  // step 4
+  std::size_t bit_length_last = 0;
+
+  // step 5
+  if (bit_length > chunk_bit_length_) {
+    number_of_messages = pow(2, chunk_bit_length_);
+
+    // step 8
+    if (my_id_ == 1) {
+      r = BitVector<>::SecureRandom(number_of_simd_);
+    }
+
+    for (auto i = 0u; i < number_of_simd_; i++) {
+      auto delta_subset = delta_bs.at(i).Subset(0, chunk_bit_length_);
+      auto delta_subset_value = static_cast<std::uint8_t>(delta_subset.GetMutableData()[0]);
+
+      if (my_id_ == 0) {
+        // step 6
+        selection_index.at(i) = delta_subset_value;
+      } else {
+        // step 7 : check whether (j + delta_subset_value) > number_of_messages for j from 1 to
+        // number_of_messages
+        auto number_of_zeros = number_of_messages - delta_subset_value;
+        auto number_of_ones = delta_subset_value;
+
+        BitVector<> this_ot_messages = BitVector<>(number_of_zeros, false);
+        this_ot_messages.Append(BitVector<>(number_of_ones, true));
+
+        this_ot_messages ^= BitVector<>(number_of_messages, r.Get(i));
+        messages.Append(this_ot_messages);
+      }
+    }
+
+    // step 9
+    if (my_id_ == 0) {
+      c = RunReceiver1ooNOt(selection_index, ot_index);
+    } else {
+      RunSender1ooNOt(messages, ot_index);
+    }
+
+    // step 10
+    bit_length_last = chunk_bit_length_;
+  }
+
+  // step 11
+  while (bit_length_last < bit_length - 1) {
+    ot_index++;
+    messages.Clear();
+
+    // step 12
+    auto bit_length_difference = std::min(chunk_bit_length_ - 1, bit_length - bit_length_last - 1);
+    number_of_messages = pow(2, bit_length_difference);
+
+    // step 13
+    auto bit_length_next = bit_length_last + bit_length_difference;
+
+    // step 20 : save randomized r in another variable, because r is still needed in step 19
+    BitVector<> r_for_xor;
+    if (my_id_ == 1) {
+      r_for_xor = BitVector<>::SecureRandom(number_of_simd_);
+    }
+
+    for (auto i = 0u; i < number_of_simd_; i++) {
+      auto delta_subset = delta_bs.at(i).Subset(bit_length_last, bit_length_next);
+      auto delta_subset_value = static_cast<std::uint8_t>(delta_subset.GetMutableData()[0]);
+
+      if (my_id_ == 0) {
+        // step 14
+        selection_index.at(i) = delta_subset_value;
+
+        // step 15
+        selection_index.at(i) += (c.Get(i) ? number_of_messages : 0);
+      } else {
+        // step 16-19 : check whether (j + delta_subset_value) > number_of_messages and/or (j +
+        // delta_subset_value + 1) > number_of_messages for j from 1 to number_of_messages and
+        // append to messages according to r
+        auto number_of_zeros = number_of_messages - delta_subset_value;
+        auto number_of_ones = delta_subset_value;
+
+        BitVector<> this_ot_messages;
+        if (!r.Get(i)) {
+          this_ot_messages = BitVector<>(number_of_zeros, false);
+          this_ot_messages.Append(BitVector<>(number_of_ones, true));
+          this_ot_messages.Append(BitVector<>(number_of_zeros - 1, false));
+          this_ot_messages.Append(BitVector<>(number_of_ones + 1, true));
+        } else {
+          this_ot_messages = BitVector<>(number_of_zeros - 1, false);
+          this_ot_messages.Append(BitVector<>(number_of_ones + 1, true));
+          this_ot_messages.Append(BitVector<>(number_of_zeros, false));
+          this_ot_messages.Append(BitVector<>(number_of_ones, true));
+        }
+
+        this_ot_messages ^= BitVector<>(2 * number_of_messages, r_for_xor.Get(i));
+        messages.Append(this_ot_messages);
+      }
+    }
+
+    // step 21
+    if (my_id_ == 0) {
+      c = RunReceiver1ooNOt(selection_index, ot_index);
+    } else {
+      RunSender1ooNOt(messages, ot_index);
+    }
+
+    // step 22
+    bit_length_last = bit_length_next;
+
+    r = r_for_xor;
+  }
+
+  // step 23
+  BitVector<> output_vector(number_of_simd_);
+  for (auto i = 0u; i < number_of_simd_; i++) {
+    auto output = ((my_id_ == 0) ? c.Get(i) : r.Get(i)) != delta_bs.at(i).Get(bit_length - 1);
+    output_vector.Set(output, i);
+  }
+
+  // place the output in output_wires_
+  auto output_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(0));
+  assert(output_wire);
+  output_wire->GetMutableValues() = output_vector;
+
+  GetLogger().LogDebug(
+      fmt::format("Evaluated arithmetic_gmw::GreaterThanGate with id#{}", gate_id_));
+}
+
+template <typename T>
+const boolean_gmw::SharePointer GreaterThanGate<T>::GetOutputAsGmwShare() {
+  auto result = std::make_shared<boolean_gmw::Share>(output_wires_);
+  assert(result);
+  return result;
+}
+
+template class GreaterThanGate<std::uint8_t>;
+template class GreaterThanGate<std::uint16_t>;
+template class GreaterThanGate<std::uint32_t>;
+template class GreaterThanGate<std::uint64_t>;
+template class GreaterThanGate<__uint128_t>;
 
 }  // namespace encrypto::motion::proto::arithmetic_gmw

@@ -100,6 +100,8 @@ class ShareWrapper {
 
   ShareWrapper operator==(const ShareWrapper& other) const;
 
+  ShareWrapper operator>(const ShareWrapper& other) const;
+
   // use this as the selection bit
   // returns this ? a : b
   ShareWrapper Mux(const ShareWrapper& a, const ShareWrapper& b) const;
@@ -215,6 +217,9 @@ class ShareWrapper {
 
   template <typename T>
   ShareWrapper HybridMul(SharePointer share, SharePointer other) const;
+
+  template <typename T>
+  ShareWrapper GreaterThan(SharePointer share, SharePointer other) const;
 
   template <typename T>
   ShareWrapper Square(SharePointer share) const;
