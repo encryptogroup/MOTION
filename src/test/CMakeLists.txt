@@ -7,6 +7,7 @@ add_executable(motiontest
         test_bitmatrix.cpp
         test_bitvector.cpp
         test_bmr.cpp
+        test_boolean_algorithms.cpp
         test_communication_layer.cpp
         test_conversions.cpp
         test_dummy_transport.cpp

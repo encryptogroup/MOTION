@@ -1,5 +1,6 @@
 add_library(motion
         algorithm/algorithm_description.cpp
+        algorithm/boolean_algorithms.cpp
         algorithm/low_depth_reduce.h
         base/backend.cpp
         base/configuration.cpp
