@@ -86,6 +86,9 @@ SharePointer Party::Out(SharePointer parent, std::size_t output_owner) {
 
 void Party::Run(std::size_t repetitions) {
   logger_->LogDebug("Party run");
+  if(repetitions != 1){
+    throw std::runtime_error("This functionality is not yet implemented");
+  }
 
   // TODO: fix check if work exists s.t. it does not require knowledge about OT
   // internals etc.

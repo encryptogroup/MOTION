@@ -72,7 +72,7 @@ TEST(ArithmeticGmw, InputOutput_1_1K_Simd_2_3_4_5_10_parties) {
           auto share_output_1 = share_input_1.Out(output_owner);
           auto share_output_1K = share_input_1K.Out(output_owner);
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             EXPECT_EQ(share_output_1.As<T>(), global_input_1);
@@ -144,7 +144,7 @@ TEST(ArithmeticGmw, Addition_1_1K_Simd_2_3_4_5_10_parties) {
           auto share_output_1_all = share_add_1.Out();
           auto share_output_1K_all = share_add_1K.Out();
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             T circuit_result_1 = share_output_1.As<T>();
@@ -245,7 +245,7 @@ TEST(ArithmeticGmw, ConstantAddition_1_1K_Simd_2_3_4_5_10_parties) {
           auto share_output_1_all = share_add_1.Out();
           auto share_output_1K_all = share_add_1K.Out();
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             auto wire_1 =
@@ -352,7 +352,7 @@ TEST(ArithmeticGmw, Subtraction_1_1K_Simd_2_3_4_5_10_parties) {
           auto share_output_1_all = share_subtraction_1.Out();
           auto share_output_1K_all = share_subtraction_1K.Out();
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             auto wire_1 =
@@ -545,7 +545,7 @@ TEST(ArithmeticGmw, ConstantMultiplication_1_1K_Simd_2_3_4_5_10_parties) {
           auto share_output_1_all = share_add_1.Out();
           auto share_output_1K_all = share_add_1K.Out();
 
-          motion_parties.at(party_id)->Run(2);
+          motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
             auto wire_1 =

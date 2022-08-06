@@ -56,6 +56,7 @@ void TemplateTest() {
             backend->GetOtProviderManager().PreSetup();
             backend->GetBaseOtProvider().PreSetup();
             backend->Synchronize();
+            backend->ComputeBaseOts();
             backend->OtExtensionSetup();
             sp_provider.Setup();
             motion_parties.at(j)->Finish();

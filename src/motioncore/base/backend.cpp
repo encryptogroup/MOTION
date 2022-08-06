@@ -147,7 +147,7 @@ void Backend::RunPreprocessing() {
 
   communication_layer_->Synchronize();
 
-  if(base_ot_provider_->HasWork()){
+  if (base_ot_provider_->HasWork()) {
     base_ot_provider_->ComputeBaseOts();
   }
 
@@ -165,7 +165,10 @@ void Backend::RunPreprocessing() {
         std::async(std::launch::async, [this] { garbled_circuit_provider_->Setup(); }));
   }
 
-  for (auto& f : futures) f.get();
+  for (auto& f : futures) {
+    assert(f.valid());
+    f.get();
+  }
 
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kPreprocessing>();
 }
@@ -476,7 +479,7 @@ void Backend::OtExtensionSetup() {
     }
   }
 
-  std::for_each(task_futures.begin(), task_futures.end(), [](auto& f) { f.get(); });
+  for (auto& f : task_futures) f.get();
 
   run_time_statistics_.back().RecordEnd<RunTimeStatistics::StatisticsId::kOtExtensionSetup>();
 
