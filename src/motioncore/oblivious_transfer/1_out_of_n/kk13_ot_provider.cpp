@@ -30,7 +30,6 @@
 
 #include "base/motion_base_provider.h"
 #include "communication/communication_layer.h"
-#include "communication/fbs_headers/ot_extension_generated.h"
 #include "communication/message.h"
 #include "communication/message_manager.h"
 #include "data_storage/base_ot_data.h"
