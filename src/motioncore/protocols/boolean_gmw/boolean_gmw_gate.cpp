@@ -706,6 +706,11 @@ void MuxGate::EvaluateOnline() {
   for (auto other_pid = 0ull; other_pid < number_of_parties; ++other_pid) {
     if (other_pid == my_id) continue;
 
+    // added by Liang Zhao
+    // ! add WaitSetup() for OT, otherwise the operations after MuxGate would fail
+    ot_receiver_.at(other_pid)->WaitSetup();
+    ot_sender_.at(other_pid)->WaitSetup();
+
     ot_receiver_.at(other_pid)->SetChoices(selection_bits);
     ot_receiver_.at(other_pid)->SendCorrections();
 
@@ -759,6 +764,421 @@ const boolean_gmw::SharePointer MuxGate::GetOutputAsGmwShare() const {
 }
 
 const motion::SharePointer MuxGate::GetOutputAsShare() const {
+  auto result = std::static_pointer_cast<motion::Share>(GetOutputAsGmwShare());
+  assert(result);
+  return result;
+}
+
+ConstantAsBooleanGmwInputGate::ConstantAsBooleanGmwInputGate(std::span<const BitVector<>> input,
+                                                             Backend& backend)
+    : ConstantAsBooleanGmwInputGate::Base(backend),
+      input_(std::vector(input.begin(), input.end())) {
+  input_owner_id_ = 0;
+  bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
+  InitializationHelper();
+}
+
+ConstantAsBooleanGmwInputGate::ConstantAsBooleanGmwInputGate(std::vector<BitVector<>>&& input,
+                                                             Backend& backend)
+    : ConstantAsBooleanGmwInputGate::Base(backend), input_(std::move(input)) {
+  input_owner_id_ = 0;
+  bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
+  InitializationHelper();
+}
+
+void ConstantAsBooleanGmwInputGate::InitializationHelper() {
+  auto& communication_layer = GetCommunicationLayer();
+  auto& _register = GetRegister();
+
+  if (static_cast<std::size_t>(input_owner_id_) >= communication_layer.GetNumberOfParties()) {
+    throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
+                                         communication_layer.GetNumberOfParties()));
+  }
+
+  gate_id_ = _register.NextGateId();
+
+  assert(input_.size() > 0u);           // assert >=1 wire
+  assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
+  // assert SIMD lengths of all wires are equal
+  assert(BitVector<>::IsEqualSizeDimensions(input_));
+
+  //  boolean_sharing_id_ = _register.NextBooleanGmwSharingId(input_.size() * bits_);
+
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Created a ConstantAsBooleanGmwInputGate with global id {}", gate_id_));
+  }
+
+  output_wires_.reserve(input_.size());
+  for (auto& v : input_) {
+    // auto wire = std::make_shared<boolean_gmw::Wire>(v, backend_);
+    // output_wires_.push_back(std::static_pointer_cast<motion::Wire>(wire));
+    output_wires_.push_back(GetRegister().EmplaceWire<boolean_gmw::Wire>(v, backend_));
+  }
+
+  // for (auto& w : output_wires_) {
+  //   _register.RegisterNextWire(w);
+  // }
+
+  if constexpr (kDebug) {
+    auto gate_info = fmt::format("gate id {},", gate_id_);
+    GetLogger().LogDebug(fmt::format(
+        "Created a ConstantAsBooleanGmwInputGate with following properties: {}", gate_info));
+  }
+}
+
+void ConstantAsBooleanGmwInputGate::EvaluateSetup() {
+  // GetBaseProvider().WaitForSetup();
+  // SetSetupIsReady();
+  // GetRegister().IncrementEvaluatedGatesSetupCounter();
+}
+
+void ConstantAsBooleanGmwInputGate::EvaluateOnline() {
+  // WaitSetup();
+  // assert(setup_is_ready_);
+  GetBaseProvider().WaitSetup();
+
+  auto& communication_layer = GetCommunicationLayer();
+  auto my_id = communication_layer.GetMyId();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
+
+  std::vector<BitVector<>> result(input_.size());
+  //  auto sharing_id = boolean_sharing_id_;
+  for (auto i = 0ull; i < result.size(); ++i) {
+    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
+      // party 0 holds the constant value
+      result.at(i) = input_.at(i);
+      for (auto party_id = 0u; party_id < number_of_parties; ++party_id) {
+        if (party_id == my_id) {
+          continue;
+        }
+      }
+    } else {
+      // the rest parties hold value of zeros
+      result.at(i) = input_.at(i) ^ input_.at(i);
+    }
+  }
+
+  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+    auto my_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(i));
+    assert(my_wire);
+    auto buf = result.at(i);
+    my_wire->GetMutableValues() = buf;
+  }
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Evaluated Boolean ConstantAsBooleanGmwInputGate with id#{}", gate_id_));
+  }
+  // SetOnlineIsReady();
+  // GetRegister().IncrementEvaluatedGatesOnlineCounter();
+}
+
+const boolean_gmw::SharePointer ConstantAsBooleanGmwInputGate::GetOutputAsGmwShare() {
+  auto result = std::make_shared<boolean_gmw::Share>(output_wires_);
+  assert(result);
+  return result;
+}
+
+ReshareBooleanGmwShareAsInput::ReshareBooleanGmwShareAsInput(const motion::SharePointer& parent,
+                                                             std::size_t party_id, Backend& backend)
+    : ReshareBooleanGmwShareAsInput::Base(backend) {
+  input_owner_id_ = party_id;
+  parent_ = parent->GetWires();
+
+  assert(parent_.size() > 0);
+  assert(parent_.at(0)->GetBitLength() > 0);
+
+  // requires_online_interaction_ = true;
+  // gate_type_ = GateType::kInteractive;
+
+  auto& _register = GetRegister();
+  // gate_id_ = _register.NextGateId();
+
+  auto& communication_layer = GetCommunicationLayer();
+  if (static_cast<std::size_t>(input_owner_id_) >= communication_layer.GetNumberOfParties()) {
+    throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
+                                         communication_layer.GetNumberOfParties()));
+  }
+
+  // for (auto& wire : parent_) {
+  //   RegisterWaitingFor(wire->GetWireId());
+  //   wire->RegisterWaitingGate(gate_id_);
+  // }
+
+  number_of_wires_ = parent_.size();
+  number_of_simd_values_ = parent->GetNumberOfSimdValues();
+
+  boolean_sharing_id_ = _register.NextBooleanGmwSharingId(number_of_wires_);
+
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Created a ReshareBooleanGmwShareAsInput with global id {}", gate_id_));
+  }
+
+  // create output wires
+  output_wires_.reserve(number_of_wires_);
+  for (size_t i = 0; i < number_of_wires_; ++i) {
+    // auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
+    //     std::make_shared<boolean_gmw::Wire>(backend_, number_of_simd_values_)));
+    // GetRegister().RegisterNextWire(w);
+    output_wires_.push_back(
+        GetRegister().EmplaceWire<boolean_gmw::Wire>(backend_, number_of_simd_values_));
+  }
+
+  if constexpr (kDebug) {
+    auto gate_info = fmt::format("gate id {},", gate_id_);
+    GetLogger().LogDebug(fmt::format(
+        "Created a ReshareBooleanGmwShareAsInput with following properties: {}", gate_info));
+  }
+}
+
+void ReshareBooleanGmwShareAsInput::EvaluateSetup() {
+  // GetBaseProvider().WaitForSetup();
+  // SetSetupIsReady();
+  // GetRegister().IncrementEvaluatedGatesSetupCounter();
+}
+
+void ReshareBooleanGmwShareAsInput::EvaluateOnline() {
+  // WaitSetup();
+  // assert(setup_is_ready_);
+
+  GetBaseProvider().WaitSetup();
+
+  for (auto& wire : parent_) {
+    wire->GetIsReadyCondition().Wait();
+  }
+
+  auto& communication_layer = GetCommunicationLayer();
+  auto my_id = communication_layer.GetMyId();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
+
+  std::vector<BitVector<>> result(number_of_wires_);
+  auto sharing_id = boolean_sharing_id_;
+  for (auto i = 0ull; i < result.size(); ++i) {
+    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
+      // extract the boolean values from parent wires
+      auto boolean_wire = std::dynamic_pointer_cast<const proto::boolean_gmw::Wire>(parent_.at(i));
+      result.at(i) = boolean_wire->GetValues();
+
+      auto log_string = std::string("");
+      for (auto party_id = 0u; party_id < number_of_parties; ++party_id) {
+        if (party_id == my_id) {
+          continue;
+        }
+        auto& randomness_generator = GetBaseProvider().GetMyRandomnessGenerator(party_id);
+        auto randomness = randomness_generator.GetBits(sharing_id, number_of_simd_values_);
+
+        if constexpr (kVerboseDebug) {
+          log_string.append(fmt::format("id#{}:{} ", party_id, randomness.AsString()));
+        }
+
+        result.at(i) ^= randomness;
+      }
+      sharing_id += number_of_simd_values_;
+
+      if constexpr (kVerboseDebug) {
+        auto s = fmt::format(
+            "My (id#{}) Boolean input sharing for ReshareBooleanGmwShareAsInput gate#{}, my input: "
+            "{}, my "
+            "share: {}, expected shares of other parties: {}",
+            input_owner_id_, gate_id_, input_.at(i).AsString(), result.at(i).AsString(),
+            log_string);
+        GetLogger().LogTrace(s);
+      }
+    } else {
+      auto& randomness_generator = GetBaseProvider().GetTheirRandomnessGenerator(input_owner_id_);
+      result.at(i) = randomness_generator.GetBits(sharing_id, number_of_simd_values_);
+
+      if constexpr (kVerboseDebug) {
+        auto s = fmt::format(
+            "Boolean input sharing (ReshareBooleanGmwShareAsInput gate#{}) of Party's#{} input, "
+            "got a "
+            "share {} from the seed",
+            gate_id_, input_owner_id_, result.at(i).AsString());
+        GetLogger().LogTrace(s);
+      }
+      sharing_id += number_of_simd_values_;
+    }
+  }
+  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+    auto my_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(i));
+    assert(my_wire);
+    auto buf = result.at(i);
+    my_wire->GetMutableValues() = buf;
+  }
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(
+        fmt::format("Evaluated ReshareBooleanGmwShareAsInput with id#{}", gate_id_));
+  }
+  // SetOnlineIsReady();
+  // GetRegister().IncrementEvaluatedGatesOnlineCounter();
+}
+
+const boolean_gmw::SharePointer ReshareBooleanGmwShareAsInput::GetOutputAsGmwShare() {
+  auto result = std::make_shared<boolean_gmw::Share>(output_wires_);
+  assert(result);
+  return result;
+}
+
+XCOTMulGate::XCOTMulGate(const motion::SharePointer& a, const motion::SharePointer& b)
+    : TwoGate(a->GetBackend()) {
+  parent_a_ = a->GetWires();
+  parent_b_ = b->GetWires();
+
+  assert(parent_a_.size() == 1);
+  // assert(parent_a_.size() == parent_b_.size());
+  assert(parent_a_.at(0)->GetBitLength() > 0);
+
+  // requires_online_interaction_ = true;
+  // gate_type_ = GateType::kInteractive;
+
+  auto& _register = GetRegister();
+  gate_id_ = _register.NextGateId();
+
+  // for (auto& wire : parent_a_) {
+  //   RegisterWaitingFor(wire->GetWireId());
+  //   wire->RegisterWaitingGate(gate_id_);
+  // }
+
+  // for (auto& wire : parent_b_) {
+  //   RegisterWaitingFor(wire->GetWireId());
+  //   wire->RegisterWaitingGate(gate_id_);
+  // }
+
+  // for (auto& wire : parent_c_) {
+  //   RegisterWaitingFor(wire->GetWireId());
+  //   wire->RegisterWaitingGate(gate_id_);
+  // }
+
+  auto number_of_wires = parent_b_.size();
+  auto number_of_simd_values = b->GetNumberOfSimdValues();
+
+  // create output wires
+  // (EvaluateOnline expects the output wires already having buffers)
+  output_wires_.reserve(number_of_wires);
+  BitVector dummy_bv(number_of_simd_values);
+  for (size_t i = 0; i < number_of_wires; ++i) {
+    // auto& w = output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
+    //     std::make_shared<boolean_gmw::Wire>(dummy_bv, backend_)));
+    // GetRegister().RegisterNextWire(w);
+    output_wires_.emplace_back(GetRegister().EmplaceWire<boolean_gmw::Wire>(dummy_bv, backend_));
+  }
+
+  const auto& communication_layer = GetCommunicationLayer();
+  const auto number_of_parties = communication_layer.GetNumberOfParties();
+  const auto my_id = communication_layer.GetMyId();
+  const auto number_of_bits = parent_b_.size();
+
+  ot_sender_.resize(number_of_parties);
+  ot_receiver_.resize(number_of_parties);
+
+  for (std::size_t i = 0; i < number_of_parties; ++i) {
+    if (i == my_id) continue;
+    ot_sender_.at(i) = GetOtProvider(i).RegisterSendXcOt(number_of_simd_values, number_of_bits);
+    ot_receiver_.at(i) =
+        GetOtProvider(i).RegisterReceiveXcOt(number_of_simd_values, number_of_bits);
+  }
+
+  if constexpr (kDebug) {
+    auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
+                                 parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+    GetLogger().LogDebug(fmt::format(
+        "Created a BooleanGMW XCOTMulGate gate with following properties: {}", gate_info));
+  }
+}
+
+void XCOTMulGate::EvaluateSetup() {
+  // SetSetupIsReady();
+  // GetRegister().IncrementEvaluatedGatesSetupCounter();
+}
+
+void XCOTMulGate::EvaluateOnline() {
+  // WaitSetup();
+  for (auto& wire : parent_a_) {
+    wire->GetIsReadyCondition().Wait();
+  }
+
+  for (auto& wire : parent_b_) {
+    wire->GetIsReadyCondition().Wait();
+  }
+
+  const auto number_of_bits = parent_b_.size();
+  const auto number_of_simd = parent_b_.at(0)->GetNumberOfSimdValues();
+  const auto& communication_layer = GetCommunicationLayer();
+  const auto number_of_parties = communication_layer.GetNumberOfParties();
+  const auto my_id = communication_layer.GetMyId();
+
+  std::vector<BitVector<>> b_vector;
+  b_vector.reserve(number_of_bits);
+  for (auto simd_i = 0ull; simd_i < number_of_simd; ++simd_i) {
+    BitVector<> b;
+    b.Reserve(number_of_bits);
+    for (auto bit_i = 0ull; bit_i < number_of_bits; ++bit_i) {
+      auto wire_b = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_b_.at(bit_i));
+      assert(wire_b);
+      b.Append(wire_b->GetValues()[simd_i]);
+    }
+    b_vector.emplace_back(b);
+  }
+  auto gmw_wire_selection_bits =
+      std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_a_.at(0));
+  assert(gmw_wire_selection_bits);
+  const auto& selection_bits = gmw_wire_selection_bits->GetValues();
+  for (auto other_pid = 0ull; other_pid < number_of_parties; ++other_pid) {
+    if (other_pid == my_id) continue;
+
+    ot_receiver_.at(other_pid)->WaitSetup();
+    ot_sender_.at(other_pid)->WaitSetup();
+
+    ot_receiver_.at(other_pid)->SetChoices(selection_bits);
+    ot_receiver_.at(other_pid)->SendCorrections();
+
+    ot_sender_.at(other_pid)->SetCorrelations(b_vector);
+    ot_sender_.at(other_pid)->SendMessages();
+  }
+
+  // for local party i: <a>_i & <b>_i
+  for (auto simd_i = 0ull; simd_i < number_of_simd; ++simd_i)
+    if (!selection_bits[simd_i]) b_vector.at(simd_i).Set(false);
+
+  // for party i
+  for (auto other_pid = 0ull; other_pid < number_of_parties; ++other_pid) {
+    if (other_pid == my_id) continue;
+    ot_receiver_.at(other_pid)->ComputeOutputs();
+    const auto ot_r = ot_receiver_.at(other_pid)->GetOutputs();
+    ot_sender_.at(other_pid)->ComputeOutputs();
+    const auto ot_s = ot_sender_.at(other_pid)->GetOutputs();
+    for (auto simd_i = 0ull; simd_i < number_of_simd; ++simd_i) {
+      // for other party j: <a>_i * <b>_j
+      b_vector.at(simd_i) ^= ot_r[simd_i];
+      BitSpan bs(const_cast<std::byte*>(ot_s[simd_i].GetData().data()), number_of_bits);
+      // <a>_j * <b>_i
+      b_vector.at(simd_i) ^= bs;
+    }
+  }
+
+  for (auto simd_i = 0ull; simd_i < number_of_simd; ++simd_i) {
+    for (auto bit_i = 0ull; bit_i < number_of_bits; ++bit_i) {
+      auto wire_output = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(bit_i));
+      assert(wire_output);
+      wire_output->GetMutableValues().Set(b_vector.at(simd_i)[bit_i], simd_i);
+    }
+  }
+
+  if constexpr (kVerboseDebug) {
+    GetLogger().LogTrace(fmt::format("Evaluated BooleanGMW XCOTMul Gate with id#{}", gate_id_));
+  }
+  // SetOnlineIsReady();
+  // GetRegister().IncrementEvaluatedGatesOnlineCounter();
+}
+
+const boolean_gmw::SharePointer XCOTMulGate::GetOutputAsGmwShare() const {
+  auto result = std::make_shared<boolean_gmw::Share>(output_wires_);
+  assert(result);
+  return result;
+}
+
+const motion::SharePointer XCOTMulGate::GetOutputAsShare() const {
   auto result = std::static_pointer_cast<motion::Share>(GetOutputAsGmwShare());
   assert(result);
   return result;

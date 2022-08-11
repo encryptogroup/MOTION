@@ -48,6 +48,8 @@ ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bi
 ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, std::span<const ShareWrapper> bits_1,
                         const ShareWrapper& carry_in);
 
+ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, const ShareWrapper& carry_in);
+
 ShareWrapper HammingWeight(const ShareWrapper& bit_string);
 
 ShareWrapper HammingWeight(std::span<const ShareWrapper> bits);

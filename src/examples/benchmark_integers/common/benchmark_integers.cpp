@@ -33,7 +33,7 @@
 
 encrypto::motion::RunTimeStatistics EvaluateProtocol(
     encrypto::motion::PartyPointer& party, std::size_t number_of_simd, std::size_t bit_size,
-    encrypto::motion::MpcProtocol protocol, encrypto::motion::IntegerOperationType operation_type) {
+    encrypto::motion::MpcProtocol protocol, encrypto::motion::UnsignedIntegerOperationType operation_type) {
   const std::vector<encrypto::motion::BitVector<>> temporary_bool(
       bit_size, encrypto::motion::BitVector<>(number_of_simd));
 
@@ -55,27 +55,27 @@ encrypto::motion::RunTimeStatistics EvaluateProtocol(
   }
 
   switch (operation_type) {
-    case encrypto::motion::IntegerOperationType::kSub: {
+    case encrypto::motion::UnsignedIntegerOperationType::kSub: {
       a - b;
       break;
     }
-    case encrypto::motion::IntegerOperationType::kGt: {
+    case encrypto::motion::UnsignedIntegerOperationType::kGt: {
       a > b;
       break;
     }
-    case encrypto::motion::IntegerOperationType::kDiv: {
+    case encrypto::motion::UnsignedIntegerOperationType::kDiv: {
       a / b;
       break;
     }
-    case encrypto::motion::IntegerOperationType::kMul: {
+    case encrypto::motion::UnsignedIntegerOperationType::kMul: {
       a* b;
       break;
     }
-    case encrypto::motion::IntegerOperationType::kAdd: {
+    case encrypto::motion::UnsignedIntegerOperationType::kAdd: {
       a + b;
       break;
     }
-    case encrypto::motion::IntegerOperationType::kEq: {
+    case encrypto::motion::UnsignedIntegerOperationType::kEq: {
       a == b;
       break;
     }

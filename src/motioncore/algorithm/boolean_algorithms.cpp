@@ -37,11 +37,61 @@ std::pair<ShareWrapper, ShareWrapper> FullAdder(const ShareWrapper& a, const Sha
   return std::pair(std::move(sum), std::move(carry_out));
 }
 
+// commented out because bits_0 may be empty, that causes problems, see AdderChain below
+// ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bit_string_1,
+//                         const ShareWrapper& carry_in) {
+//   std::vector<ShareWrapper> bits_0{bit_string_0.Split()};
+//   std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
+//   return AdderChain(bits_0, bits_1, carry_in);
+// }
+
 ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bit_string_1,
                         const ShareWrapper& carry_in) {
   std::vector<ShareWrapper> bits_0{bit_string_0.Split()};
-  std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
-  return AdderChain(bits_0, bits_1, carry_in);
+
+  // ! bit_string_1.Get() may be empty
+  if (bit_string_1.Get()) {
+    std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
+    return AdderChain(bits_0, bits_1, carry_in);
+  } else {
+    return AdderChain(bits_0, carry_in);
+  }
+}
+
+ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, const ShareWrapper& carry_in) {
+
+  if (!bits_0.empty()) assert(bits_0[0]->GetCircuitType() == CircuitType::kBoolean);
+  assert(!bits_0.empty());
+
+  // inlining seems to be causing constexpr retrieval of size which yields
+  // the extent and not the actual runtime size, i.e., max std::size not
+  // sure how to avoid it in a more elegant way...
+  std::size_t bits_0_length = bits_0.size();
+  // auto [min_length, max_length] = std::minmax(bits_0_length, bits_1_length);
+  // std::size_t max_length = bits_0_length;
+
+  // allocate wires
+  std::vector<ShareWrapper> result_wires(bits_0_length + 1);
+
+  // compute the output wires using full adders for bit strings of equal
+  // size
+  ShareWrapper carry{carry_in};
+  std::size_t i = 0;
+
+  // if shares are of unequal size, compute the remaining part using only
+  // the longer share
+  // std::span<const ShareWrapper> long_share{bits_0.size() > bits_1.size() ? bits_0 : bits_1};
+
+  for (; i < bits_0_length; ++i) {
+    result_wires[i] = bits_0[i] ^ carry;
+    carry = bits_0[i] & carry;
+  }
+
+  // save the carry bit for the case of an overflow
+  result_wires.back() = carry;
+
+  // concatenate wires into a single share
+  return ShareWrapper::Concatenate(result_wires);
 }
 
 ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, std::span<const ShareWrapper> bits_1,

@@ -48,6 +48,7 @@ add_library(motion
         protocols/constant/constant_gate.cpp
         protocols/constant/constant_share.cpp
         protocols/constant/constant_wire.cpp
+        protocols/constant/constant_share_wrapper.cpp
         protocols/conversion/conversion_gate.cpp
         protocols/data_management/simdify_gate.cpp
         protocols/data_management/subset_gate.cpp
@@ -74,6 +75,7 @@ add_library(motion
         utility/logger.cpp
         utility/runtime_info.cpp
         utility/thread.cpp
+        utility/MOTION_dp_mechanism_helper/print_uint128_t.h
         )
 add_library(MOTION::motion ALIAS motion)
 

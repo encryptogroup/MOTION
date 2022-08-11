@@ -25,10 +25,14 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-
+#include "secure_type/secure_fixed_point_circuit_CBMC.h"
+#include "secure_type/secure_floating_point_circuit_ABY.h"
 namespace encrypto::motion {
 
 class Logger;
+
+class SecureFixedPointCircuitCBMC;
+class SecureFloatingPointCircuitABY;
 
 class SecureUnsignedInteger {
  public:
@@ -93,6 +97,8 @@ class SecureUnsignedInteger {
     return *this;
   }
 
+  // ! 128-bit circuit for division are not optimized because of HyCC time out
+  // TODO: regenerate circuit
   SecureUnsignedInteger operator/(const SecureUnsignedInteger& other) const;
 
   SecureUnsignedInteger& operator/=(const SecureUnsignedInteger& other) {
@@ -100,14 +106,59 @@ class SecureUnsignedInteger {
     return *this;
   }
 
+  ShareWrapper operator<(const SecureUnsignedInteger& other) const;
+
   ShareWrapper operator>(const SecureUnsignedInteger& other) const;
 
   ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
+  /// \brief operations with constant value
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  SecureUnsignedInteger operator+(const T& constant_value) const;
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  SecureUnsignedInteger operator-(const T& constant_value) const;
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  SecureUnsignedInteger operator*(const T& constant_value) const;
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  SecureUnsignedInteger operator/(const T& constant_value) const;
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  ShareWrapper operator<(const T& constant_value) const;
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  ShareWrapper operator>(const T& constant_value) const;
+
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  ShareWrapper operator==(const T& constant_value) const;
+
+  /// \brief mulitplication with a Boolean GMW bit
+  SecureUnsignedInteger MulBooleanGmwBit(const ShareWrapper& boolean_gmw_share_other) const;
+
+  /// \brief equals to zero
+  ShareWrapper EQZ() const;
+
+  /// \brief is greater than or equals to zero
+  ShareWrapper GEQ(const SecureUnsignedInteger& other) const;
+
+  /// \brief is less than or equals to zero
+  ShareWrapper LEQ(const SecureUnsignedInteger& other) const;
+
+  /// \brief modulo reduction with secure_unsigned_integer_m
+  // ! 128-bit circuit for modulo reduction are not optimized because of HyCC time out
+  // TODO: regenerate circuit
+  SecureUnsignedInteger Mod(const SecureUnsignedInteger& secure_unsigned_integer_m) const;
+
+  /// \brief Modulo reduction with constant value m
+  template <typename T>
+  SecureUnsignedInteger Mod(const T& m) const;
+
   /// \brief internally extracts the ShareWrapper/SharePointer from input and
   /// calls ShareWrapper::Simdify(std::span<SharePointer> input)
   static SecureUnsignedInteger Simdify(std::span<SecureUnsignedInteger> input);
-  //
+
   /// \brief internally extracts shares from each entry in input and calls
   /// Simdify(std::span<SecureUnsignedInteger> input) from the result
   static SecureUnsignedInteger Simdify(std::vector<SecureUnsignedInteger>&& input);
@@ -135,12 +186,18 @@ class SecureUnsignedInteger {
   template <typename T>
   T As() const;
 
+  /// \brief converts the information on the wires to a veoctor of T in type Unsigned Integer.
+  /// See the description in ShareWrapper::As for reference.
+  template <typename T, typename A = std::allocator<T>>
+  std::vector<T, A> AsVector() const;
+
  private:
   std::shared_ptr<ShareWrapper> share_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};
 
-  std::string ConstructPath(const IntegerOperationType type, const std::size_t bitlength,
-                            std::string suffix = "") const;
+  std::string ConstructPath(const UnsignedIntegerOperationType type, const std::size_t bitlength,
+                            std::string suffix = "",
+                            const std::size_t floating_point_bit_length = 64) const;
 };
 
 }  // namespace encrypto::motion
