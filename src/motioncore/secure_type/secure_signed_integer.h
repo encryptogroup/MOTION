@@ -160,10 +160,10 @@ class SecureSignedInteger {
   // convert *this to negative integers
   SecureSignedInteger Neg() const;
 
-  // convert SecureSignedInteger to SecureFloatingPointCircuitESAT
+  // convert (32/64/128-bit) SecureSignedInteger to (32/64-bit) SecureFloatingPointCircuitESAT
   SecureFloatingPointCircuitABY Int2FL(std::size_t floating_point_bit_length = 64) const;
 
-  // convert SecureSignedInteger to SecureFixedPointCircuitCBMC
+  // convert SecureSignedInteger to 64-bit SecureFixedPointCircuitCBMC
   SecureFixedPointCircuitCBMC Int2Fx(std::size_t fraction_bit_size = 16) const;
 
   /// \brief internally extracts the ShareWrapper/SharePointer from input and

@@ -3300,153 +3300,153 @@ TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw, FLAbsSIMDInG
     if (t.joinable()) t.join();
 }
 
-// TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw, FL2FxInGmw) {
-//   using T = double;
-//   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
-//   std::srand(time(nullptr));
+TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw, FL2FxInGmw) {
+  using T = double;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  std::srand(time(nullptr));
 
-//   T min = -(INT32_MAX);
-//   T max = INT32_MAX;
+  T min = -(INT32_MAX);
+  T max = INT32_MAX;
 
-//   std::vector<T> raw_global_input_1 = RandomRangeVector(min, max, 2);
-//   std::size_t fixed_point_fraction_bit_size = 16;
-//   // test casesz
-//   std::size_t test_case = std::rand() % 7;
-//   switch (test_case) {
-//     case 0:
-//       raw_global_input_1.at(0) = 3.2;
-//       break;
-//     case 1:
-//       raw_global_input_1.at(0) = 3.5;
-//       break;
-//     case 2:
-//       raw_global_input_1.at(0) = -2.1;
-//       break;
-//     case 3:
-//       raw_global_input_1.at(0) = -3.5;
-//       break;
-//     case 4:
-//       raw_global_input_1.at(0) = 0;
-//       break;
-//     case 5:
-//       raw_global_input_1.at(0) = 0.2;
-//       break;
-//     case 6:
-//       raw_global_input_1.at(0) = -0.2;
-//       break;
-//   }
+  std::vector<T> raw_global_input_1 = RandomRangeVector(min, max, 2);
+  std::size_t fixed_point_fraction_bit_size = 16;
+  // test cases
+  std::size_t test_case = std::rand() % 10;
+  switch (test_case) {
+    case 0:
+      raw_global_input_1.at(0) = 3.2;
+      break;
+    case 1:
+      raw_global_input_1.at(0) = 3.5;
+      break;
+    case 2:
+      raw_global_input_1.at(0) = -2.1;
+      break;
+    case 3:
+      raw_global_input_1.at(0) = -3.5;
+      break;
+    case 4:
+      raw_global_input_1.at(0) = 0;
+      break;
+    case 5:
+      raw_global_input_1.at(0) = 0.2;
+      break;
+    case 6:
+      raw_global_input_1.at(0) = -0.2;
+      break;
+  }
 
-//   constexpr auto kNumberOfWires{sizeof(T) * 8};
-//   constexpr std::size_t kNumberOfSimd{1};
-//   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
-//       encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1.at(0)),
-//       encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1.at(1))};
-//   std::vector<encrypto::motion::BitVector<>> dummy_input(
-//       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{1};
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+      encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1.at(0)),
+      encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1.at(1))};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-//   std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
-//   kPortOffset))); for (auto& party : motion_parties) {
-//     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-//     party->GetConfiguration()->SetOnlineAfterSetup(true);
-//   }
-//   std::vector<std::thread> threads;
-//   for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-//     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
-//                           &raw_global_input_1, fixed_point_fraction_bit_size]() {
-//       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-//       encrypto::motion::SecureFloatingPointCircuitABY
-//           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
-//                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
-//           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
-//                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
-//                             1);
-//       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
-//       EXPECT_EQ(share_1.Get()->GetBitLength(), kNumberOfWires);
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
+  kPortOffset))); for (auto& party : motion_parties) {
+    party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+    party->GetConfiguration()->SetOnlineAfterSetup(true);
+  }
+  std::vector<std::thread> threads;
+  for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+    threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+                          &raw_global_input_1, fixed_point_fraction_bit_size]() {
+      const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+      encrypto::motion::SecureFloatingPointCircuitABY
+          share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+          share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
+                            1);
+      EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+      EXPECT_EQ(share_1.Get()->GetBitLength(), kNumberOfWires);
 
-//       encrypto::motion::SecureFixedPointCircuitCBMC share_floating_point_to_fixed_point =
-//           share_0.FL2Fx(fixed_point_fraction_bit_size);
-//       auto share_output = share_floating_point_to_fixed_point.Out();
+      encrypto::motion::SecureFixedPointCircuitCBMC share_floating_point_to_fixed_point =
+          share_0.FL2Fx(fixed_point_fraction_bit_size);
+      auto share_output = share_floating_point_to_fixed_point.Out();
 
-//       motion_parties.at(party_id)->Run();
-//       motion_parties.at(party_id)->Finish();
+      motion_parties.at(party_id)->Run();
+      motion_parties.at(party_id)->Finish();
 
-//       if (std::is_same<T, float>::value) {
-//         double fixed_point_result = share_output.AsFixedPoint<std::uint64_t, std::int64_t>();
-//         double expect_result = (raw_global_input_1.at(0));
-//         EXPECT_NEAR(expect_result, fixed_point_result, 0.01);
-//       } else if (std::is_same<T, double>::value) {
-//         double fixed_point_result = share_output.AsFixedPoint<std::uint64_t, std::int64_t>();
-//         double expect_result = (raw_global_input_1.at(0));
-//         EXPECT_NEAR(expect_result, fixed_point_result, 0.01);
-//       }
-//     });
-//   }
-//   for (auto& t : threads)
-//     if (t.joinable()) t.join();
-// }
+      if (std::is_same<T, float>::value) {
+        double fixed_point_result = share_output.AsFixedPoint<std::uint64_t, std::int64_t>();
+        double expect_result = (raw_global_input_1.at(0));
+        EXPECT_NEAR(expect_result, fixed_point_result, 0.01);
+      } else if (std::is_same<T, double>::value) {
+        double fixed_point_result = share_output.AsFixedPoint<std::uint64_t, std::int64_t>();
+        double expect_result = (raw_global_input_1.at(0));
+        EXPECT_NEAR(expect_result, fixed_point_result, 0.01);
+      }
+    });
+  }
+  for (auto& t : threads)
+    if (t.joinable()) t.join();
+}
 
-// TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw, FL2FxSIMDInGmw) {
-//   using T = TypeParam;
-//   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
-//   constexpr auto kNumberOfWires{sizeof(T) * 8};
-//   constexpr std::size_t kNumberOfSimd{1};
+TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw, FL2FxSIMDInGmw) {
+  using T = TypeParam;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{1};
 
-//   std::srand(time(nullptr));
+  std::srand(time(nullptr));
 
-//   T min = -10000;
-//   T max = 10000;
+  T min = -10000;
+  T max = 10000;
 
-//   std::vector<T> raw_global_input_1 = RandomRangeVector(min, max, kNumberOfSimd);
-//   std::vector<T> raw_global_input_2 = RandomRangeVector(min, max, kNumberOfSimd);
-//   std::size_t fixed_point_fraction_bit_size = 16;
-//   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
-//       encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1),
-//       encrypto::motion::ToInput<T, std::true_type>(raw_global_input_2)};
+  std::vector<T> raw_global_input_1 = RandomRangeVector(min, max, kNumberOfSimd);
+  std::vector<T> raw_global_input_2 = RandomRangeVector(min, max, kNumberOfSimd);
+  std::size_t fixed_point_fraction_bit_size = 16;
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+      encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1),
+      encrypto::motion::ToInput<T, std::true_type>(raw_global_input_2)};
 
-//   std::vector<encrypto::motion::BitVector<>> dummy_input(
-//       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
 
-//   std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
-//   kPortOffset))); for (auto& party : motion_parties) {
-//     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
-//     party->GetConfiguration()->SetOnlineAfterSetup(true);
-//   }
-//   std::vector<std::thread> threads;
-//   for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-//     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
-//                           &raw_global_input_1, &raw_global_input_2,
-//                           &fixed_point_fraction_bit_size]() {
-//       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-//       encrypto::motion::SecureFloatingPointCircuitABY
-//           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
-//                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
-//           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
-//                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
-//                             1);
-//       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
+  kPortOffset))); for (auto& party : motion_parties) {
+    party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+    party->GetConfiguration()->SetOnlineAfterSetup(true);
+  }
+  std::vector<std::thread> threads;
+  for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+    threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+                          &raw_global_input_1, &raw_global_input_2,
+                          &fixed_point_fraction_bit_size]() {
+      const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+      encrypto::motion::SecureFloatingPointCircuitABY
+          share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+          share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
+                            1);
+      EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
 
-//       encrypto::motion::SecureFixedPointCircuitCBMC share_floating_point_to_fixed_point =
-//           share_0.FL2Fx(fixed_point_fraction_bit_size);
+      encrypto::motion::SecureFixedPointCircuitCBMC share_floating_point_to_fixed_point =
+          share_0.FL2Fx(fixed_point_fraction_bit_size);
 
-//       auto share_output = share_floating_point_to_fixed_point.Out();
+      auto share_output = share_floating_point_to_fixed_point.Out();
 
-//       motion_parties.at(party_id)->Run();
-//       motion_parties.at(party_id)->Finish();
-//       if (party_0) {
-//         std::vector<T> result_T;
+      motion_parties.at(party_id)->Run();
+      motion_parties.at(party_id)->Finish();
+      if (party_0) {
+        std::vector<T> result_T;
 
-//         std::vector<double> fixed_point_result =
-//             share_output.AsFixedPointVector<std::uint64_t, std::int64_t>();
+        std::vector<double> fixed_point_result =
+            share_output.AsFixedPointVector<std::uint64_t, std::int64_t>();
 
-//         for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-//           EXPECT_NEAR(raw_global_input_1[i], fixed_point_result[i], 0.01);
-//         }
-//       }
-//     });
-//   }
-//   for (auto& t : threads)
-//     if (t.joinable()) t.join();
-// }
+        for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+          EXPECT_NEAR(raw_global_input_1[i], fixed_point_result[i], 0.01);
+        }
+      }
+    });
+  }
+  for (auto& t : threads)
+    if (t.joinable()) t.join();
+}
 
 // test passed
 TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw,
@@ -3640,8 +3640,6 @@ TYPED_TEST(SecureFloatingPointCircuitABYTest_with_ABY_circuit_bgmw, CosSIMDInGmw
   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
       encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1),
       encrypto::motion::ToInput<T, std::true_type>(raw_global_input_1)};
-
-  std::cout << std::endl;
 
   std::vector<encrypto::motion::BitVector<>> dummy_input(
       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));

@@ -31,14 +31,14 @@ add_executable(motiontest
         # test_tcp_transport.cpp
         # test_unsimdify_gate.cpp
 
-        # test_unsigned_integer_operations_bgmw.cpp # test passed
-        # test_unsigned_integer_operations_bmr.cpp # test passed
-        # test_signed_integer_operations_bgmw.cpp # test passed
-        # test_signed_integer_operations_bmr.cpp # test passed
-        # test_floating_point_circuit_ABY_bgmw.cpp # test passed
-        # test_floating_point_circuit_ABY_bmr.cpp # test passed
-        test_fixed_point_circuit_CBMC_bgmw.cpp
-        test_fixed_point_circuit_CBMC_bmr.cpp
+        test_unsigned_integer_operations_bgmw.cpp # test passed
+        test_unsigned_integer_operations_bmr.cpp # test passed
+        test_signed_integer_operations_bgmw.cpp # test passed
+        test_signed_integer_operations_bmr.cpp # test passed
+        test_floating_point_circuit_ABY_bgmw.cpp # test passed
+        test_floating_point_circuit_ABY_bmr.cpp # test passed
+        test_fixed_point_circuit_CBMC_bgmw.cpp # test passed
+        test_fixed_point_circuit_CBMC_bmr.cpp # test passed
 )
 
 target_link_libraries(motiontest PRIVATE

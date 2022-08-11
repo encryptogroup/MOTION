@@ -556,38 +556,30 @@ SecureSignedInteger SecureFloatingPointCircuitABY::FL2Int(std::size_t integer_bi
   }
 }
 
-// SecureFixedPointCircuitCBMC SecureFloatingPointCircuitABY::FL2Fx(
-//     std::size_t fixed_point_fraction_bit_size, size_t fixed_point_bit_length) const {
-//   // SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
-//   //     (*this) * double(std::exp2(fixed_point_fraction_bit_size));
+SecureFixedPointCircuitCBMC SecureFloatingPointCircuitABY::FL2Fx(
+    std::size_t fixed_point_fraction_bit_size, size_t fixed_point_bit_length) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
+    throw std::runtime_error(
+        "Floating-point operations are not supported for Arithmetic GMW shares");
+  } else {  // BooleanCircuitType
+    if constexpr (kDebug) {
+      if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+        logger_->LogDebug(
+            "Creating a Boolean floating-point to fixed-point conversion circuit in BMR");
+      } else {
+        logger_->LogDebug(
+            "Creating a Boolean floating-point to fixed-point conversion circuit in GMW");
+      }
+    }
 
-//   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-//     throw std::runtime_error(
-//         "Floating-point operations are not supported for Arithmetic GMW shares");
-//   } else {  // BooleanCircuitType
+    SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
+        (*this).MulPow2m(std::int64_t(fixed_point_fraction_bit_size));
 
-//     if constexpr (kDebug) {
-//       if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
-//           share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
-//         logger_->LogDebug(
-//             "Creating a Boolean floating-point to fixed-point conversion circuit in BMR");
-//       } else {
-//         logger_->LogDebug(
-//             "Creating a Boolean floating-point to fixed-point conversion circuit in GMW");
-//       }
-//     }
-
-//     SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
-//         (*this).MulPow2m(std::int64_t(fixed_point_fraction_bit_size));
-
-//     // std::cout << "FL2Int()" << std::endl;
-//     // std::size_t fixed_point_bit_length = 64;
-
-//     return
-//     floating_point_multiple_pow2_fixed_point_fraction_bit_size.FL2Int(fixed_point_bit_length)
-//         .Get();
-//   }
-// }
+    return floating_point_multiple_pow2_fixed_point_fraction_bit_size.FL2Int(fixed_point_bit_length)
+        .Get();
+  }
+}
 
 // exp circuit only supports 32-bit floating-point numbers as input,
 // we use the 64-bit log2 and 64-bit exp2 circuits instead for 64-bit inputs

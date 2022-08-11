@@ -624,74 +624,74 @@ SecureSignedInteger SecureSignedInteger::Neg() const {
   return (ShareWrapper::Concatenate(unsigned_integer_twos_complement_vector));
 }
 
-// SecureFloatingPointCircuitABY SecureSignedInteger::Int2FL(
-//     std::size_t floating_point_bit_length) const {
-//   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-//     throw std::runtime_error(
-//         "Floating-point operations are not supported for Arithmetic GMW shares");
-//   } else {  // BooleanCircuitType
-//     const auto bitlength = share_->Get()->GetBitLength();
+SecureFloatingPointCircuitABY SecureSignedInteger::Int2FL(
+    std::size_t floating_point_bit_length) const {
+  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
+    throw std::runtime_error(
+        "Floating-point operations are not supported for Arithmetic GMW shares");
+  } else {  // BooleanCircuitType
+    const auto bitlength = share_->Get()->GetBitLength();
 
-//     std::shared_ptr<AlgorithmDescription> integer_to_floating_point_algorithm;
-//     std::string path;
-//     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
-//         share_->Get()->GetProtocol() ==
-//             MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
-//       path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_size",
-//                            floating_point_bit_length);
-//     else  // GMW, use depth-optimized circuit
-//       path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_depth",
-//                            floating_point_bit_length);
-//     if ((integer_to_floating_point_algorithm =
-//              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-//       if constexpr (kDebug) {
-//         logger_->LogDebug(fmt::format(
-//             "Found in cache Boolean integer to floating-point circuit with file path {}", path));
-//       }
-//     } else {
-//       integer_to_floating_point_algorithm =
-//           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-//       assert(integer_to_floating_point_algorithm);
-//       if constexpr (kDebug) {
-//         logger_->LogDebug(
-//             fmt::format("Read Boolean integer to floating circuit from file {}", path));
-//       }
-//     }
+    std::shared_ptr<AlgorithmDescription> integer_to_floating_point_algorithm;
+    std::string path;
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
+      path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_size",
+                           floating_point_bit_length);
+    else  // GMW, use depth-optimized circuit
+      path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_depth",
+                           floating_point_bit_length);
+    if ((integer_to_floating_point_algorithm =
+             share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+      if constexpr (kDebug) {
+        logger_->LogDebug(fmt::format(
+            "Found in cache Boolean integer to floating-point circuit with file path {}", path));
+      }
+    } else {
+      integer_to_floating_point_algorithm =
+          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+      assert(integer_to_floating_point_algorithm);
+      if constexpr (kDebug) {
+        logger_->LogDebug(
+            fmt::format("Read Boolean integer to floating circuit from file {}", path));
+      }
+    }
 
-//     // ! we mask the correct result with zero_bits_mask in circuit, otherwise, CBMC-GC cannot
-//     // convert this circuit to bristol format, input wire zero_bits_mask must be zero bits
-//     ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_) ^ (*share_);
+    // ! we mask the correct result with zero_bits_mask in circuit, otherwise, CBMC-GC cannot
+    // convert this circuit to bristol format, input wire zero_bits_mask must be zero bits
+    ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_) ^ (*share_);
 
-//     const auto share_input{
-//         ShareWrapper::Concatenate(std::vector{*share_, constant_boolean_gmw_or_bmr_share_zero})};
-//     const auto evaluation_result = share_input.Evaluate(integer_to_floating_point_algorithm);
+    const auto share_input{
+        ShareWrapper::Concatenate(std::vector{*share_, constant_boolean_gmw_or_bmr_share_zero})};
+    const auto evaluation_result = share_input.Evaluate(integer_to_floating_point_algorithm);
 
-//     return evaluation_result;
-//   }
-// }
+    return evaluation_result;
+  }
+}
 
-// SecureFixedPointCircuitCBMC SecureSignedInteger::Int2Fx(std::size_t fraction_bit_size) const {
-//   const auto bitlength = share_->Get()->GetBitLength();
-//   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_vector = share_->Split();
+SecureFixedPointCircuitCBMC SecureSignedInteger::Int2Fx(std::size_t fraction_bit_size) const {
+  const auto bitlength = share_->Get()->GetBitLength();
+  std::vector<ShareWrapper> boolean_gmw_or_bmr_share_vector = share_->Split();
 
-//   ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
-//       boolean_gmw_or_bmr_share_vector[0] ^ boolean_gmw_or_bmr_share_vector[0];
+  ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
+      boolean_gmw_or_bmr_share_vector[0] ^ boolean_gmw_or_bmr_share_vector[0];
 
-//   // convert signed integer to fixed-point by directly left shifting the bits
-//   std::vector<ShareWrapper> fixed_point_boolean_gmw_or_bmr_share_vector(bitlength);
-//   for (std::size_t i = 0; i < bitlength; i++) {
-//     fixed_point_boolean_gmw_or_bmr_share_vector[i] = constant_boolean_gmw_or_bmr_share_zero;
-//   }
+  // convert signed integer to fixed-point by directly left shifting the bits
+  std::vector<ShareWrapper> fixed_point_boolean_gmw_or_bmr_share_vector(bitlength);
+  for (std::size_t i = 0; i < bitlength; i++) {
+    fixed_point_boolean_gmw_or_bmr_share_vector[i] = constant_boolean_gmw_or_bmr_share_zero;
+  }
 
-//   for (std::size_t i = 0; i + fraction_bit_size < bitlength; i++) {
-//     fixed_point_boolean_gmw_or_bmr_share_vector[i + fraction_bit_size] =
-//         boolean_gmw_or_bmr_share_vector[i];
-//   }
-//   ShareWrapper fixed_point_boolean_gmw_or_bmr_share =
-//       share_->Concatenate(fixed_point_boolean_gmw_or_bmr_share_vector);
+  for (std::size_t i = 0; i + fraction_bit_size < bitlength; i++) {
+    fixed_point_boolean_gmw_or_bmr_share_vector[i + fraction_bit_size] =
+        boolean_gmw_or_bmr_share_vector[i];
+  }
+  ShareWrapper fixed_point_boolean_gmw_or_bmr_share =
+      share_->Concatenate(fixed_point_boolean_gmw_or_bmr_share_vector);
 
-//   return fixed_point_boolean_gmw_or_bmr_share;
-// }
+  return fixed_point_boolean_gmw_or_bmr_share;
+}
 
 std::string SecureSignedInteger::ConstructPath(const SignedIntegerOperationType type,
                                                const std::size_t bitlength, std::string suffix,
