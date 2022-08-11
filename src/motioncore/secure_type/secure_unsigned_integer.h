@@ -25,8 +25,8 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-#include "secure_type/secure_fixed_point_circuit_CBMC.h"
-#include "secure_type/secure_floating_point_circuit_ABY.h"
+// #include "secure_type/secure_fixed_point_circuit_CBMC.h"
+// #include "secure_type/secure_floating_point_circuit_ABY.h"
 namespace encrypto::motion {
 
 class Logger;
@@ -112,6 +112,7 @@ class SecureUnsignedInteger {
 
   ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
+  // TODO: support garbled circuit
   /// \brief operations with constant value
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   SecureUnsignedInteger operator+(const T& constant_value) const;

@@ -793,6 +793,18 @@ ShareWrapper ShareWrapper::Evaluate(const AlgorithmDescription& algorithm) const
             std::make_shared<ShareWrapper>(~*pointers_to_wires_of_split_share.at(gate.parent_a));
         break;
       }
+
+      case PrimitiveOperationType::kMux: {
+        assert(gate.parent_b);
+        assert(gate.output_wire);
+        auto mux_result = (*pointers_to_wires_of_split_share.at(*gate.selection_bit))
+                              .Mux(*pointers_to_wires_of_split_share.at(gate.parent_a),
+                                   *pointers_to_wires_of_split_share.at(*gate.parent_b));
+        pointers_to_wires_of_split_share.at(gate.output_wire) =
+            std::make_shared<ShareWrapper>(mux_result);
+        break;
+      }
+
       default:
         throw std::runtime_error("Invalid PrimitiveOperationType");
     }

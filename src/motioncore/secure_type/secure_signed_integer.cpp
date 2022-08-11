@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2021 Oleksandr Tkachenko, Arianne Roselina Prananto
+// Copyright (c) 2022 Liang Zhao
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -31,6 +31,7 @@
 #include "algorithm/boolean_algorithms.h"
 #include "base/backend.h"
 #include "base/register.h"
+#include "protocols/constant/constant_share_wrapper.h"
 #include "protocols/data_management/unsimdify_gate.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
@@ -54,7 +55,9 @@ SecureSignedInteger SecureSignedInteger::operator+(const SecureSignedInteger& ot
     std::shared_ptr<AlgorithmDescription> addition_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kAdd, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kAdd, bitlength, "_depth");
@@ -72,10 +75,7 @@ SecureSignedInteger SecureSignedInteger::operator+(const SecureSignedInteger& ot
         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
       }
     }
-    // std::cout << "operator+, ShareWrapper::Concatenate" << std::endl;
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
-
-    // std::cout << "share_input.Evaluate(addition_algorithm" << std::endl;
     return SecureSignedInteger(share_input.Evaluate(addition_algorithm));
   }
 }
@@ -89,7 +89,9 @@ SecureSignedInteger SecureSignedInteger::operator-(const SecureSignedInteger& ot
     std::shared_ptr<AlgorithmDescription> subtraction_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kSub, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kSub, bitlength, "_depth");
@@ -97,15 +99,16 @@ SecureSignedInteger SecureSignedInteger::operator-(const SecureSignedInteger& ot
     if ((subtraction_algorithm =
              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+        logger_->LogDebug(fmt::format(
+            "Found in cache Boolean integer subtraction circuit with file path {}", path));
       }
     } else {
       subtraction_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(subtraction_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+        logger_->LogDebug(
+            fmt::format("Read Boolean integer subtraction circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
@@ -122,7 +125,9 @@ SecureSignedInteger SecureSignedInteger::operator*(const SecureSignedInteger& ot
     std::shared_ptr<AlgorithmDescription> multiplication_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kMul, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kMul, bitlength, "_depth");
@@ -156,7 +161,9 @@ SecureSignedInteger SecureSignedInteger::operator/(const SecureSignedInteger& ot
     std::shared_ptr<AlgorithmDescription> division_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kDiv, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kDiv, bitlength, "_depth");
@@ -164,14 +171,14 @@ SecureSignedInteger SecureSignedInteger::operator/(const SecureSignedInteger& ot
     if ((division_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+            fmt::format("Found in cache Boolean integer division circuit with file path {}", path));
       }
     } else {
       division_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(division_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean integer division circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
@@ -188,7 +195,9 @@ ShareWrapper SecureSignedInteger::operator<(const SecureSignedInteger& other) co
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGt, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGt, bitlength, "_depth");
@@ -196,15 +205,15 @@ ShareWrapper SecureSignedInteger::operator<(const SecureSignedInteger& other) co
     if ((is_greater_algorithm =
              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+        logger_->LogDebug(fmt::format(
+            "Found in cache Boolean integer less than circuit with file path {}", path));
       }
     } else {
       is_greater_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(is_greater_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean integer less than circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*other.share_, *share_})};
@@ -221,7 +230,9 @@ ShareWrapper SecureSignedInteger::operator>(const SecureSignedInteger& other) co
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGt, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGt, bitlength, "_depth");
@@ -229,15 +240,16 @@ ShareWrapper SecureSignedInteger::operator>(const SecureSignedInteger& other) co
     if ((is_greater_algorithm =
              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+        logger_->LogDebug(fmt::format(
+            "Found in cache Boolean integer greater than circuit with file path {}", path));
       }
     } else {
       is_greater_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(is_greater_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+        logger_->LogDebug(
+            fmt::format("Read Boolean integer greater than circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
@@ -253,7 +265,9 @@ ShareWrapper SecureSignedInteger::operator==(const SecureSignedInteger& other) c
     if constexpr (kDebug) {
       if (other->GetProtocol() == MpcProtocol::kBmr) {
         logger_->LogDebug("Creating a Boolean equality circuit in BMR");
-      } else {
+      } else if (share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+        logger_->LogDebug("Creating a Boolean equality circuit in YAO");
+      } else if (share_->Get()->GetProtocol() == MpcProtocol::kBooleanGmw) {
         logger_->LogDebug("Creating a Boolean equality circuit in GMW");
       }
     }
@@ -264,7 +278,7 @@ ShareWrapper SecureSignedInteger::operator==(const SecureSignedInteger& other) c
 template <typename T, typename>
 SecureSignedInteger SecureSignedInteger::operator+(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this + signed_integer_constant;
 }
@@ -283,7 +297,7 @@ template SecureSignedInteger SecureSignedInteger::operator+
 template <typename T, typename>
 SecureSignedInteger SecureSignedInteger::operator-(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
 
   return *this - signed_integer_constant;
 }
@@ -302,7 +316,7 @@ template SecureSignedInteger SecureSignedInteger::operator-
 template <typename T, typename>
 SecureSignedInteger SecureSignedInteger::operator*(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
 
   return *this * signed_integer_constant;
 }
@@ -321,7 +335,7 @@ template SecureSignedInteger SecureSignedInteger::operator*
 template <typename T, typename>
 SecureSignedInteger SecureSignedInteger::operator/(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
 
   return *this / signed_integer_constant;
 }
@@ -340,7 +354,7 @@ template SecureSignedInteger SecureSignedInteger::operator/
 template <typename T, typename>
 ShareWrapper SecureSignedInteger::operator<(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
 
   return *this < signed_integer_constant;
 }
@@ -359,7 +373,7 @@ template ShareWrapper SecureSignedInteger::operator< <__uint128_t>(
 template <typename T, typename>
 ShareWrapper SecureSignedInteger::operator>(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
 
   return *this > signed_integer_constant;
 }
@@ -377,7 +391,7 @@ template ShareWrapper SecureSignedInteger::operator>
 template <typename T, typename>
 ShareWrapper SecureSignedInteger::operator==(const T& constant_value) const {
   SecureSignedInteger signed_integer_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput<T>(constant_value);
 
   return *this == signed_integer_constant;
 }
@@ -392,7 +406,6 @@ template ShareWrapper SecureSignedInteger::operator==
 template ShareWrapper SecureSignedInteger::operator==
     <__uint128_t>(const __uint128_t& constant_value) const;
 
-// TODO: implemente for other secure type
 SecureSignedInteger SecureSignedInteger::MulBooleanGmwBit(
     const ShareWrapper& boolean_gmw_share_other) const {
   assert(boolean_gmw_share_other->GetProtocol() == MpcProtocol::kBooleanGmw);
@@ -411,7 +424,9 @@ ShareWrapper SecureSignedInteger::EQZ() const {
     std::shared_ptr<AlgorithmDescription> equal_zero_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kEQZ, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kEQZ, bitlength, "_depth");
@@ -419,15 +434,16 @@ ShareWrapper SecureSignedInteger::EQZ() const {
     if ((equal_zero_algorithm =
              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer addition circuit with file path {}", path));
+        logger_->LogDebug(fmt::format(
+            "Found in cache Boolean integer equal to zero circuit with file path {}", path));
       }
     } else {
       equal_zero_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(equal_zero_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}", path));
+        logger_->LogDebug(
+            fmt::format("Read Boolean integer equal to zero circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *share_})};
@@ -441,11 +457,9 @@ ShareWrapper SecureSignedInteger::LTZ() const {
     throw std::runtime_error("Integer LTZ operation is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
-    // std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
-    // std::string path;
 
+    // return the most significant bit (sign bit) of this signed integer
     std::vector<ShareWrapper> boolean_gmw_or_bmr_share_vector = (*share_).Split();
-
     ShareWrapper boolean_gmw_or_bmr_share_msb_sign = boolean_gmw_or_bmr_share_vector.back();
     return boolean_gmw_or_bmr_share_msb_sign;
   }
@@ -460,7 +474,9 @@ ShareWrapper SecureSignedInteger::GEQ(const SecureSignedInteger& other) const {
     std::shared_ptr<AlgorithmDescription> geq_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGEQ, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGEQ, bitlength, "_depth");
@@ -492,7 +508,9 @@ ShareWrapper SecureSignedInteger::LEQ(const SecureSignedInteger& other) const {
     std::shared_ptr<AlgorithmDescription> geq_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGEQ, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kGEQ, bitlength, "_depth");
@@ -524,7 +542,9 @@ ShareWrapper SecureSignedInteger::InRange(const SecureSignedInteger& other) cons
     std::shared_ptr<AlgorithmDescription> in_range_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kInRange, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(SignedIntegerOperationType::kInRange, bitlength, "_depth");
@@ -551,23 +571,13 @@ SecureSignedInteger SecureSignedInteger::Neg(
     const ShareWrapper& boolean_gmw_or_bmr_share_sign) const {
   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_this_vector = share_->Split();
 
+  // compute two's complement
   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_this_invert_vector;
 
   boolean_gmw_or_bmr_share_this_invert_vector.reserve(boolean_gmw_or_bmr_share_this_vector.size());
   for (ShareWrapper boolean_gmw_or_bmr_share_this_wire : boolean_gmw_or_bmr_share_this_vector) {
     boolean_gmw_or_bmr_share_this_invert_vector.emplace_back(~boolean_gmw_or_bmr_share_this_wire);
-    // std::cout << "boolean_gmw_or_bmr_share_this_wire->GetBitLength(): "
-    //           << boolean_gmw_or_bmr_share_this_wire->GetBitLength() << std::endl;
   }
-
-  // std::cout << "boolean_gmw_or_bmr_share_this_vector.size(): "
-  //           << boolean_gmw_or_bmr_share_this_vector.size() << std::endl;
-
-  // std::cout << "boolean_gmw_or_bmr_share_sign->GetBitLength(): " <<
-  // boolean_gmw_or_bmr_share_sign->GetBitLength()
-  //           << std::endl;
-
-  // std::cout << "AdderChain" << std::endl;
   ShareWrapper unsigned_integer_twos_complement_with_overflow_bit =
       encrypto::motion::algorithm::AdderChain(boolean_gmw_or_bmr_share_this_invert_vector,
                                               boolean_gmw_or_bmr_share_sign);
@@ -575,48 +585,31 @@ SecureSignedInteger SecureSignedInteger::Neg(
   std::vector<ShareWrapper> unsigned_integer_twos_complement_with_overflow_bit_vector =
       unsigned_integer_twos_complement_with_overflow_bit.Split();
 
-  // std::cout << "unsigned_integer_twos_complement_with_overflow_bit_vector.size(): "
-  //           << unsigned_integer_twos_complement_with_overflow_bit_vector.size() << std::endl;
-
   std::vector<ShareWrapper> unsigned_integer_twos_complement_vector(
       unsigned_integer_twos_complement_with_overflow_bit_vector.begin(),
       unsigned_integer_twos_complement_with_overflow_bit_vector.end() - 1);
 
-  // std::cout << "unsigned_integer_twos_complement_vector.size(): "
-  //           << unsigned_integer_twos_complement_vector.size() << std::endl;
-  // return (boolean_gmw_or_bmr_share_sign.XCOTMul(
-  //            ShareWrapper::Concatenate(unsigned_integer_twos_complement_vector))) ^
-  //        ((~boolean_gmw_or_bmr_share_sign).XCOTMul(this->Get()));
-
-  // std::cout << "before Mux" << std::endl;
-
   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_sign_vector(
       unsigned_integer_twos_complement_vector.size(), boolean_gmw_or_bmr_share_sign);
 
-  // return ShareWrapper::Concatenate(boolean_gmw_or_bmr_share_sign_vector)
-  //     .Mux(ShareWrapper::Concatenate(unsigned_integer_twos_complement_vector), this->Get());
+  // output negation(*this) or (*this)
   return (boolean_gmw_or_bmr_share_sign)
       .Mux(ShareWrapper::Concatenate(unsigned_integer_twos_complement_vector), this->Get());
 }
 
 SecureSignedInteger SecureSignedInteger::Neg() const {
   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_this_vector = share_->Split();
+
+  // compute two's complement
   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_this_invert_vector;
   boolean_gmw_or_bmr_share_this_invert_vector.reserve(boolean_gmw_or_bmr_share_this_vector.size());
   for (ShareWrapper boolean_gmw_or_bmr_share_this_wire : boolean_gmw_or_bmr_share_this_vector) {
     boolean_gmw_or_bmr_share_this_invert_vector.emplace_back(~boolean_gmw_or_bmr_share_this_wire);
-    // std::cout << "boolean_gmw_or_bmr_share_this_wire->GetBitLength(): "
-    //           << boolean_gmw_or_bmr_share_this_wire->GetBitLength() << std::endl;
   }
 
   ShareWrapper constant_boolean_gmw_or_bmr_share_one =
       boolean_gmw_or_bmr_share_this_vector[0] ^ (~boolean_gmw_or_bmr_share_this_vector[0]);
 
-  // std::cout << "boolean_gmw_or_bmr_share_sign->GetBitLength(): " <<
-  // boolean_gmw_or_bmr_share_sign->GetBitLength()
-  //           << std::endl;
-
-  // std::cout << "AdderChain" << std::endl;
   ShareWrapper unsigned_integer_twos_complement_with_overflow_bit =
       encrypto::motion::algorithm::AdderChain(boolean_gmw_or_bmr_share_this_invert_vector,
                                               constant_boolean_gmw_or_bmr_share_one);
@@ -629,98 +622,81 @@ SecureSignedInteger SecureSignedInteger::Neg() const {
       unsigned_integer_twos_complement_with_overflow_bit_vector.end() - 1);
 
   return (ShareWrapper::Concatenate(unsigned_integer_twos_complement_vector));
-
-  // // only for debugging
-  // return ((*this));
 }
 
-SecureFloatingPointCircuitABY SecureSignedInteger::Int2FL(
-    std::size_t floating_point_bit_length) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-    throw std::runtime_error(
-        "Floating-point operations are not supported for Arithmetic GMW shares");
-  } else {  // BooleanCircuitType
-    const auto bitlength = share_->Get()->GetBitLength();
+// SecureFloatingPointCircuitABY SecureSignedInteger::Int2FL(
+//     std::size_t floating_point_bit_length) const {
+//   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
+//     throw std::runtime_error(
+//         "Floating-point operations are not supported for Arithmetic GMW shares");
+//   } else {  // BooleanCircuitType
+//     const auto bitlength = share_->Get()->GetBitLength();
 
-    std::shared_ptr<AlgorithmDescription> integer_to_floating_point_algorithm;
-    std::string path;
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
-      path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_size",
-                           floating_point_bit_length);
-    else  // GMW, use depth-optimized circuit
-      path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_depth",
-                           floating_point_bit_length);
-    if ((integer_to_floating_point_algorithm =
-             share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format(
-            "Found in cache Boolean integer to floating-point circuit with file path {}", path));
-      }
-    } else {
-      integer_to_floating_point_algorithm =
-          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-      assert(integer_to_floating_point_algorithm);
-      if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Read Boolean integer to floating circuit from file {}", path));
-      }
-    }
+//     std::shared_ptr<AlgorithmDescription> integer_to_floating_point_algorithm;
+//     std::string path;
+//     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+//         share_->Get()->GetProtocol() ==
+//             MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
+//       path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_size",
+//                            floating_point_bit_length);
+//     else  // GMW, use depth-optimized circuit
+//       path = ConstructPath(SignedIntegerOperationType::kInt2FL, bitlength, "_depth",
+//                            floating_point_bit_length);
+//     if ((integer_to_floating_point_algorithm =
+//              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+//       if constexpr (kDebug) {
+//         logger_->LogDebug(fmt::format(
+//             "Found in cache Boolean integer to floating-point circuit with file path {}", path));
+//       }
+//     } else {
+//       integer_to_floating_point_algorithm =
+//           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
+//       assert(integer_to_floating_point_algorithm);
+//       if constexpr (kDebug) {
+//         logger_->LogDebug(
+//             fmt::format("Read Boolean integer to floating circuit from file {}", path));
+//       }
+//     }
 
-// ! we mask the correct result with zero_bits_mask, otherwise, it cannot be converted to bristol
-// format in CBMC-GC, input wire zero_bits_mask must be zero bits
-ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_)^ (*share_);
+//     // ! we mask the correct result with zero_bits_mask in circuit, otherwise, CBMC-GC cannot
+//     // convert this circuit to bristol format, input wire zero_bits_mask must be zero bits
+//     ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_) ^ (*share_);
 
-    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, constant_boolean_gmw_or_bmr_share_zero})};
-    const auto evaluation_result = share_input.Evaluate(integer_to_floating_point_algorithm);
+//     const auto share_input{
+//         ShareWrapper::Concatenate(std::vector{*share_, constant_boolean_gmw_or_bmr_share_zero})};
+//     const auto evaluation_result = share_input.Evaluate(integer_to_floating_point_algorithm);
 
-    return evaluation_result;
-  }
-}
+//     return evaluation_result;
+//   }
+// }
 
-SecureFixedPointCircuitCBMC SecureSignedInteger::Int2Fx(std::size_t fraction_bit_size) const {
-  // const auto bitlength = share_->Get()->GetBitLength();
-  // std::vector<ShareWrapper> boolean_gmw_or_bmr_share_vector = share_->Split();
+// SecureFixedPointCircuitCBMC SecureSignedInteger::Int2Fx(std::size_t fraction_bit_size) const {
+//   const auto bitlength = share_->Get()->GetBitLength();
+//   std::vector<ShareWrapper> boolean_gmw_or_bmr_share_vector = share_->Split();
 
-  // ShareWrapper fixed_point_boolean_gmw_or_bmr_share = *(share_.get()) ^ *(share_.get());
-  // std::vector<ShareWrapper> fixed_point_boolean_gmw_or_bmr_share_vector =
-  //     fixed_point_boolean_gmw_or_bmr_share.Split();
+//   ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
+//       boolean_gmw_or_bmr_share_vector[0] ^ boolean_gmw_or_bmr_share_vector[0];
 
-  // for (std::size_t i = 0; i + f < bitlength; i++) {
-  //   fixed_point_boolean_gmw_or_bmr_share_vector[i + f] = boolean_gmw_or_bmr_share_vector[i];
-  // }
-  // fixed_point_boolean_gmw_or_bmr_share =
-  // share_->Concatenate(fixed_point_boolean_gmw_or_bmr_share_vector);
+//   // convert signed integer to fixed-point by directly left shifting the bits
+//   std::vector<ShareWrapper> fixed_point_boolean_gmw_or_bmr_share_vector(bitlength);
+//   for (std::size_t i = 0; i < bitlength; i++) {
+//     fixed_point_boolean_gmw_or_bmr_share_vector[i] = constant_boolean_gmw_or_bmr_share_zero;
+//   }
 
-  // return fixed_point_boolean_gmw_or_bmr_share;
+//   for (std::size_t i = 0; i + fraction_bit_size < bitlength; i++) {
+//     fixed_point_boolean_gmw_or_bmr_share_vector[i + fraction_bit_size] =
+//         boolean_gmw_or_bmr_share_vector[i];
+//   }
+//   ShareWrapper fixed_point_boolean_gmw_or_bmr_share =
+//       share_->Concatenate(fixed_point_boolean_gmw_or_bmr_share_vector);
 
-  const auto bitlength = share_->Get()->GetBitLength();
-  std::vector<ShareWrapper> boolean_gmw_or_bmr_share_vector = share_->Split();
-
-  // ShareWrapper fixed_point_boolean_gmw_or_bmr_share = *(share_.get()) ^ *(share_.get());
-
-  ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
-      boolean_gmw_or_bmr_share_vector[0] ^ boolean_gmw_or_bmr_share_vector[0];
-
-  std::vector<ShareWrapper> fixed_point_boolean_gmw_or_bmr_share_vector(bitlength);
-  for (std::size_t i = 0; i < bitlength; i++) {
-    fixed_point_boolean_gmw_or_bmr_share_vector[i] = constant_boolean_gmw_or_bmr_share_zero;
-  }
-
-  for (std::size_t i = 0; i + fraction_bit_size < bitlength; i++) {
-    fixed_point_boolean_gmw_or_bmr_share_vector[i + fraction_bit_size] =
-        boolean_gmw_or_bmr_share_vector[i];
-  }
-  ShareWrapper fixed_point_boolean_gmw_or_bmr_share =
-      share_->Concatenate(fixed_point_boolean_gmw_or_bmr_share_vector);
-
-  return fixed_point_boolean_gmw_or_bmr_share;
-}
+//   return fixed_point_boolean_gmw_or_bmr_share;
+// }
 
 std::string SecureSignedInteger::ConstructPath(const SignedIntegerOperationType type,
                                                const std::size_t bitlength, std::string suffix,
                                                const std::size_t floating_point_bit_length) const {
   std::string operation_type_string;
-  // std::string suffix_tmp = suffix;
   switch (type) {
     case SignedIntegerOperationType::kAdd: {
       operation_type_string = "add";
@@ -762,11 +738,6 @@ std::string SecureSignedInteger::ConstructPath(const SignedIntegerOperationType 
       operation_type_string = "to_float" + std::to_string(floating_point_bit_length);
       break;
     }
-      // case SignedIntegerOperationType::kInt2Fx: {
-      //   operation_type_string = "int2fx";
-      //   suffix_tmp = "";
-      //   break;
-      // }
 
     default:
       throw std::runtime_error(fmt::format("Invalid integer operation required: {}", type));
@@ -797,9 +768,7 @@ SecureSignedInteger SecureSignedInteger::Subset(std::vector<size_t>&& positions)
 }
 
 std::vector<SecureSignedInteger> SecureSignedInteger::Unsimdify() const {
-  auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_->Get());
-  auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);
-  share_->Get()->GetRegister()->RegisterNextGate(unsimdify_gate_cast);
+  auto unsimdify_gate = share_->Get()->GetRegister()->EmplaceGate<UnsimdifyGate>(share_->Get());
   std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
   std::vector<SecureSignedInteger> result(shares.size());
   std::transform(shares.begin(), shares.end(), result.begin(),
@@ -817,17 +786,13 @@ struct is_specialization : std::false_type {};
 template <template <typename...> class Ref, typename... Args>
 struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
 
-// modified by Liang Zhao
 template <typename T>
 T SecureSignedInteger::As() const {
   if (share_->Get()->GetProtocol() == MpcProtocol::kArithmeticGmw)
     return share_->As<T>();
-  else if (share_->Get()->GetProtocol() == MpcProtocol::kBooleanGmw ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBooleanConstant ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBooleanMix ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBmr) {
+  else if (share_->Get()->GetCircuitType() == CircuitType::kBoolean) {
     auto share_out = share_->As<std::vector<encrypto::motion::BitVector<>>>();
-    if constexpr (std::is_unsigned<T>()) {
+    if constexpr (std::is_unsigned<T>() || std::is_same<T, __uint128_t>()) {
       return encrypto::motion::ToOutput<T>(share_out);
     } else {
       throw std::invalid_argument(
@@ -848,66 +813,15 @@ std::vector<T, A> SecureSignedInteger::AsVector() const {
 }
 
 template std::uint8_t SecureSignedInteger::As() const;
-
 template std::uint16_t SecureSignedInteger::As() const;
-
 template std::uint32_t SecureSignedInteger::As() const;
-
 template std::uint64_t SecureSignedInteger::As() const;
-
-// added by Liang Zhao
 template __uint128_t SecureSignedInteger::As() const;
 
 template std::vector<std::uint8_t> SecureSignedInteger::AsVector() const;
-
 template std::vector<std::uint16_t> SecureSignedInteger::AsVector() const;
-
 template std::vector<std::uint32_t> SecureSignedInteger::AsVector() const;
-
 template std::vector<std::uint64_t> SecureSignedInteger::AsVector() const;
-
-// added by Liang Zhao
 template std::vector<__uint128_t> SecureSignedInteger::AsVector() const;
-
-// // added by Liang Zhao
-// ??? not useful for wrap protocol
-// SecureSignedInteger SecureSignedInteger::AddUint64OutputUint128(const SecureSignedInteger&
-// other) const {
-//   if (share_->Get()->GetCircuitType() == CircuitType::kArithmetic) {
-//     // use primitive operation in arithmetic GMW
-//     return *share_ + *other.share_;
-//   } else {  // BooleanCircuitType
-//     const auto bitlength = share_->Get()->GetBitLength();
-//     std::shared_ptr<AlgorithmDescription> addition_algorithm;
-//     std::string path;
-
-//     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
-//       path = ConstructPath(SignedIntegerOperationType::kAdd, bitlength, "_out128_size");
-//     else  // GMW, use depth-optimized circuit
-//       path = ConstructPath(SignedIntegerOperationType::kAdd, bitlength, "_out128_depth");
-
-//     if ((addition_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path)))
-//     {
-//       if constexpr (kDebug) {
-//         logger_->LogDebug(
-//             fmt::format("Found in cache Boolean integer addition circuit with file path {}",
-//             path));
-//       }
-//     } else {
-//       addition_algorithm =
-//           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-//       assert(addition_algorithm);
-//       if constexpr (kDebug) {
-//         logger_->LogDebug(fmt::format("Read Boolean integer addition circuit from file {}",
-//         path));
-//       }
-//     }
-//     std::cout << "operator+, ShareWrapper::Concatenate" << std::endl;
-//     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
-
-//     std::cout << "share_input.Evaluate(addition_algorithm" << std::endl;
-//     return SecureSignedInteger(share_input.Evaluate(addition_algorithm));
-//   }
-// }
 
 }  // namespace encrypto::motion

@@ -271,7 +271,9 @@ ShareWrapper SecureUnsignedInteger::operator==(const SecureUnsignedInteger& othe
     if constexpr (kDebug) {
       if (other->GetProtocol() == MpcProtocol::kBmr) {
         logger_->LogDebug("Creating a Boolean equality circuit in BMR");
-      } else {
+      } else if (share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+        logger_->LogDebug("Creating a Boolean equality circuit in YAO");
+      } else if (share_->Get()->GetProtocol() == MpcProtocol::kBooleanGmw) {
         logger_->LogDebug("Creating a Boolean equality circuit in GMW");
       }
     }
@@ -428,7 +430,9 @@ ShareWrapper SecureUnsignedInteger::EQZ() const {
     std::shared_ptr<AlgorithmDescription> equal_zero_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kEQZ, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kEQZ, bitlength, "_depth");
@@ -462,7 +466,9 @@ SecureUnsignedInteger SecureUnsignedInteger::Mod(
     std::shared_ptr<AlgorithmDescription> mod_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kMod, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kMod, bitlength, "_depth");
@@ -514,7 +520,9 @@ ShareWrapper SecureUnsignedInteger::GEQ(const SecureUnsignedInteger& other) cons
     std::shared_ptr<AlgorithmDescription> geq_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_depth");
@@ -545,7 +553,9 @@ ShareWrapper SecureUnsignedInteger::LEQ(const SecureUnsignedInteger& other) cons
     std::shared_ptr<AlgorithmDescription> geq_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_depth");

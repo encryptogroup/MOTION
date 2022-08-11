@@ -62,6 +62,10 @@ add_library(motion
         protocols/share_wrapper.cpp
         protocols/wire.cpp
         secure_type/secure_unsigned_integer.cpp
+        secure_type/secure_signed_integer.cpp
+        # secure_type/secure_floating_point_circuit_ABY.cpp
+        # secure_type/secure_fixed_point_circuit_CBMC.cpp
+        secure_type/secure_signed_integer.cpp
         statistics/analysis.cpp
         statistics/run_time_statistics.cpp
         utility/bit_matrix.cpp

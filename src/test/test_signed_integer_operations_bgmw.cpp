@@ -32,27 +32,27 @@
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/share_wrapper.h"
-#include "secure_type/secure_unsigned_integer.h"
-#include "test_constants.h"
+#include "secure_type/secure_signed_integer.h"
 #include "test_helpers.h"
-#include "utility/MOTION_dp_mechanism_helper/print_uint128_t.h"
 #include "utility/config.h"
+
+#include "test_constants.h"
 
 using namespace encrypto::motion;
 
 namespace {
 TEST(AlgorithmDescription, FromBristolFormatIntAdd8Size) {
-  const auto uint_add8 = encrypto::motion::AlgorithmDescription::FromBristol(
+  const auto int_add8 = encrypto::motion::AlgorithmDescription::FromBristol(
       std::string(encrypto::motion::kRootDir) +
-      "/circuits/unsigned_integer_HyCC/uint8_add_size.bristol");
-  EXPECT_EQ(uint_add8.number_of_gates, 34);
-  EXPECT_EQ(uint_add8.gates.size(), 34);
-  EXPECT_EQ(uint_add8.number_of_output_wires, 8);
-  EXPECT_EQ(uint_add8.number_of_input_wires_parent_a, 8);
-  ASSERT_NO_THROW([&uint_add8]() { EXPECT_EQ(*uint_add8.number_of_input_wires_parent_b, 8); }());
-  EXPECT_EQ(uint_add8.number_of_wires, 50);
+      "/circuits/signed_integer_HyCC/int8_add_size.bristol");
+  EXPECT_EQ(int_add8.number_of_gates, 34);
+  EXPECT_EQ(int_add8.gates.size(), 34);
+  EXPECT_EQ(int_add8.number_of_output_wires, 8);
+  EXPECT_EQ(int_add8.number_of_input_wires_parent_a, 8);
+  ASSERT_NO_THROW([&int_add8]() { EXPECT_EQ(*int_add8.number_of_input_wires_parent_b, 8); }());
+  EXPECT_EQ(int_add8.number_of_wires, 50);
 
-  const auto& gate0 = uint_add8.gates.at(0);
+  const auto& gate0 = int_add8.gates.at(0);
   EXPECT_EQ(gate0.parent_a, 0);
   ASSERT_NO_THROW([&gate0]() { EXPECT_EQ(*gate0.parent_b, 8); }());
   EXPECT_EQ(gate0.output_wire, 42);
@@ -61,38 +61,45 @@ TEST(AlgorithmDescription, FromBristolFormatIntAdd8Size) {
 
   EXPECT_EQ(gate0.selection_bit.has_value(), false);
 
-  const auto& gate1 = uint_add8.gates.at(1);
+  const auto& gate1 = int_add8.gates.at(1);
   EXPECT_EQ(gate1.parent_a, 0);
   ASSERT_NO_THROW([&gate1]() { EXPECT_EQ(*gate1.parent_b, 8); }());
   EXPECT_EQ(gate1.output_wire, 16);
   // EXPECT_EQ(gate1.type, encrypto::motion::PrimitiveOperationType::kAnd); // compile errors
   EXPECT_EQ((gate1.type == encrypto::motion::PrimitiveOperationType::kAnd), 1);
+
   EXPECT_EQ(gate1.selection_bit.has_value(), false);
 
-  const auto& gate32 = uint_add8.gates.at(32);
+  const auto& gate32 = int_add8.gates.at(32);
   EXPECT_EQ(gate32.parent_a, 15);
   ASSERT_NO_THROW([&gate32]() { EXPECT_EQ(*gate32.parent_b, 40); }());
   EXPECT_EQ(gate32.output_wire, 41);
   // EXPECT_EQ(gate32.type, encrypto::motion::PrimitiveOperationType::kXor); // compile errors
   EXPECT_EQ((gate32.type == encrypto::motion::PrimitiveOperationType::kXor), 1);
+
   EXPECT_EQ(gate32.selection_bit.has_value(), false);
 
-  const auto& gate33 = uint_add8.gates.at(33);
+  const auto& gate33 = int_add8.gates.at(33);
   EXPECT_EQ(gate33.parent_a, 7);
   ASSERT_NO_THROW([&gate33]() { EXPECT_EQ(*gate33.parent_b, 41); }());
   EXPECT_EQ(gate33.output_wire, 49);
   // EXPECT_EQ(gate33.type, encrypto::motion::PrimitiveOperationType::kXor); // compile errors
   EXPECT_EQ((gate33.type == encrypto::motion::PrimitiveOperationType::kXor), 1);
+
   EXPECT_EQ(gate33.selection_bit.has_value(), false);
 }
-template <typename T>
-class SecureUintTest_8_16_32_64_bgmw : public ::testing::Test {};
 
 template <typename T>
-class SecureUintTest_8_16_32_64_128_bgmw : public ::testing::Test {};
+class SecureIntTest_8_16_32_64_bgmw : public ::testing::Test {};
 
 template <typename T>
-class SecureUintTest_32_64_bgmw : public ::testing::Test {};
+class SecureIntTest_8_16_32_64_128_bgmw : public ::testing::Test {};
+
+template <typename T>
+class SecureIntTest_32_64_bgmw : public ::testing::Test {};
+
+template <typename T>
+class SecureIntTest_128_bgmw : public ::testing::Test {};
 
 using uint_32_64 = ::testing::Types<std::uint32_t, std::uint64_t>;
 using uint_8_16_32_64 = ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
@@ -100,19 +107,24 @@ using uint_8_16_32_64 = ::testing::Types<std::uint8_t, std::uint16_t, std::uint3
 using uint_8_16_32_64_128 =
     ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t, __uint128_t>;
 
-TYPED_TEST_SUITE(SecureUintTest_32_64_bgmw, uint_32_64);
+using uint_128 = ::testing::Types<__uint128_t>;
 
-TYPED_TEST_SUITE(SecureUintTest_8_16_32_64_128_bgmw, uint_8_16_32_64_128);
+TYPED_TEST_SUITE(SecureIntTest_32_64_bgmw, uint_32_64);
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionSIMDInGmw) {
+TYPED_TEST_SUITE(SecureIntTest_128_bgmw, uint_128);
+
+TYPED_TEST_SUITE(SecureIntTest_8_16_32_64_128_bgmw, uint_8_16_32_64_128);
+
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, AdditionSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -132,7 +144,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -145,10 +157,11 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) + raw_global_input_2.at(i);
+        const T_int expect_result =
+            T_int(raw_global_input_1.at(i)) + T_int(raw_global_input_2.at(i));
         std::vector<T> result = share_output.AsVector<T>();
 
-        EXPECT_EQ(result[i], expect_result);
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
       motion_parties.at(party_id)->Finish();
     });
@@ -157,15 +170,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionConstantSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, AdditionConstantSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -185,23 +199,24 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionConstantSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1), 1);
       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
 
-      encrypto::motion::SecureUnsignedInteger share_result = share_0 + raw_global_input_2[0];
+      encrypto::motion::SecureSignedInteger share_result = share_0 + raw_global_input_2[0];
       auto share_output = share_result.Out();
 
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) + raw_global_input_2.at(0);
+        const T_int expect_result =
+            T_int(raw_global_input_1.at(i)) + T_int(raw_global_input_2.at(0));
         std::vector<T> result = share_output.AsVector<T>();
 
-        EXPECT_EQ(result[i], expect_result);
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
       motion_parties.at(party_id)->Finish();
     });
@@ -210,15 +225,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, AdditionConstantSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, SubtractionSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, SubtractionSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -238,7 +254,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, SubtractionSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -251,10 +267,11 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, SubtractionSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) - raw_global_input_2.at(i);
+        const T_int expect_result =
+            T_int(raw_global_input_1.at(i)) - T_int(raw_global_input_2.at(i));
         std::vector<T> result = share_output.AsVector<T>();
 
-        EXPECT_EQ(result[i], expect_result);
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
       motion_parties.at(party_id)->Finish();
     });
@@ -263,15 +280,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, SubtractionSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MultiplicationSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, MultiplicationSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
-  constexpr std::size_t kNumberOfSimd{10};
-  std::srand(time(nullptr));
+  constexpr std::size_t kNumberOfSimd{1000};
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -291,7 +309,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MultiplicationSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -304,10 +322,11 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MultiplicationSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) * raw_global_input_2.at(i);
+        const T_int expect_result =
+            T_int(raw_global_input_1.at(i)) * T_int(raw_global_input_2.at(i));
         std::vector<T> result = share_output.AsVector<T>();
 
-        EXPECT_EQ(result[i], expect_result);
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
       motion_parties.at(party_id)->Finish();
     });
@@ -316,18 +335,25 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MultiplicationSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, DivisionSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, DivisionSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{10};
-  std::srand(time(nullptr));
 
-  T min = 1;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+
+  for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+    if (raw_global_input_2[i] == 0) {
+      raw_global_input_2[i] == 1;
+    }
+  }
 
   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
       encrypto::motion::ToInput(raw_global_input_1), encrypto::motion::ToInput(raw_global_input_2)};
@@ -344,7 +370,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, DivisionSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -357,10 +383,11 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, DivisionSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) / raw_global_input_2.at(i);
+        const T_int expect_result =
+            T_int(raw_global_input_1.at(i)) / T_int(raw_global_input_2.at(i));
         std::vector<T> result = share_output.AsVector<T>();
 
-        EXPECT_EQ(result[i], expect_result);
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
       motion_parties.at(party_id)->Finish();
     });
@@ -369,15 +396,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, DivisionSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LessThanSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, LessThanSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -397,7 +425,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LessThanSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -410,7 +438,8 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LessThanSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const bool expect_result = raw_global_input_1.at(i) < raw_global_input_2.at(i);
+        const bool expect_result =
+            T_int(raw_global_input_1.at(i)) < T_int(raw_global_input_2.at(i));
         BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
@@ -422,15 +451,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LessThanSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GreaterThanSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, GreaterThanSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -450,7 +480,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GreaterThanSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -463,7 +493,8 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GreaterThanSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const bool expect_result = raw_global_input_1.at(i) > raw_global_input_2.at(i);
+        const bool expect_result =
+            T_int(raw_global_input_1.at(i)) > T_int(raw_global_input_2.at(i));
         BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
@@ -475,15 +506,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GreaterThanSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EqualitySIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, EqualitySIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -503,7 +535,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EqualitySIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -516,7 +548,8 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EqualitySIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const bool expect_result = raw_global_input_1.at(i) == raw_global_input_2.at(i);
+        const bool expect_result =
+            T_int(raw_global_input_1.at(i)) == T_int(raw_global_input_2.at(i));
         BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
@@ -528,20 +561,21 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EqualitySIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MulBooleanGmwBitSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, MulBooleanGmwBitSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
   T min = 0;
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   std::vector<bool> raw_global_input_2 = RandomBoolVector(kNumberOfSimd);
 
-  BitVector<> boolean_bit = BitVector<>(raw_global_input_2);
+  BitVector<> boolean_bit = BitVector(raw_global_input_2);
 
   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
       encrypto::motion::ToInput(raw_global_input_1)};
@@ -558,7 +592,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MulBooleanGmwBitSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &boolean_bit]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(boolean_bit, 1)
@@ -571,10 +605,10 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MulBooleanGmwBitSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) * (boolean_bit[i]);
+        const T_int expect_result = T_int((raw_global_input_1.at(i)) * (boolean_bit[i]));
         std::vector<T> result = share_output.AsVector<T>();
 
-        EXPECT_EQ(result[i], expect_result);
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
       motion_parties.at(party_id)->Finish();
     });
@@ -583,15 +617,16 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, MulBooleanGmwBitSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EQZSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, EQZSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -611,7 +646,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EQZSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -624,7 +659,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EQZSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const bool expect_result = raw_global_input_1.at(i) == 0;
+        const bool expect_result = T_int(raw_global_input_1.at(i)) == 0;
         BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
@@ -635,18 +670,19 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EQZSIMDInGmw) {
   for (auto& t : threads)
     if (t.joinable()) t.join();
 }
-
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, ObliviousModSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, LTZSIMDInGmw) {
   using T = TypeParam;
-  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
-  constexpr auto kNumberOfWires{sizeof(T) * 8};
-  constexpr std::size_t kNumberOfSimd{10};
+  using T_int = get_int_type_t<T>;
   std::srand(time(nullptr));
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
-  T min = 0;
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{1000};
+
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
-  std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
-  std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(T(1), max, kNumberOfSimd);
+  const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+  const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
 
   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
       encrypto::motion::ToInput(raw_global_input_1), encrypto::motion::ToInput(raw_global_input_2)};
@@ -663,21 +699,21 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, ObliviousModSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1), 1);
       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
 
-      const auto share_result = share_0.Mod(share_1);
+      const auto share_result = share_0.LTZ();
       auto share_output = share_result.Out();
 
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) % raw_global_input_2.at(i);
-        std::vector<T> result = share_output.AsVector<T>();
+        const bool expect_result = T_int(raw_global_input_1.at(i)) < 0;
+        BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
       }
@@ -688,19 +724,75 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, ObliviousModSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, ModSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, InRangeSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{2};
+
+  T min = -T(1) << (sizeof(T) * 8 - 1);
+  T max = T(1) << (sizeof(T) * 8 - 1);
+  const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+  const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(T(0), max, kNumberOfSimd);
+
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+      encrypto::motion::ToInput(raw_global_input_1), encrypto::motion::ToInput(raw_global_input_2)};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
+  for (auto& party : motion_parties) {
+    party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+    party->GetConfiguration()->SetOnlineAfterSetup(true);
+  }
+  std::vector<std::thread> threads;
+  for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+    threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+                          &raw_global_input_1, &raw_global_input_2]() {
+      const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+      encrypto::motion::SecureSignedInteger
+          share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+          share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1), 1);
+      EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+      const auto share_result = share_0.InRange(share_1);
+      auto share_output = share_result.Out();
+
+      motion_parties.at(party_id)->Run();
+
+      for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+        const bool expect_result =
+            (T_int(raw_global_input_1.at(i)) <= T_int(raw_global_input_2.at(i))) &&
+            (T_int(raw_global_input_1.at(i)) >= -T_int(raw_global_input_2.at(i)));
+        BitVector<> result = share_output.As<BitVector<>>();
+
+        EXPECT_EQ(result[i], expect_result);
+      }
+      motion_parties.at(party_id)->Finish();
+    });
+  }
+  for (auto& t : threads)
+    if (t.joinable()) t.join();
+}
+
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, NegSIMDInGmw) {
+  using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
-
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
-  const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(T(1), max, kNumberOfSimd);
+  const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   std::size_t m = raw_global_input_2[0];
 
   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
@@ -716,41 +808,101 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, ModSIMDInGmw) {
   std::vector<std::thread> threads;
   for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
-                          &raw_global_input_1, &m, &raw_global_input_2]() {
+                          &raw_global_input_1, &m]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1), 1);
       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
 
-      encrypto::motion::SecureUnsignedInteger share_result = share_0.Mod(raw_global_input_2.at(0));
+      const auto share_result = share_0.Neg();
       auto share_output = share_result.Out();
 
       motion_parties.at(party_id)->Run();
-      motion_parties.at(party_id)->Finish();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const T expect_result = raw_global_input_1.at(i) % raw_global_input_2.at(0);
+        const T_int expect_result = -T_int(raw_global_input_1[i]);
         std::vector<T> result = share_output.AsVector<T>();
-        EXPECT_EQ(result[i], expect_result);
+
+        EXPECT_EQ(T_int(result[i]), expect_result);
       }
+      motion_parties.at(party_id)->Finish();
     });
   }
   for (auto& t : threads)
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GEQSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, NegConditionSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
-  T min = 0;
+  T min = -T(1) << (sizeof(T) * 8 - 1);
+  T max = T(1) << (sizeof(T) * 8 - 1);
+  const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+  std::vector<bool> raw_global_input_2 = RandomBoolVector(kNumberOfSimd);
+
+  BitVector<> boolean_bit = BitVector(raw_global_input_2);
+
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+      encrypto::motion::ToInput(raw_global_input_1)};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
+  for (auto& party : motion_parties) {
+    party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+    party->GetConfiguration()->SetOnlineAfterSetup(true);
+  }
+  std::vector<std::thread> threads;
+  for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+    threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+                          &raw_global_input_1, &raw_global_input_2, &boolean_bit]() {
+      const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+      encrypto::motion::SecureSignedInteger share_0 =
+          party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+                  : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0);
+      encrypto::motion::ShareWrapper share_1 =
+          party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(boolean_bit, 1)
+                  : motion_parties.at(party_id)->In<kBooleanGmw>(boolean_bit, 1);
+      EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+      const auto share_result = share_0.Neg(share_1);
+      auto share_output = share_result.Out();
+
+      motion_parties.at(party_id)->Run();
+
+      for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+        const T_int expect_result =
+            T_int(1 - 2 * raw_global_input_2[i]) * T_int(raw_global_input_1.at(i));
+        std::vector<T> result = share_output.AsVector<T>();
+
+        EXPECT_EQ(T_int(result[i]), expect_result);
+      }
+      motion_parties.at(party_id)->Finish();
+    });
+  }
+  for (auto& t : threads)
+    if (t.joinable()) t.join();
+}
+
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, GEQSIMDInGmw) {
+  using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{1000};
+
+  T min = -T(1) << (sizeof(T) * 8 - 1);
   T max = T(1) << (sizeof(T) * 8 - 1);
   const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
   const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
@@ -770,7 +922,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GEQSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -783,7 +935,8 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GEQSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const bool expect_result = raw_global_input_1.at(i) >= raw_global_input_2.at(i);
+        const bool expect_result =
+            T_int(raw_global_input_1.at(i)) >= T_int(raw_global_input_2.at(i));
         BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
@@ -795,13 +948,14 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, GEQSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LEQSIMDInGmw) {
+TYPED_TEST(SecureIntTest_8_16_32_64_128_bgmw, LEQSIMDInGmw) {
   using T = TypeParam;
+  using T_int = get_int_type_t<T>;
+  std::srand(time(nullptr));
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
 
   constexpr auto kNumberOfWires{sizeof(T) * 8};
   constexpr std::size_t kNumberOfSimd{1000};
-  std::srand(time(nullptr));
 
   T min = 0;
   T max = T(1) << (sizeof(T) * 8 - 1);
@@ -823,7 +977,7 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LEQSIMDInGmw) {
     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
                           &raw_global_input_1, &raw_global_input_2]() {
       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
-      encrypto::motion::SecureUnsignedInteger
+      encrypto::motion::SecureSignedInteger
           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
@@ -836,7 +990,8 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LEQSIMDInGmw) {
       motion_parties.at(party_id)->Run();
 
       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
-        const bool expect_result = raw_global_input_1.at(i) <= raw_global_input_2.at(i);
+        const bool expect_result =
+            T_int(raw_global_input_1.at(i)) <= T_int(raw_global_input_2.at(i));
         BitVector<> result = share_output.As<BitVector<>>();
 
         EXPECT_EQ(result[i], expect_result);
@@ -847,5 +1002,219 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LEQSIMDInGmw) {
   for (auto& t : threads)
     if (t.joinable()) t.join();
 }
+
+// TYPED_TEST(SecureIntTest_32_64_bgmw, Int2FLSIMDInGmw) {
+//   using T = TypeParam;
+//   using T_int = get_int_type_t<T>;
+//   std::srand(time(nullptr));
+//   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+//   constexpr auto kNumberOfWires{sizeof(T) * 8};
+//   constexpr std::size_t kNumberOfSimd{1000};
+
+//   T min = -T(1) << (sizeof(T) * 8 - 1);
+//   T max = T(1) << (sizeof(T) * 8 - 1);
+//   std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+//   std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+
+//   // only for debug
+//   raw_global_input_1[0] = 0;
+
+//   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+//       encrypto::motion::ToInput(raw_global_input_1),
+//       encrypto::motion::ToInput(raw_global_input_2)};
+//   std::vector<encrypto::motion::BitVector<>> dummy_input(
+//       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+//   std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
+//   kPortOffset))); for (auto& party : motion_parties) {
+//     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+//     party->GetConfiguration()->SetOnlineAfterSetup(true);
+//   }
+//   std::vector<std::thread> threads;
+//   for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+//     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+//                           &raw_global_input_1, &raw_global_input_2]() {
+//       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+//       encrypto::motion::SecureSignedInteger
+//           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+//                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+//           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+//                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
+//                             1);
+//       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+//       const auto share_result_32 = share_0.Int2FL(32);
+//       const auto share_result_64 = share_0.Int2FL(64);
+//       auto share_output_32 = share_result_32.Out();
+//       auto share_output_64 = share_result_64.Out();
+
+//       std::cout << "party run" << std::endl;
+//       motion_parties.at(party_id)->Run();
+//       motion_parties.at(party_id)->Finish();
+//       std::cout << "party finish" << std::endl;
+
+//       std::vector<float> result_32 = share_output_32.AsFloatingPointVector<float>();
+//       std::vector<double> result_64 = share_output_64.AsFloatingPointVector<double>();
+
+//       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+//         const float expect_result_32 = float(T_int(raw_global_input_1.at(i)));
+//         const double expect_result_64 = double(T_int(raw_global_input_1.at(i)));
+
+//         EXPECT_EQ(result_32[i], expect_result_32);
+//         EXPECT_EQ(result_64[i], expect_result_64);
+//       }
+//     });
+//   }
+//   for (auto& t : threads)
+//     if (t.joinable()) t.join();
+// }
+
+// TYPED_TEST(SecureIntTest_128_bgmw, Int2FLSIMDInGmw) {
+//   using T = TypeParam;
+//   using T_int = get_int_type_t<T>;
+//   std::srand(time(nullptr));
+//   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+//   constexpr auto kNumberOfWires{sizeof(T) * 8};
+//   constexpr std::size_t kNumberOfSimd{1000};
+
+//   T min = -T(1) << (sizeof(T) * 8 - 1);
+//   T max = T(1) << (sizeof(T) * 8 - 1);
+//   std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+//   std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+
+//   // only for debug
+//   raw_global_input_1[0] = 0;
+
+//   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+//       encrypto::motion::ToInput(raw_global_input_1),
+//       encrypto::motion::ToInput(raw_global_input_2)};
+//   std::vector<encrypto::motion::BitVector<>> dummy_input(
+//       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+//   std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
+//   kPortOffset))); for (auto& party : motion_parties) {
+//     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+//     party->GetConfiguration()->SetOnlineAfterSetup(true);
+//   }
+//   std::vector<std::thread> threads;
+//   for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+//     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+//                           &raw_global_input_1, &raw_global_input_2]() {
+//       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+//       encrypto::motion::SecureSignedInteger
+//           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+//                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+//           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+//                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
+//                             1);
+//       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+//       const auto share_result_32 = share_0.Int2FL(32);
+//       const auto share_result_64 = share_0.Int2FL(64);
+//       auto share_output_32 = share_result_32.Out();
+//       auto share_output_64 = share_result_64.Out();
+
+//       std::cout << "party run" << std::endl;
+//       motion_parties.at(party_id)->Run();
+//       motion_parties.at(party_id)->Finish();
+//       std::cout << "party finish" << std::endl;
+
+//       std::vector<float> result_32 = share_output_32.AsFloatingPointVector<float>();
+//       std::vector<double> result_64 = share_output_64.AsFloatingPointVector<double>();
+
+//       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+//         const float expect_result_32 = float(T_int(raw_global_input_1.at(i)));
+//         const double expect_result_64 = double(T_int(raw_global_input_1.at(i)));
+
+//         // if (T_int(raw_global_input_1.at(i)) < 0) {
+//         //   print_u128_u("-raw_global_input_1.at(i): ", -raw_global_input_1.at(i));
+//         // } else {
+//         //   print_u128_u("raw_global_input_1.at(i): ", raw_global_input_1.at(i));
+//         // }
+
+//         // std::cout << "expect_result_32: " << expect_result_32 << std::endl;
+//         // std::cout << "expect_result_64: " << expect_result_64 << std::endl;
+//         // std::cout<<std::endl;
+
+//         EXPECT_LE(result_32[i], std::nextafter(expect_result_32, +INFINITY));
+//         EXPECT_GE(result_32[i], std::nextafter(expect_result_32, -INFINITY));
+//         EXPECT_LE(result_64[i], std::nextafter(expect_result_64, +INFINITY));
+//         EXPECT_GE(result_64[i], std::nextafter(expect_result_64, -INFINITY));
+//       }
+//     });
+//   }
+//   for (auto& t : threads)
+//     if (t.joinable()) t.join();
+// }
+
+// TYPED_TEST(SecureIntTest_32_64_bgmw, Int2FxSIMDInGmw) {
+//   using T = std::uint64_t;
+//   using T_int = get_int_type_t<T>;
+//   std::srand(time(nullptr));
+//   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+//   constexpr auto kNumberOfWires{sizeof(T) * 8};
+//   constexpr std::size_t kNumberOfSimd{1000};
+
+//   T min = 0;
+//   T max = T(1) << (sizeof(T) * 8 - 1 - 16);
+//   std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+//   std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+
+//   // only for debugging
+//   for (std::size_t i = 0; i < kNumberOfSimd; ++i) {
+//     raw_global_input_1[i] = -raw_global_input_1[i];
+//   }
+//   // raw_global_input_1[0] = -10;
+//   std::cout << "raw_global_input_1: " << T_int(raw_global_input_1[0]) << std::endl;
+
+//   std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+//       encrypto::motion::ToInput(raw_global_input_1),
+//       encrypto::motion::ToInput(raw_global_input_2)};
+//   std::vector<encrypto::motion::BitVector<>> dummy_input(
+//       kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+//   std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2,
+//   kPortOffset))); for (auto& party : motion_parties) {
+//     party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+//     party->GetConfiguration()->SetOnlineAfterSetup(true);
+//   }
+//   std::vector<std::thread> threads;
+//   for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+//     threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+//                           &raw_global_input_1, &raw_global_input_2]() {
+//       const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+//       encrypto::motion::SecureSignedInteger
+//           share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+//                             : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+//           share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+//                             : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1),
+//                             1);
+//       EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+//       const auto share_result = share_0.Int2Fx(16);
+//       auto share_output = share_result.Out();
+
+//       std::cout << "party run" << std::endl;
+//       motion_parties.at(party_id)->Run();
+//       motion_parties.at(party_id)->Finish();
+//       std::cout << "party finish" << std::endl;
+
+//       std::vector<double> result = share_output.AsFixedPointVector<std::uint64_t,
+//       std::int64_t>();
+
+//       for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+//         const double expect_result = double(T_int(raw_global_input_1.at(i)));
+//         // std::cout << "expect_result: " << expect_result << std::endl;
+//         // std::cout << "result: " << result[i] << std::endl;
+//         EXPECT_EQ(result[i], expect_result);
+//       }
+//     });
+//   }
+//   for (auto& t : threads)
+//     if (t.joinable()) t.join();
+// }
 
 }  // namespace
