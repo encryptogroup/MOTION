@@ -25,8 +25,6 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-// #include "secure_type/secure_fixed_point_circuit_CBMC.h"
-// #include "secure_type/secure_floating_point_circuit_ABY.h"
 namespace encrypto::motion {
 
 class Logger;

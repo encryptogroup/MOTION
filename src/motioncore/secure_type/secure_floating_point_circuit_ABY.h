@@ -28,6 +28,7 @@
 #include "secure_type/secure_fixed_point_circuit_CBMC.h"
 #include "secure_type/secure_signed_integer.h"
 #include "secure_type/secure_unsigned_integer.h"
+#include "utility/MOTION_dp_mechanism_helper/snapping_mechanism.h"
 
 namespace encrypto::motion {
 
@@ -38,14 +39,19 @@ class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureSignedInteger;
 
-// support single-precision (32 bits) floating point and double-precision (64 bits) floating point
-// operations
+// SecureFloatingPointCircuitABY supports single-precision (32 bits) floating point and
+// double-precision (64 bits) floating point operations
 
-// floating-point circuits or C program source:
+// we use existing circuits or convert C programs (manually generated or from libraries) to circuit
+// with CBMC-GC:
+// 1. existing circuits:
 // ABY: https://github.com/encryptogroup/ABY/tree/public/bin/circ, (circuits are optimized for both,
 // low depth and low number of AND gates, with a priority on low-depth, we convert circuit to
 // .bristol with python program manually
+
+// 2. C program library
 // SoftFloat-2c: http://www.jhauser.us/arithmetic/SoftFloat.html
+
 class SecureFloatingPointCircuitABY {
  public:
   SecureFloatingPointCircuitABY() = default;
@@ -124,6 +130,8 @@ class SecureFloatingPointCircuitABY {
 
   ShareWrapper operator==(const SecureFloatingPointCircuitABY& other) const;
 
+  // TODO: support garbled circuit
+  /// \brief operations with constant value
   SecureFloatingPointCircuitABY operator+(const float& constant_value) const;
   SecureFloatingPointCircuitABY operator-(const float& constant_value) const;
   SecureFloatingPointCircuitABY operator*(const float& constant_value) const;
@@ -139,43 +147,64 @@ class SecureFloatingPointCircuitABY {
   ShareWrapper operator>(const double& constant_value) const;
   ShareWrapper operator==(const double& constant_value) const;
 
+  /// \brief mulitplication with a Boolean GMW bit
   SecureFloatingPointCircuitABY MulBooleanGmwBit(const ShareWrapper& boolean_gmw_share_other) const;
 
+  // negation operations
   SecureFloatingPointCircuitABY Neg() const;
 
+  // absolute values
   SecureFloatingPointCircuitABY Abs() const;
 
+  // equals to zero
   ShareWrapper EQZ() const;
 
+  // less than zero
   ShareWrapper LTZ() const;
 
+  // exponential operation with base 2
   SecureFloatingPointCircuitABY Exp2() const;
 
+  // logarithm operation with base 2
   SecureFloatingPointCircuitABY Log2() const;
 
+  // natural exponential operation
   SecureFloatingPointCircuitABY Exp() const;
 
+  // natural logarithm operation
   SecureFloatingPointCircuitABY Ln() const;
 
+  // square
   SecureFloatingPointCircuitABY Sqr() const;
 
+  // square root
   SecureFloatingPointCircuitABY Sqrt() const;
 
+  // sine function
+  // compute sin(x*PI), x can be an arbitrary floating-point number
+  // the circuit for sin only support 32-bit floating-point numbers,
+  // for 64-bit floating-point numbers, we first convert it to 32-bit floating-point numbers,
+  // then, compute sin and convert the result to 64-bit floating-point numbers
   SecureFloatingPointCircuitABY Sin() const;
 
+  // cosine function
+  // compute cos(x*PI), x can be an arbitrary floating-point number
+  // the circuit for cosine only support 32-bit floating-point numbers,
+  // for 64-bit floating-point numbers, we first convert it to 32-bit floating-point numbers,
+  // then, compute cos and convert the result to 64-bit floating-point numbers
   SecureFloatingPointCircuitABY Cos() const;
 
-  // convert 32-bit floating point to 64-bit floating point
+  // convert 32-bit floating-point numbers to 64-bit floating-point numbers
   SecureFloatingPointCircuitABY ConvertSinglePrecisionToDoublePrecision() const;
 
-  // convert 64-bit floating point to 32-bit floating point
+  // convert 64-bit floating-point numbers to 32-bit floating-point numbers
   SecureFloatingPointCircuitABY ConvertDoublePrecisionToSinglePrecision() const;
 
   SecureFloatingPointCircuitABY Ceil() const;
 
   SecureFloatingPointCircuitABY Floor() const;
 
-  // round floating point to nearest signed integer
+  // round (32-bit, 64-bit) floating-point numbers to nearest (32-bit, 64-bit) signed integers
   // for example:
   // round(10.3) -> 10
   // round(10.5) -> 11
@@ -194,22 +223,22 @@ class SecureFloatingPointCircuitABY {
   SecureFixedPointCircuitCBMC FL2Fx(std::size_t fixed_point_fraction_bit_size = 16,
                                     std::size_t fixed_point_bit_length = 64) const;
 
-  // multiply with 2^m
+  // multiply with floating-point number 2^m by directly manipulate the exponent bits
+  // more efficient than normal floating-point multiplication
   SecureFloatingPointCircuitABY MulPow2m(std::int64_t m) const;
 
-  // divide by 2^m
+  // divide by floating-point number 2^m by directly manipulate the exponent bits
+  // more efficient than normal floating-point division
   SecureFloatingPointCircuitABY DivPow2m(std::int64_t m) const;
 
-  // used in the snapping mechanism
-  // return x if -B < x < B,
-  // return -B if x < -B
-  // return B if x > B
+  // primarily used in the snapping mechanism (paper: On Signiﬁcance of the Least Significant Bits
+  // For Differential Privacy) return x if -B < x < B, return -B if x < -B return B if x > B
   SecureFloatingPointCircuitABY ClampB(double B);
 
-  // used in the snapping mechanism
-  // round floating-point number to the nearest integer
-  // with deterministic rounding
-  // circuit is generated with CBMC-GC based on the code from
+  // primarily used in the snapping mechanism (paper: On Signiﬁcance of the Least Significant Bits
+  // For Differential Privacy)
+  // round 64-bit floating-point number to the nearest integer with deterministic
+  // rounding circuit is generated with CBMC-GC inspired by the code from
   // (https://github.com/ctcovington/floating_point)
   SecureFloatingPointCircuitABY RoundToNearestInteger();
 
@@ -245,13 +274,13 @@ class SecureFloatingPointCircuitABY {
   template <typename T>
   T As() const;
 
-  /// \brief converts the information on the wires to floating-point number(data type: float,
+  /// \brief converts the information on the wires to floating-point numbers (data type: float,
   /// double). See the description in ShareWrapper::As for reference.
   template <typename FLType>
   FLType AsFloatingPoint() const;
 
-  /// \brief converts the information on the wires to floating-point vector (data type: float,
-  /// double). See the description in ShareWrapper::As for reference.
+  /// \brief converts the information on the wires to floating-point number vector (data type:
+  /// float, double). See the description in ShareWrapper::As for reference.
   // used for SIMD
   template <typename FLType, typename A = std::allocator<FLType>>
   std::vector<FLType, A> AsFloatingPointVector() const;

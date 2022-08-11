@@ -104,6 +104,27 @@ inline std::vector<T> SubVectors(std::span<const T> a, std::span<const T> b) {
   return result;
 }
 
+/// \brief Subtracts each element in \p a and \p b and returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the -= operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the difference the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  // std::cout << "a.size(): " << a.size() << std::endl;
+  // std::cout << "b.size(): " << b.size() << std::endl;
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) -= b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
 /// \brief Multiplies each element in \p a and \p b and returns the result.
 /// \tparam T type of the elements in the vectors. T must provide the *= operator.
 /// \param a
@@ -120,6 +141,26 @@ inline std::vector<T> MultiplyVectors(std::span<const T> a, std::span<const T> b
 
   for (auto j = 0ull; j < result.size(); ++j) {
     result[j] *= b[j];  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+/// \brief Multiplies each element in \p a and \p b and returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the *= operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the product the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) *= b.at(j);  // TODO: implement using AVX2 and AVX512
   }
   return result;
 }
@@ -157,6 +198,26 @@ inline std::vector<T> AddVectors(std::span<const std::vector<T>> vectors) {
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>>&& vectors) {
   return AddVectors<T>(vectors);
+}
+
+/// \brief Adds each element in \p a and \p b and returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the += operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the sum the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+#pragma omp simd
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) += b.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
 }
 
 // XXX two distinct vectors do not overlop, so I don't see the use for the restrict functions.
@@ -224,6 +285,66 @@ inline std::vector<T> RestrictMulVectors(std::span<const T> a, std::span<const T
   T* __restrict__ result_pointer{result.data()};
   std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
                  [](const T& a_value, const T& b_value) { return a_value * b_value; });
+  return result;
+}
+
+/// \brief Divides each element in \p a and \p b and returns the result.
+///        It is assumed that the vectors do not overlap.
+/// \tparam T type of the elements in the vectors. T must provide the binary / operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the product the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> RestrictDivVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result(a.size());
+  const T* __restrict__ a_pointer{a.data()};
+  const T* __restrict__ b_pointer{b.data()};
+  T* __restrict__ result_pointer{result.data()};
+  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
+                 [](const T& a_value, const T& b_value) { return a_value / b_value; });
+  return result;
+}
+
+/// \brief Negation each element in \p a returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the -= operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the negative the ith element in a.
+/// \pre \p a
+template <typename T>
+inline std::vector<T> NegVectors(const std::vector<T>& a) {
+  // assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) = -a.at(j);  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+/// \brief absolute each element in \p a returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the -= operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the negative the ith element in a.
+/// \pre \p a
+template <typename T>
+inline std::vector<T> AbsVectors(const std::vector<T>& a) {
+  // assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result.at(j) = std::abs(a.at(j));  // TODO: implement using AVX2 and AVX512
+  }
   return result;
 }
 

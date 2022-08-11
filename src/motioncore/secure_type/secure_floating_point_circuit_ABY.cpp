@@ -30,6 +30,7 @@
 #include "algorithm/algorithm_description.h"
 #include "base/backend.h"
 #include "base/register.h"
+#include "protocols/constant/constant_share_wrapper.h"
 #include "protocols/data_management/unsimdify_gate.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
@@ -54,7 +55,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator+(
     std::shared_ptr<AlgorithmDescription> addition_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kAdd_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kAdd_circuit, bitlength, "_depth");
@@ -89,7 +92,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator-(
     std::shared_ptr<AlgorithmDescription> subtraction_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kSub_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kSub_circuit, bitlength, "_depth");
@@ -124,7 +129,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator*(
     std::shared_ptr<AlgorithmDescription> multiplication_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kMul_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kMul_circuit, bitlength, "_depth");
@@ -160,7 +167,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator/(
     std::shared_ptr<AlgorithmDescription> division_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kDiv_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kDiv_circuit, bitlength, "_depth");
@@ -194,7 +203,9 @@ ShareWrapper SecureFloatingPointCircuitABY::operator<(
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kGt_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kGt_circuit, bitlength, "_depth");
@@ -229,7 +240,9 @@ ShareWrapper SecureFloatingPointCircuitABY::operator>(
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kGt_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kGt_circuit, bitlength, "_depth");
@@ -261,13 +274,14 @@ ShareWrapper SecureFloatingPointCircuitABY::operator==(
         "Floating-point operations are not supported for Arithmetic GMW shares");
   } else {  // BooleanCircuitType
     if constexpr (kDebug) {
-      if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+      if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
         logger_->LogDebug("Creating a Boolean floating-point equality circuit in BMR");
       } else {
         logger_->LogDebug("Creating a Boolean floating-point equality circuit in GMW");
       }
     }
-    // ! we assume -0 and +0 not equal to each other
+    // ! we assume -0 and +0 are not equal to each other
     return this->Get() == other.Get();
   }
 }
@@ -279,7 +293,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Neg() const {
   } else {  // BooleanCircuitType
 
     if constexpr (kDebug) {
-      if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+      if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
         logger_->LogDebug("Creating a Boolean floating-point negation circuit in BMR");
       } else {
         logger_->LogDebug("Creating a Boolean floating-point negation circuit in GMW");
@@ -307,14 +322,15 @@ ShareWrapper SecureFloatingPointCircuitABY::EQZ() const {
     std::size_t num_of_simd = share_->Get()->GetNumberOfSimdValues();
 
     if constexpr (kDebug) {
-      if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+      if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
         logger_->LogDebug("Creating a Boolean floating-point equal to zero circuit in BMR");
       } else {
         logger_->LogDebug("Creating a Boolean floating-point equal to zero circuit in GMW");
       }
     }
 
-    // exclude the sign bit for comparison
+    // exclude the sign bit and compare the rest bits
     std::vector<ShareWrapper> boolean_gmw_or_bmr_share_floating_point_bit_vector = share_->Split();
     std::vector<ShareWrapper> boolean_gmw_or_bmr_share_floating_point_bit_vector_exclude_sign_bit(
         boolean_gmw_or_bmr_share_floating_point_bit_vector.begin(),
@@ -348,8 +364,10 @@ ShareWrapper SecureFloatingPointCircuitABY::LTZ() const {
         throw std::runtime_error(
             "Floating-point operations are not supported for Arithmetic GMW shares");
       } else {
-        if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
-          logger_->LogDebug("Creating a Boolean floating-point less than to zero circuit in BMR");
+        if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+            share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+          logger_->LogDebug(
+              "Creating a Boolean floating-point less than to zero circuit in YAO/BMR");
         } else {
           logger_->LogDebug("Creating a Boolean floating-point less than to zero circuit in GMW");
         }
@@ -360,10 +378,12 @@ ShareWrapper SecureFloatingPointCircuitABY::LTZ() const {
     if (bitlength == 32) {
       ShareWrapper sign_bit = share_->Split()[bitlength - 1];
       return sign_bit;
-    }
-    if (bitlength == 64) {
+    } else if (bitlength == 64) {
       ShareWrapper sign_bit = share_->Split()[bitlength - 1];
       return sign_bit;
+    } else {
+      throw std::runtime_error(
+          "Floating-point operations only supported for 32/64-bit floating-point numbers");
     }
   }
 }
@@ -379,7 +399,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Abs() const {
         throw std::runtime_error(
             "Floating-point operations are not supported for Arithmetic GMW shares");
       } else {
-        if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+        if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+            share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
           logger_->LogDebug("Creating a Boolean floating-point absolute value circuit in BMR");
         } else {
           logger_->LogDebug("Creating a Boolean floating-point sabsolute value circuit in GMW");
@@ -387,9 +408,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Abs() const {
       }
     }
 
-    // ShareWrapper boolean_gmw_or_bmr_share_floating_point_less_than_zero = (*this).LTZ();
     std::vector<ShareWrapper> floating_point_boolean_gmw_or_bmr_share_vector = share_->Split();
 
+    // set the sign bit of the floating-point number to zero
     const auto bitlength = share_->Get()->GetBitLength();
     if (bitlength == 32) {
       ShareWrapper sign_bit = floating_point_boolean_gmw_or_bmr_share_vector[bitlength - 1];
@@ -398,14 +419,16 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Abs() const {
           constant_boolean_gmw_or_bmr_share_zero;
 
       return ShareWrapper::Concatenate(floating_point_boolean_gmw_or_bmr_share_vector);
-    }
-    if (bitlength == 64) {
+    } else if (bitlength == 64) {
       ShareWrapper sign_bit = floating_point_boolean_gmw_or_bmr_share_vector[bitlength - 1];
       ShareWrapper constant_boolean_gmw_or_bmr_share_zero = sign_bit ^ sign_bit;
       floating_point_boolean_gmw_or_bmr_share_vector[bitlength - 1] =
           constant_boolean_gmw_or_bmr_share_zero;
 
       return ShareWrapper::Concatenate(floating_point_boolean_gmw_or_bmr_share_vector);
+    } else {
+      throw std::runtime_error(
+          "Floating-point operations only supported for 32/64-bit floating-point numbers");
     }
   }
 }
@@ -418,7 +441,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Ceil() const {
     const auto bitlength = share_->Get()->GetBitLength();
     std::shared_ptr<AlgorithmDescription> ceil_algorithm;
     std::string path;
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kCeil_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kCeil_circuit, bitlength, "_depth");
@@ -438,7 +463,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Ceil() const {
     }
 
     // create constant share of zero
-    // the second input of the circuit must be zero bits (because of CBMC-GC generation rules)
+    // the second input of the circuit must be zero bits (because of CBMC-GC generation
+    // limititations)
     ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_) ^ (*share_);
 
     const auto share_input{
@@ -456,7 +482,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Floor() const {
     const auto bitlength = share_->Get()->GetBitLength();
     std::shared_ptr<AlgorithmDescription> floor_algorithm;
     std::string path;
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kFloor_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
 
@@ -477,7 +505,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Floor() const {
     }
 
     // create constant share of zero
-    // the second input of the circuit must be zero bits (because of CBMC-GC generation rules)
+    // the second input of the circuit must be zero bits (because of CBMC-GC generation
+    // limititations)
     ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_) ^ (*share_);
 
     const auto share_input{
@@ -496,7 +525,9 @@ SecureSignedInteger SecureFloatingPointCircuitABY::FL2Int(std::size_t integer_bi
     std::shared_ptr<AlgorithmDescription> floating_point_to_integer_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kFL2Int_circuit, bitlength, "_size",
                            integer_bit_length);
     else  // GMW, use depth-optimized circuit
@@ -525,40 +556,41 @@ SecureSignedInteger SecureFloatingPointCircuitABY::FL2Int(std::size_t integer_bi
   }
 }
 
-// TODO: fixed after MulPow2m
-SecureFixedPointCircuitCBMC SecureFloatingPointCircuitABY::FL2Fx(
-    std::size_t fixed_point_fraction_bit_size, size_t fixed_point_bit_length) const {
-  // SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
-  //     (*this) * double(std::exp2(fixed_point_fraction_bit_size));
+// SecureFixedPointCircuitCBMC SecureFloatingPointCircuitABY::FL2Fx(
+//     std::size_t fixed_point_fraction_bit_size, size_t fixed_point_bit_length) const {
+//   // SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
+//   //     (*this) * double(std::exp2(fixed_point_fraction_bit_size));
 
-  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-    throw std::runtime_error(
-        "Floating-point operations are not supported for Arithmetic GMW shares");
-  } else {  // BooleanCircuitType
+//   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
+//     throw std::runtime_error(
+//         "Floating-point operations are not supported for Arithmetic GMW shares");
+//   } else {  // BooleanCircuitType
 
-    if constexpr (kDebug) {
-      if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
-        logger_->LogDebug(
-            "Creating a Boolean floating-point to fixed-point conversion circuit in BMR");
-      } else {
-        logger_->LogDebug(
-            "Creating a Boolean floating-point to fixed-point conversion circuit in GMW");
-      }
-    }
+//     if constexpr (kDebug) {
+//       if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+//           share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+//         logger_->LogDebug(
+//             "Creating a Boolean floating-point to fixed-point conversion circuit in BMR");
+//       } else {
+//         logger_->LogDebug(
+//             "Creating a Boolean floating-point to fixed-point conversion circuit in GMW");
+//       }
+//     }
 
-    SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
-        (*this).MulPow2m(std::int64_t(fixed_point_fraction_bit_size));
+//     SecureFloatingPointCircuitABY floating_point_multiple_pow2_fixed_point_fraction_bit_size =
+//         (*this).MulPow2m(std::int64_t(fixed_point_fraction_bit_size));
 
-    // std::cout << "FL2Int()" << std::endl;
-    // std::size_t fixed_point_bit_length = 64;
+//     // std::cout << "FL2Int()" << std::endl;
+//     // std::size_t fixed_point_bit_length = 64;
 
-    return floating_point_multiple_pow2_fixed_point_fraction_bit_size.FL2Int(fixed_point_bit_length)
-        .Get();
-  }
-}
+//     return
+//     floating_point_multiple_pow2_fixed_point_fraction_bit_size.FL2Int(fixed_point_bit_length)
+//         .Get();
+//   }
+// }
 
-// circuit only supports 32-bit floating-point as input,
-// we use the 64-bit log2 and 64-bit exp2 circuits for 64-bit inputs
+// exp circuit only supports 32-bit floating-point numbers as input,
+// we use the 64-bit log2 and 64-bit exp2 circuits instead for 64-bit inputs
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp() const {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     throw std::runtime_error(
@@ -566,13 +598,13 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp() const {
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
 
-    // 32-bit floating point input
+    // 32-bit floating-point number input
     if (bitlength == 32) {
-      // std::cout << "bitlength: " << bitlength << std::endl;
       std::shared_ptr<AlgorithmDescription> exp_algorithm;
       std::string path;
-
-      if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() ==
+              MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
         path = ConstructPath(FloatingPointOperationType::kExp_circuit, bitlength, "_size");
       else  // GMW, use depth-optimized circuit
         path = ConstructPath(FloatingPointOperationType::kExp_circuit, bitlength, "_depth");
@@ -595,7 +627,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp() const {
       const auto share_input{ShareWrapper::Concatenate(std::vector{*share_})};
       const auto evaluation_result_wires = share_input.Evaluate(exp_algorithm).Split();
 
-      // ignore the wire for other information (e.g., errors, ...)
+      // ignore the wires for other information (e.g., errors, ...)
       std::vector<ShareWrapper>::const_iterator first = evaluation_result_wires.begin();
       std::vector<ShareWrapper>::const_iterator last = evaluation_result_wires.begin() + bitlength;
       const std::vector<ShareWrapper> truncated_wires(first, last);
@@ -603,12 +635,12 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp() const {
     }
 
     // (bitlength == 64)
-    // for 64-bit floating-point input, use following conversion
+    // for 64-bit floating-point input, use following conversion:
     // e^x = 2^(x*log2(e))
-    else {
-      // std::cout << "bitlength: " << bitlength << std::endl;
+    else if (bitlength == 64) {
       if constexpr (kDebug) {
-        if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+        if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+            share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
           logger_->LogDebug("Creating a Boolean 64-bit exponentiation circuit in BMR");
         } else {
           logger_->LogDebug("Creating a Boolean 64-bit exponentiation circuit in GMW");
@@ -620,16 +652,16 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp() const {
 
       SecureFloatingPointCircuitABY boolean_gmw_or_bmr_share_floating_point_constant_log2_e;
 
-      // TODO: test if bmr or bgmw works
       if ((*share_)->GetProtocol() == MpcProtocol::kBooleanGmw) {
         boolean_gmw_or_bmr_share_floating_point_constant_log2_e =
             share_.get()->Get()->GetBackend().ConstantAsBooleanGmwInput(
                 encrypto::motion::ToInput<double, std::true_type>(vector_of_constant_log2_e));
-      } else {
+      } else if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
         boolean_gmw_or_bmr_share_floating_point_constant_log2_e =
             share_.get()->Get()->GetBackend().ConstantAsBmrInput(
                 encrypto::motion::ToInput<double, std::true_type>(vector_of_constant_log2_e));
       }
+      // TODO: support garbled circuit protocol
 
       SecureFloatingPointCircuitABY boolean_gmw_or_bmr_share_floating_point_x_mul_constant_log2_e =
           (*this) * boolean_gmw_or_bmr_share_floating_point_constant_log2_e;
@@ -637,6 +669,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp() const {
       SecureFloatingPointCircuitABY exp_result =
           boolean_gmw_or_bmr_share_floating_point_x_mul_constant_log2_e.Exp2();
       return exp_result;
+    } else {
+      throw std::runtime_error(
+          "Floating-point operations only supported for 32/64-bit floating-point numbers");
     }
   }
 }
@@ -650,7 +685,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp2() const {
     std::shared_ptr<AlgorithmDescription> exp2_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kExp2_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kExp2_circuit, bitlength, "_depth");
@@ -671,7 +708,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Exp2() const {
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_})};
     const auto evaluation_result_wires = share_input.Evaluate(exp2_algorithm).Split();
 
-    // ignore the wire for other information (e.g., errors, ...)
+    // ignore the wires for other information (e.g., errors, ...)
     std::vector<ShareWrapper>::const_iterator first = evaluation_result_wires.begin();
     std::vector<ShareWrapper>::const_iterator last = evaluation_result_wires.begin() + bitlength;
     const std::vector<ShareWrapper> truncated_wires(first, last);
@@ -689,7 +726,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Log2() const {
     std::shared_ptr<AlgorithmDescription> log2_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kLog2_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kLog2_circuit, bitlength, "_depth");
@@ -709,7 +748,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Log2() const {
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_})};
     const auto evaluation_result_wires = share_input.Evaluate(log2_algorithm).Split();
-    // ignore the wire for other information (e.g., errors, ...)
+    // ignore the wires for other information (e.g., errors, ...)
     std::vector<ShareWrapper>::const_iterator first = evaluation_result_wires.begin();
     std::vector<ShareWrapper>::const_iterator last = evaluation_result_wires.begin() + bitlength;
     const std::vector<ShareWrapper> truncated_wires(first, last);
@@ -727,7 +766,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Ln() const {
     std::shared_ptr<AlgorithmDescription> ln_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kLn_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kLn_circuit, bitlength, "_depth");
@@ -764,7 +805,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Sqr() const {
     std::shared_ptr<AlgorithmDescription> sqr_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kSqr_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kSqr_circuit, bitlength, "_depth");
@@ -796,7 +839,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Sqrt() const {
     const auto bitlength = share_->Get()->GetBitLength();
     std::shared_ptr<AlgorithmDescription> sqrt_algorithm;
     std::string path;
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kSqrt_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FloatingPointOperationType::kSqrt_circuit, bitlength, "_depth");
@@ -832,7 +877,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Sin() const {
     if (bitlength == 32) {
       std::shared_ptr<AlgorithmDescription> sin_algorithm;
       std::string path;
-      if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() ==
+              MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
         path = ConstructPath(FloatingPointOperationType::kSin_circuit, bitlength, "_size");
       else  // GMW, use depth-optimized circuit
         path = ConstructPath(FloatingPointOperationType::kSin_circuit, bitlength, "_depth");
@@ -850,10 +897,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Sin() const {
               fmt::format("Read Boolean 32-bit floating-point sin circuit from file {}", path));
         }
       }
-      // std::cout << "before evaluation" << std::endl;
       const auto share_input{ShareWrapper::Concatenate(std::vector{*share_})};
       const auto evaluation_result = share_input.Evaluate(sin_algorithm);
-      // std::cout << "after evaluation" << std::endl;
       std::vector<ShareWrapper> evaluation_result_split = evaluation_result.Split();
 
       std::vector<ShareWrapper> single_precision_floating_point_result_vector(
@@ -865,9 +910,10 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Sin() const {
 
     // TODO: test
     // bitlength==64
-    else {
+    else if (bitlength == 64) {
       if constexpr (kDebug) {
-        if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+        if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+            share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
           logger_->LogDebug("Creating a 64-bit Boolean floating-point sin circuit in BMR");
         } else {
           logger_->LogDebug("Creating a 64-bit Boolean floating-point sin circuit in GMW");
@@ -883,6 +929,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Sin() const {
 
       // convert 32-bit result to 64-bit result
       return single_precision_floating_point_sin.ConvertSinglePrecisionToDoublePrecision();
+    } else {
+      throw std::runtime_error(
+          "Floating-point operations only supported for 32/64-bit floating-point numbers");
     }
   }
 }
@@ -899,7 +948,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Cos() const {
     if (bitlength == 32) {
       std::shared_ptr<AlgorithmDescription> cos_algorithm;
       std::string path;
-      if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+      if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() ==
+              MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
         path = ConstructPath(FloatingPointOperationType::kCos_circuit, bitlength, "_size");
       else  // GMW, use depth-optimized circuit
         path = ConstructPath(FloatingPointOperationType::kCos_circuit, bitlength, "_depth");
@@ -917,10 +968,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Cos() const {
               fmt::format("Read Boolean floating-point cos circuit from file {}", path));
         }
       }
-      // std::cout << "before evaluation" << std::endl;
       const auto share_input{ShareWrapper::Concatenate(std::vector{*share_})};
       const auto evaluation_result = share_input.Evaluate(cos_algorithm);
-      // std::cout << "after evaluation" << std::endl;
       std::vector<ShareWrapper> evaluation_result_split = evaluation_result.Split();
 
       std::vector<ShareWrapper> single_precision_floating_point_result_vector(
@@ -931,9 +980,10 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Cos() const {
     }
 
     // bitlength==64
-    else {
+    else if (bitlength == 64) {
       if constexpr (kDebug) {
-        if ((*share_)->GetProtocol() == MpcProtocol::kBmr) {
+        if ((*share_)->GetProtocol() == MpcProtocol::kBmr ||
+            share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
           logger_->LogDebug("Creating a 64-bit Boolean floating-point cos circuit in BMR");
         } else {
           logger_->LogDebug("Creating a 64-bit Boolean floating-point cos circuit in GMW");
@@ -948,13 +998,14 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Cos() const {
           single_precision_floating_point.Cos();
 
       return single_precision_floating_point_cos.ConvertSinglePrecisionToDoublePrecision();
+    } else {
+      throw std::runtime_error(
+          "Floating-point operations only supported for 32/64-bit floating-point numbers");
     }
   }
 }
 
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64_t m) const {
-  // std::cout << "MulPow2m: " << std::endl;
-
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     throw std::runtime_error(
         "Floating-point operations are not supported for Arithmetic GMW shares");
@@ -962,35 +1013,25 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
     if (m == 0) {
       return *this;
     } else {
-      // std::cout << "000" << std::endl;
       std::vector<ShareWrapper> floating_point_boolean_gmw_or_bmr_share_x_vector = share_->Split();
       const auto bitlength = share_->Get()->GetBitLength();
-      // std::cout << "111" << std::endl;
 
       if (bitlength == 32) {
-        // std::cout << "222" << std::endl;
         using T = std::uint16_t;
         std::size_t T_size = sizeof(T) * 8;
 
-        // std::cout << "333" << std::endl;
         ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
             floating_point_boolean_gmw_or_bmr_share_x_vector[0] ^
             floating_point_boolean_gmw_or_bmr_share_x_vector[0];
 
-        // std::cout << "constant_boolean_gmw_or_bmr_share_zero.GetProtocol()"
-        //           << (constant_boolean_gmw_or_bmr_share_zero->GetProtocol() == MpcProtocol::kBmr)
-        //           << std::endl;
-
         ShareWrapper boolean_gmw_or_bmr_share_x_equal_zero = this->EQZ();
-        // std::cout << "444" << std::endl;
         std::vector<ShareWrapper> floating_point_boolean_gmw_or_bmr_share_x_exponent_vector(
             floating_point_boolean_gmw_or_bmr_share_x_vector.begin() +
                 FLOATINGPOINT32_MANTISSA_BITS,
             floating_point_boolean_gmw_or_bmr_share_x_vector.begin() +
                 FLOATINGPOINT32_MANTISSA_BITS + FLOATINGPOINT32_EXPONENT_BITS);
-        // std::cout << "555" << std::endl;
 
-        // compensate exponent of x with zero bits and convert it to a secure unsigned integer
+        // compensate the exponent of x with zero bits and convert it to a secure unsigned integer
         std::vector<ShareWrapper>
             floating_point_boolean_gmw_or_bmr_share_x_exponent_compensation_vector(T_size);
 
@@ -1002,11 +1043,10 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
           floating_point_boolean_gmw_or_bmr_share_x_exponent_compensation_vector[i] =
               floating_point_boolean_gmw_or_bmr_share_x_exponent_vector[i];
         }
-        // std::cout << "666" << std::endl;
+
         SecureUnsignedInteger secure_unsigned_integer_x_exponent =
             SecureUnsignedInteger(ShareWrapper::Concatenate(
                 floating_point_boolean_gmw_or_bmr_share_x_exponent_compensation_vector));
-        // std::cout << "777" << std::endl;
         std::size_t num_of_simd = share_->Get()->GetNumberOfSimdValues();
         std::vector<T> vector_of_m(num_of_simd, T(m));
 
@@ -1016,9 +1056,11 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
               share_->Get()->GetBackend().ConstantAsBmrInput(ToInput<T>(vector_of_m)));
         } else {
           secure_unsigned_integer_m = SecureUnsignedInteger(
-              share_->Get()->GetBackend().ConstantBooleanGmwInput(ToInput<T>(vector_of_m)));
+              share_->Get()->GetBackend().ConstantAsBooleanGmwInput(ToInput<T>(vector_of_m)));
         }
+        // TODO: support the garbled circuit protocol
 
+        // compute (*this) * 2^m by adding m to the exponent part of (*this)
         SecureUnsignedInteger secure_unsigned_integer_x_exponent_plus_m =
             secure_unsigned_integer_x_exponent + secure_unsigned_integer_m;
 
@@ -1075,7 +1117,6 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
             floating_point_boolean_gmw_or_bmr_share_x_vector.begin() + FLOATINGPOINT_MANTISSA_BITS,
             floating_point_boolean_gmw_or_bmr_share_x_vector.begin() + FLOATINGPOINT_MANTISSA_BITS +
                 FLOATINGPOINT_EXPONENT_BITS);
-        //   std::cout << "000" << std::endl;
 
         // compensate exponent of x with zero bits and convert it to a secure unsigned integer
         std::vector<ShareWrapper>
@@ -1105,13 +1146,12 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
           secure_unsigned_integer_m = SecureUnsignedInteger(
               share_->Get()->GetBackend().ConstantAsBooleanGmwInput(ToInput<T>(vector_of_m)));
         }
+        // TODO: support the garbled circuit protocol
 
-        // SecureUnsignedInteger secure_unsigned_integer_m = SecureUnsignedInteger(
-        //     share_->Get()->GetBackend().ConstantBooleanGmwInput(ToInput<T>(vector_of_m)));
+        // compute (*this) * 2^m by adding m to the exponent part of (*this)
         SecureUnsignedInteger secure_unsigned_integer_x_exponent_plus_m =
             secure_unsigned_integer_x_exponent + secure_unsigned_integer_m;
 
-        //   std::cout << "111" << std::endl;
         std::vector<ShareWrapper> boolean_gmw_or_bmr_share_x_exponent_plus_m_vector =
             secure_unsigned_integer_x_exponent_plus_m.Get().Split();
 
@@ -1128,13 +1168,11 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
               boolean_gmw_or_bmr_share_x_exponent_plus_m_vector[i]);
         }
 
-        //   std::cout << "222" << std::endl;
         boolean_gmw_or_bmr_share_x_mul_pow2_m_vector.emplace_back(
             floating_point_boolean_gmw_or_bmr_share_x_vector.back());
 
         ShareWrapper boolean_gmw_or_bmr_share_x_mul_pow2_m =
             ShareWrapper::Concatenate(boolean_gmw_or_bmr_share_x_mul_pow2_m_vector);
-        //   std::cout << "333" << std::endl;
 
         // TODO: test
         ShareWrapper result = boolean_gmw_or_bmr_share_x_equal_zero.Mux(
@@ -1166,7 +1204,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::DivPow2m(std::int64
   return MulPow2m(-m);
 }
 
-// TODO: test
+// TODO: support the garbled circuit protocol
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::ClampB(double B) {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     throw std::runtime_error(
@@ -1233,9 +1271,6 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::ClampB(double B) {
     SecureFloatingPointCircuitABY floating_point_x_abs =
         SecureFloatingPointCircuitABY(floating_point_boolean_gmw_or_bmr_share_x_abs);
 
-    //   SecureFloatingPointCircuitABY floating_point_constant_B =
-    //       SecureFloatingPointCircuitABY(floating_point_constant_boolean_gmw_or_bmr_share_B);
-
     ShareWrapper boolean_gmw_or_bmr_share_abs_x_greater_than_B =
         floating_point_x_abs > floating_point_constant_B;
 
@@ -1259,7 +1294,6 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::ClampB(double B) {
   }
 }
 
-// TODO: maybe generate circuit for 32-bit floating point
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::RoundToNearestInteger() {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     throw std::runtime_error(
@@ -1267,17 +1301,24 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::RoundToNearestInteg
   } else {  // BooleanCircuitType
 
     const auto bitlength = share_->Get()->GetBitLength();
-    assert(bitlength == 32);
+
+    // only support 64-bit floating-point numbers
+    assert(bitlength == 64);
 
     std::shared_ptr<AlgorithmDescription> round_to_nearest_integer_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
+    {
       path =
           ConstructPath(FloatingPointOperationType::kRoundToNearestInt_circuit, bitlength, "_size");
-    else  // GMW, use depth-optimized circuit
+    } else  // GMW, use depth-optimized circuit
+    {
       path = ConstructPath(FloatingPointOperationType::kRoundToNearestInt_circuit, bitlength,
                            "_depth");
+    }
     if ((round_to_nearest_integer_algorithm =
              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
@@ -1298,8 +1339,8 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::RoundToNearestInteg
 
     ShareWrapper constant_boolean_gmw_or_bmr_share_zero = (*share_) ^ (*share_);
 
-    // the circuit mask the result with the second input as Bristol can't directly connect input
-    // with output, we mask the result with 0
+    // the circuit mask the result with the second input as CGMC-GC can't generates Bristol circuits
+    // that directly connects input with output, we mask the result with 0
     const auto share_input{
         ShareWrapper::Concatenate(std::vector{*share_, constant_boolean_gmw_or_bmr_share_zero})};
     return SecureFloatingPointCircuitABY(share_input.Evaluate(round_to_nearest_integer_algorithm));
@@ -1309,14 +1350,15 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::RoundToNearestInteg
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator+(
     const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant;
-  floating_point_constant = share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+  floating_point_constant =
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
   return *this + floating_point_constant;
 }
 
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator-(
     const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this - floating_point_constant;
 }
@@ -1324,7 +1366,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator-(
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator*(
     const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this * floating_point_constant;
 }
@@ -1332,27 +1374,27 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator*(
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator/(
     const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this / floating_point_constant;
 }
 
 ShareWrapper SecureFloatingPointCircuitABY::operator<(const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this < floating_point_constant;
 }
 
 ShareWrapper SecureFloatingPointCircuitABY::operator>(const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this > floating_point_constant;
 }
 ShareWrapper SecureFloatingPointCircuitABY::operator==(const float& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this == floating_point_constant;
 }
@@ -1360,14 +1402,15 @@ ShareWrapper SecureFloatingPointCircuitABY::operator==(const float& constant_val
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator+(
     const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant;
-  floating_point_constant = share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+  floating_point_constant =
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
   return *this + floating_point_constant;
 }
 
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator-(
     const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this - floating_point_constant;
 }
@@ -1375,7 +1418,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator-(
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator*(
     const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this * floating_point_constant;
 }
@@ -1383,27 +1426,27 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator*(
 SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::operator/(
     const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this / floating_point_constant;
 }
 
 ShareWrapper SecureFloatingPointCircuitABY::operator<(const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this < floating_point_constant;
 }
 
 ShareWrapper SecureFloatingPointCircuitABY::operator>(const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this > floating_point_constant;
 }
 ShareWrapper SecureFloatingPointCircuitABY::operator==(const double& constant_value) const {
   SecureFloatingPointCircuitABY floating_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInput(constant_value);
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInput(constant_value);
 
   return *this == floating_point_constant;
 }
@@ -1430,12 +1473,10 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
   ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
       single_precision_floating_point_sign_bit ^ single_precision_floating_point_sign_bit;
 
-  // std::cout << "111" << std::endl;
-
   // extend the single-precision floating point to the double-precision floating point
   std::vector<ShareWrapper> double_precision_floating_point_bits_vector(FLOATINGPOINT_BITS);
 
-  // fill the mantissa bits of 64-bit floating point
+  // fill the mantissa bits of 64-bit floating point numbers with zeros
   for (std::size_t i = 0; i < FLOATINGPOINT_MANTISSA_BITS - FLOATINGPOINT32_MANTISSA_BITS; ++i) {
     double_precision_floating_point_bits_vector[i] = constant_boolean_gmw_or_bmr_share_zero;
   }
@@ -1446,8 +1487,6 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
                                                          FLOATINGPOINT32_MANTISSA_BITS)];
   }
 
-  // std::cout << "222" << std::endl;
-
   // extend the exponent bits to 64-bit floating point
   std::vector<ShareWrapper> double_precision_floating_point_exponent_bit_vector(T_size);
   for (std::size_t i = 0; i < T_size; ++i) {
@@ -1457,17 +1496,13 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
     double_precision_floating_point_exponent_bit_vector[i] =
         single_precision_floating_point_exponent_bit_vector[i];
   }
-  // std::cout << "333" << std::endl;
   SecureUnsignedInteger unsigned_integer_double_precision_floating_point_exponent(
       ShareWrapper::Concatenate(double_precision_floating_point_exponent_bit_vector));
-  // std::cout << "444" << std::endl;
 
   // compute the biased exponent of the double precision floating point
   SecureUnsignedInteger unsigned_integer_double_precision_floating_point_biased_exponent =
       unsigned_integer_double_precision_floating_point_exponent +
       T(T(FLOATINGPOINT_EXPONENT_BIAS) - T(FLOATINGPOINT32_EXPONENT_BIAS));
-
-  // std::cout << "555" << std::endl;
 
   std::vector<ShareWrapper>
       unsigned_integer_double_precision_floating_point_biased_exponent_vector =
@@ -1482,7 +1517,6 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
         double_precision_floating_point_biased_exponent_bit_vector[i - FLOATINGPOINT_MANTISSA_BITS];
   }
   double_precision_floating_point_bits_vector.back() = single_precision_floating_point_sign_bit;
-  // std::cout << "666" << std::endl;
   return ShareWrapper::Concatenate(double_precision_floating_point_bits_vector);
 }
 
@@ -1505,11 +1539,8 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
   ShareWrapper double_precision_floating_point_sign_bit =
       double_precision_floating_point_bits_vector.back();
 
-  // std::cout << "000" << std::endl;
   ShareWrapper constant_boolean_gmw_or_bmr_share_zero =
       double_precision_floating_point_sign_bit ^ double_precision_floating_point_sign_bit;
-
-  // std::cout << "111" << std::endl;
 
   // truncate the double-precision floating point to the single-precision floating point
   std::vector<ShareWrapper> single_precision_floating_point_bits_vector(FLOATINGPOINT32_BITS);
@@ -1521,8 +1552,6 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
                                                          FLOATINGPOINT32_MANTISSA_BITS)];
   }
 
-  // std::cout << "222" << std::endl;
-
   // truncate the exponent bits to 32-bit floating point
   std::vector<ShareWrapper> single_precision_floating_point_exponent_bit_vector(T_size);
   for (std::size_t i = 0; i < T_size; ++i) {
@@ -1532,18 +1561,14 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
     single_precision_floating_point_exponent_bit_vector[i] =
         double_precision_floating_point_exponent_bit_vector[i];
   }
-  // std::cout << "333" << std::endl;
   SecureUnsignedInteger unsigned_integer_single_precision_floating_point_exponent(
       ShareWrapper::Concatenate(single_precision_floating_point_exponent_bit_vector));
-  // std::cout << "444" << std::endl;
 
   // TODO: operation with constant supoprt bmr protocol
   // compute the biased exponent of the double precision floating point
   SecureUnsignedInteger unsigned_integer_single_precision_floating_point_biased_exponent =
       unsigned_integer_single_precision_floating_point_exponent +
       T(T(FLOATINGPOINT32_EXPONENT_BIAS) - T(FLOATINGPOINT_EXPONENT_BIAS));
-
-  // std::cout << "555" << std::endl;
 
   std::vector<ShareWrapper>
       unsigned_integer_single_precision_floating_point_biased_exponent_vector =
@@ -1560,7 +1585,6 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
                                                                    FLOATINGPOINT32_MANTISSA_BITS];
   }
   single_precision_floating_point_bits_vector.back() = double_precision_floating_point_sign_bit;
-  // std::cout << "666" << std::endl;
   return ShareWrapper::Concatenate(single_precision_floating_point_bits_vector);
 }
 
@@ -1573,7 +1597,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulBooleanGmwBit(
   return result;
 }
 
-// suffix is ignored, BMR and GMW are using the same circuit
+// suffix is ignored when BMR and Boolean GMW are using the same circuit
 std::string SecureFloatingPointCircuitABY::ConstructPath(
     const FloatingPointOperationType type, const std::size_t bitlength, std::string suffix,
     const std::size_t integer_bit_length) const {
@@ -1648,7 +1672,6 @@ std::string SecureFloatingPointCircuitABY::ConstructPath(
       suffix_tmp = suffix;
       break;
     }
-
     case FloatingPointOperationType::kFloor_circuit: {
       operation_type_string = "floor";
       circuit_source = "CBMC";
@@ -1661,17 +1684,12 @@ std::string SecureFloatingPointCircuitABY::ConstructPath(
       suffix_tmp = suffix;
       break;
     }
-
     case FloatingPointOperationType::kRoundToNearestInt_circuit: {
       operation_type_string = "round_to_nearest_integer";
       circuit_source = "CBMC";
       suffix_tmp = suffix;
       break;
     }
-      //  case FloatingPointOperationType::kFL2Fx_circuit: {
-      //      operation_type_string = "FL2Fx";
-      //      break;
-      //  }
 
     default:
       throw std::runtime_error(fmt::format("Invalid floating-point operation required: {}", type));
@@ -1707,9 +1725,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::Subset(
 }
 
 std::vector<SecureFloatingPointCircuitABY> SecureFloatingPointCircuitABY::Unsimdify() const {
-  auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_->Get());
-  auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);
-  share_->Get()->GetRegister()->RegisterNextGate(unsimdify_gate_cast);
+  auto unsimdify_gate = share_->Get()->GetRegister()->EmplaceGate<UnsimdifyGate>(share_->Get());
   std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
   std::vector<SecureFloatingPointCircuitABY> result(shares.size());
   std::transform(shares.begin(), shares.end(), result.begin(),
@@ -1729,14 +1745,11 @@ struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
 
 template <typename T>
 T SecureFloatingPointCircuitABY::As() const {
-  if (share_->Get()->GetProtocol() == MpcProtocol::kArithmeticGmw)
+  if (share_->Get()->GetCircuitType() == CircuitType::kArithmetic)
     return share_->As<T>();
-  else if (share_->Get()->GetProtocol() == MpcProtocol::kBooleanGmw ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBooleanConstant ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBooleanMix ||
-           share_->Get()->GetProtocol() == MpcProtocol::kBmr) {
+  else if (share_->Get()->GetCircuitType() == CircuitType::kBoolean) {
     auto share_out = share_->As<std::vector<encrypto::motion::BitVector<>>>();
-    if constexpr (std::is_unsigned<T>()) {
+    if constexpr (std::is_unsigned<T>() || std::is_same<T, __uint128_t>()) {
       return encrypto::motion::ToOutput<T>(share_out);
     } else {
       throw std::invalid_argument(fmt::format(
@@ -1744,8 +1757,6 @@ T SecureFloatingPointCircuitABY::As() const {
           typeid(T).name(), share_->Get()->GetProtocol()));
     }
   }
-
-  // TODO:: add kBooleanConstant
 
   else {
     throw std::invalid_argument("Unsupported protocol for SecureFloatingPointCircuitABY::As()");
@@ -1764,11 +1775,8 @@ FLType SecureFloatingPointCircuitABY::AsFloatingPoint() const {
   } else if constexpr (std::is_same<FLType, double>()) {
     std::uint64_t as_unsigned_output = As<std::uint64_t>();
 
-    // std::cout << "as_unsigned_output: " << as_unsigned_output << std::endl;
-
     FLType as_double_output;
     as_double_output = reinterpret_cast<double&>(as_unsigned_output);
-    // std::cout << "as_double_output: " << as_double_output << std::endl;
     return as_double_output;
   } else {
     throw std::invalid_argument(
@@ -1779,13 +1787,13 @@ FLType SecureFloatingPointCircuitABY::AsFloatingPoint() const {
 }
 
 template <typename FLType, typename A>
-vector<FLType, A> SecureFloatingPointCircuitABY::AsFloatingPointVector() const {
+std::vector<FLType, A> SecureFloatingPointCircuitABY::AsFloatingPointVector() const {
   if constexpr (std::is_same<FLType, float>()) {
     auto share_out = share_->As<std::vector<encrypto::motion::BitVector<>>>();
     std::vector<std::uint32_t> as_unsigned_output_vector =
         encrypto::motion::ToVectorOutput<std::uint32_t>(share_out);
 
-    vector<FLType, A> as_float_output_vector;
+    std::vector<FLType, A> as_float_output_vector;
     for (std::size_t i = 0; i < as_unsigned_output_vector.size(); i++) {
       as_float_output_vector.emplace_back(reinterpret_cast<float&>(as_unsigned_output_vector[i]));
     }
@@ -1795,7 +1803,7 @@ vector<FLType, A> SecureFloatingPointCircuitABY::AsFloatingPointVector() const {
     std::vector<std::uint64_t> as_unsigned_output_vector =
         encrypto::motion::ToVectorOutput<std::uint64_t>(share_out);
 
-    vector<FLType, A> as_double_output_vector;
+    std::vector<FLType, A> as_double_output_vector;
     for (std::size_t i = 0; i < as_unsigned_output_vector.size(); i++) {
       as_double_output_vector.emplace_back(reinterpret_cast<double&>(as_unsigned_output_vector[i]));
     }
@@ -1806,23 +1814,19 @@ vector<FLType, A> SecureFloatingPointCircuitABY::AsFloatingPointVector() const {
         "Unsupported output type in SecureFloatingPointCircuitABY::As<{}>() for {} Protocol",
         typeid(FLType).name(), share_->Get()->GetProtocol()));
   }
-  return vector<FLType, A>();
+  return std::vector<FLType, A>();
 }
 
 template std::uint32_t SecureFloatingPointCircuitABY::As() const;
-
 template std::uint64_t SecureFloatingPointCircuitABY::As() const;
 
 template std::vector<std::uint32_t> SecureFloatingPointCircuitABY::As() const;
-
 template std::vector<std::uint64_t> SecureFloatingPointCircuitABY::As() const;
 
 template float SecureFloatingPointCircuitABY::AsFloatingPoint() const;
-
 template double SecureFloatingPointCircuitABY::AsFloatingPoint() const;
 
 template std::vector<float> SecureFloatingPointCircuitABY::AsFloatingPointVector() const;
-
 template std::vector<double> SecureFloatingPointCircuitABY::AsFloatingPointVector() const;
 
 }  // namespace encrypto::motion
