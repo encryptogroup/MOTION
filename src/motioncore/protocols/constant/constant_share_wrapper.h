@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2022 Liang Zhao
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -25,6 +25,7 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
+#include "utility/meta.hpp"
 
 namespace encrypto::motion {
 
@@ -46,62 +47,82 @@ class ConstantShareWrapper {
   ShareWrapper CreateConstantArithmeticGmwInput(T constant_value,
                                                 std::size_t num_of_simd = 1) const;
 
-   /// \brief inputs constant unsigned integer vector as arithmetic GMW input
-   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>,typename A>
-   ShareWrapper CreateConstantArithmeticGmwInput(std::vector<T, A> constant_value_vector) const;
+  /// \brief inputs constant unsigned integer vector as arithmetic GMW input
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>,
+            typename A>
+  ShareWrapper CreateConstantArithmeticGmwInput(std::vector<T, A> constant_value_vector) const;
 
-   /// \brief inputs constant unsigned integer vector as Boolean GMW input
-   template <typename T,
-             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-   ShareWrapper CreateConstantBooleanGmwInput(T constant_value, std::size_t num_of_simd) const;
-   template <typename T,
-             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-   ShareWrapper CreateConstantBooleanGmwInput(T constant_value) const;
+  /// \brief inputs constant unsigned integer vector as Boolean GMW input
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
+  ShareWrapper CreateConstantBooleanGmwInput(T constant_value, std::size_t num_of_simd) const;
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
+  ShareWrapper CreateConstantBooleanGmwInput(T constant_value) const;
 
-   /// \brief inputs constant bool value as Boolean GMW input
-   ShareWrapper CreateConstantBooleanGmwInput(bool constant_value) const;
-   ShareWrapper CreateConstantBooleanGmwInput(bool constant_value, std::size_t num_of_simd) const;
+  /// \brief inputs constant bool value as Boolean GMW input
+  ShareWrapper CreateConstantBooleanGmwInput(bool constant_value) const;
+  ShareWrapper CreateConstantBooleanGmwInput(bool constant_value, std::size_t num_of_simd) const;
 
-   /// \brief inputs constant float/double value as Boolean GMW input
-   ShareWrapper CreateConstantBooleanGmwInput(float constant_value, std::size_t num_of_simd)
-   const; ShareWrapper CreateConstantBooleanGmwInput(float constant_value) const; ShareWrapper
-   CreateConstantBooleanGmwInput(double constant_value, std::size_t num_of_simd) const;
-   ShareWrapper CreateConstantBooleanGmwInput(double constant_value) const;
+  /// \brief inputs constant float/double value as Boolean GMW input
+  ShareWrapper CreateConstantBooleanGmwInput(float constant_value, std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBooleanGmwInput(float constant_value) const;
+  ShareWrapper CreateConstantBooleanGmwInput(double constant_value, std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBooleanGmwInput(double constant_value) const;
 
-   /// \brief inputs constant float/double value as BMR input
-   template <typename T,
-             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-   ShareWrapper CreateConstantBmrInput(T constant_value, std::size_t num_of_simd) const;
-   template <typename T,
-             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-   ShareWrapper CreateConstantBmrInput(T constant_value) const;
+  /// \brief inputs constant float/double value as BMR input
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
+  ShareWrapper CreateConstantBmrInput(T constant_value, std::size_t num_of_simd) const;
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
+  ShareWrapper CreateConstantBmrInput(T constant_value) const;
 
-   /// \brief inputs constant bool value as BMR input
-   ShareWrapper CreateConstantBmrInput(bool constant_value) const;
-   ShareWrapper CreateConstantBmrInput(bool constant_value, std::size_t num_of_simd) const;
+  /// \brief inputs constant bool value as BMR input
+  ShareWrapper CreateConstantBmrInput(bool constant_value) const;
+  ShareWrapper CreateConstantBmrInput(bool constant_value, std::size_t num_of_simd) const;
 
-   /// \brief constant double value as BMR input
-   ShareWrapper CreateConstantBmrInput(float constant_value, std::size_t num_of_simd) const;
-   ShareWrapper CreateConstantBmrInput(float constant_value) const;
-   ShareWrapper CreateConstantBmrInput(double constant_value, std::size_t num_of_simd) const;
-   ShareWrapper CreateConstantBmrInput(double constant_value) const;
+  /// \brief constant double value as BMR input
+  ShareWrapper CreateConstantBmrInput(float constant_value, std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBmrInput(float constant_value) const;
+  ShareWrapper CreateConstantBmrInput(double constant_value, std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBmrInput(double constant_value) const;
 
-   /// \brief create constant Boolean GMW or BMR shares based on the type of this.share_
-   template <typename T,
-             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(T constant_value, std::size_t num_of_simd)
-   const; template <typename T,
-             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(T constant_value) const;
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(bool constant_value) const;
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(bool constant_value,
-                                                   std::size_t num_of_simd) const;
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(float constant_value,
-                                                   std::size_t num_of_simd) const;
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(float constant_value) const;
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(double constant_value,
-                                                   std::size_t num_of_simd) const;
-   ShareWrapper CreateConstantBooleanGmwOrBmrInput(double constant_value) const;
+  /// \brief create constant Boolean GMW or BMR shares based on the type of this.share_
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(T constant_value, std::size_t num_of_simd) const;
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(T constant_value) const;
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(bool constant_value) const;
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(bool constant_value,
+                                                  std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(float constant_value,
+                                                  std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(float constant_value) const;
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(double constant_value,
+                                                  std::size_t num_of_simd) const;
+  ShareWrapper CreateConstantBooleanGmwOrBmrInput(double constant_value) const;
+
+  template <typename T, typename T_int = get_int_type_t<T>>
+  ShareWrapper CreateConstantBooleanGmwInputFromFixedPoint(
+      double constant_fixed_point, std::size_t num_of_simd,
+      std::size_t fixed_point_fraction_bit_size) const;
+
+  template <typename T, typename T_int = get_int_type_t<T>>
+  ShareWrapper CreateConstantBooleanGmwInputFromFixedPoint(
+      double constant_fixed_point, std::size_t fixed_point_fraction_bit_size) const;
+
+  template <typename T, typename T_int = get_int_type_t<T>>
+  ShareWrapper CreateConstantBooleanGmwOrBmrInputFromFixedPoint(
+      double constant_fixed_point, std::size_t num_of_simd,
+      std::size_t fixed_point_fraction_bit_size) const;
+
+  template <typename T, typename T_int = get_int_type_t<T>>
+  ShareWrapper CreateConstantBooleanGmwOrBmrInputFromFixedPoint(
+      double constant_fixed_point, std::size_t fixed_point_fraction_bit_size) const;
 
  private:
   SharePointer share_;

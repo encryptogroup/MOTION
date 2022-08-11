@@ -1104,7 +1104,7 @@ std::vector<BitVector<Allocator>> ToInput(IntegralType integral_value) {
   std::vector<BitVector<Allocator>> result;
   for (auto i = 0ull; i < kBitLength; ++i) result.emplace_back(1, ((integral_value >> i) & 1) == 1);
   return result;
-} 
+}
 
 template std::vector<BitVector<StdAllocator>> ToInput(std::uint8_t);
 template std::vector<BitVector<StdAllocator>> ToInput(std::uint16_t);
@@ -1144,6 +1144,48 @@ template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uin
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint32_t>&);
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint64_t>&);
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<__uint128_t>&);
+
+template <typename T, typename T_int, typename Allocator>
+std::vector<BitVector<Allocator>> FixedPointToInput(const double fixed_point,
+                                                    std::size_t fixed_point_fraction_bit_size) {
+  T fixed_point_represented_as_unsigned_integer =
+      ((T_int)(fixed_point * (pow(2, fixed_point_fraction_bit_size))));
+
+  return ToInput<T>(fixed_point_represented_as_unsigned_integer);
+}
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint8_t, std::int8_t>(
+    const double fixed_point, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint16_t, std::int16_t>(
+    const double fixed_point, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint32_t, std::int32_t>(
+    const double fixed_point, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint64_t, std::int64_t>(
+    const double fixed_point, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<__uint128_t, __int128_t>(
+    const double fixed_point, std::size_t fixed_point_fraction_bit_size);
+
+template <typename T, typename T_int, typename Allocator>
+std::vector<BitVector<Allocator>> FixedPointToInput(const std::vector<double>& fixed_point_vector,
+                                                    std::size_t fixed_point_fraction_bit_size) {
+  std::vector<T> fixed_point_represented_as_unsigned_integer_vector(fixed_point_vector.size());
+  for (std::size_t i = 0; i < fixed_point_vector.size(); i++) {
+    fixed_point_represented_as_unsigned_integer_vector[i] =
+        ((T_int)(fixed_point_vector[i] * (pow(2, fixed_point_fraction_bit_size))));
+  }
+
+  return ToInput<T>(fixed_point_represented_as_unsigned_integer_vector);
+}
+
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint8_t, std::int8_t>(
+    const std::vector<double>& fixed_point_vector, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint16_t, std::int16_t>(
+    const std::vector<double>& fixed_point_vector, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint32_t, std::int32_t>(
+    const std::vector<double>& fixed_point_vector, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<std::uint64_t, std::int64_t>(
+    const std::vector<double>& fixed_point_vector, std::size_t fixed_point_fraction_bit_size);
+template std::vector<BitVector<StdAllocator>> FixedPointToInput<__uint128_t, __int128_t>(
+    const std::vector<double>& fixed_point_vector, std::size_t fixed_point_fraction_bit_size);
 
 BitSpan::BitSpan(std::byte* buffer, std::size_t bit_size, bool aligned)
     : pointer_(buffer), bit_size_(bit_size), aligned_(aligned) {}

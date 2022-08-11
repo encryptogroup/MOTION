@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Oleksandr Tkachenko
+// Copyright (c) 2022 Liang Zhao
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -108,7 +108,7 @@ template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInput<std::u
 template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInput<std::uint64_t>(
     std::uint64_t constant_value) const;
 template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInput<__uint128_t>(
-    __uint128_t constant_value) const; 
+    __uint128_t constant_value) const;
 
 ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInput(bool constant_value) const {
   std::size_t num_of_simd = share_->GetNumberOfSimdValues();
@@ -376,5 +376,128 @@ ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInput(double con
   }
   return constant_boolean_gmw_or_bmr_share;
 }
+
+template <typename T, typename T_int>
+ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint(
+    double constant_value, std::size_t num_of_simd,
+    std::size_t fixed_point_fraction_bit_size) const {
+  std::vector<double> constant_value_vector(num_of_simd, constant_value);
+  ShareWrapper constant_boolean_gmw_share = share_->GetBackend().ConstantAsBooleanGmwInput(
+      FixedPointToInput<T, T_int>(constant_value_vector, fixed_point_fraction_bit_size));
+
+  return constant_boolean_gmw_share;
+}
+
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<
+    std::uint8_t, std::int8_t>(double constant_value, std::size_t num_of_simd,
+                               std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<
+    std::uint16_t, std::int16_t>(double constant_value, std::size_t num_of_simd,
+                                 std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<
+    std::uint32_t, std::int32_t>(double constant_value, std::size_t num_of_simd,
+                                 std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<
+    std::uint64_t, std::int64_t>(double constant_value, std::size_t num_of_simd,
+                                 std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<
+    __uint128_t, __int128_t>(double constant_value, std::size_t num_of_simd,
+                             std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename T, typename T_int>
+ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const {
+  std::size_t num_of_simd = share_->GetNumberOfSimdValues();
+  std::vector<double> constant_value_vector(num_of_simd, constant_value);
+  ShareWrapper constant_boolean_gmw_share = share_->GetBackend().ConstantAsBooleanGmwInput(
+      FixedPointToInput<T, T_int>(constant_value_vector, fixed_point_fraction_bit_size));
+
+  return constant_boolean_gmw_share;
+}
+
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<std::uint8_t, std::int8_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<std::uint16_t, std::int16_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<std::uint32_t, std::int32_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<std::uint64_t, std::int64_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwInputFromFixedPoint<__uint128_t, __int128_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename T, typename T_int>
+ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint(
+    double constant_value, std::size_t num_of_simd,
+    std::size_t fixed_point_fraction_bit_size) const {
+  std::vector<double> constant_value_vector(num_of_simd, constant_value);
+  ShareWrapper constant_boolean_gmw_or_bmr_share;
+  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
+    constant_boolean_gmw_or_bmr_share = share_->GetBackend().ConstantAsBooleanGmwInput(
+        FixedPointToInput<T, T_int>(constant_value_vector, fixed_point_fraction_bit_size));
+  } else {
+    constant_boolean_gmw_or_bmr_share = share_->GetBackend().ConstantAsBmrInput(
+        FixedPointToInput<T, T_int>(constant_value_vector, fixed_point_fraction_bit_size));
+  }
+
+  return constant_boolean_gmw_or_bmr_share;
+}
+
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<
+    std::uint8_t, std::int8_t>(double constant_value, std::size_t num_of_simd,
+                               std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<
+    std::uint16_t, std::int16_t>(double constant_value, std::size_t num_of_simd,
+                                 std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<
+    std::uint32_t, std::int32_t>(double constant_value, std::size_t num_of_simd,
+                                 std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<
+    std::uint64_t, std::int64_t>(double constant_value, std::size_t num_of_simd,
+                                 std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<
+    __uint128_t, __int128_t>(double constant_value, std::size_t num_of_simd,
+                             std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename T, typename T_int>
+ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const {
+  std::size_t num_of_simd = share_->GetNumberOfSimdValues();
+  std::vector<double> constant_value_vector(num_of_simd, constant_value);
+  ShareWrapper constant_boolean_gmw_or_bmr_share;
+
+  if (share_->GetProtocol() == MpcProtocol::kBooleanGmw) {
+    // std::cout << "kBooleanGmw" << std::endl;
+    constant_boolean_gmw_or_bmr_share = share_->GetBackend().ConstantAsBooleanGmwInput(
+        FixedPointToInput<T, T_int>(constant_value_vector, fixed_point_fraction_bit_size));
+  } else {
+    // std::cout << "kBmr" << std::endl;
+    constant_boolean_gmw_or_bmr_share = share_->GetBackend().ConstantAsBmrInput(
+        FixedPointToInput<T, T_int>(constant_value_vector, fixed_point_fraction_bit_size));
+  }
+
+  return constant_boolean_gmw_or_bmr_share;
+}
+
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint8_t, std::int8_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint16_t, std::int16_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint32_t, std::int32_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
+template ShareWrapper
+ConstantShareWrapper::CreateConstantBooleanGmwOrBmrInputFromFixedPoint<__uint128_t, __int128_t>(
+    double constant_value, std::size_t fixed_point_fraction_bit_size) const;
 
 }  // namespace encrypto::motion

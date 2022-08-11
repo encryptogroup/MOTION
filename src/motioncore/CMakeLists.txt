@@ -64,7 +64,7 @@ add_library(motion
         secure_type/secure_unsigned_integer.cpp
         secure_type/secure_signed_integer.cpp
         secure_type/secure_floating_point_circuit_ABY.cpp
-        # secure_type/secure_fixed_point_circuit_CBMC.cpp
+        secure_type/secure_fixed_point_circuit_CBMC.cpp
         secure_type/secure_signed_integer.cpp
         statistics/analysis.cpp
         statistics/run_time_statistics.cpp
@@ -80,6 +80,10 @@ add_library(motion
         utility/runtime_info.cpp
         utility/thread.cpp
         utility/MOTION_dp_mechanism_helper/print_uint128_t.h
+        utility/MOTION_dp_mechanism_helper/fixed_point_operation.cpp
+        utility/MOTION_dp_mechanism_helper/snapping_mechanism.cpp
+        utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.cpp
+        utility/MOTION_dp_mechanism_helper/floating_point_operation.cpp
         )
 add_library(MOTION::motion ALIAS motion)
 

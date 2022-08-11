@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2021 Oleksandr Tkachenko, Arianne Roselina Prananto
+// Copyright (c) 2021-2022 Oleksandr Tkachenko, Arianne Roselina Prananto, Liang Zhao
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //

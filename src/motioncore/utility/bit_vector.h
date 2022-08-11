@@ -36,6 +36,7 @@
 
 #include "config.h"
 #include "helpers.h"
+#include "utility/meta.hpp"
 
 namespace encrypto::motion {
 
@@ -476,6 +477,20 @@ template <typename T,
                                       std::is_same_v<T, __uint128_t>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
+
+// convert a fixed point number (represented as double) to BitVector,
+// integer of type T hold the fixed point number
+template <typename T, typename T_int = get_int_type_t<T>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> FixedPointToInput(const double fixed_point,
+                                                    std::size_t fixed_point_fraction_bit_size);
+
+// convert a vector of fixed point number (represented as double) to a vector of BitVector,
+// integer of type T hold the fixed point number
+template <typename T, typename T_int = get_int_type_t<T>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> FixedPointToInput(const std::vector<double>& fixed_point_vector,
+                                                    std::size_t fixed_point_fraction_bit_size);
 
 // Output functions for converting vectors of BitVectors to vectors of floating point or
 // integer numbers

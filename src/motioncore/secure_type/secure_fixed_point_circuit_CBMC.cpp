@@ -31,6 +31,8 @@
 #include "base/backend.h"
 #include "base/register.h"
 #include "protocols/data_management/unsimdify_gate.h"
+#include "utility/MOTION_dp_mechanism_helper/fixed_point_operation.h"
+#include "protocols/constant/constant_share_wrapper.h"
 #include "utility/constants.h"
 #include "utility/logger.h"
 
@@ -53,12 +55,12 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator+(
     std::shared_ptr<AlgorithmDescription> addition_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kAdd_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kAdd_circuit, bitlength, "_depth");
-
-    // std::cout<<"path: "<<path<<std::endl;
 
     if ((addition_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
@@ -89,7 +91,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator-(
     std::shared_ptr<AlgorithmDescription> subtraction_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kSub_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kSub_circuit, bitlength, "_depth");
@@ -123,7 +127,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator*(
     std::shared_ptr<AlgorithmDescription> multiplication_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kMul_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kMul_circuit, bitlength, "_depth");
@@ -157,7 +163,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator/(
     std::shared_ptr<AlgorithmDescription> division_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kDiv_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kDiv_circuit, bitlength, "_depth");
@@ -181,39 +189,6 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator/(
   }
 }
 
-SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Div_Goldschmidt(
-    const SecureFixedPointCircuitCBMC& other) const {
-  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-    throw std::runtime_error("Fixed-point operations are not supported for Arithmetic GMW shares");
-  } else {  // BooleanCircuitType
-    const auto bitlength = share_->Get()->GetBitLength();
-    std::shared_ptr<AlgorithmDescription> division_algorithm;
-    std::string path;
-
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
-      path = ConstructPath(FixedPointOperationType::kDiv_Goldschmidt_circuit, bitlength, "_size");
-    else  // GMW, use depth-optimized circuit
-      path = ConstructPath(FixedPointOperationType::kDiv_Goldschmidt_circuit, bitlength, "_depth");
-
-    if ((division_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format(
-            "Found in cache Boolean fixed-point kDiv_Goldschmidt circuit with file path {}", path));
-      }
-    } else {
-      division_algorithm =
-          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-      assert(division_algorithm);
-      if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Read Boolean fixed-point kDiv_Goldschmidt circuit from file {}", path));
-      }
-    }
-    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
-    return SecureFixedPointCircuitCBMC(share_input.Evaluate(division_algorithm));
-  }
-}
-
 ShareWrapper SecureFixedPointCircuitCBMC::operator>(
     const SecureFixedPointCircuitCBMC& other) const {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
@@ -223,7 +198,9 @@ ShareWrapper SecureFixedPointCircuitCBMC::operator>(
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kGt_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kGt_circuit, bitlength, "_depth");
@@ -257,7 +234,9 @@ ShareWrapper SecureFixedPointCircuitCBMC::operator<(
     std::shared_ptr<AlgorithmDescription> is_greater_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kGt_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kGt_circuit, bitlength, "_depth");
@@ -288,8 +267,9 @@ ShareWrapper SecureFixedPointCircuitCBMC::operator==(
     throw std::runtime_error("Fixed-point operations are not supported for Arithmetic GMW shares");
   } else {  // BooleanCircuitType
     if constexpr (kDebug) {
-      if (other->GetProtocol() == MpcProtocol::kBmr) {
-        logger_->LogDebug("Creating a Boolean equality circuit in BMR");
+      if (other->GetProtocol() == MpcProtocol::kBmr ||
+          share_->Get()->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+        logger_->LogDebug("Creating a Boolean equality circuit in YAO/BMR");
       } else {
         logger_->LogDebug("Creating a Boolean equality circuit in GMW");
       }
@@ -303,7 +283,7 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator+(
   std::size_t num_of_simd = share_->Get()->GetNumberOfSimdValues();
 
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this + fixed_point_constant;
@@ -312,7 +292,7 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator+(
 SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator-(
     const double& constant_value) const {
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this - fixed_point_constant;
@@ -320,12 +300,13 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator-(
 
 SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator*(
     const double constant_value) const {
-  // std::cout << "SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator*" << std::endl;
+  // std::cout << "SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator*" <<
+  // std::endl;
 
   // std::cout << "(*share_)->GetProtocol(): " << int((*share_)->GetProtocol()) << std::endl;
 
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this * fixed_point_constant;
@@ -334,7 +315,7 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator*(
 SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator/(
     const double& constant_value) const {
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this / fixed_point_constant;
@@ -342,7 +323,7 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::operator/(
 
 ShareWrapper SecureFixedPointCircuitCBMC::operator<(const double& constant_value) const {
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this < fixed_point_constant;
@@ -350,14 +331,14 @@ ShareWrapper SecureFixedPointCircuitCBMC::operator<(const double& constant_value
 
 ShareWrapper SecureFixedPointCircuitCBMC::operator>(const double& constant_value) const {
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this > fixed_point_constant;
 }
 ShareWrapper SecureFixedPointCircuitCBMC::operator==(const double& constant_value) const {
   SecureFixedPointCircuitCBMC fixed_point_constant =
-      share_->CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
+      ConstantShareWrapper(*share_).CreateConstantBooleanGmwOrBmrInputFromFixedPoint<std::uint64_t, std::int64_t>(
           constant_value, f_);
 
   return *this == fixed_point_constant;
@@ -372,38 +353,6 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::MulBooleanGmwBit(
   return result;
 }
 
-SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Sqrt() const {
-  if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-    throw std::runtime_error("Fixed-point operations are not supported for Arithmetic GMW shares");
-  } else {  // BooleanCircuitType
-    const auto bitlength = share_->Get()->GetBitLength();
-    std::shared_ptr<AlgorithmDescription> sqrt_algorithm;
-    std::string path;
-
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
-      path = ConstructPath(FixedPointOperationType::kSqrt_circuit, bitlength, "_size");
-    else  // GMW, use depth-optimized circuit
-      path = ConstructPath(FixedPointOperationType::kSqrt_circuit, bitlength, "_depth");
-
-    if ((sqrt_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-      if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format(
-            "Found in cache Boolean fixed-point square root circuit with file path {}", path));
-      }
-    } else {
-      sqrt_algorithm =
-          std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-      assert(sqrt_algorithm);
-      if constexpr (kDebug) {
-        logger_->LogDebug(
-            fmt::format("Read Boolean fixed-point square root circuit from file {}", path));
-      }
-    }
-    const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *share_})};
-    return SecureFixedPointCircuitCBMC(share_input.Evaluate(sqrt_algorithm));
-  }
-}
-
 SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Sqrt_P0132() const {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     throw std::runtime_error("Fixed-point operations are not supported for Arithmetic GMW shares");
@@ -412,7 +361,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Sqrt_P0132() const {
     std::shared_ptr<AlgorithmDescription> sqrt_P0132_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kSqrt_P0132_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kSqrt_P0132_circuit, bitlength, "_depth");
@@ -445,7 +396,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Exp2_P1045() const {
     std::shared_ptr<AlgorithmDescription> exp2_P1045_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kExp2_P1045_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kExp2_P1045_circuit, bitlength, "_depth");
@@ -477,7 +430,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Exp2_P1045_Neg_0_1() co
     std::shared_ptr<AlgorithmDescription> exp2_P1045_neg_0_1_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path =
           ConstructPath(FixedPointOperationType::kExp2_P1045_Neg_0_1_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
@@ -514,7 +469,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Log2_P2508() const {
     std::shared_ptr<AlgorithmDescription> log2_P2508_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kLog2_P2508_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kLog2_P2508_circuit, bitlength, "_depth");
@@ -541,9 +498,7 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Log2_P2508() const {
 ShareWrapper SecureFixedPointCircuitCBMC::LTZ() const {
   const auto bitlength = share_->Get()->GetBitLength();
   if (bitlength == 32) {
-    // ShareWrapper sign_bit = share_->Split()[bitlength - 1];
-    // return sign_bit;
-    throw std::runtime_error("32-bit Boolean fixed-point circuit not generated yet");
+    throw std::runtime_error("32-bit Boolean fixed-point circuit not supported");
   }
   if (bitlength == 64) {
     ShareWrapper sign_bit = share_->Split()[bitlength - 1];
@@ -559,7 +514,9 @@ ShareWrapper SecureFixedPointCircuitCBMC::EQZ() const {
     std::shared_ptr<AlgorithmDescription> eqz_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kEQZ_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kEQZ_circuit, bitlength, "_depth");
@@ -590,7 +547,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Ceil() const {
     std::shared_ptr<AlgorithmDescription> ceil_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kCeil_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kCeil_circuit, bitlength, "_depth");
@@ -613,57 +572,14 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Ceil() const {
   }
 }
 
-// // directly manipulate boolean bits
-// SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Floor() const {
-//   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
-//     throw std::runtime_error("Fixed-point operations are not supported for Arithmetic GMW
-//     shares");
-//   } else {  // BooleanCircuitType
-//     const auto bitlength = share_->Get()->GetBitLength();
-//     std::shared_ptr<AlgorithmDescription> ceil_algorithm;
-//     std::string path;
-
-//     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
-//       path = ConstructPath(FixedPointOperationType::kFloor_circuit, bitlength, "_size");
-//     else  // GMW, use depth-optimized circuit
-//       path = ConstructPath(FixedPointOperationType::kFloor_circuit, bitlength, "_depth");
-
-//     if ((ceil_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
-//       if constexpr (kDebug) {
-//         logger_->LogDebug(
-//             fmt::format("Found in cache Boolean fixed-point floor circuit with file path {}",
-//             path));
-//       }
-//     } else {
-//       ceil_algorithm =
-//           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-//       assert(ceil_algorithm);
-//       if constexpr (kDebug) {
-//         logger_->LogDebug(fmt::format("Read Boolean fixed-point floor circuit from file {}",
-//         path));
-//       }
-//     }
-//     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *share_})};
-//     return SecureFixedPointCircuitCBMC(share_input.Evaluate(ceil_algorithm));
-//   }
-// }
-
 SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Floor() const {
   std::vector<ShareWrapper> share_split = share_->Split();
   const auto bitlength = share_->Get()->GetBitLength();
-
-  // std::size_t num_of_simd = share_->Get()->GetNumberOfSimdValues();
-  // std::vector<std::uint32_t> vector_of_zero(num_of_simd, 0);
-  // ShareWrapper boolean_gmw_share_zero;
-  // ShareWrapper boolean_gmw_share_zero_bit = boolean_gmw_share_zero.Split().at(0);
 
   if (bitlength == 32) {
     throw std::runtime_error("32-bit Boolean fixed-point circuit not generated yet");
   }
   if (bitlength == 64) {
-    // boolean_gmw_share_zero =
-    //     ShareWrapper(share_->Get()->GetBackend().ConstantBooleanGmwInput(ToInput(vector_of_zero)));
-
     ShareWrapper constant_boolean_gmw_or_bmr_share_zero = share_split[0] ^ share_split[0];
 
     for (std::size_t i = 0; i < f_; i++) {
@@ -689,7 +605,9 @@ SecureSignedInteger SecureFixedPointCircuitCBMC::Fx2Int(std::size_t integer_bit_
     std::shared_ptr<AlgorithmDescription> fx2int_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kFx2Int_circuit, bitlength, "_size",
                            integer_bit_length, 0);
     else  // GMW, use depth-optimized circuit
@@ -718,9 +636,6 @@ SecureSignedInteger SecureFixedPointCircuitCBMC::Fx2Int(std::size_t integer_bit_
 SecureSignedInteger SecureFixedPointCircuitCBMC::RoundedFx2Int() const {
   std::vector<ShareWrapper> fixed_point_boolean_gmw_share_vector = share_->Split();
 
-  // ShareWrapper constant_boolean_gmw_share_zero =
-  //     fixed_point_boolean_gmw_share_vector[0] ^ fixed_point_boolean_gmw_share_vector[0];
-
   ShareWrapper constant_boolean_gmw_share_sign = fixed_point_boolean_gmw_share_vector.back();
 
   std::vector<ShareWrapper> signed_integer_boolean_gmw_share(k_);
@@ -744,7 +659,9 @@ SecureFloatingPointCircuitABY SecureFixedPointCircuitCBMC::Fx2FL(
     std::shared_ptr<AlgorithmDescription> fx2fl_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kFx2FL_circuit, bitlength, "_size", 0,
                            floating_point_bit_length);
     else  // GMW, use depth-optimized circuit
@@ -868,7 +785,9 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Sin_P3307_0_1() const {
     std::shared_ptr<AlgorithmDescription> sin_P3307_algorithm;
     std::string path;
 
-    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr)  // BMR, use size-optimized circuit
+    if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
+        share_->Get()->GetProtocol() ==
+            MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
       path = ConstructPath(FixedPointOperationType::kSin_P3307_0_1_circuit, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
       path = ConstructPath(FixedPointOperationType::kSin_P3307_0_1_circuit, bitlength, "_depth");
@@ -876,14 +795,14 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Sin_P3307_0_1() const {
     if ((sin_P3307_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
-            fmt::format("Found in cache Boolean fixed-point exp2 circuit with file path {}", path));
+            fmt::format("Found in cache Boolean fixed-point sin circuit with file path {}", path));
       }
     } else {
       sin_P3307_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(sin_P3307_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean fixed-point exp2 circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean fixed-point sin circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *share_})};
@@ -896,7 +815,6 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Sin_P3307_0_4() const {
     throw std::runtime_error("Fixed-point operations are not supported for Arithmetic GMW shares");
   } else {  // BooleanCircuitType
 
-    // std::cout << "222" << std::endl;
     // y1 in range (0,4)
     SecureFixedPointCircuitCBMC fixed_point_y1 = *this;
     ShareWrapper boolean_gmw_or_bmr_share_y1_greater_than_2 = fixed_point_y1 > double(2);
@@ -941,14 +859,14 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Cos_P3508() const {
     if ((cos_P3508_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
-            fmt::format("Found in cache Boolean fixed-point exp2 circuit with file path {}", path));
+            fmt::format("Found in cache Boolean fixed-point cos circuit with file path {}", path));
       }
     } else {
       cos_P3508_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(cos_P3508_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean fixed-point exp2 circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean fixed-point cos circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *share_})};
@@ -1004,10 +922,6 @@ std::string SecureFixedPointCircuitCBMC::ConstructPath(
       operation_type_string = "eqz";
       break;
     }
-    // case FixedPointOperationType::kLTZ_circuit: {
-    //   operation_type_string = "ltz";
-    //   break;
-    // }
     case FixedPointOperationType::kSqrt_circuit: {
       operation_type_string = "sqrt";
       break;
@@ -1036,14 +950,6 @@ std::string SecureFixedPointCircuitCBMC::ConstructPath(
       operation_type_string = "cos_P3508";
       break;
     }
-    // case FixedPointOperationType::kExp_circuit: {
-    //   operation_type_string = "exp";
-    //   break;
-    // }
-    // case FixedPointOperationType::kLn_circuit: {
-    //   operation_type_string = "ln";
-    //   break;
-    // }
     case FixedPointOperationType::kCeil_circuit: {
       operation_type_string = "ceil";
       break;
@@ -1088,9 +994,7 @@ SecureFixedPointCircuitCBMC SecureFixedPointCircuitCBMC::Subset(std::vector<size
 }
 
 std::vector<SecureFixedPointCircuitCBMC> SecureFixedPointCircuitCBMC::Unsimdify() const {
-  auto unsimdify_gate = std::make_shared<UnsimdifyGate>(share_->Get());
-  auto unsimdify_gate_cast = std::static_pointer_cast<Gate>(unsimdify_gate);
-  share_->Get()->GetRegister()->RegisterNextGate(unsimdify_gate_cast);
+  auto unsimdify_gate = share_->Get()->GetRegister()->EmplaceGate<UnsimdifyGate>(share_->Get());
   std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
   std::vector<SecureFixedPointCircuitCBMC> result(shares.size());
   std::transform(shares.begin(), shares.end(), result.begin(),
@@ -1149,7 +1053,7 @@ std::vector<double> SecureFixedPointCircuitCBMC::AsFixedPointVector(
     std::vector<std::uint32_t> as_unsigned_output_vector =
         encrypto::motion::ToVectorOutput<std::uint32_t>(share_out);
 
-    vector<double> as_fixed_output_vector;
+    std::vector<double> as_fixed_output_vector;
     for (std::size_t i = 0; i < as_unsigned_output_vector.size(); i++) {
       as_fixed_output_vector.emplace_back(
           FixedPointToDouble<FxType, FxType_int>(as_unsigned_output_vector[i], k_, f_));
@@ -1161,7 +1065,7 @@ std::vector<double> SecureFixedPointCircuitCBMC::AsFixedPointVector(
     std::vector<std::uint64_t> as_unsigned_output_vector =
         encrypto::motion::ToVectorOutput<std::uint64_t>(share_out);
 
-    vector<double> as_fixed_output_vector;
+    std::vector<double> as_fixed_output_vector;
     for (std::size_t i = 0; i < as_unsigned_output_vector.size(); i++) {
       as_fixed_output_vector.emplace_back(
           FixedPointToDouble<FxType, FxType_int>(as_unsigned_output_vector[i], k_, f_));
@@ -1180,11 +1084,9 @@ std::vector<double> SecureFixedPointCircuitCBMC::AsFixedPointVector(
 }
 
 template std::uint32_t SecureFixedPointCircuitCBMC::As() const;
-
 template std::uint64_t SecureFixedPointCircuitCBMC::As() const;
 
 template std::vector<std::uint32_t> SecureFixedPointCircuitCBMC::As() const;
-
 template std::vector<std::uint64_t> SecureFixedPointCircuitCBMC::As() const;
 
 template double SecureFixedPointCircuitCBMC::AsFixedPoint<std::uint64_t, std::int64_t>(
