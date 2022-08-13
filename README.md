@@ -31,7 +31,7 @@ This code is provided as an experimental implementation for testing purposes and
 
 1. Clone the MOTION git repository by running:
     ```
-    git clone https://github.com/encryptogroup/MOTION.git
+    git clone https://github.com/liangzhao-darmstadt/Securely-Realizing-Output-Privacy-in-MPC-using-Differential-Privacy.git
     ```
 
 2. Enter the Framework directory: `cd MOTION/`
