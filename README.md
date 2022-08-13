@@ -34,7 +34,7 @@ This code is provided as an experimental implementation for testing purposes and
     git clone https://github.com/liangzhao-darmstadt/Securely-Realizing-Output-Privacy-in-MPC-using-Differential-Privacy.git
     ```
 
-2. Enter the Framework directory: `cd Securely-Realizing-Output-Privacy-in-MPC-using-Differential-Privacy/`
+2. Enter the Framework directory: `cd MOTION/`
 
 3. Create and enter the build directory: `mkdir build && cd build`
 
