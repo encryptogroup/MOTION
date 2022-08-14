@@ -66,6 +66,14 @@ add_library(motion
         secure_type/secure_floating_point_circuit_ABY.cpp
         secure_type/secure_fixed_point_circuit_CBMC.cpp
         secure_type/secure_signed_integer.cpp
+        secure_dp_mechanism/secure_dp_mechanism_helper.cpp
+        secure_dp_mechanism/secure_snapping_mechanism.cpp
+        secure_dp_mechanism/secure_PrivaDA_EKMPP.cpp
+        secure_dp_mechanism/secure_gaussian_mechanism.cpp
+        secure_dp_mechanism/secure_discrete_laplace_mechanism_CKS.cpp
+        secure_dp_mechanism/secure_discrete_gaussian_mechanism_CKS.cpp
+        secure_dp_mechanism/secure_integer_scaling_laplace_mechanism.cpp
+        secure_dp_mechanism/secure_integer_scaling_gaussian_mechanism.cpp
         statistics/analysis.cpp
         statistics/run_time_statistics.cpp
         utility/bit_matrix.cpp
@@ -84,9 +92,10 @@ add_library(motion
         utility/MOTION_dp_mechanism_helper/snapping_mechanism.cpp
         utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.cpp
         utility/MOTION_dp_mechanism_helper/floating_point_operation.cpp
-        )
+        utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.cpp
+        utility/MOTION_dp_mechanism_helper/integer_scaling_mechanism.cpp
+)
 add_library(MOTION::motion ALIAS motion)
-
 
 # Add version information to library
 file(TOUCH "${CMAKE_CURRENT_BINARY_DIR}/version.cpp")
@@ -100,48 +109,47 @@ add_custom_target(motion_version
         COMMENT "gather information about git repository and generating version.cpp")
 add_dependencies(motion motion_version)
 
-
 # -fvect-cost-model flag is not supported by clang(++)
-if (NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    set(MOTION_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
-endif ()
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        set(MOTION_VECT_COST_MODEL_GCC_FLAG "-fvect-cost-model=unlimited")
+endif()
 
 set_property(TARGET motion PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-if (MOTION_BOOST_LOG_DYN_LINK)
-    target_compile_definitions(motion PUBLIC OMP_NESTED=1 BOOST_LOG_DYN_LINK=1)
-else ()
-    target_compile_definitions(motion PUBLIC OMP_NESTED=1)
-endif ()
-#target_compile_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
-#target_link_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
-#target_compile_options(motion PUBLIC "-fsanitize=thread")
-#target_link_options(motion PUBLIC "-fsanitize=thread")
+if(MOTION_BOOST_LOG_DYN_LINK)
+        target_compile_definitions(motion PUBLIC OMP_NESTED=1 BOOST_LOG_DYN_LINK=1)
+else()
+        target_compile_definitions(motion PUBLIC OMP_NESTED=1)
+endif()
+
+# target_compile_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
+# target_link_options(motion PUBLIC "-fno-omit-frame-pointer" "-fsanitize=address")
+# target_compile_options(motion PUBLIC "-fsanitize=thread")
+# target_link_options(motion PUBLIC "-fsanitize=thread")
 
 # there is a strange bug that Party::Reset() sometimes results in a segfault in the next Party::Run
 # this only happens in the Release mode and even not in RelWithDebInfo which makes it hard to find the bug
 # TODO: fix
 
-#if ("${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
-#    list(APPEND MOTION_EXTRA_FLAGS
-#            -fgcse-after-reload
-#            -finline-functions
-#            -fipa-cp-clone
-#            -floop-interchange
-#            -floop-unroll-and-jam
-#            -fpeel-loops
-#            -fpredictive-commoning
-#            -fsplit-paths
-#            -ftree-loop-distribute-patterns
-#            -ftree-loop-distribution
-#            -ftree-loop-vectorize
-#            -ftree-partial-pre
-#            -ftree-slp-vectorize
-#            -funswitch-loops
-#            -fvect-cost-model
-#            )
-#endif ()
-
+# if ("${CMAKE_BUILD_TYPE}" MATCHES "RelWithDebInfo")
+# list(APPEND MOTION_EXTRA_FLAGS
+# -fgcse-after-reload
+# -finline-functions
+# -fipa-cp-clone
+# -floop-interchange
+# -floop-unroll-and-jam
+# -fpeel-loops
+# -fpredictive-commoning
+# -fsplit-paths
+# -ftree-loop-distribute-patterns
+# -ftree-loop-distribution
+# -ftree-loop-vectorize
+# -ftree-partial-pre
+# -ftree-slp-vectorize
+# -funswitch-loops
+# -fvect-cost-model
+# )
+# endif ()
 target_compile_features(motion PUBLIC cxx_std_20)
 target_compile_options(motion PRIVATE
         ${MOTION_EXTRA_FLAGS}
@@ -150,45 +158,49 @@ target_compile_options(motion PRIVATE
         -maes -msse2 -msse4.1 -msse4.2 -mpclmul
         -ffunction-sections -march=native -ffast-math
         ${MOTION_VECT_COST_MODEL_GCC_FLAG}
-        )
+)
 
-if (WIN32)
-    target_link_libraries(motion PUBLIC wsock32 ws2_32)
-    target_include_directories(motion PUBLIC
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>)
-endif ()
+if(WIN32)
+        target_link_libraries(motion PUBLIC wsock32 ws2_32)
+        target_include_directories(motion PUBLIC
+                $<INSTALL_INTERFACE:include>
+                $<BUILD_INTERFACE:${OPENSSL_INCLUDE_DIR}>)
+endif()
 
 # Prevent undefined references to `__log2_finite' and `__exp2_finite' when
 # compiling with clang.
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    target_compile_options(motion PRIVATE -fno-builtin)
-endif ()
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        target_compile_options(motion PRIVATE -fno-builtin)
+endif()
 
 set(MOTION_ALIGNMENT 16)
-if (MOTION_USE_AVX)
-    # at least AVX
-    target_compile_options(motion PRIVATE -mavx)
-    target_compile_definitions(motion PRIVATE MOTION_AVX)
-    add_compile_definitions(MOTION_AVX)
-    set(MOTION_ALIGNMENT 32)
-    if (NOT MOTION_USE_AVX STREQUAL "AVX")
-        # at least AVX2
-        target_compile_options(motion PRIVATE -mavx2)
-        target_compile_definitions(motion PRIVATE MOTION_AVX2)
-        if (NOT MOTION_USE_AVX STREQUAL "AVX2")
-            # AVX512, based on what's available on a Skylake-X CPU
-            target_compile_options(motion PRIVATE -mavx512f -mavx512dq -mavx512cd -mavx512bw -mavx512vl)
-            target_compile_definitions(motion PRIVATE MOTION_AVX512)
-            set(MOTION_ALIGNMENT 64)
-            if (NOT MOTION_USE_AVX STREQUAL "AVX512")
-                # AVX512 with VAES (and potentially whatever else we need beyond basic Cascade Lake Extensions)
-                target_compile_options(motion PRIVATE -mvaes)
-                target_compile_definitions(motion PRIVATE MOTION_AVX512_VAES)
-            endif ()
-        endif ()
-    endif ()
-endif ()
+
+if(MOTION_USE_AVX)
+        # at least AVX
+        target_compile_options(motion PRIVATE -mavx)
+        target_compile_definitions(motion PRIVATE MOTION_AVX)
+        add_compile_definitions(MOTION_AVX)
+        set(MOTION_ALIGNMENT 32)
+
+        if(NOT MOTION_USE_AVX STREQUAL "AVX")
+                # at least AVX2
+                target_compile_options(motion PRIVATE -mavx2)
+                target_compile_definitions(motion PRIVATE MOTION_AVX2)
+
+                if(NOT MOTION_USE_AVX STREQUAL "AVX2")
+                        # AVX512, based on what's available on a Skylake-X CPU
+                        target_compile_options(motion PRIVATE -mavx512f -mavx512dq -mavx512cd -mavx512bw -mavx512vl)
+                        target_compile_definitions(motion PRIVATE MOTION_AVX512)
+                        set(MOTION_ALIGNMENT 64)
+
+                        if(NOT MOTION_USE_AVX STREQUAL "AVX512")
+                                # AVX512 with VAES (and potentially whatever else we need beyond basic Cascade Lake Extensions)
+                                target_compile_options(motion PRIVATE -mvaes)
+                                target_compile_definitions(motion PRIVATE MOTION_AVX512_VAES)
+                        endif()
+                endif()
+        endif()
+endif()
 
 configure_file(
         ${CMAKE_CURRENT_SOURCE_DIR}/utility/config.h.in
@@ -201,9 +213,9 @@ add_custom_target(
         "${MOTION_ROOT_DIR}/src/motioncore/utility/config.h.in"
 )
 
-if (MOTION_COMPILATION_TIME_DEBUGGING)
-    set_property(TARGET motion PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
-endif ()
+if(MOTION_COMPILATION_TIME_DEBUGGING)
+        set_property(TARGET motion PROPERTY RULE_LAUNCH_COMPILE "${CMAKE_COMMAND} -E time")
+endif()
 
 add_dependencies(motion fbs-generation motion_config)
 
@@ -215,7 +227,7 @@ target_include_directories(motion PUBLIC
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/fmt/include>
         $<BUILD_INTERFACE:${MOTION_ROOT_DIR}/extern/flatbuffers/include>
         $<BUILD_INTERFACE:${Boost_INCLUDE_DIRS}>
-        )
+)
 
 target_compile_definitions(motion PUBLIC FMT_HEADER_ONLY BOOST_ERROR_CODE_HEADER_ONLY)
 
@@ -234,42 +246,42 @@ target_link_libraries(motion
         OpenSSL::SSL
         PUBLIC
         Boost::json
-        )
+)
 
-if (MOTION_LINK_TCMALLOC)
-	find_library(tcmalloc_minimal REQUIRED
-		NAMES tcmalloc_minimal libtcmalloc_minimal
-		PATHS ${TCMALLOC_ROOT}/lib
-		)
-	target_link_libraries(motion PRIVATE tcmalloc_minimal)
-endif ()
+if(MOTION_LINK_TCMALLOC)
+        find_library(tcmalloc_minimal REQUIRED
+                NAMES tcmalloc_minimal libtcmalloc_minimal
+                PATHS ${TCMALLOC_ROOT}/lib
+        )
+        target_link_libraries(motion PRIVATE tcmalloc_minimal)
+endif()
 
 install(TARGETS motion
         EXPORT "${PROJECT_NAME}Targets"
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         INCLUDES DESTINATION lib
-        )
+)
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
-        )
+)
 
 export(TARGETS motion NAMESPACE "${PROJECT_NAME}::" FILE "${PROJECT_NAME}Targets.cmake")
 install(EXPORT "${PROJECT_NAME}Targets"
         NAMESPACE "${PROJECT_NAME}::"
         DESTINATION "lib/cmake/${PROJECT_NAME}"
-        )
+)
 
 include(CMakePackageConfigHelpers)
 
 configure_package_config_file("${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
         INSTALL_DESTINATION "lib/cmake/${PROJECT_NAME}"
-        )
+)
 
 install(FILES
         "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
         DESTINATION "lib/cmake/${PROJECT_NAME}"
-        )
+)

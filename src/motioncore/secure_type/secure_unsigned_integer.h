@@ -25,6 +25,8 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
+#include "secure_type/secure_fixed_point_circuit_CBMC.h"
+#include "secure_type/secure_floating_point_circuit_ABY.h"
 namespace encrypto::motion {
 
 class Logger;
@@ -110,7 +112,7 @@ class SecureUnsignedInteger {
 
   ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
-  // TODO: support garbled circuit
+  // TODO: support garbled circuit protocol
   /// \brief operations with constant value
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   SecureUnsignedInteger operator+(const T& constant_value) const;
@@ -153,6 +155,12 @@ class SecureUnsignedInteger {
   /// \brief Modulo reduction with constant value m
   template <typename T>
   SecureUnsignedInteger Mod(const T& m) const;
+
+ // convert (32/64-bit) SecureUnsignedInteger to (32/64-bit) SecureFloatingPointCircuitESAT
+  SecureFloatingPointCircuitABY Int2FL(std::size_t floating_point_bit_length = 64) const;
+
+ // convert SecureUnsignedInteger to 64-bit SecureFixedPointCircuitCBMC
+  SecureFixedPointCircuitCBMC Int2Fx(std::size_t fraction_bit_size = 16) const;
 
   /// \brief internally extracts the ShareWrapper/SharePointer from input and
   /// calls ShareWrapper::Simdify(std::span<SharePointer> input)

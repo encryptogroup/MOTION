@@ -1,6 +1,26 @@
+// MIT License
 //
-// Created by liangzhao on 30.05.22.
+// Copyright (c) 2022 Liang Zhao
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #include "dp_mechanism_helper.h"
 #include <bits/stdc++.h>
@@ -39,8 +59,6 @@ float bool_vector_to_float(std::vector<bool> bool_vector) {
   std::size_t count = bool_vector.size();
   std::uint32_t int_output = bool_vector_to_int<std::uint32_t>(bool_vector);
 
-  // std::cout << "int_output: " << int_output << std::endl;
-
   float* float_output = reinterpret_cast<float*>(&int_output);
   return *float_output;
 }
@@ -48,8 +66,6 @@ float bool_vector_to_float(std::vector<bool> bool_vector) {
 double bool_vector_to_double(std::vector<bool> bool_vector) {
   std::size_t count = bool_vector.size();
   std::uint64_t int_output = bool_vector_to_int<std::uint64_t>(bool_vector);
-
-  // std::cout << "int_output: " << int_output << std::endl;
 
   double* double_output = reinterpret_cast<double*>(&int_output);
   return *double_output;
@@ -73,45 +89,25 @@ template std::uint64_t bool_vector_geometric_sampling(std::vector<bool> bool_vec
 
 double uniform_floating_point64_0_1(const std::vector<bool>& random_bit_mantissa,
                                     const std::vector<bool>& random_bit_exponent) {
-  //   bool floating_point_bool_array[FLOATINGPOINT_BITS];
-
   using T = std::uint16_t;
   using T_int = std::int16_t;
   T_int geo = bool_vector_geometric_sampling<T>(random_bit_exponent);
-  //  std::cout << "geo: " << geo << std::endl;
   T_int biased_exponent = FLOATINGPOINT_EXPONENT_BIAS - geo;
-
-  //  std::cout << "biased_exponent: " << biased_exponent << std::endl;
 
   std::vector<bool> exponent_bool_vector(FLOATINGPOINT_EXPONENT_BITS);
   for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; i++) {
     exponent_bool_vector[i] = ((biased_exponent >> i) & 1);
   }
 
-  //  std::cout << "random_bit_mantissa: ";
   std::vector<bool> uniform_floating_point_bool_vector(FLOATINGPOINT_BITS);
   for (std::size_t i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
     uniform_floating_point_bool_vector[i] = random_bit_mantissa[i];
-    //    std::cout << random_bit_mantissa[FLOATINGPOINT_MANTISSA_BITS - 1 - i];
   }
-  //  std::cout << std::endl;
 
   for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; i++) {
     uniform_floating_point_bool_vector[i + FLOATINGPOINT_MANTISSA_BITS] = exponent_bool_vector[i];
   }
   uniform_floating_point_bool_vector.emplace_back(false);
-
-  //  std::cout << "uniform_floating_point_bool_vector: ";
-  //  for (std::size_t i = 0; i < FLOATINGPOINT_BITS; i++) {
-  //    std::cout << uniform_floating_point_bool_vector[i];
-  //  }
-  //  std::cout << std::endl;
-
-  //  std::cout << "uniform_floating_point_bool_vector reverse: ";
-  //  for (std::size_t i = 0; i < FLOATINGPOINT_BITS; i++) {
-  //    std::cout << uniform_floating_point_bool_vector[FLOATINGPOINT_BITS - 1 - i];
-  //  }
-  //  std::cout << std::endl;
 
   double uniform_floating_point_double = bool_vector_to_double(uniform_floating_point_bool_vector);
 
@@ -120,13 +116,6 @@ double uniform_floating_point64_0_1(const std::vector<bool>& random_bit_mantissa
 
 float uniform_floating_point32_0_1(const std::vector<bool>& random_bit_mantissa,
                                    const std::vector<bool>& random_bit_exponent) {
-  //   bool floating_point_bool_array[FLOATINGPOINT32_BITS];
-
-  // std::size_t FLOATINGPOINT32_BITS = 32;
-  // std::size_t FLOATINGPOINT32_MANTISSA_BITS = 23;
-  // std::size_t FLOATINGPOINT32_EXPONENT_BITS = 8;
-  // std::size_t FLOATINGPOINT32_EXPONENT_BIAS = 127;
-
   using T = std::uint16_t;
   using T_int = std::int16_t;
   T_int geo = bool_vector_geometric_sampling<T>(random_bit_exponent);
@@ -303,8 +292,8 @@ std::vector<double> decimalToFraction(double number, long precision) {
   // because the random unsigned integer we generate in MPC is smaller than 2^(64)
   const long pVal = precision;
 
-//// only for debug
-//  const long pVal = std::exp2l(30);
+  //// only for debug
+  //  const long pVal = std::exp2l(30);
 
   // Calculate GCD of integral
   // equivalent of fractional
@@ -350,8 +339,6 @@ double ceil_power_of_two(double a_double) {
   }
 
   double* a_double_ceil_power_of_two = reinterpret_cast<double*>(&a_uint_ceil_power_of_two);
-
-  //    std::cout << "*a_double_ceil_power_of_two: " << *a_double_ceil_power_of_two << std::endl;
 
   return *a_double_ceil_power_of_two;
 }
@@ -406,13 +393,13 @@ void test_dp_mechanism_helper() {
     a_double_tmp = a_double_vector[i];
     double numerator = decimalToFraction(a_double_tmp)[0];
     double denominator = decimalToFraction(a_double_tmp)[1];
-    std::cout << "numerator: " << numerator << std::endl;
-    std::cout << "denominator: " << denominator << std::endl;
-    std::cout << "a_double_tmp: " << a_double_tmp << std::endl;
-    std::cout << "numerator/denominator: " << numerator / denominator << std::endl;
-    if (numerator >= std::exp2(64) || denominator >= std::exp2(64)) {
-      std::cout << "decimalToFraction failed: " << std::endl;
-      break;
-    }
+    // std::cout << "numerator: " << numerator << std::endl;
+    // std::cout << "denominator: " << denominator << std::endl;
+    // std::cout << "a_double_tmp: " << a_double_tmp << std::endl;
+    // std::cout << "numerator/denominator: " << numerator / denominator << std::endl;
+    // if (numerator >= std::exp2(64) || denominator >= std::exp2(64)) {
+    //   std::cout << "decimalToFraction failed: " << std::endl;
+    //   break;
+    // }
   }
 }

@@ -848,4 +848,132 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LEQSIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
+TYPED_TEST(SecureUintTest_32_64_bgmw, Int2FLSIMDInGmw) {
+  using T = TypeParam;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{1000};
+  std::srand(time(nullptr));
+
+  T min = 0;
+  T max = T(1) << (sizeof(T) * 8 - 2);
+  const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+  const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+      encrypto::motion::ToInput(raw_global_input_1), encrypto::motion::ToInput(raw_global_input_2)};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
+  for (auto& party : motion_parties) {
+    party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+    party->GetConfiguration()->SetOnlineAfterSetup(true);
+  }
+  std::vector<std::thread> threads;
+  for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+    threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+                          &raw_global_input_1, &raw_global_input_2]() {
+      const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+      encrypto::motion::SecureUnsignedInteger
+          share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+          share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1), 1);
+      EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+      const auto share_result_32 = share_0.Int2FL(32);
+      const auto share_result_64 = share_0.Int2FL(64);
+      auto share_output_32 = share_result_32.Out();
+      auto share_output_64 = share_result_64.Out();
+
+      motion_parties.at(party_id)->Run();
+      motion_parties.at(party_id)->Finish();
+
+      std::vector<float> result_32 = share_output_32.AsFloatingPointVector<float>();
+      std::vector<double> result_64 = share_output_64.AsFloatingPointVector<double>();
+
+      for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+        const float expect_result_32 = float(raw_global_input_1.at(i));
+        const double expect_result_64 = double(raw_global_input_1.at(i));
+
+      // if (T(raw_global_input_1.at(i)) < 0) {
+      //     print_u128_u("-raw_global_input_1.at(i): ", -raw_global_input_1.at(i));
+      //   } else {
+      //     print_u128_u("raw_global_input_1.at(i): ", raw_global_input_1.at(i));
+      //   }
+
+      //   std::cout << "expect_result_32: " << expect_result_32 << std::endl;
+      //   std::cout << "expect_result_64: " << expect_result_64 << std::endl;
+      //   std::cout<<std::endl;
+
+        EXPECT_EQ(result_32[i], expect_result_32);
+        EXPECT_EQ(result_64[i], expect_result_64);
+      
+        // EXPECT_LE(result_32[i], std::nextafter(expect_result_32, +INFINITY));
+        // EXPECT_GE(result_32[i], std::nextafter(expect_result_32, -INFINITY));
+        // EXPECT_LE(result_64[i], std::nextafter(expect_result_64, +INFINITY));
+        // EXPECT_GE(result_64[i], std::nextafter(expect_result_64, -INFINITY));
+      
+      }
+    });
+  }
+  for (auto& t : threads)
+    if (t.joinable()) t.join();
+}
+
+TYPED_TEST(SecureUintTest_32_64_bgmw, Int2FxSIMDInGmw) {
+  using T = std::uint64_t;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+
+  constexpr auto kNumberOfWires{sizeof(T) * 8};
+  constexpr std::size_t kNumberOfSimd{1000};
+  std::srand(time(nullptr));
+
+  T min = 0;
+  T max = T(1) << (sizeof(T) * 8 - 2 - 16);
+  const std::vector<T> raw_global_input_1 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+  const std::vector<T> raw_global_input_2 = RandomRangeIntegerVector<T>(min, max, kNumberOfSimd);
+
+  std::vector<std::vector<encrypto::motion::BitVector<>>> global_input{
+      encrypto::motion::ToInput(raw_global_input_1), encrypto::motion::ToInput(raw_global_input_2)};
+  std::vector<encrypto::motion::BitVector<>> dummy_input(
+      kNumberOfWires, encrypto::motion::BitVector<>(kNumberOfSimd, false));
+
+  std::vector<PartyPointer> motion_parties(std::move(MakeLocallyConnectedParties(2, kPortOffset)));
+  for (auto& party : motion_parties) {
+    party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+    party->GetConfiguration()->SetOnlineAfterSetup(true);
+  }
+  std::vector<std::thread> threads;
+  for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+    threads.emplace_back([party_id, &motion_parties, kNumberOfWires, &global_input, &dummy_input,
+                          &raw_global_input_1, &raw_global_input_2]() {
+      const bool party_0 = motion_parties.at(party_id)->GetConfiguration()->GetMyId() == 0;
+      encrypto::motion::SecureUnsignedInteger
+          share_0 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(0), 0)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 0),
+          share_1 = party_0 ? motion_parties.at(party_id)->In<kBooleanGmw>(dummy_input, 1)
+                            : motion_parties.at(party_id)->In<kBooleanGmw>(global_input.at(1), 1);
+      EXPECT_EQ(share_0.Get()->GetBitLength(), kNumberOfWires);
+
+      const auto share_result = share_0.Int2Fx(16);
+      auto share_output = share_result.Out();
+
+      motion_parties.at(party_id)->Run();
+      motion_parties.at(party_id)->Finish();
+
+      std::vector<double> result = share_output.AsFixedPointVector<std::uint64_t, std::int64_t>();
+
+      for (std::size_t i = 0; i < kNumberOfSimd; i++) {
+        const double expect_result = double(raw_global_input_1.at(i));
+        EXPECT_EQ(result[i], expect_result);
+      }
+    });
+  }
+  for (auto& t : threads)
+    if (t.joinable()) t.join();
+}
+
 }  // namespace

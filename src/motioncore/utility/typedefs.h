@@ -202,6 +202,8 @@ enum class UnsignedIntegerOperationType : unsigned int {
   kLEQ,
   kEQZ,
   kMod,
+  kInt2FL,
+  kInt2Fx,
 
   kAddConstant,
   kSubConstant,
@@ -249,6 +251,12 @@ inline std::string to_string(UnsignedIntegerOperationType p) {
     }
     case UnsignedIntegerOperationType::kMod: {
       return "UINT_MOD";
+    }
+    case UnsignedIntegerOperationType::kInt2FL: {
+      return "UINT_Int2FL";
+    }
+    case UnsignedIntegerOperationType::kInt2Fx: {
+      return "UINT_Int2Fx";
     }
     case UnsignedIntegerOperationType::kAddConstant: {
       return "UINT_ADD_Constant";
@@ -794,6 +802,136 @@ inline std::string to_string(FixedPointOperationType p) {
 
     default:
       throw std::invalid_argument("Invalid FixedPointOperationType");
+  }
+}
+
+enum class DPMechanismType : unsigned int {
+  kGenerateRandomBooleanGmwBits,
+  kSimpleGeometricSampling,
+
+  kUniformFloatingPoint32_0_1,
+  kUniformFloatingPoint64_0_1,
+
+  kUniformFixedPoint_0_1,
+  kUniformFixedPoint_0_1_Up,
+
+  kRandomUnsignedInteger,
+
+  kSecureSnappingMechanism,
+
+  kSecurePrivaDA_EKMPP_FxLaplace_DP_insecure,
+  kSecurePrivaDA_EKMPP_FL32Laplace_DP_insecure,
+  kSecurePrivaDA_EKMPP_FL64Laplace_DP_insecure,
+
+  kSecurePrivaDA_EKMPP_FxDiscreteLaplace,
+  kSecurePrivaDA_EKMPP_FL32DiscreteLaplace,
+  kSecurePrivaDA_EKMPP_FL64DiscreteLaplace,
+
+  kSecureGaussianMechanism_FxGaussian_DP_insecure,
+  kSecureGaussianMechanism_FL32Gaussian_DP_insecure,
+  kSecureGaussianMechanism_FL64Gaussian_DP_insecure,
+
+  kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace,
+  kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace,
+  kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace,
+  kSecureDiscreteGaussianMechanismCKS_FxDiscreteGaussian,
+  kSecureDiscreteGaussianMechanismCKS_FL32DiscreteGaussian,
+  kSecureDiscreteGaussianMechanismCKS_FL64DiscreteGaussian,
+
+  kSecureIntegerScalingLaplaceMechanism_FxLaplace,
+  kSecureIntegerScalingLaplaceMechanism_FL32Laplace,
+  kSecureIntegerScalingLaplaceMechanism_FL64Laplace,
+
+  kSecureIntegerScalingGaussianMechanism_FLGaussian,
+
+  kInvalid
+};
+
+inline std::string to_string(DPMechanismType p) {
+  switch (p) {
+    case DPMechanismType::kGenerateRandomBooleanGmwBits: {
+      return "BGMW_kGenerateRandomBooleanGmwBits";
+    }
+    case DPMechanismType::kSimpleGeometricSampling: {
+      return "BGMW_kSimpleGeometricSampling";
+    }
+    case DPMechanismType::kUniformFloatingPoint32_0_1: {
+      return "BGMW_kUniformFloatingPoint32_0_1";
+    }
+    case DPMechanismType::kUniformFloatingPoint64_0_1: {
+      return "BGMW_kUniformFloatingPoint64_0_1";
+    }
+    case DPMechanismType::kUniformFixedPoint_0_1: {
+      return "BGMW_kUniformFixedPoint_0_1";
+    }
+    case DPMechanismType::kRandomUnsignedInteger: {
+      return "BGMW_kRandomUnsignedInteger";
+    }
+    case DPMechanismType::kUniformFixedPoint_0_1_Up: {
+      return "BGMW_kUniformFixedPoint_0_1_Up";
+    }
+    case DPMechanismType::kSecureSnappingMechanism: {
+      return "BGMW_kSecureSnappingMechanism";
+    }
+    case DPMechanismType::kSecurePrivaDA_EKMPP_FxLaplace_DP_insecure: {
+      return "BGMW_kSecurePrivaDA_EKMPP_FxLaplace_DP_insecure";
+    }
+    case DPMechanismType::kSecurePrivaDA_EKMPP_FL32Laplace_DP_insecure: {
+      return "BGMW_kSecurePrivaDA_EKMPP_FL32Laplace_DP_insecure";
+    }
+    case DPMechanismType::kSecurePrivaDA_EKMPP_FL64Laplace_DP_insecure: {
+      return "BGMW_kSecurePrivaDA_EKMPP_FL64Laplace_DP_insecure";
+    }
+    case DPMechanismType::kSecureGaussianMechanism_FxGaussian_DP_insecure: {
+      return "BGMW_kSecureGaussianMechanism_FxGaussian_DP_insecure";
+    }
+    case DPMechanismType::kSecureGaussianMechanism_FL32Gaussian_DP_insecure: {
+      return "BGMW_kSecureGaussianMechanism_FL32Gaussian_DP_insecure";
+    }
+    case DPMechanismType::kSecureGaussianMechanism_FL64Gaussian_DP_insecure: {
+      return "BGMW_kSecureGaussianMechanism_FL64Gaussian_DP_insecure";
+    }
+    case DPMechanismType::kSecurePrivaDA_EKMPP_FxDiscreteLaplace: {
+      return "BGMW_kSecurePrivaDA_EKMPP_FxDiscreteLaplace";
+    }
+    case DPMechanismType::kSecurePrivaDA_EKMPP_FL32DiscreteLaplace: {
+      return "BGMW_kSecurePrivaDA_EKMPP_FL32DiscreteLaplace";
+    }
+    case DPMechanismType::kSecurePrivaDA_EKMPP_FL64DiscreteLaplace: {
+      return "BGMW_kSecurePrivaDA_EKMPP_FL64DiscreteLaplace";
+    }
+    case DPMechanismType::kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace: {
+      return "BGMW_kSecureDiscreteLaplaceMechanism_FxDiscreteLaplace";
+    }
+    case DPMechanismType::kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace: {
+      return "BGMW_kSecureDiscreteLaplaceMechanism_FL32DiscreteLaplace";
+    }
+    case DPMechanismType::kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace: {
+      return "BGMW_kSecureDiscreteLaplaceMechanism_FL64DiscreteLaplace";
+    }
+    case DPMechanismType::kSecureDiscreteGaussianMechanismCKS_FxDiscreteGaussian: {
+      return "BGMW_kSecureDiscreteGaussianMechanism_FxDiscreteGaussian";
+    }
+    case DPMechanismType::kSecureDiscreteGaussianMechanismCKS_FL32DiscreteGaussian: {
+      return "BGMW_kSecureDiscreteGaussianMechanism_FL32DiscreteGaussian";
+    }
+    case DPMechanismType::kSecureDiscreteGaussianMechanismCKS_FL64DiscreteGaussian: {
+      return "BGMW_kSecureDiscreteGaussianMechanism_FL64DiscreteGaussian";
+    }
+    case DPMechanismType::kSecureIntegerScalingLaplaceMechanism_FxLaplace: {
+      return "BGMW_kSecureIntegerScalingLaplaceMechanism_FxLaplace";
+    }
+    case DPMechanismType::kSecureIntegerScalingLaplaceMechanism_FL32Laplace: {
+      return "BGMW_kSecureIntegerScalingLaplaceMechanism_FL32Laplace";
+    }
+    case DPMechanismType::kSecureIntegerScalingLaplaceMechanism_FL64Laplace: {
+      return "BGMW_kSecureIntegerScalingLaplaceMechanism_FL64Laplace";
+    }
+    case DPMechanismType::kSecureIntegerScalingGaussianMechanism_FLGaussian: {
+      return "BGMW_kSecureIntegerScalingGaussianMechanism_FLGaussian";
+    }
+    default:
+      throw std::invalid_argument("Invalid DPMechanismType");
   }
 }
 

@@ -1,6 +1,26 @@
+// MIT License
 //
-// Created by liangzhao on 13.05.22.
+// Copyright (c) 2022 Liang Zhao
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #include "fixed_point_operation.h"
 #include <bitset>
@@ -16,12 +36,6 @@ FixedPointStruct<T> CreateFixedPointStruct(double fixed_point, std::size_t k, st
   } else {
     fixed_point_struct.v = T(fixed_point * (pow(2, f)));
   }
-  //    std::cout<<"fixed_point * (1 << f): "<<fixed_point * (1 << f)<<std::endl;
-  //    print_u128_u("fixed_point_struct.v: ", __int128_t(fixed_point_struct.v));
-  //    double mantissa;
-  //    int exponent;
-  //    mantissa = std::frexp(std::abs(fixed_point), &exponent);
-  //    T v = mantissa *
 
   fixed_point_struct.k = k;
   fixed_point_struct.f = f;
@@ -49,12 +63,8 @@ FixedPointVectorStruct<T> CreateFixedPointVectorStruct(double fixed_point, std::
     fixed_point_T = T(fixed_point * (pow(2, f)));
   }
 
-  //   print_u128_u("fixed_point_T: ", fixed_point_T);
-  //   std::cout << "std::int64_t(fixed_point_T) = " << std::int64_t(fixed_point_T) << std::endl;
-
   for (std::size_t i = 0; i < vector_size; ++i) {
     fixed_point_vector_struct.v_vector.emplace_back(fixed_point_T);
-    // print_u128_u("fixed_point_vector_struct.v_vector ", fixed_point_vector_struct.v_vector[i]);
   }
 
   fixed_point_vector_struct.k = k;
@@ -199,27 +209,6 @@ template double FixedPointToDouble<std::uint64_t, std::int64_t>(std::uint64_t fi
 
 template double FixedPointToDouble<__uint128_t, __int128_t>(__uint128_t fixed_point, std::size_t k,
                                                             std::size_t f);
-
-// template <typename T, typename T_int, typename A>
-// std::vector<double> FixedPointToDouble(std::vector<FixedPointStruct<T>, A> fixed_point_struct) {
-//   std::size_t result_vector_size = fixed_point_struct.size();
-//   std::vector<double> result_vector;
-//   result_vector.reserve(result_vector_size);
-//   for (std::size_t i = 0; i < result_vector_size; i++) {
-//     result_vector.template emplace_back(FixedPointToDouble<T, T_int>(fixed_point_struct[i]));
-//   }
-//   return result_vector;
-// }
-//
-// template std::vector<double>
-// FixedPointToDouble<__uint64_t, __int64_t, std::allocator<FixedPointStruct<__uint64_t>>>(
-//     std::vector<FixedPointStruct<__uint64_t>, std::allocator<FixedPointStruct<__uint64_t>>>
-//         fixed_point_struct);
-//
-// template std::vector<double>
-// FixedPointToDouble<__uint128_t, __int128_t, std::allocator<FixedPointStruct<__uint128_t>>>(
-//     std::vector<FixedPointStruct<__uint128_t>, std::allocator<FixedPointStruct<__uint128_t>>>
-//         fixed_point_struct);
 
 template <typename T, typename T_int, typename A>
 std::vector<double> FixedPointToDouble(std::vector<T, A> fixed_point_mantissa_vector, std::size_t k,
@@ -407,13 +396,8 @@ template __uint128_t Pow2<__uint128_t>(__uint128_t a, std::size_t k);
 template <typename T, typename T_int, typename A>
 T FixedPointAppRcr(T b, std::size_t k, std::size_t f) {
   double alpha = 2.9142;
-  //    FixedPointStruct<T> fixed_point_alpha = CreateFixedPointStruct<T>(alpha, k, f);
 
-  // std::cout<<"(k): "<<(k)<<std::endl;
-  // std::cout<<"(1 << 41): "<<(pow(2,k))<<std::endl;
   T alpha_T = T(alpha * (pow(2, k)));
-  //    std::cout << "alpha * (pow(2, k)): " << alpha * (pow(2, k)) << std::endl;
-  //    print_u128_u("alpha_T: ", alpha_T);
 
   std::vector<T, A> c_v_vector = FixedPointNorm<T, T_int, A>(b, k, f);
   T c = c_v_vector[0];
@@ -630,21 +614,6 @@ std::vector<T, A> FixedPointSimplifiedNormSQ(T b, std::size_t k, std::size_t f) 
     z[i] = y[i] ^ y[i + 1];
   }
   z[k - 1] = y[k - 1];
-
-  //    std::cout << "z[i]: ";
-  //    for (std::size_t i = 0; i <= k - 2; i++) {
-  //        std::cout << z[i];
-  //    }
-  //    std::cout << std::endl;
-
-  //    T v = 0;
-  //    for (std::size_t i = 0; i < k; i++) {
-  //        v = v + (T(1) << T(k - i - 1)) * T(z[i]);
-  //    }
-
-  // ==========
-
-  //    T c = b * v;
 
   T m = 0;
   for (std::size_t i = 0; i < k; i++) {
@@ -1003,108 +972,6 @@ FixedPointLinAppSQ<std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(s
 template __uint128_t FixedPointLinAppSQ<__uint128_t, __int128_t, std::allocator<__uint128_t>>(
     __uint128_t b, std::size_t k, std::size_t f);
 
-// template<typename T, typename T_int, typename A>
-// T FixedPointLinAppSQ_optimization_1(T b, std::size_t k, std::size_t f) {
-//
-//     double constant_alpha = -0.8099868542;
-//     double constant_beta = 1.787727479;
-//
-//     T alpha = -T(-constant_alpha * (pow(2, k)));
-//     //    T beta = T(constant_2 * (1 << (2*f)));
-//     T beta = T(constant_beta * (pow(2, 2 * k)));
-//
-//     //    print_u128_u("alpha: ", alpha);
-//     //    print_u128_u("beta: ", beta);
-//     //    print_u128_u("alpha + beta: ", alpha + beta);
-//
-//     // std::vector<T, A> norm_SQ_result = FixedPointNormSQ<T, A>(b, k, f);
-//     // T c = norm_SQ_result[0];
-//     // T v = norm_SQ_result[1];
-//     // T m = norm_SQ_result[2];
-//     // T W = norm_SQ_result[3];
-//
-//     FixedPointStruct<T> fixed_point_b = CreateFixedPointStruct<T>(b, k, f);
-//
-//     std::vector<T, A> floating_point_b = FixedPointFx2FL<T, T, T_int, A>(fixed_point_b, k, f, k -
-//     1, k); std::cout << "floating_point_b: " << FloatingPointToDouble<T>(floating_point_b) <<
-//     std::endl;
-//
-//     FixedPointStruct<T> fixed_point_b_norm = CreateFixedPointStruct<T>(floating_point_b[0] >> (k
-//     - 1 - f), k, f);
-//
-//     std::cout << "fixed_point_b_norm: " << FixedPointToDouble<T, T_int>(fixed_point_b_norm) <<
-//     std::endl;
-//
-//     print_u128_u("fixed_point_b_norm.v: ", fixed_point_b_norm.v);
-//
-//     double b_LinAppSQ = (FixedPointToDouble<T, T_int>(fixed_point_b_norm.v) * constant_alpha +
-//     constant_beta);
-//
-//     std::cout << "b_LinAppSQ: " << b_LinAppSQ << std::endl;
-//     FixedPointStruct<T> fixed_point_b_LinAppSQ = CreateFixedPointStruct<T>(b_LinAppSQ, k, f);
-//
-//     std::cout << "fixed_point_b_LinAppSQ: " << FixedPointToDouble<T,
-//     T_int>(fixed_point_b_LinAppSQ) << std::endl;
-//
-//     T constant_p_plus_k_minus_1 = floating_point_b[1] + (k - 1);
-//     T constant_p_plus_k_minus_1_div2 = T_int(constant_p_plus_k_minus_1) >> 1;
-
-// T w = alpha * c + beta;
-//    print_u128_u("alpha * c + beta: ", w);
-
-// T m_prime = m % 2;
-//    print_u128_u("m_prime: ", m_prime);
-
-// T w_mul_v = w * v;
-//    print_u128_u("w_mul_v: ", w_mul_v);
-
-//    double factor = 1.0 / (pow(2, (3.0 * k - 2 * f)));
-//    FixedPointStruct<T> fixed_point_factor = CreateFixedPointStruct<T>(factor, k, f);
-
-//    TODO: use FixDiv?, efficiency difference?
-// assumption: T >= 3k
-// T w_prime_trunc = T_int(w_mul_v) >> (3 * k - 2 * f);
-
-// TODO: this requires 3*k - 2*f < f, compare arithmeic shift vs FxDivSimple
-//    FixedPointStruct<T> constant_fixed_point_1_div_3_mul_k_minus_2_mul_f =
-//    CreateFixedPointStruct<T>(1.0 / (pow(2.0, (3.0 * k - 2 * f))), k, f); FixedPointStruct<T>
-//    fixed_point_w_mul_v = CreateFixedPointStruct<T>(w_mul_v, k, f); FixedPointStruct<T>
-//    fixed_point_w_prime_trunc = FixedPointDivisionSimple<T, T_int>(fixed_point_w_mul_v,
-//                                                                                       constant_fixed_point_1_div_3_mul_k_minus_2_mul_f);
-//    T w_prime_trunc=  fixed_point_w_prime_trunc.v;
-
-//    print_u128_u("w_prime_trunc: ", w_prime_trunc);
-
-// T w_prime_trunc_mul_W = w_prime_trunc * W;
-// //    print_u128_u("w_prime_trunc_mul_W: ", w_prime_trunc_mul_W);
-
-// FixedPointStruct<T> fixed_point_w_prime_trunc_mul_W =
-// CreateFixedPointStruct<T>(w_prime_trunc_mul_W, k, f);
-
-// FixedPointStruct<T> constant_fixed_point_1_div_2_high_f_div_2 = CreateFixedPointStruct<T>((pow(2,
-// (f / 2.0))), k, f);
-
-// FixedPointStruct<T> fixed_point_w = FixedPointDivisionSimple<T,
-// T_int>(fixed_point_w_prime_trunc_mul_W,
-//                                                                        constant_fixed_point_1_div_2_high_f_div_2);
-
-// //    print_u128_u("fixed_point_w.v: ", fixed_point_w.v);
-
-// FixedPointStruct<T> fixed_point_sqrt_2 = CreateFixedPointStruct<T>(pow(2, 0.5), k, f);
-// //    print_u128_u("fixed_point_sqrt_2.v: ", fixed_point_sqrt_2.v);
-
-// T sqrt_2_mul_w = FixedPointMultiplication<T, T_int>(fixed_point_sqrt_2, fixed_point_w).v;
-// //    print_u128_u("sqrt_2_mul_w: ", sqrt_2_mul_w);
-
-// T result = (1 - m_prime) * fixed_point_w.v + m_prime * sqrt_2_mul_w;
-
-//    return b;
-//}
-
-// template __uint128_t
-// FixedPointLinAppSQ_optimization_1<__uint128_t, __int128_t,
-// std::allocator<__uint128_t>>(__uint128_t b, std::size_t k, std::size_t f);
-
 template <typename T, typename T_int, typename A>
 FixedPointStruct<T> FixedPointExp2P1045(FixedPointStruct<T>& fixed_point_a) {
   std::size_t k = fixed_point_a.k;
@@ -1423,10 +1290,6 @@ template FixedPointStruct<__uint128_t>
 FixedPointSqrtP0132<__uint128_t, __uint128_t, __int128_t, std::uint64_t, std::int64_t,
                     std::allocator<__uint128_t>>(FixedPointStruct<__uint128_t>& fixed_point_a);
 
-// template FixedPointStruct<__uint128_t>
-// FixedPointSqrtP0132<__uint128_t, __uint128_t, __int128_t,
-// std::allocator<__uint128_t>>(FixedPointStruct<__uint128_t> &fixed_point_a);
-
 template <typename FLType, typename IntType, typename IntType_int, typename A>
 FixedPointStruct<FLType> FixedPointSqrtPQ0371(FixedPointStruct<FLType>& fixed_point_a) {
   std::size_t k = fixed_point_a.k;
@@ -1514,39 +1377,6 @@ void test_fixed_point_operation() {
   using IntType_int = std::int64_t;
   std::size_t k = 41;
   std::size_t f = 20;
-
-  //  T fixed_point_a = 1 << 31;
-  //  double fixed_point_a_double = FixedPointToDouble<T, T_int>(fixed_point_a);
-  //  FixedPointStruct<T> result_struct = FixedPointSimplifiedFxSqrt<T, T_int>(fixed_point_a, k, f);
-  //  std::cout << "fixed_point_a_double: " << fixed_point_a_double << std::endl;
-  //  std::cout << "sqrt_fixed_point_a_double: " << sqrt(fixed_point_a_double) << std::endl;
-  //  print_u128_u("result_struct.v: ", result_struct.v);
-  //  std::cout << "result_struct.v_double: " << FixedPointToDouble<T, T_int>(result_struct.v)
-  //            << std::endl;
-
-  // =======================================================
-
-  //    IntType integer_a = 43234252;
-  //    std::size_t gamma = FLOATINGPOINT_BITS;
-  //    std::size_t l_floating_point = FLOATINGPOINT_MANTISSA_BITS+1;
-  //    std::size_t k_floating_point = FLOATINGPOINT_EXPONENT_BITS;
-  //    std::vector<FLType> integer_to_floating_point = IntegerToFloatingPoint_ABZS<FLType, IntType,
-  //    IntType_int>(integer_a, gamma, l_floating_point,
-  //                                                                                                              k_floating_point);
-
-  // =======================================================
-  //    FxType fixed_point_a = 144566918243;
-  //    double fixed_point_a_double = FixedPointToDouble<FxType, FxType_int>(fixed_point_a, k, f);
-  //    std::cout << "fixed_point_a_double: " << fixed_point_a_double << std::endl;
-  //    FixedPointStruct<FxType> fixed_point_a_struct =
-  //    CreateFixedPointStruct<FxType>(fixed_point_a); FixedPointStruct<FxType>
-  //    fixed_point_sqrt_result_struct = FixedPointSqrtP0132<FLType, FxType, FxType_int, IntType,
-  //    IntType_int, std::allocator<FLType> >(
-  //            fixed_point_a_struct);
-  //    double fixed_point_a_sqrt_double = FixedPointToDouble<FxType,
-  //    FxType_int>(fixed_point_sqrt_result_struct); std::cout << "fixed_point_a_sqrt_double: " <<
-  //    fixed_point_a_sqrt_double << std::endl;
-  // =======================================================
 
   FxType fixed_point_a = 166918243;
   double fixed_point_a_double = FixedPointToDouble<FxType, FxType_int>(fixed_point_a, k, f);

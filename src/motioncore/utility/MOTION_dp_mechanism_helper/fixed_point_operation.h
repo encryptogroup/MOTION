@@ -1,3 +1,27 @@
+// MIT License
+//
+// Copyright (c) 2022 Liang Zhao
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #pragma once
 
 #include <cmath>
@@ -87,8 +111,8 @@ FixedPointVectorStruct<T> CreateFixedPointVectorStruct(T fixed_point_mantissa_ve
                                                        std::size_t vector_size = 1);
 
 template <typename T>
-FixedPointVectorStruct<T> CreateFixedPointVectorStruct(const std::vector<T>& fixed_point_mantissa_vector,
-                                                       std::size_t k = 41, std::size_t f = 20);
+FixedPointVectorStruct<T> CreateFixedPointVectorStruct(
+    const std::vector<T>& fixed_point_mantissa_vector, std::size_t k = 41, std::size_t f = 20);
 
 template <typename T>
 void double_to_integer(const double coeff[], std::size_t coeff_size, std::size_t k = 41,
@@ -197,15 +221,8 @@ FixedPointStruct<FLType> FixedPointSqrtPQ0371(FixedPointStruct<FLType>& fixed_po
 template <typename T, typename T_int, typename A = std::allocator<T>>
 T FixedPointLinAppSQ(T b, std::size_t k = 41, std::size_t f = 20);
 
-// template <typename T, typename T_int, typename A = std::allocator<T>>
-// T FixedPointLinAppSQ_optimization_1(T b, std::size_t k = 41, std::size_t f = 20);
-
 template <typename T, typename T_int, typename A = std::allocator<T>>
 FixedPointStruct<T> FixedPointExp2P1045(FixedPointStruct<T>& fixed_point_a);
-
-// too much arithmetic shift -> not efficient
-// template<typename T, typename T_int, typename A = std::allocator<T>>
-// FixedPointStruct<T> FixedPointExp2PQ1065(FixedPointStruct<T> &fixed_point_a);
 
 template <typename T, typename T_int>
 FixedPointStruct<T> FixedPointPolynomialEvaluation(FixedPointStruct<T>& fixed_point_x,

@@ -621,4 +621,46 @@ inline std::vector<T> RowDotProduct(std::span<const std::vector<T>> a,
   return result;
 }
 
+/// \brief Convert a bool array (representing each bit of the integer) to corresponding integer of type T
+template <typename T>
+T BoolArrayToInteger(const bool bool_array[], unsigned count) {
+  T tmp;
+  T integer_output = 0;
+
+  for (unsigned i = 0; i < count; i++) {
+    tmp = bool_array[i];
+    integer_output |= (T(tmp) << (i));
+  }
+
+  return integer_output;
+}
+
+/// \brief Convert a bool vector (representing each bit of the integer) to corresponding integer of type T
+template <typename T>
+T BoolVectorToInteger(const std::vector<bool>& bool_vector) {
+  T tmp;
+  T integer_output = 0;
+  std::size_t count = bool_vector.size();
+
+  for (unsigned i = 0; i < count; i++) {
+    tmp = bool_vector[i];
+    integer_output |= T(tmp) << (i);
+  }
+
+  return integer_output;
+}
+
+// check if all elements of vector equal to value
+template <typename T>
+bool VectorAllEqualToValue(std::vector<T> const& v, T value) {
+  if (v.size() == 0) {
+    return false;
+  }
+  if (v[0] != value) {
+    return false;
+  }
+
+  return std::equal(v.begin() + 1, v.end(), v.begin());
+}
+
 }  // namespace encrypto::motion

@@ -8,3 +8,13 @@ add_subdirectory(tutorial/crosstabs)
 add_subdirectory(tutorial/innerproduct)
 add_subdirectory(tutorial/mult3)
 add_subdirectory(millionaires_problem)
+
+
+add_subdirectory(benchmark_unsigned_integer_operation)
+add_subdirectory(benchmark_signed_integer_operation)
+add_subdirectory(benchmark_fixed_point_operation)
+add_subdirectory(benchmark_floating_point_operation)
+add_subdirectory(benchmark_snapping_mechanism)
+add_subdirectory(benchmark_PrivaDA_gaussian_mechanism)
+add_subdirectory(benchmark_discrete_laplace_discrete_gaussian_mechanism)
+add_subdirectory(benchmark_integer_scaling_mechanism)

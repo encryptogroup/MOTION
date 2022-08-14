@@ -1,6 +1,27 @@
+// MIT License
 //
-// Created by liangzhao on 02.06.22.
+// Copyright (c) 2022 Liang Zhao
+// Cryptography and Privacy Engineering Group (ENCRYPTO)
+// TU Darmstadt, Germany
 //
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 
 #include <ctime>
 #include <iomanip>
@@ -107,50 +128,50 @@ std::vector<IntType> symmetrical_binomial_distribution(double constant_sqrt_n, s
     bool iterations_finish = false;
 
     for (std::size_t iter = 0; iter < iterations; iter++) {
-        std::cout << "iter: " << iter << std::endl;
+        // std::cout << "iter: " << iter << std::endl;
         IntType_int s = signed_integer_geometric_sample_vector[iter];
         IntType_int k = random_bits_vector[iter] * (s) + (!random_bits_vector[iter]) * (-s - 1);
 
         IntType_int i = k * m + IntType_int(random_unsigned_integer_vector[iter]);
 
-        std::cout << "std::int64_t(s): " << std::int64_t(s) << std::endl;
-        std::cout << "std::int64_t(k): " << std::int64_t(k) << std::endl;
-        if (i < 0) {
-            print_u128_u("-i: ", -i);
-        } else {
-            print_u128_u("i: ", i);
-        }
+        // std::cout << "std::int64_t(s): " << std::int64_t(s) << std::endl;
+        // std::cout << "std::int64_t(k): " << std::int64_t(k) << std::endl;
+        // if (i < 0) {
+        //     print_u128_u("-i: ", -i);
+        // } else {
+        //     print_u128_u("i: ", i);
+        // }
 
         //    std::cout << "i: " << i << std::endl;
-        if (k < 0) {
-            print_u128_u("-k: ", -k);
-        } else {
-            print_u128_u("k: ", k);
-        }
-        print_u128_u("s: ", s);
-        print_u128_u("k: ", k);
-        print_u128_u("i: ", i);
+        // if (k < 0) {
+        //     print_u128_u("-k: ", -k);
+        // } else {
+        //     print_u128_u("k: ", k);
+        // }
+        // print_u128_u("s: ", s);
+        // print_u128_u("k: ", k);
+        // print_u128_u("i: ", i);
 
         double p_i = sqrtl(2 / M_PI) / constant_sqrt_n * (1.0 - 0.4 * powl(logl(constant_sqrt_n) * 2, 1.5) / constant_sqrt_n) *
                      expl(-powl(((double) (i) * M_SQRT2 / constant_sqrt_n), 2));
 
-        std::cout << " std::exp(-pow((double(i) * 2 / constant_sqrt_n), 2)): " << std::exp(-pow((double(i) * 2 / constant_sqrt_n), 2)) << std::endl;
+        // std::cout << " std::exp(-pow((double(i) * 2 / constant_sqrt_n), 2)): " << std::exp(-pow((double(i) * 2 / constant_sqrt_n), 2)) << std::endl;
 
-        std::cout << "p_i: " << p_i << std::endl;
+        // std::cout << "p_i: " << p_i << std::endl;
 
         bool i_in_range =
                 ((double) (i) >= -constant_sqrt_n * logl(constant_sqrt_n) / 2.0) && ((double) (i) <= constant_sqrt_n * logl(constant_sqrt_n) / 2.0);
 
-        std::cout << "i_in_range: " << i_in_range << std::endl;
+        // std::cout << "i_in_range: " << i_in_range << std::endl;
 
         bool c = random_floating_point_0_1_vector[iter] < (p_i * m * powl(2, (double) (s)) / 4);
-        std::cout << "(p_i * m * powl(2, (double)(s)) / 4): " << (p_i * m * powl(2, (double) (s)) / 4) << std::endl;
-        std::cout << "choice: " << c << std::endl;
-        std::cout << "random_floating_point_0_1_vector[iter]: " << random_floating_point_0_1_vector[iter] << std::endl;
+        // std::cout << "(p_i * m * powl(2, (double)(s)) / 4): " << (p_i * m * powl(2, (double) (s)) / 4) << std::endl;
+        // std::cout << "choice: " << c << std::endl;
+        // std::cout << "random_floating_point_0_1_vector[iter]: " << random_floating_point_0_1_vector[iter] << std::endl;
 
         if (p_i > 0 && i_in_range && c) {
             if (!iterations_finish) {
-                std::cout << "choose iter: " << iter << std::endl;
+                // std::cout << "choose iter: " << iter << std::endl;
                 iterations_finish = true;
                 result_vector[0] = i;
                 result_vector[1] = true;
@@ -159,7 +180,7 @@ std::vector<IntType> symmetrical_binomial_distribution(double constant_sqrt_n, s
                 break;
             }
         }
-        std::cout << std::endl;
+        // std::cout << std::endl;
     }
     return result_vector;
 }
@@ -325,8 +346,8 @@ void test_symmetrical_binomial_distribution() {
     std::vector<IntType> symmetrical_binomial_distribution_result = symmetrical_binomial_distribution<IntType, IntType_int, std::allocator<IntType>>(
             sqrt_n, signed_integer_geometric_sample_vector, random_bits_vector, random_unsigned_integer_vector, random_floating_point_0_1_vector,
             iterations);
-    print_u128_u_neg("symmetrical_binomial_distribution[0]: ", (symmetrical_binomial_distribution_result[0]));
-    print_u128_u_neg("symmetrical_binomial_distribution[1]: ", (symmetrical_binomial_distribution_result[1]));
+    print_u128_neg("symmetrical_binomial_distribution[0]: ", (symmetrical_binomial_distribution_result[0]));
+    print_u128_neg("symmetrical_binomial_distribution[1]: ", (symmetrical_binomial_distribution_result[1]));
 
 }
 

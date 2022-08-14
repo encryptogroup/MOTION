@@ -31,14 +31,23 @@ add_executable(motiontest
         # test_tcp_transport.cpp
         # test_unsimdify_gate.cpp
 
-        test_unsigned_integer_operations_bgmw.cpp # test passed
-        test_unsigned_integer_operations_bmr.cpp # test passed
-        test_signed_integer_operations_bgmw.cpp # test passed
-        test_signed_integer_operations_bmr.cpp # test passed
-        test_floating_point_circuit_ABY_bgmw.cpp # test passed
-        test_floating_point_circuit_ABY_bmr.cpp # test passed
-        test_fixed_point_circuit_CBMC_bgmw.cpp # test passed
-        test_fixed_point_circuit_CBMC_bmr.cpp # test passed
+        # test_unsigned_integer_operations_bgmw.cpp # test passed
+        # test_unsigned_integer_operations_bmr.cpp # test passed
+        # test_signed_integer_operations_bgmw.cpp # test passed
+        # test_signed_integer_operations_bmr.cpp # test passed
+        # test_floating_point_circuit_ABY_bgmw.cpp # test passed
+        # test_floating_point_circuit_ABY_bmr.cpp # test passed
+        # test_fixed_point_circuit_CBMC_bgmw.cpp # test passed
+        # test_fixed_point_circuit_CBMC_bmr.cpp # test passed
+        # test_basic_random_number_generation.cpp # test passed
+        # test_invertbinarytree.cpp # test passed
+        # test_geometricExp_discreteLaplace_discreteGaussian.cpp  
+        # test_PrivaDA.cpp # test passed
+        # test_gaussian_mechanism.cpp # test passed
+        # test_discrete_laplace_mechanism_CKS.cpp
+        # test_discrete_gaussian_mechanism_CKS.cpp
+        # test_integer_scaling_laplace_mechanism.cpp
+        # test_integer_scaling_gaussian_mechanism.cpp
 )
 
 target_link_libraries(motiontest PRIVATE
