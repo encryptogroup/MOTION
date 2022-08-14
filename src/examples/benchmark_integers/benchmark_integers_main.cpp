@@ -51,7 +51,7 @@ constexpr std::size_t kIllegalProtocol{100}, kIllegalOperationType{100};
 
 struct Combination {
   Combination(std::size_t bit_size, encrypto::motion::MpcProtocol protocol,
-              encrypto::motion::IntegerOperationType operation_type, std::size_t number_of_simd)
+              encrypto::motion::UnsignedIntegerOperationType operation_type, std::size_t number_of_simd)
       : bit_size_(bit_size),
         protocol_(protocol),
         operation_type_(operation_type),
@@ -59,12 +59,12 @@ struct Combination {
 
   std::size_t bit_size_{0};
   encrypto::motion::MpcProtocol protocol_{kIllegalProtocol};
-  encrypto::motion::IntegerOperationType operation_type_{kIllegalOperationType};
+  encrypto::motion::UnsignedIntegerOperationType operation_type_{kIllegalOperationType};
   std::size_t number_of_simd_{0};
 };
 
 std::vector<Combination> GenerateAllCombinations() {
-  using T = encrypto::motion::IntegerOperationType;
+  using T = encrypto::motion::UnsignedIntegerOperationType;
 
   const std::array kArithmeticBitSizes = {8, 16, 32, 64};
   const std::array kNumbersOfSimd = {1000};

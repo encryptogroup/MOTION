@@ -416,6 +416,48 @@ ShareWrapper ShareWrapper::Mux(const ShareWrapper& a, const ShareWrapper& b) con
   }
 }
 
+ShareWrapper ShareWrapper::XCOTMul(const ShareWrapper& b) const {
+  // SharePointer a = share_;
+  assert(share_);
+  assert(*b);
+  // assert(MpcProtocol::kBooleanGmw == share_->GetProtocol());
+  // assert(MpcProtocol::kBooleanGmw == b->GetProtocol());
+  assert(share_->GetBitLength() == 1);
+
+  if (share_->GetProtocol() == MpcProtocol::kArithmeticGmw) {
+    // TODO implement
+    throw std::runtime_error(
+        "C-OT-based Multiplication for Arithmetic GMW shares is not implemented yet");
+  }
+
+  // <a> & <b>
+  else if (share_->GetProtocol() == MpcProtocol::kBooleanGmw &&
+           b->GetProtocol() == MpcProtocol::kBooleanGmw) {
+    auto a_gmw_share = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
+    auto b_gmw_share = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(*b);
+
+    assert(a_gmw_share);
+    assert(b_gmw_share);
+
+    // auto XCOTMul_gate = std::make_shared<proto::boolean_gmw::XCOTMulGate>(a_gmw_share,
+    // b_gmw_share); share_->GetRegister()->RegisterNextGate(XCOTMul_gate);
+
+    auto XCOTMul_gate = share_->GetRegister()->EmplaceGate<proto::boolean_gmw::XCOTMulGate>(
+        a_gmw_share, b_gmw_share);
+    return ShareWrapper(XCOTMul_gate->GetOutputAsShare());
+  }
+
+  else if (share_->GetProtocol() == MpcProtocol::kBmr && b->GetProtocol() == MpcProtocol::kBmr) {
+    // std::cout << "ShareWrapper::COT bit operation" << std::endl;
+    auto mask = ShareWrapper::Concatenate(std::vector<ShareWrapper>(b->GetBitLength(), *this));
+    return mask & b;
+  }
+
+  else {
+    throw std::runtime_error("C-OT-based Multiplication not support for this share type");
+  }
+}
+
 ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) {
   assert(a.size() == b.size());
   assert(a.size() > 0);
@@ -751,6 +793,18 @@ ShareWrapper ShareWrapper::Evaluate(const AlgorithmDescription& algorithm) const
             std::make_shared<ShareWrapper>(~*pointers_to_wires_of_split_share.at(gate.parent_a));
         break;
       }
+
+      case PrimitiveOperationType::kMux: {
+        assert(gate.parent_b);
+        assert(gate.output_wire);
+        auto mux_result = (*pointers_to_wires_of_split_share.at(*gate.selection_bit))
+                              .Mux(*pointers_to_wires_of_split_share.at(gate.parent_a),
+                                   *pointers_to_wires_of_split_share.at(*gate.parent_b));
+        pointers_to_wires_of_split_share.at(gate.output_wire) =
+            std::make_shared<ShareWrapper>(mux_result);
+        break;
+      }
+
       default:
         throw std::runtime_error("Invalid PrimitiveOperationType");
     }
@@ -793,7 +847,7 @@ struct is_specialization<Ref<Args...>, Ref> : std::true_type {};
 template <typename T>
 T ShareWrapper::As() const {
   ShareConsistencyCheck();
-  if constexpr (std::is_unsigned<T>()) {
+  if constexpr (std::is_unsigned<T>() || std::is_same_v<T, __uint128_t>) {
     if (share_->GetCircuitType() != CircuitType::kArithmetic) {
       throw std::invalid_argument(
           "Trying to ShareWrapper::As() to a arithmetic output with non-arithmetic input");
@@ -816,7 +870,8 @@ T ShareWrapper::As() const {
       throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
     }
   } else if constexpr (is_specialization<T, std::vector>::value &&
-                       std::is_unsigned<typename T::value_type>()) {
+                       (std::is_unsigned<typename T::value_type>() ||
+                        std::is_same_v<T, __uint128_t>)) {
     // std::vector of unsigned integers
     if (share_->GetCircuitType() != CircuitType::kArithmetic) {
       throw std::invalid_argument(
@@ -927,11 +982,13 @@ template std::uint8_t ShareWrapper::As() const;
 template std::uint16_t ShareWrapper::As() const;
 template std::uint32_t ShareWrapper::As() const;
 template std::uint64_t ShareWrapper::As() const;
+template __uint128_t ShareWrapper::As() const;
 
 template std::vector<std::uint8_t> ShareWrapper::As() const;
 template std::vector<std::uint16_t> ShareWrapper::As() const;
 template std::vector<std::uint32_t> ShareWrapper::As() const;
 template std::vector<std::uint64_t> ShareWrapper::As() const;
+template std::vector<__uint128_t> ShareWrapper::As() const;
 
 template <typename T>
 ShareWrapper ShareWrapper::Add(SharePointer share, SharePointer other) const {

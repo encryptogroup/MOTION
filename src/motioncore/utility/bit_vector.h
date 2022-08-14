@@ -36,6 +36,7 @@
 
 #include "config.h"
 #include "helpers.h"
+#include "utility/meta.hpp"
 
 namespace encrypto::motion {
 
@@ -452,7 +453,8 @@ std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bit_vecto
 /// \param value
 /// \relates BitVector
 template <typename T,
-          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T>>,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T> ||
+                                      std::is_same_v<T, __uint128_t>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(T value);
 
@@ -471,9 +473,24 @@ std::vector<BitVector<Allocator>> ToInput(T value);
 /// \tparam T
 /// \param vector
 template <typename T,
-          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T>>,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T> ||
+                                      std::is_same_v<T, __uint128_t>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
+
+// convert a fixed point number (represented as double) to BitVector,
+// integer of type T hold the fixed point number
+template <typename T, typename T_int = get_int_type_t<T>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> FixedPointToInput(const double fixed_point,
+                                                    std::size_t fixed_point_fraction_bit_size);
+
+// convert a vector of fixed point number (represented as double) to a vector of BitVector,
+// integer of type T hold the fixed point number
+template <typename T, typename T_int = get_int_type_t<T>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> FixedPointToInput(const std::vector<double>& fixed_point_vector,
+                                                    std::size_t fixed_point_fraction_bit_size);
 
 // Output functions for converting vectors of BitVectors to vectors of floating point or
 // integer numbers
@@ -491,11 +508,13 @@ std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
 /// \tparam UnsignedIntegralType
 /// \param bit_vectors
 template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType> ||
+                                      std::is_same_v<UnsignedIntegralType, __uint128_t>>,
           typename Allocator = std::allocator<std::byte>>
 UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
   static_assert(std::is_integral<UnsignedIntegralType>::value);
-  static_assert(sizeof(UnsignedIntegralType) <= 8);
+  // static_assert(sizeof(UnsignedIntegralType) <= 8);
+  static_assert(sizeof(UnsignedIntegralType) <= 16);  // support __uint128_t
   if constexpr (sizeof(UnsignedIntegralType) == 1) {
     static_assert(std::is_same_v<UnsignedIntegralType, std::uint8_t>);
   } else if constexpr (sizeof(UnsignedIntegralType) == 2) {
@@ -504,8 +523,9 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
     static_assert(std::is_same_v<UnsignedIntegralType, std::uint32_t>);
   } else if constexpr (sizeof(UnsignedIntegralType) == 8) {
     static_assert(std::is_same_v<UnsignedIntegralType, std::uint64_t>);
+  } else if constexpr (sizeof(UnsignedIntegralType) == 16) {
+    static_assert(std::is_same_v<UnsignedIntegralType, __uint128_t>);
   }
-
   // kBitLength is always equal to bit_vectors
   constexpr auto kBitLength{sizeof(UnsignedIntegralType) * 8};
 
@@ -544,11 +564,13 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
 /// \param bit_vectors
 /// \relates BitVector
 template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>,
+          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType> ||
+                                      std::is_same_v<UnsignedIntegralType, __uint128_t>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator>> bit_vectors) {
   static_assert(std::is_integral<UnsignedIntegralType>::value);
-  static_assert(sizeof(UnsignedIntegralType) <= 8);
+  // static_assert(sizeof(UnsignedIntegralType) <= 8);
+  static_assert(sizeof(UnsignedIntegralType) <= 16);  // support __uint128_t
   if constexpr (sizeof(UnsignedIntegralType) == 1) {
     static_assert(std::is_same_v<UnsignedIntegralType, std::uint8_t>);
   } else if constexpr (sizeof(UnsignedIntegralType) == 2) {
@@ -557,8 +579,9 @@ std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator
     static_assert(std::is_same_v<UnsignedIntegralType, std::uint32_t>);
   } else if constexpr (sizeof(UnsignedIntegralType) == 8) {
     static_assert(std::is_same_v<UnsignedIntegralType, std::uint64_t>);
+  } else if constexpr (sizeof(UnsignedIntegralType) == 16) {
+    static_assert(std::is_same_v<UnsignedIntegralType, __uint128_t>);
   }
-
   constexpr auto kBitLength{sizeof(UnsignedIntegralType) * 8};
 
   assert(!bit_vectors.empty());

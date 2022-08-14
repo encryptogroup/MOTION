@@ -56,6 +56,8 @@ class ConstantBooleanInputGate final : public Gate {
 
   ConstantBooleanInputGate(const std::vector<BitVector<>>& v, Backend& backend);
 
+  ConstantBooleanInputGate(std::span<const BitVector<>> v, Backend& backend);
+
   ~ConstantBooleanInputGate() final = default;
 
   void EvaluateSetup() final override {}

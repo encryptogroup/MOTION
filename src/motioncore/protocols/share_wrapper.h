@@ -94,9 +94,8 @@ class ShareWrapper {
     *this = *this * other;
     return *this;
   }
-  
-  friend ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b);
 
+  friend ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b);
 
   ShareWrapper operator==(const ShareWrapper& other) const;
 
@@ -105,6 +104,12 @@ class ShareWrapper {
   // use this as the selection bit
   // returns this ? a : b
   ShareWrapper Mux(const ShareWrapper& a, const ShareWrapper& b) const;
+
+/// \brief computes a & b using C-OT when: 
+  // a: Boolean GMW bit (this.share_),
+  // b: Boolean GMW bit vector,
+  // otherwise, expand a and compute expand(a) & b in BMR
+  ShareWrapper XCOTMul(const ShareWrapper& b) const;
 
   template <MpcProtocol P>
   ShareWrapper Convert() const;
@@ -223,7 +228,7 @@ class ShareWrapper {
 
   template <typename T>
   ShareWrapper Square(SharePointer share) const;
-  
+
   template <typename T>
   ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const;
 
