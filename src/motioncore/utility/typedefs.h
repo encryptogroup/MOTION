@@ -285,4 +285,83 @@ inline std::string to_string(UnsignedIntegerOperationType p) {
       throw std::invalid_argument("Invalid UnsignedIntegerOperationType");
   }
 }
+
+enum class SignedIntegerOperationType : unsigned int {
+  kAdd,
+  kSub,
+  kMul,
+  kDiv,
+  kLt,
+  kGt,
+  kEq,
+  kGEQ,
+  kLEQ,
+  kInRange,
+  kEQZ,
+  kLTZ,
+
+  kNeg,
+  kNegCondition,
+
+  kInt2FL,
+  kInt2Fx,
+
+  kInvalid
+};
+
+inline std::string to_string(SignedIntegerOperationType p) {
+  switch (p) {
+    case SignedIntegerOperationType::kAdd: {
+      return "INT_ADD";
+    }
+    case SignedIntegerOperationType::kSub: {
+      return "INT_SUB";
+    }
+    case SignedIntegerOperationType::kMul: {
+      return "INT_MUL";
+    }
+    case SignedIntegerOperationType::kDiv: {
+      return "INT_DIV";
+    }
+    case SignedIntegerOperationType::kLt: {
+      return "INT_LT";
+    }
+    case SignedIntegerOperationType::kGt: {
+      return "INT_GT";
+    }
+    case SignedIntegerOperationType::kEq: {
+      return "INT_EQ";
+    }
+    case SignedIntegerOperationType::kGEQ: {
+      return "INT_GEQ";
+    }
+    case SignedIntegerOperationType::kLEQ: {
+      return "INT_LEQ";
+    }
+    case SignedIntegerOperationType::kInRange: {
+      return "INT_InRange";
+    }
+    case SignedIntegerOperationType::kEQZ: {
+      return "INT_EQZ";
+    }
+    case SignedIntegerOperationType::kLTZ: {
+      return "INT_LTZ";
+    }
+    case SignedIntegerOperationType::kNeg: {
+      return "INT_NEG";
+    }
+    case SignedIntegerOperationType::kNegCondition: {
+      return "INT_NEG_CONDITION";
+    }
+    case SignedIntegerOperationType::kInt2FL: {
+      return "INT_Int2FL";
+    }
+    case SignedIntegerOperationType::kInt2Fx: {
+      return "INT_Int2Fx";
+    }
+    default:
+      throw std::invalid_argument("Invalid SignedIntegerOperationType");
+  }
+}
+
 }  // namespace encrypto::motion
