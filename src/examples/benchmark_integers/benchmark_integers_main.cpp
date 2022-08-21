@@ -111,9 +111,6 @@ int main(int ac, char* av[]) {
           party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
-    std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
-                             encrypto::motion::to_string(combination.operation_type_),
-                             combination.bit_size_, combination.number_of_simd_);
     std::cout << encrypto::motion::PrintStatistics(
         fmt::format("Protocol {} operation {} bit size {} SIMD {}",
                     encrypto::motion::to_string(combination.protocol_),
