@@ -1087,7 +1087,7 @@ std::vector<BitVector<Allocator>> ToInput(IntegralType integral_value) {
   constexpr auto kBitLength{sizeof(IntegralType) * 8};
 
   static_assert(std::is_integral<IntegralType>::value);
-  static_assert(sizeof(IntegralType) <= 8);
+  static_assert(sizeof(IntegralType) <= 16);  // support __uint128_t
   if constexpr (sizeof(IntegralType) == 1) {
     static_assert(std::is_same_v<IntegralType, std::uint8_t>);
   } else if constexpr (sizeof(IntegralType) == 2) {
@@ -1096,7 +1096,10 @@ std::vector<BitVector<Allocator>> ToInput(IntegralType integral_value) {
     static_assert(std::is_same_v<IntegralType, std::uint32_t>);
   } else if constexpr (sizeof(IntegralType) == 8) {
     static_assert(std::is_same_v<IntegralType, std::uint64_t>);
+  } else if constexpr (sizeof(IntegralType) == 16) {
+    static_assert(std::is_same_v<IntegralType, __uint128_t>);
   }
+
   std::vector<BitVector<Allocator>> result;
   for (auto i = 0ull; i < kBitLength; ++i) result.emplace_back(1, ((integral_value >> i) & 1) == 1);
   return result;
@@ -1106,11 +1109,12 @@ template std::vector<BitVector<StdAllocator>> ToInput(std::uint8_t);
 template std::vector<BitVector<StdAllocator>> ToInput(std::uint16_t);
 template std::vector<BitVector<StdAllocator>> ToInput(std::uint32_t);
 template std::vector<BitVector<StdAllocator>> ToInput(std::uint64_t);
+template std::vector<BitVector<StdAllocator>> ToInput(__uint128_t);
 
 template <typename IntegralType, typename, typename Allocator>
 std::vector<BitVector<Allocator>> ToInput(const std::vector<IntegralType>& input_vector) {
   static_assert(std::is_integral<IntegralType>::value);
-  static_assert(sizeof(IntegralType) <= 8);
+  static_assert(sizeof(IntegralType) <= 16);  // support __uint128_t
   if constexpr (sizeof(IntegralType) == 1) {
     static_assert(std::is_same_v<IntegralType, std::uint8_t>);
   } else if constexpr (sizeof(IntegralType) == 2) {
@@ -1119,6 +1123,8 @@ std::vector<BitVector<Allocator>> ToInput(const std::vector<IntegralType>& input
     static_assert(std::is_same_v<IntegralType, std::uint32_t>);
   } else if constexpr (sizeof(IntegralType) == 8) {
     static_assert(std::is_same_v<IntegralType, std::uint64_t>);
+  } else if constexpr (sizeof(IntegralType) == 16) {
+    static_assert(std::is_same_v<IntegralType, __uint128_t>);
   }
 
   constexpr auto kBitLength{sizeof(IntegralType) * 8};
@@ -1135,6 +1141,7 @@ template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uin
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint16_t>&);
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint32_t>&);
 template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<std::uint64_t>&);
+template std::vector<BitVector<StdAllocator>> ToInput(const std::vector<__uint128_t>&);
 
 BitSpan::BitSpan(std::byte* buffer, std::size_t bit_size, bool aligned)
     : pointer_(buffer), bit_size_(bit_size), aligned_(aligned) {}
