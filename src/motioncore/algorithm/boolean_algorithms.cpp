@@ -40,8 +40,39 @@ std::pair<ShareWrapper, ShareWrapper> FullAdder(const ShareWrapper& a, const Sha
 ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bit_string_1,
                         const ShareWrapper& carry_in) {
   std::vector<ShareWrapper> bits_0{bit_string_0.Split()};
-  std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
-  return AdderChain(bits_0, bits_1, carry_in);
+
+  if (bit_string_1.Get()) {
+    std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
+    return AdderChain(bits_0, bits_1, carry_in);
+  } else {
+    return AdderChain(bits_0, carry_in);
+  }
+}
+
+ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, const ShareWrapper& carry_in) {
+  if (!bits_0.empty()) assert(bits_0[0]->GetCircuitType() == CircuitType::kBoolean);
+  assert(!bits_0.empty());
+
+  std::size_t bits_0_length = bits_0.size();
+
+  // allocate wires
+  std::vector<ShareWrapper> result_wires(bits_0_length + 1);
+
+  // compute the output wires using full adders for bit strings of equal
+  // size
+  ShareWrapper carry{carry_in};
+  std::size_t i = 0;
+
+  for (; i < bits_0_length; ++i) {
+    result_wires[i] = bits_0[i] ^ carry;
+    carry = bits_0[i] & carry;
+  }
+
+  // save the carry bit for the case of an overflow
+  result_wires.back() = carry;
+
+  // concatenate wires into a single share
+  return ShareWrapper::Concatenate(result_wires);
 }
 
 ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, std::span<const ShareWrapper> bits_1,
