@@ -56,6 +56,8 @@ class ConstantBooleanInputGate final : public Gate {
 
   ConstantBooleanInputGate(const std::vector<BitVector<>>& v, Backend& backend);
 
+  ConstantBooleanInputGate(std::span<const BitVector<>> v, Backend& backend);
+
   ~ConstantBooleanInputGate() final = default;
 
   void EvaluateSetup() final override {}
@@ -202,8 +204,9 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     auto gate_info =
         fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
                     parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
-    GetLogger().LogDebug(fmt::format(
-        "Created an ConstantArithmeticMultiplicationGate with following properties: {}", gate_info));
+    GetLogger().LogDebug(
+        fmt::format("Created an ConstantArithmeticMultiplicationGate with following properties: {}",
+                    gate_info));
   }
 
   ~ConstantArithmeticMultiplicationGate() final = default;

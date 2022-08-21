@@ -65,6 +65,18 @@ ConstantBooleanInputGate::ConstantBooleanInputGate(const std::vector<BitVector<>
       fmt::format("Allocated a ConstantBooleanInputGate with following properties: {}", gate_info));
 }
 
+ConstantBooleanInputGate::ConstantBooleanInputGate(std::span<const BitVector<>> v, Backend& backend)
+    : Gate(backend) {
+  assert(output_wires_.empty());
+  output_wires_.reserve(v.size());
+  for (std::size_t i = 0; i < v.size(); ++i) {
+    output_wires_.emplace_back(GetRegister().EmplaceWire<ConstantBooleanWire>(v[i], backend));
+  }
+  auto gate_info = fmt::format("gate id {}", gate_id_);
+  GetLogger().LogDebug(
+      fmt::format("Allocated a ConstantBooleanInputGate with following properties: {}", gate_info));
+}
+
 motion::SharePointer ConstantBooleanInputGate::GetOutputAsShare() const {
   return std::make_shared<ConstantBooleanShare>(output_wires_);
 }
@@ -115,5 +127,6 @@ template class ConstantArithmeticInputGate<std::uint8_t>;
 template class ConstantArithmeticInputGate<std::uint16_t>;
 template class ConstantArithmeticInputGate<std::uint32_t>;
 template class ConstantArithmeticInputGate<std::uint64_t>;
+template class ConstantArithmeticInputGate<__uint128_t>;
 
 }  // namespace encrypto::motion::proto
