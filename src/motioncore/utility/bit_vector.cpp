@@ -1075,7 +1075,7 @@ std::vector<BitVector<StdAllocator>> ToInput<float, std::true_type, StdAllocator
 template <>
 std::vector<BitVector<StdAllocator>> ToInput<double, std::true_type, StdAllocator>(
     const std::vector<double>& vector_of_doubles) {
-  std::vector<std::uint32_t> vector_of_doubles_converted;
+  std::vector<std::uint64_t> vector_of_doubles_converted;
   vector_of_doubles_converted.reserve(vector_of_doubles.size());
   for (const auto& d : vector_of_doubles)
     vector_of_doubles_converted.emplace_back(*reinterpret_cast<const std::uint64_t*>(&d));
