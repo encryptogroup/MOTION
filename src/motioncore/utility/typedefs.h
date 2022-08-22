@@ -188,4 +188,180 @@ enum class GarbledCircuitRole : unsigned int {
   kInvalid = 2  // for checking whether the value is valid
 };
 
+enum class UnsignedIntegerOperationType : unsigned int {
+  kAdd,
+  kSub,
+  kMul,
+  kDiv,
+  kLt,
+  kGt,
+  kEq,
+  kGEQ,
+  kLEQ,
+  kEQZ,
+  kMod,
+  kInt2FL,
+  kInt2Fx,
+
+  kAddConstant,
+  kSubConstant,
+  kMulConstant,
+  kDivConstant,
+  kLtConstant,
+  kGtConstant,
+  kEqConstant,
+  kModConstant,
+
+  kInvalid
+};
+
+inline std::string to_string(UnsignedIntegerOperationType p) {
+  switch (p) {
+    case UnsignedIntegerOperationType::kAdd: {
+      return "UINT_ADD";
+    }
+    case UnsignedIntegerOperationType::kSub: {
+      return "UINT_SUB";
+    }
+    case UnsignedIntegerOperationType::kMul: {
+      return "UINT_MUL";
+    }
+    case UnsignedIntegerOperationType::kDiv: {
+      return "UINT_DIV";
+    }
+    case UnsignedIntegerOperationType::kLt: {
+      return "UINT_LT";
+    }
+    case UnsignedIntegerOperationType::kGt: {
+      return "UINT_GT";
+    }
+    case UnsignedIntegerOperationType::kEq: {
+      return "UINT_EQ";
+    }
+    case UnsignedIntegerOperationType::kGEQ: {
+      return "UINT_GEQ";
+    }
+    case UnsignedIntegerOperationType::kLEQ: {
+      return "UINT_LEQ";
+    }
+    case UnsignedIntegerOperationType::kEQZ: {
+      return "UINT_EQZ";
+    }
+    case UnsignedIntegerOperationType::kMod: {
+      return "UINT_MOD";
+    }
+    case UnsignedIntegerOperationType::kInt2FL: {
+      return "UINT_Int2FL";
+    }
+    case UnsignedIntegerOperationType::kInt2Fx: {
+      return "UINT_Int2Fx";
+    }
+    case UnsignedIntegerOperationType::kAddConstant: {
+      return "UINT_ADD_Constant";
+    }
+    case UnsignedIntegerOperationType::kSubConstant: {
+      return "UINT_SUB_Constant";
+    }
+    case UnsignedIntegerOperationType::kMulConstant: {
+      return "UINT_MUL_Constant";
+    }
+    case UnsignedIntegerOperationType::kDivConstant: {
+      return "UINT_DIV_Constant";
+    }
+    case UnsignedIntegerOperationType::kLtConstant: {
+      return "UINT_LT_Constant";
+    }
+    case UnsignedIntegerOperationType::kGtConstant: {
+      return "UINT_GT_Constant";
+    }
+    case UnsignedIntegerOperationType::kEqConstant: {
+      return "UINT_EQ_Constant";
+    }
+    case UnsignedIntegerOperationType::kModConstant: {
+      return "UINT_MOD_Constant";
+    }
+
+    default:
+      throw std::invalid_argument("Invalid UnsignedIntegerOperationType");
+  }
+}
+
+enum class SignedIntegerOperationType : unsigned int {
+  kAdd,
+  kSub,
+  kMul,
+  kDiv,
+  kLt,
+  kGt,
+  kEq,
+  kGEQ,
+  kLEQ,
+  kInRange,
+  kEQZ,
+  kLTZ,
+
+  kNeg,
+  kNegCondition,
+
+  kInt2FL,
+  kInt2Fx,
+
+  kInvalid
+};
+
+inline std::string to_string(SignedIntegerOperationType p) {
+  switch (p) {
+    case SignedIntegerOperationType::kAdd: {
+      return "INT_ADD";
+    }
+    case SignedIntegerOperationType::kSub: {
+      return "INT_SUB";
+    }
+    case SignedIntegerOperationType::kMul: {
+      return "INT_MUL";
+    }
+    case SignedIntegerOperationType::kDiv: {
+      return "INT_DIV";
+    }
+    case SignedIntegerOperationType::kLt: {
+      return "INT_LT";
+    }
+    case SignedIntegerOperationType::kGt: {
+      return "INT_GT";
+    }
+    case SignedIntegerOperationType::kEq: {
+      return "INT_EQ";
+    }
+    case SignedIntegerOperationType::kGEQ: {
+      return "INT_GEQ";
+    }
+    case SignedIntegerOperationType::kLEQ: {
+      return "INT_LEQ";
+    }
+    case SignedIntegerOperationType::kInRange: {
+      return "INT_InRange";
+    }
+    case SignedIntegerOperationType::kEQZ: {
+      return "INT_EQZ";
+    }
+    case SignedIntegerOperationType::kLTZ: {
+      return "INT_LTZ";
+    }
+    case SignedIntegerOperationType::kNeg: {
+      return "INT_NEG";
+    }
+    case SignedIntegerOperationType::kNegCondition: {
+      return "INT_NEG_CONDITION";
+    }
+    case SignedIntegerOperationType::kInt2FL: {
+      return "INT_Int2FL";
+    }
+    case SignedIntegerOperationType::kInt2Fx: {
+      return "INT_Int2Fx";
+    }
+    default:
+      throw std::invalid_argument("Invalid SignedIntegerOperationType");
+  }
+}
+
 }  // namespace encrypto::motion

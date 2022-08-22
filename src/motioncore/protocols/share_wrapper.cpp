@@ -927,11 +927,13 @@ template std::uint8_t ShareWrapper::As() const;
 template std::uint16_t ShareWrapper::As() const;
 template std::uint32_t ShareWrapper::As() const;
 template std::uint64_t ShareWrapper::As() const;
+template __uint128_t ShareWrapper::As() const;
 
 template std::vector<std::uint8_t> ShareWrapper::As() const;
 template std::vector<std::uint16_t> ShareWrapper::As() const;
 template std::vector<std::uint32_t> ShareWrapper::As() const;
 template std::vector<std::uint64_t> ShareWrapper::As() const;
+template std::vector<__uint128_t> ShareWrapper::As() const;
 
 template <typename T>
 ShareWrapper ShareWrapper::Add(SharePointer share, SharePointer other) const {

@@ -142,6 +142,26 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   SharePointer BooleanGmwInput(std::size_t party_id, std::vector<BitVector<>>&& input);
 
+  /// \brief share constant values (publicly known before circuit evaluation) as Boolean gmw share
+  /// without
+  // interaction i.e., one party holds the constant values while the other parities holds value of
+  // zero
+  SharePointer ConstantAsBooleanGmwInput(bool input = false);
+  SharePointer ConstantAsBooleanGmwInput(const BitVector<>& input);
+  SharePointer ConstantAsBooleanGmwInput(BitVector<>&& input);
+  SharePointer ConstantAsBooleanGmwInput(std::vector<BitVector<>>&& input);
+  SharePointer ConstantAsBooleanGmwInput(std::span<const BitVector<>> input);
+  SharePointer ConstantAsBooleanGmwInput(const std::vector<BitVector<>>& input);
+
+  /// \brief share constant values (publicly known before circuit evaluation) as Boolean gmw share
+  /// without
+  // interaction i.e., all parties holds the same constant values
+  SharePointer ConstantBooleanGmwInput(bool input = false);
+  SharePointer ConstantBooleanGmwInput(const BitVector<>& input);
+  SharePointer ConstantBooleanGmwInput(BitVector<>&& input);
+  SharePointer ConstantBooleanGmwInput(std::vector<BitVector<>>&& input);
+  SharePointer ConstantBooleanGmwInput(std::span<const BitVector<>> input);
+  SharePointer ConstantBooleanGmwInput(const std::vector<BitVector<>>& input);
   SharePointer BooleanGmwOutput(const SharePointer& parent, std::size_t output_owner);
 
   SharePointer BmrInput(std::size_t party_id, bool input = false);
@@ -154,6 +174,12 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   SharePointer BmrInput(std::size_t party_id, std::vector<BitVector<>>&& input);
 
+  /// \brief share constant values (publicly known before circuit evaluation) as BMR share
+  SharePointer ConstantAsBmrInput(bool input = false, std::size_t party_id = 0);
+  SharePointer ConstantAsBmrInput(const BitVector<>& input, std::size_t party_id = 0);
+  SharePointer ConstantAsBmrInput(BitVector<>&& input, std::size_t party_id = 0);
+  SharePointer ConstantAsBmrInput(std::span<const BitVector<>> input, std::size_t party_id = 0);
+  SharePointer ConstantAsBmrInput(std::vector<BitVector<>>&& input, std::size_t party_id = 0);
   SharePointer BmrOutput(const SharePointer& parent, std::size_t output_owner);
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
@@ -213,9 +239,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   SharePointer GarbledCircuitInput(std::size_t party_id, std::vector<BitVector<>>&& input);
 
-  std::pair<SharePointer, ReusableFiberPromise<std::vector<BitVector<>>>*>
-  GarbledCircuitInput(std::size_t party_id, std::size_t number_of_wires,
-                      std::size_t number_of_simd);
+  std::pair<SharePointer, ReusableFiberPromise<std::vector<BitVector<>>>*> GarbledCircuitInput(
+      std::size_t party_id, std::size_t number_of_wires, std::size_t number_of_simd);
 
   SharePointer GarbledCircuitOutput(const SharePointer& parent, std::size_t output_owner);
 
