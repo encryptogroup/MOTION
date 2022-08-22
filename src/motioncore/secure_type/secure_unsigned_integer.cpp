@@ -412,10 +412,10 @@ template ShareWrapper SecureUnsignedInteger::operator==
 template ShareWrapper SecureUnsignedInteger::operator==
     <__uint128_t>(const __uint128_t& constant_value) const;
 
-ShareWrapper SecureUnsignedInteger::EQZ() const {
+ShareWrapper SecureUnsignedInteger::IsZero() const {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
-    throw std::runtime_error("Integer EQZ is not implemented for arithmetic GMW");
+    throw std::runtime_error("Integer IsZero is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
     std::shared_ptr<AlgorithmDescription> equal_zero_algorithm;
@@ -502,10 +502,10 @@ template SecureUnsignedInteger SecureUnsignedInteger::Mod<std::uint64_t>(
 template SecureUnsignedInteger SecureUnsignedInteger::Mod<__uint128_t>(
     const __uint128_t& integer_m) const;
 
-ShareWrapper SecureUnsignedInteger::GEQ(const SecureUnsignedInteger& other) const {
+ShareWrapper SecureUnsignedInteger::GE(const SecureUnsignedInteger& other) const {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
-    throw std::runtime_error("Integer GEQ is not implemented for arithmetic GMW");
+    throw std::runtime_error("Integer GE is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
     std::shared_ptr<AlgorithmDescription> geq_algorithm;
@@ -521,24 +521,24 @@ ShareWrapper SecureUnsignedInteger::GEQ(const SecureUnsignedInteger& other) cons
     if ((geq_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer geq circuit with file path {}", path));
+            fmt::format("Found in cache Boolean integer ge circuit with file path {}", path));
       }
     } else {
       geq_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(geq_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer geq circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean integer ge circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
     return share_input.Evaluate(geq_algorithm).Split().at(0);
   }
 }
-ShareWrapper SecureUnsignedInteger::LEQ(const SecureUnsignedInteger& other) const {
+ShareWrapper SecureUnsignedInteger::LE(const SecureUnsignedInteger& other) const {
   if (share_->Get()->GetCircuitType() != CircuitType::kBoolean) {
     // use primitive operation in arithmetic GMW
-    throw std::runtime_error("Integer GEQ is not implemented for arithmetic GMW");
+    throw std::runtime_error("Integer GE is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
     std::shared_ptr<AlgorithmDescription> geq_algorithm;
@@ -554,14 +554,14 @@ ShareWrapper SecureUnsignedInteger::LEQ(const SecureUnsignedInteger& other) cons
     if ((geq_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer geq circuit with file path {}", path));
+            fmt::format("Found in cache Boolean integer ge circuit with file path {}", path));
       }
     } else {
       geq_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(geq_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer geq circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean integer ge circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*other.share_, *share_})};

@@ -139,13 +139,13 @@ class SecureUnsignedInteger {
   ShareWrapper operator==(const T& constant_value) const;
 
   /// \brief equals to zero
-  ShareWrapper EQZ() const;
+  ShareWrapper IsZero() const;
 
-  /// \brief is greater than or equals to zero
-  ShareWrapper GEQ(const SecureUnsignedInteger& other) const;
+  /// \brief is greater than or equals to
+  ShareWrapper GE(const SecureUnsignedInteger& other) const;
 
-  /// \brief is less than or equals to zero
-  ShareWrapper LEQ(const SecureUnsignedInteger& other) const;
+  /// \brief is less than or equals to
+  ShareWrapper LE(const SecureUnsignedInteger& other) const;
 
   /// \brief modulo reduction with secure_unsigned_integer_m
   SecureUnsignedInteger Mod(const SecureUnsignedInteger& secure_unsigned_integer_m) const;
