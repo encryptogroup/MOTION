@@ -616,7 +616,7 @@ std::string SecureUnsignedInteger::ConstructPath(
       throw std::runtime_error(
           fmt::format("Invalid integer operation required: {}", to_string(type)));
   }
-  return fmt::format("{}/circuits/unsigned_integer_HyCC/uint{}_{}{}.bristol", kRootDir, bitlength,
+  return fmt::format("{}/circuits/unsigned_integer/uint{}_{}{}.bristol", kRootDir, bitlength,
                      operation_type_string, suffix);
 }
 

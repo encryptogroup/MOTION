@@ -43,7 +43,7 @@ namespace {
 TEST(AlgorithmDescription, FromBristolFormatIntAdd8Size) {
   const auto uint_add8 = encrypto::motion::AlgorithmDescription::FromBristol(
       std::string(encrypto::motion::kRootDir) +
-      "/circuits/unsigned_integer_HyCC/uint8_add_size.bristol");
+      "/circuits/unsigned_integer/uint8_add_size.bristol");
   EXPECT_EQ(uint_add8.number_of_gates, 34);
   EXPECT_EQ(uint_add8.gates.size(), 34);
   EXPECT_EQ(uint_add8.number_of_output_wires, 8);
