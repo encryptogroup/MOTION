@@ -64,31 +64,4 @@ using TypeMap = decltype(detail::MakeTypeMap<Value, Ts...>());
 
 #endif
 
-// return the int type of uint type
-template <typename T>
-struct get_int_type {};
-
-template <>
-struct get_int_type<std::uint8_t> {
-  using type = std::int8_t;
-};
-template <>
-struct get_int_type<std::uint16_t> {
-  using type = std::int16_t;
-};
-template <>
-struct get_int_type<std::uint32_t> {
-  using type = std::int32_t;
-};
-template <>
-struct get_int_type<std::uint64_t> {
-  using type = std::int64_t;
-};
-template <>
-struct get_int_type<__uint128_t> {
-  using type = __int128_t;
-};
-template <typename T>
-using get_int_type_t = typename get_int_type<T>::type;
-
 }  // namespace encrypto::motion
