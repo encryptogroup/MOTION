@@ -768,7 +768,7 @@ ConstantAsBooleanGmwInputGate::ConstantAsBooleanGmwInputGate(std::span<const Bit
                                                              Backend& backend)
     : ConstantAsBooleanGmwInputGate::Base(backend),
       input_(std::vector(input.begin(), input.end())) {
-  input_owner_id_ = 0;
+  // input_owner_id_ = 0;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
   InitializationHelper();
 }
@@ -776,26 +776,29 @@ ConstantAsBooleanGmwInputGate::ConstantAsBooleanGmwInputGate(std::span<const Bit
 ConstantAsBooleanGmwInputGate::ConstantAsBooleanGmwInputGate(std::vector<BitVector<>>&& input,
                                                              Backend& backend)
     : ConstantAsBooleanGmwInputGate::Base(backend), input_(std::move(input)) {
-  input_owner_id_ = 0;
   bits_ = input_.size() == 0 ? 0 : input_.at(0).GetSize();
   InitializationHelper();
 }
 
 void ConstantAsBooleanGmwInputGate::InitializationHelper() {
   auto& communication_layer = GetCommunicationLayer();
-  auto& _register = GetRegister();
-
-  if (static_cast<std::size_t>(input_owner_id_) >= communication_layer.GetNumberOfParties()) {
-    throw std::runtime_error(fmt::format("Invalid input owner: {} of {}", input_owner_id_,
-                                         communication_layer.GetNumberOfParties()));
-  }
-
-  gate_id_ = _register.NextGateId();
+  auto my_id = communication_layer.GetMyId();
 
   assert(input_.size() > 0u);           // assert >=1 wire
   assert(input_.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
   // assert SIMD lengths of all wires are equal
   assert(BitVector<>::IsEqualSizeDimensions(input_));
+
+  std::vector<BitVector<>> result(input_.size());
+  for (auto i = 0ull; i < result.size(); ++i) {
+    // if (static_cast<std::size_t>(input_owner_id_) == my_id) {
+    if (my_id == 0u) {
+      // party 0 holds the constant value
+      result.at(i) = input_.at(i);
+    } else {
+      result.at(i) = BitVector<>(input_.at(i).GetSize());
+    }
+  }
 
   if constexpr (kVerboseDebug) {
     GetLogger().LogTrace(
@@ -807,6 +810,13 @@ void ConstantAsBooleanGmwInputGate::InitializationHelper() {
     output_wires_.push_back(GetRegister().EmplaceWire<boolean_gmw::Wire>(v, backend_));
   }
 
+  for (auto i = 0ull; i < output_wires_.size(); ++i) {
+    auto my_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(i));
+    assert(my_wire);
+    auto buf = result.at(i);
+    my_wire->GetMutableValues() = buf;
+  }
+
   if constexpr (kDebug) {
     auto gate_info = fmt::format("gate id {},", gate_id_);
     GetLogger().LogDebug(fmt::format(
@@ -816,40 +826,7 @@ void ConstantAsBooleanGmwInputGate::InitializationHelper() {
 
 void ConstantAsBooleanGmwInputGate::EvaluateSetup() {}
 
-void ConstantAsBooleanGmwInputGate::EvaluateOnline() {
-  GetBaseProvider().WaitSetup();
-
-  auto& communication_layer = GetCommunicationLayer();
-  auto my_id = communication_layer.GetMyId();
-  auto number_of_parties = communication_layer.GetNumberOfParties();
-
-  std::vector<BitVector<>> result(input_.size());
-  for (auto i = 0ull; i < result.size(); ++i) {
-    if (static_cast<std::size_t>(input_owner_id_) == my_id) {
-      // party 0 holds the constant value
-      result.at(i) = input_.at(i);
-      for (auto party_id = 0u; party_id < number_of_parties; ++party_id) {
-        if (party_id == my_id) {
-          continue;
-        }
-      }
-    } else {
-      // the rest parties hold values of zeros
-      result.at(i) = input_.at(i) ^ input_.at(i);
-    }
-  }
-
-  for (auto i = 0ull; i < output_wires_.size(); ++i) {
-    auto my_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(i));
-    assert(my_wire);
-    auto buf = result.at(i);
-    my_wire->GetMutableValues() = buf;
-  }
-  if constexpr (kVerboseDebug) {
-    GetLogger().LogTrace(
-        fmt::format("Evaluated Boolean ConstantAsBooleanGmwInputGate with id#{}", gate_id_));
-  }
-}
+void ConstantAsBooleanGmwInputGate::EvaluateOnline() {}
 
 const boolean_gmw::SharePointer ConstantAsBooleanGmwInputGate::GetOutputAsGmwShare() {
   auto result = std::make_shared<boolean_gmw::Share>(output_wires_);
