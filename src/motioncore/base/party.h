@@ -196,16 +196,25 @@ class Party {
     }
   }
 
-  template <MpcProtocol P, typename T = std::uint8_t,
-            typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <MpcProtocol P, typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
   SharePointer In(const std::vector<T>& input,
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     switch (P) {
       case MpcProtocol::kArithmeticConstant: {
-        return backend_->ConstantArithmeticGmwInput(input);
+        if constexpr (std::is_unsigned_v<T>) {
+          return backend_->ConstantArithmeticGmwInput<T>(input);
+        } else {
+          return backend_->ConstantArithmeticGmwInput<std::make_unsigned_t<T>>(
+              ToTwosComplement<T>(input));
+        }
       }
       case MpcProtocol::kArithmeticGmw: {
-        return backend_->ArithmeticGmwInput<T>(party_id, input);
+        if constexpr (std::is_unsigned_v<T>) {
+          return backend_->ArithmeticGmwInput<T>(party_id, input);
+        } else {
+          return backend_->ArithmeticGmwInput<std::make_unsigned_t<T>>(party_id,
+                                                                       ToTwosComplement<T>(input));
+        }
       }
       case MpcProtocol::kAstra: {
         return backend_->AstraInput<T>(party_id, input);
@@ -227,16 +236,25 @@ class Party {
     }
   }
 
-  template <MpcProtocol P, typename T = std::uint8_t,
-            typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <MpcProtocol P, typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
   SharePointer In(std::vector<T>&& input,
                   std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     switch (P) {
       case MpcProtocol::kArithmeticConstant: {
-        return backend_->ConstantArithmeticGmwInput(std::move(input));
+        if constexpr (std::is_unsigned_v<T>) {
+          return backend_->ConstantArithmeticGmwInput<T>(input);
+        } else {
+          return backend_->ConstantArithmeticGmwInput<std::make_unsigned_t<T>>(
+              ToTwosComplement<T>(input));
+        }
       }
       case MpcProtocol::kArithmeticGmw: {
-        return backend_->ArithmeticGmwInput<T>(party_id, std::move(input));
+        if constexpr (std::is_unsigned_v<T>) {
+          return backend_->ArithmeticGmwInput<T>(party_id, input);
+        } else {
+          return backend_->ArithmeticGmwInput<std::make_unsigned_t<T>>(party_id,
+                                                                       ToTwosComplement<T>(input));
+        }
       }
       case MpcProtocol::kAstra: {
         return backend_->AstraInput<T>(party_id, std::move(input));
@@ -258,8 +276,7 @@ class Party {
     }
   }
 
-  template <MpcProtocol P, typename T = std::uint8_t,
-            typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <MpcProtocol P, typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
   SharePointer In(T input, std::size_t party_id = std::numeric_limits<std::size_t>::max()) {
     if constexpr (std::is_same_v<T, bool>) {
       if constexpr (P == MpcProtocol::kBooleanGmw)

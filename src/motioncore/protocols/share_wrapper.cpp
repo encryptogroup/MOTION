@@ -24,6 +24,7 @@
 
 #include "share_wrapper.h"
 
+#include <cassert>
 #include <stdexcept>
 #include <typeinfo>
 
@@ -52,6 +53,8 @@
 #include "protocols/data_management/unsimdify_gate.h"
 #include "protocols/garbled_circuit/garbled_circuit_provider.h"
 #include "secure_type/secure_unsigned_integer.h"
+#include "share.h"
+#include "utility/bit_vector.h"
 
 namespace encrypto::motion {
 
@@ -240,10 +243,12 @@ ShareWrapper ShareWrapper::operator*(const ShareWrapper& other) const {
   assert(*other);
   assert(share_);
   assert(share_->GetNumberOfSimdValues() == other->GetNumberOfSimdValues());
+
   bool lhs_is_arith = share_->GetCircuitType() == CircuitType::kArithmetic;
   bool rhs_is_arith = other->GetCircuitType() == CircuitType::kArithmetic;
   bool lhs_is_bool = share_->GetCircuitType() == CircuitType::kBoolean;
   bool rhs_is_bool = other->GetCircuitType() == CircuitType::kBoolean;
+
   if (!lhs_is_arith || !rhs_is_arith) {
     if (lhs_is_bool && rhs_is_arith) {
       if (other->GetBitLength() == 8u) {
@@ -815,6 +820,11 @@ T ShareWrapper::As() const {
     } else {
       throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
     }
+  } else if constexpr (std::is_signed<T>()) {
+    std::make_unsigned_t<T> unsigned_value{As<std::make_unsigned_t<T>>()};
+    bool msb{(unsigned_value >> sizeof(T) * 8 - 1) == 1};
+    T signed_value{msb ? -static_cast<T>(-unsigned_value) : static_cast<T>(unsigned_value)};
+    return signed_value;
   } else if constexpr (is_specialization<T, std::vector>::value &&
                        std::is_unsigned<typename T::value_type>()) {
     // std::vector of unsigned integers
@@ -847,6 +857,17 @@ T ShareWrapper::As() const {
     } else {
       throw std::invalid_argument("Unsupported arithmetic protocol in ShareWrapper::As()");
     }
+  } else if constexpr (is_specialization<T, std::vector>::value &&
+                       std::is_signed<typename T::value_type>()) {
+    auto unsigned_values{As<std::vector<std::make_unsigned_t<typename T::value_type>>>()};
+    T signed_values;
+    signed_values.reserve(unsigned_values.size());
+    for (auto& v : unsigned_values) {
+      bool msb{(v >> sizeof(T) * 8 - 1) == 1};
+      T signed_value{msb ? -static_cast<T>(-v) : static_cast<T>(v)};
+      signed_values.emplace_back(signed_value);
+    }
+    return unsigned_values;
   } else {
     throw std::invalid_argument(
         fmt::format("Unsupported output type in ShareWrapper::As<{}>()", typeid(T).name()));

@@ -24,14 +24,11 @@
 
 #pragma once
 
-#include <cassert>
 #include <limits>
 #include <memory>
 #include <span>
 #include <vector>
 
-#include "share.h"
-#include "utility/bit_vector.h"
 #include "utility/typedefs.h"
 
 namespace encrypto::motion {

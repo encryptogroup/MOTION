@@ -22,10 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <fstream>
-#include <random>
-
 #include <gtest/gtest.h>
+#include <algorithm>
+#include <fstream>
+#include <limits>
+#include <random>
+#include <type_traits>
 
 #include "algorithm/algorithm_description.h"
 #include "base/party.h"
@@ -34,6 +36,7 @@
 #include "protocols/share_wrapper.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "utility/config.h"
+#include "utility/helpers.h"
 
 #include "test_constants.h"
 

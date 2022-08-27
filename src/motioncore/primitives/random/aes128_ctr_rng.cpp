@@ -23,8 +23,8 @@
 #include "aes128_ctr_rng.h"
 
 #include <array>
-#include <openssl/rand.h>
 #include <fstream>
+#include <openssl/rand.h>
 
 #include "primitives/aes/aesni_primitives.h"
 

@@ -31,6 +31,7 @@
 #include "test_constants.h"
 #include "utility/bit_vector.h"
 #include "utility/condition.h"
+#include "utility/helpers.h"
 
 namespace {
 TEST(Condition, WaitNotifyOne) {
@@ -260,6 +261,35 @@ TEST(InputOutputUnVectorization, VectorsOfUnsignedIntegers) {
   EXPECT_EQ(kV16, v16_check);
   EXPECT_EQ(kV32, v32_check);
   EXPECT_EQ(kV64, v64_check);
+}
+
+template <typename T>
+class TwosComplementTest : public testing::Test {
+};
+
+using TwosComplementUnsignedTypes =
+    ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
+TYPED_TEST_SUITE(TwosComplementTest, TwosComplementUnsignedTypes);
+
+TYPED_TEST(TwosComplementTest, Conversion) {
+  using U = TypeParam;
+  using S = typename std::make_signed_t<U>;
+  constexpr std::size_t num_values{std::min(static_cast<std::size_t>(std::numeric_limits<U>::max()),
+                                            static_cast<std::size_t>(10000))};
+
+  constexpr S begin{static_cast<S>(0) - static_cast<S>(num_values / 2)};
+
+  for (S i = begin; (i - begin) < num_values; ++i) {
+    U u{encrypto::motion::ToTwosComplement(i)};
+    S s{encrypto::motion::FromTwosComplement(u)};
+    ASSERT_EQ(i, s);
+    if (std::signbit(i)) {  // is negative
+      U positive_u = -u;
+      ASSERT_EQ(-i, positive_u);
+    } else {  // is positive
+      ASSERT_EQ(i, u);
+    }
+  }
 }
 
 }  // namespace

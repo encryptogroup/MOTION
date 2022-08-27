@@ -452,7 +452,7 @@ std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bit_vecto
 /// \param value
 /// \relates BitVector
 template <typename T,
-          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T>>,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_integral_v<T>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(T value);
 
@@ -471,7 +471,7 @@ std::vector<BitVector<Allocator>> ToInput(T value);
 /// \tparam T
 /// \param vector
 template <typename T,
-          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T>>,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_integral_v<T>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
 
@@ -490,24 +490,11 @@ std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
 ///      - Each BitVector in \p bit_vectors has size equal 1.
 /// \tparam UnsignedIntegralType
 /// \param bit_vectors
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>,
+template <typename IntegralType, typename = std::enable_if_t<std::is_integral_v<IntegralType>>,
           typename Allocator = std::allocator<std::byte>>
-UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
-  static_assert(std::is_integral<UnsignedIntegralType>::value);
-  static_assert(sizeof(UnsignedIntegralType) <= 8);
-  if constexpr (sizeof(UnsignedIntegralType) == 1) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint8_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 2) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint16_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 4) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint32_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 8) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint64_t>);
-  }
-
+IntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
   // kBitLength is always equal to bit_vectors
-  constexpr auto kBitLength{sizeof(UnsignedIntegralType) * 8};
+  constexpr auto kBitLength{sizeof(IntegralType) * 8};
 
   assert(!bit_vectors.empty());
   if (kBitLength != bit_vectors.size()) {
@@ -520,11 +507,19 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
   for ([[maybe_unused]] auto i = 0ull; i < bit_vectors.size(); ++i)
     assert(bit_vectors.at(i).GetSize() == bit_vectors.at(0).GetSize());
 
-  UnsignedIntegralType output_value{0};
-  // Converting values in a BitVector to UnsignedIntegralType
-  for (auto i = 0ull; i < kBitLength; ++i) {
-    assert(bit_vectors.at(i).GetSize() == 1);
-    output_value += static_cast<UnsignedIntegralType>(bit_vectors.at(i)[0]) << i;
+  IntegralType output_value{0};
+  if constexpr (std::is_unsigned_v<IntegralType>) {
+    // Converting values in a BitVector to UnsignedIntegralType
+    for (auto i = 0ull; i < kBitLength; ++i) {
+      assert(bit_vectors.at(i).GetSize() == 1);
+      output_value += static_cast<IntegralType>(bit_vectors[i][0]) << i;
+    }
+  } else {
+    std::make_unsigned_t<IntegralType> unsigned_value{0};
+    for (auto j = 0ull; j < kBitLength; ++j) {
+      unsigned_value += static_cast<std::make_unsigned_t<IntegralType>>(bit_vectors[j][0]) << j;
+    }
+    output_value = FromTwosComplement(unsigned_value);
   }
 
   return output_value;
@@ -543,23 +538,10 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
 /// \tparam UnsignedIntegralType
 /// \param bit_vectors
 /// \relates BitVector
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>,
+template <typename IntegralType, typename = std::enable_if_t<std::is_integral_v<IntegralType>>,
           typename Allocator = std::allocator<std::byte>>
-std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator>> bit_vectors) {
-  static_assert(std::is_integral<UnsignedIntegralType>::value);
-  static_assert(sizeof(UnsignedIntegralType) <= 8);
-  if constexpr (sizeof(UnsignedIntegralType) == 1) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint8_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 2) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint16_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 4) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint32_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 8) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint64_t>);
-  }
-
-  constexpr auto kBitLength{sizeof(UnsignedIntegralType) * 8};
+std::vector<IntegralType> ToVectorOutput(std::vector<BitVector<Allocator>> bit_vectors) {
+  constexpr auto kBitLength{sizeof(IntegralType) * 8};
 
   assert(!bit_vectors.empty());
   if (kBitLength != bit_vectors.size()) {
@@ -578,13 +560,22 @@ std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator
   // Then output_vector[0] == x0*2^0 + x1*2^1 + ... + xn*2^n
   //     output_vector[1] == y0*2^0 + y1*2^1 + ... + yn*2^n
   //     output_vector[2] == z0*2^0 + z1*2^1 + ... + zn*2^n
-  std::vector<UnsignedIntegralType> output_vector;
+  std::vector<IntegralType> output_vector;
+  output_vector.reserve(number_of_simd);
   for (auto i = 0ull; i < number_of_simd; ++i) {
-    UnsignedIntegralType value{0};
-    for (auto j = 0ull; j < kBitLength; ++j) {
-      value += static_cast<UnsignedIntegralType>(bit_vectors.at(j)[i]) << j;
+    if constexpr (std::is_unsigned_v<IntegralType>) {
+      IntegralType value{0};
+      for (auto j = 0ull; j < kBitLength; ++j) {
+        value += static_cast<IntegralType>(bit_vectors[j][i]) << j;
+      }
+      output_vector.emplace_back(value);
+    } else {
+      std::make_unsigned_t<IntegralType> unsigned_value{0};
+      for (auto j = 0ull; j < kBitLength; ++j) {
+        unsigned_value += static_cast<std::make_unsigned_t<IntegralType>>(bit_vectors[j][i]) << j;
+      }
+      output_vector.emplace_back(FromTwosComplement(unsigned_value));
     }
-    output_vector.emplace_back(value);
   }
   return output_vector;
 }
@@ -769,9 +760,8 @@ class BitSpan {
   /// \brief Returns true if Allocator is aligned allocator.
   bool IsAligned() const noexcept { return aligned_; }
 
-  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
-  /// in this.
-  /// \throws std::out_of_range if accessing invalid positions in this or other.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from,
+  /// dest_to) in this. \throws std::out_of_range if accessing invalid positions in this or other.
   template <typename BitVectorType>
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorType& other);
 
@@ -780,14 +770,14 @@ class BitSpan {
   template <typename BitVectorType>
   void Copy(const std::size_t dest_from, BitVectorType& other);
 
-  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
-  /// in this.
-  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from,
+  /// dest_to) in this. \throws an std::out_of_range exception if accessing invalid positions in
+  /// this or other.
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan& other);
 
-  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
-  /// in this.
-  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from,
+  /// dest_to) in this. \throws an std::out_of_range exception if accessing invalid positions in
+  /// this or other.
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan&& other);
 
   /// \brief copies other to this[dest_from...dest_from+GetSize()].

@@ -24,12 +24,22 @@
 
 #pragma once
 
+#include <flatbuffers/flatbuffers.h>
+#include <fmt/format.h>
 #include <algorithm>
+#include <bit>
 #include <cassert>
+#include <concepts>
 #include <cstdint>
+#include <random>
 #include <span>
 #include <string>
+#include <type_traits>
 #include <vector>
+
+#include "condition.h"
+#include "primitives/random/default_rng.h"
+#include "typedefs.h"
 
 namespace encrypto::motion {
 
@@ -497,6 +507,36 @@ inline std::vector<T> RowDotProduct(std::span<const std::vector<T>> a,
       result[j] += a[i][j] * b[i][j];
     }
   }
+  return result;
+}
+
+template <std::signed_integral T>
+auto ToTwosComplement(T input) {
+  using U = typename std::make_unsigned_t<T>;
+  return std::bit_cast<U>(input);
+}
+
+template <std::signed_integral T>
+auto ToTwosComplement(const std::vector<T>& input) {
+  using U = typename std::make_unsigned_t<T>;
+  std::vector<U> twos_complement;
+  twos_complement.reserve(input.size());
+  for (const auto& x : input) twos_complement.emplace_back(ToTwosComplement<T>(x));
+  return twos_complement;
+}
+
+template <std::unsigned_integral T>
+auto FromTwosComplement(T input) {
+  using S = typename std::make_signed_t<T>;
+  return std::bit_cast<S>(input);
+}
+
+template <std::unsigned_integral T>
+auto FromTwosComplement(const std::vector<T>& input) {
+  using S = typename std::make_signed_t<T>;
+  std::vector<S> result;
+  result.reserve(input.size());
+  for (const auto& x : input) result.emplace_back(FromTwosComplement<T>(x));
   return result;
 }
 

@@ -321,6 +321,9 @@ T SecureUnsignedInteger::As() const {
     auto share_out = share_->As<std::vector<encrypto::motion::BitVector<>>>();
     if constexpr (std::is_unsigned<T>()) {
       return encrypto::motion::ToOutput<T>(share_out);
+    } else if constexpr (is_specialization<T, std::vector>::value &&
+                         std::is_unsigned<typename T::value_type>()) {
+      return encrypto::motion::ToVectorOutput<typename T::value_type>(share_out);
     } else {
       throw std::invalid_argument(
           fmt::format("Unsupported output type in SecureUnsignedInteger::As<{}>() for {} Protocol",

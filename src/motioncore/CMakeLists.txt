@@ -60,6 +60,7 @@ add_library(motion
         protocols/share.cpp
         protocols/share_wrapper.cpp
         protocols/wire.cpp
+        secure_type/secure_signed_integer.cpp
         secure_type/secure_unsigned_integer.cpp
         statistics/analysis.cpp
         statistics/run_time_statistics.cpp

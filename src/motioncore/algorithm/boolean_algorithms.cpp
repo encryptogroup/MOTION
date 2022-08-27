@@ -24,6 +24,12 @@
 
 #include "boolean_algorithms.h"
 
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+
+#include "protocols/share.h"
+
 namespace encrypto::motion::algorithm {
 
 std::pair<ShareWrapper, ShareWrapper> FullAdder(const ShareWrapper& a, const ShareWrapper& b,
