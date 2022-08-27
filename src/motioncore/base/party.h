@@ -272,7 +272,7 @@ class Party {
   }
 
   template <MpcProtocol P, typename T = std::uint8_t,
-            typename = std::enable_if_t<std::is_unsigned_v<T>>>
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   SharePointer SharedIn(T input) {
     switch (P) {
       case MpcProtocol::kArithmeticConstant: {
@@ -309,7 +309,7 @@ class Party {
   }
 
   template <MpcProtocol P, typename T = std::uint8_t,
-            typename = std::enable_if_t<std::is_unsigned_v<T>>>
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   SharePointer SharedIn(const std::vector<T>& input) {
     switch (P) {
       case MpcProtocol::kArithmeticConstant: {
