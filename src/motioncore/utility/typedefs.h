@@ -197,8 +197,8 @@ enum class UnsignedIntegerOperationType : unsigned int {
   kGt,
   kEq,
   kGE,
-  kLEQ,
-  kEQZ,
+  kLE,
+  kIsZero,
   kMod,
   kInt2FL,
   kInt2Fx,
@@ -241,11 +241,11 @@ inline std::string to_string(UnsignedIntegerOperationType p) {
     case UnsignedIntegerOperationType::kGE: {
       return "UINT_GE";
     }
-    case UnsignedIntegerOperationType::kLEQ: {
-      return "UINT_LEQ";
+    case UnsignedIntegerOperationType::kLE: {
+      return "UINT_LE";
     }
-    case UnsignedIntegerOperationType::kEQZ: {
-      return "UINT_EQZ";
+    case UnsignedIntegerOperationType::kIsZero: {
+      return "UINT_IsZero";
     }
     case UnsignedIntegerOperationType::kMod: {
       return "UINT_MOD";
@@ -294,11 +294,11 @@ enum class SignedIntegerOperationType : unsigned int {
   kLt,
   kGt,
   kEq,
-  kGEQ,
-  kLEQ,
+  kGE,
+  kLE,
   kInRange,
-  kEQZ,
-  kLTZ,
+  kIsZero,
+  kIsNegative,
 
   kNeg,
   kNegCondition,
@@ -332,20 +332,20 @@ inline std::string to_string(SignedIntegerOperationType p) {
     case SignedIntegerOperationType::kEq: {
       return "INT_EQ";
     }
-    case SignedIntegerOperationType::kGEQ: {
-      return "INT_GEQ";
+    case SignedIntegerOperationType::kGE: {
+      return "INT_GE";
     }
-    case SignedIntegerOperationType::kLEQ: {
-      return "INT_LEQ";
+    case SignedIntegerOperationType::kLE: {
+      return "INT_LE";
     }
     case SignedIntegerOperationType::kInRange: {
       return "INT_InRange";
     }
-    case SignedIntegerOperationType::kEQZ: {
-      return "INT_EQZ";
+    case SignedIntegerOperationType::kIsZero: {
+      return "INT_IsZero";
     }
-    case SignedIntegerOperationType::kLTZ: {
-      return "INT_LTZ";
+    case SignedIntegerOperationType::kIsNegative: {
+      return "INT_IsNegative";
     }
     case SignedIntegerOperationType::kNeg: {
       return "INT_NEG";

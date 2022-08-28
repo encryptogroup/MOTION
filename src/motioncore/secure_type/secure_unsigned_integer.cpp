@@ -424,9 +424,9 @@ ShareWrapper SecureUnsignedInteger::IsZero() const {
     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
         share_->Get()->GetProtocol() ==
             MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
-      path = ConstructPath(UnsignedIntegerOperationType::kEQZ, bitlength, "_size");
+      path = ConstructPath(UnsignedIntegerOperationType::kIsZero, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(UnsignedIntegerOperationType::kEQZ, bitlength, "_depth");
+      path = ConstructPath(UnsignedIntegerOperationType::kIsZero, bitlength, "_depth");
 
     if ((equal_zero_algorithm =
              share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
@@ -599,8 +599,8 @@ std::string SecureUnsignedInteger::ConstructPath(
       operation_type_string = "eq";
       break;
     }
-    case UnsignedIntegerOperationType::kEQZ: {
-      operation_type_string = "eqz";
+    case UnsignedIntegerOperationType::kIsZero: {
+      operation_type_string = "is_zero";
       break;
     }
     case UnsignedIntegerOperationType::kGE: {
