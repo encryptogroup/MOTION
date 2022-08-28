@@ -147,10 +147,10 @@ class SecureUnsignedInteger {
   /// \brief is less than or equals to
   ShareWrapper LE(const SecureUnsignedInteger& other) const;
 
-  /// \brief modulo reduction with secure_unsigned_integer_m
+  /// \brief modular reduction with secure_unsigned_integer_m
   SecureUnsignedInteger Mod(const SecureUnsignedInteger& secure_unsigned_integer_m) const;
 
-  /// \brief modulo reduction with constant value m
+  /// \brief modular reduction with constant value m
   template <typename T>
   SecureUnsignedInteger Mod(const T& m) const;
 

@@ -467,14 +467,14 @@ SecureUnsignedInteger SecureUnsignedInteger::Mod(
     if ((mod_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
-            fmt::format("Found in cache Boolean integer modulo circuit with file path {}", path));
+            fmt::format("Found in cache Boolean integer modular reduction circuit with file path {}", path));
       }
     } else {
       mod_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
       assert(mod_algorithm);
       if constexpr (kDebug) {
-        logger_->LogDebug(fmt::format("Read Boolean integer modulo circuit from file {}", path));
+        logger_->LogDebug(fmt::format("Read Boolean integer modular reduction circuit from file {}", path));
       }
     }
     const auto share_input{
