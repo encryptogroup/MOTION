@@ -28,49 +28,6 @@
 namespace encrypto::motion {
 
 template <typename T, typename>
-ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput(T constant_value,
-                                                                    std::size_t num_of_simd) const {
-  std::vector<T> constant_value_vector(num_of_simd, constant_value);
-  ShareWrapper constant_arithmetic_gmw_share =
-      share_->GetBackend().ConstantArithmeticGmwInput<T>(constant_value_vector);
-  return constant_arithmetic_gmw_share;
-}
-
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<std::uint8_t>(
-    std::uint8_t constant_value, std::size_t num_of_simd) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<std::uint16_t>(
-    std::uint16_t constant_value, std::size_t num_of_simd) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<std::uint32_t>(
-    std::uint32_t constant_value, std::size_t num_of_simd) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<std::uint64_t>(
-    std::uint64_t constant_value, std::size_t num_of_simd) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<__uint128_t>(
-    __uint128_t constant_value, std::size_t num_of_simd) const;
-
-template <typename T, typename, typename A>
-ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput(
-    std::vector<T, A> constant_value_vector) const {
-  ShareWrapper constant_arithmetic_gmw_share =
-      share_->GetBackend().ConstantArithmeticGmwInput<T>(constant_value_vector);
-  return constant_arithmetic_gmw_share;
-}
-
-template ShareWrapper
-ConstantShareWrapper::CreateConstantArithmeticGmwInput<std::uint8_t, std::allocator<std::uint8_t>>(
-    std::vector<std::uint8_t> constant_value_vector) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<
-    std::uint16_t, std::allocator<std::uint16_t>>(
-    std::vector<std::uint16_t> constant_value_vector) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<
-    std::uint32_t, std::allocator<std::uint32_t>>(
-    std::vector<std::uint32_t> constant_value_vector) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<
-    std::uint64_t, std::allocator<std::uint64_t>>(
-    std::vector<std::uint64_t> constant_value_vector) const;
-template ShareWrapper ConstantShareWrapper::CreateConstantArithmeticGmwInput<
-    __uint128_t, std::allocator<__uint128_t>>(std::vector<__uint128_t> constant_value_vector) const;
-
-template <typename T, typename>
 ShareWrapper ConstantShareWrapper::CreateConstantBooleanGmwInput(T constant_value,
                                                                  std::size_t num_of_simd) const {
   std::vector<T> constant_value_vector(num_of_simd, constant_value);

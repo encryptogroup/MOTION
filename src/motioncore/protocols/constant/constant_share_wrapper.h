@@ -25,7 +25,6 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-#include "utility/meta.hpp"
 
 namespace encrypto::motion {
 
@@ -41,18 +40,6 @@ class ConstantShareWrapper {
   ConstantShareWrapper(const ConstantShareWrapper& sw) : share_(sw.share_) {}
 
  public:
-  /// \brief inputs constant unsigned integer as arithmetic GMW share
-  template <typename T,
-            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
-  ShareWrapper CreateConstantArithmeticGmwInput(T constant_value,
-                                                std::size_t num_of_simd = 1) const;
-
-  /// \brief inputs constant unsigned integer vector as arithmetic GMW share
-  template <typename T,
-            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>,
-            typename A>
-  ShareWrapper CreateConstantArithmeticGmwInput(std::vector<T, A> constant_value_vector) const;
-
   /// \brief inputs constant unsigned integer vector as Boolean GMW share
   template <typename T,
             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
