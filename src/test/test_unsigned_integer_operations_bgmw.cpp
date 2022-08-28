@@ -527,7 +527,6 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, EqualitySIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
-
 TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, IsZeroSIMDInGmw) {
   using T = TypeParam;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -793,5 +792,124 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bgmw, LESIMDInGmw) {
     if (t.joinable()) t.join();
 }
 
+template <typename T>
+struct PartySharedInBGMWTest : public testing::Test {};
+
+TYPED_TEST_SUITE(PartySharedInBGMWTest, uint_8_16_32_64_128);
+
+TYPED_TEST(PartySharedInBGMWTest, SharedInBooleanGmw) {
+  using T = TypeParam;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  std::mt19937 mersenne_twister(sizeof(T));
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto random = std::bind(distribution, mersenne_twister);
+  auto test_number_of_parties = std::vector<std::size_t>{2, 4, 6};
+
+  for (auto number_of_parties : test_number_of_parties) {
+    std::vector<T> input;
+    T subtract = 0;
+
+    const T expected = random();
+    for (std::size_t i = 0; i < number_of_parties - 1; i++) {
+      input.push_back(random());
+      subtract ^= input.at(i);
+    }
+    input.push_back(static_cast<T>(expected ^ subtract));
+
+    std::vector<PartyPointer> parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+
+    std::vector<std::thread> threads;
+    for (auto party_id = 0u; party_id < parties.size(); ++party_id) {
+      threads.emplace_back([party_id, expected, &parties, &input]() {
+        const auto my_id = parties.at(party_id)->GetConfiguration()->GetMyId();
+        encrypto::motion::SecureUnsignedInteger share =
+            parties.at(party_id)->SharedIn<kBooleanGmw>(encrypto::motion::ToInput(input.at(my_id)));
+        auto share_output = share.Out();
+
+        parties.at(my_id)->Run();
+        const T result = share_output.As<T>();
+
+        EXPECT_EQ(result, expected);
+        parties.at(my_id)->Finish();
+      });
+    }
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  }
+}
+ 
+TYPED_TEST(PartySharedInBGMWTest, PublicInBooleanGmw) {
+  using T = TypeParam;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  std::mt19937 mersenne_twister(sizeof(T));
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto random = std::bind(distribution, mersenne_twister);
+  auto test_number_of_parties = std::vector<std::size_t>{2, 4, 6};
+
+  std::size_t num_of_simd = 10;
+
+  for (auto number_of_parties : test_number_of_parties) {
+    std::vector<T> input;
+
+    const std::vector<T> expected = ::RandomVector<T>(num_of_simd);
+    input = expected;
+
+    std::vector<PartyPointer> parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+
+    std::vector<std::thread> threads;
+    for (auto party_id = 0u; party_id < parties.size(); ++party_id) {
+      threads.emplace_back([party_id, expected, &parties, &input, &num_of_simd]() {
+        const auto my_id = parties.at(party_id)->GetConfiguration()->GetMyId();
+        encrypto::motion::SecureUnsignedInteger share =
+            parties.at(party_id)->PublicIn<kBooleanGmw>(encrypto::motion::ToInput(input));
+        auto share_output = share.Out();
+
+        parties.at(my_id)->Run();
+        const std::vector<T> result = share_output.As<std::vector<T>>();
+        EXPECT_EQ(result, expected);
+
+        if (party_id == 0u) {
+          std::vector<BitVector<>> expected_input_vector = encrypto::motion::ToInput(input);
+          for (std::size_t wire_index = 0; wire_index < sizeof(T) * 8; ++wire_index) {
+            for (std::size_t simd_index = 0; simd_index < num_of_simd; ++simd_index) {
+              auto wire_single_simd =
+                  std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(
+                      share.Get().Get()->GetWires().at(wire_index));
+
+              EXPECT_EQ(wire_single_simd->GetValues()[simd_index],
+                        expected_input_vector[wire_index][simd_index]);
+            }
+          }
+        } else {
+          std::vector<T> zero_input(num_of_simd);
+          std::vector<BitVector<>> expected_input_vector = encrypto::motion::ToInput(zero_input);
+          for (std::size_t wire_index = 0; wire_index < sizeof(T) * 8; ++wire_index) {
+            for (std::size_t simd_index = 0; simd_index < num_of_simd; ++simd_index) {
+              auto wire_single_simd =
+                  std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(
+                      share.Get().Get()->GetWires().at(wire_index));
+
+              EXPECT_EQ(wire_single_simd->GetValues()[simd_index],
+                        expected_input_vector[wire_index][simd_index]);
+            }
+          }
+        }
+        parties.at(my_id)->Finish();
+      });
+    }
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  }
+}
 
 }  // namespace

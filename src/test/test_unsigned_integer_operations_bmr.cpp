@@ -796,5 +796,52 @@ TYPED_TEST(SecureUintTest_8_16_32_64_128_bmr, LESIMDInBmr) {
     if (t.joinable()) t.join();
 }
 
+template <typename T>
+struct PartySharedInBmrTest : public testing::Test {};
+
+TYPED_TEST_SUITE(PartySharedInBmrTest, uint_8_16_32_64_128);
+
+TYPED_TEST(PartySharedInBmrTest, PublicInBmr) {
+  using T = TypeParam;
+  constexpr auto kBmr = encrypto::motion::MpcProtocol::kBmr;
+  std::mt19937 mersenne_twister(sizeof(T));
+  std::uniform_int_distribution<T> distribution(0, std::numeric_limits<T>::max());
+  auto random = std::bind(distribution, mersenne_twister);
+  auto test_number_of_parties = std::vector<std::size_t>{2, 4, 6};
+
+  std::size_t num_of_simd = 10;
+
+  for (auto number_of_parties : test_number_of_parties) {
+    std::vector<T> input;
+
+    const std::vector<T> expected = ::RandomVector<T>(num_of_simd);
+    input = expected;
+
+    std::vector<PartyPointer> parties(
+        std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+    for (auto& party : parties) {
+      party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+      party->GetConfiguration()->SetOnlineAfterSetup(true);
+    }
+ 
+    std::vector<std::thread> threads;
+    for (auto party_id = 0u; party_id < parties.size(); ++party_id) {
+      threads.emplace_back([party_id, expected, &parties, &input, &num_of_simd]() {
+        const auto my_id = parties.at(party_id)->GetConfiguration()->GetMyId();
+        encrypto::motion::SecureUnsignedInteger share =
+            parties.at(party_id)->PublicIn<kBmr>(encrypto::motion::ToInput(input));
+        auto share_output = share.Out();
+
+        parties.at(my_id)->Run();
+        const std::vector<T> result = share_output.As<std::vector<T>>();
+        EXPECT_EQ(result, expected);
+
+        parties.at(my_id)->Finish();
+      });
+    }
+    for (auto& t : threads)
+      if (t.joinable()) t.join();
+  }
+}
 
 }  // namespace
