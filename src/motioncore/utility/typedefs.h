@@ -196,7 +196,7 @@ enum class UnsignedIntegerOperationType : unsigned int {
   kLt,
   kGt,
   kEq,
-  kGEQ,
+  kGE,
   kLEQ,
   kEQZ,
   kMod,
@@ -238,8 +238,8 @@ inline std::string to_string(UnsignedIntegerOperationType p) {
     case UnsignedIntegerOperationType::kEq: {
       return "UINT_EQ";
     }
-    case UnsignedIntegerOperationType::kGEQ: {
-      return "UINT_GEQ";
+    case UnsignedIntegerOperationType::kGE: {
+      return "UINT_GE";
     }
     case UnsignedIntegerOperationType::kLEQ: {
       return "UINT_LEQ";

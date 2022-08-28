@@ -5,7 +5,7 @@ The following circuits are generated with [HyCC](https://gitlab.com/securityengi
  - Multiplication (mul)
  - Division (div)
  - Greater than (gt)
- - Greater than or equal to (geq)
+ - Greater than or equal to (ge)
  - Equal to zero (eqz)
  - Modulo reduction (mod)
 

@@ -508,31 +508,31 @@ ShareWrapper SecureUnsignedInteger::GE(const SecureUnsignedInteger& other) const
     throw std::runtime_error("Integer GE is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
-    std::shared_ptr<AlgorithmDescription> geq_algorithm;
+    std::shared_ptr<AlgorithmDescription> ge_algorithm;
     std::string path;
 
     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
         share_->Get()->GetProtocol() ==
             MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
-      path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_size");
+      path = ConstructPath(UnsignedIntegerOperationType::kGE, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_depth");
+      path = ConstructPath(UnsignedIntegerOperationType::kGE, bitlength, "_depth");
 
-    if ((geq_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+    if ((ge_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer ge circuit with file path {}", path));
       }
     } else {
-      geq_algorithm =
+      ge_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-      assert(geq_algorithm);
+      assert(ge_algorithm);
       if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer ge circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*share_, *other.share_})};
-    return share_input.Evaluate(geq_algorithm).Split().at(0);
+    return share_input.Evaluate(ge_algorithm).Split().at(0);
   }
 }
 ShareWrapper SecureUnsignedInteger::LE(const SecureUnsignedInteger& other) const {
@@ -541,31 +541,31 @@ ShareWrapper SecureUnsignedInteger::LE(const SecureUnsignedInteger& other) const
     throw std::runtime_error("Integer GE is not implemented for arithmetic GMW");
   } else {  // BooleanCircuitType
     const auto bitlength = share_->Get()->GetBitLength();
-    std::shared_ptr<AlgorithmDescription> geq_algorithm;
+    std::shared_ptr<AlgorithmDescription> ge_algorithm;
     std::string path;
 
     if (share_->Get()->GetProtocol() == MpcProtocol::kBmr ||
         share_->Get()->GetProtocol() ==
             MpcProtocol::kGarbledCircuit)  // BMR, use size-optimized circuit
-      path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_size");
+      path = ConstructPath(UnsignedIntegerOperationType::kGE, bitlength, "_size");
     else  // GMW, use depth-optimized circuit
-      path = ConstructPath(UnsignedIntegerOperationType::kGEQ, bitlength, "_depth");
+      path = ConstructPath(UnsignedIntegerOperationType::kGE, bitlength, "_depth");
 
-    if ((geq_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
+    if ((ge_algorithm = share_->Get()->GetRegister()->GetCachedAlgorithmDescription(path))) {
       if constexpr (kDebug) {
         logger_->LogDebug(
             fmt::format("Found in cache Boolean integer ge circuit with file path {}", path));
       }
     } else {
-      geq_algorithm =
+      ge_algorithm =
           std::make_shared<AlgorithmDescription>(AlgorithmDescription::FromBristol(path));
-      assert(geq_algorithm);
+      assert(ge_algorithm);
       if constexpr (kDebug) {
         logger_->LogDebug(fmt::format("Read Boolean integer ge circuit from file {}", path));
       }
     }
     const auto share_input{ShareWrapper::Concatenate(std::vector{*other.share_, *share_})};
-    return share_input.Evaluate(geq_algorithm).Split().at(0);
+    return share_input.Evaluate(ge_algorithm).Split().at(0);
   }
 }
 
@@ -603,8 +603,8 @@ std::string SecureUnsignedInteger::ConstructPath(
       operation_type_string = "eqz";
       break;
     }
-    case UnsignedIntegerOperationType::kGEQ: {
-      operation_type_string = "geq";
+    case UnsignedIntegerOperationType::kGE: {
+      operation_type_string = "ge";
       break;
     }
     case UnsignedIntegerOperationType::kMod: {
