@@ -377,6 +377,44 @@ class Party {
     }
   }
 
+  /// \brief input constant values (publicly known before circuit evaluation) as secret shares
+  template <MpcProtocol P>
+  SharePointer PublicIn(std::span<const BitVector<>> input) {
+    std::size_t party_id = configuration_->GetMyId();
+    switch (P) {
+        // input constant values as Boolean GMW shares (without interaction between parties), i.e.,
+        // one party holds the constant values as shares while the other parities holds value of
+        // zero as shares
+      case MpcProtocol::kBooleanGmw: {
+        std::vector<encrypto::motion::WirePointer> wires(input.size());
+        encrypto::motion::RegisterPointer register_pointer{backend_->GetRegister()};
+
+        // party 0 holds the constant value as Boolean GMW shares
+        if (party_id == 0u) {
+          return SharedIn<MpcProtocol::kBooleanGmw>(input);
+        }
+
+        // the rest parties hold zero as Boolean GMW shares
+        else {
+          std::vector<BitVector<>> empty_input(wires.size());
+          for (std::size_t i = 0; i < wires.size(); i++) {
+            empty_input[i] = BitVector<>(input[0].GetSize());
+          }
+          return SharedIn<MpcProtocol::kBooleanGmw>(empty_input);
+        }
+      }
+
+      // TODO: find a more efficient way to input constant values
+      case MpcProtocol::kBmr: {
+        // pretend party 0 is the owner of  the constant values
+        return In<MpcProtocol::kBmr>(input, 0u);
+      }
+      default: {
+        throw(std::runtime_error(fmt::format("Not implemented yet", static_cast<unsigned int>(P))));
+      }
+    }
+  }
+
   SharePointer Out(SharePointer parent, std::size_t output_owner);
 
   /// \brief Evaluates the constructed gates a predefined number of times.
