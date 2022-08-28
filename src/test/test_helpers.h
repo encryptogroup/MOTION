@@ -42,23 +42,6 @@ inline std::vector<T> RandomVector(std::size_t size) {
   return v;
 }
 
-inline std::vector<bool> RandomBoolVector(std::size_t size) {
-  std::vector<bool> bool_vector;
-  bool_vector.reserve(size);
-
-  using T = std::uint64_t;
-  std::vector<T> random_T_vector = ::RandomVector<T>(ceil(double(size) / (sizeof(T) * 8)));
-
-  for (std::size_t i = 0; i < ceil(double(size) / (sizeof(T) * 8)); i++) {
-    for (std::size_t j = 0; j < (sizeof(T) * 8); j++) {
-      bool_vector.emplace_back((random_T_vector[i] >> j) & 1);
-    }
-  }
-
-  bool_vector.resize(size);
-  return bool_vector;
-}
-
 template <typename IntType = int>
 std::vector<IntType> RandomRangeIntegerVector(IntType min, IntType max, std::size_t n) {
   std::random_device rd;
