@@ -44,10 +44,7 @@ Wire::Wire(Backend& backend, std::size_t number_of_simd)
 
 Wire::~Wire() { assert(wire_id_ >= 0); }
 
-void Wire::RegisterWaitingGate(std::size_t gate_id) {
-  std::scoped_lock lock(mutex_);
-  waiting_gate_ids_.insert(gate_id);
-}
+void Wire::RegisterWaitingGate(std::size_t) {}
 
 void Wire::SetOnlineFinished() {
   assert(wire_id_ >= 0);
@@ -60,10 +57,6 @@ void Wire::SetOnlineFinished() {
     is_done_ = true;
   }
   is_done_condition_.NotifyAll();
-
-  for (auto gate_id : waiting_gate_ids_) {
-    Wire::SignalReadyToDependency(gate_id, backend_);
-  }
 }
 
 const std::atomic<bool>& Wire::IsReady() const noexcept { return is_done_; }
@@ -75,12 +68,6 @@ std::string Wire::PrintIds(const std::vector<std::shared_ptr<Wire>>& wires) {
   }
   result.erase(result.end() - 1);
   return result;
-}
-
-void Wire::SignalReadyToDependency(std::size_t gate_id, Backend& backend) {
-  auto gate = backend.GetGate(gate_id);
-  assert(gate != nullptr);
-  gate->SignalDependencyIsReady();
 }
 
 void Wire::InitializationHelper() { wire_id_ = backend_.GetRegister()->NextWireId(); }

@@ -76,11 +76,11 @@ class Gate {
 
   void Clear();
 
-  void RegisterWaitingFor(std::size_t wire_id);
+  [[deprecated("FiberCondition already handles synchronization between gates")]] 
+  void RegisterWaitingFor(std::size_t);
 
-  void SignalDependencyIsReady();
-
-  bool AreDependenciesReady() { return wire_dependencies_.size() == number_of_ready_dependencies_; }
+  [[deprecated("FiberCondition already handles synchronization between gates")]] 
+  bool AreDependenciesReady() { return false; }
 
   virtual bool NeedsSetup() const { return true; }
 
@@ -104,19 +104,14 @@ class Gate {
   std::vector<WirePointer> output_wires_;
   Backend& backend_;
   std::int64_t gate_id_ = -1;
-  std::unordered_set<std::size_t> wire_dependencies_;
 
   GateType gate_type_ = GateType::kInvalid;
   std::atomic<bool> setup_is_ready_ = false;
   std::atomic<bool> online_is_ready_ = false;
   std::atomic<bool> requires_online_interaction_ = false;
 
-  std::atomic<bool> added_to_active_queue_ = false;
-
   FiberCondition setup_is_ready_condition_;
   FiberCondition online_is_ready_condition_;
-
-  std::atomic<std::size_t> number_of_ready_dependencies_ = 0;
 
   Gate(Backend& backend);
 
@@ -132,7 +127,6 @@ class Gate {
   bool own_output_wires_{true};
 
  private:
-  void IfReadyAddToProcessingQueue();
 
   std::mutex mutex_;
 };
@@ -179,6 +173,11 @@ class InputGate : public OneGate {
   InputGate(Backend& backend) : OneGate(backend) { gate_type_ = GateType::kInput; }
 
   InputGate(InputGate&) = delete;
+  
+  //TODO: Add a method that allows one to set the input of the gate after its 
+  //      construction and before executing the setup (maybe even online?) phase.
+  //      The method is not required to perform defined behavior if a value is
+  //      set two times or a non-zero value is set during construction.
 
   std::int64_t input_owner_id_ = -1;
 };

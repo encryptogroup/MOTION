@@ -28,6 +28,8 @@
 #include "base/register.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_share.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
+#include "protocols/astra/astra_share.h"
+#include "protocols/astra/astra_wire.h"
 #include "protocols/bmr/bmr_share.h"
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_share.h"
@@ -83,12 +85,6 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
         }
       }
     }
-  }
-
-  // Register this gate as waiting for the wires.
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
   }
 
   // Register output wires.
@@ -159,6 +155,35 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
             throw std::invalid_argument(fmt::format(
                 "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
                 parent_[i]->GetBitLength()));
+        }
+        break;
+      }
+      case encrypto::motion::MpcProtocol::kAstra: {
+        switch (parent_[0]->GetBitLength()) {
+          case 8: {
+            output_wires_.emplace_back(GetRegister().EmplaceWire<proto::astra::Wire<std::uint8_t>>(
+                backend_, output_number_of_simd_values_));
+            break;
+          }
+          case 16: {
+            output_wires_.emplace_back(GetRegister().EmplaceWire<proto::astra::Wire<std::uint16_t>>(
+                backend_, output_number_of_simd_values_));
+            break;
+          }
+          case 32: {
+            output_wires_.emplace_back(GetRegister().EmplaceWire<proto::astra::Wire<std::uint32_t>>(
+                backend_, output_number_of_simd_values_));
+            break;
+          }
+          case 64: {
+            output_wires_.emplace_back(GetRegister().EmplaceWire<proto::astra::Wire<std::uint64_t>>(
+                backend_, output_number_of_simd_values_));
+            break;
+          }
+          default:
+            throw std::invalid_argument(
+                fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
+                            parent_[i]->GetBitLength()));
         }
         break;
       }
@@ -244,6 +269,11 @@ void ArithmeticConstantSimdifyOnline(std::span<WirePointer> parent_wires, WirePo
                                                                           output_wire);
 }
 
+template <typename T>
+void AstraSimdifyOnline(std::span<WirePointer> parent_wires, WirePointer output_wire) {
+  ArithmeticSimdifyOnlineImplementation<proto::astra::Wire<T>>(parent_wires, output_wire);
+}
+
 void SimdifyGate::EvaluateOnline() {
   WaitSetup();
   if constexpr (kDebug) {
@@ -302,6 +332,31 @@ void SimdifyGate::EvaluateOnline() {
           throw std::invalid_argument(fmt::format(
               "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
               output_wires_[0]->GetBitLength()));
+      }
+      break;
+    }
+    case encrypto::motion::MpcProtocol::kAstra: {
+      switch (parent_[0]->GetBitLength()) {
+        case 8: {
+          AstraSimdifyOnline<std::uint8_t>(parent_, output_wires_[0]);
+          break;
+        }
+        case 16: {
+          AstraSimdifyOnline<std::uint16_t>(parent_, output_wires_[0]);
+          break;
+        }
+        case 32: {
+          AstraSimdifyOnline<std::uint32_t>(parent_, output_wires_[0]);
+          break;
+        }
+        case 64: {
+          AstraSimdifyOnline<std::uint64_t>(parent_, output_wires_[0]);
+          break;
+        }
+        default:
+          throw std::invalid_argument(
+              fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
+                          output_wires_[0]->GetBitLength()));
       }
       break;
     }
@@ -426,6 +481,39 @@ SharePointer SimdifyGate::GetOutputAsShare() {
           throw std::invalid_argument(fmt::format(
               "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
               output_wires_[0]->GetBitLength()));
+      }
+      break;
+    }
+    case encrypto::motion::MpcProtocol::kAstra: {
+      switch (parent_[0]->GetBitLength()) {
+        case 8: {
+          auto tmp = std::make_shared<proto::astra::Share<std::uint8_t>>(output_wires_);
+          assert(tmp);
+          share = std::static_pointer_cast<Share>(tmp);
+          break;
+        }
+        case 16: {
+          auto tmp = std::make_shared<proto::astra::Share<std::uint16_t>>(output_wires_);
+          assert(tmp);
+          share = std::static_pointer_cast<Share>(tmp);
+          break;
+        }
+        case 32: {
+          auto tmp = std::make_shared<proto::astra::Share<std::uint32_t>>(output_wires_);
+          assert(tmp);
+          share = std::static_pointer_cast<Share>(tmp);
+          break;
+        }
+        case 64: {
+          auto tmp = std::make_shared<proto::astra::Share<std::uint64_t>>(output_wires_);
+          assert(tmp);
+          share = std::static_pointer_cast<Share>(tmp);
+          break;
+        }
+        default:
+          throw std::invalid_argument(
+              fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
+                          output_wires_[0]->GetBitLength()));
       }
       break;
     }

@@ -20,52 +20,47 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <flatbuffers/flatbuffers.h>
 #include <gtest/gtest.h>
 #include <boost/log/trivial.hpp>
 
 #include "communication/communication_layer.h"
-#include "communication/message_handler.h"
+#include "communication/message.h"
+#include "communication/message_manager.h"
 #include "utility/logger.h"
+
+namespace {
+
+namespace comm = encrypto::motion::communication;
 
 TEST(CommunicationLayer, Dummy) {
   std::size_t number_of_parties = 3;
-  auto communication_layers = encrypto::motion::communication::MakeDummyCommunicationLayers(3);
+  auto communication_layers = comm::MakeDummyCommunicationLayers(3);
   auto& communication_layer_alice = communication_layers.at(0);
   auto& communication_layer_bob = communication_layers.at(1);
   auto& communication_layer_charlie = communication_layers.at(2);
-
-  auto log_alice =
-      std::make_shared<encrypto::motion::Logger>(0, boost::log::trivial::severity_level::trace);
-  auto log_bob =
-      std::make_shared<encrypto::motion::Logger>(1, boost::log::trivial::severity_level::trace);
-  auto log_charlie =
-      std::make_shared<encrypto::motion::Logger>(2, boost::log::trivial::severity_level::trace);
-  communication_layer_alice->SetLogger(log_alice);
-  communication_layer_bob->SetLogger(log_bob);
-  communication_layer_charlie->SetLogger(log_charlie);
-
-  communication_layer_bob->RegisterFallbackMessageHandler([](auto party_id) {
-    return std::make_shared<encrypto::motion::communication::QueueHandler>();
-  });
-  communication_layer_charlie->RegisterFallbackMessageHandler([](auto party_id) {
-    return std::make_shared<encrypto::motion::communication::QueueHandler>();
-  });
-  auto& queue_handler_bob = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
-      communication_layer_bob->GetFallbackMessageHandler(0));
-  auto& queue_handler_charlie = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
-      communication_layer_charlie->GetFallbackMessageHandler(0));
 
   std::for_each(std::begin(communication_layers), std::end(communication_layers),
                 [](auto& cl) { cl->Start(); });
 
   const std::vector<std::uint8_t> message = {0xde, 0xad, 0xbe, 0xef};
 
-  {
-    communication_layer_alice->SendMessage(1, message);
-    auto ReceivedMessage = queue_handler_bob.GetQueue().dequeue();
-    EXPECT_EQ(ReceivedMessage, message);
-  }
+  auto message_future_b1{communication_layer_bob->GetMessageManager().RegisterReceive(
+      0, comm::MessageType::kOutputMessage, 0)};
 
+  auto message_future_b2{communication_layer_bob->GetMessageManager().RegisterReceive(
+      0, comm::MessageType::kOutputMessage, 1)};
+  auto message_future_c2{communication_layer_charlie->GetMessageManager().RegisterReceive(
+      0, comm::MessageType::kOutputMessage, 1)};
+
+  {
+    communication_layer_alice->SendMessage(
+        1, comm::BuildMessage(comm::MessageType::kOutputMessage, 0, message).Release());
+    auto received_message = message_future_b1.get();
+    auto lhs = comm::GetMessage(received_message.data())->payload();
+    for (std::size_t i = 0; i < message.size(); ++i) EXPECT_EQ(lhs->Get(i), message[i]);
+  }
+  // sync#1
   {
     std::vector<std::future<void>> futures;
     for (auto& cl : communication_layers) {
@@ -75,11 +70,23 @@ TEST(CommunicationLayer, Dummy) {
   }
 
   {
-    communication_layer_alice->BroadcastMessage(message);
-    auto received_message_bob = queue_handler_bob.GetQueue().dequeue();
-    EXPECT_EQ(received_message_bob, message);
-    auto received_message_charlie = queue_handler_charlie.GetQueue().dequeue();
-    EXPECT_EQ(received_message_charlie, message);
+    communication_layer_alice->BroadcastMessage(
+        comm::BuildMessage(comm::MessageType::kOutputMessage, 1, message).Release());
+    auto received_message_1 = message_future_b2.get();
+    auto lhs1 = comm::GetMessage(received_message_1.data())->payload();
+    for (std::size_t i = 0; i < message.size(); ++i) EXPECT_EQ(lhs1->Get(i), message[i]);
+    auto received_message_2 = message_future_c2.get();
+    auto lhs2 = comm::GetMessage(received_message_2.data())->payload();
+    for (std::size_t i = 0; i < message.size(); ++i) EXPECT_EQ(lhs2->Get(i), message[i]);
+  }
+
+  // a few more syncs to check that it works
+  for (std::size_t i = 0; i < 10u; ++i) {
+    std::vector<std::future<void>> futures;
+    for (auto& cl : communication_layers) {
+      futures.emplace_back(std::async(std::launch::async, [&cl] { cl->Synchronize(); }));
+    }
+    std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
   }
 
   // shutdown all commmunication layers
@@ -100,36 +107,24 @@ TEST_P(CommunicationLayerTest, Tcp) {
   auto& communication_layer_bob = communication_layers.at(1);
   auto& communication_layer_charlie = communication_layers.at(2);
 
-  auto log_alice =
-      std::make_shared<encrypto::motion::Logger>(0, boost::log::trivial::severity_level::trace);
-  auto log_bob =
-      std::make_shared<encrypto::motion::Logger>(1, boost::log::trivial::severity_level::trace);
-  auto log_charlie =
-      std::make_shared<encrypto::motion::Logger>(2, boost::log::trivial::severity_level::trace);
-  communication_layer_alice->SetLogger(log_alice);
-  communication_layer_bob->SetLogger(log_bob);
-  communication_layer_charlie->SetLogger(log_charlie);
-
-  communication_layer_bob->RegisterFallbackMessageHandler([](auto party_id) {
-    return std::make_shared<encrypto::motion::communication::QueueHandler>();
-  });
-  communication_layer_charlie->RegisterFallbackMessageHandler([](auto party_id) {
-    return std::make_shared<encrypto::motion::communication::QueueHandler>();
-  });
-  auto& queue_handler_bob = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
-      communication_layer_bob->GetFallbackMessageHandler(0));
-  auto& queue_handler_charlie = dynamic_cast<encrypto::motion::communication::QueueHandler&>(
-      communication_layer_charlie->GetFallbackMessageHandler(0));
-
   std::for_each(std::begin(communication_layers), std::end(communication_layers),
                 [](auto& cl) { cl->Start(); });
 
   const std::vector<std::uint8_t> message = {0xde, 0xad, 0xbe, 0xef};
 
+  auto message_future_b1{communication_layer_bob->GetMessageManager().RegisterReceive(
+      0, comm::MessageType::kOutputMessage, 0)};
+
+  auto message_future_b2{communication_layer_bob->GetMessageManager().RegisterReceive(
+      0, comm::MessageType::kOutputMessage, 1)};
+  auto message_future_c2{communication_layer_charlie->GetMessageManager().RegisterReceive(
+      0, comm::MessageType::kOutputMessage, 1)};
   {
-    communication_layer_alice->SendMessage(1, message);
-    auto ReceivedMessage = queue_handler_bob.GetQueue().dequeue();
-    EXPECT_EQ(ReceivedMessage, message);
+    communication_layer_alice->SendMessage(
+        1, comm::BuildMessage(comm::MessageType::kOutputMessage, 0, message).Release());
+    auto received_message = message_future_b1.get();
+    auto lhs = comm::GetMessage(received_message.data())->payload();
+    for (std::size_t i = 0; i < message.size(); ++i) EXPECT_EQ(lhs->Get(i), message[i]);
   }
 
   {
@@ -141,11 +136,14 @@ TEST_P(CommunicationLayerTest, Tcp) {
   }
 
   {
-    communication_layer_alice->BroadcastMessage(message);
-    auto received_message_bob = queue_handler_bob.GetQueue().dequeue();
-    EXPECT_EQ(received_message_bob, message);
-    auto received_message_charlie = queue_handler_charlie.GetQueue().dequeue();
-    EXPECT_EQ(received_message_charlie, message);
+    communication_layer_alice->BroadcastMessage(
+        comm::BuildMessage(comm::MessageType::kOutputMessage, 1, message).Release());
+    auto received_message_1 = message_future_b2.get();
+    auto lhs_1 = comm::GetMessage(received_message_1.data())->payload();
+    for (std::size_t i = 0; i < message.size(); ++i) EXPECT_EQ(lhs_1->Get(i), message[i]);
+    auto received_message_2 = message_future_c2.get();
+    auto lhs_2 = comm::GetMessage(received_message_2.data())->payload();
+    for (std::size_t i = 0; i < message.size(); ++i) EXPECT_EQ(lhs_2->Get(i), message[i]);
   }
 
   // shutdown all commmunication layers
@@ -158,3 +156,4 @@ TEST_P(CommunicationLayerTest, Tcp) {
 
 INSTANTIATE_TEST_SUITE_P(CommunicationLayerTcpTests, CommunicationLayerTest, testing::Bool(),
                          [](auto& info) { return info.param ? "ipv6" : "ipv4"; });
+}  // namespace

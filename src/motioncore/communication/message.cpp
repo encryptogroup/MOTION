@@ -29,20 +29,47 @@
 
 namespace encrypto::motion::communication {
 
-flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
-                                            const std::vector<uint8_t>* payload) {
-  auto allocation_size = payload ? payload->size() + 20 : 1024;
-  flatbuffers::FlatBufferBuilder builder(allocation_size);
-  auto root = CreateMessageDirect(builder, message_type, payload);
-  FinishMessageBuffer(builder, root);
-  return builder;
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type) {
+  auto allocation_size = 32;
+  flatbuffers::FlatBufferBuilder fbb(allocation_size);
+  MessageBuilder message_builder(fbb);
+  message_builder.add_message_type(message_type);
+  auto root = message_builder.Finish();
+  FinishMessageBuffer(fbb, root);
+  return fbb;
 }
 
-flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, const uint8_t* payload,
-                                            std::size_t size) {
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type, std::size_t message_id,
+                                            std::span<const uint8_t> payload) {
+  auto allocation_size = payload.size() + 20;
+  flatbuffers::FlatBufferBuilder fbb(allocation_size);
+  auto payload_vector = fbb.CreateVector<uint8_t>(payload.data(), payload.size());
+  MessageBuilder message_builder(fbb);
+  message_builder.add_message_id(message_id);
+  message_builder.add_payload(payload_vector);
+  message_builder.add_message_type(message_type);
+  auto root = message_builder.Finish();
+  FinishMessageBuffer(fbb, root);
+  return fbb;
+}
+
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
+                                            std::span<const uint8_t> payload) {
+  auto allocation_size = payload.size() + 20;
+  flatbuffers::FlatBufferBuilder fbb(allocation_size);
+  auto payload_vector = fbb.CreateVector<uint8_t>(payload.data(), payload.size());
+  MessageBuilder message_builder(fbb);
+  message_builder.add_payload(payload_vector);
+  message_builder.add_message_type(message_type);
+  auto root = message_builder.Finish();
+  FinishMessageBuffer(fbb, root);
+  return fbb;
+}
+
+flatbuffers::FlatBufferBuilder BuildMessage(MessageType message_type,
+                                            const std::vector<uint8_t>* payload) {
   assert(payload);
-  std::vector<std::uint8_t> buffer(payload, payload + size);
-  return BuildMessage(message_type, &buffer);
+  return BuildMessage(message_type, std::span(*payload));
 }
 
 using namespace std::string_literals;

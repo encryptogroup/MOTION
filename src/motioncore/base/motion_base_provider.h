@@ -55,14 +55,14 @@ class BaseProvider {
 
   const std::vector<std::uint8_t>& GetAesFixedKey() const { return aes_fixed_key_; }
   primitives::SharingRandomnessGenerator& GetMyRandomnessGenerator(std::size_t party_id) {
-    return *my_randomness_generators_.at(party_id);
+    return *my_randomness_generators_[party_id];
   }
   primitives::SharingRandomnessGenerator& GetTheirRandomnessGenerator(std::size_t party_id) {
-    return *their_randomness_generators_.at(party_id);
+    return *their_randomness_generators_[party_id];
   }
-
-  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> RegisterForOutputMessages(
-      std::size_t gate_id);
+  primitives::SharingRandomnessGenerator& GetGlobalRandomnessGenerator() {
+    return *global_randomness_generator_;
+  }
 
  private:
   communication::CommunicationLayer& communication_layer_;
@@ -72,12 +72,13 @@ class BaseProvider {
   std::vector<std::uint8_t> aes_fixed_key_;
   std::vector<std::unique_ptr<primitives::SharingRandomnessGenerator>> my_randomness_generators_;
   std::vector<std::unique_ptr<primitives::SharingRandomnessGenerator>> their_randomness_generators_;
-  std::shared_ptr<HelloMessageHandler> hello_message_handler_;
-  std::vector<std::shared_ptr<OutputMessageHandler>> output_message_handlers_;
+  std::unique_ptr<primitives::SharingRandomnessGenerator> global_randomness_generator_;
 
   std::atomic_flag execute_setup_flag_ = ATOMIC_FLAG_INIT;
   bool setup_ready_;
   std::unique_ptr<FiberCondition> setup_ready_cond_;
+
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> hello_message_futures_;
 };
 
 }  // namespace encrypto::motion

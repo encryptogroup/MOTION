@@ -41,24 +41,19 @@ struct Data;
 
 class Provider {
  public:
+  using future_type = ReusableFiberFuture<std::vector<std::uint8_t>>;
   Provider(communication::CommunicationLayer& communication_layer);
   ~Provider();
   const Block128& GetGlobalOffset() const { return global_offset_; }
-  ReusableFiberFuture<BitVector<>> RegisterForInputPublicValues(std::size_t input_owner,
-                                                                std::size_t gate_id,
-                                                                std::size_t bitlength);
-  std::vector<ReusableFiberFuture<BitVector<>>> RegisterForInputPublicValues(std::size_t gate_id,
-                                                                             std::size_t bitlength);
-  std::vector<ReusableFiberFuture<Block128Vector>> RegisterForInputKeys(std::size_t gate_id,
-                                                                        std::size_t number_blocks);
-  std::vector<ReusableFiberFuture<Block128Vector>> RegisterForGarbledRows(
-      std::size_t gate_id, std::size_t number_blocks);
+  future_type RegisterForInputPublicValues(std::size_t input_owner, std::size_t gate_id);
+  std::vector<future_type> RegisterForInputPublicValues(std::size_t gate_id);
+  std::vector<future_type> RegisterForInputKeys(std::size_t gate_id);
+  std::vector<future_type> RegisterForGarbledRows(std::size_t gate_id);
 
  private:
   communication::CommunicationLayer& communication_layer_;
   std::size_t my_id_;
   std::size_t number_of_parties_;
-  std::vector<std::unique_ptr<Data>> data_;
   Block128 global_offset_;
 };
 

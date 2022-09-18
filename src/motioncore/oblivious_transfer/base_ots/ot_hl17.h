@@ -29,6 +29,7 @@
 
 #include <functional>
 #include <memory>
+#include <span>
 
 #include "primitives/curve25519/mycurve25519.h"
 
@@ -108,17 +109,17 @@ class OtHL17 final : public RandomOt {
   /**
    * Parts of the sender side.
    */
-  void Send0(SenderState& state, std::array<std::byte, kCurve25519GeByteSize>& message_output);
+  void Send0(SenderState& state, std::span<std::uint8_t> message_output);
   void Send1(SenderState& state);
   std::pair<std::vector<std::byte>, std::vector<std::byte>> Send2(
-      SenderState& state, const std::array<std::byte, kCurve25519GeByteSize>& message_input);
+      SenderState& state, std::span<const std::uint8_t> message_input);
 
   /**
    * Parts of the receiver side.
    */
   void Receive0(ReceiverState& state, bool choice);
-  void Receive1(ReceiverState& state, std::array<std::byte, kCurve25519GeByteSize>& message_output,
-                const std::array<std::byte, kCurve25519GeByteSize>& message_input);
+  void Receive1(ReceiverState& state, std::span<std::uint8_t> message_output,
+                std::span<const std::uint8_t> message_input);
   std::vector<std::byte> Receive2(ReceiverState& state);
 };
 

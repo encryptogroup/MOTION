@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <optional>
 #include <stdexcept>
+#include <span>
 #include <vector>
 
 namespace encrypto::motion::communication {
@@ -48,8 +49,7 @@ class Transport {
   virtual ~Transport() = default;
 
   // send a message
-  virtual void SendMessage(std::vector<std::uint8_t>&& message) = 0;
-  virtual void SendMessage(const std::vector<std::uint8_t>& message) = 0;
+  virtual void SendMessage(std::span<const std::uint8_t> message) = 0;
 
   // check if a new message is available
   virtual bool Available() const = 0;

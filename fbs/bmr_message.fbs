@@ -1,8 +1,0 @@
-namespace encrypto.motion.communication;
-
-table BmrMessage {
-  gate_id:uint64;       // gate id
-  payload:[ubyte];      // store payload for each wire separately
-}
-
-root_type BmrMessage;

@@ -26,6 +26,7 @@
 
 #include "base/party.h"
 #include "multiplication_triple/sp_provider.h"
+#include "oblivious_transfer/base_ots/base_ot_provider.h"
 
 namespace {
 
@@ -51,6 +52,8 @@ void TemplateTest() {
             auto& backend = party->GetBackend();
             auto& sp_provider = backend->GetSpProvider();
             sp_provider->PreSetup();
+            backend->GetBaseOtProvider()->PreSetup();
+            backend->Synchronize();
             backend->OtExtensionSetup();
             sp_provider->Setup();
             party->Finish();

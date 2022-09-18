@@ -77,10 +77,10 @@ class InputGate final : public motion::InputGate {
  protected:
   std::size_t number_of_simd_{0};  ///< Number of parallel values on wires
   std::size_t bit_size_{0};        ///< Number of wires
-  motion::ReusableFiberFuture<motion::BitVector<>> received_public_values_;
-  std::vector<motion::ReusableFiberFuture<motion::Block128Vector>> received_public_keys_;
-  motion::ReusableFiberFuture<std::vector<motion::BitVector<>>> input_future_;
-  motion::ReusableFiberPromise<std::vector<motion::BitVector<>>> input_promise_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> received_public_values_;
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> received_public_keys_;
+  ReusableFiberFuture<std::vector<BitVector<>>> input_future_;
+  ReusableFiberPromise<std::vector<BitVector<>>> input_promise_;
 };
 
 constexpr std::size_t kAll = std::numeric_limits<std::int64_t>::max();
@@ -177,7 +177,7 @@ class AndGate final : public TwoGate {
   std::vector<std::vector<std::unique_ptr<motion::XcOtBitReceiver>>> receiver_ots_1_;
   std::vector<std::vector<std::unique_ptr<motion::FixedXcOt128Receiver>>> receiver_ots_kappa_;
 
-  std::vector<motion::ReusableFiberFuture<motion::Block128Vector>> received_garbled_rows_;
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> received_garbled_rows_;
 
   // buffer to store all garbled tables for all wires
   // structure: wires X (simd X (row_00 || row_01 || row_10 || row_11))

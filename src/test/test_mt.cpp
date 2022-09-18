@@ -28,6 +28,8 @@
 
 #include "base/party.h"
 #include "multiplication_triple/mt_provider.h"
+#include "oblivious_transfer/base_ots/base_ot_provider.h"
+
 namespace {
 
 constexpr auto kNumberOfPartiesList = {2u, 3u};
@@ -52,6 +54,8 @@ TEST(MultiplicationTriples, Binary) {
             auto& backend = party->GetBackend();
             auto& mt_provider = backend->GetMtProvider();
             mt_provider->PreSetup();
+            backend->GetBaseOtProvider()->PreSetup();
+            backend->Synchronize();
             backend->OtExtensionSetup();
             mt_provider->Setup();
             party->Finish();
@@ -107,6 +111,8 @@ void TemplateTestInteger() {
             auto& backend = party->GetBackend();
             auto& mt_provider = backend->GetMtProvider();
             mt_provider->PreSetup();
+            backend->GetBaseOtProvider()->PreSetup();
+            backend->Synchronize();
             backend->OtExtensionSetup();
             mt_provider->Setup();
             party->Finish();

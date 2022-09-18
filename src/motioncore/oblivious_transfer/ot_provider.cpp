@@ -28,9 +28,8 @@
 
 #include "base/motion_base_provider.h"
 #include "communication/communication_layer.h"
-#include "communication/fbs_headers/ot_extension_generated.h"
-#include "communication/message_handler.h"
-#include "communication/ot_extension_message.h"
+#include "communication/message.h"
+#include "communication/message_manager.h"
 #include "data_storage/base_ot_data.h"
 #include "data_storage/ot_extension_data.h"
 #include "primitives/pseudo_random_generator.h"
@@ -41,42 +40,43 @@
 
 namespace encrypto::motion {
 
-OtProvider::OtProvider(std::function<void(flatbuffers::FlatBufferBuilder&&)> send_function,
-                       OtExtensionData& data, std::size_t party_id, std::shared_ptr<Logger> logger)
-    : send_function_(send_function),
-      data_(data),
-      receiver_provider_(data_.GetReceiverData(), party_id, logger),
-      sender_provider_(data_.GetSenderData(), party_id, logger) {}
+OtProvider::OtProvider(OtExtensionData& data, std::size_t party_id)
+    : data_(data), receiver_provider_(data_, party_id), sender_provider_(data_, party_id) {
+  for (std::size_t i = 0; i < data_.sender_data.u_futures.size(); ++i) {
+    data_.sender_data.u_futures[i] = data_.message_manager.RegisterReceive(
+        party_id, communication::MessageType::kOtExtensionReceiverMasks, i);
+  }
+}
 
 void OtProvider::WaitSetup() const {
-  data_.GetReceiverData().setup_finished_condition->Wait();
-  data_.GetSenderData().setup_finished_condition->Wait();
+  data_.receiver_data.setup_finished_condition->Wait();
+  data_.sender_data.setup_finished_condition->Wait();
 }
 
 [[nodiscard]] std::unique_ptr<ROtSender> OtProvider::RegisterSendROt(std::size_t number_of_ots,
                                                                      std::size_t bitlength) {
-  return sender_provider_.RegisterROt(number_of_ots, bitlength, send_function_);
+  return sender_provider_.RegisterROt(number_of_ots, bitlength);
 }
 
 [[nodiscard]] std::unique_ptr<XcOtSender> OtProvider::RegisterSendXcOt(std::size_t number_of_ots,
                                                                        std::size_t bitlength) {
-  return sender_provider_.RegisterXcOt(number_of_ots, bitlength, send_function_);
+  return sender_provider_.RegisterXcOt(number_of_ots, bitlength);
 }
 
 [[nodiscard]] std::unique_ptr<FixedXcOt128Sender> OtProvider::RegisterSendFixedXcOt128(
     std::size_t number_of_ots) {
-  return sender_provider_.RegisterFixedXcOt128s(number_of_ots, send_function_);
+  return sender_provider_.RegisterFixedXcOt128s(number_of_ots);
 }
 
 [[nodiscard]] std::unique_ptr<XcOtBitSender> OtProvider::RegisterSendXcOtBit(
     std::size_t number_of_ots) {
-  return sender_provider_.RegisterXcOtBits(number_of_ots, send_function_);
+  return sender_provider_.RegisterXcOtBits(number_of_ots);
 }
 
 template <typename T>
 [[nodiscard]] std::unique_ptr<AcOtSender<T>> OtProvider::RegisterSendAcOt(std::size_t number_of_ots,
                                                                           std::size_t vector_size) {
-  return sender_provider_.RegisterAcOt<T>(number_of_ots, vector_size, send_function_);
+  return sender_provider_.RegisterAcOt<T>(number_of_ots, vector_size);
 }
 
 template std::unique_ptr<AcOtSender<std::uint8_t>> OtProvider::RegisterSendAcOt(
@@ -92,43 +92,43 @@ template std::unique_ptr<AcOtSender<__uint128_t>> OtProvider::RegisterSendAcOt(
 
 [[nodiscard]] std::unique_ptr<GOtSender> OtProvider::RegisterSendGOt(std::size_t number_of_ots,
                                                                      std::size_t bitlength) {
-  return sender_provider_.RegisterGOt(number_of_ots, bitlength, send_function_);
+  return sender_provider_.RegisterGOt(number_of_ots, bitlength);
 }
 
 [[nodiscard]] std::unique_ptr<GOt128Sender> OtProvider::RegisterSendGOt128(
     std::size_t number_of_ots) {
-  return sender_provider_.RegisterGOt128(number_of_ots, send_function_);
+  return sender_provider_.RegisterGOt128(number_of_ots);
 }
 
 [[nodiscard]] std::unique_ptr<GOtBitSender> OtProvider::RegisterSendGOtBit(
     std::size_t number_of_ots) {
-  return sender_provider_.RegisterGOtBit(number_of_ots, send_function_);
+  return sender_provider_.RegisterGOtBit(number_of_ots);
 }
 
 [[nodiscard]] std::unique_ptr<ROtReceiver> OtProvider::RegisterReceiveROt(std::size_t number_of_ots,
                                                                           std::size_t bitlength) {
-  return receiver_provider_.RegisterROt(number_of_ots, bitlength, send_function_);
+  return receiver_provider_.RegisterROt(number_of_ots, bitlength);
 }
 
 [[nodiscard]] std::unique_ptr<XcOtReceiver> OtProvider::RegisterReceiveXcOt(
     std::size_t number_of_ots, std::size_t bitlength) {
-  return receiver_provider_.RegisterXcOt(number_of_ots, bitlength, send_function_);
+  return receiver_provider_.RegisterXcOt(number_of_ots, bitlength);
 }
 
 [[nodiscard]] std::unique_ptr<FixedXcOt128Receiver> OtProvider::RegisterReceiveFixedXcOt128(
     std::size_t number_of_ots) {
-  return receiver_provider_.RegisterFixedXcOt128s(number_of_ots, send_function_);
+  return receiver_provider_.RegisterFixedXcOt128s(number_of_ots);
 }
 
 [[nodiscard]] std::unique_ptr<XcOtBitReceiver> OtProvider::RegisterReceiveXcOtBit(
     std::size_t number_of_ots) {
-  return receiver_provider_.RegisterXcOtBits(number_of_ots, send_function_);
+  return receiver_provider_.RegisterXcOtBits(number_of_ots);
 }
 
 template <typename T>
 [[nodiscard]] std::unique_ptr<AcOtReceiver<T>> OtProvider::RegisterReceiveAcOt(
     std::size_t number_of_ots, std::size_t vector_size) {
-  return receiver_provider_.RegisterAcOt<T>(number_of_ots, vector_size, send_function_);
+  return receiver_provider_.RegisterAcOt<T>(number_of_ots, vector_size);
 }
 
 template std::unique_ptr<AcOtReceiver<std::uint8_t>> OtProvider::RegisterReceiveAcOt(
@@ -144,24 +144,24 @@ template std::unique_ptr<AcOtReceiver<__uint128_t>> OtProvider::RegisterReceiveA
 
 [[nodiscard]] std::unique_ptr<GOt128Receiver> OtProvider::RegisterReceiveGOt128(
     std::size_t number_of_ots) {
-  return receiver_provider_.RegisterGOt128(number_of_ots, send_function_);
+  return receiver_provider_.RegisterGOt128(number_of_ots);
 }
 
 [[nodiscard]] std::unique_ptr<GOtBitReceiver> OtProvider::RegisterReceiveGOtBit(
     std::size_t number_of_ots) {
-  return receiver_provider_.RegisterGOtBit(number_of_ots, send_function_);
+  return receiver_provider_.RegisterGOtBit(number_of_ots);
 }
 
 [[nodiscard]] std::unique_ptr<GOtReceiver> OtProvider::RegisterReceiveGOt(std::size_t number_of_ots,
                                                                           std::size_t bitlength) {
-  return receiver_provider_.RegisterGOt(number_of_ots, bitlength, send_function_);
+  return receiver_provider_.RegisterGOt(number_of_ots, bitlength);
 }
 
-OtProviderFromOtExtension::OtProviderFromOtExtension(
-    std::function<void(flatbuffers::FlatBufferBuilder&&)> send_function, OtExtensionData& data,
-    const BaseOtData& base_ot_data, BaseProvider& motion_base_provider, std::size_t party_id,
-    std::shared_ptr<Logger> logger)
-    : OtProvider(send_function, data, party_id, logger),
+OtProviderFromOtExtension::OtProviderFromOtExtension(OtExtensionData& data,
+                                                     const BaseOtData& base_ot_data,
+                                                     BaseProvider& motion_base_provider,
+                                                     std::size_t party_id)
+    : OtProvider(data, party_id),
       base_ot_data_(base_ot_data),
       motion_base_provider_(motion_base_provider) {}
 
@@ -171,7 +171,7 @@ void OtProviderFromOtExtension::SendSetup() {
 
   // storage for sender and base OT receiver data
   const auto& base_ots_receiver_data = base_ot_data_.GetReceiverData();
-  auto& ot_extension_sender_data = data_.GetSenderData();
+  auto& ot_extension_sender_data = data_.sender_data;
 
   // number of OTs after extension
   // == width of the bit matrix
@@ -212,18 +212,16 @@ void OtProviderFromOtExtension::SendSetup() {
   // transmitted one by one to prevent waiting for finishing all messages to start sending
   // the vectors can be transmitted in the wrong order
 
-  for (auto it = ot_extension_sender_data.u_futures.begin();
-       it < ot_extension_sender_data.u_futures.end(); ++it) {
-    const std::size_t u_id{it->get()};
-    if (base_ots_receiver_data.c[u_id]) {
-      const auto& u = ot_extension_sender_data.u[u_id];
-      BitSpan bs(v[u_id].GetMutableData().data(), bit_size, true);
-      bs ^= u;
+  for (i = 0; i < ot_extension_sender_data.u_futures.size(); ++i) {
+    auto raw_message{ot_extension_sender_data.u_futures[i].get()};
+    if (base_ots_receiver_data.c[i]) {
+      BitSpan bit_span_u(const_cast<std::uint8_t*>(
+                             communication::GetMessage(raw_message.data())->payload()->data()),
+                         bit_size);
+      BitSpan bit_span_v(v[i].GetMutableData().data(), bit_size, true);
+      bit_span_v ^= bit_span_u;
     }
   }
-
-  // delete the allocated memory
-  ot_extension_sender_data.u = {};
 
   // array with pointers to each row of the matrix
   std::array<const std::byte*, kKappa> pointers;
@@ -243,48 +241,6 @@ void OtProviderFromOtExtension::SendSetup() {
   BitMatrix::SenderTranspose128AndEncrypt(
       pointers, ot_extension_sender_data.y0, ot_extension_sender_data.y1, base_ots_receiver_data.c,
       prg_fixed_key, bit_size_padded, ot_extension_sender_data.bitlengths);
-  /*
-    for (i = 0; i < ot_extension_sender_data.bitlengths.size(); ++i) {
-      // here we want to store the sender's outputs
-      // XXX: why are the y0_, y1_ vectors resized every time new ots are registered?
-      auto &out0 = ot_extension_sender_data.y0[i];
-      auto &out1 = ot_extension_sender_data.y1[i];
-
-      // bit length of the OT
-      const auto bitlength = ot_extension_sender_data.bitlengths[i];
-
-      // in which of the above "rows" can we find the block
-      const auto row_i = i % kKappa;
-      // where in the "row" do we have to look for the block
-      const auto blk_offset = ((kKappa / 8) * (i / kKappa));
-      auto V_row = reinterpret_cast<std::byte *>(
-          __builtin_assume_aligned(pointers.at(row_i) + blk_offset,
-    kAlignment));
-
-      // compute the sender outputs
-      if (bitlength <= kKappa) {
-        // the bit length is smaller than 128 bit
-        out0 = BitVector<>(prg_fixed_key.FixedKeyAes(V_row, i), bitlength);
-
-        auto out1_in = base_ots_receiver_data.c ^ BitSpan(V_row, kKappa, true);
-        out1 = BitVector<>(prg_fixed_key.FixedKeyAes(out1_in.GetData().data(), i), bitlength);
-      } else {
-        // string OT with bit length > 128 bit
-        // -> do seed compression and send later only 128 bit seeds
-        auto seed0 = prg_fixed_key.FixedKeyAes(V_row, i);
-        prgs_variable_key.SetKey(seed0.data());
-        out0 =
-            BitVector<>(prgs_variable_key.Encrypt(BitsToBytes(bitlength)),
-    bitlength);
-
-        auto out1_in = base_ots_receiver_data.c ^ BitSpan(V_row, kKappa, true);
-        auto seed1 = prg_fixed_key.FixedKeyAes(out1_in.GetData().data(), i);
-        prgs_variable_key.SetKey(seed1.data());
-        out1 =
-            BitVector<>(prgs_variable_key.Encrypt(BitsToBytes(bitlength)),
-    bitlength);
-      }
-    }*/
 
   // we are done with the setup for the sender side
   {
@@ -314,7 +270,7 @@ void OtProviderFromOtExtension::ReceiveSetup() {
   }
   // storage for receiver and base OT sender data
   const auto& base_ots_sender_data = base_ot_data_.GetSenderData();
-  auto& ot_extension_receiver_data = data_.GetReceiverData();
+  auto& ot_extension_receiver_data = data_.receiver_data;
 
   // make random choices (this is precomputation, real inputs are not known yet)
   ot_extension_receiver_data.random_choices =
@@ -349,9 +305,12 @@ void OtProviderFromOtExtension::ReceiveSetup() {
     prg_variable_key.SetOffset(base_ots_sender_data.consumed_offset);
     u ^= AlignedBitVector(prg_variable_key.Encrypt(byte_size), bit_size);
 
+    auto buffer_span{
+        std::span(reinterpret_cast<const std::uint8_t*>(u.GetData().data()), u.GetData().size())};
+    auto msg{communication::BuildMessage(communication::MessageType::kOtExtensionReceiverMasks, i,
+                                         buffer_span)};
     // send this row
-    send_function_(communication::BuildOtExtensionMessageReceiverMasks(u.GetData().data(),
-                                                                       u.GetData().size(), i));
+    data_.send_function(std::move(msg));
   }
 
   // transpose matrix T
@@ -372,26 +331,6 @@ void OtProviderFromOtExtension::ReceiveSetup() {
   BitMatrix::ReceiverTranspose128AndEncrypt(pointers, ot_extension_receiver_data.outputs,
                                             prg_fixed_key, bit_size_padded,
                                             ot_extension_receiver_data.bitlengths);
-  /*BitMatrix::TransposeUsingBitSlicing(pointers, bit_size_padded);
-  for (i = 0; i < ot_extension_receiver_data.outputs.size(); ++i) {
-    const auto row_i = i % kKappa;
-    const auto blk_offset = ((kKappa / 8) * (i / kKappa));
-    const auto T_row = pointers.at(row_i) + blk_offset;
-    auto &out = ot_extension_receiver_data.outputs.at(i);
-
-    std::unique_lock lock(ot_extension_receiver_data.bitlengths_mutex);
-    const std::size_t bitlength = ot_extension_receiver_data.bitlengths.at(i);
-    lock.unlock();
-
-    if (bitlength <= kKappa) {
-      out = BitVector<>(prg_fixed_key.FixedKeyAes(T_row, i), bitlength);
-    } else {
-      auto seed = prg_fixed_key.FixedKeyAes(T_row, i);
-      prg_variable_key.SetKey(seed.data());
-      out = BitVector<>(prg_variable_key.Encrypt(BitsToBytes(bitlength)), bitlength);
-    }
-  }*/
-
   {
     std::scoped_lock(ot_extension_receiver_data.setup_finished_condition->GetMutex());
     ot_extension_receiver_data.setup_finished = true;
@@ -400,146 +339,126 @@ void OtProviderFromOtExtension::ReceiveSetup() {
 }
 
 OtVector::OtVector(const std::size_t ot_id, const std::size_t number_of_ots,
-                   const std::size_t bitlength, const OtProtocol p,
-                   const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function)
-    : ot_id_(ot_id),
-      number_of_ots_(number_of_ots),
-      bitlen_(bitlength),
-      p_(p),
-      send_function_(send_function) {}
+                   const std::size_t bitlength, OtExtensionData& data)
+    : ot_id_(ot_id), number_of_ots_(number_of_ots), bitlength_(bitlength), data_(data) {}
 
-std::unique_ptr<ROtSender> OtProviderSender::RegisterROt(
-    const std::size_t number_of_ots, const std::size_t bitlength,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<ROtSender> OtProviderSender::RegisterROt(const std::size_t number_of_ots,
+                                                         const std::size_t bitlength) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<ROtSender>(i, number_of_ots, bitlength, data_, send_function);
+  auto ot = std::make_unique<ROtSender>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XcOt",
-                                    party_id_, number_of_ots, bitlength));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XcOt",
+                                         party_id_, number_of_ots, bitlength));
     }
   }
   return ot;
 }
 
-std::unique_ptr<XcOtSender> OtProviderSender::RegisterXcOt(
-    const std::size_t number_of_ots, const std::size_t bitlength,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<XcOtSender> OtProviderSender::RegisterXcOt(const std::size_t number_of_ots,
+                                                           const std::size_t bitlength) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<XcOtSender>(i, number_of_ots, bitlength, data_, send_function);
+  auto ot = std::make_unique<XcOtSender>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XcOt",
-                                    party_id_, number_of_ots, bitlength));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XcOt",
+                                         party_id_, number_of_ots, bitlength));
     }
   }
   return ot;
 }
 
 std::unique_ptr<FixedXcOt128Sender> OtProviderSender::RegisterFixedXcOt128s(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+    const std::size_t number_of_ots) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<FixedXcOt128Sender>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<FixedXcOt128Sender>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender FixedXCOT128s",
-                                    party_id_, number_of_ots, 128));
+    if (data_.logger) {
+      data_.logger->LogDebug(
+          fmt::format("Party#{}: registered {} parallel {}-bit sender FixedXCOT128s", party_id_,
+                      number_of_ots, 128));
     }
   }
   return ot;
 }
 
-std::unique_ptr<XcOtBitSender> OtProviderSender::RegisterXcOtBits(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<XcOtBitSender> OtProviderSender::RegisterXcOtBits(const std::size_t number_of_ots) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<XcOtBitSender>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<XcOtBitSender>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XCOTBits",
-                                    party_id_, number_of_ots, 1));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender XCOTBits",
+                                         party_id_, number_of_ots, 1));
     }
   }
   return ot;
 }
 
 template <typename T>
-std::unique_ptr<AcOtSender<T>> OtProviderSender::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<AcOtSender<T>> OtProviderSender::RegisterAcOt(std::size_t number_of_ots,
+                                                              std::size_t vector_size) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<AcOtSender<T>>(i, number_of_ots, vector_size, data_, send_function);
+  auto ot = std::make_unique<AcOtSender<T>>(i, number_of_ots, vector_size, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender ACOTs",
-                                    party_id_, number_of_ots, 8 * sizeof(T)));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender ACOTs",
+                                         party_id_, number_of_ots, 8 * sizeof(T)));
     }
   }
   return ot;
 }
 
 template std::unique_ptr<AcOtSender<std::uint8_t>> OtProviderSender::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtSender<std::uint16_t>> OtProviderSender::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtSender<std::uint32_t>> OtProviderSender::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtSender<std::uint64_t>> OtProviderSender::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtSender<__uint128_t>> OtProviderSender::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 
-std::unique_ptr<GOtSender> OtProviderSender::RegisterGOt(
-    const std::size_t number_of_ots, const std::size_t bitlength,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<GOtSender> OtProviderSender::RegisterGOt(const std::size_t number_of_ots,
+                                                         const std::size_t bitlength) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<GOtSender>(i, number_of_ots, bitlength, data_, send_function);
+  auto ot = std::make_unique<GOtSender>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOTs",
-                                    party_id_, number_of_ots, bitlength));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOTs",
+                                         party_id_, number_of_ots, bitlength));
     }
   }
   return ot;
 }
 
-std::unique_ptr<GOt128Sender> OtProviderSender::RegisterGOt128(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<GOt128Sender> OtProviderSender::RegisterGOt128(const std::size_t number_of_ots) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<GOt128Sender>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<GOt128Sender>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOT128s",
-                                    party_id_, number_of_ots, 128));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOT128s",
+                                         party_id_, number_of_ots, 128));
     }
   }
   return ot;
 }
 
-std::unique_ptr<GOtBitSender> OtProviderSender::RegisterGOtBit(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<GOtBitSender> OtProviderSender::RegisterGOtBit(const std::size_t number_of_ots) {
   const auto i = total_ots_count_;
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<GOtBitSender>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<GOtBitSender>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOTBits",
-                                    party_id_, number_of_ots, 1));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender GOTBits",
+                                         party_id_, number_of_ots, 1));
     }
   }
   return ot;
@@ -552,12 +471,8 @@ void OtProviderSender::Clear() {
   total_ots_count_ = 0;
 
   {
-    std::scoped_lock lock(data_.setup_finished_condition->GetMutex());
-    data_.setup_finished = false;
-  }
-  {
-    std::scoped_lock lock(data_.corrections_mutex);
-    data_.received_correction_offsets.clear();
+    std::scoped_lock lock(data_.sender_data.setup_finished_condition->GetMutex());
+    data_.sender_data.setup_finished = false;
   }
 }
 
@@ -566,45 +481,42 @@ void OtProviderSender::Reset() {
   // TODO
 }
 
-std::unique_ptr<ROtReceiver> OtProviderReceiver::RegisterROt(
-    const std::size_t number_of_ots, const std::size_t bitlength,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<ROtReceiver> OtProviderReceiver::RegisterROt(const std::size_t number_of_ots,
+                                                             const std::size_t bitlength) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<ROtReceiver>(i, number_of_ots, bitlength, data_, send_function);
+  auto ot = std::make_unique<ROtReceiver>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ROts",
-                                    party_id_, number_of_ots, bitlength));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ROts",
+                                         party_id_, number_of_ots, bitlength));
     }
   }
   return ot;
 }
 
-std::unique_ptr<XcOtReceiver> OtProviderReceiver::RegisterXcOt(
-    const std::size_t number_of_ots, const std::size_t bitlength,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<XcOtReceiver> OtProviderReceiver::RegisterXcOt(const std::size_t number_of_ots,
+                                                               const std::size_t bitlength) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<XcOtReceiver>(i, number_of_ots, bitlength, data_, send_function);
+  auto ot = std::make_unique<XcOtReceiver>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver XcOts",
-                                    party_id_, number_of_ots, bitlength));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver XcOts",
+                                         party_id_, number_of_ots, bitlength));
     }
   }
   return ot;
 }
 
 std::unique_ptr<FixedXcOt128Receiver> OtProviderReceiver::RegisterFixedXcOt128s(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+    const std::size_t number_of_ots) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<FixedXcOt128Receiver>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<FixedXcOt128Receiver>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(
+    if (data_.logger) {
+      data_.logger->LogDebug(
           fmt::format("Party#{}: registered {} parallel {}-bit receiver FixedXCOT128s", party_id_,
                       number_of_ots, 128));
     }
@@ -613,92 +525,83 @@ std::unique_ptr<FixedXcOt128Receiver> OtProviderReceiver::RegisterFixedXcOt128s(
 }
 
 std::unique_ptr<XcOtBitReceiver> OtProviderReceiver::RegisterXcOtBits(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+    const std::size_t number_of_ots) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<XcOtBitReceiver>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<XcOtBitReceiver>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver XCOTBits",
-                                    party_id_, number_of_ots, 1));
+    if (data_.logger) {
+      data_.logger->LogDebug(
+          fmt::format("Party#{}: registered {} parallel {}-bit receiver XCOTBits", party_id_,
+                      number_of_ots, 1));
     }
   }
   return ot;
 }
 
 template <typename T>
-std::unique_ptr<AcOtReceiver<T>> OtProviderReceiver::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<AcOtReceiver<T>> OtProviderReceiver::RegisterAcOt(std::size_t number_of_ots,
+                                                                  std::size_t vector_size) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<AcOtReceiver<T>>(i, number_of_ots, vector_size, data_, send_function);
+  auto ot = std::make_unique<AcOtReceiver<T>>(i, number_of_ots, vector_size, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ACOTs",
-                                    party_id_, number_of_ots, 8 * sizeof(T)));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ACOTs",
+                                         party_id_, number_of_ots, 8 * sizeof(T)));
     }
   }
   return ot;
 }
 
 template std::unique_ptr<AcOtReceiver<std::uint8_t>> OtProviderReceiver::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtReceiver<std::uint16_t>> OtProviderReceiver::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtReceiver<std::uint32_t>> OtProviderReceiver::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtReceiver<std::uint64_t>> OtProviderReceiver::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 template std::unique_ptr<AcOtReceiver<__uint128_t>> OtProviderReceiver::RegisterAcOt(
-    std::size_t number_of_ots, std::size_t vector_size,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+    std::size_t number_of_ots, std::size_t vector_size);
 
-std::unique_ptr<GOtReceiver> OtProviderReceiver::RegisterGOt(
-    const std::size_t number_of_ots, const std::size_t bitlength,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+std::unique_ptr<GOtReceiver> OtProviderReceiver::RegisterGOt(const std::size_t number_of_ots,
+                                                             const std::size_t bitlength) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<GOtReceiver>(i, number_of_ots, bitlength, data_, send_function);
+  auto ot = std::make_unique<GOtReceiver>(i, number_of_ots, bitlength, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOTs",
-                                    party_id_, number_of_ots, bitlength));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOTs",
+                                         party_id_, number_of_ots, bitlength));
     }
   }
   return ot;
 }
 
 std::unique_ptr<GOt128Receiver> OtProviderReceiver::RegisterGOt128(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+    const std::size_t number_of_ots) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<GOt128Receiver>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<GOt128Receiver>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOT128s",
-                                    party_id_, number_of_ots, 128));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOT128s",
+                                         party_id_, number_of_ots, 128));
     }
   }
   return ot;
 }
 
 std::unique_ptr<GOtBitReceiver> OtProviderReceiver::RegisterGOtBit(
-    const std::size_t number_of_ots,
-    const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function) {
+    const std::size_t number_of_ots) {
   const auto i = total_ots_count_.load();
   total_ots_count_ += number_of_ots;
-  auto ot = std::make_unique<GOtBitReceiver>(i, number_of_ots, data_, send_function);
+  auto ot = std::make_unique<GOtBitReceiver>(i, number_of_ots, data_);
   if constexpr (kDebug) {
-    if (logger_) {
-      logger_->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOTBits",
-                                    party_id_, number_of_ots, 1));
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver GOTBits",
+                                         party_id_, number_of_ots, 1));
     }
   }
   return ot;
@@ -711,10 +614,12 @@ void OtProviderReceiver::Clear() {
   total_ots_count_ = 0;
 
   {
-    std::scoped_lock lock(data_.setup_finished_condition->GetMutex());
-    data_.setup_finished = false;
+    std::scoped_lock lock(data_.receiver_data.setup_finished_condition->GetMutex());
+    data_.receiver_data.setup_finished = false;
   }
 
+  // XXX
+  /*
   {
     std::scoped_lock lock(data_.real_choices_mutex);
     data_.set_real_choices.clear();
@@ -723,48 +628,18 @@ void OtProviderReceiver::Clear() {
   {
     std::scoped_lock lock(data_.received_outputs_mutex);
     data_.received_outputs.clear();
-  }
+  }*/
 }
 void OtProviderReceiver::Reset() { Clear(); }
-
-class OtExtensionMessageHandler : public communication::MessageHandler {
- public:
-  OtExtensionMessageHandler(OtExtensionData& data) : data_(data) {}
-  void ReceivedMessage(std::size_t, std::vector<std::uint8_t>&& message) override;
-
- private:
-  OtExtensionData& data_;
-};
-
-void OtExtensionMessageHandler::ReceivedMessage(std::size_t,
+/*
+void OtExtensionMessageHandler::ReceivedMessage(std::size_t, std::size_t id,
                                                 std::vector<std::uint8_t>&& raw_message) {
   assert(!raw_message.empty());
   auto message = communication::GetMessage(raw_message.data());
   auto message_type = message->message_type();
-  auto index_i = communication::GetOtExtensionMessage(message->payload()->data())->i();
-  auto ot_data = communication::GetOtExtensionMessage(message->payload()->data())->buffer()->data();
-  auto ot_data_size =
-      communication::GetOtExtensionMessage(message->payload()->data())->buffer()->size();
-  switch (message_type) {
-    case communication::MessageType::kOtExtensionReceiverMasks: {
-      data_.MessageReceived(ot_data, ot_data_size, OtExtensionDataType::kReceptionMask, index_i);
-      break;
-    }
-    case communication::MessageType::kOtExtensionReceiverCorrections: {
-      data_.MessageReceived(ot_data, ot_data_size, OtExtensionDataType::kReceptionCorrection,
-                            index_i);
-      break;
-    }
-    case communication::MessageType::kOtExtensionSender: {
-      data_.MessageReceived(ot_data, ot_data_size, OtExtensionDataType::kSendMessage, index_i);
-      break;
-    }
-    default: {
-      assert(false);
-      break;
-    }
-  }
-}
+  data_.MessageReceived(std::span(message->payload()->data(), message->payload()->size()),
+                        message_type, id);
+}*/
 
 OtProviderManager::OtProviderManager(communication::CommunicationLayer& communication_layer,
                                      const BaseOtProvider& base_ot_provider,
@@ -780,28 +655,17 @@ OtProviderManager::OtProviderManager(communication::CommunicationLayer& communic
       continue;
     }
     auto send_function = [this, party_id](flatbuffers::FlatBufferBuilder&& message_builder) {
-      communication_layer_.SendMessage(party_id, std::move(message_builder));
+      communication_layer_.SendMessage(party_id, message_builder.Release());
     };
-    data_.at(party_id) = std::make_unique<OtExtensionData>();
+    data_.at(party_id) = std::make_unique<OtExtensionData>(
+        party_id, send_function, communication_layer_.GetMessageManager(), logger);
+    data_.at(party_id)->party_id = party_id;
     providers_.at(party_id) = std::make_unique<OtProviderFromOtExtension>(
-        send_function, *data_.at(party_id), base_ot_provider.GetBaseOtsData(party_id),
-        motion_base_provider, party_id, logger);
+        *data_.at(party_id), base_ot_provider.GetBaseOtsData(party_id), motion_base_provider,
+        party_id);
   }
-
-  communication_layer_.RegisterMessageHandler(
-      [this](std::size_t party_id) {
-        return std::make_shared<OtExtensionMessageHandler>(*data_.at(party_id));
-      },
-      {communication::MessageType::kOtExtensionReceiverMasks,
-       communication::MessageType::kOtExtensionReceiverCorrections,
-       communication::MessageType::kOtExtensionSender});
 }
 
-OtProviderManager::~OtProviderManager() {
-  communication_layer_.DeregisterMessageHandler(
-      {communication::MessageType::kOtExtensionReceiverMasks,
-       communication::MessageType::kOtExtensionReceiverCorrections,
-       communication::MessageType::kOtExtensionSender});
-}
+OtProviderManager::~OtProviderManager() {}
 
 }  // namespace encrypto::motion

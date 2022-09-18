@@ -27,6 +27,7 @@
 #include "statistics/run_time_statistics.h"
 #include "utility/fiber_thread_pool/fiber_thread_pool.hpp"
 #include "utility/logger.h"
+#include <iostream>
 
 namespace encrypto::motion {
 
@@ -52,6 +53,11 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
 
   // ------------------------------ setup phase ------------------------------
   statistics.RecordStart<RunTimeStatistics::StatisticsId::kGatesSetup>();
+  // Evaluate all setup phase custom jobs
+  while(custom_setup_.size() > 0u) {
+      fiber_pool.post(custom_setup_.front());
+      custom_setup_.pop();
+  }
 
   // Evaluate the setup phase of all the gates
   for (auto& gate : register_.GetGates()) {
@@ -76,6 +82,11 @@ void GateExecutor::EvaluateSetupOnline(RunTimeStatistics& statistics) {
   // ------------------------------ online phase ------------------------------
   statistics.RecordStart<RunTimeStatistics::StatisticsId::kGatesOnline>();
 
+  // Evaluate all online phase custom jobs
+  while(custom_online_.size() > 0u) {
+      fiber_pool.post(custom_online_.front());
+      custom_online_.pop();
+  }
   // Evaluate the online phase of all the gates
   for (auto& gate : register_.GetGates()) {
     if (gate->NeedsOnline()) {
@@ -120,6 +131,16 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
   // create a pool with std::thread::hardware_concurrency() no. of threads
   // to execute fibers
   FiberThreadPool fiber_pool(0, register_.GetTotalNumberOfGates());
+  
+  // Evaluate all custom jobs
+  while(custom_setup_.size() > 0u) {
+      fiber_pool.post(custom_setup_.front());
+      custom_setup_.pop();
+  }
+  while(custom_online_.size() > 0u) {
+      fiber_pool.post(custom_online_.front());
+      custom_online_.pop();
+  }
 
   // Evaluate all the gates
   for (auto& gate : register_.GetGates()) {
@@ -133,7 +154,7 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
 
         // XXX: maybe insert a 'yield' here?
         gate->EvaluateOnline();
-        gate->SetOnlineIsReady();
+       gate->SetOnlineIsReady();
         if (gate->NeedsOnline()) {
           register_.IncrementEvaluatedGatesOnlineCounter();
         }
@@ -158,6 +179,14 @@ void GateExecutor::Evaluate(RunTimeStatistics& statistics) {
   register_.ClearActiveQueue();
 
   statistics.RecordEnd<RunTimeStatistics::StatisticsId::kEvaluate>();
+}
+
+void GateExecutor::AddCustomSetupJob(std::function<void()> job) {
+    custom_setup_.push(std::move(job));
+}
+
+void GateExecutor::AddCustomOnlineJob(std::function<void()> job) {
+    custom_online_.push(std::move(job));
 }
 
 }  // namespace encrypto::motion

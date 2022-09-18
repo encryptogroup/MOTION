@@ -24,37 +24,27 @@
 
 #pragma once
 
-#include <flatbuffers/flatbuffers.h>
-#include <fmt/format.h>
-#include <random>
-
-#include "condition.h"
-#include "primitives/random/default_rng.h"
-#include "typedefs.h"
+#include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <span>
+#include <string>
+#include <vector>
 
 namespace encrypto::motion {
 
 /// \brief Returns a vector of \p length random unsigned integral values.
 /// \tparam UnsignedIntegralType
 /// \param length
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
-std::vector<UnsignedIntegralType> RandomVector(std::size_t length) {
-  const auto byte_size = sizeof(UnsignedIntegralType) * length;
-  std::vector<UnsignedIntegralType> vec(length);
-
-  auto& rng = DefaultRng::GetThreadInstance();
-  rng.RandomBytes(reinterpret_cast<std::byte*>(vec.data()), byte_size);
-
-  return vec;
-}
+template <typename UnsignedIntegralType>
+std::vector<UnsignedIntegralType> RandomVector(std::size_t length);
 
 /// \brief Converts a vector of unsigned integral values to a vector of uint8_t
 /// \tparam UnsignedIntegralType
 /// \param values
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
-inline std::vector<std::uint8_t> ToByteVector(const std::vector<UnsignedIntegralType>& values) {
+inline std::vector<std::uint8_t> ToByteVector(std::span<const UnsignedIntegralType> values) {
   std::vector<std::uint8_t> result(reinterpret_cast<const std::uint8_t*>(values.data()),
                                    reinterpret_cast<const std::uint8_t*>(values.data()) +
                                        sizeof(UnsignedIntegralType) * values.size());
@@ -66,22 +56,7 @@ inline std::vector<std::uint8_t> ToByteVector(const std::vector<UnsignedIntegral
 /// \param buffer
 template <typename UnsignedIntegralType,
           typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
-inline std::vector<UnsignedIntegralType> FromByteVector(const std::vector<std::uint8_t>& buffer) {
-  assert(buffer.size() % sizeof(UnsignedIntegralType) ==
-         0);  // buffer length is multiple of the element size
-  std::vector<UnsignedIntegralType> result(buffer.size() / sizeof(UnsignedIntegralType));
-  std::copy(buffer.data(), buffer.data() + buffer.size(),
-            reinterpret_cast<std::uint8_t*>(result.data()));
-  return result;
-}
-
-/// \brief Converts a flatbuffer vector of uint8_t to a vector of unsigned integral values
-/// \tparam UnsignedIntegralType
-/// \param buffer
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType>>>
-inline std::vector<UnsignedIntegralType> FromByteVector(
-    const flatbuffers::Vector<std::uint8_t>& buffer) {
+inline std::vector<UnsignedIntegralType> FromByteVector(std::span<const std::uint8_t> buffer) {
   assert(buffer.size() % sizeof(UnsignedIntegralType) ==
          0);  // buffer length is multiple of the element size
   std::vector<UnsignedIntegralType> result(buffer.size() / sizeof(UnsignedIntegralType));
@@ -105,7 +80,7 @@ inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& 
   std::vector<T> result = a;
 #pragma omp simd
   for (auto j = 0ull; j < result.size(); ++j) {
-    result.at(j) += b.at(j);  // TODO: implement using AVX2 and AVX512
+    result[j] += b[j];  // TODO: implement using AVX2 and AVX512
   }
   return result;
 }
@@ -122,9 +97,9 @@ inline std::vector<T> SubVectors(const std::vector<T>& a, const std::vector<T>& 
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
-  std::vector<T> result = a;
+  std::vector<T> result(a.begin(), a.end());
   for (auto j = 0ull; j < result.size(); ++j) {
-    result.at(j) -= b.at(j);  // TODO: implement using AVX2 and AVX512
+    result[j] -= b[j];  // TODO: implement using AVX2 and AVX512
   }
   return result;
 }
@@ -141,10 +116,10 @@ inline std::vector<T> MultiplyVectors(std::vector<T> a, std::vector<T> b) {
   if (a.size() == 0) {
     return {};
   }  // if empty input vector
-  std::vector<T> result = a;
+  std::vector<T> result(a.begin(), a.end());
 
   for (auto j = 0ull; j < result.size(); ++j) {
-    result.at(j) *= b.at(j);  // TODO: implement using AVX2 and AVX512
+    result[j] *= b[j];  // TODO: implement using AVX2 and AVX512
   }
   return result;
 }
@@ -161,13 +136,13 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>>& vectors) {
     return {};
   }  // if empty input vector
 
-  std::vector<T> result = vectors.at(0);
+  std::vector<T> result = vectors[0];
 
   for (auto i = 1ull; i < vectors.size(); ++i) {
-    auto& inner_vector = vectors.at(i);
+    auto& inner_vector = vectors[i];
     assert(inner_vector.size() == result.size());  // expect the vectors to be of the same size
     for (auto j = 0ull; j < result.size(); ++j) {
-      result.at(j) += inner_vector.at(j);  // TODO: implement using AVX2 and AVX512
+      result[j] += inner_vector[j];  // TODO: implement using AVX2 and AVX512
     }
   }
   return result;
@@ -181,7 +156,7 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>>& vectors) {
 /// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
 inline std::vector<T> AddVectors(std::vector<std::vector<T>>&& vectors) {
-  return AddVectors(vectors);
+  return AddVectors<T>(vectors);
 }
 
 // XXX two distinct vectors do not overlop, so I don't see the use for the restrict functions.
@@ -194,7 +169,7 @@ inline std::vector<T> AddVectors(std::vector<std::vector<T>>&& vectors) {
 /// \return A vector containing at position i the sum the ith element in a and b.
 /// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> RestrictAddVectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline std::vector<T> RestrictAddVectors(std::span<const T> a, std::span<const T> b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -216,7 +191,7 @@ inline std::vector<T> RestrictAddVectors(const std::vector<T>& a, const std::vec
 /// \return A vector containing at position i the difference the ith element in a and b.
 /// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> RestrictSubVectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline std::vector<T> RestrictSubVectors(std::span<const T> a, std::span<const T> b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -238,7 +213,7 @@ inline std::vector<T> RestrictSubVectors(const std::vector<T>& a, const std::vec
 /// \return A vector containing at position i the product the ith element in a and b.
 /// \pre \p a and \p b must be of equal size.
 template <typename T>
-inline std::vector<T> RestrictMulVectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline std::vector<T> RestrictMulVectors(std::span<const T> a, std::span<const T> b) {
   assert(a.size() == b.size());
   if (a.size() == 0) {
     return {};
@@ -256,16 +231,16 @@ inline std::vector<T> RestrictMulVectors(const std::vector<T>& a, const std::vec
 /// \tparam T type of the elements in the vectors. T must provide the += operator.
 /// \param values
 template <typename T>
-inline T SumReduction(const std::vector<T>& values) {
+inline T SumReduction(std::span<const T> values) {
   if (values.size() == 0) {
     return 0;
   } else if (values.size() == 1) {
-    return values.at(0);
+    return values[0];
   } else {
     T sum = 0;
 #pragma omp parallel for reduction(+ : sum) default(none) shared(values)
     for (auto i = 0ull; i < values.size(); ++i) {
-      sum += values.at(i);
+      sum += values[i];
     }
     return sum;
   }
@@ -275,13 +250,13 @@ inline T SumReduction(const std::vector<T>& values) {
 /// \tparam T type of the elements in the vectors. T must provide the -= operator.
 /// \param values
 template <typename T>
-inline T SubReduction(const std::vector<T>& values) {
+inline T SubReduction(std::span<const T> values) {
   if (values.size() == 0) {
     return 0;
   } else {
-    T result = values.at(0);
+    T result = values[0];
     for (auto i = 1ull; i < values.size(); ++i) {
-      result -= values.at(i);
+      result -= values[i];
     }
     return result;
   }
@@ -291,13 +266,13 @@ inline T SubReduction(const std::vector<T>& values) {
 /// \tparam T type of the elements in the vectors. T must provide the *= operator.
 /// \param values
 template <typename T>
-inline T MulReduction(const std::vector<T>& values) {
+inline T MulReduction(std::span<const T> values) {
   if (values.size() == 0) {
     return 0;
   } else {
-    T product = values.at(0);
+    T product = values[0];
     for (auto i = 1ull; i < values.size(); ++i) {
-      product *= values.at(i);
+      product *= values[i];
     }
     return product;
   }
@@ -314,18 +289,18 @@ inline T MulReduction(const std::vector<T>& values) {
 ///         +----------+--------------------------------------------------+
 /// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
-inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>>& values) {
+inline std::vector<T> RowSumReduction(std::span<const std::vector<T>> values) {
   if (values.size() == 0) {
     return {};
   } else {
-    std::vector<T> sum(values.at(0).size());
+    std::vector<T> sum(values[0].size());
     for (auto i = 1ull; i < values.size(); ++i) {
-      assert(values.at(0).size() == values.at(i).size());
+      assert(values[0].size() == values[i].size());
     }
 
     for (auto i = 0ull; i < sum.size(); ++i) {
       for (auto j = 0ull; j < values.size(); ++j) {
-        sum.at(i) += values.at(j).at(i);
+        sum[i] += values[j][i];
       }
     }
     return std::move(sum);
@@ -343,18 +318,18 @@ inline std::vector<T> RowSumReduction(const std::vector<std::vector<T>>& values)
 ///         +-----------+--------------------------------------------------+
 /// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
-inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>>& values) {
+inline std::vector<T> RowSubReduction(std::span<const std::vector<T>> values) {
   if (values.size() == 0) {
     return {};
   } else {
-    std::vector<T> result = values.at(0);
+    std::vector<T> result = values[0];
     for (auto i = 1ull; i < values.size(); ++i) {
-      assert(values.at(0).size() == values.at(i).size());
+      assert(values[0].size() == values[i].size());
     }
 
     for (auto i = 0ull; i < result.size(); ++i) {
       for (auto j = 1ull; j < values.size(); ++j) {
-        result.at(i) -= values.at(j).at(i);
+        result[i] -= values[j][i];
       }
     }
     return std::move(result);
@@ -372,18 +347,18 @@ inline std::vector<T> RowSubReduction(const std::vector<std::vector<T>>& values)
 ///         +-----------+--------------------------------------------------+
 /// \pre All vectors in \p vectors must be of equal size.
 template <typename T>
-inline std::vector<T> RowMulReduction(const std::vector<std::vector<T>>& values) {
+inline std::vector<T> RowMulReduction(std::span<const std::vector<T>> values) {
   if (values.size() == 0) {
     return {};
   } else {
-    std::vector<T> product(values.at(0).size(), 1);
+    std::vector<T> product(values[0].size(), 1);
     for (auto i = 1ull; i < values.size(); ++i) {
-      assert(values.at(0).size() == values.at(i).size());
+      assert(values[0].size() == values[i].size());
     }
 
     for (auto i = 0ull; i < product.size(); ++i) {
       for (auto j = 0ull; j < values.size(); ++j) {
-        product.at(i) *= values.at(j).at(i);
+        product[i] *= values[j][i];
       }
     }
     return std::move(product);
@@ -402,14 +377,7 @@ bool IsPowerOfTwo(UnsignedIntegralType x) {
 /// \brief Returns a hexadecimal string representation of the bytes stored in \p values
 /// \param values
 /// \param n Number of bytes.
-inline std::string Hex(const std::uint8_t* values, std::size_t n) {
-  std::string buffer;
-  for (auto i = 0ull; i < n; ++i) {
-    buffer.append(fmt::format("{0:#x} ", values[i]));
-  }
-  buffer.erase(buffer.end() - 1);  // remove the last whitespace
-  return buffer;
-}
+std::string Hex(const std::uint8_t* values, std::size_t n);
 
 /// \brief Returns a hexadecimal string representation of the bytes stored in \p values
 /// \param values
@@ -464,12 +432,12 @@ inline std::string to_string(std::vector<T> values) {
 /// XXX the std library implements operators for vector comparisions.
 
 template <typename T>
-inline bool Vectors(const std::vector<T>& a, const std::vector<T>& b) {
+inline bool Vectors(std::span<const T> a, std::span<const T> b) {
   if (a.size() != b.size()) {
     return false;
   }
   for (auto i = 0ull; i < a.size(); ++i) {
-    if (a.at(i) != b.at(i)) {
+    if (a[i] != b[i]) {
       return false;
     }
   }
@@ -479,13 +447,13 @@ inline bool Vectors(const std::vector<T>& a, const std::vector<T>& b) {
 /// \brief Checks if all the vectors have the same size.
 /// \param values A vector of vectors.
 template <typename T>
-inline bool Dimensions(const std::vector<std::vector<T>>& values) {
+inline bool Dimensions(std::span<const std::vector<T>> values) {
   if (values.size() <= 1) {
     return true;
   } else {
-    auto first_size = values.at(0).size();
+    auto first_size = values[0].size();
     for (auto i = 1ull; i < values.size(); ++i) {
-      if (first_size != values.at(i).size()) {
+      if (first_size != values[i].size()) {
         return false;
       }
     }
@@ -502,5 +470,33 @@ std::size_t DivideAndCeil(std::size_t dividend, std::size_t divisor);
 /// \brief Returns the number of bytes necessary to store \p bits bits.
 /// \param bits
 constexpr std::size_t BitsToBytes(const std::size_t bits) { return (bits + 7) / 8; }
+
+/// \brief Returns the the dot product of rows of \p a and \p b, i.e., a result vector of size j
+/// (number of rows), where result[j] is the sum of all a[i][j] * b[i][j].
+template <typename T>
+inline T DotProduct(std::span<const T> a, std::span<const T> b) {
+  assert(a.size() > 0);
+  assert(a.size() == b.size());
+  T result = a[0] * b[0];
+  for (std::size_t i = 1; i < a.size(); ++i) result += a[i] * b[i];
+  return result;
+}
+
+/// \brief Returns the the dot product of \p a and \p b, i.e., the sum of all a[i] * b[i].
+template <typename T>
+inline std::vector<T> RowDotProduct(std::span<const std::vector<T>> a,
+                                    std::span<const std::vector<T>> b) {
+  assert(a.size() > 0);
+  assert(a.size() == b.size());
+  std::size_t row_size{a[0].size()};
+  std::vector<T> result(row_size, 0);
+  for (std::size_t i = 0; i < a.size(); ++i) {
+    assert(a[i].size() == b[i].size() && a[i].size() == row_size);
+    for (std::size_t j = 0; j < row_size; ++j) {
+      result[j] += a[i][j] * b[i][j];
+    }
+  }
+  return result;
+}
 
 }  // namespace encrypto::motion

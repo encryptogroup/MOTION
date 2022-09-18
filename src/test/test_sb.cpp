@@ -28,6 +28,7 @@
 #include "multiplication_triple/sb_impl.h"
 #include "multiplication_triple/sb_provider.h"
 #include "multiplication_triple/sp_provider.h"
+#include "oblivious_transfer/base_ots/base_ot_provider.h"
 
 namespace {
 
@@ -55,6 +56,8 @@ void TemplateTest() {
             auto& sb_provider = backend->GetSbProvider();
             sb_provider->PreSetup();
             sp_provider->PreSetup();
+            backend->GetBaseOtProvider()->PreSetup();
+            backend->Synchronize();
             backend->OtExtensionSetup();
             sp_provider->Setup();
             sb_provider->Setup();

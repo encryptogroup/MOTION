@@ -26,6 +26,7 @@
 
 #include <span>
 
+#include "communication/message_manager.h"
 #include "utility/bit_vector.h"
 #include "utility/block.h"
 #include "utility/reusable_future.h"
@@ -40,12 +41,8 @@ class BasicOtSender : public OtVector {
   void WaitSetup() const;
 
  protected:
-  BasicOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength, OtProtocol p,
-                const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function,
-                OtExtensionSenderData& data);
-
-  // reference to data storage
-  OtExtensionSenderData& data_;
+  BasicOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+                OtExtensionData& data);
 };
 
 // base class capturing the common things among the receiver implementations
@@ -68,12 +65,8 @@ class BasicOtReceiver : public OtVector {
   void SendCorrections();
 
  protected:
-  BasicOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength, OtProtocol p,
-                  const std::function<void(flatbuffers::FlatBufferBuilder&&)>& Send,
-                  OtExtensionReceiverData& data);
-
-  // reference to data storage
-  OtExtensionReceiverData& data_;
+  BasicOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
+                  OtExtensionData& data);
 
   // input of the receiver, the choices
   BitVector<> choices_;
@@ -86,8 +79,9 @@ class BasicOtReceiver : public OtVector {
 class ROtSender : public OtVector {
  public:
   ROtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
-            OtExtensionSenderData& data,
-            const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+            OtExtensionData& data);
+
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kROt; }
 
   // wait that the ot extension setup has finished
   void WaitSetup() const;
@@ -105,9 +99,6 @@ class ROtSender : public OtVector {
   void SendMessages() const;
 
  private:
-  // reference to data storage
-  OtExtensionSenderData& data_;
-
   // both output masks of the sender
   std::vector<BitVector<>> outputs_;
 
@@ -119,8 +110,7 @@ class ROtSender : public OtVector {
 // fixed correlation for all OTs
 class FixedXcOt128Sender : public BasicOtSender {
  public:
-  FixedXcOt128Sender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionSenderData& data,
-                     const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  FixedXcOt128Sender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // set the *single* correlation for all OTs in this batch
   void SetCorrelation(Block128 correlation) { correlation_ = correlation; }
@@ -137,6 +127,10 @@ class FixedXcOt128Sender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override {
+    return OtProtocol::kFixedXcOt128;
+  }
+
  private:
   // the correlation function is  f(x) = x ^ correlation_ for all OTs
   Block128 correlation_;
@@ -146,14 +140,16 @@ class FixedXcOt128Sender : public BasicOtSender {
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
+
+  // future for the message containing client's corrections
+  ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // receiver implementation of batched xor-correlated 128 bit string OT with a
 // fixed correlation for all OTs
 class FixedXcOt128Receiver : public BasicOtReceiver {
  public:
-  FixedXcOt128Receiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionReceiverData& data,
-                       const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  FixedXcOt128Receiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -164,9 +160,13 @@ class FixedXcOt128Receiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override {
+    return OtProtocol::kFixedXcOt128;
+  }
+
  private:
   // future for the sender's message
-  ReusableFiberFuture<Block128Vector> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   Block128Vector outputs_;
@@ -178,8 +178,7 @@ class FixedXcOt128Receiver : public BasicOtReceiver {
 // sender implementation of batched xor-correlated bit ots
 class XcOtBitSender : public BasicOtSender {
  public:
-  XcOtBitSender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionSenderData& data,
-                const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  XcOtBitSender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // set the correlations for the OTs in this batch
   void SetCorrelations(BitVector<>&& correlations) {
@@ -206,6 +205,8 @@ class XcOtBitSender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kXcOtBit; }
+
  private:
   // the correlation vector
   BitVector<> correlations_;
@@ -215,14 +216,16 @@ class XcOtBitSender : public BasicOtSender {
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
+
+  // future for the message containing client's corrections
+  ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // sender implementation of batched xor-correlated bit ots
 class XcOtSender : public BasicOtSender {
  public:
   XcOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
-             OtExtensionSenderData& data,
-             const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+             OtExtensionData& data);
 
   // set the correlations for the OTs in this batch
   void SetCorrelations(std::vector<BitVector<>>&& correlations) {
@@ -249,6 +252,8 @@ class XcOtSender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kXcOt; }
+
  private:
   // the correlation vector
   std::vector<BitVector<>> correlations_;
@@ -258,14 +263,16 @@ class XcOtSender : public BasicOtSender {
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
+
+  // future for the message containing client's corrections
+  ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // receiver implementation of batched random generic ots
 class ROtReceiver : OtVector {
  public:
   ROtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
-              OtExtensionReceiverData& data,
-              const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+              OtExtensionData& data);
 
   // wait that the ot extension setup has finished
   void WaitSetup() const;
@@ -284,10 +291,9 @@ class ROtReceiver : OtVector {
     return choices_;
   }
 
- private:
-  // reference to data storage
-  OtExtensionReceiverData& data_;
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kROt; }
 
+ private:
   // random message choices
   BitVector<> choices_;
 
@@ -301,8 +307,7 @@ class ROtReceiver : OtVector {
 // receiver implementation of batched xor-correlated bit ots
 class XcOtBitReceiver : public BasicOtReceiver {
  public:
-  XcOtBitReceiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionReceiverData& data,
-                  const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  XcOtBitReceiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -313,9 +318,11 @@ class XcOtBitReceiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kXcOtBit; }
+
  private:
   // future for the sender's message
-  ReusableFiberFuture<BitVector<>> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   BitVector<> outputs_;
@@ -328,8 +335,7 @@ class XcOtBitReceiver : public BasicOtReceiver {
 class XcOtReceiver : public BasicOtReceiver {
  public:
   XcOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
-               OtExtensionReceiverData& data,
-               const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+               OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -340,9 +346,11 @@ class XcOtReceiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kXcOt; }
+
  private:
   // future for the sender's message
-  ReusableFiberFuture<std::vector<BitVector<>>> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   std::vector<BitVector<>> outputs_;
@@ -358,8 +366,7 @@ class AcOtSender : public BasicOtSender {
 
  public:
   AcOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t vector_size,
-             OtExtensionSenderData& data,
-             const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+             OtExtensionData& data);
 
   // set the correlations for the OTs in this batch
   void SetCorrelations(std::vector<T>&& correlations) {
@@ -386,6 +393,8 @@ class AcOtSender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kAcOt; }
+
  private:
   // dimension of each sender-input/output
   const std::size_t vector_size_;
@@ -398,6 +407,9 @@ class AcOtSender : public BasicOtSender {
 
   // if the sender outputs have been computed
   bool outputs_computed_ = false;
+
+  // future for the message containing client's corrections
+  ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // receiver implementation of batched additive-correlated ots
@@ -407,8 +419,7 @@ class AcOtReceiver : public BasicOtReceiver {
 
  public:
   AcOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t vector_size,
-               OtExtensionReceiverData& data,
-               const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+               OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -419,12 +430,14 @@ class AcOtReceiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kAcOt; }
+
  private:
   // dimension of each sender-input/output
   const std::size_t vector_size_;
 
   // future for the sender's message
-  ReusableFiberFuture<std::vector<T>> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   std::vector<T> outputs_;
@@ -436,8 +449,7 @@ class AcOtReceiver : public BasicOtReceiver {
 // sender implementation of batched 128 bit string OT
 class GOt128Sender : public BasicOtSender {
  public:
-  GOt128Sender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionSenderData& data,
-               const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  GOt128Sender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // set the message pairs for all OTs in this batch
   void SetInputs(Block128Vector&& inputs) { inputs_ = std::move(inputs); }
@@ -446,16 +458,20 @@ class GOt128Sender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kGOt128; }
+
  private:
   // the sender's inputs, 2 * number_of_ots blocks
   Block128Vector inputs_;
+
+  // future for the message containing client's corrections
+  mutable ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // receiver implementation of batched 128 bit string OT
 class GOt128Receiver : public BasicOtReceiver {
  public:
-  GOt128Receiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionReceiverData& data,
-                 const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  GOt128Receiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -466,9 +482,11 @@ class GOt128Receiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kGOt128; }
+
  private:
   // future for the sender's message
-  ReusableFiberFuture<Block128Vector> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   Block128Vector outputs_;
@@ -480,8 +498,7 @@ class GOt128Receiver : public BasicOtReceiver {
 // sender implementation of batched 1 bit string OT
 class GOtBitSender : public BasicOtSender {
  public:
-  GOtBitSender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionSenderData& data,
-               const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  GOtBitSender(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& datar);
 
   // set the message pairs for all OTs in this batch
   void SetInputs(BitVector<>&& inputs) { inputs_ = std::move(inputs); }
@@ -490,17 +507,21 @@ class GOtBitSender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kGOtBit; }
+
  private:
   // the sender's inputs, 2 * number_of_ots blocks
   BitVector<> inputs_;
+
+  // future for the message containing client's corrections
+  mutable ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // sender implementation of batched 1 bit string OT
 class GOtSender : public BasicOtSender {
  public:
   GOtSender(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
-            OtExtensionSenderData& data,
-            const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+            OtExtensionData& data);
 
   // set the message pairs for all OTs in this batch
   void SetInputs(std::vector<BitVector<>>&& inputs) { inputs_ = std::move(inputs); }
@@ -511,16 +532,20 @@ class GOtSender : public BasicOtSender {
   // send the sender's messages
   void SendMessages() const;
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kGOt; }
+
  private:
   // the sender's inputs, 2 * number_of_ots blocks
   std::vector<BitVector<>> inputs_;
+
+  // future for the message containing client's corrections
+  mutable ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
 };
 
 // receiver implementation of batched 1 bit string OT
 class GOtBitReceiver : public BasicOtReceiver {
  public:
-  GOtBitReceiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionReceiverData& data,
-                 const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+  GOtBitReceiver(std::size_t ot_id, std::size_t number_of_ots, OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -531,9 +556,11 @@ class GOtBitReceiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kGOtBit; }
+
  private:
   // future for the sender's message
-  ReusableFiberFuture<BitVector<>> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   BitVector<> outputs_;
@@ -546,8 +573,7 @@ class GOtBitReceiver : public BasicOtReceiver {
 class GOtReceiver : public BasicOtReceiver {
  public:
   GOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std::size_t bitlength,
-              OtExtensionReceiverData& data,
-              const std::function<void(flatbuffers::FlatBufferBuilder&&)>& send_function);
+              OtExtensionData& data);
 
   // compute the receiver's outputs
   void ComputeOutputs();
@@ -558,9 +584,11 @@ class GOtReceiver : public BasicOtReceiver {
     return outputs_;
   }
 
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kGOt; }
+
  private:
   // future for the sender's message
-  ReusableFiberFuture<std::vector<BitVector<>>> sender_message_future_;
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver
   std::vector<BitVector<>> outputs_;

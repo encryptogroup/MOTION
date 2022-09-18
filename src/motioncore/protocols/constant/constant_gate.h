@@ -115,12 +115,6 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
 
     gate_id_ = GetRegister().NextGateId();
 
-    RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-    parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-    RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-    parent_b_.at(0)->RegisterWaitingGate(gate_id_);
-
     {
       auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
           backend_, a->GetNumberOfSimdValues());
@@ -157,7 +151,7 @@ class ConstantArithmeticAdditionGate final : public TwoGate {
     std::vector<T> output;
     if (GetCommunicationLayer().GetMyId() ==
         (gate_id_ % GetCommunicationLayer().GetNumberOfParties())) {
-      output = RestrictAddVectors(constant_wire->GetValues(), non_constant_wire->GetValues());
+      output = RestrictAddVectors<T>(constant_wire->GetValues(), non_constant_wire->GetValues());
     } else {
       output = non_constant_wire->GetValues();
     }
@@ -210,12 +204,6 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
 
     gate_id_ = GetRegister().NextGateId();
 
-    RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-    parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-    RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-    parent_b_.at(0)->RegisterWaitingGate(gate_id_);
-
     {
       auto w = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
           backend_, a->GetNumberOfSimdValues());
@@ -250,7 +238,7 @@ class ConstantArithmeticMultiplicationGate final : public TwoGate {
     assert(constant_wire);
 
     std::vector<T> output =
-        RestrictMulVectors(constant_wire->GetValues(), non_constant_wire->GetValues());
+        RestrictMulVectors<T>(constant_wire->GetValues(), non_constant_wire->GetValues());
 
     auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
     arithmetic_wire->GetMutableValues() = std::move(output);

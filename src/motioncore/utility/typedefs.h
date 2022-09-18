@@ -143,6 +143,7 @@ enum class MpcProtocol : unsigned int {
   kBmr,
   kArithmeticConstant,
   kBooleanConstant,
+  kAstra,
   kInvalid  // for checking whether the value is valid
 };
 

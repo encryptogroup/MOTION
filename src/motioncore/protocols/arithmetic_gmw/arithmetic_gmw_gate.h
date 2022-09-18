@@ -31,7 +31,6 @@
 #include <span>
 
 #include "base/motion_base_provider.h"
-#include "communication/fbs_headers/output_message_generated.h"
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "protocols/gate.h"
@@ -61,10 +60,17 @@ class InputGate final : public motion::InputGate {
  public:
   InputGate(std::span<const T> input, std::size_t input_owner, Backend& backend);
   InputGate(std::vector<T>&& input, std::size_t input_owner, Backend& backend);
+  InputGate(std::size_t simd_values, std::size_t input_owner, Backend& backend)
+  : InputGate(std::vector<T>(simd_values, T(0)), input_owner, backend) {}
 
   void InitializationHelper();
 
   ~InputGate() final = default;
+  
+  //Sets input values after construction but before evaluating the online phase.
+  //The input can only be set once, before EvaluateOnline() was called and only 
+  //if all input values were set to 0 during construction.
+  void SetAndCommit(std::vector<T> input);
 
   void EvaluateSetup() final override;
   // non-interactive input sharing based on distributed in advance randomness seeds
@@ -172,8 +178,8 @@ class MultiplicationGate final : public motion::TwoGate {
   MultiplicationGate(Gate&) = delete;
 
  private:
-  arithmetic_gmw::WirePointer<T> d_, e_;
-  std::shared_ptr<OutputGate<T>> d_output_, e_output_;
+  std::vector<motion::ReusableFiberFuture<std::vector<std::uint8_t>>> d_futures_;
+  std::vector<motion::ReusableFiberFuture<std::vector<std::uint8_t>>> e_futures_;
 
   std::size_t number_of_mts_, mt_offset_;
 };

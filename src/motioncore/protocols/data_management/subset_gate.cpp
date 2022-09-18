@@ -79,12 +79,6 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
     }
   }
 
-  // Register this gate as waiting for the wires.
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
   // Register output wires.
   const std::size_t number_of_wires{parent_.size()};
   output_wires_.reserve(number_of_wires);

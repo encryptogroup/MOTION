@@ -115,6 +115,8 @@ class Register {
   std::size_t GetNumberOfEvaluatedGatesOnline() const { return evaluated_gates_online_; }
 
   std::size_t GetTotalNumberOfGates() const { return global_gate_id_ - gate_id_offset_; }
+  
+  std::size_t GetGateIdOffset() const { return gate_id_offset_; }
 
   void Reset();
 

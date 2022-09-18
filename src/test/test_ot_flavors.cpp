@@ -47,16 +47,6 @@ class OtFlavorTest : public ::testing::Test {
       ot_provider_wrappers_[i] = std::make_unique<encrypto::motion::OtProviderManager>(
           *communication_layers_[i], *base_ot_providers_[i], *motion_base_providers_[i], nullptr);
     }
-
-    std::vector<std::future<void>> futures;
-    for (std::size_t i = 0; i < 2; ++i) {
-      futures.emplace_back(std::async(std::launch::async, [this, i] {
-        communication_layers_[i]->Start();
-        motion_base_providers_[i]->Setup();
-        base_ot_providers_[i]->ComputeBaseOts();
-      }));
-    }
-    std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
   }
 
   void TearDown() override {
@@ -77,7 +67,22 @@ class OtFlavorTest : public ::testing::Test {
   }
 
   void RunOtExtensionSetup() {
+    for (std::size_t i = 0; i < 2; ++i) {
+      base_ot_providers_[i]->PreSetup();
+    }
+
     std::vector<std::future<void>> futures;
+    for (std::size_t i = 0; i < 2; ++i) {
+      futures.emplace_back(std::async(std::launch::async, [this, i] {
+        communication_layers_[i]->Start();
+        communication_layers_[i]->Synchronize();
+        motion_base_providers_[i]->Setup();
+        base_ot_providers_[i]->ComputeBaseOts();
+      }));
+    }
+    std::for_each(std::begin(futures), std::end(futures), [](auto& f) { f.get(); });
+
+    futures.clear();
     for (std::size_t i = 0; i < 2; ++i) {
       futures.emplace_back(std::async(std::launch::async, [this, i] {
         ot_provider_wrappers_[i]->GetProvider(1 - i).SendSetup();

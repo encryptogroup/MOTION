@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019 Lennart Braun
+// Copyright (c) 2022 Oliver Schick
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -20,33 +20,25 @@
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
 
-#pragma once
+#include "astra_wire.h"
 
-#include <cstdint>
-#include <vector>
-#include "utility/reusable_future.h"
+namespace encrypto::motion::proto::astra {
 
-namespace encrypto::motion {
+template<typename T>
+Wire<T>::Wire(Backend& backend, std::vector<Data> values)
+  : Base(backend, values.size()), values_{std::move(values)}, 
+    setup_ready_condition_{std::make_unique<FiberCondition>([this]() { return setup_ready_.load(); })} {   
+}
 
-enum SharedBitsMessageType : std::uint8_t { kMaskMessage = 2, kReconstructMessage = 1 };
+template<typename T>
+Wire<T>::Wire(Backend& backend, std::size_t number_of_simd)
+  : Base(backend, number_of_simd) {}
 
-struct SharedBitsData {
-  void MessageReceived(const SharedBitsMessageType type, const std::uint8_t* message,
-                       const std::size_t size);
-  void Clear();
-
-  // register to receive the masked value during squaring
-  ReusableFuture<std::vector<std::uint8_t>> RegisterForMaskMessage(size_t expected_size);
-
-  // register to receive the reconstruction messages for a^2
-  ReusableFuture<std::vector<std::uint8_t>> RegisterForReconstructMessage(size_t expected_size);
-
-  ReusablePromise<std::vector<std::uint8_t>> mask_message_promise;
-  std::size_t mask_message_expected_size = 0;
-  ReusablePromise<std::vector<std::uint8_t>> reconstruct_message_promise;
-  std::size_t reconstruct_message_expected_size = 0;
-};
-
-}  // namespace encrypto::motion
+template class Wire<std::uint8_t>;
+template class Wire<std::uint16_t>;
+template class Wire<std::uint32_t>;
+template class Wire<std::uint64_t>;
+template class Wire<__uint128_t>;
+    
+} // namespace encrypto::motion::proto::astra

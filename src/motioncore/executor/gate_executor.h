@@ -24,6 +24,7 @@
 
 #include <functional>
 #include <memory>
+#include <queue>
 
 namespace encrypto::motion {
 
@@ -42,10 +43,16 @@ class GateExecutor {
   void EvaluateSetupOnline(RunTimeStatistics& statistics);
   // Run setup and online phase of each gate as soon as possible.
   void Evaluate(RunTimeStatistics& statistics);
+  
+  void AddCustomSetupJob(std::function<void()> job);
+  
+  void AddCustomOnlineJob(std::function<void()> job);
 
  private:
   Register& register_;
   std::function<void()> preprocessing_function_;
+  std::queue<std::function<void()>> custom_setup_;
+  std::queue<std::function<void()>> custom_online_;
   std::shared_ptr<Logger> logger_;
 };
 

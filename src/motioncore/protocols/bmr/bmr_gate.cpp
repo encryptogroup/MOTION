@@ -23,7 +23,6 @@
 // SOFTWARE.
 
 #include "bmr_gate.h"
-#include "bmr_data.h"
 #include "bmr_provider.h"
 #include "bmr_wire.h"
 
@@ -31,8 +30,8 @@
 
 #include "base/backend.h"
 #include "base/motion_base_provider.h"
-#include "communication/bmr_message.h"
 #include "communication/communication_layer.h"
+#include "communication/message.h"
 #include "oblivious_transfer/ot_flavors.h"
 #include "oblivious_transfer/ot_provider.h"
 #include "primitives/aes/aesni_primitives.h"
@@ -101,12 +100,11 @@ void InputGate::InitializationHelper() {
   // if this is someone else's input, prepare for receiving the *public values*
   // (if it is our's then we would compute it ourselves)
   if (my_id != static_cast<std::size_t>(input_owner_id_)) {
-    received_public_values_ = bmr_provider.RegisterForInputPublicValues(
-        input_owner_id_, gate_id_, number_of_simd_ * bit_size_);
+    received_public_values_ = bmr_provider.RegisterForInputPublicValues(input_owner_id_, gate_id_);
   }
 
   // prepare for receiving the *public/active keys* of the other parties
-  received_public_keys_ = bmr_provider.RegisterForInputKeys(gate_id_, number_of_simd_ * bit_size_);
+  received_public_keys_ = bmr_provider.RegisterForInputKeys(gate_id_);
 
   if constexpr (kDebug) {
     auto gate_info = fmt::format("gate id {}, input owner {}", gate_id_, input_owner_id_);
@@ -179,37 +177,37 @@ void InputGate::EvaluateOnline() {
   const auto number_of_simd = output_wires_.at(0)->GetNumberOfSimdValues();
   const auto number_of_wires = output_wires_.size();
   const bool my_input = static_cast<std::size_t>(input_owner_id_) == my_id;
-  motion::BitVector<> buffer;
-  buffer.Reserve(bit_size_);
 
   // if this is our input, set the public values by masking our real inputs
   // with the random permutation bits
   if (my_input) {
-    auto input = input_future_.get();
-    assert(input.size() > 0u);           // assert >=1 wire
-    assert(input.at(0).GetSize() > 0u);  // assert >=1 SIMD bits
-    // assert SIMD lengths of all wires are equal
-    assert(motion::BitVector<>::IsEqualSizeDimensions(input));
+    motion::BitVector<> buffer;
+    buffer.Reserve(bit_size_);
+    std::vector<BitVector<>> input{input_future_.get()};
 
-    for (auto i = 0ull; i < output_wires_.size(); ++i) {
-      auto wire = std::dynamic_pointer_cast<bmr::Wire>(output_wires_.at(i));
+    for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+      auto wire = std::dynamic_pointer_cast<bmr::Wire>(output_wires_[i]);
       assert(wire);
-      wire->GetMutablePublicValues() = input.at(i) ^ wire->GetPermutationBits();
+      wire->GetMutablePublicValues() = input[i] ^ wire->GetPermutationBits();
       buffer.Append(wire->GetPublicValues());
     }
-    const std::vector<std::uint8_t> payload(
-        reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()),
-        reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()) + buffer.GetData().size());
-    communication_layer.BroadcastMessage(communication::BuildBmrInput0Message(gate_id_, payload));
+    std::span payload(reinterpret_cast<const std::uint8_t*>(buffer.GetData().data()),
+                      buffer.GetData().size());
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kBmrInputGate0, gate_id_, payload)};
+    communication_layer.BroadcastMessage(msg.Release());
   }
   // otherwise receive the public values from the party that provides the input
   else {
-    buffer = received_public_values_.get();
+    std::vector<std::uint8_t> public_values_message{received_public_values_.get()};
+    auto pointer{const_cast<std::uint8_t*>(
+        communication::GetMessage(public_values_message.data())->payload()->data())};
+    BitSpan public_values_span(pointer, output_wires_.size() * number_of_simd_);
     for (auto i = 0ull; i < output_wires_.size(); ++i) {
       auto wire = std::dynamic_pointer_cast<bmr::Wire>(output_wires_.at(i));
       assert(wire);
       wire->GetMutablePublicValues() =
-          buffer.Subset(i * number_of_simd_, (i + 1) * number_of_simd_);
+          public_values_span.Subset(i * number_of_simd_, (i + 1) * number_of_simd_);
     }
   }
 
@@ -235,10 +233,11 @@ void InputGate::EvaluateOnline() {
   }
 
   // send the selected keys to all other parties
-  const std::vector<std::uint8_t> payload(
-      reinterpret_cast<const std::uint8_t*>(my_keys_buffer.data()),
-      reinterpret_cast<const std::uint8_t*>(my_keys_buffer.data()) + my_keys_buffer.ByteSize());
-  communication_layer.BroadcastMessage(communication::BuildBmrInput1Message(gate_id_, payload));
+  std::span payload(reinterpret_cast<const std::uint8_t*>(my_keys_buffer.data()),
+                    my_keys_buffer.ByteSize());
+  auto msg{
+      communication::BuildMessage(communication::MessageType::kBmrInputGate1, gate_id_, payload)};
+  communication_layer.BroadcastMessage(msg.Release());
 
   // index function for the public/active keys stored in the wires
   const auto PublicKeyIndex = [number_of_parties](auto simd_i, auto party_i) {
@@ -256,21 +255,30 @@ void InputGate::EvaluateOnline() {
         assert(wire);
         auto& public_keys = wire->GetMutablePublicKeys();
         for (auto simd_k = 0ull; simd_k < number_of_simd; ++simd_k) {
-          public_keys.at(PublicKeyIndex(simd_k, my_id)) =
-              my_keys_buffer.at(wire_j * number_of_simd + simd_k);
+          public_keys[PublicKeyIndex(simd_k, my_id)] =
+              my_keys_buffer[wire_j * number_of_simd + simd_k];
         }
       }
     } else {
+      assert(received_public_keys_.size() == number_of_parties - 1);
       // other party: we copy the received keys to the right position
-      auto received_keys_buffer = received_public_keys_.at(party_i).get();
-      assert(received_keys_buffer.size() == number_of_wires * number_of_simd);
+      std::size_t party_i_remapped{party_i > my_id ? party_i - 1 : party_i};
+      std::vector<std::uint8_t> received_keys_message{
+          received_public_keys_[party_i_remapped].get()};
+      const std::uint8_t* received_keys_pointer{
+          communication::GetMessage(received_keys_message.data())->payload()->data()};
+      assert(communication::GetMessage(received_keys_message.data())->payload()->size() ==
+             number_of_wires * number_of_simd * kKappa / 8);
+
       for (auto wire_j = 0ull; wire_j < number_of_wires; ++wire_j) {
         auto wire = std::dynamic_pointer_cast<bmr::Wire>(output_wires_.at(wire_j));
         assert(wire);
         auto& public_keys = wire->GetMutablePublicKeys();
         for (auto simd_k = 0ull; simd_k < number_of_simd; ++simd_k) {
-          public_keys.at(PublicKeyIndex(simd_k, party_i)) =
-              received_keys_buffer.at(wire_j * number_of_simd + simd_k);
+          auto pub_key_ptr{public_keys[PublicKeyIndex(simd_k, party_i)].data()};
+          std::copy_n(reinterpret_cast<const std::byte*>(received_keys_pointer) +
+                          Block128::size() * (wire_j * number_of_simd + simd_k),
+                      Block128::size(), pub_key_ptr);
         }
       }
     }
@@ -370,11 +378,6 @@ OutputGate::OutputGate(const motion::SharePointer& parent, std::size_t output_ow
 
   gate_id_ = GetRegister().NextGateId();
 
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());  // mark this gate as waiting for @param wire
-    wire->RegisterWaitingGate(gate_id_);    // register this gate in @param wire as waiting
-  }
-
   is_my_output_ = static_cast<std::size_t>(output_owner_) == my_id ||
                   static_cast<std::size_t>(output_owner_) == kAll;
 
@@ -469,16 +472,6 @@ XorGate::XorGate(const motion::SharePointer& a, const motion::SharePointer& b)
   gate_type_ = GateType::kNonInteractive;
 
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   output_wires_.resize(parent_a_.size());
   const motion::BitVector tmp_bv(a->GetNumberOfSimdValues());
@@ -584,11 +577,6 @@ InvGate::InvGate(const motion::SharePointer& parent) : OneGate(parent->GetBacken
   gate_type_ = GateType::kNonInteractive;
 
   gate_id_ = GetRegister().NextGateId();
-
-  for (auto& wire : parent_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
 
   output_wires_.resize(parent_.size());
   const motion::BitVector tmp_bv(parent->GetNumberOfSimdValues());
@@ -710,17 +698,7 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   const auto number_of_simd{parent_a_.at(0)->GetNumberOfSimdValues()};
   const auto number_of_wires{parent_a_.size()};
   const auto size_of_all_garbled_tables = number_of_wires * number_of_simd * 4 * number_of_parties;
-
-  for (auto& wire : parent_a_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
-  for (auto& wire : parent_b_) {
-    RegisterWaitingFor(wire->GetWireId());
-    wire->RegisterWaitingGate(gate_id_);
-  }
-
+  
   output_wires_.resize(number_of_wires);
   const motion::BitVector tmp_bv(number_of_simd);
   for (auto& w : output_wires_) {
@@ -756,8 +734,7 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
   garbled_tables_.SetToZero();
 
   // store futures for the (partial) garbled tables we will receive during garbling
-  received_garbled_rows_ =
-      backend_.GetBmrProvider().RegisterForGarbledRows(gate_id_, size_of_all_garbled_tables);
+  received_garbled_rows_ = backend_.GetBmrProvider().RegisterForGarbledRows(gate_id_);
 
   if constexpr (kDebug) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
@@ -1083,18 +1060,23 @@ void AndGate::EvaluateSetup() {
   }
 
   // send out our partial garbled tables
-  const std::vector<std::uint8_t> send_message_buffer(
-      reinterpret_cast<const std::uint8_t*>(garbled_tables_.data()),
-      reinterpret_cast<const std::uint8_t*>(garbled_tables_.data()) + garbled_tables_.ByteSize());
-  communication_layer.BroadcastMessage(
-      communication::BuildBmrAndMessage(static_cast<std::size_t>(gate_id_), send_message_buffer));
+  std::span send_message_buffer(reinterpret_cast<const std::uint8_t*>(garbled_tables_.data()),
+                                garbled_tables_.ByteSize());
+  auto msg{communication::BuildMessage(communication::MessageType::kBmrAndGate, gate_id_,
+                                       send_message_buffer)};
+  communication_layer.BroadcastMessage(msg.Release());
 
   // finalize garbled tables
   for (auto party_i = 0ull; party_i < number_of_parties; ++party_i) {
     if (party_i == my_id) continue;
-    const auto ReceivedMessage = received_garbled_rows_.at(party_i).get();
-    assert(ReceivedMessage.size() == garbled_tables_.size());
-    garbled_tables_ ^= ReceivedMessage;
+    auto remapped_party_i{party_i > my_id ? party_i - 1 : party_i};
+    std::vector<std::uint8_t> garbled_rows_message = received_garbled_rows_[remapped_party_i].get();
+    auto pointer{reinterpret_cast<const std::byte*>(
+        communication::GetMessage(garbled_rows_message.data())->payload()->data())};
+    assert(communication::GetMessage(garbled_rows_message.data())->payload()->size() ==
+           garbled_tables_.size() * kKappa / 8);
+    std::transform(pointer, pointer + garbled_tables_.size() * Block128::size(),
+                   garbled_tables_[0].data(), garbled_tables_[0].data(), std::bit_xor<std::byte>());
   }
 
   // mark this gate as setup-ready to proceed with the online phase

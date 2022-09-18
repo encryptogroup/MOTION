@@ -77,12 +77,6 @@ class GmwToArithmeticGate final : public OneGate {
     // register this gate
     gate_id_ = GetRegister().NextGateId();
 
-    // register this gate with the parent wires
-    for (auto& wire : parent_) {
-      RegisterWaitingFor(wire->GetWireId());
-      wire->RegisterWaitingGate(gate_id_);
-    }
-
     if constexpr (kDebug) {
       auto gate_info = fmt::format("gate id {}, parent wires: ", gate_id_);
       for (const auto& wire : parent_) gate_info.append(fmt::format("{} ", wire->GetWireId()));

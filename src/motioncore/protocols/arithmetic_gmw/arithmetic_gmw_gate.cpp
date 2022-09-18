@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2019-2021 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto
+// Copyright (c) 2019-2022 Oleksandr Tkachenko, Lennart Braun, Arianne Roselina Prananto, Oliver Schick
 // Cryptography and Privacy Engineering Group (ENCRYPTO)
 // TU Darmstadt, Germany
 //
@@ -24,13 +24,16 @@
 
 #include "arithmetic_gmw_gate.h"
 
+#include <flatbuffers/flatbuffers.h>
+#include <cmath>
 #include <fmt/format.h>
-#include <math.h>
+#include <span>
 
 #include "base/backend.h"
 #include "base/register.h"
 #include "communication/communication_layer.h"
-#include "communication/output_message.h"
+#include "communication/message.h"
+#include "communication/message_manager.h"
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "primitives/sharing_randomness_generator.h"
@@ -66,11 +69,25 @@ void InputGate<T>::InitializationHelper() {
         fmt::format("Created an arithmetic_gmw::InputGate with global id {}", gate_id_));
   }
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(input_, backend_)};
-
+  
   auto gate_info =
       fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_, input_owner_id_);
   GetLogger().LogDebug(fmt::format(
       "Allocate an arithmetic_gmw::InputGate with following properties: {}", gate_info));
+}
+
+template<typename T>
+void InputGate<T>::SetAndCommit(std::vector<T> input) {
+  auto out_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_[0]);
+  assert(out_wire);
+  auto& values = out_wire->GetMutableValues();
+  size_t simd_values = values.size();
+  assert(input.size() == simd_values);
+  
+  for(auto i = 0u; i != simd_values; ++i) {
+    input_[i] += input[i];
+    values[i] += std::move(input[i]);
+  }
 }
 
 template <typename T>
@@ -86,7 +103,7 @@ void InputGate<T>::EvaluateOnline() {
   auto number_of_parties = communication_layer.GetNumberOfParties();
 
   std::vector<T> result;
-
+  
   if (static_cast<std::size_t>(input_owner_id_) == my_id) {
     result.resize(input_.size());
     auto log_string = std::string("");
@@ -191,17 +208,14 @@ OutputGate<T>::OutputGate(const arithmetic_gmw::WirePointer<T>& parent, std::siz
   is_my_output_ = my_id == static_cast<std::size_t>(output_owner_) ||
                   static_cast<std::size_t>(output_owner_) == kAll;
 
-  RegisterWaitingFor(parent_.at(0)->GetWireId());
-  parent_.at(0)->RegisterWaitingGate(gate_id_);
-
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, parent->GetNumberOfSimdValues())};
 
   // Tell the DataStorages that we want to receive OutputMessages from the
   // other parties.
   if (is_my_output_) {
-    auto& base_provider = GetBaseProvider();
-    output_message_futures_ = base_provider.RegisterForOutputMessages(gate_id_);
+    output_message_futures_ = GetCommunicationLayer().GetMessageManager().RegisterReceiveAll(
+        communication::MessageType::kOutputMessage, gate_id_);
   }
 
   if constexpr (kDebug) {
@@ -246,15 +260,17 @@ void OutputGate<T>::EvaluateOnline() {
 
   // we need to send shares to one other party:
   if (!is_my_output_) {
-    auto payload = ToByteVector(output);
-    auto output_message = motion::communication::BuildOutputMessage(gate_id_, payload);
-    communication_layer.SendMessage(output_owner_, std::move(output_message));
+    auto payload = ToByteVector<T>(output);
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, payload)};
+    communication_layer.SendMessage(output_owner_, msg.Release());
   }
   // we need to send shares to all other parties:
   else if (output_owner_ == kAll) {
-    auto payload = ToByteVector(output);
-    auto output_message = motion::communication::BuildOutputMessage(gate_id_, payload);
-    communication_layer.BroadcastMessage(std::move(output_message));
+    auto payload = ToByteVector<T>(output);
+    auto msg{
+        communication::BuildMessage(communication::MessageType::kOutputMessage, gate_id_, payload)};
+    communication_layer.BroadcastMessage(msg.Release());
   }
 
   // we receive shares from other parties
@@ -268,14 +284,11 @@ void OutputGate<T>::EvaluateOnline() {
         shared_outputs.push_back(output);
         continue;
       }
-      const auto output_message = output_message_futures_.at(i).get();
+      const auto output_message = output_message_futures_.at(i > my_id ? i - 1 : i).get();
       auto message = communication::GetMessage(output_message.data());
-      auto output_message_pointer = communication::GetOutputMessage(message->payload()->data());
-      assert(output_message_pointer);
-      assert(output_message_pointer->wires()->size() == 1);
 
-      shared_outputs.push_back(
-          FromByteVector<T>(*output_message_pointer->wires()->Get(0)->payload()));
+      const auto& fb_vector{*message->payload()};
+      shared_outputs.push_back(FromByteVector<T>(std::span(fb_vector.Data(), fb_vector.size())));
       assert(shared_outputs[i].size() == parent_[0]->GetNumberOfSimdValues());
     }
 
@@ -341,12 +354,6 @@ AdditionGate<T>::AdditionGate(const arithmetic_gmw::WirePointer<T>& a,
 
   gate_id_ = GetRegister().NextGateId();
 
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
-
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
 
@@ -373,7 +380,7 @@ void AdditionGate<T>::EvaluateOnline() {
   assert(wire_b);
 
   std::vector<T> output;
-  output = RestrictAddVectors(wire_a->GetValues(), wire_b->GetValues());
+  output = RestrictAddVectors<T>(wire_a->GetValues(), wire_b->GetValues());
 
   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
   arithmetic_wire->GetMutableValues() = std::move(output);
@@ -409,12 +416,6 @@ SubtractionGate<T>::SubtractionGate(const arithmetic_gmw::WirePointer<T>& a,
 
   gate_id_ = GetRegister().NextGateId();
 
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
-
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};
 
@@ -437,10 +438,11 @@ void SubtractionGate<T>::EvaluateOnline() {
   auto wire_a = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_a_.at(0));
   auto wire_b = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_b_.at(0));
 
+
   assert(wire_a);
   assert(wire_b);
 
-  std::vector<T> output = SubVectors(wire_a->GetValues(), wire_b->GetValues());
+  std::vector<T> output = SubVectors<T>(wire_a->GetValues(), wire_b->GetValues());
 
   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
   arithmetic_wire->GetMutableValues() = std::move(output);
@@ -467,35 +469,30 @@ template <typename T>
 MultiplicationGate<T>::MultiplicationGate(const arithmetic_gmw::WirePointer<T>& a,
                                           const arithmetic_gmw::WirePointer<T>& b)
     : TwoGate(a->GetBackend()) {
-  parent_a_ = {std::static_pointer_cast<motion::Wire>(a)};
-  parent_b_ = {std::static_pointer_cast<motion::Wire>(b)};
-
-  assert(parent_a_.at(0)->GetNumberOfSimdValues() == parent_b_.at(0)->GetNumberOfSimdValues());
+  
+  size_t simd_values = a->GetNumberOfSimdValues();
+  assert(b->GetNumberOfSimdValues() == simd_values);
 
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
 
-  d_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
-                                                                   a->GetNumberOfSimdValues());
-  e_ = GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_,
-                                                                   a->GetNumberOfSimdValues());
-
-  d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
-  e_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(e_);
-
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
+  auto& message_manager = GetCommunicationLayer().GetMessageManager();
+    
+  d_futures_ = message_manager.RegisterReceiveAll(
+                 communication::MessageType::kArithmeticGmwDMultiplyGate, gate_id_);
+      
+  e_futures_ = message_manager.RegisterReceiveAll(
+                 communication::MessageType::kArithmeticGmwEMultiplyGate, gate_id_);
+  
+  parent_a_ = {std::static_pointer_cast<motion::Wire>(a)};
+  parent_b_ = {std::static_pointer_cast<motion::Wire>(b)};
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
-      backend_, a->GetNumberOfSimdValues())};
+      backend_, simd_values)};
 
-  number_of_mts_ = parent_a_.at(0)->GetNumberOfSimdValues();
-  mt_offset_ = GetMtProvider().template RequestArithmeticMts<T>(number_of_mts_);
+  number_of_mts_ = simd_values;
+  mt_offset_ = GetMtProvider().template RequestArithmeticMts<T>(simd_values);
 
   auto gate_info =
       fmt::format("uint{}_t type, gate id {}, parents: {}, {}", sizeof(T) * 8, gate_id_,
@@ -510,74 +507,97 @@ void MultiplicationGate<T>::EvaluateSetup() {}
 template <typename T>
 void MultiplicationGate<T>::EvaluateOnline() {
   // nothing to setup, no need to wait/check
-  parent_a_.at(0)->GetIsReadyCondition().Wait();
-  parent_b_.at(0)->GetIsReadyCondition().Wait();
+
+  const auto x_wire = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_a_[0]);
+  const auto y_wire = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_b_[0]);
+  auto out_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_[0]);
+  assert(x_wire);
+  assert(y_wire);
+  assert(out_wire);
+  
+  
+  size_t number_of_simd_values = x_wire->GetNumberOfSimdValues();
+  auto& communication_layer = GetCommunicationLayer();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
+  auto my_id = communication_layer.GetMyId();
+  
+  parent_a_[0]->GetIsReadyCondition().Wait();
+  parent_b_[0]->GetIsReadyCondition().Wait();
 
   auto& mt_provider = GetMtProvider();
   mt_provider.WaitFinished();
   const auto& mts = mt_provider.template GetIntegerAll<T>();
+  std::vector<T> d_values;
+  std::vector<T> e_values;
+  
   {
-    const auto x = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_a_.at(0));
-    assert(x);
-    d_->GetMutableValues() = std::vector<T>(
-        mts.a.begin() + mt_offset_, mts.a.begin() + mt_offset_ + x->GetNumberOfSimdValues());
-    T* __restrict__ d_v = d_->GetMutableValues().data();
-    const T* __restrict__ x_v = x->GetValues().data();
-    const auto number_of_simd_values{x->GetNumberOfSimdValues()};
+    d_values = std::vector<T>(
+        mts.a.begin() + mt_offset_, mts.a.begin() + mt_offset_ + number_of_simd_values);
+    T* __restrict__ d_v = d_values.data();
+    const T* __restrict__ x_v = x_wire->GetValues().data();
 
     std::transform(x_v, x_v + number_of_simd_values, d_v, d_v,
                    [](const T& a, const T& b) { return a + b; });
-    d_->SetOnlineFinished();
 
-    const auto y = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_b_.at(0));
-    assert(y);
-    e_->GetMutableValues() = std::vector<T>(
-        mts.b.begin() + mt_offset_, mts.b.begin() + mt_offset_ + x->GetNumberOfSimdValues());
-    T* __restrict__ e_v = e_->GetMutableValues().data();
-    const T* __restrict__ y_v = y->GetValues().data();
+    e_values = std::vector<T>(
+        mts.b.begin() + mt_offset_, mts.b.begin() + mt_offset_ + number_of_simd_values);
+    T* __restrict__ e_v = e_values.data();
+    const T* __restrict__ y_v = y_wire->GetValues().data();
     std::transform(y_v, y_v + number_of_simd_values, e_v, e_v,
                    [](const T& a, const T& b) { return a + b; });
-    e_->SetOnlineFinished();
+  }
+  
+  //TODO: Code is very similar in ArithmeticGmw::OutputGate, Astra::OutputGate and the following section
+  auto payload = ToByteVector<T>(d_values);
+  auto msg = communication::BuildMessage(
+               communication::MessageType::kArithmeticGmwDMultiplyGate, gate_id_, payload);
+  communication_layer.BroadcastMessage(msg.Release());
+
+  for (auto i = 0u; i != number_of_parties - 1; ++i) {
+    auto d_message = d_futures_[i].get();
+    auto payload = communication::GetMessage(d_message.data())->payload();
+    auto received_values = FromByteVector<T>({payload->Data(), payload->size()});
+    assert(received_values.size() == number_of_simd_values);
+    //Sum up the shares of all parties
+    T* __restrict__ d_v = d_values.data();
+    const T* __restrict__ r_v = received_values.data();
+    std::transform(r_v, r_v + number_of_simd_values, d_v, d_v,
+                   [](const T& a, const T& b) { return a + b; });
+  }
+  
+  payload = ToByteVector<T>(e_values);
+  msg = communication::BuildMessage(
+          communication::MessageType::kArithmeticGmwEMultiplyGate, gate_id_, payload);
+  communication_layer.BroadcastMessage(msg.Release());
+  
+  for (auto i = 0u; i != number_of_parties - 1; ++i) {
+    auto e_message = e_futures_[i].get();
+    auto payload = communication::GetMessage(e_message.data())->payload();
+    auto received_values = FromByteVector<T>({payload->Data(), payload->size()});
+    assert(received_values.size() == number_of_simd_values);
+    //Sum up the shares of all parties
+    T* __restrict__ e_v = e_values.data();
+    const T* __restrict__ r_v = received_values.data();
+    std::transform(r_v, r_v + number_of_simd_values, e_v, e_v,
+                   [](const T& a, const T& b) { return a + b; });
   }
 
-  d_output_->WaitOnline();
-  e_output_->WaitOnline();
-
-  const auto& d_clear = d_output_->GetOutputWires().at(0);
-  const auto& e_clear = e_output_->GetOutputWires().at(0);
-
-  d_clear->GetIsReadyCondition().Wait();
-  e_clear->GetIsReadyCondition().Wait();
-
-  const auto d_w = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(d_clear);
-  const auto x_i_w = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_a_.at(0));
-  const auto e_w = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(e_clear);
-  const auto y_i_w = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_b_.at(0));
-
-  assert(d_w);
-  assert(x_i_w);
-  assert(e_w);
-  assert(y_i_w);
-
-  auto output = std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(output_wires_.at(0));
-  assert(output);
-  output->GetMutableValues() =
+  out_wire->GetMutableValues() =
       std::vector<T>(mts.c.begin() + mt_offset_,
-                     mts.c.begin() + mt_offset_ + parent_a_.at(0)->GetNumberOfSimdValues());
+                     mts.c.begin() + mt_offset_ + number_of_simd_values);
 
-  const T* __restrict__ d{d_w->GetValues().data()};
-  const T* __restrict__ s_x{x_i_w->GetValues().data()};
-  const T* __restrict__ e{e_w->GetValues().data()};
-  const T* __restrict__ s_y{y_i_w->GetValues().data()};
-  T* __restrict__ output_pointer{output->GetMutableValues().data()};
+  const T* __restrict__ d{d_values.data()};
+  const T* __restrict__ s_x{x_wire->GetValues().data()};
+  const T* __restrict__ e{e_values.data()};
+  const T* __restrict__ s_y{y_wire->GetValues().data()};
+  T* __restrict__ output_pointer{out_wire->GetMutableValues().data()};
 
-  if (GetCommunicationLayer().GetMyId() ==
-      (gate_id_ % GetCommunicationLayer().GetNumberOfParties())) {
-    for (auto i = 0ull; i < output->GetNumberOfSimdValues(); ++i) {
+  if (my_id == (gate_id_ % number_of_parties)) {
+    for (auto i = 0u; i != number_of_simd_values; ++i) {
       output_pointer[i] += (d[i] * s_y[i]) + (e[i] * s_x[i]) - (e[i] * d[i]);
     }
   } else {
-    for (auto i = 0ull; i < output->GetNumberOfSimdValues(); ++i) {
+    for (auto i = 0u; i != number_of_simd_values; ++i) {
       output_pointer[i] += (d[i] * s_y[i]) + (e[i] * s_x[i]);
     }
   }
@@ -616,12 +636,6 @@ HybridMultiplicationGate<T>::HybridMultiplicationGate(const boolean_gmw::WirePoi
   gate_type_ = GateType::kInteractive;
 
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_a_.at(0)->GetWireId());
-  parent_a_.at(0)->RegisterWaitingGate(gate_id_);
-
-  RegisterWaitingFor(parent_b_.at(0)->GetWireId());
-  parent_b_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, parent_a_[0]->GetNumberOfSimdValues())};
@@ -727,9 +741,6 @@ SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->
   d_output_ = GetRegister().template EmplaceGate<OutputGate<T>>(d_);
 
   gate_id_ = GetRegister().NextGateId();
-
-  RegisterWaitingFor(parent_.at(0)->GetWireId());
-  parent_.at(0)->RegisterWaitingGate(gate_id_);
 
   output_wires_ = {GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(
       backend_, a->GetNumberOfSimdValues())};

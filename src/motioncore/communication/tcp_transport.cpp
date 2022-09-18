@@ -84,15 +84,13 @@ void TcpTransport::Shutdown() {
   implementation_->socket_.close(ec);
 }
 
-void TcpTransport::SendMessage(std::vector<std::uint8_t>&& message) { SendMessage(message); }
-
 static void u32tou8(std::uint32_t v, std::uint8_t* result) {
   for (auto i = 0u; i < sizeof(std::uint32_t); ++i) {
     result[i] = (v >> i * 8) & 0xFF;
   }
 }
 
-void TcpTransport::SendMessage(const std::vector<std::uint8_t>& message) {
+void TcpTransport::SendMessage(std::span<const std::uint8_t> message) {
   if (message.size() > std::numeric_limits<std::uint32_t>::max()) {
     throw std::runtime_error(fmt::format("Max message size is {} B but tried to send {} B",
                                          std::numeric_limits<std::uint32_t>::max(),
@@ -101,8 +99,8 @@ void TcpTransport::SendMessage(const std::vector<std::uint8_t>& message) {
   std::array<std::uint8_t, sizeof(std::uint32_t)> message_size;
   u32tou8(message.size(), message_size.data());
 
-  std::array<boost::asio::const_buffer, 2> buffers = {boost::asio::buffer(message_size),
-                                                      boost::asio::buffer(message)};
+  std::array<boost::asio::const_buffer, 2> buffers = {
+      boost::asio::buffer(message_size), boost::asio::buffer(message.data(), message.size())};
 
   boost::system::error_code ec;
   std::shared_lock lock(implementation_->socket_mutex_);

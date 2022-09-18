@@ -52,11 +52,10 @@ class Wire {
 
   virtual ~Wire();
 
+  [[deprecated("FiberCondition already handles synchronization between gates")]] 
   void RegisterWaitingGate(std::size_t gate_id);
 
   void SetOnlineFinished();
-
-  const auto& GetWaitingGatesIds() const noexcept { return waiting_gate_ids_; }
 
   const std::atomic<bool>& IsReady() const noexcept;
 
@@ -93,18 +92,14 @@ class Wire {
 
   std::int64_t wire_id_ = -1;
 
-  std::unordered_set<std::size_t> waiting_gate_ids_;
-
   Wire(Backend& backend, std::size_t number_of_simd);
 
-  static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
+  //static void SignalReadyToDependency(std::size_t gate_id, Backend& backend);
 
   virtual void DynamicClear(){};
 
  private:
   void InitializationHelper();
-
-  std::mutex mutex_;
 };
 
 using WirePointer = std::shared_ptr<Wire>;
