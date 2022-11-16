@@ -47,6 +47,11 @@ class InputGate final : public motion::InputGate {
 
   ~InputGate() final = default;
 
+  //Sets input values after construction but before evaluating the online phase.
+  //The input can only be set once, before EvaluateOnline() was called and only 
+  //if all input values were set to 0 during construction.
+  void SetAndCommit(std::vector<BitVector<>> input);
+  
   void EvaluateSetup() final override;
 
   void EvaluateOnline() final override;
@@ -159,8 +164,8 @@ class AndGate final : public TwoGate {
   std::size_t mt_offset_;
   std::size_t mt_bitlen_;
 
-  std::shared_ptr<motion::Share> d_, e_;
-  std::shared_ptr<OutputGate> d_output_, e_output_;
+  std::vector<motion::ReusableFiberFuture<std::vector<std::uint8_t>>> d_futures_;
+  std::vector<motion::ReusableFiberFuture<std::vector<std::uint8_t>>> e_futures_;
 };
 
 class MuxGate final : public ThreeGate {

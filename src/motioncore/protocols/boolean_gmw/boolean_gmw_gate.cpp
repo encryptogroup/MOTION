@@ -39,6 +39,47 @@
 
 namespace encrypto::motion::proto::boolean_gmw {
 
+std::vector<uint8_t> ToByteVector(std::vector<BitVector<>> values) {
+  std::vector<uint8_t> result;
+  result.reserve(values.size() * values[0].GetData().size());
+  for(BitVector<> const& bit_vector : values) {
+    std::span s{reinterpret_cast<const std::uint8_t*>(bit_vector.GetData().data()), 
+                bit_vector.GetData().size()}; 
+    std::copy(s.begin(), s.end(), std::back_inserter(result));
+  }
+  return result;
+}
+
+void AssignSpan(std::vector<BitVector<>>& values, 
+                std::span<const uint8_t> s) {
+  size_t number_of_simd_values = values.size();
+  auto it = s.begin();
+  auto const end_it = s.end();
+  for(size_t i = 0u; i != number_of_simd_values; ++i) {
+    for(std::byte& b : values[i].GetMutableData()) {
+      assert(it != end_it);
+      b = std::byte(*it);
+      ++it;
+    }
+  }
+  assert(it == end_it);
+}
+
+void XorAssignSpan(std::vector<BitVector<>>& values, 
+                   std::span<const uint8_t> s) {
+  size_t number_of_simd_values = values.size();
+  auto it = s.begin();
+  auto const end_it = s.end();
+  for(size_t i = 0u; i != number_of_simd_values; ++i) {
+    for(std::byte& b : values[i].GetMutableData()) {
+      assert(it != end_it);
+      b ^= std::byte(*it);
+      ++it;
+    }
+  }
+  assert(it == end_it);
+}
+
 InputGate::InputGate(std::span<const BitVector<>> input, std::size_t party_id, Backend& backend)
     : InputGate::Base(backend), input_(std::vector(input.begin(), input.end())) {
   input_owner_id_ = party_id;
@@ -84,6 +125,15 @@ void InputGate::InitializationHelper() {
     auto gate_info = fmt::format("gate id {},", gate_id_);
     GetLogger().LogDebug(
         fmt::format("Created a BooleanGmwInputGate with following properties: {}", gate_info));
+  }
+}
+
+void InputGate::SetAndCommit(std::vector<BitVector<>> input) {
+  input_ = std::move(input);
+  for (size_t i = 0u; i != input.size(); ++i) {
+    auto my_wire = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_[i]);
+    assert(my_wire);
+    my_wire->GetMutableValues() = input_[i];
   }
 }
 
@@ -488,47 +538,36 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
 
   assert(parent_a_.size() > 0);
   assert(parent_a_.size() == parent_b_.size());
-  assert(parent_a_.at(0)->GetBitLength() > 0);
+  assert(parent_a_[0]->GetBitLength() > 0);
 
   auto number_of_wires = parent_a_.size();
   auto number_of_simd_values = a->GetNumberOfSimdValues();
   requires_online_interaction_ = true;
   gate_type_ = GateType::kInteractive;
-
-  std::vector<motion::WirePointer> dummy_wires_e(number_of_wires), dummy_wires_d(number_of_wires);
-
-  auto& _register = GetRegister();
-
-  for (auto& w : dummy_wires_d) {
-    w = _register.EmplaceWire<boolean_gmw::Wire>(backend_, number_of_simd_values);
-  }
-
-  for (auto& w : dummy_wires_e) {
-    w = _register.EmplaceWire<boolean_gmw::Wire>(backend_, number_of_simd_values);
-  }
-
-  d_ = std::make_shared<boolean_gmw::Share>(dummy_wires_d);
-  e_ = std::make_shared<boolean_gmw::Share>(dummy_wires_e);
-
-  d_output_ = _register.EmplaceGate<OutputGate>(d_);
-  e_output_ = _register.EmplaceGate<OutputGate>(e_);
-
-  gate_id_ = _register.NextGateId();
+  gate_id_ = GetRegister().NextGateId();
+  
+  auto& message_manager = GetCommunicationLayer().GetMessageManager();
+  
+  d_futures_ = message_manager.RegisterReceiveAll(
+                 communication::MessageType::kBooleanGmwDMultiplyGate, gate_id_);
+      
+  e_futures_ = message_manager.RegisterReceiveAll(
+                 communication::MessageType::kBooleanGmwEMultiplyGate, gate_id_);
 
   // create output wires
   output_wires_.reserve(number_of_wires);
-  for (size_t i = 0; i < number_of_wires; ++i) {
+  for (size_t i = 0u; i < number_of_wires; ++i) {
     output_wires_.emplace_back(
         GetRegister().EmplaceWire<boolean_gmw::Wire>(backend_, number_of_simd_values));
   }
 
   auto& mt_provider = backend_.GetMtProvider();
-  mt_bitlen_ = parent_a_.size() * parent_a_.at(0)->GetNumberOfSimdValues();
+  mt_bitlen_ = parent_a_.size() * parent_a_[0]->GetNumberOfSimdValues();
   mt_offset_ = mt_provider->RequestBinaryMts(mt_bitlen_);
 
   if constexpr (kDebug) {
     auto gate_info = fmt::format("gate id {}, parents: {}, {}", gate_id_,
-                                 parent_a_.at(0)->GetWireId(), parent_b_.at(0)->GetWireId());
+                                 parent_a_[0]->GetWireId(), parent_b_[0]->GetWireId());
     GetLogger().LogDebug(
         fmt::format("Created a BooleanGMW AND gate with following properties: {}", gate_info));
   }
@@ -536,7 +575,20 @@ AndGate::AndGate(const motion::SharePointer& a, const motion::SharePointer& b)
 
 void AndGate::EvaluateSetup() {}
 
+#include <string>
+#include <iostream>
+#include <mutex>
+std::mutex str_m;
+using namespace std::string_literals;
+using std::to_string;
+void printValue(std::string str) {
+    std::lock_guard guard{str_m};
+    std::cout << str << std::endl;
+}
+
 void AndGate::EvaluateOnline() {
+  using communication::MessageType::kBooleanGmwDMultiplyGate;
+  using communication::MessageType::kBooleanGmwEMultiplyGate;
   // nothing to setup, no need to wait/check
   for (auto& wire : parent_a_) {
     wire->GetIsReadyCondition().Wait();
@@ -545,72 +597,77 @@ void AndGate::EvaluateOnline() {
   for (auto& wire : parent_b_) {
     wire->GetIsReadyCondition().Wait();
   }
+  
+  auto& communication_layer = GetCommunicationLayer();
+  auto my_id = communication_layer.GetMyId();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
 
   auto& mt_provider = GetMtProvider();
   mt_provider.WaitFinished();
   const auto& mts = mt_provider.GetBinaryAll();
-
-  auto& d_mutable_wires = d_->GetMutableWires();
-  for (auto i = 0ull; i < d_mutable_wires.size(); ++i) {
-    auto d = std::dynamic_pointer_cast<boolean_gmw::Wire>(d_mutable_wires.at(i));
-    const auto x = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_a_.at(i));
-    assert(d);
+  size_t number_of_wires = parent_a_.size();
+  size_t number_of_simd_values = parent_a_[0]->GetNumberOfSimdValues();
+  
+  std::vector<BitVector<>> d_values(number_of_wires), e_values(number_of_wires);
+  for (size_t i = 0u; i != number_of_wires; ++i) {
+    const auto x = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_a_[i]);
+    const auto y = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_b_[i]);
     assert(x);
-    d->GetMutableValues() = mts.a.Subset(mt_offset_ + i * x->GetNumberOfSimdValues(),
-                                         mt_offset_ + (i + 1) * x->GetNumberOfSimdValues());
-    d->GetMutableValues() ^= x->GetValues();
-    d->SetOnlineFinished();
-  }
-
-  auto& e_mutable_wires = e_->GetMutableWires();
-  for (auto i = 0ull; i < e_mutable_wires.size(); ++i) {
-    auto e = std::dynamic_pointer_cast<boolean_gmw::Wire>(e_mutable_wires.at(i));
-    const auto y = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_b_.at(i));
-    assert(e);
+    assert(x->GetNumberOfSimdValues() == number_of_simd_values);
     assert(y);
-    e->GetMutableValues() = mts.b.Subset(mt_offset_ + i * y->GetNumberOfSimdValues(),
-                                         mt_offset_ + (i + 1) * y->GetNumberOfSimdValues());
-    e->GetMutableValues() ^= y->GetValues();
-    e->SetOnlineFinished();
+    assert(y->GetNumberOfSimdValues() == number_of_simd_values);
+    d_values[i] = mts.a.Subset(mt_offset_ + i * number_of_simd_values,
+                               mt_offset_ + (i + 1) * number_of_simd_values);
+    d_values[i] ^= x->GetValues();
+    
+    e_values[i] = mts.b.Subset(mt_offset_ + i * number_of_simd_values,
+                               mt_offset_ + (i + 1) * number_of_simd_values);
+    e_values[i] ^= y->GetValues();
   }
 
-  d_output_->WaitOnline();
-  e_output_->WaitOnline();
-
-  const auto& d_clear = d_output_->GetOutputWires();
-  const auto& e_clear = e_output_->GetOutputWires();
-
-  for (auto& wire : d_clear) {
-    wire->GetIsReadyCondition().Wait();
+  communication_layer.BroadcastMessage(
+    communication::BuildMessage(kBooleanGmwDMultiplyGate, gate_id_, ToByteVector(d_values)).Release());
+  
+  communication_layer.BroadcastMessage(
+    communication::BuildMessage(kBooleanGmwEMultiplyGate, gate_id_, ToByteVector(e_values)).Release());
+  
+  // collect shares from all parties
+  for(size_t i = 0u; i != number_of_parties - 1; ++i) {
+    auto message = d_futures_[i].get();
+    auto payload = communication::GetMessage(message.data())->payload();
+    XorAssignSpan(d_values, {payload->Data(), payload->size()});
   }
-  for (auto& wire : e_clear) {
-    wire->GetIsReadyCondition().Wait();
+
+  // collect shares from all parties
+  for (size_t i = 0u; i != number_of_parties - 1; ++i) {
+    auto message = e_futures_[i].get();
+    auto payload = communication::GetMessage(message.data())->payload();
+    XorAssignSpan(e_values, {payload->Data(), payload->size()});
   }
+  
+  assert(d_values.size() > 0u);
+  assert(d_values.size() == e_values.size());
 
-  for (auto i = 0ull; i < d_clear.size(); ++i) {
-    const auto d_w = std::dynamic_pointer_cast<const boolean_gmw::Wire>(d_clear.at(i));
-    const auto x_i_w = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_a_.at(i));
-    const auto e_w = std::dynamic_pointer_cast<const boolean_gmw::Wire>(e_clear.at(i));
-    const auto y_i_w = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_b_.at(i));
-
-    assert(d_w);
+  for (size_t i = 0u; i != d_values.size(); ++i) {
+    const auto x_i_w = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_a_[i]);
+    const auto y_i_w = std::dynamic_pointer_cast<const boolean_gmw::Wire>(parent_b_[i]);
     assert(x_i_w);
-    assert(e_w);
     assert(y_i_w);
+    assert(x_i_w->GetNumberOfSimdValues() == number_of_simd_values);
+    assert(y_i_w->GetNumberOfSimdValues() == number_of_simd_values);
 
-    auto output = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_.at(i));
+    auto output = std::dynamic_pointer_cast<boolean_gmw::Wire>(output_wires_[i]);
     assert(output);
     output->GetMutableValues() =
-        mts.c.Subset(mt_offset_ + i * parent_a_.at(0)->GetNumberOfSimdValues(),
-                     mt_offset_ + (i + 1) * parent_a_.at(0)->GetNumberOfSimdValues());
+        mts.c.Subset(mt_offset_ + i * number_of_simd_values,
+                     mt_offset_ + (i + 1) * number_of_simd_values);
 
-    const auto& d = d_w->GetValues();
+    const auto& d = d_values[i];
     const auto& x_i = x_i_w->GetValues();
-    const auto& e = e_w->GetValues();
+    const auto& e = e_values[i];
     const auto& y_i = y_i_w->GetValues();
 
-    if (GetCommunicationLayer().GetMyId() ==
-        (gate_id_ % GetCommunicationLayer().GetNumberOfParties())) {
+    if (my_id == (gate_id_ % number_of_parties)) {
       output->GetMutableValues() ^= (d & y_i) ^ (e & x_i) ^ (e & d);
     } else {
       output->GetMutableValues() ^= (d & y_i) ^ (e & x_i);

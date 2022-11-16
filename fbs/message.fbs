@@ -21,6 +21,12 @@ enum MessageType : ubyte {
   kAstraOnlineDotProductGate = 17,
   kArithmeticGmwDMultiplyGate = 18,
   kArithmeticGmwEMultiplyGate = 19,
+  kBooleanAstraInputGate = 20,
+  kBooleanAstraOutputGate = 21,
+  kBooleanAstraOnlineAndGate = 22,
+  kBooleanAstraOnlineDotProductGate = 23,
+  kBooleanGmwDMultiplyGate = 24,
+  kBooleanGmwEMultiplyGate = 25,
   // add new message types here
   }
 

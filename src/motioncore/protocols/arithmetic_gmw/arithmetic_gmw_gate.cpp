@@ -506,6 +506,9 @@ void MultiplicationGate<T>::EvaluateSetup() {}
 
 template <typename T>
 void MultiplicationGate<T>::EvaluateOnline() {
+    
+  using communication::MessageType::kArithmeticGmwDMultiplyGate;
+  using communication::MessageType::kArithmeticGmwEMultiplyGate;
   // nothing to setup, no need to wait/check
 
   const auto x_wire = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_a_[0]);
@@ -547,12 +550,14 @@ void MultiplicationGate<T>::EvaluateOnline() {
                    [](const T& a, const T& b) { return a + b; });
   }
   
-  //TODO: Code is very similar in ArithmeticGmw::OutputGate, Astra::OutputGate and the following section
-  auto payload = ToByteVector<T>(d_values);
-  auto msg = communication::BuildMessage(
-               communication::MessageType::kArithmeticGmwDMultiplyGate, gate_id_, payload);
-  communication_layer.BroadcastMessage(msg.Release());
-
+  communication_layer.BroadcastMessage(
+                        communication::BuildMessage(
+                          kArithmeticGmwDMultiplyGate, gate_id_, ToByteVector<T>(d_values)).Release());
+  
+  communication_layer.BroadcastMessage(
+                        communication::BuildMessage(
+                          kArithmeticGmwEMultiplyGate, gate_id_, ToByteVector<T>(e_values)).Release());
+  
   for (auto i = 0u; i != number_of_parties - 1; ++i) {
     auto d_message = d_futures_[i].get();
     auto payload = communication::GetMessage(d_message.data())->payload();
@@ -564,11 +569,6 @@ void MultiplicationGate<T>::EvaluateOnline() {
     std::transform(r_v, r_v + number_of_simd_values, d_v, d_v,
                    [](const T& a, const T& b) { return a + b; });
   }
-  
-  payload = ToByteVector<T>(e_values);
-  msg = communication::BuildMessage(
-          communication::MessageType::kArithmeticGmwEMultiplyGate, gate_id_, payload);
-  communication_layer.BroadcastMessage(msg.Release());
   
   for (auto i = 0u; i != number_of_parties - 1; ++i) {
     auto e_message = e_futures_[i].get();
