@@ -40,6 +40,9 @@ add_library(motion
         protocols/bmr/bmr_provider.cpp
         protocols/bmr/bmr_share.cpp
         protocols/bmr/bmr_wire.cpp
+        protocols/boolean_astra/boolean_astra_gate.cpp
+        protocols/boolean_astra/boolean_astra_wire.cpp
+        protocols/boolean_astra/boolean_astra_share.cpp
         protocols/boolean_gmw/boolean_gmw_gate.cpp
         protocols/boolean_gmw/boolean_gmw_share.cpp
         protocols/boolean_gmw/boolean_gmw_wire.cpp

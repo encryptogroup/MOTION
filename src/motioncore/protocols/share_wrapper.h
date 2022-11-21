@@ -221,6 +221,8 @@ class ShareWrapper {
   
   template <typename T>
   ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const;
+  
+  ShareWrapper BooleanDotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const;
 
   ShareWrapper ArithmeticGmwToBmr() const;
 

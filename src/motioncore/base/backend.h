@@ -47,6 +47,13 @@ using SharePointer = std::shared_ptr<Share>;
 
 }  // namespace encrypto::motion::proto::boolean_gmw
 
+namespace encrypto::motion::proto::boolean_astra {
+
+class Share;
+using SharePointer = std::shared_ptr<Share>;
+
+}  // namespace encrypto::motion::proto::boolean_astra
+
 namespace encrypto::motion::proto::bmr {
 
 class Provider;
@@ -128,6 +135,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
   void Reset();
 
   void Clear();
+  
+  //BooleanGmw interface
 
   SharePointer BooleanGmwInput(std::size_t party_id, bool input = false);
 
@@ -155,8 +164,11 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   SharePointer BooleanGmwMux(const SharePointer& a, const SharePointer& b,
                              const SharePointer& selection);
-
+                             
   SharePointer BooleanGmwOutput(const SharePointer& parent, std::size_t output_owner);
+                             
+  //Bmr interface
+
 
   SharePointer BmrInput(std::size_t party_id, bool input = false);
 
@@ -169,6 +181,32 @@ class Backend : public std::enable_shared_from_this<Backend> {
   SharePointer BmrInput(std::size_t party_id, std::vector<BitVector<>>&& input);
 
   SharePointer BmrOutput(const SharePointer& parent, std::size_t output_owner);
+  
+  //BooleanAstra interface
+  
+  SharePointer BooleanAstraInput(std::size_t party_id, bool input = false);
+
+  SharePointer BooleanAstraInput(std::size_t party_id, const BitVector<>& input);
+
+  SharePointer BooleanAstraInput(std::size_t party_id, BitVector<>&& input);
+
+  SharePointer BooleanAstraInput(std::size_t party_id, std::span<const BitVector<>> input);
+
+  SharePointer BooleanAstraInput(std::size_t party_id, std::vector<BitVector<>>&& input);
+  
+  SharePointer BooleanAstraOutput(const SharePointer& parent, std::size_t output_owner);
+
+  SharePointer BooleanAstraXor(const proto::boolean_astra::SharePointer& a,
+                               const proto::boolean_astra::SharePointer& b);
+
+  SharePointer BooleanAstraXor(const SharePointer& a, const SharePointer& b);
+
+  SharePointer BooleanAstraAnd(const proto::boolean_astra::SharePointer& a,
+                               const proto::boolean_astra::SharePointer& b);
+
+  SharePointer BooleanAstraAnd(const SharePointer& a, const SharePointer& b);
+  
+  //ArithmeticAstra interface
 
   template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   SharePointer ConstantArithmeticGmwInput(T input = 0) {
@@ -218,6 +256,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
                                         
   template <typename T>
   SharePointer ArithmeticGmwSubtraction(const SharePointer& a, const SharePointer& b);
+  
+  //Astra interface
 
   template <typename T>
   SharePointer AstraInput(std::size_t party_id, T input = 0);
@@ -245,6 +285,8 @@ class Backend : public std::enable_shared_from_this<Backend> {
 
   template <typename T>
   SharePointer AstraSubtraction(const SharePointer& a, const SharePointer& b);
+  
+  //End interfaces
   
   void AddCustomSetupJob(std::function<void()> job);
   

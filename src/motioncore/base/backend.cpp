@@ -52,6 +52,8 @@
 #include "protocols/bmr/bmr_gate.h"
 #include "protocols/bmr/bmr_provider.h"
 #include "protocols/bmr/bmr_share.h"
+#include "protocols/boolean_astra/boolean_astra_gate.h"
+#include "protocols/boolean_astra/boolean_astra_share.h"
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
 #include "protocols/boolean_gmw/boolean_gmw_share.h"
 #include "register.h"
@@ -173,6 +175,8 @@ void Backend::Reset() { register_->Reset(); }
 
 void Backend::Clear() { register_->Clear(); }
 
+//BooleanGmw interface
+
 SharePointer Backend::BooleanGmwInput(std::size_t party_id, bool input) {
   return BooleanGmwInput(party_id, BitVector(1, input));
 }
@@ -264,6 +268,8 @@ SharePointer Backend::BooleanGmwOutput(const SharePointer& parent, std::size_t o
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsShare());
 }
 
+//Bmr interface
+
 SharePointer Backend::BmrInput(std::size_t party_id, bool input) {
   return BmrInput(party_id, BitVector(1, input));
 }
@@ -291,6 +297,74 @@ SharePointer Backend::BmrOutput(const SharePointer& parent, std::size_t output_o
   const auto output_gate = register_->EmplaceGate<proto::bmr::OutputGate>(parent, output_owner);
   return std::static_pointer_cast<Share>(output_gate->GetOutputAsShare());
 }
+
+
+//BooleanAstra interface
+
+SharePointer Backend::BooleanAstraInput(std::size_t party_id, bool input) {
+  return BooleanAstraInput(party_id, BitVector(1, input));
+}
+
+SharePointer Backend::BooleanAstraInput(std::size_t party_id, const BitVector<>& input) {
+  return BooleanAstraInput(party_id, std::vector<BitVector<>>{input});
+}
+
+SharePointer Backend::BooleanAstraInput(std::size_t party_id, BitVector<>&& input) {
+  return BooleanAstraInput(party_id, std::vector<BitVector<>>{std::move(input)});
+}
+
+SharePointer Backend::BooleanAstraInput(std::size_t party_id, std::span<const BitVector<>> input) {
+  return BooleanAstraInput(party_id, std::vector<BitVector<>>{input.begin(), input.end()});
+}
+
+SharePointer Backend::BooleanAstraInput(std::size_t party_id, std::vector<BitVector<>>&& input) {
+  const auto input_gate = register_->EmplaceGate<proto::boolean_astra::InputGate>(std::move(input), party_id, *this);
+  return std::static_pointer_cast<Share>(input_gate->GetOutputAsBooleanAstraShare());
+}
+
+SharePointer Backend::BooleanAstraOutput(const SharePointer& parent, std::size_t output_owner) {
+  assert(parent);
+  const auto output_gate = register_->EmplaceGate<proto::boolean_astra::OutputGate>(parent, output_owner);
+  return std::static_pointer_cast<Share>(output_gate->GetOutputAsBooleanAstraShare());
+}
+
+SharePointer Backend::BooleanAstraXor(const proto::boolean_astra::SharePointer& a,
+                                      const proto::boolean_astra::SharePointer& b) {
+  assert(a);
+  assert(b);
+  auto wire_a = a->GetBooleanAstraWire();
+  auto wire_b = b->GetBooleanAstraWire();
+  const auto xor_gate = register_->EmplaceGate<proto::boolean_astra::XorGate>(wire_a, wire_b);
+  return xor_gate->GetOutputAsBooleanAstraShare();
+}
+
+SharePointer Backend::BooleanAstraXor(const SharePointer& a, const SharePointer& b) {
+  assert(a);
+  assert(b);
+  const auto casted_a = std::dynamic_pointer_cast<proto::boolean_astra::Share>(a);
+  const auto casted_b = std::dynamic_pointer_cast<proto::boolean_astra::Share>(b);
+  return BooleanAstraXor(casted_a, casted_b);
+}
+
+SharePointer Backend::BooleanAstraAnd(const proto::boolean_astra::SharePointer& a,
+                                      const proto::boolean_astra::SharePointer& b) {
+  assert(a);
+  assert(b);
+  auto wire_a = a->GetBooleanAstraWire();
+  auto wire_b = b->GetBooleanAstraWire();
+  const auto and_gate = register_->EmplaceGate<proto::boolean_astra::AndGate>(wire_a, wire_b);
+  return and_gate->GetOutputAsBooleanAstraShare();
+}
+
+SharePointer Backend::BooleanAstraAnd(const SharePointer& a, const SharePointer& b) {
+  assert(a);
+  assert(b);
+  const auto casted_a = std::dynamic_pointer_cast<proto::boolean_astra::Share>(a);
+  const auto casted_b = std::dynamic_pointer_cast<proto::boolean_astra::Share>(b);
+  return BooleanAstraAnd(casted_a, casted_b);
+}
+
+//ArithmeticGmw interface
 
 template <typename T>
 SharePointer Backend::ArithmeticGmwInput(std::size_t party_id, T input) {
@@ -482,6 +556,8 @@ template SharePointer Backend::ArithmeticGmwSubtraction<std::uint64_t>(const Sha
                                                                        const SharePointer& b);
 template SharePointer Backend::ArithmeticGmwSubtraction<__uint128_t>(const SharePointer& a,
                                                                      const SharePointer& b);
+                                                                     
+//Astra interface
 
 template <typename T>
 SharePointer Backend::AstraInput(std::size_t party_id, T input) {
@@ -647,6 +723,8 @@ template SharePointer Backend::AstraSubtraction<std::uint64_t>(const SharePointe
                                                                const SharePointer& b);
 template SharePointer Backend::AstraSubtraction<__uint128_t>(const SharePointer& a,
                                                              const SharePointer& b);
+                                                             
+//End interfaces
   
 void Backend::AddCustomSetupJob(std::function<void()> job) {
   gate_executor_->AddCustomSetupJob(std::move(job));
