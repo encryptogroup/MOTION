@@ -28,6 +28,12 @@
 
 #include "primitives/aes/aesni_primitives.h"
 
+
+// added by Liang Zhao
+// otherwise has compiler error in server (Arch Linux)
+#include <array>
+#include <tuple>
+
 namespace encrypto::motion {
 
 thread_local Aes128CtrRng Aes128CtrRng::thread_instance_;
