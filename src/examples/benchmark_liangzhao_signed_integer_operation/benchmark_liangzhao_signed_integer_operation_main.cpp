@@ -72,18 +72,26 @@ std::vector<Combination> GenerateAllCombinations() {
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
-      T::kAdd, T::kSub, T::kMul, T::kDiv,    T::kLt,
-      T::kGt,  T::kEq,  T::kGEQ, T::kLEQ,    T::kInRange,
+      T::kAdd,    T::kSub,   T::kMul, T::kDiv,    T::kLt,
+      T::kGt,     T::kEq,    T::kGE,  T::kLE,     T::kInRange,
 
-      T::kEQZ, T::kLTZ, T::kNeg, T::kInt2FL, T::kInt2Fx,
+      T::kIsZero, T::kIsNeg, T::kNeg, T::kInt2FL, T::kInt2Fx,
+  };
+
+  const std::array kGarbledCircuitOperationTypes = {
+      // boolean circuit based method
+      T::kAdd,    T::kSub,   T::kMul, T::kDiv,    T::kLt,
+      T::kGt,     T::kEq,    T::kGE,  T::kLE,     T::kInRange,
+
+      T::kIsZero, T::kIsNeg, T::kNeg, T::kInt2FL, T::kInt2Fx,
   };
 
   const std::array kBmrOperationTypes = {
       // boolean circuit based method
-      T::kAdd, T::kSub, T::kMul, T::kDiv,    T::kLt,
-      T::kGt,  T::kEq,  T::kGEQ, T::kLEQ,    T::kInRange,
+      T::kAdd,    T::kSub,   T::kMul, T::kDiv,    T::kLt,
+      T::kGt,     T::kEq,    T::kGE,  T::kLE,     T::kInRange,
 
-      T::kEQZ, T::kLTZ, T::kNeg, T::kInt2FL, T::kInt2Fx,
+      T::kIsZero, T::kIsNeg, T::kNeg, T::kInt2FL, T::kInt2Fx,
   };
 
   std::vector<Combination> combinations;
@@ -100,6 +108,23 @@ std::vector<Combination> GenerateAllCombinations() {
         else {
           combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
                                     operation_type, number_of_simd);
+        }
+      }
+    }
+  }
+
+  for (const auto number_of_simd : kNumbersOfSimd) {
+    for (const auto bit_size : kBooleanBitSizes) {
+      for (const auto operation_type : kGarbledCircuitOperationTypes) {
+        if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
+        }
+
+        else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
+        }
+
+        else {
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                    number_of_simd);
         }
       }
     }
@@ -151,19 +176,19 @@ int main(int ac, char* av[]) {
 
   combinations = GenerateAllCombinations();
 
-  // added by Liang Zhao
-  std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
-  const std::string CSV_filename =
-      "../../src/examples/benchmark_liangzhao_signed_integer_operation/"
-      "benchmark_liangzhao_signed_integer_operation_P" +
-      party_id + ".csv";
-  encrypto::motion::CreateCsvFile(CSV_filename);
+  // // added by Liang Zhao
+  // std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
+  // const std::string CSV_filename =
+  //     "../../src/examples/benchmark_liangzhao_signed_integer_operation/"
+  //     "benchmark_liangzhao_signed_integer_operation_P" +
+  //     party_id + ".csv";
+  // encrypto::motion::CreateCsvFile(CSV_filename);
 
-  const std::string txt_filename =
-      "../../src/examples/benchmark_liangzhao_signed_integer_operation/"
-      "benchmark_liangzhao_signed_integer_operation_P" +
-      party_id + ".txt";
-  encrypto::motion::CreateTxtFile(txt_filename);
+  // const std::string txt_filename =
+  //     "../../src/examples/benchmark_liangzhao_signed_integer_operation/"
+  //     "benchmark_liangzhao_signed_integer_operation_P" +
+  //     party_id + ".txt";
+  // encrypto::motion::CreateTxtFile(txt_filename);
 
   for (const auto combination : combinations) {
     encrypto::motion::AccumulatedRunTimeStatistics accumulated_statistics;
@@ -174,12 +199,12 @@ int main(int ac, char* av[]) {
       auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
                                          combination.protocol_, combination.operation_type_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics = party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
-    std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
-                             encrypto::motion::to_string(combination.operation_type_),
-                             combination.bit_size_, combination.number_of_simd_);
+    // std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
+    //                          encrypto::motion::to_string(combination.operation_type_),
+    //                          combination.bit_size_, combination.number_of_simd_);
     std::cout << encrypto::motion::PrintStatistics(
         fmt::format("Protocol {} operation {} bit size {} SIMD {}",
                     encrypto::motion::to_string(combination.protocol_),
@@ -187,25 +212,25 @@ int main(int ac, char* av[]) {
                     combination.number_of_simd_),
         accumulated_statistics, accumulated_communication_statistics);
 
-    // added by Liang Zhao
-    encrypto::motion::WriteToTxt(
-        txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
-                                  encrypto::motion::to_string(combination.operation_type_),
-                                  combination.bit_size_, combination.number_of_simd_));
+    // // added by Liang Zhao
+    // encrypto::motion::WriteToTxt(
+    //     txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
+    //                               encrypto::motion::to_string(combination.operation_type_),
+    //                               combination.bit_size_, combination.number_of_simd_));
 
-    encrypto::motion::WriteToTxt(
-        txt_filename, encrypto::motion::PrintStatistics(
-                          fmt::format("Protocol {} operation {} bit size {} SIMD {}",
-                                      encrypto::motion::to_string(combination.protocol_),
-                                      encrypto::motion::to_string(combination.operation_type_),
-                                      combination.bit_size_, combination.number_of_simd_),
-                          accumulated_statistics, accumulated_communication_statistics));
+    // encrypto::motion::WriteToTxt(
+    //     txt_filename, encrypto::motion::PrintStatistics(
+    //                       fmt::format("Protocol {} operation {} bit size {} SIMD {}",
+    //                                   encrypto::motion::to_string(combination.protocol_),
+    //                                   encrypto::motion::to_string(combination.operation_type_),
+    //                                   combination.bit_size_, combination.number_of_simd_),
+    //                       accumulated_statistics, accumulated_communication_statistics));
 
-    // added by Liang Zhao
-    encrypto::motion::WriteToCsv(
-        fmt::format("{} {}-bit SIMD-{}", encrypto::motion::to_string(combination.operation_type_),
-                    combination.bit_size_, combination.number_of_simd_),
-        CSV_filename, accumulated_statistics, accumulated_communication_statistics);
+    // // added by Liang Zhao
+    // encrypto::motion::WriteToCsv(
+    //     fmt::format("{} {}-bit SIMD-{}", encrypto::motion::to_string(combination.operation_type_),
+    //                 combination.bit_size_, combination.number_of_simd_),
+    //     CSV_filename, accumulated_statistics, accumulated_communication_statistics);
   }
   return EXIT_SUCCESS;
 }

@@ -12,9 +12,9 @@
 # =================================================================
 # added by Liang Zhao
 add_subdirectory(benchmark_liangzhao_unsigned_integer_operation)
+add_subdirectory(benchmark_liangzhao_signed_integer_operation)
 # add_subdirectory(benchmark_liangzhao_basic)
 # add_subdirectory(benchmark_liangzhao_arithmetic_gmw_operation)
-# add_subdirectory(benchmark_liangzhao_signed_integer_operation)
 # add_subdirectory(benchmark_liangzhao_fixed_point_operation)
 # add_subdirectory(benchmark_liangzhao_floating_point_operation)
 
