@@ -86,11 +86,11 @@ std::vector<Combination> GenerateAllCombinations() {
       T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
   };
 
-  // const std::array kGarbledCircuitOperationTypes = {
-  //     // boolean circuit based method
-  //     T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
-  //     T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
-  // };
+  const std::array kGarbledCircuitOperationTypes = {
+      // boolean circuit based method
+      T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
+      T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+  };
 
   std::vector<Combination> combinations;
 
@@ -103,14 +103,14 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
-    for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kBooleanGmwOperationTypes) {
-        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit,
-                                  operation_type, number_of_simd);
-      }
-    }
-  }
+  // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
+  //   for (const auto bit_size : kBooleanBitSizes) {
+  //     for (const auto operation_type : kBooleanGmwOperationTypes) {
+  //       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit,
+  //                                 operation_type, number_of_simd);
+  //     }
+  //   }
+  // }
 
   for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBooleanBitSizes) {
