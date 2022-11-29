@@ -38,13 +38,13 @@ add_executable(motiontest
         # =================================================================
         # liangzhao tests
 
-        test_liangzhao_mux_xcotmul.cpp # test passed
+        # test_liangzhao_mux_xcotmul.cpp # test passed
 
-        test_liangzhao_unsigned_integer_operations_bgmw.cpp # test passed, need intensive test, edge case test
+        # test_liangzhao_unsigned_integer_operations_bgmw.cpp # test passed, need intensive test, edge case test
         # test_liangzhao_unsigned_integer_operations_bmr.cpp # test passed, need intensive test, edge case test
         # test_liangzhao_unsigned_integer_operations_gc.cpp # test passed, need intensive test, edge case test
 
-        test_liangzhao_signed_integer_operations_bgmw.cpp # test passed, need intensive test, edge case test
+        # test_liangzhao_signed_integer_operations_bgmw.cpp # test passed, need intensive test, edge case test
         # test_liangzhao_signed_integer_operations_bmr.cpp # test passed, need intensive test, edge case test
         # test_liangzhao_signed_integer_operations_gc.cpp # test passed, need intensive test, edge case test
         # test_liangzhao_floating_point_circuit_ABY_bgmw.cpp # test passed, need intensive test, edge case test
@@ -68,7 +68,9 @@ add_executable(motiontest
 
         # test_liangzhao_edaBit.cpp # test passed
 
-        test_liangzhao_EQ_EQZ_LTBits_LTC_LTS_LTZ.cpp
+        # test_liangzhao_EQ_EQZ_LTBits_LTC_LTS_LTZ.cpp # not tested
+
+        test_liangzhao_sampling_algorithm.cpp
 )
 
 target_link_libraries(motiontest PRIVATE

@@ -36,15 +36,15 @@
 
 namespace encrypto::motion {
 
-SamplingAlgorithm::SamplingAlgorithm(const SharePointer& other)
+SecureSamplingAlgorithm::SecureSamplingAlgorithm(const SharePointer& other)
     : share_(std::make_unique<ShareWrapper>(other)),
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
-SamplingAlgorithm::SamplingAlgorithm(SharePointer&& other)
+SecureSamplingAlgorithm::SecureSamplingAlgorithm(SharePointer&& other)
     : share_(std::make_unique<ShareWrapper>(std::move(other))),
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
-ShareWrapper SamplingAlgorithm::GenerateRandomBooleanGmwBits(const std::size_t num_of_bits,
+ShareWrapper SecureSamplingAlgorithm::GenerateRandomBooleanGmwBits(const std::size_t num_of_bits,
                                                              const std::size_t num_of_simd) const {
   std::vector<BitVector<>> random_bitvector_vector;
   random_bitvector_vector.reserve(num_of_bits);
@@ -66,7 +66,7 @@ ShareWrapper SamplingAlgorithm::GenerateRandomBooleanGmwBits(const std::size_t n
 }
 
 template <typename T>
-ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2(
+ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2(
     std::size_t bit_size_k, const std::size_t num_of_simd) const {
   assert(sizeof(T) * 8 >= bit_size_k);
   std::size_t T_size = sizeof(T) * 8;
@@ -93,118 +93,118 @@ ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2(
   return boolean_gmw_random_unsigned_integer;
 }
 
-template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint8_t>(
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint8_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint16_t>(
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint16_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint32_t>(
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint32_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint64_t>(
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint64_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uint128_t>(
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uint128_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
 
-// template <typename T>
-// ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW(
-//     T m, const std::size_t num_of_simd) const {
-//   std::size_t T_size = sizeof(T) * 8;
-//   ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
-//   SecureUnsignedInteger random_unsigned_integer =
-//       SecureUnsignedInteger(boolean_gmw_share_random_bits);
-//   SecureUnsignedInteger random_unsigned_integer_0_m = random_unsigned_integer.Mod(m);
-//   return random_unsigned_integer_0_m.Get();
-// }
+template <typename T>
+ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW(
+    T m, const std::size_t num_of_simd) const {
+  std::size_t T_size = sizeof(T) * 8;
+  ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
+  SecureUnsignedInteger random_unsigned_integer =
+      SecureUnsignedInteger(boolean_gmw_share_random_bits);
+  SecureUnsignedInteger random_unsigned_integer_0_m = random_unsigned_integer.Mod(m);
+  return random_unsigned_integer_0_m.Get();
+}
 
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint8_t>(
-//     std::uint8_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint16_t>(
-//     std::uint16_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint32_t>(
-//     std::uint32_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint64_t>(
-//     std::uint64_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
-//     __uint128_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint8_t>(
+    std::uint8_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint16_t>(
+    std::uint16_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint32_t>(
+    std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint64_t>(
+    std::uint64_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
+    __uint128_t m, const std::size_t num_of_simd) const;
 
-// template <typename T>
-// ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBMR(
-//     T m, const std::size_t num_of_simd) const {
-//   std::size_t T_size = sizeof(T) * 8;
-//   ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
-//   SecureUnsignedInteger random_unsigned_integer =
-//       SecureUnsignedInteger(boolean_gmw_share_random_bits.Convert<MpcProtocol::kBmr>());
-//   ShareWrapper random_unsigned_integer_bmr_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
-//   return random_unsigned_integer_bmr_share_0_m;
-// }
+template <typename T>
+ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR(
+    T m, const std::size_t num_of_simd) const {
+  std::size_t T_size = sizeof(T) * 8;
+  ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
+  SecureUnsignedInteger random_unsigned_integer =
+      SecureUnsignedInteger(boolean_gmw_share_random_bits.Convert<MpcProtocol::kBmr>());
+  ShareWrapper random_unsigned_integer_bmr_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
+  return random_unsigned_integer_bmr_share_0_m;
+}
 
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint8_t>(
-//     std::uint8_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint16_t>(
-//     std::uint16_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint32_t>(
-//     std::uint32_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint64_t>(
-//     std::uint64_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
-//     __uint128_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint8_t>(
+    std::uint8_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint16_t>(
+    std::uint16_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint32_t>(
+    std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint64_t>(
+    std::uint64_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
+    __uint128_t m, const std::size_t num_of_simd) const;
 
-// // TODO: need conversion from Boolean Gmw to Garbled circuit
-// template <typename T>
-// ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerGC(
-//     T m, const std::size_t num_of_simd) const {
+// TODO: need conversion from Boolean Gmw to Garbled circuit
+template <typename T>
+ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC(
+    T m, const std::size_t num_of_simd) const {
 //   std::size_t T_size = sizeof(T) * 8;
 //   ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
 //   SecureUnsignedInteger random_unsigned_integer =
 //       SecureUnsignedInteger(boolean_gc_share_random_bits.Convert<MpcProtocol::kGarbledCircuit, >());
 //   ShareWrapper random_unsigned_integer_gc_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
 //   return random_unsigned_integer_gc_share_0_m;
-// }
+}
 
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint8_t>(
-//     std::uint8_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint16_t>(
-//     std::uint16_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint32_t>(
-//     std::uint32_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint64_t>(
-//     std::uint64_t m, const std::size_t num_of_simd) const;
-// template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerGC<__uint128_t>(
-//     __uint128_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint8_t>(
+    std::uint8_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint16_t>(
+    std::uint16_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint32_t>(
+    std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint64_t>(
+    std::uint64_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<__uint128_t>(
+    __uint128_t m, const std::size_t num_of_simd) const;
 
-// ShareWrapper SamplingAlgorithm::SimpleGeometricSampling_1(const ShareWrapper& random_bits) const {
-//   ShareWrapper random_bits_pre_or = random_bits.PreOrL();
+ShareWrapper SecureSamplingAlgorithm::SimpleGeometricSampling_1(const ShareWrapper& random_bits) const {
+  ShareWrapper random_bits_pre_or = random_bits.PreOrL();
 
-//   std::vector<ShareWrapper> random_bits_pre_or_vector = random_bits_pre_or.Split();
+  std::vector<ShareWrapper> random_bits_pre_or_vector = random_bits_pre_or.Split();
 
-//   //   ShareWrapper constant_boolean_gmw_share_one =
-//   //       random_bits_pre_or_vector[0] ^ (~random_bits_pre_or_vector[0]);
-//   //   ShareWrapper constant_boolean_gmw_share_zero =
-//   //       random_bits_pre_or_vector[0] ^ (random_bits_pre_or_vector[0]);
-//   ShareWrapper constant_boolean_gmw_share_one =
-//       (random_bits_pre_or_vector[0]).CreateConstantAsBooleanGmwInput(true);
-//   ShareWrapper constant_boolean_gmw_share_zero =
-//       (random_bits_pre_or_vector[0]).CreateConstantAsBooleanGmwInput(false);
+  //   ShareWrapper constant_boolean_gmw_share_one =
+  //       random_bits_pre_or_vector[0] ^ (~random_bits_pre_or_vector[0]);
+  //   ShareWrapper constant_boolean_gmw_share_zero =
+  //       random_bits_pre_or_vector[0] ^ (random_bits_pre_or_vector[0]);
+  ShareWrapper constant_boolean_gmw_share_one =
+      (random_bits_pre_or_vector[0]).CreateConstantAsBooleanGmwInput(true);
+  ShareWrapper constant_boolean_gmw_share_zero =
+      (random_bits_pre_or_vector[0]).CreateConstantAsBooleanGmwInput(false);
 
-//   std::size_t num_of_random_bits = random_bits_pre_or_vector.size();
+  std::size_t num_of_random_bits = random_bits_pre_or_vector.size();
 
-//   std::vector<ShareWrapper> random_bits_pre_or_vector_right_shift_by_1_vector(num_of_random_bits);
-//   random_bits_pre_or_vector_right_shift_by_1_vector[0] = constant_boolean_gmw_share_zero;
-//   for (std::size_t i = 1; i < num_of_random_bits; i++) {
-//     random_bits_pre_or_vector_right_shift_by_1_vector[i] = random_bits_pre_or_vector[i - 1];
-//   }
+  std::vector<ShareWrapper> random_bits_pre_or_vector_right_shift_by_1_vector(num_of_random_bits);
+  random_bits_pre_or_vector_right_shift_by_1_vector[0] = constant_boolean_gmw_share_zero;
+  for (std::size_t i = 1; i < num_of_random_bits; i++) {
+    random_bits_pre_or_vector_right_shift_by_1_vector[i] = random_bits_pre_or_vector[i - 1];
+  }
 
-//   ShareWrapper random_bits_pre_or_right_shift_by_1 =
-//       ShareWrapper::Concatenate(random_bits_pre_or_vector_right_shift_by_1_vector);
+  ShareWrapper random_bits_pre_or_right_shift_by_1 =
+      ShareWrapper::Concatenate(random_bits_pre_or_vector_right_shift_by_1_vector);
 
-//   ShareWrapper random_bits_pre_or_right_shift_by_1_invert = ~random_bits_pre_or_right_shift_by_1;
+  ShareWrapper random_bits_pre_or_right_shift_by_1_invert = ~random_bits_pre_or_right_shift_by_1;
 
-//   ShareWrapper hamming_weight =
-//       encrypto::motion::algorithm::HammingWeight(random_bits_pre_or_right_shift_by_1_invert);
+  ShareWrapper hamming_weight =
+      encrypto::motion::algorithm::HammingWeight(random_bits_pre_or_right_shift_by_1_invert);
 
-//   return hamming_weight;
-// }
+  return hamming_weight;
+}
 
-// ShareWrapper SamplingAlgorithm::SimpleGeometricSampling_0(const ShareWrapper& random_bits) const {
+// ShareWrapper SecureSamplingAlgorithm::SimpleGeometricSampling_0(const ShareWrapper& random_bits) const {
 //   ShareWrapper random_bits_pre_or = random_bits.PreOrL();
 
 //   //   std::vector<ShareWrapper> random_bits_pre_or_vector = random_bits_pre_or.Split();
@@ -217,7 +217,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return hamming_weight;
 // }
 
-// ShareWrapper SamplingAlgorithm::UniformFloatingPoint64_0_1(
+// ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint64_0_1(
 //     const ShareWrapper& random_bits_of_length_52,
 //     const ShareWrapper& random_bits_of_length_1022) const {
 //   //   std::cout << "UniformFloatingPoint64_0_1" << std::endl;
@@ -333,7 +333,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return ShareWrapper::Concatenate(boolean_gmw_share_uniform_floating_point_vector);
 // }
 
-// ShareWrapper SamplingAlgorithm::UniformFloatingPoint32_0_1(
+// ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint32_0_1(
 //     const ShareWrapper& random_bits_of_length_23,
 //     const ShareWrapper& random_bits_of_length_126) const {
 //   //   std::cout << "UniformFloatingPoint32_0_1" << std::endl;
@@ -450,7 +450,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 // }
 
 // template <typename FloatType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLGeometricDistributionEXP(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
 //     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
@@ -644,7 +644,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   //   }
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP<
 //     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
@@ -653,7 +653,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_2) const;
 
 // template std::vector<ShareWrapper>
-// SamplingAlgorithm::FLGeometricDistributionEXP<double, std::uint64_t, std::int64_t>(
+// SecureSamplingAlgorithm::FLGeometricDistributionEXP<double, std::uint64_t, std::int64_t>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
@@ -661,7 +661,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_2) const;
 
 // template <typename FloatType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLGeometricDistributionEXP(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
 //     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
 //     std::size_t iteration_2) const {
@@ -764,18 +764,18 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   //   }
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP<
 //     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2) const;
 
 // template <typename FloatType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteLaplaceDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution(
 //     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
@@ -873,7 +873,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_discrete_laplace_sample_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteLaplaceDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
 //     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
@@ -882,7 +882,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
 //     std::size_t iteration_2, std::size_t iteration_3) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteLaplaceDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -892,7 +892,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_2, std::size_t iteration_3) const;
 
 // template <typename FloatType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteLaplaceDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution(
 //     const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
@@ -982,14 +982,14 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_discrete_laplace_sample_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteLaplaceDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
 //     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
 //     std::size_t iteration_3) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteLaplaceDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
@@ -997,7 +997,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_3) const;
 
 // template <typename FloatType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteGaussianDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution(
 //     const std::vector<double>& constant_floating_point_sigma_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
 //     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
@@ -1127,7 +1127,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_result_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
 //     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<double>& constant_floating_point_sigma_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
@@ -1136,7 +1136,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
 //     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<double>& constant_floating_point_sigma_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
@@ -1146,7 +1146,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
 // template <typename FloatType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteGaussianDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution(
 //     const std::vector<double>& constant_floating_point_sigma_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
@@ -1269,7 +1269,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_result_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
 //     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<double>& constant_floating_point_sigma_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
@@ -1277,7 +1277,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
 //     std::size_t iteration_3, std::size_t iteration_4) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FLDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<double>& constant_floating_point_sigma_vector,
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
@@ -1287,7 +1287,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 
 // // TODO: after benchmarking, use more floating-point
 // template <typename FloatType, typename UintType>
-// std::vector<ShareWrapper> SamplingAlgorithm::FLSymmetricBinomialDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FLSymmetricBinomialDistribution(
 //     std::vector<double> constant_sqrt_n_vector,
 //     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
 //     const ShareWrapper& boolean_gmw_share_random_bits,
@@ -1449,7 +1449,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 
 // // constant_sqrt_n * sqrt(2) < 2^(64)
 // template std::vector<ShareWrapper>
-// SamplingAlgorithm::FLSymmetricBinomialDistribution<double, std::uint64_t>(
+// SecureSamplingAlgorithm::FLSymmetricBinomialDistribution<double, std::uint64_t>(
 //     std::vector<double> constant_sqrt_n_vector,
 //     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
 //     const ShareWrapper& boolean_gmw_share_random_bits,
@@ -1458,7 +1458,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 
 // // // constant_sqrt_n * sqrt(2) < 2^(128)
 // // template std::vector<ShareWrapper>
-// // SamplingAlgorithm::FLSymmetricBinomialDistribution<double, __uint128_t, __int128_t>(
+// // SecureSamplingAlgorithm::FLSymmetricBinomialDistribution<double, __uint128_t, __int128_t>(
 // //     std::vector<double> constant_sqrt_n_vector,
 // //     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
 // //     const ShareWrapper& boolean_gmw_share_random_bits,
@@ -1466,7 +1466,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 // //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration)
 // //     const;
 
-// ShareWrapper SamplingAlgorithm::BooleanGmwBitsZeroCompensation(
+// ShareWrapper SecureSamplingAlgorithm::BooleanGmwBitsZeroCompensation(
 //     const ShareWrapper& boolean_gmw_share_bits, const std::size_t num_of_total_bits) const {
 //   //   std::size_t T_size = sizeof(UintType) * 8;
 
@@ -1496,7 +1496,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return ShareWrapper::Concatenate(boolean_gmw_share_bits_with_zero_compensation_vector);
 // }
 
-// ShareWrapper SamplingAlgorithm::UniformFixedPoint_0_1(
+// ShareWrapper SecureSamplingAlgorithm::UniformFixedPoint_0_1(
 //     const ShareWrapper& random_bits_of_length_fixed_point_fraction,
 //     const std::size_t fixed_point_bit_size) const {
 //   ShareWrapper fixed_point_boolean_gmw_share_0_1 = BooleanGmwBitsZeroCompensation(
@@ -1505,7 +1505,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return fixed_point_boolean_gmw_share_0_1;
 // }
 
-// ShareWrapper SamplingAlgorithm::UniformFixedPoint_0_1_Up(
+// ShareWrapper SecureSamplingAlgorithm::UniformFixedPoint_0_1_Up(
 //     const ShareWrapper& random_bits_of_length_fixed_point_fraction,
 //     const std::size_t fixed_point_bit_size) const {
 //   // uniform fixed point in [0,1)
@@ -1534,7 +1534,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 // }
 
 // template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FxGeometricDistributionEXP(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP(
 //     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
@@ -1740,7 +1740,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 // }
 
 // // TODO: use exp2_p1045_neg_0_1
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
 //     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
@@ -1748,7 +1748,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
 //     std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -1757,7 +1757,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const;
 
 // template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FxGeometricDistributionEXP(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP(
 //     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
 //     std::size_t fixed_point_fraction_bit_size) const {
@@ -1876,20 +1876,20 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   }
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
 //     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
 //     std::size_t fixed_point_fraction_bit_size) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxGeometricDistributionEXP<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
 //     std::size_t fixed_point_fraction_bit_size) const;
 
 // template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteLaplaceDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution(
 //     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
@@ -1990,7 +1990,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 // }
 
 // template std::vector<ShareWrapper>
-// SamplingAlgorithm::FxDiscreteLaplaceDistribution<double, std::uint64_t, std::int64_t>(
+// SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution<double, std::uint64_t, std::int64_t>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
@@ -2000,7 +2000,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t fixed_point_fraction_bit_size) const;
 
 // template <typename FixType, typename UintType>
-// std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteLaplaceDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
@@ -2090,14 +2090,14 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_discrete_laplace_sample_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteLaplaceDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution<
 //     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
 //     std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteLaplaceDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
@@ -2105,7 +2105,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const;
 
 // template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteGaussianDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution(
 //     const std::vector<double>& constant_fixed_point_sigma_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
 //     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
@@ -2233,7 +2233,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_result_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
 //     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<double>& constant_fixed_point_sigma_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
@@ -2243,7 +2243,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
 //     std::size_t fixed_point_fraction_bit_size) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<double>& constant_fixed_point_sigma_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
@@ -2254,7 +2254,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t fixed_point_fraction_bit_size) const;
 
 // template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteGaussianDistribution(
+// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution(
 //     const std::vector<double>& constant_fixed_point_sigma_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
 //     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
@@ -2375,7 +2375,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //   return boolean_gmw_share_result_vector;
 // }
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
 //     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
 //     const std::vector<double>& constant_fixed_point_sigma_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
@@ -2384,7 +2384,7 @@ template ShareWrapper SamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uin
 //     std::size_t iteration_3, std::size_t iteration_4,
 //     std::size_t fixed_point_fraction_bit_size) const;
 
-// template std::vector<ShareWrapper> SamplingAlgorithm::FxDiscreteGaussianDistribution<
+// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
 //     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
 //     const std::vector<double>& constant_fixed_point_sigma_vector,
 //     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,

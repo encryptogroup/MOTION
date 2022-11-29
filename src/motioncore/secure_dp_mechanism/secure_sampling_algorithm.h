@@ -25,39 +25,49 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
+#include "secure_type/secure_fixed_point_circuit_CBMC.h"
+#include "secure_type/secure_floating_point_circuit_ABY.h"
+#include "secure_type/secure_signed_integer.h"
+#include "secure_type/secure_unsigned_integer.h"
 
 namespace encrypto::motion {
 
 class Logger;
+class SecureUnsignedInteger;
+class SecureSignedInteger;
+class SecureFloatingPointCircuitABY;
+class SecureFixedPointCircuitCBMC;
 
 /// \brief class to wrap sampling algorithms
-class SamplingAlgorithm {
+class SecureSamplingAlgorithm {
  public:
-  SamplingAlgorithm() = default;
+  SecureSamplingAlgorithm() = default;
 
-  SamplingAlgorithm(const SamplingAlgorithm& other) : SamplingAlgorithm(*other.share_) {}
+  SecureSamplingAlgorithm(const SecureSamplingAlgorithm& other)
+      : SecureSamplingAlgorithm(*other.share_) {}
 
-  SamplingAlgorithm(SamplingAlgorithm&& other) : SamplingAlgorithm(std::move(*other.share_)) {
+  SecureSamplingAlgorithm(SecureSamplingAlgorithm&& other)
+      : SecureSamplingAlgorithm(std::move(*other.share_)) {
     other.share_->Get().reset();
   }
 
-  SamplingAlgorithm(const ShareWrapper& other) : SamplingAlgorithm(*other) {}
+  SecureSamplingAlgorithm(const ShareWrapper& other) : SecureSamplingAlgorithm(*other) {}
 
-  SamplingAlgorithm(ShareWrapper&& other) : SamplingAlgorithm(std::move(*other)) {
+  SecureSamplingAlgorithm(ShareWrapper&& other) : SecureSamplingAlgorithm(std::move(*other)) {
     other.Get().reset();
   }
 
-  SamplingAlgorithm(const SharePointer& other);
+  SecureSamplingAlgorithm(const SharePointer& other);
 
-  SamplingAlgorithm(SharePointer&& other);
+  SecureSamplingAlgorithm(SharePointer&& other);
 
-  SamplingAlgorithm& operator=(const SamplingAlgorithm& other) {
+  SecureSamplingAlgorithm& operator=(const SecureSamplingAlgorithm& other) {
     this->share_ = other.share_;
     this->logger_ = other.logger_;
     return *this;
   }
 
-  SamplingAlgorithm& operator=(SamplingAlgorithm&& other) {
+  SecureSamplingAlgorithm& operator=(SecureSamplingAlgorithm&& other) {
     this->share_ = std::move(other.share_);
     this->logger_ = std::move(other.logger_);
     return *this;
@@ -71,11 +81,11 @@ class SamplingAlgorithm {
 
   const ShareWrapper& operator->() const { return *share_; }
 
-  //   SamplingAlgorithm() : share_(nullptr){};
+  //   SecureSamplingAlgorithm() : share_(nullptr){};
 
-  //   SamplingAlgorithm(const SharePointer& other);
+  //   SecureSamplingAlgorithm(const SharePointer& other);
 
-  //   SamplingAlgorithm(const ShareWrapper& other) : SamplingAlgorithm(*other) {}
+  //   SecureSamplingAlgorithm(const ShareWrapper& other) : SecureSamplingAlgorithm(*other) {}
 
  public:
   // each party generates random boolean gmw bits locally

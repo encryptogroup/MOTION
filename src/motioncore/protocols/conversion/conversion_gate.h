@@ -118,4 +118,73 @@ class ArithmeticGmwToBmrGate final : public OneGate {
   ReusableFiberPromise<std::vector<BitVector<>>>* input_promise_;
 };
 
+// added by Liang Zhao
+class GCToBooleanGmwGate final : public OneGate {
+ public:
+  GCToBooleanGmwGate(const SharePointer& parent);
+
+  ~GCToBooleanGmwGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
+
+  const proto::boolean_gmw::SharePointer GetOutputAsGmwShare() const;
+
+  const SharePointer GetOutputAsShare() const;
+
+  GCToBooleanGmwGate() = delete;
+
+  GCToBooleanGmwGate(const Gate&) = delete;
+};
+
+class BooleanGmwToGCGate final : public OneGate {
+ public:
+  BooleanGmwToGCGate(const SharePointer& parent);
+
+  ~BooleanGmwToGCGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  const proto::bmr::SharePointer GetOutputAsGCShare() const;
+
+  const SharePointer GetOutputAsShare() const;
+
+  BooleanGmwToGCGate() = delete;
+
+  BooleanGmwToGCGate(const Gate&) = delete;
+
+ private:
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> received_public_values_;
+  std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> received_public_keys_;
+};
+
+class ArithmeticGmwToGCGate final : public OneGate {
+ public:
+  ArithmeticGmwToGCGate(const SharePointer& parent);
+
+  ~ArithmeticGmwToGCGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
+
+  const proto::bmr::SharePointer GetOutputAsGCShare() const;
+
+  const SharePointer GetOutputAsShare() const;
+
+  ArithmeticGmwToGCGate() = delete;
+
+  ArithmeticGmwToGCGate(const Gate&) = delete;
+
+ private:
+  ReusableFiberPromise<std::vector<BitVector<>>>* input_promise_;
+};
+
 }  // namespace encrypto::motion
