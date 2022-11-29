@@ -1,0 +1,361 @@
+liangzhao@aw17r4:~/Documents/MOTION/build/bin$ ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Addition_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.470 ms      0.000 ms      0.000 ms
+MT Setup               497.506 ms      0.000 ms      0.000 ms
+SP Presetup             64.038 ms      0.000 ms      0.000 ms
+SP Setup              3771.878 ms      0.000 ms      0.000 ms
+SB Presetup              0.005 ms      0.000 ms      0.000 ms
+SB Setup              4805.638 ms      0.000 ms      0.000 ms
+Base OTs               299.647 ms      0.000 ms      0.000 ms
+OT Extension Setup    1483.799 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6662.380 ms      0.000 ms      0.000 ms
+Gates Setup            371.016 ms      0.000 ms      0.000 ms
+Gates Precomputation      3.577 ms      0.000 ms      0.000 ms
+Gates Online          4956.784 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   11995.396 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.119 MiB in 10817 messages
+Received: 11.843 MiB in 10817 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Subtraction_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.540 ms      0.000 ms      0.000 ms
+MT Setup               490.856 ms      0.000 ms      0.000 ms
+SP Presetup             61.990 ms      0.000 ms      0.000 ms
+SP Setup              3753.708 ms      0.000 ms      0.000 ms
+SB Presetup              0.005 ms      0.000 ms      0.000 ms
+SB Setup              4769.715 ms      0.000 ms      0.000 ms
+Base OTs               322.304 ms      0.000 ms      0.000 ms
+OT Extension Setup    1515.245 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6678.880 ms      0.000 ms      0.000 ms
+Gates Setup            402.106 ms      0.000 ms      0.000 ms
+Gates Precomputation      5.592 ms      0.000 ms      0.000 ms
+Gates Online          4723.832 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   11812.421 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.119 MiB in 10817 messages
+Received: 11.843 MiB in 10817 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Multiplication_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.962 ms      0.000 ms      0.000 ms
+MT Setup               220.796 ms      0.000 ms      0.000 ms
+SP Presetup             18.814 ms      0.000 ms      0.000 ms
+SP Setup              1225.407 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup              1546.488 ms      0.000 ms      0.000 ms
+Base OTs               320.164 ms      0.000 ms      0.000 ms
+OT Extension Setup     433.698 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2322.487 ms      0.000 ms      0.000 ms
+Gates Setup             35.134 ms      0.000 ms      0.000 ms
+Gates Precomputation     14.245 ms      0.000 ms      0.000 ms
+Gates Online          1873.771 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4246.928 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.014 MiB in 4432 messages
+Received: 3.526 MiB in 4432 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Division_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.962 ms      0.000 ms      0.000 ms
+MT Setup              1009.998 ms      0.000 ms      0.000 ms
+SP Presetup            136.015 ms      0.000 ms      0.000 ms
+SP Setup              7671.836 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup              9722.603 ms      0.000 ms      0.000 ms
+Base OTs               298.571 ms      0.000 ms      0.000 ms
+OT Extension Setup    2712.977 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  12872.041 ms      0.000 ms      0.000 ms
+Gates Setup             34.867 ms      0.000 ms      0.000 ms
+Gates Precomputation     10.537 ms      0.000 ms      0.000 ms
+Gates Online          1453.228 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   14373.457 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.413 MiB in 4046 messages
+Received: 20.075 MiB in 4046 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_LessThan_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.870 ms      0.000 ms      0.000 ms
+MT Setup               227.806 ms      0.000 ms      0.000 ms
+SP Presetup             27.314 ms      0.000 ms      0.000 ms
+SP Setup              1226.773 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup              1547.551 ms      0.000 ms      0.000 ms
+Base OTs               310.231 ms      0.000 ms      0.000 ms
+OT Extension Setup     433.809 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2320.630 ms      0.000 ms      0.000 ms
+Gates Setup             35.748 ms      0.000 ms      0.000 ms
+Gates Precomputation      4.719 ms      0.000 ms      0.000 ms
+Gates Online           638.182 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3000.641 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.938 MiB in 3460 messages
+Received: 3.446 MiB in 3460 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Equal_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.389 ms      0.000 ms      0.000 ms
+MT Setup               206.772 ms      0.000 ms      0.000 ms
+SP Presetup             13.174 ms      0.000 ms      0.000 ms
+SP Setup               859.006 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup              1073.904 ms      0.000 ms      0.000 ms
+Base OTs               342.507 ms      0.000 ms      0.000 ms
+OT Extension Setup     250.617 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1681.450 ms      0.000 ms      0.000 ms
+Gates Setup             18.058 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.804 ms      0.000 ms      0.000 ms
+Gates Online           162.868 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1864.453 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.138 MiB in 916 messages
+Received: 2.138 MiB in 916 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Exp2_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             44.859 ms      0.000 ms      0.000 ms
+MT Setup              7469.685 ms      0.000 ms      0.000 ms
+SP Presetup           1657.243 ms      0.000 ms      0.000 ms
+SP Setup             54803.972 ms      0.000 ms      0.000 ms
+SB Presetup              0.005 ms      0.000 ms      0.000 ms
+SB Setup             77731.210 ms      0.000 ms      0.000 ms
+Base OTs              1244.581 ms      0.000 ms      0.000 ms
+OT Extension Setup   23373.110 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total 104051.735 ms      0.000 ms      0.000 ms
+Gates Setup           2677.996 ms      0.000 ms      0.000 ms
+Gates Precomputation     46.596 ms      0.000 ms      0.000 ms
+Gates Online         40649.933 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  147434.204 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 109.262 MiB in 219533 messages
+Received: 192.071 MiB in 219533 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Log2_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            190.099 ms      0.000 ms      0.000 ms
+MT Setup             14835.655 ms      0.000 ms      0.000 ms
+SP Presetup           3033.359 ms      0.000 ms      0.000 ms
+SP Setup            100641.612 ms      0.000 ms      0.000 ms
+SB Presetup              0.005 ms      0.000 ms      0.000 ms
+SB Setup            149963.725 ms      0.000 ms      0.000 ms
+Base OTs              1930.209 ms      0.000 ms      0.000 ms
+OT Extension Setup   47572.589 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total 202738.804 ms      0.000 ms      0.000 ms
+Gates Setup           9010.296 ms      0.000 ms      0.000 ms
+Gates Precomputation     65.720 ms      0.000 ms      0.000 ms
+Gates Online        219597.771 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  431528.835 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 226.605 MiB in 362750 messages
+Received: 388.172 MiB in 362750 messages
+===========================================================================
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Sqrt_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             49.366 ms      0.000 ms      0.000 ms
+MT Setup              6954.234 ms      0.000 ms      0.000 ms
+SP Presetup            952.430 ms      0.000 ms      0.000 ms
+SP Setup             35842.842 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup             49971.871 ms      0.000 ms      0.000 ms
+Base OTs               785.863 ms      0.000 ms      0.000 ms
+OT Extension Setup   16415.466 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  68176.049 ms      0.000 ms      0.000 ms
+Gates Setup           3333.590 ms      0.000 ms      0.000 ms
+Gates Precomputation     22.497 ms      0.000 ms      0.000 ms
+Gates Online         52137.362 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  123681.381 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 67.475 MiB in 118359 messages
+Received: 115.794 MiB in 118359 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Ceil_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             10.544 ms      0.000 ms      0.000 ms
+MT Setup               512.568 ms      0.000 ms      0.000 ms
+SP Presetup             72.000 ms      0.000 ms      0.000 ms
+SP Setup              3634.758 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup              4732.087 ms      0.000 ms      0.000 ms
+Base OTs               290.309 ms      0.000 ms      0.000 ms
+OT Extension Setup    1548.630 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6671.020 ms      0.000 ms      0.000 ms
+Gates Setup            379.385 ms      0.000 ms      0.000 ms
+Gates Precomputation     64.468 ms      0.000 ms      0.000 ms
+Gates Online          1985.717 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9108.965 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 6.902 MiB in 6908 messages
+Received: 11.402 MiB in 6908 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation FL_Floor_agmw bit size 128 SIMD 0
+===========================================================================
+MOTION version: d465d60-dirty @ master
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 21576
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              9.529 ms      0.000 ms      0.000 ms
+MT Setup               507.077 ms      0.000 ms      0.000 ms
+SP Presetup             58.593 ms      0.000 ms      0.000 ms
+SP Setup              3614.242 ms      0.000 ms      0.000 ms
+SB Presetup              0.003 ms      0.000 ms      0.000 ms
+SB Setup              4578.284 ms      0.000 ms      0.000 ms
+Base OTs               291.663 ms      0.000 ms      0.000 ms
+OT Extension Setup    1434.097 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6377.898 ms      0.000 ms      0.000 ms
+Gates Setup            288.883 ms      0.000 ms      0.000 ms
+Gates Precomputation      4.533 ms      0.000 ms      0.000 ms
+Gates Online          2082.913 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8756.047 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 6.902 MiB in 6908 messages
+Received: 11.402 MiB in 6908 messages
+===========================================================================

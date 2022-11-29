@@ -1,0 +1,1319 @@
+lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kGenerateRandomBooleanGmwBits bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    100.924 ms      0.000 ms -nan       ms
+Gates Setup              1.137 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.916 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     127.265 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSimpleGeometricSampling bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.391 ms      0.000 ms      0.000 ms
+MT Setup               148.376 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               306.242 ms      0.000 ms -nan       ms
+OT Extension Setup     300.965 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    854.925 ms      0.000 ms      0.000 ms
+Gates Setup             81.468 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1897.807 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2857.911 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 1.249 MiB in 12617 messages
+Received: 1.249 MiB in 12617 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint32_0_1 bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.077 ms      0.000 ms      0.000 ms
+MT Setup               155.733 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               294.787 ms      0.000 ms      0.000 ms
+OT Extension Setup      99.020 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    659.451 ms      0.000 ms      0.000 ms
+Gates Setup             14.660 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1757.243 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2439.434 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.148 MiB in 1531 messages
+Received: 0.148 MiB in 1531 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint64_0_1 bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.459 ms      0.000 ms      0.000 ms
+MT Setup                52.084 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               305.339 ms      0.000 ms -nan       ms
+OT Extension Setup     304.291 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    762.353 ms      0.000 ms      0.000 ms
+Gates Setup             80.419 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2320.164 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3170.894 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 1.257 MiB in 12705 messages
+Received: 1.257 MiB in 12705 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1 bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    106.534 ms      0.000 ms      0.000 ms
+Gates Setup              0.769 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.733 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     146.646 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1_Up bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.093 ms      0.000 ms -nan       ms
+MT Setup               189.304 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               307.479 ms      0.000 ms -nan       ms
+OT Extension Setup      96.021 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    692.498 ms      0.000 ms      0.000 ms
+Gates Setup             13.963 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           445.510 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1173.233 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.111 MiB in 1155 messages
+Received: 0.111 MiB in 1155 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kRandomUnsignedInteger bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.359 ms      0.000 ms -nan       ms
+MT Setup               156.179 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               305.940 ms      0.000 ms -nan       ms
+OT Extension Setup     205.739 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    776.203 ms      0.000 ms -nan       ms
+Gates Setup             62.987 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        359606.442 ms      0.000 ms      0.001 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  360454.446 ms      0.000 ms      0.002 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.885 MiB in 8959 messages
+Received: 0.885 MiB in 8959 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureSnappingMechanism bit size 64 SIMD 1
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.588 ms      0.000 ms -nan       ms
+MT Setup               116.364 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               304.750 ms      0.000 ms      0.000 ms
+OT Extension Setup     672.253 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   1200.534 ms      0.000 ms -nan       ms
+Gates Setup            421.927 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        196061.113 ms      0.000 ms      0.001 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  197693.648 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 11.828 MiB in 120277 messages
+Received: 11.828 MiB in 120277 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kGenerateRandomBooleanGmwBits bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     92.200 ms      0.000 ms -nan       ms
+Gates Setup              1.455 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            25.466 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     285.616 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSimpleGeometricSampling bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.478 ms      0.000 ms      0.000 ms
+MT Setup                91.071 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               218.102 ms      0.000 ms      0.000 ms
+OT Extension Setup     614.940 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   1025.714 ms      0.000 ms      0.000 ms
+Gates Setup             82.510 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1716.486 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2840.810 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.628 MiB in 12617 messages
+Received: 1.628 MiB in 12617 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint32_0_1 bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.289 ms      0.000 ms      0.000 ms
+MT Setup               201.249 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               304.311 ms      0.000 ms -nan       ms
+OT Extension Setup     190.487 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    788.611 ms      0.000 ms -nan       ms
+Gates Setup             19.055 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1827.716 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2664.635 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.184 MiB in 1531 messages
+Received: 0.184 MiB in 1531 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint64_0_1 bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              5.694 ms      0.000 ms -nan       ms
+MT Setup               245.573 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               268.103 ms      0.000 ms      0.000 ms
+OT Extension Setup     456.616 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   1061.019 ms      0.000 ms -nan       ms
+Gates Setup            100.584 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2320.007 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3504.551 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.639 MiB in 12705 messages
+Received: 1.639 MiB in 12705 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1 bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     99.742 ms      0.000 ms      0.000 ms
+Gates Setup              0.930 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             1.314 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     112.589 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1_Up bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.333 ms      0.000 ms -nan       ms
+MT Setup               200.880 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               303.481 ms      0.000 ms -nan       ms
+OT Extension Setup     201.939 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    810.080 ms      0.000 ms -nan       ms
+Gates Setup              4.330 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           502.086 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1324.782 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.134 MiB in 1155 messages
+Received: 0.134 MiB in 1155 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kRandomUnsignedInteger bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.980 ms      0.000 ms      0.000 ms
+MT Setup               165.411 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               258.298 ms      0.000 ms -nan       ms
+OT Extension Setup     493.151 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   1002.100 ms      0.000 ms -nan       ms
+Gates Setup             63.927 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        359488.829 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation  360576.568 ms      0.000 ms      0.001 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.151 MiB in 8959 messages
+Received: 1.151 MiB in 8959 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureSnappingMechanism bit size 64 SIMD 5
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             18.058 ms      0.000 ms -nan       ms
+MT Setup               537.482 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               262.018 ms      0.000 ms -nan       ms
+OT Extension Setup    1205.947 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   2123.139 ms      0.000 ms -nan       ms
+Gates Setup            314.514 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        198220.717 ms      0.000 ms      0.002 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  200666.249 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 15.541 MiB in 120277 messages
+Received: 15.541 MiB in 120277 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kGenerateRandomBooleanGmwBits bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     97.585 ms      0.000 ms -nan       ms
+Gates Setup              9.265 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.448 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     299.336 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSimpleGeometricSampling bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.529 ms      0.000 ms -nan       ms
+MT Setup                88.245 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               305.463 ms      0.000 ms -nan       ms
+OT Extension Setup     675.968 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1163.773 ms      0.000 ms -nan       ms
+Gates Setup             85.061 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1869.410 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3126.029 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 2.101 MiB in 12617 messages
+Received: 2.101 MiB in 12617 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint32_0_1 bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.246 ms      0.000 ms -nan       ms
+MT Setup                93.594 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               313.207 ms      0.000 ms -nan       ms
+OT Extension Setup     297.158 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    800.628 ms      0.000 ms -nan       ms
+Gates Setup             13.365 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1938.286 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2760.128 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.227 MiB in 1531 messages
+Received: 0.227 MiB in 1531 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint64_0_1 bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.247 ms      0.000 ms -nan       ms
+MT Setup               101.718 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               267.085 ms      0.000 ms -nan       ms
+OT Extension Setup     705.883 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1163.173 ms      0.000 ms -nan       ms
+Gates Setup             84.172 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2294.702 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3563.494 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.116 MiB in 12705 messages
+Received: 2.116 MiB in 12705 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1 bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    109.203 ms      0.000 ms      0.000 ms
+Gates Setup              0.564 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.429 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     115.147 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1_Up bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.204 ms      0.000 ms      0.000 ms
+MT Setup               117.382 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               301.332 ms      0.000 ms -nan       ms
+OT Extension Setup     249.864 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    766.693 ms      0.000 ms -nan       ms
+Gates Setup              9.294 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           519.047 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1316.190 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.164 MiB in 1155 messages
+Received: 0.164 MiB in 1155 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kRandomUnsignedInteger bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.654 ms      0.000 ms -nan       ms
+MT Setup               106.426 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               259.413 ms      0.000 ms      0.000 ms
+OT Extension Setup     589.960 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   1065.045 ms      0.000 ms      0.000 ms
+Gates Setup             54.605 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        359360.983 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation  360489.743 ms      0.000 ms      0.002 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.484 MiB in 8959 messages
+Received: 1.484 MiB in 8959 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureSnappingMechanism bit size 64 SIMD 10
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             39.451 ms      0.000 ms -nan       ms
+MT Setup               924.795 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               282.283 ms      0.000 ms      0.000 ms
+OT Extension Setup    1971.630 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total   3312.214 ms      0.000 ms -nan       ms
+Gates Setup            309.850 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        198114.367 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation  201756.832 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 20.183 MiB in 120277 messages
+Received: 20.183 MiB in 120277 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kGenerateRandomBooleanGmwBits bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    103.992 ms      0.000 ms      0.000 ms
+Gates Setup              9.604 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             2.881 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     260.547 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSimpleGeometricSampling bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             24.850 ms      0.000 ms -nan       ms
+MT Setup               261.189 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               316.081 ms      0.000 ms      0.000 ms
+OT Extension Setup    2526.146 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3218.255 ms      0.000 ms      0.000 ms
+Gates Setup             50.795 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1720.688 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5007.498 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.815 MiB in 12617 messages
+Received: 10.815 MiB in 12617 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint32_0_1 bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.149 ms      0.000 ms -nan       ms
+MT Setup               223.873 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               304.810 ms      0.000 ms      0.000 ms
+OT Extension Setup     654.114 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1269.787 ms      0.000 ms -nan       ms
+Gates Setup             20.081 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1741.743 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3052.283 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 1.041 MiB in 1531 messages
+Received: 1.041 MiB in 1531 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint64_0_1 bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             24.535 ms      0.000 ms -nan       ms
+MT Setup                62.576 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               313.778 ms      0.000 ms -nan       ms
+OT Extension Setup    2962.275 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3450.405 ms      0.000 ms      0.000 ms
+Gates Setup             47.636 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2481.317 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5998.370 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 10.893 MiB in 12705 messages
+Received: 10.893 MiB in 12705 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1 bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     99.850 ms      0.000 ms      0.000 ms
+Gates Setup             24.458 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.556 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     153.192 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1_Up bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.393 ms      0.000 ms      0.000 ms
+MT Setup               106.414 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               271.097 ms      0.000 ms      0.000 ms
+OT Extension Setup     619.853 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1104.254 ms      0.000 ms -nan       ms
+Gates Setup              5.574 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           608.180 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1739.284 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.709 MiB in 1155 messages
+Received: 0.709 MiB in 1155 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kRandomUnsignedInteger bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             16.363 ms      0.000 ms      0.000 ms
+MT Setup               171.309 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               303.259 ms      0.000 ms -nan       ms
+OT Extension Setup    2097.758 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2690.100 ms      0.000 ms      0.000 ms
+Gates Setup             40.994 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        360147.142 ms      0.000 ms      0.001 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  362884.263 ms      0.000 ms      0.002 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.590 MiB in 8959 messages
+Received: 7.590 MiB in 8959 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureSnappingMechanism bit size 64 SIMD 100
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            253.089 ms      0.000 ms -nan       ms
+MT Setup              1142.210 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               310.073 ms      0.000 ms      0.000 ms
+OT Extension Setup   18438.346 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total  20232.819 ms      0.000 ms -nan       ms
+Gates Setup            362.929 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        190174.954 ms      0.000 ms      0.001 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  210792.520 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 105.571 MiB in 120277 messages
+Received: 105.571 MiB in 120277 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kGenerateRandomBooleanGmwBits bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    113.747 ms      0.000 ms -nan       ms
+Gates Setup              1.440 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.683 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     328.954 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSimpleGeometricSampling bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            278.572 ms      0.000 ms -nan       ms
+MT Setup               518.891 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               327.880 ms      0.000 ms -nan       ms
+OT Extension Setup   19963.683 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  21191.826 ms      0.000 ms      0.000 ms
+Gates Setup             58.011 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2619.118 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   23874.507 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 97.396 MiB in 12617 messages
+Received: 97.396 MiB in 12617 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint32_0_1 bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             58.545 ms      0.000 ms -nan       ms
+MT Setup               596.343 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               284.948 ms      0.000 ms -nan       ms
+OT Extension Setup    2056.549 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3092.923 ms      0.000 ms -nan       ms
+Gates Setup             12.129 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1477.897 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4601.164 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.127 MiB in 1531 messages
+Received: 9.127 MiB in 1531 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFloatingPoint64_0_1 bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            241.712 ms      0.000 ms -nan       ms
+MT Setup              3603.522 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               318.659 ms      0.000 ms -nan       ms
+OT Extension Setup   18456.034 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total  22727.059 ms      0.000 ms -nan       ms
+Gates Setup             43.475 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2452.369 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   25228.812 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 98.097 MiB in 12705 messages
+Received: 98.097 MiB in 12705 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1 bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     94.589 ms      0.000 ms      0.000 ms
+Gates Setup              0.379 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.782 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     115.431 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kUniformFixedPoint_0_1_Up bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             53.592 ms      0.000 ms -nan       ms
+MT Setup                47.844 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               277.304 ms      0.000 ms -nan       ms
+OT Extension Setup    2203.091 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2663.077 ms      0.000 ms      0.000 ms
+Gates Setup              7.153 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           545.766 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3237.141 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 6.133 MiB in 1155 messages
+Received: 6.133 MiB in 1155 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kRandomUnsignedInteger bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            223.836 ms      0.000 ms -nan       ms
+MT Setup               368.063 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               292.154 ms      0.000 ms      0.000 ms
+OT Extension Setup   13568.467 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  14552.148 ms      0.000 ms      0.000 ms
+Gates Setup             26.150 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        358566.506 ms      0.000 ms      0.002 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  373150.441 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 68.271 MiB in 8959 messages
+Received: 68.271 MiB in 8959 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureSnappingMechanism bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 83aace26-dirty @ master
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000
+by lzhao@simx2, PID 1687226
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1980.449 ms      0.000 ms -nan       ms
+MT Setup              4953.290 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               304.582 ms      0.000 ms      0.000 ms
+OT Extension Setup  177575.818 ms      0.000 ms      0.001 ms
+---------------------------------------------------------------------------
+Preprocessing Total 184908.696 ms      0.000 ms -nan       ms
+Gates Setup            255.709 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online        167373.946 ms      0.000 ms      0.001 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  352559.903 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 953.958 MiB in 120277 messages
+Received: 953.958 MiB in 120277 messages
+===========================================================================

@@ -192,4 +192,109 @@ std::string PrintStatistics(const std::string& experiment_name,
   return ss.str();
 }
 
+
+// void AccumulatedCommunicationStatistics::WriteToCsv(const std::string& filename) const {
+//   // std::cout << "AccumulatedCommunicationStatistics::WriteToCsv" << std::endl;
+//   constexpr unsigned kMiB = 1024 * 1024;
+
+//   std::fstream csv_file;
+
+//   // opens an existing csv file or creates a new file.
+//   csv_file.open(filename, std::ios::out | std::ios::app);
+//   csv_file << fmt::format("{:0.3f}",
+//                           boost::accumulators::mean(accumulators_[kIdxNumberOfBytesSent]) / kMiB)
+//            << ",";
+
+//   csv_file << fmt::format("{:d}", static_cast<std::size_t>(boost::accumulators::mean(
+//                                       accumulators_[kIdxNumberOfMessagesSent])))
+//            << ",";
+
+//   csv_file << fmt::format(
+//                   "{:0.3f}",
+//                   boost::accumulators::mean(accumulators_[kIdxNumberOfBytesReceived]) / kMiB)
+//            << ",";
+//   csv_file << fmt::format("{:d}", static_cast<std::size_t>(boost::accumulators::mean(
+//                                       accumulators_[kIdxNumberOfMessagesReceived])));
+
+//   csv_file << "\n";
+//   csv_file.close();
+// }
+
+// void WriteToCsv(const std::string& experiment_name, const std::string& filename,
+//                const AccumulatedRunTimeStatistics& execution_statistics,
+//                const AccumulatedCommunicationStatistics& communication_statistics) {
+//   std::fstream csv_file;
+
+//   // creates a new file.
+//   csv_file.open(filename, std::ios::out | std::ios::app);
+//   csv_file << experiment_name << ",";
+//   csv_file.close();
+
+//   execution_statistics.WriteToCsv(filename);
+//   communication_statistics.WriteToCsv(filename);
+// }
+
+// void WriteToTxt(const std::string& filename, const std::string& statistic_information) {
+//   std::fstream txt_file;
+
+//   // creates a new file.
+//   txt_file.open(filename, std::ios::out | std::ios::app);
+//   txt_file << statistic_information;
+//   txt_file.close();
+// }
+
+// void CreateCsvFile(const std::string& filename) {
+//   std::fstream csv_file;
+
+//   // creates a new .csv file.
+//   csv_file.open(filename, std::ios::out);
+
+//   csv_file << "Protocol"
+//            << ",";
+//   csv_file << "MT Presetup"
+//            << ",";
+//   csv_file << "MT Setup"
+//            << ",";
+//   csv_file << "SP Presetup"
+//            << ",";
+//   csv_file << "SP Setup"
+//            << ",";
+//   csv_file << "SB Presetup"
+//            << ",";
+//   csv_file << "SB Setup"
+//            << ",";
+//   csv_file << "Base OTs"
+//            << ",";
+//   csv_file << "OT Extension Setup"
+//            << ",";
+//   csv_file << "KK13 OT Extension Setup"
+//            << ",";
+//   csv_file << "Preprocessing Total"
+//            << ",";
+//   csv_file << "Gates Setup"
+//            << ",";
+//   csv_file << "Gates Online"
+//            << ",";
+//   csv_file << "Circuit Evaluation"
+//            << ",";
+//   csv_file << "Sent"
+//            << ",";
+//   csv_file << "Sent Messages"
+//            << ",";
+//   csv_file << "Received"
+//            << ",";
+//   csv_file << "Received Messages";
+//   csv_file << "\n";
+
+//   csv_file.close();
+// }
+
+// void CreateTxtFile(const std::string& filename) {
+//   std::fstream csv_file;
+
+//   // creates a new .txt file.
+//   csv_file.open(filename, std::ios::out);
+//   csv_file.close();
+// }
+
 }  // namespace encrypto::motion

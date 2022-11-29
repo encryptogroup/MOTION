@@ -1,0 +1,16 @@
+git clone https://github.com/encryptogroup/MOTION.git
+
+cd MOTION/
+
+mkdir build && cd build
+
+git checkout dev
+
+cmake ..
+
+cmake .. -DMOTION_BUILD_EXE=On
+
+cmake .. -DMOTION_BUILD_TESTS=On
+
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+

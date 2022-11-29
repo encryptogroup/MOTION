@@ -32,6 +32,9 @@
 #include <list>
 #include "run_time_statistics.h"
 
+// added by Liang Zhao
+#include <fstream>
+
 namespace encrypto::motion::communication {
 
 struct TransportStatistics;
@@ -53,8 +56,11 @@ class AccumulatedRunTimeStatistics {
   void Add(const RunTimeStatistics& statistics);
 
   std::string PrintHumanReadable() const;
- 
+
   boost::json::object ToJson() const;
+
+  // added by Liang Zhao
+  void WriteToCsv(const std::string& filename) const;
 
  private:
   std::size_t count_ = 0;
@@ -78,8 +84,11 @@ class AccumulatedCommunicationStatistics {
   void Add(const std::vector<communication::TransportStatistics>& statistics);
 
   std::string PrintHumanReadable() const;
- 
+
   boost::json::object ToJson() const;
+
+  // added by Liang Zhao
+  void WriteToCsv(const std::string& filename) const;
 
  private:
   std::size_t count_ = 0;
@@ -88,5 +97,17 @@ class AccumulatedCommunicationStatistics {
 
 std::string PrintStatistics(const std::string& experiment_name, const AccumulatedRunTimeStatistics&,
                             const AccumulatedCommunicationStatistics&);
+
+// added by Liang Zhao
+void WriteToCsv(const std::string& experiment_name, const std::string& filename,
+                const AccumulatedRunTimeStatistics& execution_statistics,
+                const AccumulatedCommunicationStatistics& communication_statistics);
+
+// added by Liang Zhao
+void WriteToTxt(const std::string& filename, const std::string& statistic_information);
+
+void CreateCsvFile(const std::string& filename);
+
+void CreateTxtFile(const std::string& filename);
 
 }  // namespace encrypto::motion

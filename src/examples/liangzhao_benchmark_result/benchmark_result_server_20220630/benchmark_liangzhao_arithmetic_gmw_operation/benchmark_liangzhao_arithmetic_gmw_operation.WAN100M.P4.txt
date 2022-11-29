@@ -1,0 +1,65 @@
+lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_arithmetic_gmw_operation --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation AGMW_MSNZB_ABZS bit size 8 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_arithmetic_gmw_operation --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+by lzhao@simx2, PID 1616204
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.035 ms      0.030 ms      0.015 ms
+MT Setup               164.613 ms    145.059 ms     51.375 ms
+SP Presetup              0.251 ms      0.161 ms      0.268 ms
+SP Setup               177.901 ms    176.393 ms     51.427 ms
+SB Presetup              0.002 ms      0.002 ms      0.000 ms
+SB Setup               381.370 ms    384.960 ms     40.995 ms
+Base OTs               299.328 ms    309.642 ms     17.578 ms
+OT Extension Setup     172.267 ms    184.812 ms     43.782 ms
+---------------------------------------------------------------------------
+Preprocessing Total    953.119 ms    959.331 ms     26.558 ms
+Gates Setup            322.175 ms    313.123 ms     27.006 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1046.882 ms   1025.246 ms     65.063 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2327.504 ms   2309.787 ms     49.637 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.211 MiB in 1734 messages
+Received: 0.209 MiB in 1734 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation AGMW_MSNZB_SIRNN bit size 8 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_arithmetic_gmw_operation --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+by lzhao@simx2, PID 1616204
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.668 ms      0.395 ms      0.592 ms
+MT Setup               165.082 ms    152.427 ms     29.442 ms
+SP Presetup              0.936 ms      0.769 ms      0.391 ms
+SP Setup               254.927 ms    266.026 ms     30.895 ms
+SB Presetup              0.002 ms      0.002 ms      0.000 ms
+SB Setup               449.680 ms    454.153 ms     32.146 ms
+Base OTs               297.225 ms    304.292 ms     29.944 ms
+OT Extension Setup     329.975 ms    335.841 ms     39.569 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1178.986 ms   1181.699 ms     25.871 ms
+Gates Setup             46.467 ms     45.443 ms      3.438 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          5915.536 ms   5928.923 ms    226.078 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7147.052 ms   7179.936 ms    218.285 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.130 MiB in 8071 messages
+Received: 1.004 MiB in 8071 messages
+===========================================================================
