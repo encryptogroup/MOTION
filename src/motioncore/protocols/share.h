@@ -70,11 +70,25 @@ class Share : public std::enable_shared_from_this<Share> {
 
   bool IsConstant() const noexcept;
 
+  // added by Liang Zhao
+  bool IsPubliclyKnownShare() const { return is_public_known_share_; }
+
+  // added by Liang Zhao
+  void SetAsPubliclyKnownShare() { is_public_known_share_ = true; }
+
+  // added by Liang Zhao
+  void SetAsPubliclyUnknownShare() { is_public_known_share_ = false; }
+
  protected:
   Share(Backend& backend) : backend_(backend) {}
 
   Backend& backend_;
   std::vector<WirePointer> wires_;
+
+  // added by Liang Zhao
+  // this share is publicly known (i.e., publicly known after share reconstruction, but the previous
+  // gates need to be online evaluated first)
+  bool is_public_known_share_ = false;
 };
 
 using SharePointer = std::shared_ptr<Share>;
@@ -84,6 +98,7 @@ class BooleanShare : public Share {
   ~BooleanShare() override = default;
 
   BooleanShare(BooleanShare&) = delete;
+
 
  protected:
   BooleanShare(Backend& backend) : Share(backend) {}

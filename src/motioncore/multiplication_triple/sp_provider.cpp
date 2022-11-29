@@ -32,7 +32,10 @@ namespace encrypto::motion {
 
 bool SpProvider::NeedSps() const noexcept {
   return 0 < number_of_sps_8_ + number_of_sps_16_ + number_of_sps_32_ + number_of_sps_64_ +
-                 number_of_sps_128_;
+                 number_of_sps_128_
+
+                 // added by Liang Zhao
+                 + number_of_sps_256_;
 }
 
 SpProvider::SpProvider(const std::size_t my_id) : my_id_(my_id) {
@@ -54,6 +57,11 @@ SpProviderFromOts::SpProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& o
       ots_sender_64_(ot_providers_.size()),
       ots_receiver_128_(ot_providers_.size()),
       ots_sender_128_(ot_providers_.size()),
+
+      // added by Liang Zhao
+      ots_receiver_256_(ot_providers_.size()),
+      ots_sender_256_(ot_providers_.size()),
+
       logger_(logger),
       run_time_statistics_(run_time_statistics) {}
 
@@ -83,6 +91,7 @@ void SpProviderFromOts::Setup() {
   if constexpr (kDebug) {
     logger_->LogDebug("Start computing setup for SPs");
   }
+
   run_time_statistics_.RecordStart<RunTimeStatistics::StatisticsId::kSpSetup>();
 
 #pragma omp parallel for
@@ -94,24 +103,37 @@ void SpProviderFromOts::Setup() {
       dynamic_cast<AcOtSender<std::uint8_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_8_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_16_.at(i)) {
       dynamic_cast<AcOtSender<std::uint16_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_16_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_32_.at(i)) {
       dynamic_cast<AcOtSender<std::uint32_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_32_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_64_.at(i)) {
       dynamic_cast<AcOtSender<std::uint64_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_64_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_128_.at(i)) {
       dynamic_cast<AcOtSender<__uint128_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_128_.at(i)) ot->SendCorrections();
+
+    // TODO: need test
+    // added by Liang Zhao
+    for (auto& ot : ots_sender_256_.at(i)) {
+      dynamic_cast<AcOtSenderBoostUint<bm::uint256_t>*>(ot.get())->SendMessages();
+    }
+    for (auto& ot : ots_receiver_256_.at(i)) ot->SendCorrections();
   }
 
+  // added by Liang Zhao
+  // TODO: cause the major time cost
   ParseOutputs();
   {
     std::scoped_lock lock(finished_condition_->GetMutex());
@@ -135,6 +157,17 @@ static void GenerateRandomPairs(SpVector<T>& sps, std::size_t number_of_sps) {
   }
 }
 
+// added by Liang Zhao
+template <typename T>
+static void GenerateRandomPairsBoostUint(SpVector<T>& sps, std::size_t number_of_sps) {
+  if (number_of_sps > 0u) {
+    sps.a = RandomVectorBoostUint<T>(number_of_sps);
+    sps.c.resize(number_of_sps);
+    std::transform(sps.a.cbegin(), sps.a.cend(), sps.c.begin(),
+                   [](const auto& a_i) { return a_i * a_i; });
+  }
+}
+
 template <typename T>
 static void RegisterHelperSend(OtProvider& ot_provider,
                                std::list<std::unique_ptr<BasicOtSender>>& ots_sender,
@@ -146,6 +179,34 @@ static void RegisterHelperSend(OtProvider& ot_provider,
     const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
     auto ptr{ot_provider.RegisterSendAcOt(batch_size * bit_size, sizeof(T) * 8)};
     auto ot_to_send = dynamic_cast<AcOtSender<T>*>(ptr.get());
+    std::vector<T> vector_to_send;
+    for (auto k = 0ull; k < batch_size; ++k) {
+      for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
+        const T input = sps.a.at(sp_id + k) << bit_i;
+        vector_to_send.emplace_back(input);
+      }
+    }
+    ot_to_send->SetCorrelations(std::move(vector_to_send));
+    ots_sender.emplace_back(std::move(ptr));
+    sp_id += batch_size;
+  }
+}
+
+// added by Liang Zhao
+template <typename T>
+static void RegisterHelperSendBoostUint(OtProvider& ot_provider,
+                                        std::list<std::unique_ptr<BasicOtSender>>& ots_sender,
+                                        std::size_t max_batch_size, const SpVector<T>& sps,
+                                        std::size_t number_of_sps) {
+  // constexpr std::size_t bit_size = sizeof(T) * 8;
+  constexpr std::size_t bit_size = std::numeric_limits<T>::digits;
+
+  for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
+    const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
+    // TODO: should modify RegisterSendAcOt?
+    auto ptr{ot_provider.RegisterSendAcOtBoostUint(batch_size * bit_size, bit_size)};
+    auto ot_to_send = dynamic_cast<AcOtSenderBoostUint<T>*>(ptr.get());
+    // auto ot_to_send = ot_provider.RegisterSendAcOtBoostUint<T>(batch_size * bit_size);
     std::vector<T> vector_to_send;
     for (auto k = 0ull; k < batch_size; ++k) {
       for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
@@ -183,12 +244,42 @@ static void RegisterHelperReceptor(OtProvider& ot_provider,
   }
 }
 
+// added by Liang Zhao
+template <typename T>
+static void RegisterHelperReceptorBoostUint(
+    OtProvider& ot_provider, std::list<std::unique_ptr<BasicOtReceiver>>& ots_receiver,
+    std::size_t max_batch_size, const SpVector<T>& sps, std::size_t number_of_sps) {
+  // constexpr std::size_t bit_size = sizeof(T) * 8;
+  constexpr std::size_t bit_size = std::numeric_limits<T>::digits;
+
+  for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
+    const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
+    // TODO: should modify RegisterSendAcOt?
+    auto ptr{ot_provider.RegisterReceiveAcOtBoostUint(batch_size * bit_size, bit_size)};
+    auto ot_to_receive = dynamic_cast<AcOtReceiverBoostUint<T>*>(ptr.get());
+    // auto ot_to_receive = ot_provider.RegisterReceiveAcOtBoostUint<T>(batch_size * bit_size);
+    BitVector<> choices;
+    for (auto k = 0ull; k < batch_size; ++k) {
+      for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
+        const bool choice = ((sps.a.at(sp_id + k) >> bit_i) & 1u) == 1;
+        choices.Append(choice);
+      }
+    }
+    ot_to_receive->SetChoices(std::move(choices));
+    ots_receiver.emplace_back(std::move(ptr));
+    sp_id += batch_size;
+  }
+}
+
 void SpProviderFromOts::RegisterOts() {
   GenerateRandomPairs<std::uint8_t>(sps_8_, number_of_sps_8_);
   GenerateRandomPairs<std::uint16_t>(sps_16_, number_of_sps_16_);
   GenerateRandomPairs<std::uint32_t>(sps_32_, number_of_sps_32_);
   GenerateRandomPairs<std::uint64_t>(sps_64_, number_of_sps_64_);
   GenerateRandomPairs<__uint128_t>(sps_128_, number_of_sps_128_);
+
+  // added by Liang Zhao
+  GenerateRandomPairsBoostUint<bm::uint256_t>(sps_256_, number_of_sps_256_);
 
 #pragma omp parallel for num_threads(ot_providers_.size())
   for (std::size_t i = 0; i < ot_providers_.size(); ++i) {
@@ -207,6 +298,10 @@ void SpProviderFromOts::RegisterOts() {
                                         sps_64_, number_of_sps_64_);
       RegisterHelperSend<__uint128_t>(*ot_providers_.at(i), ots_sender_128_.at(i), kMaxBatchSize,
                                       sps_128_, number_of_sps_128_);
+
+      // added by Liang Zhao
+      RegisterHelperSendBoostUint<bm::uint256_t>(*ot_providers_.at(i), ots_sender_256_.at(i),
+                                                 kMaxBatchSize, sps_256_, number_of_sps_256_);
     } else if (i > my_id_) {
       RegisterHelperReceptor<std::uint8_t>(*ot_providers_.at(i), ots_receiver_8_.at(i),
                                            kMaxBatchSize, sps_8_, number_of_sps_8_);
@@ -218,6 +313,10 @@ void SpProviderFromOts::RegisterOts() {
                                             kMaxBatchSize, sps_64_, number_of_sps_64_);
       RegisterHelperReceptor<__uint128_t>(*ot_providers_.at(i), ots_receiver_128_.at(i),
                                           kMaxBatchSize, sps_128_, number_of_sps_128_);
+
+      // added by Liang Zhao
+      RegisterHelperReceptorBoostUint<bm::uint256_t>(*ot_providers_.at(i), ots_receiver_256_.at(i),
+                                                     kMaxBatchSize, sps_256_, number_of_sps_256_);
     }
   }
 }
@@ -231,6 +330,30 @@ static void ParseHelperSend(std::list<std::unique_ptr<BasicOtSender>>& ots_sende
   for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
     const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
     const auto& ot_to_send = dynamic_cast<AcOtSender<T>*>(ots_sender.front().get());
+    ot_to_send->ComputeOutputs();
+    const auto output_to_send = ot_to_send->GetOutputs();
+    for (auto j = 0ull; j < batch_size; ++j) {
+      for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
+        sps.c.at(sp_id + j) -= 2 * output_to_send[j * bit_size + bit_i];
+      }
+    }
+    ots_sender.pop_front();
+    sp_id += batch_size;
+  }
+}
+
+// added by Liang Zhao
+template <typename T>
+static void ParseHelperSendBoostUint(std::list<std::unique_ptr<BasicOtSender>>& ots_sender,
+                                     std::size_t max_batch_size, SpVector<T>& sps,
+                                     std::size_t number_of_sps) {
+  // constexpr std::size_t bit_size = sizeof(T) * 8;
+  constexpr std::size_t bit_size = std::numeric_limits<T>::digits;
+
+  for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
+    const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
+    // const auto& ot_to_send = ots_sender.front();
+    const auto& ot_to_send = dynamic_cast<AcOtSenderBoostUint<T>*>(ots_sender.front().get());
     ot_to_send->ComputeOutputs();
     const auto output_to_send = ot_to_send->GetOutputs();
     for (auto j = 0ull; j < batch_size; ++j) {
@@ -264,6 +387,30 @@ static void ParseHelperReceive(std::list<std::unique_ptr<BasicOtReceiver>>& ots_
   }
 }
 
+// added by Liang Zhao
+template <typename T>
+static void ParseHelperReceiveBoostUint(std::list<std::unique_ptr<BasicOtReceiver>>& ots_receiver,
+                                        std::size_t max_batch_size, SpVector<T>& sps,
+                                        std::size_t number_of_sps) {
+  // constexpr std::size_t bit_size = sizeof(T) * 8;
+  constexpr std::size_t bit_size = std::numeric_limits<T>::digits;
+
+  for (std::size_t sp_id = 0; sp_id < number_of_sps;) {
+    const auto batch_size = std::min(max_batch_size, number_of_sps - sp_id);
+    // const auto& ot_to_receive = ots_receiver.front();
+    const auto& ot_to_receive = dynamic_cast<AcOtReceiverBoostUint<T>*>(ots_receiver.front().get());
+    ot_to_receive->ComputeOutputs();
+    const auto output_to_receive = ot_to_receive->GetOutputs();
+    for (auto j = 0ull; j < batch_size; ++j) {
+      for (auto bit_i = 0u; bit_i < bit_size; ++bit_i) {
+        sps.c.at(sp_id + j) += 2 * output_to_receive[j * bit_size + bit_i];
+      }
+    }
+    ots_receiver.pop_front();
+    sp_id += batch_size;
+  }
+}
+
 void SpProviderFromOts::ParseOutputs() {
   for (std::size_t i = 0; i < ot_providers_.size(); ++i) {
     if (i == my_id_) {
@@ -280,6 +427,10 @@ void SpProviderFromOts::ParseOutputs() {
                                      number_of_sps_64_);
       ParseHelperSend<__uint128_t>(ots_sender_128_.at(i), kMaxBatchSize, sps_128_,
                                    number_of_sps_128_);
+
+      // added by Liang Zhao
+      ParseHelperSendBoostUint<bm::uint256_t>(ots_sender_256_.at(i), kMaxBatchSize, sps_256_,
+                                              number_of_sps_256_);
     } else if (i > my_id_) {
       ParseHelperReceive<std::uint8_t>(ots_receiver_8_.at(i), kMaxBatchSize, sps_8_,
                                        number_of_sps_8_);
@@ -291,6 +442,10 @@ void SpProviderFromOts::ParseOutputs() {
                                         number_of_sps_64_);
       ParseHelperReceive<__uint128_t>(ots_receiver_128_.at(i), kMaxBatchSize, sps_128_,
                                       number_of_sps_128_);
+
+      // added by Liang Zhao
+      ParseHelperReceiveBoostUint<bm::uint256_t>(ots_receiver_256_.at(i), kMaxBatchSize, sps_256_,
+                                                 number_of_sps_256_);
     }
   }
 }

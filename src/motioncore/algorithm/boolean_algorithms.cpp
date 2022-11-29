@@ -24,6 +24,12 @@
 
 #include "boolean_algorithms.h"
 
+#include <algorithm>
+#include <cassert>
+#include <cmath>
+
+#include "protocols/share.h"
+
 namespace encrypto::motion::algorithm {
 
 std::pair<ShareWrapper, ShareWrapper> FullAdder(const ShareWrapper& a, const ShareWrapper& b,
@@ -37,11 +43,24 @@ std::pair<ShareWrapper, ShareWrapper> FullAdder(const ShareWrapper& a, const Sha
   return std::pair(std::move(sum), std::move(carry_out));
 }
 
+// ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bit_string_1,
+//                         const ShareWrapper& carry_in) {
+//   std::vector<ShareWrapper> bits_0{bit_string_0.Split()};
+//   std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
+//   return AdderChain(bits_0, bits_1, carry_in);
+// }
+
 ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bit_string_1,
                         const ShareWrapper& carry_in) {
-  std::vector<ShareWrapper> bits_0{bit_string_0.Split()};
+  // std::cout << "AdderChain(const ShareWrapper& bit_string_0" << std::endl;
 
+  // std::cout << "bits_0{bit_string_0.Split()}" << std::endl;
+  std::vector<ShareWrapper> bits_0{bit_string_0.Split()};
+  // std::cout << "bits_1{bit_string_1.Split()}" << std::endl;
+
+  // std::cout << "bits_0.size: " << bits_0.size() << std::endl;
   if (bit_string_1.Get()) {
+    // std::cout << "bits_1.size: " << bits_1.size() << std::endl;
     std::vector<ShareWrapper> bits_1{bit_string_1.Split()};
     return AdderChain(bits_0, bits_1, carry_in);
   } else {
@@ -50,10 +69,21 @@ ShareWrapper AdderChain(const ShareWrapper& bit_string_0, const ShareWrapper& bi
 }
 
 ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, const ShareWrapper& carry_in) {
+  // std::cout << "AdderChain(std::span<const ShareWrapper> bits_0" << std::endl;
+
   if (!bits_0.empty()) assert(bits_0[0]->GetCircuitType() == CircuitType::kBoolean);
+  // if (!bits_1.empty()) assert(bits_1[0]->GetCircuitType() == CircuitType::kBoolean);
   assert(!bits_0.empty());
 
+  // inlining seems to be causing constexpr retrieval of size which yields
+  // the extent and not the actual runtime size, i.e., max std::size not
+  // sure how to avoid it in a more elegant way...
   std::size_t bits_0_length = bits_0.size();
+  // auto [min_length, max_length] = std::minmax(bits_0_length, bits_1_length);
+  // std::size_t max_length = bits_0_length;
+
+  // std::cout << "min_length: " << min_length << std::endl;
+  // std::cout << "max_length: " << max_length << std::endl;
 
   // allocate wires
   std::vector<ShareWrapper> result_wires(bits_0_length + 1);
@@ -62,6 +92,13 @@ ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, const ShareWrapper
   // size
   ShareWrapper carry{carry_in};
   std::size_t i = 0;
+  // for (; i < min_length; ++i) {
+  //   std::tie(result_wires[i], carry) = FullAdder(bits_0[i], bits_1[i], carry);
+  // }
+
+  // if shares are of unequal size, compute the remaining part using only
+  // the longer share
+  // std::span<const ShareWrapper> long_share{bits_0.size() > bits_1.size() ? bits_0 : bits_1};
 
   for (; i < bits_0_length; ++i) {
     result_wires[i] = bits_0[i] ^ carry;
@@ -71,10 +108,12 @@ ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, const ShareWrapper
   // save the carry bit for the case of an overflow
   result_wires.back() = carry;
 
+  // std::cout << "result_wires.back() = carry;" << std::endl;
+  // std::cout << "result_wires.size: " << result_wires.size() << std::endl;
+
   // concatenate wires into a single share
   return ShareWrapper::Concatenate(result_wires);
 }
-
 ShareWrapper AdderChain(std::span<const ShareWrapper> bits_0, std::span<const ShareWrapper> bits_1,
                         const ShareWrapper& carry_in) {
   if (!bits_0.empty()) assert(bits_0[0]->GetCircuitType() == CircuitType::kBoolean);

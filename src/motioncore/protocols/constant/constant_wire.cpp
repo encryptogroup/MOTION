@@ -27,15 +27,22 @@
 namespace encrypto::motion::proto {
 
 ConstantBooleanWire::ConstantBooleanWire(Backend& backend, std::size_t number_of_simd)
-    : BooleanWire(backend, number_of_simd) {}
+    : BooleanWire(backend, number_of_simd) {
+  SetAsPubliclyKnownWire();
+}
 
 ConstantBooleanWire::ConstantBooleanWire(BitVector<>&& values, Backend& backend)
-    : BooleanWire(backend, values.GetSize()), values_(std::move(values)) {}
+    : BooleanWire(backend, values.GetSize()), values_(std::move(values)) {
+  SetAsPubliclyKnownWire();
+}
 
 ConstantBooleanWire::ConstantBooleanWire(const BitVector<>& values, Backend& backend)
-    : BooleanWire(backend, values.GetSize()), values_(values) {}
+    : BooleanWire(backend, values.GetSize()), values_(values) {
+  SetAsPubliclyKnownWire();
+}
 
 ConstantBooleanWire::ConstantBooleanWire(bool value, Backend& backend) : BooleanWire(backend, 1) {
+  SetAsPubliclyKnownWire();
   values_.Append(value);
 }
 
@@ -43,5 +50,8 @@ template class ConstantArithmeticWire<std::uint8_t>;
 template class ConstantArithmeticWire<std::uint16_t>;
 template class ConstantArithmeticWire<std::uint32_t>;
 template class ConstantArithmeticWire<std::uint64_t>;
+
+// added by Liang Zhao
+template class ConstantArithmeticWire<__uint128_t>;
 
 }  // namespace encrypto::motion::proto

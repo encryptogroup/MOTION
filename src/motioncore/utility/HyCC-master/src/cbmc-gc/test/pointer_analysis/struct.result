@@ -1,0 +1,12 @@
+b => {outer, outer<4,0>}
+inner_c => outer
+inner_l => outer<8,0>
+outer<184,0> => ina
+outer<232,0> => inb
+pia => ina
+pib => inb
+ina<40,0> => inc
+pic => inc
+
+outer => ?
+outer<4,0> => ?

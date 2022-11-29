@@ -105,6 +105,14 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
                     backend_, position_ids_.size()));
             break;
           }
+
+          // added by Liang Zhao
+          case 128: {
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<__uint128_t>>(
+                    backend_, position_ids_.size()));
+            break;
+          }
           default:
             throw std::invalid_argument(
                 fmt::format("Trying to create a ConstantArithmeticShare with invalid bitlength: {}",
@@ -138,6 +146,15 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
                     backend_, position_ids_.size()));
             break;
           }
+
+            // added by Liang Zhao
+          case 128: {
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<__uint128_t>>(
+                    backend_, position_ids_.size()));
+            break;
+          }
+
           default:
             throw std::invalid_argument(fmt::format(
                 "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
@@ -278,6 +295,13 @@ void SubsetGate::EvaluateOnline() {
                                                         position_ids_);
           break;
         }
+
+        // added by Liang Zhao
+        case 128: {
+          ArithmeticConstantSubsetOnline<__uint128_t>(parent_[0], output_wires_[0], position_ids_);
+          break;
+        }
+
         default:
           throw std::invalid_argument(
               fmt::format("Trying to create a ConstantArithmeticShare with invalid bitlength: {}",
@@ -301,6 +325,12 @@ void SubsetGate::EvaluateOnline() {
         }
         case 64: {
           ArithmeticGmwSubsetOnline<std::uint64_t>(parent_[0], output_wires_[0], position_ids_);
+          break;
+        }
+
+          // added by Liang Zhao
+        case 128: {
+          ArithmeticGmwSubsetOnline<__uint128_t>(parent_[0], output_wires_[0], position_ids_);
           break;
         }
         default:
@@ -385,6 +415,15 @@ const SharePointer SubsetGate::GetOutputAsShare() {
           result = std::static_pointer_cast<Share>(tmp);
           break;
         }
+
+        // added by Liang Zhao
+        case 128: {
+          auto tmp = std::make_shared<proto::ConstantArithmeticShare<__uint128_t>>(output_wires_);
+          assert(tmp);
+          result = std::static_pointer_cast<Share>(tmp);
+          break;
+        }
+
         default:
           throw std::invalid_argument(
               fmt::format("Trying to create a ConstantArithmeticShare with invalid bitlength: {}",
@@ -421,6 +460,15 @@ const SharePointer SubsetGate::GetOutputAsShare() {
           result = std::static_pointer_cast<Share>(tmp);
           break;
         }
+
+          // added by Liang Zhao
+        case 128: {
+          auto tmp = std::make_shared<proto::arithmetic_gmw::Share<__uint128_t>>(output_wires_[0]);
+          assert(tmp);
+          result = std::static_pointer_cast<Share>(tmp);
+          break;
+        }
+
         default:
           throw std::invalid_argument(fmt::format(
               "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",

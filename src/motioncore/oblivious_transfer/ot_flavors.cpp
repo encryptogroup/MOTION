@@ -502,6 +502,7 @@ AcOtReceiver<T>::AcOtReceiver(std::size_t ot_id, std::size_t number_of_ots, std:
     : BasicOtReceiver(ot_id, number_of_ots, 8 * sizeof(T) * vector_size, data),
       vector_size_(vector_size),
       outputs_(number_of_ots * vector_size) {
+  // TODO: the new version of MOTION is very different from the old one
   sender_message_future_ = data_.message_manager.RegisterReceive(
       data_.party_id, communication::MessageType::kOtExtensionSender, ot_id);
 }
@@ -563,6 +564,396 @@ template class AcOtReceiver<std::uint16_t>;
 template class AcOtReceiver<std::uint32_t>;
 template class AcOtReceiver<std::uint64_t>;
 template class AcOtReceiver<__uint128_t>;
+
+// added by Liang Zhao
+
+// ---------- AcOtSenderBoostUint ----------
+
+template <typename T>
+AcOtSenderBoostUint<T>::AcOtSenderBoostUint(const std::size_t ot_id,
+                                            const std::size_t number_of_ots,
+                                            const std::size_t vector_size, OtExtensionData& data)
+    : BasicOtSender(ot_id, number_of_ots, (std::numeric_limits<T>::digits) * vector_size, data),
+      vector_size_(vector_size),
+      corrections_future_(data.message_manager.RegisterReceive(
+          data_.party_id, communication::MessageType::kOtExtensionReceiverCorrections, ot_id)) {
+  // std::cout << "AcOtSenderBoostUint" << std::endl;
+
+  // std::cout << "number_of_ots: " << number_of_ots << std::endl;
+}
+
+template <typename T>
+void AcOtSenderBoostUint<T>::ComputeOutputs() {
+  // std::cout << "AcOtSenderBoostUint<T>::ComputeOutputs" << std::endl;
+
+  if (outputs_computed_) {
+    // the work was already done
+    return;
+  }
+
+  // setup phase needs to be finished
+  WaitSetup();
+
+  // wait until the receiver has sent its correction bits
+  // data_.received_correction_offsets_condition.at(ot_id_)->Wait();
+
+  // make space for all the OTs
+  outputs_.resize(number_of_ots_ * vector_size_);
+
+  // get the corrections bits
+  // std::unique_lock lock(data_.corrections_mutex);
+  // const auto corrections = data_.corrections.Subset(ot_id_, ot_id_ + number_of_ots_);
+  // lock.unlock();
+  // get the corrections bits
+  std::vector<std::uint8_t> corrections_message{corrections_future_.get()};
+  auto pointer = const_cast<std::uint8_t*>(
+      communication::GetMessage(corrections_message.data())->payload()->data());
+  BitSpan corrections_span{pointer, number_of_ots_};
+
+  // // only for debugging
+  // std::vector<T> xxx;
+
+  // take one of the precomputed outputs
+  // if (vector_size_ == 1) {
+  //   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+  //     if (corrections_span[ot_i]) {
+  //       std::vector<T> ot_data_y1_vector =
+  //           ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //               outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+  //       outputs_[ot_i] = ot_data_y1_vector[0];
+
+  //     } else {
+  //       std::vector<T> ot_data_y0_vector =
+  //           ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //               outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+  //       outputs_[ot_i] = ot_data_y0_vector[0];
+  //     }
+  //   }
+  //   // std::cout << "AcOtSenderBoostUint vector_size_ == 1 ImportOtDataToBoostUintVector finish"
+  //   //           << std::endl;
+  // }
+
+  // new optimized method
+  // test passed
+  // take one of the precomputed outputs
+  if (vector_size_ == 1) {
+    for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+      // std::cout << "corrections_span[ot_i]: " << corrections_span[ot_i] << std::endl;
+
+      if (corrections_span[ot_i]) {
+        // std::cout << "if (corrections_span[ot_i]): " << std::endl;
+
+        ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+            outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+
+        // std::cout << "outputs_[ot_i]: " << outputs_[ot_i] << std::endl;
+      } else {
+        // std::cout << "else (corrections_span[ot_i]): " << std::endl;
+
+        ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+            outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+
+        // std::cout << "outputs_[ot_i]: " << outputs_[ot_i] << std::endl;
+      }
+    }
+  }
+
+  // // vector_size_ > 1
+  // else {
+  //   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+  //     if (corrections_span[ot_i]) {
+  //       std::vector<T> ot_data_y1_vector =
+  //           ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //               outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+  //       for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+  //         outputs_[ot_i * vector_size_ + vector_index] = ot_data_y1_vector[vector_index];
+  //       }
+
+  //     } else {
+  //       std::vector<T> ot_data_y0_vector =
+  //           ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //               outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+  //       for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+  //         outputs_[ot_i * vector_size_ + vector_index] = ot_data_y0_vector[vector_index];
+  //       }
+  //     }
+  //   }
+  // }
+
+  // new optimized method
+  // test passed
+  else {
+    for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+      if (corrections_span[ot_i]) {
+        ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+            outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+      } else {
+        ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+            outputs_, ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+      }
+    }
+  }
+
+  // remember that we have done this
+  outputs_computed_ = true;
+}
+
+template <typename T>
+void AcOtSenderBoostUint<T>::SendMessages() const {
+  // std::cout<<"AcOtSenderBoostUint<T>::SendMessages"<<std::endl;
+
+  assert(data_.sender_data.IsSetupReady());
+  auto buffer = correlations_;
+  // if (vector_size_ == 1) {
+  //   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+  //     std::vector<T> ot_data_y0_vector =
+  //         ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //             ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+  //     std::vector<T> ot_data_y1_vector =
+  //         ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //             ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+  //     buffer[ot_i] += ot_data_y0_vector[0] + ot_data_y1_vector[0];
+  //   }
+  // }
+
+  if (vector_size_ == 1) {
+    std::vector<T> ot_data_y0_vector(number_of_ots_);
+    std::vector<T> ot_data_y1_vector(number_of_ots_);
+    for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+          ot_data_y0_vector, ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+          ot_data_y1_vector, ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+      buffer[ot_i] += ot_data_y0_vector[ot_i] + ot_data_y1_vector[ot_i];
+
+      // std::cout << "AcOtSenderBoostUint<T>::SendMessages: buffer[ot_i]: " << buffer[ot_i]
+      //           << std::endl;
+    }
+  }
+
+  // vector_size_ > 1
+  // else {
+  //   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+  //     std::vector<T> ot_data_y0_vector =
+  //         ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //             ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+  //     std::vector<T> ot_data_y1_vector =
+  //         ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //             ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+
+  //     for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+  //       buffer[ot_i * vector_size_ + vector_index] +=
+  //           ot_data_y0_vector[vector_index] + ot_data_y1_vector[vector_index];
+  //     }
+  //   }
+  // }
+
+  // test passed
+  else {
+    std::vector<T> ot_data_y0_vector(vector_size_ * number_of_ots_);
+    std::vector<T> ot_data_y1_vector(vector_size_ * number_of_ots_);
+    for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+          ot_data_y0_vector, ot_i, ot_id_, vector_size_, data_.sender_data.y0);
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+          ot_data_y1_vector, ot_i, ot_id_, vector_size_, data_.sender_data.y1);
+
+      for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+        buffer[ot_i * vector_size_ + vector_index] +=
+            ot_data_y0_vector[ot_i * vector_size_ + vector_index] +
+            ot_data_y1_vector[ot_i * vector_size_ + vector_index];
+      }
+    }
+  }
+  assert(buffer.size() == number_of_ots_ * vector_size_);
+
+  // send_function_(communication::BuildOtExtensionMessageSender(
+  //     reinterpret_cast<const std::byte*>(buffer.data()), sizeof(T) * buffer.size(), ot_id_));
+
+  std::size_t num_of_bytes = ((std::numeric_limits<T>::digits) / 8) * buffer.size();
+
+  // TODO: check if ExportOtDataInUint8tFromBoostUintVector works correctly
+  // std::vector<std::byte> buffer_byte_vector =
+  //     ExportOtDataInUint8tFromBoostUintVector<T, std::allocator<T>>(num_of_bytes, buffer);
+  std::vector<std::uint8_t> buffer_byte_vector =
+      ExportOtDataInUint8tFromBoostUintVector<T, std::allocator<T>>(num_of_bytes, buffer);
+
+  // std::cout << "AcOtSenderBoostUint<T>::SendMessages: buffer_byte_vector: " << std::endl;
+  // for (std::size_t i = 0; i < num_of_bytes; ++i) {
+  //   std::cout << unsigned(buffer_byte_vector[i]) << std::endl;
+  // }
+
+  // std::vector<std::uint8_t*> buffer_byte_vector =
+  // ExportOtDataFromBoostUintVector<T, std::allocator<T>>(num_of_bytes, buffer);
+  // send_function_(communication::BuildOtExtensionMessageSender(buffer_byte_vector.data(),
+  //                                                             num_of_bytes, ot_id_));
+
+  // auto msg{communication::BuildMessage(communication::MessageType::kOtExtensionSender, ot_id_,
+  //                                      buffer_span)};
+
+  // auto msg{communication::BuildMessage(communication::MessageType::kOtExtensionSender, ot_id_,
+  //                                      buffer_byte_vector.data())};
+
+  auto msg{communication::BuildMessage(communication::MessageType::kOtExtensionSender, ot_id_,
+                                       buffer_byte_vector)};
+  data_.send_function(std::move(msg));
+}
+
+// ---------- AcOtReceiverBoostUint ----------
+
+template <typename T>
+AcOtReceiverBoostUint<T>::AcOtReceiverBoostUint(const std::size_t ot_id,
+                                                const std::size_t number_of_ots,
+                                                const std::size_t vector_size,
+                                                OtExtensionData& data)
+    : BasicOtReceiver(ot_id, number_of_ots, (std::numeric_limits<T>::digits) * vector_size, data),
+      vector_size_(vector_size),
+      outputs_(number_of_ots * vector_size) {
+  sender_message_future_ = data_.message_manager.RegisterReceive(
+      data_.party_id, communication::MessageType::kOtExtensionSender, ot_id);
+
+  // std::cout << "AcOtReceiverBoostUint" << std::endl;
+  // std::cout << "number_of_ots: " << number_of_ots << std::endl;
+  // std::cout << "vector_size: " << vector_size << std::endl;
+}
+
+template <typename T>
+void AcOtReceiverBoostUint<T>::ComputeOutputs() {
+  // std::cout << "AcOtReceiverBoostUint<T>::ComputeOutputs" << std::endl;
+  if (outputs_computed_) {
+    // already done
+    return;
+  }
+
+  WaitSetup();
+
+  if (!corrections_sent_) {
+    throw std::runtime_error("Choices in COT must be se(n)t before calling ComputeOutputs()");
+  }
+
+  auto sender_message = sender_message_future_.get();
+  auto pointer = const_cast<std::uint8_t*>(
+      communication::GetMessage(sender_message.data())->payload()->data());
+  assert(communication::GetMessage(sender_message.data())->payload()->size() ==
+         number_of_ots_ * vector_size_ * (std::numeric_limits<T>::digits) / 8);
+
+  // std::cout << "sender_message.size: " << sender_message.size() << std::endl;
+  // std::cout << "number_of_ots_: " << number_of_ots_ << std::endl;
+  // std::cout << "vector_size_: " << vector_size_ << std::endl;
+
+  // assert(sender_message.size() == number_of_ots_ * vector_size_);
+
+  // TODO: sender_message need special treatment
+
+  // if (vector_size_ == 1) {
+  //   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+  //     std::vector<T> ot_data_output_vector =
+  //         ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //             ot_i, ot_id_, vector_size_, data_.receiver_data.outputs);
+
+  //     if (choices_[ot_i]) {
+  //       outputs_[ot_i] = sender_message[ot_i] - ot_data_output_vector[0];
+  //     } else {
+  //       outputs_[ot_i] = ot_data_output_vector[0];
+  //     }
+  //   }
+  //   // std::cout << "AcOtReceiverBoostUint vector_size_ == 1 ImportOtDataToBoostUintVector
+  //   finish"
+  //   //           << std::endl;
+
+  // }
+
+  // std::cout << "sender_message.data(): " << std::endl;
+  // for (std::size_t i = 0; i < number_of_ots_ * vector_size_ * (std::numeric_limits<T>::digits) / 8;
+  //      i++) {
+  //   std::cout << unsigned(pointer[i]) << std::endl;
+  // }
+
+  // std::cout << "pointer: " << std::endl;
+  // for (std::size_t i = 0; i < number_of_ots_ * vector_size_ * (std::numeric_limits<T>::digits) / 8;
+  //      i++) {
+  //   std::cout << unsigned(pointer[i]) << std::endl;
+  // }
+
+  // TODO: need test
+  // ! sender_message_T always be the same value, somewhere goes wrong
+  std::vector<T> sender_message_T(number_of_ots_ * vector_size_);
+  // ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(sender_message_T, vector_size_,
+  //                                                                  sender_message.data());
+  ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(sender_message_T, number_of_ots_ *vector_size_,
+                                                                   pointer);
+
+  if (vector_size_ == 1) {
+    std::vector<T> ot_data_vector(number_of_ots_);
+    for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+          ot_data_vector, ot_i, ot_id_, vector_size_, data_.receiver_data.outputs);
+
+      // std::cout << "sender_message_T: " << sender_message_T[ot_i * vector_size_] << std::endl;
+
+      // std::cout << "ot_data_vector: " << ot_data_vector[ot_i * vector_size_] << std::endl;
+
+      if (choices_[ot_i]) {
+        // TODO: fix sender_message[ot_i]?
+        // outputs_[ot_i] = sender_message[ot_i] - ot_data_vector[ot_i];
+        outputs_[ot_i] = sender_message_T[ot_i] - ot_data_vector[ot_i];
+      } else {
+        outputs_[ot_i] = ot_data_vector[ot_i];
+      }
+    }
+  }
+
+  // vector_size_ > 1
+  // else {
+  //   for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+  //     std::vector<T> ot_data_output_vector =
+  //         ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+  //             ot_i, ot_id_, vector_size_, data_.receiver_data.outputs);
+
+  //     if (choices_[ot_i]) {
+  //       for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+  //         outputs_[ot_i * vector_size_ + vector_index] =
+  //             sender_message[ot_i * vector_size_ + vector_index] -
+  //             ot_data_output_vector[vector_index];
+  //       }
+  //     } else {
+  //       for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+  //         outputs_[ot_i * vector_size_ + vector_index] = ot_data_output_vector[vector_index];
+  //       }
+  //     }
+  //   }
+  // }
+
+  else {
+    std::vector<T> ot_data_vector(number_of_ots_ * vector_size_);
+    for (std::size_t ot_i = 0; ot_i < number_of_ots_; ++ot_i) {
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(
+          ot_data_vector, ot_i, ot_id_, vector_size_, data_.receiver_data.outputs);
+
+      if (choices_[ot_i]) {
+        for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+          // outputs_[ot_i * vector_size_ + vector_index] =
+          //     sender_message[ot_i * vector_size_ + vector_index] -
+          //     ot_data_vector[ot_i * vector_size_ + vector_index];
+          outputs_[ot_i * vector_size_ + vector_index] =
+              sender_message_T[ot_i * vector_size_ + vector_index] -
+              ot_data_vector[ot_i * vector_size_ + vector_index];
+        }
+      } else {
+        for (std::size_t vector_index = 0; vector_index < vector_size_; ++vector_index) {
+          outputs_[ot_i * vector_size_ + vector_index] =
+              ot_data_vector[ot_i * vector_size_ + vector_index];
+        }
+      }
+    }
+  }
+  outputs_computed_ = true;
+}
+
+// ---------- kAcOtBoostUint template instantiations ----------
+
+template class AcOtSenderBoostUint<bm::uint256_t>;
+template class AcOtReceiverBoostUint<bm::uint256_t>;
 
 // ---------- GOt128Sender ----------
 

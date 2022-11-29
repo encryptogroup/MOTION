@@ -35,15 +35,23 @@ class ConstantArithmeticWire final : public Wire {
   using value_type = T;
 
   ConstantArithmeticWire(Backend& backend, std::size_t number_of_simd)
-      : Wire(backend, number_of_simd) {}
+      : Wire(backend, number_of_simd) {
+    SetAsPubliclyKnownWire();
+  }
 
   ConstantArithmeticWire(std::vector<T>&& values, Backend& backend)
-      : Wire(backend, values.size()), values_(std::move(values)) {}
+      : Wire(backend, values.size()), values_(std::move(values)) {
+    SetAsPubliclyKnownWire();
+  }
 
   ConstantArithmeticWire(const std::vector<T>& values, Backend& backend)
-      : Wire(backend, values.size()), values_(values) {}
+      : Wire(backend, values.size()), values_(values) {
+    SetAsPubliclyKnownWire();
+  }
 
-  ConstantArithmeticWire(T t, Backend& backend) : Wire(backend, 1), values_({t}) {}
+  ConstantArithmeticWire(T t, Backend& backend) : Wire(backend, 1), values_({t}) {
+    SetAsPubliclyKnownWire();
+  }
 
   ~ConstantArithmeticWire() final = default;
 

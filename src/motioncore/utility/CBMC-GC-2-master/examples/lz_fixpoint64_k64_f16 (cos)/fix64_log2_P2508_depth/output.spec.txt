@@ -1,0 +1,3 @@
+INPUT_A_x: int64;
+INPUT_B_x: int64;
+OUTPUT_log2_P2508: int64;

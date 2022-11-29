@@ -82,6 +82,12 @@ class GOtBitReceiver;
 class GOtSender;
 class GOtReceiver;
 
+// added by Liang Zhao
+template <typename T>
+class AcOtSenderBoostUint;
+template <typename T>
+class AcOtReceiverBoostUint;
+
 class OtVector {
  public:
   OtVector() = delete;
@@ -119,6 +125,12 @@ class OtProviderSender : public FiberSetupWaitable {
   std::unique_ptr<XcOtBitSender> RegisterXcOtBits(std::size_t number_of_ots);
   template <typename T>
   std::unique_ptr<AcOtSender<T>> RegisterAcOt(std::size_t number_of_ots, std::size_t vector_size);
+
+  // added by Liang Zhao
+  template <typename T>
+  std::unique_ptr<AcOtSenderBoostUint<T>> RegisterAcOtBoostUint(std::size_t number_of_ots,
+                                                                std::size_t vector_size);
+
   std::unique_ptr<GOtSender> RegisterGOt(std::size_t number_of_ots, std::size_t bitlength);
   std::unique_ptr<GOt128Sender> RegisterGOt128(std::size_t number_of_ots);
   std::unique_ptr<GOtBitSender> RegisterGOtBit(std::size_t number_of_ots);
@@ -152,6 +164,12 @@ class OtProviderReceiver : public FiberSetupWaitable {
   std::unique_ptr<XcOtBitReceiver> RegisterXcOtBits(std::size_t number_of_ots);
   template <typename T>
   std::unique_ptr<AcOtReceiver<T>> RegisterAcOt(std::size_t number_of_ots, std::size_t vector_size);
+
+  // added by Liang Zhao
+  template <typename T>
+  std::unique_ptr<AcOtReceiverBoostUint<T>> RegisterAcOtBoostUint(std::size_t number_of_ots,
+                                                                  std::size_t vector_size);
+
   std::unique_ptr<GOtReceiver> RegisterGOt(std::size_t number_of_ots, std::size_t bitlength);
   std::unique_ptr<GOt128Receiver> RegisterGOt128(std::size_t number_of_ots);
   std::unique_ptr<GOtBitReceiver> RegisterGOtBit(std::size_t number_of_ots);
@@ -202,6 +220,13 @@ class OtProvider : public FiberSetupWaitable {
     throw std::runtime_error("not implemented");
   }
 
+  // added by Liang Zhao
+  [[nodiscard]] virtual std::unique_ptr<BasicOtSender> RegisterSendAcOtBoostUint(
+      [[maybe_unused]] std::size_t number_of_ots = 1, [[maybe_unused]] std::size_t bit_length = 8,
+      [[maybe_unused]] std::size_t vector_size = 1) {
+    throw std::runtime_error("not implemented");
+  }
+
   [[nodiscard]] virtual std::unique_ptr<GOtSender> RegisterSendGOt(
       [[maybe_unused]] std::size_t number_of_ots = 1, [[maybe_unused]] std::size_t bitlength = 1) {
     throw std::runtime_error("not implemented");
@@ -241,6 +266,14 @@ class OtProvider : public FiberSetupWaitable {
       [[maybe_unused]] std::size_t vector_size = 1) {
     throw std::runtime_error("not implemented");
   }
+
+  // added by Liang Zhao
+  [[nodiscard]] virtual std::unique_ptr<BasicOtReceiver> RegisterReceiveAcOtBoostUint(
+      [[maybe_unused]] std::size_t number_of_ots = 1, [[maybe_unused]] std::size_t bitlength = 8,
+      [[maybe_unused]] std::size_t vector_size = 1) {
+    throw std::runtime_error("not implemented");
+  }
+
   [[nodiscard]] virtual std::unique_ptr<GOtReceiver> RegisterReceiveGOt(
       [[maybe_unused]] std::size_t number_of_ots = 1, [[maybe_unused]] std::size_t bitlength = 1) {
     throw std::runtime_error("not implemented");
@@ -303,6 +336,10 @@ class OtProviderFromOtExtension final : public OtProvider {
                                                                 std::size_t bitlength,
                                                                 std::size_t vector_size) override;
 
+  // added by Liang Zhao
+  [[nodiscard]] std::unique_ptr<BasicOtSender> RegisterSendAcOtBoostUint(
+      std::size_t number_of_ots, std::size_t bitlength, std::size_t vector_size) override;
+
   [[nodiscard]] std::unique_ptr<GOtSender> RegisterSendGOt(std::size_t number_of_ots,
                                                            std::size_t bitlength) override;
 
@@ -325,6 +362,10 @@ class OtProviderFromOtExtension final : public OtProvider {
       std::size_t number_of_ots) override;
 
   [[nodiscard]] std::unique_ptr<BasicOtReceiver> RegisterReceiveAcOt(
+      std::size_t number_of_ots, std::size_t bitlength, std::size_t vector_size) override;
+
+  // added by Liang Zhao
+  [[nodiscard]] std::unique_ptr<BasicOtReceiver> RegisterReceiveAcOtBoostUint(
       std::size_t number_of_ots, std::size_t bitlength, std::size_t vector_size) override;
 
   [[nodiscard]] std::unique_ptr<GOtReceiver> RegisterReceiveGOt(std::size_t number_of_ots,

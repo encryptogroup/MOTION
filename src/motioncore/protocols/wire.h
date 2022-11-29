@@ -73,6 +73,15 @@ class Wire {
 
   virtual bool IsConstant() const noexcept = 0;
 
+  // added by Liang Zhao
+  bool IsPubliclyKnownWire() const { return is_public_known_wire_; }
+
+  // added by Liang Zhao
+  void SetAsPubliclyKnownWire() { is_public_known_wire_ = true; }
+
+  // added by Liang Zhao
+  void SetAsPubliclyUnknownWire() { is_public_known_wire_ = false; }
+
   Wire(const Wire&) = delete;
 
  protected:
@@ -97,6 +106,11 @@ class Wire {
   void InitializationHelper();
 
   std::mutex mutex_;
+
+  // added by Liang Zhao
+  // this wire is publicly known (i.e., publicly known after share reconstruction, but the previous
+  // gates need to be online evaluated first)
+  bool is_public_known_wire_ = false;
 };
 
 using WirePointer = std::shared_ptr<Wire>;

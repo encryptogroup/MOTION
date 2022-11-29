@@ -388,6 +388,15 @@ void ArithmeticGmwToBmrGate::EvaluateOnline() {
       input_promise_->set_value(ToInput(w->GetValues()));
       break;
     }
+
+      // added by Liang Zhao
+    case 128: {
+      auto w{std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<__uint128_t>>(parent_[0])};
+      assert(w);
+      input_promise_->set_value(ToInput(w->GetValues()));
+      break;
+    }
+
     default:
       throw std::logic_error(fmt::format("Illegal bitlength: {}", bitlength));
   }

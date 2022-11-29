@@ -32,6 +32,9 @@
 #include "utility/reusable_future.h"
 #include "utility/type_traits.h"
 
+// added by Liang Zhao
+#include "boost/multiprecision/cpp_int.hpp"
+namespace bm = boost::multiprecision;
 namespace encrypto::motion {
 
 // base class capturing the common things among the sender implementations
@@ -437,6 +440,110 @@ class AcOtReceiver : public BasicOtReceiver {
   const std::size_t vector_size_;
 
   // future for the sender's message
+  ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
+
+  // the output for the receiver
+  std::vector<T> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+};
+
+// added by Liang Zhao
+// may not useful
+// T: boost::multiprecision::uint256_t
+template <typename T>  //, typename U = IsUnsignedInt<T>>
+class AcOtSenderBoostUint : public BasicOtSender {
+  
+  // commented out by Liang Zhao
+  // using IsUnsignedEnablerType = IsUnsignedInt<T>;
+
+ public:
+  AcOtSenderBoostUint(std::size_t ot_id, std::size_t number_of_ots, std::size_t vector_size,
+                      OtExtensionData& data);
+
+  // set the correlations for the OTs in this batch
+  void SetCorrelations(std::vector<T>&& correlations) {
+    assert(correlations.size() == number_of_ots_ * vector_size_);
+    correlations_ = std::move(correlations);
+  }
+  void SetCorrelations(const std::vector<T>& correlations) {
+    assert(correlations.size() == number_of_ots_ * vector_size_);
+    correlations_ = correlations;
+  }
+
+  // get the correlations for the OTs in this batch
+  const std::vector<T>& GetCorrelations() const { return correlations_; }
+
+  // compute the sender's outputs
+  void ComputeOutputs();
+
+  // get the sender's outputs
+  std::vector<T>& GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  // send the sender's messages
+  void SendMessages() const;
+
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kAcOt; }
+
+ private:
+  // dimension of each sender-input/output
+  const std::size_t vector_size_;
+
+  // the correlation vector
+  std::vector<T> correlations_;
+
+  // the "0 output" for the sender (the "1 output" can be computed by applying the correlation)
+  std::vector<T> outputs_;
+
+  // if the sender outputs have been computed
+  bool outputs_computed_ = false;
+
+  // future for the message containing client's corrections
+  ReusableFiberFuture<std::vector<std::uint8_t>> corrections_future_;
+};
+
+// added by Liang Zhao
+// may not useful
+// T: boost::multiprecision::uint256_t
+// receiver implementation of batched additive-correlated ots
+template <typename T>  //, typename = IsUnsignedInt<T>>
+class AcOtReceiverBoostUint : public BasicOtReceiver {
+  // using IsUnsignedEnablerType = IsUnsignedInt<T>;
+
+ public:
+  AcOtReceiverBoostUint(std::size_t ot_id, std::size_t number_of_ots, std::size_t vector_size,
+                        OtExtensionData& data);
+
+  // // added by Liang Zhao
+  // // constructor when T is from boost::multiprecision::cpp_int
+  // AcOtReceiverBoostUint(std::size_t ot_id, std::size_t number_of_ots, std::size_t vector_size,
+  //                       OtExtensionReceiverData& data,
+  //                       const std::function<void(flatbuffers::FlatBufferBuilder&&)>&
+  //                       send_function, bool is_boost_multiprecision_cpp_int);
+
+  // compute the receiver's outputs
+  void ComputeOutputs();
+
+  // get the receiver's outputs
+  std::vector<T>& GetOutputs() {
+    assert(outputs_computed_);
+    return outputs_;
+  }
+
+  [[nodiscard]] OtProtocol GetProtocol() const noexcept override { return OtProtocol::kAcOt; }
+
+ private:
+  // dimension of each sender-input/output
+  const std::size_t vector_size_;
+
+  // future for the sender's message
+  // ReusableFiberFuture<std::vector<T>> sender_message_future_;
+
+  // TODO: special treatment, different from the old version
   ReusableFiberFuture<std::vector<std::uint8_t>> sender_message_future_;
 
   // the output for the receiver

@@ -101,6 +101,15 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
                     backend_, std::size_t(1)));
             break;
           }
+
+          // added by Liang Zhao
+          case 128: {
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::ConstantArithmeticWire<__uint128_t>>(
+                    backend_, std::size_t(1)));
+            break;
+          }
+
           default:
             throw std::invalid_argument(
                 fmt::format("Trying to create a ConstantArithmeticShare with invalid bitlength: {}",
@@ -134,6 +143,14 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
                     backend_, std::size_t(1)));
             break;
           }
+
+            // added by Liang Zhao
+          case 128: {
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::arithmetic_gmw::Wire<__uint128_t>>(
+                    backend_, std::size_t(1)));
+            break;
+          }
           default:
             throw std::invalid_argument(fmt::format(
                 "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
@@ -163,6 +180,14 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
                 GetRegister().EmplaceWire<proto::astra::Wire<std::uint64_t>>(backend_, 1));
             break;
           }
+
+          // added by Liang Zhao
+          case 128: {
+            output_wires_.emplace_back(
+                GetRegister().EmplaceWire<proto::astra::Wire<__uint128_t>>(backend_, 1));
+            break;
+          }
+
           default:
             throw std::invalid_argument(
                 fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
@@ -276,6 +301,13 @@ void UnsimdifyGate::EvaluateOnline() {
           ArithmeticConstantUnsimdifyOnline<std::uint64_t>(parent_[0], output_wires_);
           break;
         }
+
+          // added by Liang Zhao
+        case 128: {
+          ArithmeticConstantUnsimdifyOnline<__uint128_t>(parent_[0], output_wires_);
+          break;
+        }
+
         default:
           throw std::invalid_argument(
               fmt::format("Trying to create a ConstantArithmeticShare with invalid bitlength: {}",
@@ -301,6 +333,13 @@ void UnsimdifyGate::EvaluateOnline() {
           ArithmeticGmwUnsimdifyOnline<std::uint64_t>(parent_[0], output_wires_);
           break;
         }
+
+          // added by Liang Zhao
+        case 128: {
+          ArithmeticGmwUnsimdifyOnline<__uint128_t>(parent_[0], output_wires_);
+          break;
+        }
+
         default:
           throw std::invalid_argument(fmt::format(
               "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
@@ -326,6 +365,13 @@ void UnsimdifyGate::EvaluateOnline() {
           AstraUnsimdifyOnline<std::uint64_t>(parent_[0], output_wires_);
           break;
         }
+
+          // added by Liang Zhao
+        case 128: {
+          AstraUnsimdifyOnline<__uint128_t>(parent_[0], output_wires_);
+          break;
+        }
+
         default:
           throw std::invalid_argument(
               fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",
@@ -420,6 +466,15 @@ std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {
             share = std::static_pointer_cast<Share>(tmp);
             break;
           }
+
+            // added by Liang Zhao
+          case 128: {
+            auto tmp = std::make_shared<proto::ConstantArithmeticShare<__uint128_t>>(output_wires);
+            assert(tmp);
+            share = std::static_pointer_cast<Share>(tmp);
+            break;
+          }
+
           default:
             throw std::invalid_argument(
                 fmt::format("Trying to create a ConstantArithmeticShare with invalid bitlength: {}",
@@ -453,6 +508,15 @@ std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {
             share = std::static_pointer_cast<Share>(tmp);
             break;
           }
+
+          // added by Liang Zhao
+          case 128: {
+            auto tmp = std::make_shared<proto::arithmetic_gmw::Share<__uint128_t>>(output_wires);
+            assert(tmp);
+            share = std::static_pointer_cast<Share>(tmp);
+            break;
+          }
+
           default:
             throw std::invalid_argument(fmt::format(
                 "Trying to create a proto::arithmetic_gmw::Share with invalid bitlength: {}",
@@ -486,6 +550,15 @@ std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {
             share = std::static_pointer_cast<Share>(tmp);
             break;
           }
+
+            // added by Liang Zhao
+          case 128: {
+            auto tmp = std::make_shared<proto::astra::Share<__uint128_t>>(output_wires);
+            assert(tmp);
+            share = std::static_pointer_cast<Share>(tmp);
+            break;
+          }
+
           default:
             throw std::invalid_argument(
                 fmt::format("Trying to create a proto::astra::Share with invalid bitlength: {}",

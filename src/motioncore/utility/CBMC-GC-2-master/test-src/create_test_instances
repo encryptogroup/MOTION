@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import pprint
+
+
+# Parsing instances
+#===============================================================================
+EXPANDABLE = {
+    "xchar": ["signed char", "unsigned char"],
+    "xshort": ["short", "unsigned short"],
+    "xint": ["int", "unsigned int"],
+    "xlong": ["long long", "unsigned long long"],
+    
+    "xsigned": ["signed char", "short", "int", "long long"],
+    "xunsigned": ["unsigned char", "unsigned short", "unsigned int", "unsigned long long"],
+    
+    "xintegral": ["xsigned", "xunsigned"], # Yes, expansions can be recursive!
+}
+
+
+def flatten(l):
+    return [item for sublist in l for item in sublist]
+
+
+def expand_one_value(assignments):
+    for name, value in assignments.items():
+        if value in EXPANDABLE:
+            instances = []
+            for specific_value in EXPANDABLE[value]:
+                new_assignments = assignments.copy()
+                new_assignments[name] = specific_value
+                instances.append(new_assignments)
+            return instances
+    return [assignments]
+
+
+def expand_values(instances):
+    instances = instances.copy()
+    while True:
+        length = len(instances)
+        instances = flatten(map(expand_one_value, instances))
+        if len(instances) == length:
+            return instances
+
+
+# An instance assigns each variable a value. If a value is expandable (i.e. can
+# have multiple specific values) then new instances are created for each
+# specific value.
+def parse_instance(inst_str):
+    assignments = {}
+    for assign_str in inst_str.split(";"):
+        [name, value] = map(str.strip, assign_str.split("="))
+        if name in assignments:
+            raise Exception(name + " is already assigned a value in instance")
+        assignments[name] = value
+    
+    return expand_values([assignments])
+
+
+def parse_instance_list(lines):
+    return flatten(map(parse_instance, lines))
+
+
+# Generating instances
+#===============================================================================
+
+# TODO
+
+
+
+# Main
+#===============================================================================
+if len(sys.argv) != 2:
+    print("Usage: " + os.path.basename(sys.argv[0]) + " <file>")
+    sys.exit(1)
+
+instances = []
+with open("instances.txt") as inst_file:
+    instances = parse_instance_list(inst_file.readlines())
+
+pprint.pprint(instances)

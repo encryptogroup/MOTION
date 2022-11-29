@@ -1,0 +1,6 @@
+CORE
+test.txt
+
+activate-multi-line-match
+Hello\nWorld
+--

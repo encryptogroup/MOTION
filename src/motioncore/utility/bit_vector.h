@@ -36,7 +36,11 @@
 
 #include "config.h"
 #include "helpers.h"
-#include "utility/meta.hpp"
+
+// added by Liang Zhao
+#include <boost/multiprecision/cpp_int.hpp>
+
+namespace bm = boost::multiprecision;
 
 namespace encrypto::motion {
 
@@ -453,8 +457,7 @@ std::ostream& operator<<(std::ostream& os, const BitVector<Allocator>& bit_vecto
 /// \param value
 /// \relates BitVector
 template <typename T,
-          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T> ||
-                                      std::is_same_v<T, __uint128_t>>,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_integral_v<T>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(T value);
 
@@ -473,11 +476,25 @@ std::vector<BitVector<Allocator>> ToInput(T value);
 /// \tparam T
 /// \param vector
 template <typename T,
-          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_unsigned_v<T> ||
-                                      std::is_same_v<T, __uint128_t>>,
+          typename = std::enable_if_t<std::is_floating_point_v<T> || std::is_integral_v<T>>,
           typename Allocator = std::allocator<std::byte>>
 std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
 
+// added by Liang Zhao
+// convert a fixed point number (represented as double) to BitVector
+// integer of type T hold the fixed point number
+template <typename T, typename T_int = std::make_signed_t<T>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> FixedPointToInput(const double fixed_point,
+                                                    std::size_t fixed_point_fraction_bit_size);
+
+// added by Liang Zhao
+// convert a vector of fixed point number (represented as double) to BitVector
+// integer of type T hold the fixed point number
+template <typename T, typename T_int = std::make_signed_t<T>,
+          typename Allocator = std::allocator<std::byte>>
+std::vector<BitVector<Allocator>> FixedPointToInput(const std::vector<double>& fixed_point_vector,
+                                                    std::size_t fixed_point_fraction_bit_size);
 // Output functions for converting vectors of BitVectors to vectors of floating point or
 // integer numbers
 
@@ -493,26 +510,11 @@ std::vector<BitVector<Allocator>> ToInput(const std::vector<T>& vector);
 ///      - Each BitVector in \p bit_vectors has size equal 1.
 /// \tparam UnsignedIntegralType
 /// \param bit_vectors
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType> ||
-                                      std::is_same_v<UnsignedIntegralType, __uint128_t>>,
+template <typename IntegralType, typename = std::enable_if_t<std::is_integral_v<IntegralType>>,
           typename Allocator = std::allocator<std::byte>>
-UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
-  static_assert(std::is_integral<UnsignedIntegralType>::value);
-  static_assert(sizeof(UnsignedIntegralType) <= 16);  // support __uint128_t
-  if constexpr (sizeof(UnsignedIntegralType) == 1) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint8_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 2) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint16_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 4) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint32_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 8) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint64_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 16) {
-    static_assert(std::is_same_v<UnsignedIntegralType, __uint128_t>);
-  }
+IntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
   // kBitLength is always equal to bit_vectors
-  constexpr auto kBitLength{sizeof(UnsignedIntegralType) * 8};
+  constexpr auto kBitLength{sizeof(IntegralType) * 8};
 
   assert(!bit_vectors.empty());
   if (kBitLength != bit_vectors.size()) {
@@ -525,11 +527,19 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
   for ([[maybe_unused]] auto i = 0ull; i < bit_vectors.size(); ++i)
     assert(bit_vectors.at(i).GetSize() == bit_vectors.at(0).GetSize());
 
-  UnsignedIntegralType output_value{0};
-  // Converting values in a BitVector to UnsignedIntegralType
-  for (auto i = 0ull; i < kBitLength; ++i) {
-    assert(bit_vectors.at(i).GetSize() == 1);
-    output_value += static_cast<UnsignedIntegralType>(bit_vectors.at(i)[0]) << i;
+  IntegralType output_value{0};
+  if constexpr (std::is_unsigned_v<IntegralType>) {
+    // Converting values in a BitVector to UnsignedIntegralType
+    for (auto i = 0ull; i < kBitLength; ++i) {
+      assert(bit_vectors.at(i).GetSize() == 1);
+      output_value += static_cast<IntegralType>(bit_vectors[i][0]) << i;
+    }
+  } else {
+    std::make_unsigned_t<IntegralType> unsigned_value{0};
+    for (auto j = 0ull; j < kBitLength; ++j) {
+      unsigned_value += static_cast<std::make_unsigned_t<IntegralType>>(bit_vectors[j][0]) << j;
+    }
+    output_value = FromTwosComplement(unsigned_value);
   }
 
   return output_value;
@@ -548,25 +558,10 @@ UnsignedIntegralType ToOutput(std::vector<BitVector<Allocator>> bit_vectors) {
 /// \tparam UnsignedIntegralType
 /// \param bit_vectors
 /// \relates BitVector
-template <typename UnsignedIntegralType,
-          typename = std::enable_if_t<std::is_unsigned_v<UnsignedIntegralType> ||
-                                      std::is_same_v<UnsignedIntegralType, __uint128_t>>,
+template <typename IntegralType, typename = std::enable_if_t<std::is_integral_v<IntegralType>>,
           typename Allocator = std::allocator<std::byte>>
-std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator>> bit_vectors) {
-  static_assert(std::is_integral<UnsignedIntegralType>::value);
-  static_assert(sizeof(UnsignedIntegralType) <= 16);  // support __uint128_t
-  if constexpr (sizeof(UnsignedIntegralType) == 1) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint8_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 2) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint16_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 4) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint32_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 8) {
-    static_assert(std::is_same_v<UnsignedIntegralType, std::uint64_t>);
-  } else if constexpr (sizeof(UnsignedIntegralType) == 16) {
-    static_assert(std::is_same_v<UnsignedIntegralType, __uint128_t>);
-  }
-  constexpr auto kBitLength{sizeof(UnsignedIntegralType) * 8};
+std::vector<IntegralType> ToVectorOutput(std::vector<BitVector<Allocator>> bit_vectors) {
+  constexpr auto kBitLength{sizeof(IntegralType) * 8};
 
   assert(!bit_vectors.empty());
   if (kBitLength != bit_vectors.size()) {
@@ -585,16 +580,183 @@ std::vector<UnsignedIntegralType> ToVectorOutput(std::vector<BitVector<Allocator
   // Then output_vector[0] == x0*2^0 + x1*2^1 + ... + xn*2^n
   //     output_vector[1] == y0*2^0 + y1*2^1 + ... + yn*2^n
   //     output_vector[2] == z0*2^0 + z1*2^1 + ... + zn*2^n
-  std::vector<UnsignedIntegralType> output_vector;
+  std::vector<IntegralType> output_vector;
+  output_vector.reserve(number_of_simd);
   for (auto i = 0ull; i < number_of_simd; ++i) {
-    UnsignedIntegralType value{0};
-    for (auto j = 0ull; j < kBitLength; ++j) {
-      value += static_cast<UnsignedIntegralType>(bit_vectors.at(j)[i]) << j;
+    if constexpr (std::is_unsigned_v<IntegralType>) {
+      IntegralType value{0};
+      for (auto j = 0ull; j < kBitLength; ++j) {
+        value += static_cast<IntegralType>(bit_vectors[j][i]) << j;
+      }
+      output_vector.emplace_back(value);
+    } else {
+      std::make_unsigned_t<IntegralType> unsigned_value{0};
+      for (auto j = 0ull; j < kBitLength; ++j) {
+        unsigned_value += static_cast<std::make_unsigned_t<IntegralType>>(bit_vectors[j][i]) << j;
+      }
+      output_vector.emplace_back(FromTwosComplement(unsigned_value));
     }
-    output_vector.emplace_back(value);
   }
   return output_vector;
 }
+
+
+// TODO: test if new method can optimize performance
+// ! new method
+template <template <class, class> class V, class T, class A>
+void ImportOtDataToBoostUintVector(std::vector<T, A>& output_vector, const std::size_t ot_i,
+                                   const std::size_t ot_id, const std::size_t vector_size,
+                                   const std::vector<BitVector<>>& input_data_vector) {
+  std::size_t bit_length_of_T = std::numeric_limits<T>::digits;
+  std::size_t chunk_size = 8;
+  std::size_t num_of_chunks = bit_length_of_T / chunk_size;
+
+  T ot_data;
+  for (std::size_t vector_index = 0; vector_index < vector_size; vector_index++) {
+    // std::cout << "begin pointer" << std::endl;
+    auto begin_pointer =
+        input_data_vector.at(ot_id + ot_i).GetData().begin() + vector_index * num_of_chunks;
+    // std::cout << "end pointer" << std::endl;
+    auto end_pointer = begin_pointer + num_of_chunks;
+
+    // std::cout << "before import_bits" << std::endl;
+
+    bm::import_bits(ot_data, begin_pointer, end_pointer, chunk_size, true);
+
+    // std::cout << "after import_bits" << std::endl;
+    output_vector[ot_i * (vector_size) + vector_index] = ot_data;
+  }
+}
+
+// added by Liang Zhao
+// convert ot data from std::vector<std::uint8_t> to type T
+// T is the unsigned integer of boost::multiprecision (e.g., boost::multiprecision::uint256_t)
+// TODO: move to other .cpp
+template <template <class, class> class V, class T, class A>
+void ImportOtDataToBoostUintVector(std::vector<T, A>& output_vector, const std::size_t vector_size,
+                                   const std::uint8_t* input_data_vector) {
+  std::size_t bit_length_of_T = std::numeric_limits<T>::digits;
+  std::size_t chunk_size = 8;
+  std::size_t num_of_chunks = bit_length_of_T / chunk_size;
+
+  V<T, A> ot_data_vector;
+  ot_data_vector.reserve(vector_size);
+
+  T ot_data;
+  for (std::size_t vector_index = 0; vector_index < vector_size; vector_index++) {
+    auto begin_pointer = input_data_vector + vector_index * num_of_chunks;
+    auto end_pointer = begin_pointer + num_of_chunks;
+
+    bm::import_bits(ot_data, begin_pointer, end_pointer, chunk_size, true);
+
+    output_vector[vector_index] = (ot_data);
+  }
+}
+
+// added by Liang Zhao
+// convert std::vector<T> to std::vector<std::byte>
+// TODO: move to other .cpp
+template <typename T, typename A>
+std::vector<std::byte> ExportOtDataFromBoostUintVector(std::size_t num_of_bytes,
+                                                       const std::vector<T, A>& input_data_vector) {
+  std::size_t bit_length_T = std::numeric_limits<T>::digits;
+  std::size_t chunk_size = 8;
+  std::size_t num_of_bytes_of_each_data_input = bit_length_T / chunk_size;
+
+  std::vector<std::byte> output_byte_vector;
+  output_byte_vector.reserve(num_of_bytes);
+  std::size_t input_data_vector_size = input_data_vector.size();
+
+  for (std::size_t input_data_vector_index = 0; input_data_vector_index < input_data_vector_size;
+       input_data_vector_index++) {
+    // convert each input data to vector of bytes
+    std::vector<unsigned char> input_data_bytes_vector;
+    // std::cout << "input_data_vector[input_data_vector_index]:
+    // "<<input_data_vector[input_data_vector_index] << std::endl;
+
+    // bm::export_bits(input_data_vector[input_data_vector_index],
+    // std::back_inserter(input_data_bytes_vector), chunk_size);
+
+    using tag_type =
+        typename bm::cpp_int_backend<std::numeric_limits<T>::digits, std::numeric_limits<T>::digits,
+                                     bm::unsigned_magnitude, bm::unchecked, void>::trivial_tag;
+    std::size_t bitcount = bit_length_T;
+    std::size_t chunks = bitcount / chunk_size;
+    std::ptrdiff_t bit_location = bitcount - chunk_size;
+    std::ptrdiff_t bit_step = -static_cast<int>(chunk_size);
+    while (bit_location % bit_step) ++bit_location;
+    do {
+      *(std::back_inserter(input_data_bytes_vector)) =
+          bm::detail::extract_bits(input_data_vector[input_data_vector_index].backend(),
+                                   bit_location, chunk_size, tag_type());
+      ++(std::back_inserter(input_data_bytes_vector));
+      bit_location += bit_step;
+    } while ((bit_location >= 0) && (bit_location < static_cast<int>(bitcount)));
+
+    for (std::size_t byte_index = 0; byte_index < num_of_bytes_of_each_data_input; byte_index++) {
+      // std::cout << static_cast<unsigned>(input_data_bytes_vector[byte_index]) << std::endl;
+      // output_byte_vector.emplace_back(static_cast<std::byte>(input_data_bytes_vector[byte_index]));
+      output_byte_vector.push_back(
+          std::move(static_cast<std::byte>(input_data_bytes_vector[byte_index])));
+    }
+  }
+
+  return output_byte_vector;
+}
+
+template <typename T, typename A>
+// std::vector<std::byte> ExportOtDataInUint8tFromBoostUintVector(std::size_t num_of_bytes,
+//                                                        const std::vector<T, A>& input_data_vector) {
+std::vector<std::uint8_t> ExportOtDataInUint8tFromBoostUintVector(std::size_t num_of_bytes,
+                                                       const std::vector<T, A>& input_data_vector) {
+  std::size_t bit_length_T = std::numeric_limits<T>::digits;
+  std::size_t chunk_size = 8;
+  std::size_t num_of_bytes_of_each_data_input = bit_length_T / chunk_size;
+
+  // std::vector<std::byte> output_byte_vector;
+  std::vector<std::uint8_t> output_byte_vector;
+
+  output_byte_vector.reserve(num_of_bytes);
+  std::size_t input_data_vector_size = input_data_vector.size();
+
+  for (std::size_t input_data_vector_index = 0; input_data_vector_index < input_data_vector_size;
+       input_data_vector_index++) {
+    // convert each input data to vector of bytes
+    std::vector<unsigned char> input_data_bytes_vector;
+    // std::cout << "input_data_vector[input_data_vector_index]:
+    // "<<input_data_vector[input_data_vector_index] << std::endl;
+
+    // bm::export_bits(input_data_vector[input_data_vector_index],
+    // std::back_inserter(input_data_bytes_vector), chunk_size);
+
+    using tag_type =
+        typename bm::cpp_int_backend<std::numeric_limits<T>::digits, std::numeric_limits<T>::digits,
+                                     bm::unsigned_magnitude, bm::unchecked, void>::trivial_tag;
+    std::size_t bitcount = bit_length_T;
+    std::size_t chunks = bitcount / chunk_size;
+    std::ptrdiff_t bit_location = bitcount - chunk_size;
+    std::ptrdiff_t bit_step = -static_cast<int>(chunk_size);
+    while (bit_location % bit_step) ++bit_location;
+    do {
+      *(std::back_inserter(input_data_bytes_vector)) =
+          bm::detail::extract_bits(input_data_vector[input_data_vector_index].backend(),
+                                   bit_location, chunk_size, tag_type());
+      ++(std::back_inserter(input_data_bytes_vector));
+      bit_location += bit_step;
+    } while ((bit_location >= 0) && (bit_location < static_cast<int>(bitcount)));
+
+    for (std::size_t byte_index = 0; byte_index < num_of_bytes_of_each_data_input; byte_index++) {
+      // std::cout << static_cast<unsigned>(input_data_bytes_vector[byte_index]) << std::endl;
+      // output_byte_vector.emplace_back(static_cast<std::byte>(input_data_bytes_vector[byte_index]));
+      output_byte_vector.push_back(
+          // std::move(static_cast<std::byte>(input_data_bytes_vector[byte_index])));
+          std::move(static_cast<std::uint8_t>(input_data_bytes_vector[byte_index])));
+    }
+  }
+
+  return output_byte_vector;
+}
+
 
 using AlignedBitVector = BitVector<AlignedAllocator>;
 
@@ -776,9 +938,8 @@ class BitSpan {
   /// \brief Returns true if Allocator is aligned allocator.
   bool IsAligned() const noexcept { return aligned_; }
 
-  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
-  /// in this.
-  /// \throws std::out_of_range if accessing invalid positions in this or other.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from,
+  /// dest_to) in this. \throws std::out_of_range if accessing invalid positions in this or other.
   template <typename BitVectorType>
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitVectorType& other);
 
@@ -787,14 +948,14 @@ class BitSpan {
   template <typename BitVectorType>
   void Copy(const std::size_t dest_from, BitVectorType& other);
 
-  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
-  /// in this.
-  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from,
+  /// dest_to) in this. \throws an std::out_of_range exception if accessing invalid positions in
+  /// this or other.
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan& other);
 
-  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from, dest_to)
-  /// in this.
-  /// \throws an std::out_of_range exception if accessing invalid positions in this or other.
+  /// \brief copies the first (dest_to - dest_from) bits from other to the bits [dest_from,
+  /// dest_to) in this. \throws an std::out_of_range exception if accessing invalid positions in
+  /// this or other.
   void Copy(const std::size_t dest_from, const std::size_t dest_to, BitSpan&& other);
 
   /// \brief copies other to this[dest_from...dest_from+GetSize()].

@@ -65,7 +65,15 @@ class Share final : public motion::Share {
 
   const std::vector<T>& GetValue() const;
 
-  std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
+  // commented out by Liang Zhao
+  // std::size_t GetBitLength() const noexcept final { return sizeof(T) * 8; }
+
+  // added by Liang Zhao
+  std::size_t GetBitLength() const noexcept final {
+    T t = 0;
+    std::size_t bit_length = encrypto::motion::GetBitSizeOfTypeT<T>(t) * 8;
+    return bit_length;
+  }
 
   std::vector<std::shared_ptr<Base>> Split() const noexcept final;
 

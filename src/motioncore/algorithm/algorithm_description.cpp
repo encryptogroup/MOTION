@@ -126,8 +126,15 @@ AlgorithmDescription AlgorithmDescription::FromBristol(std::ifstream& stream) {
     } else if (type == std::string("MUX")) {
       assert(line_vector.size() == 7);
       primitive_operation.type = PrimitiveOperationType::kMux;
-      primitive_operation.parent_a = std::stoull(line_vector.at(2));
-      primitive_operation.parent_b = std::stoull(line_vector.at(3));
+
+      // ! this is incorrect
+      // primitive_operation.parent_a = std::stoull(line_vector.at(2));
+      // primitive_operation.parent_b = std::stoull(line_vector.at(3));
+
+      // commented by Liang Zhao
+      // error correction: switch parent_b and parent_a for MUX gate
+      primitive_operation.parent_b = std::stoull(line_vector.at(2));
+      primitive_operation.parent_a = std::stoull(line_vector.at(3));
       primitive_operation.selection_bit = std::stoull(line_vector.at(4));
       primitive_operation.output_wire = std::stoull(line_vector.at(5));
     } else if (type == std::string("INV")) {

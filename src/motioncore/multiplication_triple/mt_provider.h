@@ -36,7 +36,10 @@ namespace encrypto::motion {
 struct RunTimeStatistics;
 class Logger;
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// modified by Liang Zhao
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+template <typename T,
+          typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
 struct IntegerMtVector {
   std::vector<T> a, b, c;  // c[i] = a[i] * b[i]
 };
@@ -45,6 +48,8 @@ struct BinaryMtVector {
   BitVector<> a, b, c;  // c[i] = a[i] ^ b[i]
 };
 
+// modified by Liang Zhao
+// extend to support 128-bit arithmetic share
 class MtProvider {
  public:
   virtual ~MtProvider() = default;
@@ -63,14 +68,22 @@ class MtProvider {
       return number_of_mts_32_;
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       return number_of_mts_64_;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      return number_of_mts_128_;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
 
   std::size_t RequestBinaryMts(const std::size_t number_of_mts) noexcept;
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   std::size_t RequestArithmeticMts(const std::size_t number_of_mts) noexcept {
     std::size_t offset;
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -85,7 +98,15 @@ class MtProvider {
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       offset = number_of_mts_64_;
       number_of_mts_64_ += number_of_mts;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      offset = number_of_mts_128_;
+      number_of_mts_128_ += number_of_mts;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
     return offset;
@@ -96,7 +117,9 @@ class MtProvider {
 
   const BinaryMtVector& GetBinaryAll() const noexcept;
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   IntegerMtVector<T> GetInteger(const std::size_t offset, const std::size_t n = 1) const {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -107,12 +130,20 @@ class MtProvider {
       return GetInteger(mts32_, offset, n);
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       return GetInteger(mts64_, offset, n);
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      return GetInteger(mts128_, offset, n);
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T,
+            typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   const IntegerMtVector<T>& GetIntegerAll() const noexcept {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -123,7 +154,14 @@ class MtProvider {
       return mts32_;
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       return mts64_;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      return mts128_;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
@@ -139,7 +177,7 @@ class MtProvider {
   MtProvider() = delete;
 
   std::size_t number_of_bit_mts_{0}, number_of_mts_8_{0}, number_of_mts_16_{0},
-      number_of_mts_32_{0}, number_of_mts_64_{0};
+      number_of_mts_32_{0}, number_of_mts_64_{0}, number_of_mts_128_{0};
 
   BinaryMtVector bit_mts_;
 
@@ -147,6 +185,7 @@ class MtProvider {
   IntegerMtVector<std::uint16_t> mts16_;
   IntegerMtVector<std::uint32_t> mts32_;
   IntegerMtVector<std::uint64_t> mts64_;
+  IntegerMtVector<__uint128_t> mts128_;
 
   const std::size_t my_id_;
   const std::size_t number_of_parties_;
@@ -198,6 +237,10 @@ class MtProviderFromOts final : public MtProvider {
 
   std::vector<std::list<std::unique_ptr<BasicOtReceiver>>> ots_receiver_64_;
   std::vector<std::list<std::unique_ptr<BasicOtSender>>> ots_sender_64_;
+
+  // added by Liang Zhao
+  std::vector<std::list<std::unique_ptr<BasicOtReceiver>>> ots_receiver_128_;
+  std::vector<std::list<std::unique_ptr<BasicOtSender>>> ots_sender_128_;
 
   std::vector<std::unique_ptr<XcOtBitReceiver>> bit_ots_receiver_;
   std::vector<std::unique_ptr<XcOtBitSender>> bit_ots_sender_;

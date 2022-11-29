@@ -1,0 +1,7 @@
+../../bin/cbmc-gc addition.c
+
+../../bin/circuit-sim mpc_main.circ --spec "INPUT_A_x := 42.1; INPUT_B_x := 99; print;"
+
+../../bin/circuit-utils mpc_main.circ --as-bristol bristol_circuit.txt
+
+../../bin/circuit-utils mpc_main.circ --remove-or-gates --as-bristol bristol_circuit.txt

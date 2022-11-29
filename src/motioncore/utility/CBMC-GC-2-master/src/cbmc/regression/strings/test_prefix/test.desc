@@ -1,0 +1,8 @@
+FUTURE
+test.c
+--string-refine
+^EXIT=10$
+^SIGNAL=0$
+^\[main.assertion.1\] assertion b: SUCCESS$
+^\[main.assertion.2\] assertion c: FAILURE$
+--

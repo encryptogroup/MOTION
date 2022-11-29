@@ -1,0 +1,13 @@
+non_xor_gates 383
+and_gates 257
+or_gates 126
+xor_gates 893
+not_gates 257
+non_xor_depth 129
+mul_gates 0
+add_gates 0
+sub_gates 0
+neg_gates 0
+mul_depth 0
+total_gates 1533
+total_depth 512

@@ -61,12 +61,21 @@ class SbProvider {
       return number_of_sbs_32_;
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       return number_of_sbs_64_;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      return number_of_sbs_128_;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   std::size_t RequestSbs(const std::size_t number_of_sbs) noexcept {
     std::size_t offset;
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -81,13 +90,23 @@ class SbProvider {
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       offset = number_of_sbs_64_;
       number_of_sbs_64_ += number_of_sbs;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      offset = number_of_sbs_128_;
+      number_of_sbs_128_ += number_of_sbs;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
     return offset;
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   std::vector<T> GetSbs(const std::size_t offset, const std::size_t n = 1) {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -98,12 +117,21 @@ class SbProvider {
       return GetSbs(sbs_32_, offset, n);
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       return GetSbs(sbs_64_, offset, n);
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      return GetSbs(sbs_128_, offset, n);
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   const std::vector<T>& GetSbsAll() noexcept {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -114,7 +142,14 @@ class SbProvider {
       return sbs_32_;
     } else if constexpr (std::is_same_v<T, std::uint64_t>) {
       return sbs_64_;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, __uint128_t>) {
+      return sbs_128_;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
@@ -129,12 +164,18 @@ class SbProvider {
   SbProvider(const std::size_t my_id);
   SbProvider() = delete;
 
-  std::size_t number_of_sbs_8_{0}, number_of_sbs_16_{0}, number_of_sbs_32_{0}, number_of_sbs_64_{0};
+  std::size_t number_of_sbs_8_{0}, number_of_sbs_16_{0}, number_of_sbs_32_{0}, number_of_sbs_64_{0},
+
+      // added by Liang Zhao
+      number_of_sbs_128_{0};
 
   std::vector<std::uint8_t> sbs_8_;
   std::vector<std::uint16_t> sbs_16_;
   std::vector<std::uint32_t> sbs_32_;
   std::vector<std::uint64_t> sbs_64_;
+
+  // added by Liang Zhao
+  std::vector<__uint128_t> sbs_128_;
 
   const std::size_t my_id_;
 
@@ -142,7 +183,9 @@ class SbProvider {
   std::shared_ptr<FiberCondition> finished_condition_;
 
  private:
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   inline std::vector<T> GetSbs(const std::vector<T>& sbs, const std::size_t offset,
                                const std::size_t n) const {
     assert(offset + n <= sbs.size());
@@ -177,6 +220,9 @@ class SbProviderFromSps final : public SbProvider {
   std::size_t offset_sps_32_;
   std::size_t offset_sps_64_;
   std::size_t offset_sps_128_;
+
+  // added by Liang Zhao
+  std::size_t offset_sps_256_;
 
   std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> mask_message_futures_;
   std::vector<ReusableFiberFuture<std::vector<std::uint8_t>>> reconstruct_message_futures_;

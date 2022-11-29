@@ -29,9 +29,12 @@
 #include "protocols/arithmetic_gmw/arithmetic_gmw_gate.h"
 #include "protocols/arithmetic_gmw/arithmetic_gmw_wire.h"
 #include "protocols/share_wrapper.h"
+#include "secure_type/secure_signed_integer.h"
 #include "test_constants.h"
 #include "test_helpers.h"
 
+
+namespace {
 using namespace encrypto::motion;
 
 auto random_value = std::mt19937{};
@@ -689,14 +692,7 @@ TYPED_TEST(ArithmeticGmwTest, GreaterThan_1_1000_Simd_2_parties) {
   }
 }
 
-template <typename T>
-class TypedAgmwTest : public testing::Test {
- public:
-  void SetUp() override {
-    GenerateParties(false);
-    GenerateRandomValues();
-  }
-
+class PartyGenerator {
  protected:
   void GenerateParties(bool online_after_setup) {
     parties_ = std::move(MakeLocallyConnectedParties(2, kPortOffset));
@@ -706,35 +702,81 @@ class TypedAgmwTest : public testing::Test {
     }
   }
 
-  void GenerateRandomValues() {
-    std::mt19937_64 random(0);
-    std::uniform_int_distribution<T> value_dist;
+  std::vector<encrypto::motion::PartyPointer> parties_;
+};
+
+class SeededRandomnessGenerator {
+ public:
+  SeededRandomnessGenerator() = default;
+  SeededRandomnessGenerator(std::size_t seed) { random_.seed(seed); }
+
+ protected:
+  BitVector<> RandomBits(std::size_t size) {
     std::bernoulli_distribution bool_dist;
+    BitVector<> result;
+    result.Reserve(size);
+    while (result.GetSize() < size) result.Append(bool_dist(random_));
+    return result;
+  }
 
-    bit_ = bool_dist(random);
-    bits_1k_.Reserve(vector_size_);
-    while (bits_1k_.GetSize() < vector_size_) bits_1k_.Append(bool_dist(random));
+  bool RandomBit() {
+    std::bernoulli_distribution bool_dist;
+    return bool_dist(random_);
+  }
 
-    T value_ = value_dist(random);
-    values_1k_.reserve(vector_size_);
-    while (values_1k_.size() < vector_size_) values_1k_.emplace_back(value_dist(random));
+  template <typename T>
+  T RandomInteger() {
+    static_assert(std::is_integral_v<T>, "T must be an integral type");
+    std::uniform_int_distribution<T> value_dist;
+    return value_dist(random_);
+  }
+
+  template <typename T>
+  std::vector<T> RandomIntegers(std::size_t size) {
+    static_assert(std::is_integral_v<T>, "T must be an integral type");
+    std::uniform_int_distribution<T> value_dist;
+    std::vector<T> result;
+    result.reserve(size);
+    while (result.size() < size) result.emplace_back(value_dist(random_));
+    return result;
+  }
+
+  std::mt19937_64 random_{0};
+};
+
+template <typename T>
+class TypedHybridAgmwTest : public testing::Test,
+                            public PartyGenerator,
+                            public SeededRandomnessGenerator {
+ public:
+  void SetUp() override {
+    GenerateParties(false);
+    GenerateRandomValues();
+  }
+
+ protected:
+  void GenerateRandomValues() {
+    bit_ = RandomBit();
+    bits_1k_ = RandomBits(vector_size_);
+    T value_ = RandomInteger<T>();
+    values_1k_ = RandomIntegers<T>(vector_size_);
   }
 
   T value_;
   std::vector<T> values_1k_;
   bool bit_;
   encrypto::motion::BitVector<> bits_1k_;
-  std::vector<encrypto::motion::PartyPointer> parties_;
 
   std::size_t vector_size_{1000};
+
+  std::mt19937_64 random_{0};
 };
 
 using IntegerTypes = ::testing::Types<std::uint8_t, std::uint16_t, std::uint32_t, std::uint64_t>;
-TYPED_TEST_SUITE(TypedAgmwTest, IntegerTypes);
+TYPED_TEST_SUITE(TypedHybridAgmwTest, IntegerTypes);
 
-TYPED_TEST(TypedAgmwTest, HybridMultiplication_1_1K_Simd_2_parties) {
+TYPED_TEST(TypedHybridAgmwTest, HybridMultiplication_1_1K_Simd_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
-  std::srand(std::time(nullptr));
   std::vector<std::future<void>> futures;
 
   for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
@@ -790,3 +832,71 @@ TYPED_TEST(TypedAgmwTest, HybridMultiplication_1_1K_Simd_2_parties) {
   }
   for (auto& future : futures) future.get();
 }
+
+template <typename T>
+class TypedSignedAgmwTest : public testing::Test,
+                            public PartyGenerator,
+                            public SeededRandomnessGenerator {
+ public:
+  void SetUp() override {
+    GenerateParties(false);
+    GenerateRandomValues();
+  }
+
+ protected:
+  void GenerateRandomValues() {
+    values_a_ = RandomIntegers<T>(vector_size_);
+    values_b_ = RandomIntegers<T>(vector_size_);
+  }
+
+  std::vector<T> values_a_, values_b_;
+  std::size_t vector_size_{1000};
+};
+
+// commented out by Liang Zhao
+// I have changed the secure_unsigned_integer
+// using SignedIntegerTypes = ::testing::Types<std::int8_t, std::int16_t, std::int32_t, std::int64_t>;
+// TYPED_TEST_SUITE(TypedSignedAgmwTest, SignedIntegerTypes);
+
+// TYPED_TEST(TypedSignedAgmwTest, SignedSubtraction_1K_Simd_2_parties) {
+//   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+//   std::vector<std::future<void>> futures;
+
+//   for (auto party_id = 0u; party_id < this->parties_.size(); ++party_id) {
+//     futures.push_back(std::async(std::launch::async, [this, party_id]() {
+//       encrypto::motion::SecureSignedInteger share_values_a_, share_values_b_;
+//       // If my input - real input, otherwise a dummy 0 (-vector).
+//       // Should not make any difference, just for consistency...
+//       std::vector<TypeParam> selected_values_a_ =
+//           party_id == 0 ? this->values_a_ : std::vector<TypeParam>(this->values_a_.size(), 0);
+//       std::vector<TypeParam> selected_values_b_ =
+//           party_id == 0 ? this->values_b_ : std::vector<TypeParam>(this->values_b_.size(), 0);
+
+//       share_values_a_ =
+//           this->parties_.at(party_id)->template In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+//               selected_values_a_, 0);
+//       share_values_b_ =
+//           this->parties_.at(party_id)->template In<encrypto::motion::MpcProtocol::kArithmeticGmw>(
+//               selected_values_b_, 0);
+
+//       auto share_sub = share_values_a_ - share_values_b_;
+
+//       auto share_output = share_sub.Out();
+
+//       this->parties_.at(party_id)->Run();
+
+//       auto circuit_result = share_output.As<std::vector<TypeParam>>();
+//       std::vector<TypeParam> expected_result;
+//       expected_result.reserve(circuit_result.size());
+//       for (std::size_t i = 0; i < this->values_a_.size(); ++i) {
+//         expected_result.emplace_back(this->values_a_[i] - this->values_b_[i]);
+//       }
+//       EXPECT_EQ(circuit_result, expected_result);
+
+//       this->parties_.at(party_id)->Finish();
+//     }));
+//   }
+//   for (auto& future : futures) future.get();
+// }
+
+}  // namespace

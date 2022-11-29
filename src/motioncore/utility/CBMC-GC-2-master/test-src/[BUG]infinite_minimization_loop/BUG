@@ -1,0 +1,1 @@
+This test causes the minimization process to loop (presumably) forever.

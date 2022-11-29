@@ -80,6 +80,18 @@ OtProviderFromOtExtension::RegisterSendFixedXcOt128(std::size_t number_of_ots) {
   }
 }
 
+// added by Liang Zhao
+[[nodiscard]] std::unique_ptr<BasicOtSender> OtProviderFromOtExtension::RegisterSendAcOtBoostUint(
+    std::size_t number_of_ots, std::size_t bitlength, std::size_t vector_size) {
+  switch (bitlength) {
+    case 256:
+      return sender_provider_.RegisterAcOtBoostUint<bm::uint256_t>(number_of_ots, vector_size);
+
+    default:
+      throw std::runtime_error(fmt::format("Bitlength {} is not supported", bitlength));
+  }
+}
+
 [[nodiscard]] std::unique_ptr<GOtSender> OtProviderFromOtExtension::RegisterSendGOt(
     std::size_t number_of_ots, std::size_t bitlength) {
   return sender_provider_.RegisterGOt(number_of_ots, bitlength);
@@ -128,6 +140,21 @@ OtProviderFromOtExtension::RegisterReceiveFixedXcOt128(std::size_t number_of_ots
       return receiver_provider_.RegisterAcOt<std::uint64_t>(number_of_ots, vector_size);
     case 128:
       return receiver_provider_.RegisterAcOt<__uint128_t>(number_of_ots, vector_size);
+
+    default:
+      throw std::runtime_error(fmt::format("Bitlength {} is not supported", bitlength));
+  }
+}
+
+// added by Liang Zhao
+[[nodiscard]] std::unique_ptr<BasicOtReceiver>
+OtProviderFromOtExtension::RegisterReceiveAcOtBoostUint(std::size_t number_of_ots,
+                                                        std::size_t bitlength,
+                                                        std::size_t vector_size) {
+  switch (bitlength) {
+    case 256:
+      return receiver_provider_.RegisterAcOtBoostUint<bm::uint256_t>(number_of_ots, vector_size);
+
     default:
       throw std::runtime_error(fmt::format("Bitlength {} is not supported", bitlength));
   }
@@ -429,6 +456,26 @@ template std::unique_ptr<AcOtSender<std::uint64_t>> OtProviderSender::RegisterAc
 template std::unique_ptr<AcOtSender<__uint128_t>> OtProviderSender::RegisterAcOt(
     std::size_t number_of_ots, std::size_t vector_size);
 
+// // TODO: this cause error
+// added by Liang Zhao
+template <typename T>
+std::unique_ptr<AcOtSenderBoostUint<T>> OtProviderSender::RegisterAcOtBoostUint(
+    std::size_t number_of_ots, std::size_t vector_size) {
+  const auto i = total_ots_count_;
+  total_ots_count_ += number_of_ots;
+  auto ot = std::make_unique<AcOtSenderBoostUint<T>>(i, number_of_ots, vector_size, data_);
+  if constexpr (kDebug) {
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit sender ACOTs",
+                                         party_id_, number_of_ots, std::numeric_limits<T>::digits));
+    }
+  }
+  return ot;
+}
+
+template std::unique_ptr<AcOtSenderBoostUint<bm::uint256_t>>
+OtProviderSender::RegisterAcOtBoostUint(std::size_t number_of_ots, std::size_t vector_size);
+
 std::unique_ptr<GOtSender> OtProviderSender::RegisterGOt(const std::size_t number_of_ots,
                                                          const std::size_t bitlength) {
   const auto i = total_ots_count_;
@@ -567,6 +614,24 @@ template std::unique_ptr<AcOtReceiver<std::uint64_t>> OtProviderReceiver::Regist
 template std::unique_ptr<AcOtReceiver<__uint128_t>> OtProviderReceiver::RegisterAcOt(
     std::size_t number_of_ots, std::size_t vector_size);
 
+template <typename T>
+std::unique_ptr<AcOtReceiverBoostUint<T>> OtProviderReceiver::RegisterAcOtBoostUint(
+    std::size_t number_of_ots, std::size_t vector_size) {
+  const auto i = total_ots_count_.load();
+  total_ots_count_ += number_of_ots;
+  auto ot = std::make_unique<AcOtReceiverBoostUint<T>>(i, number_of_ots, vector_size, data_);
+  if constexpr (kDebug) {
+    if (data_.logger) {
+      data_.logger->LogDebug(fmt::format("Party#{}: registered {} parallel {}-bit receiver ACOTs",
+                                         party_id_, number_of_ots, std::numeric_limits<T>::digits));
+    }
+  }
+  return ot;
+}
+
+template std::unique_ptr<AcOtReceiverBoostUint<bm::uint256_t>>
+OtProviderReceiver::RegisterAcOtBoostUint(std::size_t number_of_ots, std::size_t vector_size);
+
 std::unique_ptr<GOtReceiver> OtProviderReceiver::RegisterGOt(const std::size_t number_of_ots,
                                                              const std::size_t bitlength) {
   const auto i = total_ots_count_.load();
@@ -624,7 +689,7 @@ OtProviderManager::OtProviderManager(communication::CommunicationLayer& communic
                                      BaseProvider& motion_base_provider)
     : communication_layer_(communication_layer),
       providers_(communication_layer_.GetNumberOfParties()),
-      data_(communication_layer_.GetNumberOfParties()){
+      data_(communication_layer_.GetNumberOfParties()) {
   auto my_id = communication_layer.GetMyId();
   for (std::size_t party_id = 0; party_id < providers_.size(); ++party_id) {
     if (party_id == my_id) {
@@ -633,8 +698,9 @@ OtProviderManager::OtProviderManager(communication::CommunicationLayer& communic
     auto send_function = [this, party_id](flatbuffers::FlatBufferBuilder&& message_builder) {
       communication_layer_.SendMessage(party_id, message_builder.Release());
     };
-    data_.at(party_id) = std::make_unique<OtExtensionData>(
-        party_id, send_function, communication_layer_.GetMessageManager(), communication_layer_.GetLogger());
+    data_.at(party_id) = std::make_unique<OtExtensionData>(party_id, send_function,
+                                                           communication_layer_.GetMessageManager(),
+                                                           communication_layer_.GetLogger());
     data_.at(party_id)->party_id = party_id;
     providers_.at(party_id) = std::make_unique<OtProviderFromOtExtension>(
         *data_.at(party_id), base_ot_provider, motion_base_provider, party_id);

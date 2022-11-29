@@ -1,0 +1,5 @@
+int8/mpc_main@arith.circ : gmw
+int8/add_to_all<int8[5],int8<5>,int8<33>>@arith.circ : yao
+int8/add_to_all<int8[5],int8<5>,int8<49>>@arith.circ : gmw
+int8/sum<int8[5],int8<3>>@arith.circ : yao
+int8/sum<int8[5],int8<4>>@arith.circ

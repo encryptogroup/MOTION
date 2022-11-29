@@ -1,0 +1,9 @@
+entries<0,16> => {a, c}
+entries<8,16> => b
+pa => a
+pb => b
+ent1 => entries<0,16>
+ent2 => entries<240,0>
+entries<248,0> => NULL
+p1 => {b, NULL}
+p2 => {a, c}

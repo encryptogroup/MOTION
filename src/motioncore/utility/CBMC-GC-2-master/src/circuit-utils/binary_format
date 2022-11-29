@@ -1,0 +1,26 @@
+Input: []
+	module|party: String
+	Variable: []
+		name: String
+		start: UInt32
+		width: UInt8
+
+Gate: []
+	type: UInt8
+	input_pin_0: UInt32
+	input_pin_1: Uint32
+
+Output: []
+	module: String
+	Variable: []
+		name: String
+		inputs: UInt32[]
+
+
+Places that handle circuit export:
+- cbmc/bmc_circuit.cpp|bmc_baset::get_input_and_output_names()
+	- output.inputs.party{A,B}.txt
+- cbmc/mpc_circuit_abc.cpp|translate()
+	- does some preparations
+- cbmc/simple_circuit_dot.cpp|translate()
+	- writes gates

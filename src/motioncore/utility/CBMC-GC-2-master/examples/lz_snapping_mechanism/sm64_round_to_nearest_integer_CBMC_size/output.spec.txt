@@ -1,0 +1,3 @@
+INPUT_A_x: uint64;
+INPUT_B_x: uint64;
+OUTPUT_round_to_nearest_int: uint64;

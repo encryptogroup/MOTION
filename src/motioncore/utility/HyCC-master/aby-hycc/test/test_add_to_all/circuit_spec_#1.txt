@@ -1,0 +1,5 @@
+int8/mpc_main@bool_size.circ : yao
+int8/add_to_all<int8[5],int8<5>,int8<33>>@bool_size.circ : gmw
+int8/add_to_all<int8[5],int8<5>,int8<49>>@arith.circ
+int8/sum<int8[5],int8<3>>@arith.circ
+int8/sum<int8[5],int8<4>>@arith.circ

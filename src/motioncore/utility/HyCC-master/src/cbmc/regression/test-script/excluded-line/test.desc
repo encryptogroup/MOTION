@@ -1,0 +1,6 @@
+CORE
+test.txt
+
+^Hello$
+--
+^Goodbye$

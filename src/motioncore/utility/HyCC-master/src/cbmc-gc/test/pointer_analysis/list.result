@@ -1,0 +1,11 @@
+list<0,0> => {list<0,0>, a, b}
+list<8,0> => {list<0,0>, a, b}
+
+a<0,0> => {list<0,0>, b}
+a<8,0> => list<0,0>
+
+b<0,0> => list<0,0>
+b<8,0> => {a, list<0,0>}
+
+"return_value_list_end$1" => list<0,0>
+"return_value_list_end$2" => list<0,0>

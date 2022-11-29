@@ -1,0 +1,5 @@
+arr => ?
+sum => {NULL, ?}
+return_value => {NULL, ?}
+begin => arr<0,4>
+end => arr<20,0>

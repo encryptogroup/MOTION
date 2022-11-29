@@ -1,0 +1,4 @@
+int16/mpc_main@bool_size.circ : gmw
+int16/add@arith.circ
+int16/sub@arith.circ
+int16/mul@arith.circ

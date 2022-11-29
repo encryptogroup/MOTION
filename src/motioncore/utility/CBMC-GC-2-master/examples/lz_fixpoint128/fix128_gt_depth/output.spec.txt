@@ -1,0 +1,3 @@
+INPUT_A_x: int128;
+INPUT_B_x: int128;
+OUTPUT_cmp: int128;

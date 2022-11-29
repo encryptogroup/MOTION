@@ -1,0 +1,9 @@
+CORE
+main.c
+--bounds-check --32
+^EXIT=10$
+^SIGNAL=0$
+array\.List dynamic object upper bound in p->List\[2\]: FAILURE
+\*\* 1 of 11 failed 
+--
+^warning: ignoring

@@ -37,8 +37,8 @@
 #include "multiplication_triple/mt_provider.h"
 #include "multiplication_triple/sp_provider.h"
 #include "primitives/sharing_randomness_generator.h"
-#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_share.h"
+#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "utility/fiber_condition.h"
 #include "utility/helpers.h"
 #include "utility/logger.h"
@@ -561,7 +561,9 @@ template class MultiplicationGate<std::uint8_t>;
 template class MultiplicationGate<std::uint16_t>;
 template class MultiplicationGate<std::uint32_t>;
 template class MultiplicationGate<std::uint64_t>;
-// template class MultiplicationGate<__uint128_t>; not yet supported
+
+// added by Liang Zhao
+template class MultiplicationGate<__uint128_t>;
 
 template <typename T>
 HybridMultiplicationGate<T>::HybridMultiplicationGate(const boolean_gmw::WirePointer& bit,
@@ -670,7 +672,9 @@ template class HybridMultiplicationGate<std::uint8_t>;
 template class HybridMultiplicationGate<std::uint16_t>;
 template class HybridMultiplicationGate<std::uint32_t>;
 template class HybridMultiplicationGate<std::uint64_t>;
-// template class HybridMultiplicationGate<__uint128_t>; not yet supported
+
+// added by Liang Zhao
+template class HybridMultiplicationGate<__uint128_t>;
 
 template <typename T>
 SquareGate<T>::SquareGate(const arithmetic_gmw::WirePointer<T>& a) : OneGate(a->GetBackend()) {
@@ -844,7 +848,7 @@ void GreaterThanGate<T>::RunSender1ooNOt(encrypto::motion::BitVector<> messages,
 
 template <typename T>
 BitVector<> GreaterThanGate<T>::RunReceiver1ooNOt(std::vector<std::uint8_t> selection_index,
-                                               std::size_t ot_index) {
+                                                  std::size_t ot_index) {
   ot_1oon_receiver_[ot_index]->WaitSetup();
 
   ot_1oon_receiver_[ot_index]->SetChoices(selection_index);
@@ -1023,5 +1027,613 @@ template class GreaterThanGate<std::uint16_t>;
 template class GreaterThanGate<std::uint32_t>;
 template class GreaterThanGate<std::uint64_t>;
 template class GreaterThanGate<__uint128_t>;
+
+template <typename T>
+ReconstructArithmeticGmwShareAndBitDecomposeGate<T>::
+    ReconstructArithmeticGmwShareAndBitDecomposeGate(const arithmetic_gmw::WirePointer<T>& parent,
+                                                     std::size_t output_owner)
+    : OneGate(parent->GetBackend()) {
+  // std::cout << "ReconstructArithmeticGmwShareAndBitDecomposeGate" << std::endl;
+  assert(parent);
+  // assert(parent_R);
+
+  if (parent->GetProtocol() != MpcProtocol::kArithmeticGmw) {
+    auto sharing_type = to_string(parent->GetProtocol());
+    throw(std::runtime_error(
+        (fmt::format("ReconstructArithmeticGmwShareAndBitDecomposeGate expects an "
+                     "arithmetic share, "
+                     "got a share of type {}",
+                     sharing_type))));
+  }
+
+  parent_ = {parent};
+
+  // TODO should support SIMD now
+  num_of_simd_ = parent_[0]->GetNumberOfSimdValues();
+
+  // values we need repeatedly
+  auto& communication_layer = GetCommunicationLayer();
+  auto my_id = communication_layer.GetMyId();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
+
+  // create boolean output wires
+  // constexpr auto number_of_wires{sizeof(T) * 8};
+  bit_size_ = sizeof(T) * 8;
+  // std::cout << "number_of_wires: " << bit_size_ << std::endl;
+
+  // requires_online_interaction_ = true;
+  // gate_type_ = GateType::kInteractive;
+
+  // create the arithmetic output wires
+  arithmetic_output_wires_.emplace_back(
+      GetRegister().template EmplaceWire<motion::proto::arithmetic_gmw::Wire<T>>(backend_,
+                                                                                 num_of_simd_));
+  arithmetic_output_wires_.at(0)->SetAsPubliclyKnownWire();
+
+  // GetRegister().RegisterNextWire(arithmetic_output_wires_.at(0));
+
+  // create the boolean output wires
+  boolean_output_wires_.reserve(bit_size_);
+  for (size_t i = 0; i < bit_size_; i++) {
+    // auto& w = boolean_output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
+    // std::make_shared<boolean_gmw::Wire>(backend_, num_of_simd_)));
+
+    boolean_output_wires_.emplace_back(std::static_pointer_cast<motion::Wire>(
+        GetRegister().template EmplaceWire<boolean_gmw::Wire>(backend_, num_of_simd_)));
+
+    boolean_output_wires_.at(i)->SetAsPubliclyKnownWire();
+    // GetRegister().RegisterNextWire(w);
+  }
+
+  // create the output gate to reconstruct the arithmetic input
+  auto arithmetic_input_wire =
+      std::dynamic_pointer_cast<motion::proto::arithmetic_gmw::Wire<T>>(parent_.at(0));
+  arithmetic_reconstruct_gate_ =
+      GetRegister().template EmplaceGate<motion::proto::arithmetic_gmw::OutputGate<T>>(
+          arithmetic_input_wire);
+  // GetRegister().RegisterNextGate(arithmetic_reconstruct_gate_);
+
+  // // register this gate
+  // gate_id_ = GetRegister().NextGateId();
+
+  // // register this gate with the parent_ wires
+  // for (auto& wire : parent_) {
+  //   RegisterWaitingFor(wire->GetWireId());
+  //   wire->RegisterWaitingGate(gate_id_);
+  // }
+
+  if constexpr (kDebug) {
+    auto gate_info = fmt::format("gate id {}", gate_id_);
+    GetLogger().LogDebug(
+        fmt::format("Allocate an ReconstructArithmeticGmwShareAndBitDecomposeGate with following "
+                    "properties: {}",
+                    gate_info));
+  }
+}
+
+template <typename T>
+ReconstructArithmeticGmwShareAndBitDecomposeGate<T>::
+    ReconstructArithmeticGmwShareAndBitDecomposeGate(const arithmetic_gmw::SharePointer<T>& parent,
+                                                     std::size_t output_owner)
+    : ReconstructArithmeticGmwShareAndBitDecomposeGate(parent->GetArithmeticWire(), output_owner) {
+  assert(parent);
+}
+
+template <typename T>
+void ReconstructArithmeticGmwShareAndBitDecomposeGate<T>::EvaluateSetup() {}
+
+template <typename T>
+void ReconstructArithmeticGmwShareAndBitDecomposeGate<T>::EvaluateOnline() {
+  // nothing to setup, no need to wait/check
+
+  // // data we need repeatedly
+  // auto& communication_layer = GetCommunicationLayer();
+  // auto my_id = communication_layer.GetMyId();
+  // auto number_of_parties = communication_layer.GetNumberOfParties();
+
+  // // note that arithmetic gates have only a single wire
+  // auto arithmetic_wire = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_.at(0));
+  // assert(arithmetic_wire);
+  // // wait for parent wire to obtain a value
+  // arithmetic_wire->GetIsReadyCondition().Wait();
+
+  // wait for output gate to reconstruct
+  arithmetic_reconstruct_gate_->WaitOnline();
+  const auto arithmetic_reconstruct_share =
+      arithmetic_reconstruct_gate_->GetOutputAsArithmeticShare();
+  const auto& reconstruct_wire = arithmetic_reconstruct_share->GetWires().at(0);
+  const auto arithmetic_reconstruct_wire =
+      std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(reconstruct_wire);
+
+  // assign reconstructed value to arithmetic_output_wire
+  auto arithmetic_output_wire =
+      std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(arithmetic_output_wires_.at(0));
+  assert(arithmetic_output_wire);
+  arithmetic_output_wire->GetMutableValues() = arithmetic_reconstruct_wire->GetValues();
+
+  // arithmetic_output_wire->SetAsPubliclyKnownWire();
+  arithmetic_output_wire->SetOnlineFinished();
+
+  // bit-decompose the reconstructed arithmetic value into Boolean bits
+  std::vector<BitVector<>> boolean_output;
+  boolean_output = ToInput<T>(arithmetic_output_wire->GetValues());
+
+  // std::cout << "reconstructed_arithmetic_output_wire: "
+  //           << arithmetic_output_wire->GetValues().at(0) << std::endl;
+  // std::cout << "reconstructed_boolean_output.at(i).Get(0): " << std::endl;
+  for (auto i = 0ull; i < bit_size_; i++) {
+    // for (std::size_t j = 0ull; j < num_of_simd_; j++) {
+    // boolean_output.emplace_back(1, ((arithmetic_output_wire->GetValues().at(j) >> i) & 1) ==
+    // 1); std::cout << boolean_output.at(i).Get(0);
+    auto boolean_output_wire =
+        std::dynamic_pointer_cast<boolean_gmw::Wire>(boolean_output_wires_.at(i));
+    // }
+    boolean_output_wire->GetMutableValues() = boolean_output.at(i);
+
+    // boolean_output_wire->SetAsPubliclyKnownWire();
+    boolean_output_wire->SetOnlineFinished();
+  }
+  // std::cout << std::endl;
+
+  // std::cout << "reconstructed_boolean_output_ reverse order: " << std::endl;
+  // for (auto i = 0ull; i < bit_size_; i++) {
+  // std::cout << boolean_output.at(bit_size_ - 1 - i).Get(0);
+  // }
+
+  // std::cout << "SetOnlineIsReady: " << std::endl;
+  //    SetOnlineIsReady();
+  // {
+  //   std::scoped_lock lock(online_is_ready_condition_.GetMutex());
+  //   online_is_ready_ = true;
+  // }
+  // online_is_ready_condition_.NotifyAll();
+  // GetRegister().IncrementEvaluatedGatesOnlineCounter();
+  // std::cout << "Evaluate online finish: " << std::endl;
+}
+
+template <typename T>
+const motion::proto::boolean_gmw::SharePointer
+ReconstructArithmeticGmwShareAndBitDecomposeGate<T>::GetOutputAsBooleanGmwValue() {
+  auto boolean_output_share =
+      std::make_shared<motion::proto::boolean_gmw::Share>(boolean_output_wires_);
+  assert(boolean_output_share);
+  // auto output_share = std::static_pointer_cast<motion::Share>(boolean_output_share);
+  // assert(output_share);
+  boolean_output_share->SetAsPubliclyKnownShare();
+  return boolean_output_share;
+}
+
+template <typename T>
+const arithmetic_gmw::SharePointer<T>
+ReconstructArithmeticGmwShareAndBitDecomposeGate<T>::GetOutputAsArithmeticGmwValue() {
+  auto arithmetic_output_wire =
+      std::dynamic_pointer_cast<arithmetic_gmw::Wire<T>>(arithmetic_output_wires_.at(0));
+  assert(arithmetic_output_wire);
+  auto arithmetic_output_share = std::make_shared<arithmetic_gmw::Share<T>>(arithmetic_output_wire);
+  arithmetic_output_share->SetAsPubliclyKnownShare();
+  return arithmetic_output_share;
+}
+
+template class ReconstructArithmeticGmwShareAndBitDecomposeGate<std::uint8_t>;
+template class ReconstructArithmeticGmwShareAndBitDecomposeGate<std::uint16_t>;
+template class ReconstructArithmeticGmwShareAndBitDecomposeGate<std::uint32_t>;
+template class ReconstructArithmeticGmwShareAndBitDecomposeGate<std::uint64_t>;
+template class ReconstructArithmeticGmwShareAndBitDecomposeGate<__uint128_t>;
+
+// added by Liang Zhao
+template <typename T>
+edaBitGate<T>::edaBitGate(Backend& backend, std::size_t bit_size, std::size_t num_of_simd)
+    : Gate(backend) {
+  num_of_simd_ = num_of_simd;
+
+  // only generate edaBits of size bit_size,
+  // the rest bits (size: total_bit_size_-bit_size) are set to constant value of zero
+  bit_size_ = bit_size;
+
+  total_bit_size_ = sizeof(T) * 8;
+
+  // requires_online_interaction_ = false;
+  // gate_type_ = GateType::kNonInteractive;
+
+  // create, initialize, and register the output wires in following part:
+  arithmetic_gmw_output_wire_vector_of_each_boolean_gmw_share_bit_.reserve(1);
+
+  std::vector<arithmetic_gmw::WirePointer<T>> constant_arithmetic_gmw_output_wires_of_value_zero;
+  constant_arithmetic_gmw_output_wires_of_value_zero.reserve(total_bit_size_);
+
+  // arithmetic_gmw_output_wire_r_vector_.emplace_back(
+  //     std::make_shared<arithmetic_gmw::Wire<T>>(backend_, num_of_simd_));
+  // GetRegister().RegisterNextWire(arithmetic_gmw_output_wire_r_vector_.at(0));
+  arithmetic_gmw_output_wire_r_vector_.emplace_back(
+      GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_, num_of_simd_));
+
+  boolean_gmw_output_wire_r_vector_.reserve(total_bit_size_);
+  for (std::size_t i = 0; i < total_bit_size_; i++) {
+    // boolean_gmw_output_wire_r_vector_.emplace_back(std::static_pointer_cast<motion::Wire>(
+    //     std::make_shared<motion::proto::boolean_gmw::Wire>(backend_, num_of_simd_)));
+    boolean_gmw_output_wire_r_vector_.emplace_back(
+        GetRegister().template EmplaceWire<motion::proto::boolean_gmw::Wire>(backend_,
+                                                                             num_of_simd_));
+
+    auto boolean_gmw_output_wire_r =
+        std::dynamic_pointer_cast<boolean_gmw::Wire>(boolean_gmw_output_wire_r_vector_.at(i));
+    boolean_gmw_output_wire_r->GetMutableValues() = BitVector<>(num_of_simd_, false);
+
+    auto& arithmetic_gmw_output_wire_of_each_bit =
+        constant_arithmetic_gmw_output_wires_of_value_zero.emplace_back(
+            GetRegister().template EmplaceWire<arithmetic_gmw::Wire<T>>(backend_, num_of_simd_));
+
+    // // only register the gates that have non-zero values
+    // GetRegister().RegisterNextWire(boolean_gmw_output_wire_r);
+    // GetRegister().RegisterNextWire(arithmetic_gmw_output_wire_of_each_bit);
+
+    arithmetic_gmw_output_wire_of_each_bit->GetMutableValues() = std::vector<T>(num_of_simd_, T(0));
+  }
+
+  arithmetic_gmw_output_wire_vector_of_each_boolean_gmw_share_bit_.push_back(
+      constant_arithmetic_gmw_output_wires_of_value_zero);
+
+  // register the required number of shared bits
+  num_of_sbs_ = num_of_simd_ * bit_size_;
+  sb_offset_ = GetSbProvider().template RequestSbs<T>(num_of_sbs_);
+
+  // // register this gate
+  // gate_id_ = GetRegister().NextGateId();
+
+  if constexpr (kDebug) {
+    auto gate_info = fmt::format("gate id {}, total_bit_size {}, bit_size {}", gate_id_,
+                                 total_bit_size_, bit_size_);
+
+    gate_info.append(fmt::format("arithmetic gmw output wire: {} ",
+                                 arithmetic_gmw_output_wire_r_vector_.at(0)->GetWireId()));
+
+    for (const auto& boolean_wire : boolean_gmw_output_wire_r_vector_) {
+      gate_info.append(fmt::format("boolean gmw output wire: {} ", boolean_wire->GetWireId()));
+    }
+
+    GetLogger().LogDebug(
+        fmt::format("Created a edaBitGate with following properties: {}", gate_info));
+  }
+}
+
+template <typename T>
+void edaBitGate<T>::EvaluateSetup() {
+  // SetSetupIsReady();
+  // GetRegister().IncrementEvaluatedGatesSetupCounter();
+}
+
+template <typename T>
+void edaBitGate<T>::EvaluateOnline() {
+  // std::cout << "edaBitGate<T>::EvaluateOnline" << std::endl;
+  // WaitSetup();
+  // assert(setup_is_ready_);
+
+  // wait for the SbProvider to finish
+  auto& sb_provider = GetSbProvider();
+  sb_provider.WaitFinished();
+
+  // extrate shared bits and assign it to <r>^B = (<r_0>^B, ..., <r_l>^B) to
+  // boolean_gmw_output_wire_r_vector_
+  const auto& sbs = sb_provider.template GetSbsAll<T>();
+  for (auto wire_i = 0ull; wire_i < total_bit_size_; wire_i++) {
+    auto boolean_gmw_output_wire_r =
+        std::dynamic_pointer_cast<boolean_gmw::Wire>(boolean_gmw_output_wire_r_vector_.at(wire_i));
+    for (std::size_t j = 0; j < num_of_simd_; ++j) {
+      bool sb = false;
+      if (wire_i < bit_size_) {
+        sb = sbs.at(sb_offset_ + wire_i * num_of_simd_ + j) & 1;  // the Boolean(ly) shared bit}
+      }
+      boolean_gmw_output_wire_r->GetMutableValues().Set(sb, j);
+    }
+    boolean_gmw_output_wire_r->SetOnlineFinished();
+  }
+
+  // std::cout << "000" << std::endl;
+  // std::cout << "<r>^B (reverse order): " << std::endl;
+
+  // for (auto wire_i = 0ull; wire_i < bit_size_; wire_i++) {
+  //   bool sb = sbs.at(sb_offset_ + (bit_size_ - 1 - wire_i) * num_of_simd_) &
+  // 1;  // the Boolean(ly) shared bit
+  // std::cout << sb;
+  // }
+  // std::cout << std::endl;
+
+  // calculate <r>^A = B2A(<r>^B) and assign it to arithmetic_gmw_output_wire_r_vector_
+  auto arithmetic_gmw_output_wire_r = std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(
+      arithmetic_gmw_output_wire_r_vector_.at(0));
+  arithmetic_gmw_output_wire_r->GetMutableValues().resize(num_of_simd_);
+
+  for (std::size_t j = 0; j < num_of_simd_; ++j) {
+    T arithmetic_value_r = 0;
+    for (std::size_t wire_i = 0ull; wire_i < total_bit_size_; wire_i++) {
+      T r = 0;
+      if (wire_i < bit_size_) {
+        r = (sbs.at(sb_offset_ + wire_i * num_of_simd_ + j));
+      }
+      arithmetic_value_r += T(r) << wire_i;
+      auto arithmetic_gmw_output_wire_of_each_bit =
+          std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(
+              arithmetic_gmw_output_wire_vector_of_each_boolean_gmw_share_bit_.at(0).at(wire_i));
+      arithmetic_gmw_output_wire_of_each_bit->GetMutableValues().at(j) = T(r);
+    }
+    // std::cout << "111" << std::endl;
+    arithmetic_gmw_output_wire_r->GetMutableValues().at(j) = arithmetic_value_r;
+  }
+  // std::cout << "222" << std::endl;
+  arithmetic_gmw_output_wire_r->SetOnlineFinished();
+  // std::cout << "333" << std::endl;
+
+  for (std::size_t wire_i = 0ull; wire_i < total_bit_size_; wire_i++) {
+    auto arithmetic_gmw_output_wire_of_each_bit =
+        std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(
+            arithmetic_gmw_output_wire_vector_of_each_boolean_gmw_share_bit_.at(0).at(wire_i));
+    arithmetic_gmw_output_wire_of_each_bit->SetOnlineFinished();
+  }
+
+  GetLogger().LogDebug(fmt::format("Evaluated edaBitGate with id#{}", gate_id_));
+  // SetOnlineIsReady();
+  // set online condition ready
+  // {
+  //   // std::cout << "444" << std::endl;
+  //   std::scoped_lock lock(online_is_ready_condition_.GetMutex());
+  //   online_is_ready_ = true;
+  //   // std::cout << "555" << std::endl;
+  // }
+  // // std::cout << "666" << std::endl;
+  // online_is_ready_condition_.NotifyAll();
+  // // std::cout << "777" << std::endl;
+
+  // GetRegister().IncrementEvaluatedGatesOnlineCounter();
+}
+
+template <typename T>
+arithmetic_gmw::SharePointer<T> edaBitGate<T>::GetOutputAsArithmeticShare() {
+  auto arithmetic_gmw_output_wire = std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(
+      arithmetic_gmw_output_wire_r_vector_.at(0));
+  auto arithmetic_gmw_output_share =
+      std::make_shared<proto::arithmetic_gmw::Share<T>>(arithmetic_gmw_output_wire);
+  assert(arithmetic_gmw_output_share);
+  return arithmetic_gmw_output_share;
+}
+
+template <typename T>
+motion::proto::boolean_gmw::SharePointer edaBitGate<T>::GetOutputAsBooleanShare() {
+  auto boolean_gmw_output_share =
+      std::make_shared<motion::proto::boolean_gmw::Share>(boolean_gmw_output_wire_r_vector_);
+  assert(boolean_gmw_output_share);
+  return boolean_gmw_output_share;
+}
+
+// added by Liang Zhao
+template <typename T>
+std::vector<motion::SharePointer> edaBitGate<T>::GetOutputAsArithmeticShareOfEachBit() {
+  std::vector<motion::SharePointer> arithmetic_gmw_output_share_vector;
+  arithmetic_gmw_output_share_vector.reserve(total_bit_size_);
+  for (auto wire_i = 0ull; wire_i < total_bit_size_; wire_i++) {
+    auto arithmetic_gmw_output_wire = std::dynamic_pointer_cast<proto::arithmetic_gmw::Wire<T>>(
+        arithmetic_gmw_output_wire_vector_of_each_boolean_gmw_share_bit_.at(0).at(wire_i));
+    auto arithmetic_gmw_output_share =
+        std::make_shared<proto::arithmetic_gmw::Share<T>>(arithmetic_gmw_output_wire);
+    assert(arithmetic_gmw_output_share);
+
+    arithmetic_gmw_output_share_vector.emplace_back(
+        std::dynamic_pointer_cast<motion::Share>(arithmetic_gmw_output_share));
+  }
+  return arithmetic_gmw_output_share_vector;
+}
+
+template class edaBitGate<std::uint8_t>;
+template class edaBitGate<std::uint16_t>;
+template class edaBitGate<std::uint32_t>;
+template class edaBitGate<std::uint64_t>;
+
+// should support now
+template class edaBitGate<__uint128_t>;
+
+// // added by Liang Zhao
+// template <typename T, typename U>
+// OutputInLargerFieldGate<T, U>::OutputInLargerFieldGate(const arithmetic_gmw::WirePointer<T>&
+// parent,
+//                                                        std::size_t output_owner)
+//     : Base(parent->GetBackend()) {
+//   assert(parent);
+
+//   if (parent->GetProtocol() != MpcProtocol::kArithmeticGmw) {
+//     auto sharing_type = to_string(parent->GetProtocol());
+//     throw(std::runtime_error(
+//         (fmt::format("Arithmetic output gate in large field gate expects an arithmetic share, "
+//                      "got a share of type {}",
+//                      sharing_type))));
+//   }
+
+//   parent_ = {parent};
+
+//   // values we need repeatedly
+//   auto& communication_layer = GetCommunicationLayer();
+//   auto my_id = communication_layer.GetMyId();
+//   auto number_of_parties = communication_layer.GetNumberOfParties();
+
+//   if (static_cast<std::size_t>(output_owner) >= number_of_parties &&
+//       static_cast<std::size_t>(output_owner) != kAll) {
+//     throw std::runtime_error(
+//         fmt::format("Invalid output owner: {} of {}", output_owner, number_of_parties));
+//   }
+
+//   output_owner_ = output_owner;
+//   requires_online_interaction_ = true;
+//   gate_type_ = GateType::kInteractive;
+//   gate_id_ = GetRegister().NextGateId();
+//   is_my_output_ = my_id == static_cast<std::size_t>(output_owner_) ||
+//                   static_cast<std::size_t>(output_owner_) == kAll;
+
+//   RegisterWaitingFor(parent_.at(0)->GetWireId());
+//   parent_.at(0)->RegisterWaitingGate(gate_id_);
+
+//   {
+//     auto w = std::static_pointer_cast<motion::Wire>(
+//         std::make_shared<arithmetic_gmw::Wire<U>>(backend_, parent->GetNumberOfSimdValues()));
+//     GetRegister().RegisterNextWire(w);
+//     w->SetAsPubliclyKnownWire();
+//     output_wires_ = {std::move(w)};
+//   }
+
+//   // Tell the DataStorages that we want to receive OutputMessages from the
+//   // other parties.
+//   if (is_my_output_) {
+//     auto& base_provider = GetBaseProvider();
+//     output_message_futures_ = base_provider.RegisterForOutputMessages(gate_id_);
+//   }
+
+//   if constexpr (kDebug) {
+//     auto gate_info =
+//         fmt::format("uint{}_t type, gate id {}, owner {}", sizeof(T) * 8, gate_id_,
+//         output_owner_);
+//     GetLogger().LogDebug(fmt::format(
+//         "Allocate an arithmetic_gmw::OutputInLargerFieldGate with following properties: {}",
+//         gate_info));
+//   }
+// }
+
+// template <typename T, typename U>
+// OutputInLargerFieldGate<T, U>::OutputInLargerFieldGate(
+//     const arithmetic_gmw::SharePointer<T>& parent, std::size_t output_owner)
+//     : OutputInLargerFieldGate(parent->GetArithmeticWire(), output_owner) {
+//   assert(parent);
+// }
+
+// template <typename T, typename U>
+// OutputInLargerFieldGate<T, U>::OutputInLargerFieldGate(const motion::SharePointer& parent,
+//                                                        std::size_t output_owner)
+//     : OutputInLargerFieldGate(std::dynamic_pointer_cast<arithmetic_gmw::Share<T>>(parent),
+//                               output_owner) {
+//   assert(parent);
+// }
+
+// template <typename T, typename U>
+// void OutputInLargerFieldGate<T, U>::EvaluateSetup() {
+//   SetSetupIsReady();
+//   GetRegister().IncrementEvaluatedGatesSetupCounter();
+// }
+
+// template <typename T, typename U>
+// void OutputInLargerFieldGate<T, U>::EvaluateOnline() {
+//   // setup needs to be done first
+//   WaitSetup();
+//   assert(setup_is_ready_);
+
+//   // data we need repeatedly
+//   auto& communication_layer = GetCommunicationLayer();
+//   auto my_id = communication_layer.GetMyId();
+//   auto number_of_parties = communication_layer.GetNumberOfParties();
+
+//   // note that arithmetic gates have only a single wire
+//   auto arithmetic_wire = std::dynamic_pointer_cast<const arithmetic_gmw::Wire<T>>(parent_.at(0));
+//   assert(arithmetic_wire);
+//   // wait for parent wire to obtain a value
+//   arithmetic_wire->GetIsReadyCondition().Wait();
+//   // initialize output with local share
+//   auto output_of_type_T = arithmetic_wire->GetValues();
+
+//   // create output of type U (large field)
+//   std::vector<U> output_of_type_U(output_of_type_T.cbegin(), output_of_type_T.cend());
+
+//   // we need to send shares to one other party:
+//   if (!is_my_output_) {
+//     auto payload = ToByteVector(output_of_type_T);
+//     auto output_message = motion::communication::BuildOutputMessage(gate_id_, payload);
+//     communication_layer.SendMessage(output_owner_, std::move(output_message));
+//   }
+//   // we need to send shares to all other parties:
+//   else if (output_owner_ == kAll) {
+//     auto payload = ToByteVector(output_of_type_T);
+//     auto output_message = motion::communication::BuildOutputMessage(gate_id_, payload);
+//     communication_layer.BroadcastMessage(std::move(output_message));
+//   }
+
+//   // we receive shares from other parties
+//   if (is_my_output_) {
+//     // collect shares from all parties
+//     std::vector<std::vector<T>> shared_outputs_of_type_T;
+//     shared_outputs_of_type_T.reserve(number_of_parties);
+
+//     // convert the data type of shared_outputs from T to U
+//     std::vector<std::vector<U>> shared_outputs_of_type_U;
+//     shared_outputs_of_type_U.reserve(number_of_parties);
+
+//     for (std::size_t i = 0; i < number_of_parties; ++i) {
+//       if (i == my_id) {
+//         shared_outputs_of_type_T.push_back(output_of_type_T);
+//         shared_outputs_of_type_U.push_back(output_of_type_U);
+//         continue;
+//       }
+//       const auto output_message = output_message_futures_.at(i).get();
+//       auto message = communication::GetMessage(output_message.data());
+//       auto output_message_pointer = communication::GetOutputMessage(message->payload()->data());
+//       assert(output_message_pointer);
+//       assert(output_message_pointer->wires()->size() == 1);
+
+//       std::vector<T> data_vector_of_type_T =
+//           FromByteVector<T>(*output_message_pointer->wires()->Get(0)->payload());
+//       shared_outputs_of_type_T.push_back(data_vector_of_type_T);
+//       std::vector<U> data_vector_of_type_U(data_vector_of_type_T.cbegin(),
+//                                            data_vector_of_type_T.cend());
+//       shared_outputs_of_type_U.push_back(data_vector_of_type_U);
+
+//       assert(shared_outputs_of_type_T[i].size() == parent_[0]->GetNumberOfSimdValues());
+//       assert(shared_outputs_of_type_U[i].size() == parent_[0]->GetNumberOfSimdValues());
+//     }
+
+//     // reconstruct the shared value in larger field U
+//     if constexpr (kVerboseDebug) {
+//       // we need to copy since we have to keep shared_outputs for the debug output below
+//       output_of_type_U = AddVectors(shared_outputs_of_type_U);
+//     } else {
+//       // we can move
+//       output_of_type_U = AddVectors(std::move(shared_outputs_of_type_U));
+//     }
+
+//     // set the value of the output wire
+//     auto arithmetic_output_wire =
+//         std::dynamic_pointer_cast<arithmetic_gmw::Wire<U>>(output_wires_.at(0));
+//     assert(arithmetic_output_wire);
+//     arithmetic_output_wire->GetMutableValues() = output_of_type_U;
+
+//     // std::cout << "shared_outputs_of_type_T: " << unsigned(shared_outputs_of_type_T[0][0]) <<
+//     // std::endl;
+
+//     if constexpr (kVerboseDebug) {
+//       std::string shares{""};
+//       for (auto i = 0u; i < number_of_parties; ++i) {
+//         shares.append(fmt::format("id#{}:{} ", i, to_string(shared_outputs_of_type_U.at(i))));
+//       }
+//       auto result = to_string(output_of_type_U);
+//       GetLogger().LogTrace(
+//           fmt::format("Received output shares: {} from other parties, "
+//                       "reconstructed result is {}",
+//                       shares, result));
+//     }
+//   }
+
+//   // we are done with this gate
+//   if constexpr (kDebug) {
+//     GetLogger().LogDebug(
+//         fmt::format("Evaluated arithmetic_gmw::OutputInLargerFieldGate with id#{}", gate_id_));
+//   }
+//   SetOnlineIsReady();
+//   GetRegister().IncrementEvaluatedGatesOnlineCounter();
+// }
+
+// template <typename T, typename U>
+// arithmetic_gmw::SharePointer<U> OutputInLargerFieldGate<T, U>::GetOutputAsArithmeticShare() {
+//   auto arithmetic_wire = std::dynamic_pointer_cast<arithmetic_gmw::Wire<U>>(output_wires_.at(0));
+//   assert(arithmetic_wire);
+//   auto result = std::make_shared<arithmetic_gmw::Share<U>>(arithmetic_wire);
+//   return result;
+// }
+
+// template class OutputInLargerFieldGate<std::uint8_t, std::uint16_t>;
+// template class OutputInLargerFieldGate<std::uint16_t, std::uint32_t>;
+// template class OutputInLargerFieldGate<std::uint32_t, std::uint64_t>;
+// template class OutputInLargerFieldGate<std::uint64_t, __uint128_t>;
 
 }  // namespace encrypto::motion::proto::arithmetic_gmw

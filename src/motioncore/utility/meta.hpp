@@ -26,6 +26,12 @@
 #include <boost/hana/map.hpp>
 #include <boost/hana/tuple.hpp>
 
+// added by Liang Zhao
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/hana.hpp>
+namespace bm = boost::multiprecision;
+namespace hana = boost::hana;
+
 namespace encrypto::motion {
 
 // TypeMap is a compile-time map whose keys are types that are mapped to
@@ -63,5 +69,97 @@ template <template <typename> class Value, typename... Ts>
 using TypeMap = decltype(detail::MakeTypeMap<Value, Ts...>());
 
 #endif
+
+
+// added by Liang Zhao
+template <typename T>
+std::size_t GetBitSizeOfTypeT(T t = 0) {
+  return hana::eval_if(
+      std::is_unsigned_v<T>, []() { return sizeof(T); },
+      [] { return std::numeric_limits<T>::digits / 8; });
+}
+
+template <typename T>
+struct get_int_type {};
+
+template <>
+struct get_int_type<std::uint8_t> {
+  using type = std::int8_t;
+};
+template <>
+struct get_int_type<std::uint16_t> {
+  using type = std::int16_t;
+};
+template <>
+struct get_int_type<std::uint32_t> {
+  using type = std::int32_t;
+};
+template <>
+struct get_int_type<std::uint64_t> {
+  using type = std::int64_t;
+};
+template <>
+struct get_int_type<__uint128_t> {
+  using type = __int128_t;
+};
+template <typename T>
+using get_int_type_t = typename get_int_type<T>::type;
+
+
+template <std::size_t UINT>
+struct get_uint_type {};
+
+template <>
+struct get_uint_type<8> {
+  using type = std::uint8_t;
+};
+template <>
+struct get_uint_type<16> {
+  using type = std::uint16_t;
+};
+template <>
+struct get_uint_type<32> {
+  using type = std::uint32_t;
+};
+template <>
+struct get_uint_type<64> {
+  using type = std::uint64_t;
+};
+template <>
+struct get_uint_type<128> {
+  using type = __uint128_t;
+};
+template <std::size_t UINT>
+using get_uint_type_t = typename get_uint_type<UINT>::type;
+
+// ================================================================
+
+// added by Liang Zhao
+template <typename T>
+struct get_shrink_type {};
+
+template <>
+struct get_shrink_type<std::uint8_t> {
+  using type = std::uint8_t;
+};
+template <>
+struct get_shrink_type<std::uint16_t> {
+  using type = std::uint8_t;
+};
+template <>
+struct get_shrink_type<std::uint32_t> {
+  using type = std::uint16_t;
+};
+template <>
+struct get_shrink_type<std::uint64_t> {
+  using type = std::uint32_t;
+};
+template <>
+struct get_shrink_type<__uint128_t> {
+  using type = std::uint64_t;
+};
+template <typename T>
+using get_shrink_type_t = typename get_shrink_type<T>::type;
+
 
 }  // namespace encrypto::motion

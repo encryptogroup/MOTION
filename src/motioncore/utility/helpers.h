@@ -24,13 +24,33 @@
 
 #pragma once
 
+#include <flatbuffers/flatbuffers.h>
+#include <fmt/format.h>
 #include <algorithm>
+#include <bit>
 #include <cassert>
+#include <concepts>
 #include <cstdint>
+#include <random>
 #include <span>
 #include <string>
+#include <type_traits>
 #include <vector>
 
+#include "condition.h"
+#include "primitives/random/default_rng.h"
+#include "typedefs.h"
+
+// added by Liang Zhao
+// #include "utility/meta.hpp"
+// #include "bit_vector.h"
+// #include ""
+// #include "boost/multiprecision/cpp_int.hpp"
+// #include "utility/bit_vector.h"
+#include <boost/hana.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+namespace bm = boost::multiprecision;
+#include <algorithm>
 namespace encrypto::motion {
 
 /// \brief Returns a vector of \p length random unsigned integral values.
@@ -38,6 +58,103 @@ namespace encrypto::motion {
 /// \param length
 template <typename UnsignedIntegralType>
 std::vector<UnsignedIntegralType> RandomVector(std::size_t length);
+
+// added by Liang Zhao
+// convert ot data from std::vector<std::uint8_t> to type T
+// T is the unsigned integer of boost::multiprecision (e.g., boost::multiprecision::uint256_t)
+// TODO: move to other .cpp
+template <template <class, class> class V, class T, class A>
+V<T, A> ImportOtDataToBoostUintVector(const std::size_t vector_size,
+                                      const std::byte* input_data_vector) {
+  std::size_t bit_length_of_T = std::numeric_limits<T>::digits;
+  std::size_t chunk_size = 8;
+  std::size_t num_of_chunks = bit_length_of_T / chunk_size;
+
+  V<T, A> ot_data_vector;
+  ot_data_vector.reserve(vector_size);
+
+  for (std::size_t vector_index = 0; vector_index < vector_size; vector_index++) {
+    std::vector<unsigned char> ot_data_byte_vector(num_of_chunks);
+
+    // extract the bytes of BitVector
+    for (std::size_t byte_index = 0; byte_index < num_of_chunks; byte_index++) {
+      ot_data_byte_vector[byte_index] =
+          static_cast<unsigned char>(input_data_vector[byte_index + vector_index * num_of_chunks]);
+    }
+    T ot_data;
+
+    // reverse the vector order, s.t., boost::multiprecision::import_bits can inteprete to T
+    // correctly std::reverse(ot_data_byte_vector.begin(), ot_data_byte_vector.end());
+
+    bm::import_bits(ot_data, ot_data_byte_vector.begin(), ot_data_byte_vector.end());
+
+    // ot_data_vector.emplace_back(ot_data);
+    ot_data_vector.push_back(std::move(ot_data));
+  }
+
+  return ot_data_vector;
+}
+
+// TODO: test
+template <template <class, class> class V, class T, class A>
+V<T, A> ImportOtDataToBoostUintVector(const std::size_t vector_size,
+                                      const std::uint8_t* input_data_vector) {
+  std::size_t bit_length_of_T = std::numeric_limits<T>::digits;
+  std::size_t chunk_size = 8;
+  std::size_t num_of_chunks = bit_length_of_T / chunk_size;
+
+  V<T, A> ot_data_vector;
+  ot_data_vector.reserve(vector_size);
+
+  for (std::size_t vector_index = 0; vector_index < vector_size; vector_index++) {
+    std::vector<unsigned char> ot_data_byte_vector(num_of_chunks);
+
+    // extract the bytes of BitVector
+    for (std::size_t byte_index = 0; byte_index < num_of_chunks; byte_index++) {
+      ot_data_byte_vector[byte_index] =
+          static_cast<unsigned char>(input_data_vector[byte_index + vector_index * num_of_chunks]);
+    }
+    T ot_data;
+
+    // reverse the vector order, s.t., boost::multiprecision::import_bits can inteprete to T
+    // correctly std::reverse(ot_data_byte_vector.begin(), ot_data_byte_vector.end());
+
+    bm::import_bits(ot_data, ot_data_byte_vector.begin(), ot_data_byte_vector.end());
+
+    // ot_data_vector.emplace_back(ot_data);
+    ot_data_vector.push_back(std::move(ot_data));
+  }
+
+  return ot_data_vector;
+}
+
+// added by Liang Zhao
+// generate random vector of type T for boost::multiprecision::uint
+template <typename T>
+std::vector<T> RandomVectorBoostUint(std::size_t length) {
+  // std::cout << "RandomVectorBoostUint" << std::endl;
+  std::size_t byte_size = std::numeric_limits<T>::digits / 8 * length;
+  // std::vector<T> vec(length);
+  auto& rng = DefaultRng::GetThreadInstance();
+
+  std::vector<std::byte> byte_vector(byte_size);
+
+  rng.RandomBytes(byte_vector.data(), byte_size);
+
+  // for (std::size_t i = 0; i < byte_size; i++) {
+  //   std::cout << unsigned(byte_vector[i]) << std::endl;
+  // }
+  // TOOD: convert byte_vector to T_vector
+  std::vector<T> vec =
+      ImportOtDataToBoostUintVector<std::vector, T, std::allocator<T>>(length, byte_vector.data());
+
+  // // fake random vector generation
+  // for (std::size_t i = 0; i < length; i++) {
+  //   vec[i] = 333;
+  // }
+
+  return vec;
+}
 
 /// \brief Converts a vector of unsigned integral values to a vector of uint8_t
 /// \tparam UnsignedIntegralType
@@ -85,6 +202,21 @@ inline std::vector<T> AddVectors(std::span<const T> a, std::span<const T> b) {
   return result;
 }
 
+// added by Liang Zhao
+template <typename T>
+inline std::vector<T> AddVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+#pragma omp simd
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result[j] += b[j];
+  }
+  return result;
+}
+
 /// \brief Subtracts each element in \p a and \p b and returns the result.
 /// \tparam T type of the elements in the vectors. T must provide the -= operator.
 /// \param a
@@ -100,6 +232,57 @@ inline std::vector<T> SubVectors(std::span<const T> a, std::span<const T> b) {
   std::vector<T> result(a.begin(), a.end());
   for (auto j = 0ull; j < result.size(); ++j) {
     result[j] -= b[j];  // TODO: implement using AVX2 and AVX512
+  }
+  return result;
+}
+
+// added by Liang Zhao
+/// \brief Minus each element in \p a returns the result.
+/// \tparam T type of the elements in the vectors. T must provide the - operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the negative the ith element in a.
+/// \pre \p a
+template <typename T>
+inline std::vector<T> MinusVectors(std::span<const T> a) {
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = (a.begin(), a.end());
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result[j] = -a[j];
+  }
+  return result;
+}
+
+// added by Liang Zhao
+template <typename T>
+inline std::vector<T> MinusVectors(const std::vector<T>& a) {
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result[j] = -a[j];
+  }
+  return result;
+}
+
+// added by Liang Zhao
+/// \brief absolute each element in \p a returns the result.
+/// \tparam T type of the elements in the vectors.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the negative the ith element in a.
+/// \pre \p a
+template <typename T>
+inline std::vector<T> AbsVectors(const std::vector<T>& a) {
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result = a;
+  for (auto j = 0ull; j < result.size(); ++j) {
+    result[j] = std::abs(a[j]);
   }
   return result;
 }
@@ -121,6 +304,78 @@ inline std::vector<T> MultiplyVectors(std::span<const T> a, std::span<const T> b
   for (auto j = 0ull; j < result.size(); ++j) {
     result[j] *= b[j];  // TODO: implement using AVX2 and AVX512
   }
+  return result;
+}
+
+// added by Liang Zhao
+// convert the value into different modulo:
+// for a (data type T), compute remainder (data type U) and wrap (data type U) s.t., remainder = a
+// mod U_max and a = remainder + wrap * (U_max + 1)
+template <typename T, typename U>
+inline std::vector<std::vector<U>> ModularReductionWithWrapVectors(const std::vector<T>& a) {
+  assert(sizeof(T) > sizeof(U));
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<U> remainder(a.size());
+  std::vector<U> wrap(a.size());
+
+  std::size_t modulo_mask;
+
+  if (sizeof(U) * 8 == 8) {
+    modulo_mask = UINT8_MAX;
+  } else if (sizeof(U) * 8 == 16) {
+    modulo_mask = UINT16_MAX;
+  } else if (sizeof(U) * 8 == 32) {
+    modulo_mask = UINT32_MAX;
+  } else if (sizeof(U) * 8 == 64) {
+    modulo_mask = UINT64_MAX;
+  }
+
+  if (sizeof(T) * 8 == 16) {
+    for (std::size_t i = 0; i < a.size(); i++) {
+      remainder.at(i) = U(a.at(i) & modulo_mask);
+      wrap.at(i) = U(a.at(i) >> (sizeof(U) * 8));
+    }
+  } else if (sizeof(T) * 8 == 32) {
+    for (std::size_t i = 0; i < a.size(); i++) {
+      remainder.at(i) = U(a.at(i) & modulo_mask);
+      wrap.at(i) = U(a.at(i) >> (sizeof(U) * 8));
+    }
+  } else if (sizeof(T) * 8 == 64) {
+    for (std::size_t i = 0; i < a.size(); i++) {
+      remainder.at(i) = U(a.at(i) & modulo_mask);
+      wrap.at(i) = U(a.at(i) >> (sizeof(U) * 8));
+    }
+  } else if (sizeof(T) * 8 == 128) {
+    for (std::size_t i = 0; i < a.size(); i++) {
+      remainder.at(i) = U(a.at(i) & modulo_mask);
+      wrap.at(i) = U(a.at(i) >> (sizeof(U) * 8));
+    }
+  }
+
+  std::vector<std::vector<U>> result = {remainder, wrap};
+
+  return result;
+}
+
+// added by Liang Zhao
+// convert the value into different modulo:
+// for a (data type T), compute remainder (data type U) and wrap (data type U) s.t., remainder = a
+// mod U_max and a = remainder + wrap * (U_max + 1)
+template <typename T>
+inline std::vector<T> ModularReductionVectors(const std::vector<T>& a, const std::vector<T>& b) {
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> remainder(a.size());
+
+  for (std::size_t i = 0; i < a.size(); i++) {
+    remainder.at(i) = T(a.at(i) % b.at(i));
+  }
+
+  std::vector<T> result = remainder;
+
   return result;
 }
 
@@ -224,6 +479,29 @@ inline std::vector<T> RestrictMulVectors(std::span<const T> a, std::span<const T
   T* __restrict__ result_pointer{result.data()};
   std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
                  [](const T& a_value, const T& b_value) { return a_value * b_value; });
+  return result;
+}
+
+// added by Liang Zhao
+/// \brief Divides each element in \p a and \p b and returns the result.
+///        It is assumed that the vectors do not overlap.
+/// \tparam T type of the elements in the vectors. T must provide the binary / operator.
+/// \param a
+/// \param b
+/// \return A vector containing at position i the product the ith element in a and b.
+/// \pre \p a and \p b must be of equal size.
+template <typename T>
+inline std::vector<T> RestrictDivVectors(std::span<const T> a, std::span<const T> b) {
+  assert(a.size() == b.size());
+  if (a.size() == 0) {
+    return {};
+  }  // if empty input vector
+  std::vector<T> result(a.size());
+  const T* __restrict__ a_pointer{a.data()};
+  const T* __restrict__ b_pointer{b.data()};
+  T* __restrict__ result_pointer{result.data()};
+  std::transform(a_pointer, a_pointer + a.size(), b_pointer, result_pointer,
+                 [](const T& a_value, const T& b_value) { return a_value / b_value; });
   return result;
 }
 
@@ -497,6 +775,36 @@ inline std::vector<T> RowDotProduct(std::span<const std::vector<T>> a,
       result[j] += a[i][j] * b[i][j];
     }
   }
+  return result;
+}
+
+template <std::signed_integral T>
+auto ToTwosComplement(T input) {
+  using U = typename std::make_unsigned_t<T>;
+  return std::bit_cast<U>(input);
+}
+
+template <std::signed_integral T>
+auto ToTwosComplement(const std::vector<T>& input) {
+  using U = typename std::make_unsigned_t<T>;
+  std::vector<U> twos_complement;
+  twos_complement.reserve(input.size());
+  for (const auto& x : input) twos_complement.emplace_back(ToTwosComplement<T>(x));
+  return twos_complement;
+}
+
+template <std::unsigned_integral T>
+auto FromTwosComplement(T input) {
+  using S = typename std::make_signed_t<T>;
+  return std::bit_cast<S>(input);
+}
+
+template <std::unsigned_integral T>
+auto FromTwosComplement(const std::vector<T>& input) {
+  using S = typename std::make_signed_t<T>;
+  std::vector<S> result;
+  result.reserve(input.size());
+  for (const auto& x : input) result.emplace_back(FromTwosComplement<T>(x));
   return result;
 }
 

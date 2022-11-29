@@ -1,0 +1,54 @@
+symex
+	Symbolically executes a goto-program and outputs the result using the symex_targett interface.
+
+symex_target_equationt : public symex_targett
+	Symbolic execution target that can convert the program to an equation using the prop_convt interface.
+	Marking variables as INPUTs and OUTPUTs (not CBMC-GC INPUTs/OUTPUTs, just general INPUTs/OUTPUTs
+	to functions) is apparently done here.
+	Conversion from expression to boolean formula is triggered in convert_assignments() with
+	decision_procedure.set_to_true(it.cond_expr).
+
+prop_convt (now prop_conv_solvert): public decision_proceduret
+	Interface for converting expressions (exprt) to boolean formula using the propt interface.
+
+propt <-- implement to create simple_circuitt
+	Provides interface for building boolean formulas (i.e. has methods like land(), lor() etc)
+
+boolbvt <-- our boolean formula generation (or not, see bv_cbmct)
+	Transitively implements prop_convt. Uses bv_utilst for conversion.
+	Contains a mapping from variable names to literals.
+
+bv_pointerst : public boolbvt
+	Adds pointer logic to boolbvt?
+
+bv_cbmct : public bv_pointerst
+	Used by cbmc (the program). Adds some overloads for *_waitfor() (no idea what that means).
+	Maybe we should derive from bv_cbmct instead of boolbvt?
+
+bv_utilst
+	Actual implementation of expression-to-boolean-formula-conversion
+
+
+Overview of steps:
+1. C program is converted to a goto-program (SSA) represented by the symex_target_equationt
+2. symex_target_equationt then symbolically executes the program to unroll all loops and inline all
+   functions
+	- conversion is done by the various symex_target_equationt::convert_*() functions
+	- in CBMC-GC we only use convert_assignments() (all other conversions are not relevant for
+	  circuits)
+	- assignments to symbols (the only kind of assignments we care for) are converted by simply
+	  writing the literals of the right-hand side to the symbol-map-entry of the left-hand side
+	  (boolbv_mapt)
+	- other kind of assignments (not sure what these other kinds of assignments are) are converted
+	  by replacing them with equalities that must yield true (using propt::set_equal())
+	  but we don't support them because we haven't implemented set_equal() (wouldn't know how).
+	  Using set_equal() creates a system of equations. Can you convert such a system to a single
+	  formula?
+
+
+CBMC Bugs in C parser:
+- defining local variable with same name as function argument shouldn't be allowed
+
+
+CBMC Bugs in C++ parser:
+- template functions can't be instantiated without errors

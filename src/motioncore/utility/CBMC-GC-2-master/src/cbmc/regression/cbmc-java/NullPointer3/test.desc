@@ -1,0 +1,9 @@
+CORE
+NullPointer3.class
+--pointer-check
+^EXIT=10$
+^SIGNAL=0$
+^.*Throw null: FAILURE$
+^VERIFICATION FAILED$
+--
+^warning: ignoring

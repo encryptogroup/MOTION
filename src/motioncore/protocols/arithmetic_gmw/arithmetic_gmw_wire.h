@@ -26,6 +26,9 @@
 
 #include "protocols/wire.h"
 
+// added by Liang Zhao
+#include "utility/meta.hpp"
+
 namespace encrypto::motion::proto::arithmetic_gmw {
 
 // Allow only unsigned integers for Arithmetic wires.
@@ -54,7 +57,15 @@ class Wire final : public motion::Wire {
 
   std::vector<T>& GetMutableValues() { return values_; }
 
-  std::size_t GetBitLength() const final { return sizeof(T) * 8; }
+  // commented out by Liang Zhao
+  // std::size_t GetBitLength() const final { return sizeof(T) * 8; }
+
+  // added by Liang Zhao
+  std::size_t GetBitLength() const final {
+    T t = 0;
+    std::size_t bit_length = encrypto::motion::GetBitSizeOfTypeT<T>(t) * 8;
+    return bit_length;
+  }
 
   bool IsConstant() const noexcept final { return false; }
 

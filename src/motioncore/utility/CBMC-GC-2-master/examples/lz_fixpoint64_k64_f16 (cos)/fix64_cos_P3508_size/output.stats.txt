@@ -1,0 +1,4 @@
+non_xor_gates 1592
+non_xor_depth 78
+total_gates 5753
+total_depth 356

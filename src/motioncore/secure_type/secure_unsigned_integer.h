@@ -25,6 +25,8 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
+#include "secure_type/secure_fixed_point_circuit_CBMC.h"
+#include "secure_type/secure_floating_point_circuit_ABY.h"
 namespace encrypto::motion {
 
 class Logger;
@@ -32,6 +34,7 @@ class Logger;
 class SecureFixedPointCircuitCBMC;
 class SecureFloatingPointCircuitABY;
 
+// ! 128-bit circuit for division, modular reduction are not optimized because of HyCC
 class SecureUnsignedInteger {
  public:
   SecureUnsignedInteger() = default;
@@ -108,8 +111,8 @@ class SecureUnsignedInteger {
 
   ShareWrapper operator==(const SecureUnsignedInteger& other) const;
 
-  // TODO: support garbled circuit protocol
   /// \brief operations with constant value
+  // // TODO: support garbled circuit protocol
   template <typename T,
             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   SecureUnsignedInteger operator+(const T& constant_value) const;
@@ -138,6 +141,10 @@ class SecureUnsignedInteger {
             typename = std::enable_if_t<std::is_unsigned_v<T> || std::is_same_v<T, __uint128_t>>>
   ShareWrapper operator==(const T& constant_value) const;
 
+  // multiplication each Boolean bit of *this with a bit share
+  SecureUnsignedInteger MulBooleanBit(
+      const ShareWrapper& boolean_gmw_bmr_gc_bit_share_other) const;
+
   /// \brief equals to zero
   ShareWrapper IsZero() const;
 
@@ -148,11 +155,31 @@ class SecureUnsignedInteger {
   ShareWrapper LE(const SecureUnsignedInteger& other) const;
 
   /// \brief modular reduction with m
+  // ! Note: the circuis is generated with HyCC, but the depth-optimized and size-optimized circuit
+  // has almost the same non-XOR gate depth and number of non-XOR gates
   SecureUnsignedInteger Mod(const SecureUnsignedInteger& secure_unsigned_integer_m) const;
 
   /// \brief modular reduction with constant value m
+  // ! Note: the circuis is generated with HyCC, but the depth-optimized and size-optimized circuit
+  // has almost the same non-XOR gate depth and number of non-XOR gates
   template <typename T>
   SecureUnsignedInteger Mod(const T& m) const;
+
+  // convert *this to negative integer according to sign (i.e., positive integer if sign = 0,
+  // negative integer otherwise)
+  SecureUnsignedInteger Neg(const ShareWrapper& boolean_gmw_bmr_gc_share_sign) const;
+
+  // TODO
+  // convert *this to a negative integer
+  SecureUnsignedInteger Neg() const;
+
+  // ShareWrapper LTZ() const;
+
+  // TODO; generate circuit for uint
+  // convert integer to SecureFloatingPointCircuitESAT
+  SecureFloatingPointCircuitABY Int2FL(std::size_t floating_point_bit_length = 64) const;
+
+  SecureFixedPointCircuitCBMC Int2Fx(std::size_t fraction_bit_size = 16) const;
 
   /// \brief internally extracts the ShareWrapper/SharePointer from input and
   /// calls ShareWrapper::Simdify(std::span<SharePointer> input)

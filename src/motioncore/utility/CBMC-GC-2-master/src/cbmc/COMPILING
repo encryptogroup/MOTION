@@ -1,0 +1,224 @@
+What architecture?
+------------------
+
+CPROVER now needs a C++11 compliant compiler and works in the following
+environments:
+
+- Linux
+
+- MacOS X
+
+- Solaris 11
+
+- FreeBSD 11
+
+- Cygwin
+  (We recommend the i686-pc-mingw32-g++ cross compiler, version 5.4 or above.)
+
+- Microsoft's Visual Studio version 12 (2013), version 14 (2015),
+  or version 15 (older versions won't work)
+
+The rest of this document is split up into three parts: compilation on
+Linux, MacOS, Windows.  Please read the section appropriate for your
+machine.
+
+
+COMPILATION ON LINUX
+--------------------
+
+We assume that you have a Debian/Ubuntu or Red Hat-like distribution.
+
+0) You need a C/C++ compiler, Flex and Bison, and GNU make.
+   The GNU Make needs to be version 3.81 or higher.
+   On Debian-like distributions, do
+
+   apt-get install g++-6 gcc flex bison make git libwww-perl patch
+
+   On Red Hat/Fedora or derivates, do
+
+   yum install gcc gcc-c++ flex bison perl-libwww-perl patch
+
+   Note that you need g++ version 5.2 or newer.
+
+1) As a user, get the CBMC source via
+
+   git clone https://github.com/diffblue/cbmc cbmc-git
+
+2) On Debian/Ubuntu, do
+
+   cd cbmc-git/src
+   make minisat2-download
+   make
+
+   On Redhat/Fedora etc., do
+
+   cd cbmc-git/src
+   make minisat2-download
+   make CXX=g++-6
+
+
+COMPILATION ON SOLARIS 11
+-------------------------
+
+1) As root, get the necessary development tools:
+
+   pkg install system/header developer/lexer/flex developer/parser/bison developer/versioning/git
+   pkg install --accept developer/gcc-5
+
+2) As a user, get the CBMC source via
+
+   git clone https://github.com/diffblue/cbmc cbmc-git
+
+3) Get MiniSat2 by entering
+
+   cd cbmc-git
+   wget http://ftp.debian.org/debian/pool/main/m/minisat2/minisat2_2.2.1.orig.tar.gz
+   gtar xfz minisat_2.2.1.orig.tar.gz
+   mv minisat2-2.2.1 minisat-2.2.1
+   (cd minisat-2.2.1; patch -p1 < ../scripts/minisat-2.2.1-patch)
+
+4) Type
+
+   cd src; gmake
+
+   That should do it. To run, you will need
+
+   export LD_LIBRARY_PATH=/usr/gcc/4.9/lib
+
+   Do not attempt to compile with gcc-45 that comes with Solaris 11.
+   It will mis-optimize MiniSat2.
+
+
+COMPILATION ON FREEBSD 11
+-------------------------
+
+1) As root, get the necessary tools:
+
+   pkg install bash gmake git www/p5-libwww patch flex bison
+
+2) As a user, get the CBMC source via
+
+   git clone https://github.com/diffblue/cbmc cbmc-git
+
+3) Do
+
+   cd cbmc-git/src
+
+4) Do
+
+   gmake minisat2-download
+   gmake
+
+
+COMPILATION ON MACOS X
+----------------------
+
+Follow these instructions:
+
+0) You need a C/C++ compiler, Flex and Bison, and GNU make. To this
+   end, first install the XCode from the App-store and then type
+
+   xcode-select --install
+
+   in a terminal window.
+
+1) Then get the CBMC source via
+
+   git clone https://github.com/diffblue/cbmc cbmc-git
+
+2) Then type
+
+   cd cbmc-git/src
+   make minisat2-download
+   make
+
+
+COMPILATION ON WINDOWS
+----------------------
+
+There are two options: compilation using g++ from Cygwin, or using
+Visual Studio's compiler. As Cygwin has significant overhead during
+process creation, we advise you use Visual Studio.
+
+Follow these instructions:
+
+0) You need a C/C++ compiler, Flex and Bison, GNU tar, gzip2,
+   GNU make, and patch. The GNU Make needs to be version 3.81 or
+   higher.  If you don't already have the above, we recommend you install
+   Cygwin.
+
+1) You need a SAT solver (in source). We recommend MiniSat2. Using a
+   browser, download from
+
+   http://ftp.debian.org/debian/pool/main/m/minisat2/minisat2_2.2.1.orig.tar.gz
+
+   and then unpack with
+
+   tar xfz minisat-2.2.1.tar.gz
+   mv minisat minisat-2.2.1
+   cd minisat-2.2.1
+   patch -p1 < ../scripts/minisat-2.2.1-patch
+
+   The patch removes the dependency on zlib and prevents a problem
+   with a header file that is often unavailable on Windows.
+
+2) Adjust src/config.inc for the paths to item 1).
+
+3A) To compile with Cygwin, install the mingw compilers, and adjust
+   the second line of config.inc to say
+
+   BUILD_ENV = MinGW
+
+3B) To compile with Visual Studio, make sure you have at least Visual
+   Studio version 12 (2013), and adjust the second line of config.inc to say
+
+   BUILD_ENV = MSVC
+
+   Open the Visual Studio Command prompt, and then run the make.exe
+   from Cygwin from in there.
+
+4) Type cd src; make - that should do it.
+   Note that "nmake" is not expected to work. Use "make".
+
+(Optional) A Visual Studio project file can be generated with the script
+"generate_vcxproj" that is in the subdirectory "scripts".  The project file
+is helpful for GUI-based tasks, e.g., the class viewer, debugging, etc., and
+can be used for building with MSBuild.  Note that you still need to run
+flex/bison using "make generated_files" before opening the project.
+
+
+WORKING WITH ECLIPSE
+--------------------
+
+To work with Eclipse, do the following:
+
+1) Select File -> New -> Makefile Project with Existing Code
+
+2) Type "cprover" as "Project Name"
+
+3) Select the "src" subdirectory as "Existing Code Location"
+
+4) Select a toolchain appropriate for your platform
+
+5) Click "Finish"
+
+6) Select Project -> Build All
+
+
+CODE COVERAGE
+-------------
+
+Code coverage metrics are provided using gcov and lcov. Ensure that you
+have installed lcov from http://ltp.sourceforge.net/coverage/lcov.php
+note for ubuntu lcov is available in the standard apt-get repos.
+
+To get coverage metrics run the following script from the regression
+directory:
+
+  get_coverage.sh
+
+This will:
+ 1) Rebuild CBMC with gcov enabled
+ 2) Run all the regression tests
+ 3) Collate the coverage metrics
+ 4) Provide an HTML report of the current coverage

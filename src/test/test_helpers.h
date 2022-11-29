@@ -25,7 +25,6 @@
 #include <openssl/rand.h>
 #include <algorithm>
 #include <limits>
-#include <random>
 #include <vector>
 
 template <typename T>
@@ -42,16 +41,112 @@ inline std::vector<T> RandomVector(std::size_t size) {
   return v;
 }
 
-template <typename IntType = int>
-std::vector<IntType> RandomRangeIntegerVector(IntType min, IntType max, std::size_t n) {
+// TODO: improve performance
+inline std::vector<bool> RandomBoolVector(std::size_t size) {
+  std::vector<bool> bool_vector;
+  bool_vector.reserve(size);
+
+  using T = std::uint64_t;
+  std::vector<T> random_T_vector = ::RandomVector<T>(ceil(double(size) / (sizeof(T) * 8)));
+
+  for (std::size_t i = 0; i < ceil(double(size) / (sizeof(T) * 8)); i++) {
+    for (std::size_t j = 0; j < (sizeof(T) * 8); j++) {
+      bool_vector.emplace_back((random_T_vector[i] >> j) & 1);
+    }
+  }
+
+  bool_vector.resize(size);
+  return bool_vector;
+}
+
+// // TODO: generate uniform floating-point number
+// template <typename T>
+// // returns a negative double number in the range of min-max
+// std::vector<T> RandomRangeVector(T min, T max, std::size_t n) {
+//   std::vector<T> random_numbers;
+//   random_numbers.reserve(n);
+//   // srand(time(NULL));
+//   for (std::size_t i = 0; i < n; i++) {
+//     // rand() will produce a random integer between 0 ... RAND_MAX where RAND_MAX
+//     // is a very large number... by dividing this number by RAND_MAX we will get
+//     // a number in the range 0 ... 1.  We typecast rand() to a double to ensure
+//     // that double division takes place as opposed to interger division which
+//     // would result in 0 OR 1 exactly.
+//     T random = ((T)rand()) / RAND_MAX;
+
+//     // Take the number between 0-1 above and multiply it by (max - min) to get a
+//     // number in the range of 0 ... (max - min)
+//     T range = (max - min) * random;
+
+//     // take this number in the range of 0 - (max-min) above and add min to it to
+//     // get a number in the range of min ... max (adding min to 0 give us min,
+//     // adding min to max-min gives us back max!)
+//     T number = min + range;
+//     random_numbers.emplace_back(number);
+//   }
+
+//   return random_numbers;
+// }
+
+// new method
+template <typename T>
+// returns a number in the range of min-max
+std::vector<T> RandomRangeVector(T min, T max, std::size_t n) {
+  std::vector<T> random_numbers;
+  random_numbers.reserve(n);
+
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<IntType> distrib(min, max);
+  std::uniform_real_distribution<> dist(min, max);
 
-  std::vector<IntType> random_numbers;
-  random_numbers.reserve(n);
   for (std::size_t i = 0; i < n; i++) {
-    random_numbers.emplace_back(distrib(gen));
+    random_numbers.emplace_back(dist(gen));
+  }
+
+  return random_numbers;
+}
+
+// template <typename T>
+// // returns a negative double number in the range of min-max
+// std::vector<T> RandomRangeIntegerVector(double min, double max, std::size_t n) {
+//   std::vector<T> random_numbers;
+//   random_numbers.reserve(n);
+//   // srand(time(NULL));
+//   for (std::size_t i = 0; i < n; i++) {
+//     // rand() will produce a random integer between 0 ... RAND_MAX where RAND_MAX
+//     // is a very large number... by dividing this number by RAND_MAX we will get
+//     // a number in the range 0 ... 1.  We typecast rand() to a double to ensure
+//     // that double division takes place as opposed to interger division which
+//     // would result in 0 OR 1 exactly.
+//     long double random = ((long double)rand()) / RAND_MAX;
+
+//     // Take the number between 0-1 above and multiply it by (max - min) to get a
+//     // number in the range of 0 ... (max - min)
+//     long double range = (max - min) * random;
+
+//     // take this number in the range of 0 - (max-min) above and add min to it to
+//     // get a number in the range of min ... max (adding min to 0 give us min,
+//     // adding min to max-min gives us back max!)
+//     T number = min + range;
+//     random_numbers.emplace_back(number);
+//   }
+
+//   return random_numbers;
+// }
+
+// new method
+template <typename T>
+// returns a integer in the range of min-max
+std::vector<T> RandomRangeIntegerVector(long double min, long double max, std::size_t n) {
+  std::vector<T> random_numbers;
+  random_numbers.reserve(n);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dist(min, max);
+
+  for (std::size_t i = 0; i < n; i++) {
+    random_numbers.emplace_back(dist(gen));
   }
 
   return random_numbers;

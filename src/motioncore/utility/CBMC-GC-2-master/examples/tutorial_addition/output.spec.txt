@@ -1,0 +1,3 @@
+return_value: uint64;
+INPUT_A: uint64;
+INPUT_B: uint64;

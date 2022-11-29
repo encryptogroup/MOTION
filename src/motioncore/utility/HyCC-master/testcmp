@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+
+
+#-------------------------------------------------------------------------------
+def flatten(l):
+    return [x for sl in l for x in sl]
+
+
+#-------------------------------------------------------------------------------
+def read_stat_file(filename):
+    stats = {}
+    with open(filename) as f:
+        keys_values = [x.split(" ") for x in f.readlines()]
+        for key_value in keys_values:
+            stats[key_value[0].strip()] = key_value[1].strip()
+    return stats
+
+
+def read_perf_data(path):
+    perf_data = {}
+    dirs = os.listdir(path)
+    for dir_name in dirs:
+        if os.path.isdir(os.path.join(path, dir_name)):
+            stats_file_new = os.path.join(path, dir_name, "mpc_main.stats")
+            stats_file_old = os.path.join(path, dir_name, "output.stats.txt")
+            if os.path.isfile(stats_file_new):
+                perf_data[dir_name] = read_stat_file(stats_file_new)
+            elif os.path.isfile(stats_file_old):
+                perf_data[dir_name] = read_stat_file(stats_file_old)
+    return perf_data
+
+
+def read_sources(paths):
+    sources = []
+    for path in paths:
+        name = os.path.basename(os.path.normpath(path))
+        sources.append((name, read_perf_data(path)))
+    return sources
+
+
+#-------------------------------------------------------------------------------
+def get_all_test_names(sources):
+    names = flatten([s[1].keys() for s in sources])
+    return sorted(list(set(names)))
+
+
+def get_best_worst_result(test_name, sources, perf_variable):
+    best = sys.maxsize
+    worst = 0
+    for source in sources:
+        tests = source[1]
+        if test_name in tests:
+            best = min(best, int(tests[test_name][perf_variable]))
+            worst = max(worst, int(tests[test_name][perf_variable]))
+    return best, worst
+
+
+def output_table_header(sources):
+    print("<tr>")
+    print("<th>Test case</th>")
+    for s in sources:
+        print("<th>" + s[0] + "</th>")
+    print("</tr>")
+
+
+def output_table_row(test_name, sources, perf_variable):
+    best, worst = get_best_worst_result(test_name, sources, perf_variable)
+    print("<tr>")
+    print("<td>" + test_name + "</td>")
+    for source in sources:
+        tests = source[1]
+        if test_name in tests:
+            if int(tests[test_name][perf_variable]) == best:
+                print("<td style=\"background-color:lightgreen;text-align:right\">")
+            elif int(tests[test_name][perf_variable]) == worst:
+                print("<td style=\"background-color:orangered;text-align:right\">")
+            else:
+                print("<td style=\"text-align:right\">")
+            print(tests[test_name][perf_variable])
+            print("</td>")
+        else:
+            print("<td style=\"text-align:right\">–</td>")
+    print("</tr>")
+
+
+def output_table(sources, perf_variable):
+    all_tests = get_all_test_names(sources)
+
+    print("<table>")
+    output_table_header(sources)
+    for test_name in all_tests:
+        output_table_row(test_name, sources, perf_variable)
+    print("</table>")
+
+
+def output_html(sources):
+    print("<!DOCTYPE html>")
+    print("<html>")
+    print("<head>")
+    print("<meta charset=\"utf-8\">")
+    print("</head>")
+    print("<body>")
+    print("<h2>Non-XOR gates</h2>")
+    output_table(sources, "non_xor_gates")
+    print("<h2>Non-XOR depth</h2>")
+    output_table(sources, "non_xor_depth")
+    print("</body>")
+    print("</html>")
+
+
+#-------------------------------------------------------------------------------
+sources = read_sources(sys.argv[1:])
+output_html(sources)
+

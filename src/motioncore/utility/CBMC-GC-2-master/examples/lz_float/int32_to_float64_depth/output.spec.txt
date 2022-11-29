@@ -1,0 +1,3 @@
+INPUT_A_x: int32;
+INPUT_B_x: int32;
+OUTPUT_float32: uint64;

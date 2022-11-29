@@ -64,6 +64,34 @@ class InputGate final : public motion::InputGate {
   ///< correlated randomness using AES CTR
 };
 
+// added by Liang Zhao
+class ConstantAsBooleanGmwInputGate final : public motion::InputGate {
+  using Base = motion::InputGate;
+
+ public:
+  ConstantAsBooleanGmwInputGate(std::span<const BitVector<>> input, Backend& backend);
+
+  ConstantAsBooleanGmwInputGate(std::vector<BitVector<>>&& input, Backend& backend);
+
+  void InitializationHelper();
+
+  ~ConstantAsBooleanGmwInputGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  const boolean_gmw::SharePointer GetOutputAsGmwShare();
+
+ protected:
+  /// two-dimensional vector for storing the raw inputs
+  std::vector<BitVector<>> input_;
+
+  std::size_t bits_;                ///< Number of parallel values on wires
+  std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
+  ///< correlated randomness using AES CTR
+};
+
 constexpr std::size_t kAll = std::numeric_limits<std::int64_t>::max();
 
 class OutputGate final : public motion::OutputGate {
@@ -193,17 +221,46 @@ class MuxGate final : public ThreeGate {
   std::vector<std::unique_ptr<XcOtSender>> ot_sender_;
 };
 
-class ConstantAsBooleanGmwInputGate final : public motion::InputGate {
+// added by Liang Zhao
+class XCOTMulGate final : public TwoGate {
+ public:
+  /// \brief Provides the functionality of expression "a * b";
+  /// \param a first input share (1 bit)
+  /// \param b second input share (bit-string)
+  XCOTMulGate(const motion::SharePointer& a, const motion::SharePointer& b);
+
+  ~XCOTMulGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  bool NeedsSetup() const override { return false; }
+
+  const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
+
+  const motion::SharePointer GetOutputAsShare() const;
+
+  XCOTMulGate() = delete;
+
+  XCOTMulGate(const Gate&) = delete;
+
+ private:
+  std::vector<std::unique_ptr<XcOtReceiver>> ot_receiver_;
+  std::vector<std::unique_ptr<XcOtSender>> ot_sender_;
+};
+
+// added by Liang Zhao
+class ReshareBooleanGmwShareAsInput final : public motion::InputGate {
   using Base = motion::InputGate;
 
  public:
-  ConstantAsBooleanGmwInputGate(std::span<const BitVector<>> input, Backend& backend);
-
-  ConstantAsBooleanGmwInputGate(std::vector<BitVector<>>&& input, Backend& backend);
+  ReshareBooleanGmwShareAsInput(const motion::SharePointer& input, std::size_t party_id,
+                                Backend& backend);
 
   void InitializationHelper();
 
-  ~ConstantAsBooleanGmwInputGate() final = default;
+  ~ReshareBooleanGmwShareAsInput() final = default;
 
   void EvaluateSetup() final override;
 
@@ -215,6 +272,79 @@ class ConstantAsBooleanGmwInputGate final : public motion::InputGate {
   /// two-dimensional vector for storing the raw inputs
   std::vector<BitVector<>> input_;
 
-  std::size_t bits_;  ///< Number of parallel values on wires
+  std::size_t bits_;                ///< Number of parallel values on wires
+  std::size_t boolean_sharing_id_;  ///< Sharing ID for Boolean GMW for generating
+  ///< correlated randomness using AES CTR
+
+  std::vector<WirePointer> parent_;
+
+  std::size_t number_of_wires_;
+  std::size_t number_of_simd_values_;
+};
+
+// added by Liang Zhao
+class BooleanGmwBitDemuxGate final : public OneGate {
+ public:
+  BooleanGmwBitDemuxGate(const motion::SharePointer& parent);
+
+  ~BooleanGmwBitDemuxGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
+
+  const motion::SharePointer GetOutputAsShare() const;
+
+  BooleanGmwBitDemuxGate() = delete;
+
+  BooleanGmwBitDemuxGate(const Gate&) = delete;
+};
+
+// added by Liang Zhao
+class BooleanValueExpandGate final : public OneGate {
+ public:
+  BooleanValueExpandGate(const motion::SharePointer& parent, std::size_t duplicate_times);
+
+  ~BooleanValueExpandGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
+
+  const motion::SharePointer GetOutputAsShare() const;
+
+  BooleanValueExpandGate() = delete;
+
+  BooleanValueExpandGate(const Gate&) = delete;
+
+ private:
+  std::size_t duplicate_times_;
+};
+
+// added by Liang Zhao
+class BooleanValueReplicateGate final : public OneGate {
+ public:
+  BooleanValueReplicateGate(const motion::SharePointer& parent, std::size_t repeat_times);
+
+  ~BooleanValueReplicateGate() final = default;
+
+  void EvaluateSetup() final override;
+
+  void EvaluateOnline() final override;
+
+  const boolean_gmw::SharePointer GetOutputAsGmwShare() const;
+
+  const motion::SharePointer GetOutputAsShare() const;
+
+  BooleanValueReplicateGate() = delete;
+
+  BooleanValueReplicateGate(const Gate&) = delete;
+
+ private:
+  std::size_t repeat_times_;
 };
 }  // namespace encrypto::motion::proto::boolean_gmw

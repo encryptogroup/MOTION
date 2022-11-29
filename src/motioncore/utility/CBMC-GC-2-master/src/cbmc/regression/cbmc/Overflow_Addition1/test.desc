@@ -1,0 +1,8 @@
+CORE
+main.c
+--signed-overflow-check
+^SIGNAL=0$
+^\[.*\] arithmetic overflow on signed \+ in .*: FAILURE$
+^VERIFICATION FAILED$
+--
+^warning: ignoring

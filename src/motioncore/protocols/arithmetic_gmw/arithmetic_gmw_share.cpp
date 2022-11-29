@@ -136,4 +136,5 @@ template class Share<std::uint32_t>;
 template class Share<std::uint64_t>;
 template class Share<__uint128_t>;
 
+// template class Share<bm::uint256_t>;
 }  // namespace encrypto::motion::proto::arithmetic_gmw

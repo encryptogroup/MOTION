@@ -1,0 +1,31 @@
+CBMC-GC
+-------
+
+- good error message if OUTPUT (which includes the return value of mpc_main())
+  is not assigned a value
+
+- improved building blocks during compilation (triangle shape)
+
+- adjust documentation
+
+BUGS
+- [BUG]infinite_minimization_loop (see test case)
+	- bug does not occur when always returning false instead of equivalence_check_process_constants_bin()
+	  in equivalence_check_process_bin()
+	- not using equivalence_check_process_constants_bin() does not seem to have a big negative impact
+
+OPTIMIZATIONS
+- optimize building blocks to full extend. Get rid of all constants to compile faster (e.g., 
+  multiplier will invoke adders with zeros, we shoud directly take FA/HA when required)
+
+- in simple_circuitt::minimize():
+	- rewrite_no_state_machine() vs minimizing_state_machine(): rewrite_no_state_machine() seems to
+	  be better, at least when not optimizing for depth
+	- MINIMIZER min = THEOREMS vs MINIMIZER min = OLD (OLD seems to be better, at least when not
+	  optimizing for depth)
+
+
+circuit-utils
+-------------
+
+- support boolean (1 bit) inputs/outputs

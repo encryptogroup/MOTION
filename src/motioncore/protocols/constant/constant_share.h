@@ -28,6 +28,9 @@
 
 #include "protocols/share.h"
 
+// added by Liang Zhao
+#include "protocols/boolean_gmw/boolean_gmw_share.h"
+#include "protocols/boolean_gmw/boolean_gmw_wire.h"
 namespace encrypto::motion::proto {
 
 /*
@@ -111,8 +114,12 @@ class ConstantArithmeticShare : public motion::Share {
     return wires_.at(0)->GetCircuitType();
   }
 
+  // corrected by Liang Zhao
+  // it should be "dynamic_pointer_cast<ConstantArithmeticWire<T>>" rather than
+  // "dynamic_pointer_cast<ConstantArithmeticWirePointer<T>>"
   const ConstantArithmeticWirePointer<T> GetConstantArithmeticWire() const {
-    auto wire = std::dynamic_pointer_cast<ConstantArithmeticWirePointer<T>>(wires_.at(0));
+    auto wire = std::dynamic_pointer_cast<ConstantArithmeticWire<T>>(wires_.at(0));
+
     assert(wire);
     return wire;
   }
@@ -155,8 +162,12 @@ class ConstantArithmeticShare : public motion::Share {
 
   void ConstructorConsistencyCheck() const {
     assert(wires_.size() == 1);
-    auto arithmetic_wire =
-        std::dynamic_pointer_cast<ConstantArithmeticWirePointer<T>>(wires_.at(0));
+
+    // commented out by Liang Zhao
+    // auto arithmetic_wire =
+    //     std::dynamic_pointer_cast<ConstantArithmeticWirePointer<T>>(wires_.at(0));
+    auto arithmetic_wire = std::dynamic_pointer_cast<ConstantArithmeticWire<T>>(wires_.at(0));
+
     assert(arithmetic_wire);
     assert(arithmetic_wire->IsConstant());
     assert(arithmetic_wire->GetProtocol() == MpcProtocol::kArithmeticConstant);

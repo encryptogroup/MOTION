@@ -31,10 +31,14 @@
 
 namespace encrypto::motion {
 
+// modified by Liang Zhao to support __uint128_t
 bool MtProvider::NeedMts() const noexcept {
   return 0 < (GetNumberOfMts<bool>() + GetNumberOfMts<std::uint8_t>() +
               GetNumberOfMts<std::uint16_t>() + GetNumberOfMts<std::uint32_t>() +
-              GetNumberOfMts<std::uint64_t>());
+              GetNumberOfMts<std::uint64_t>()
+
+              // added by Liang Zhao
+              + GetNumberOfMts<__uint128_t>());
 }
 
 std::size_t MtProvider::RequestBinaryMts(const std::size_t number_of_mts) noexcept {
@@ -76,6 +80,11 @@ MtProviderFromOts::MtProviderFromOts(std::vector<std::unique_ptr<OtProvider>>& o
       ots_sender_32_(number_of_parties_),
       ots_receiver_64_(number_of_parties_),
       ots_sender_64_(number_of_parties_),
+
+      // added by Liang Zhao
+      ots_receiver_128_(number_of_parties_),
+      ots_sender_128_(number_of_parties_),
+
       bit_ots_receiver_(number_of_parties_),
       bit_ots_sender_(number_of_parties_),
       logger_(logger),
@@ -120,18 +129,27 @@ void MtProviderFromOts::Setup() {
       dynamic_cast<AcOtSender<std::uint8_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_8_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_16_.at(i)) {
       dynamic_cast<AcOtSender<std::uint16_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_16_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_32_.at(i)) {
       dynamic_cast<AcOtSender<std::uint32_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_32_.at(i)) ot->SendCorrections();
+
     for (auto& ot : ots_sender_64_.at(i)) {
       dynamic_cast<AcOtSender<std::uint64_t>*>(ot.get())->SendMessages();
     }
     for (auto& ot : ots_receiver_64_.at(i)) ot->SendCorrections();
+
+    // added by Liang Zhao
+    for (auto& ot : ots_sender_128_.at(i)) {
+      dynamic_cast<AcOtSender<__uint128_t>*>(ot.get())->SendMessages();
+    }
+    for (auto& ot : ots_receiver_128_.at(i)) ot->SendCorrections();
 
     if (number_of_bit_mts_ > 0) {
       assert(bit_ots_receiver_.at(i) != nullptr);
@@ -234,6 +252,9 @@ void MtProviderFromOts::RegisterOts() {
   GenerateRandomTriples<std::uint32_t>(mts32_, number_of_mts_32_);
   GenerateRandomTriples<std::uint64_t>(mts64_, number_of_mts_64_);
 
+  // added by Liang Zhao
+  GenerateRandomTriples<__uint128_t>(mts128_, number_of_mts_128_);
+
   for (auto i = 0ull; i < number_of_parties_; ++i) {
     if (i == my_id_) {
       continue;
@@ -250,6 +271,11 @@ void MtProviderFromOts::RegisterOts() {
                                   ots_receiver_32_.at(i), kMaxBatchSize, mts32_, number_of_mts_32_);
     RegisterHelper<std::uint64_t>(*ot_providers_.at(i), ots_sender_64_.at(i),
                                   ots_receiver_64_.at(i), kMaxBatchSize, mts64_, number_of_mts_64_);
+
+    // added by Liang Zhao
+    RegisterHelper<__uint128_t>(*ot_providers_.at(i), ots_sender_128_.at(i),
+                                ots_receiver_128_.at(i), kMaxBatchSize, mts128_,
+                                number_of_mts_128_);
   }
 }
 
@@ -308,6 +334,10 @@ void MtProviderFromOts::ParseOutputs() {
                                number_of_mts_32_);
     ParseHelper<std::uint64_t>(ots_sender_64_.at(i), ots_receiver_64_.at(i), kMaxBatchSize, mts64_,
                                number_of_mts_64_);
+
+    // added by Liang Zhao
+    ParseHelper<__uint128_t>(ots_sender_128_.at(i), ots_receiver_128_.at(i), kMaxBatchSize, mts128_,
+                             number_of_mts_128_);
   }
 }
 

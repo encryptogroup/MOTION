@@ -1,0 +1,12 @@
+#include "uint8.h"
+
+// vodi main(){
+void mpc_main() {
+
+  uint8_t INPUT_A_x;
+  uint8_t INPUT_B_x;
+
+
+  uint8_t OUTPUT_mod = uint8_mod(INPUT_A_x, INPUT_B_x);
+}
+

@@ -42,7 +42,9 @@ class OtVectorReceiver;
 struct RunTimeStatistics;
 class Logger;
 
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// modified by Liang Zhao
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+template <typename T>
 struct SpVector {
   std::vector<T> a, c;  // c[i] = a[i]^2
 };
@@ -67,12 +69,21 @@ class SpProvider {
       return number_of_sps_64_;
     } else if constexpr (std::is_same_v<T, __uint128_t>) {
       return number_of_sps_128_;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, bm::uint256_t>) {
+      return number_of_sps_256_;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   std::size_t RequestSps(const std::size_t number_of_sps) noexcept {
     std::size_t offset;
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -90,13 +101,23 @@ class SpProvider {
     } else if constexpr (std::is_same_v<T, __uint128_t>) {
       offset = number_of_sps_128_;
       number_of_sps_128_ += number_of_sps;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, bm::uint256_t>) {
+      offset = number_of_sps_256_;
+      number_of_sps_256_ += number_of_sps;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
     return offset;
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   SpVector<T> GetSps(const std::size_t offset, const std::size_t n = 1) {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -109,12 +130,21 @@ class SpProvider {
       return GetSps(sps_64_, offset, n);
     } else if constexpr (std::is_same_v<T, __uint128_t>) {
       return GetSps(sps_128_, offset, n);
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, bm::uint256_t>) {
+      return GetSps(sps_256_, offset, n);
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
 
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   const SpVector<T>& GetSpsAll() noexcept {
     WaitFinished();
     if constexpr (std::is_same_v<T, std::uint8_t>) {
@@ -127,7 +157,14 @@ class SpProvider {
       return sps_64_;
     } else if constexpr (std::is_same_v<T, __uint128_t>) {
       return sps_128_;
-    } else {
+    }
+
+    // added by Liang Zhao
+    else if constexpr (std::is_same_v<T, bm::uint256_t>) {
+      return sps_256_;
+    }
+
+    else {
       throw std::runtime_error("Unknown type");
     }
   }
@@ -143,7 +180,10 @@ class SpProvider {
   SpProvider() = delete;
 
   std::size_t number_of_sps_8_{0}, number_of_sps_16_{0}, number_of_sps_32_{0}, number_of_sps_64_{0},
-      number_of_sps_128_{0};
+      number_of_sps_128_{0},
+
+      // added by Liang Zhao
+      number_of_sps_256_{0};
 
   SpVector<std::uint8_t> sps_8_;
   SpVector<std::uint16_t> sps_16_;
@@ -151,13 +191,18 @@ class SpProvider {
   SpVector<std::uint64_t> sps_64_;
   SpVector<__uint128_t> sps_128_;
 
+  // added by Liang Zhao
+  SpVector<bm::uint256_t> sps_256_;
+
   const std::size_t my_id_;
 
   bool finished_ = false;
   std::shared_ptr<FiberCondition> finished_condition_;
 
  private:
-  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  // modified by Liang Zhao
+  // template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+  template <typename T>
   inline SpVector<T> GetSps(const SpVector<T>& sps, const std::size_t offset,
                             const std::size_t n) const {
     assert(sps.a.size() == sps.c.size());
@@ -200,6 +245,10 @@ class SpProviderFromOts final : public SpProvider {
 
   std::vector<std::list<std::unique_ptr<BasicOtReceiver>>> ots_receiver_128_;
   std::vector<std::list<std::unique_ptr<BasicOtSender>>> ots_sender_128_;
+
+  // added by Liang Zhao
+  std::vector<std::list<std::unique_ptr<BasicOtReceiver>>> ots_receiver_256_;
+  std::vector<std::list<std::unique_ptr<BasicOtSender>>> ots_sender_256_;
 
   const std::size_t kMaxBatchSize{10'000};
 

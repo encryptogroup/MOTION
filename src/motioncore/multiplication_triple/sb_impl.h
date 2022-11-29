@@ -34,12 +34,19 @@
 #include "sp_provider.h"
 #include "utility/helpers.h"
 
+// added by Liang Zhao
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/multiprecision/integer.hpp>
+namespace bm = boost::multiprecision;
+
 namespace encrypto::motion {
 
 namespace detail {
 
+// modified by Liang Zhao
 // smallest square root of a mod 2^k
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+template <typename T>
 T sqrt(size_t k, T a) {
   assert(k >= 3);
   assert(a % 8 == 1);
@@ -77,8 +84,12 @@ T sqrt(size_t k, T a) {
   return minimum;
 }
 
+// commented out by Liang Zhao
 // inversion of a mod 2^k
-template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+// template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
+
+// modified by Liang Zhao
+template <typename T>
 T invert(std::size_t k, T a) {
   assert((a & 1) == 1);
   const T mask = (T(1) << k) - 1;
@@ -120,10 +131,28 @@ constexpr std::size_t GetBitSize() {
   return sizeof(T) * 8;
 }
 
+// added by Liang Zhao
+template <typename T>
+constexpr std::size_t GetBitSizeBoostUint() {
+  if constexpr (std::is_same_v<T, __uint128_t>) {
+    return sizeof(T) * 8;
+  } else {
+    return std::numeric_limits<T>::digits;
+  }
+}
+
 template <typename T, typename U = get_expanded_type_t<T>,
           typename = std::enable_if_t<std::is_same_v<U, get_expanded_type_t<T>>>>
 constexpr U GetModMask() {
   return (U(1) << (GetBitSize<T>() + 2)) - 1;
+}
+
+// added by Liang Zhao
+// T: __uint128_t
+// U: boost::multiprecision::uint256_t
+template <typename T, typename U>
+U GetModMaskBoostUint() {
+  return (U(1) << (GetBitSizeBoostUint<T>() + 2)) - 1;
 }
 
 template <typename T, typename U = get_expanded_type_t<T>,
@@ -135,6 +164,38 @@ static std::pair<std::vector<U>, std::vector<U>> compute_sbs_phase_1(std::size_t
 
   // generate random u_i mod 2^k+2
   auto wb1 = RandomVector<U>(number_of_sbs);
+
+  // compute a_i = 2 * u_i + 1  mod2^k+2  (for party 0)
+  //         a_i = 2 * u_i      mod2^k+2  (for all other parties)
+  if (my_id == 0) {
+    std::transform(wb1.cbegin(), wb1.cend(), wb1.begin(),
+                   [mod_mask](auto u_i) { return (2 * u_i + 1) & mod_mask; });
+  } else {
+    std::transform(wb1.cbegin(), wb1.cend(), wb1.begin(),
+                   [mod_mask](auto u_i) { return (2 * u_i) & mod_mask; });
+  }
+
+  // start squaring:
+
+  // mask a with the first part of the SP
+  std::vector<U> wb2;  // XXX: maybe reuse SP buffer here?
+  wb2.reserve(number_of_sbs);
+  std::transform(wb1.cbegin(), wb1.cend(), sps.a.cbegin(), std::back_inserter(wb2),
+                 [mod_mask](auto a_i, auto sp_a_i) { return (a_i - sp_a_i) & mod_mask; });
+
+  // wb1 contains our shares of a
+  // wb2 contains our shares of d (which is the masked a)
+  return {wb1, wb2};
+}
+
+// added by Liang Zhao
+template <typename T, typename U>
+static std::pair<std::vector<U>, std::vector<U>> compute_sbs_phase_1_BoostUint(
+    std::size_t number_of_sbs, std::size_t my_id, SpVector<U>& sps) {
+  U mod_mask = GetModMaskBoostUint<T, U>();
+
+  // generate random u_i mod 2^k+2
+  auto wb1 = RandomVectorBoostUint<U>(number_of_sbs);
 
   // compute a_i = 2 * u_i + 1  mod2^k+2  (for party 0)
   //         a_i = 2 * u_i      mod2^k+2  (for all other parties)
@@ -182,6 +243,29 @@ static void compute_sbs_phase_2(std::vector<U>& wb1, std::vector<U>& wb2, std::s
   // wb2 contains now shares of a^2
 }
 
+// added by Liang Zhao
+template <typename T, typename U>
+static void compute_sbs_phase_2_BoostUint(std::vector<U>& wb1, std::vector<U>& wb2,
+                                          std::size_t my_id, SpVector<U>& sps) {
+  // wb1 contains our shares of a
+  // wb2 contains the reconstructed d (which is the masked a)
+
+  U mod_mask = GetModMaskBoostUint<T, U>();
+
+  // continue with squaring:
+  // compute shares of a^2
+  if (my_id == 0) {
+    std::transform(wb1.cbegin(), wb1.cend(), wb2.cbegin(), wb2.begin(),
+                   [](auto a, auto d) { return 2 * d * a - d * d; });
+  } else {
+    std::transform(wb1.cbegin(), wb1.cend(), wb2.cbegin(), wb2.begin(),
+                   [](auto a, auto d) { return 2 * d * a; });
+  }
+  std::transform(wb2.cbegin(), wb2.cend(), sps.c.cbegin(), wb2.begin(),
+                 [mod_mask](auto t, auto c) { return (c + t) & mod_mask; });
+  // wb2 contains now shares of a^2
+}
+
 template <typename T, typename U = get_expanded_type_t<T>,
           typename = std::enable_if_t<std::is_same_v<U, get_expanded_type_t<T>>>>
 static void compute_sbs_phase_3(std::vector<U>& wb1, std::vector<U>& wb2, std::vector<T>& sbs,
@@ -207,6 +291,48 @@ static void compute_sbs_phase_3(std::vector<U>& wb1, std::vector<U>& wb2, std::v
   } else {
     std::transform(wb1.cbegin(), wb1.cend(), wb2.cbegin(), wb1.begin(), [](auto a_i, auto c) {
       return (invert<U>(GetBitSize<T>() + 1, U(c & mod_mask_1)) * a_i) & mod_mask_1;
+    });
+  }
+
+  // compute b_i = d_i / 2 as element of Z
+  sbs.clear();
+  sbs.reserve(number_of_sbs);
+  std::transform(wb1.cbegin(), wb1.cend(), std::back_inserter(sbs),
+                 [](auto& d_i) { return static_cast<T>(d_i >> 1); });
+}
+
+// added by Liang Zhao
+template <typename T, typename U>
+static void compute_sbs_phase_3_BoostUint(std::vector<U>& wb1, std::vector<U>& wb2,
+                                          std::vector<T>& sbs, std::size_t my_id) {
+  // sbs is the output buffer
+  // wb1 contains our share of a
+  // wb2 contains the reconstructed a^2
+
+  U mod_mask = GetModMaskBoostUint<T, U>();
+  U mod_mask_1 = mod_mask >> 1;
+  auto number_of_sbs = wb1.size();
+
+  // std::cout << "before std::transform" << std::endl;
+
+  // compute c as smallest square root of a^2 mod 2^k+2
+  std::transform(wb2.cbegin(), wb2.cend(), wb2.begin(), [mod_mask](auto asq) {
+    // std::cout << "U(asq & mod_mask): " << U(asq & mod_mask) << std::endl;
+    // TODO: this might cause the error
+    return sqrt(GetBitSizeBoostUint<T>() + 2, U(asq & mod_mask));
+  });
+
+  // std::cout << "after std::transform" << std::endl;
+
+  // compute d_i = c^-1 * a + 1 mod 2^k+1  (for party 0)
+  //         d_i = c^-1 * a     mod 2^k+1  (for all other parties)
+  if (my_id == 0) {
+    std::transform(wb1.cbegin(), wb1.cend(), wb2.cbegin(), wb1.begin(), [mod_mask_1](U a_i, U c) {
+      return (invert<U>(GetBitSizeBoostUint<T>() + 1, U(c & mod_mask_1)) * a_i + 1) & mod_mask_1;
+    });
+  } else {
+    std::transform(wb1.cbegin(), wb1.cend(), wb2.cbegin(), wb1.begin(), [mod_mask_1](U a_i, U c) {
+      return (invert<U>(GetBitSizeBoostUint<T>() + 1, U(c & mod_mask_1)) * a_i) & mod_mask_1;
     });
   }
 

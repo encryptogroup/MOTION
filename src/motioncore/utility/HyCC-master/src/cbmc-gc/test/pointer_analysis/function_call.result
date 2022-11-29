@@ -1,0 +1,6 @@
+p => {NULL, arr<0,8>}
+q => {NULL, brr<0,8>}
+pa => {a, b}
+pb => {a, b}
+px => {x, y}
+py => {x, y}

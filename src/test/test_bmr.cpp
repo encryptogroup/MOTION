@@ -430,8 +430,10 @@ TEST_P(BmrHeavyTest, Mux) {
                     output_owner = std::rand() % this->number_of_parties_;
   std::vector<encrypto::motion::BitVector<>> global_input1(this->number_of_wires_),
       global_input2(this->number_of_wires_);
-  for (auto& bv : global_input1) bv = encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
-  for (auto& bv : global_input2) bv = encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
+  for (auto& bv : global_input1)
+    bv = encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
+  for (auto& bv : global_input2)
+    bv = encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
   encrypto::motion::BitVector<> bit_vector_selection =
       encrypto::motion::BitVector<>::SecureRandom(this->number_of_simd_);
 

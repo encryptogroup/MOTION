@@ -22,10 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <fstream>
-#include <random>
-
 #include <gtest/gtest.h>
+#include <algorithm>
+#include <fstream>
+#include <limits>
+#include <random>
+#include <type_traits>
 
 #include "algorithm/algorithm_description.h"
 #include "base/party.h"
@@ -34,6 +36,7 @@
 #include "protocols/share_wrapper.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "utility/config.h"
+#include "utility/helpers.h"
 
 #include "test_constants.h"
 
@@ -42,7 +45,7 @@ using namespace encrypto::motion;
 namespace {
 TEST(AlgorithmDescription, FromBristolFormatIntAdd8Size) {
   const auto int_add8 = encrypto::motion::AlgorithmDescription::FromBristol(
-      std::string(encrypto::motion::kRootDir) + "/circuits/int/int_add8_size.bristol");
+      std::string(encrypto::motion::kRootDir) + "/circuits/unsigned_integer/uint8_add_size.bristol");
   EXPECT_EQ(int_add8.number_of_gates, 34);
   EXPECT_EQ(int_add8.gates.size(), 34);
   EXPECT_EQ(int_add8.number_of_output_wires, 8);
