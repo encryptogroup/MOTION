@@ -18,6 +18,7 @@ Server Settings
 
 git clone https://github.com/liangzhao-darmstadt/MOTION.git
 cd MOTION/
+git checkout dev
 mkdir build && cd build
 cmake ..
 cmake .. -DMOTION_BUILD_EXE=On
