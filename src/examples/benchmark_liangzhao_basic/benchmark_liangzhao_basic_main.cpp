@@ -33,7 +33,7 @@
 #include <boost/program_options.hpp>
 
 #include "base/party.h"
-#include "common/benchmark_liangzhao_signed_integer_operation.h"
+#include "common/benchmark_liangzhao_basic.h"
 #include "communication/communication_layer.h"
 #include "communication/tcp_transport.h"
 #include "statistics/analysis.h"
@@ -51,115 +51,82 @@ constexpr std::size_t kIllegalProtocol{100}, kIllegalOperationType{100};
 
 struct Combination {
   Combination(std::size_t bit_size, encrypto::motion::MpcProtocol protocol,
-              encrypto::motion::SignedIntegerOperationType operation_type,
-              std::size_t number_of_simd)
-      : bit_size_(bit_size),
-        protocol_(protocol),
-        operation_type_(operation_type),
-        number_of_simd_(number_of_simd) {}
+              encrypto::motion::PrimitiveOperationType operation_type, std::size_t number_of_simd)
+      : bit_size(bit_size),
+        protocol(protocol),
+        operation_type(operation_type),
+        number_of_simd(number_of_simd) {}
 
-  std::size_t bit_size_{0};
-  encrypto::motion::MpcProtocol protocol_{kIllegalProtocol};
-  encrypto::motion::SignedIntegerOperationType operation_type_{kIllegalOperationType};
-  std::size_t number_of_simd_{0};
+  std::size_t bit_size{0};
+  encrypto::motion::MpcProtocol protocol{kIllegalProtocol};
+  encrypto::motion::PrimitiveOperationType operation_type{kIllegalOperationType};
+  std::size_t number_of_simd{0};
 };
 
 std::vector<Combination> GenerateAllCombinations() {
-  using T = encrypto::motion::SignedIntegerOperationType;
+  using T = encrypto::motion::PrimitiveOperationType;
 
-  const std::array kBooleanBitSizes = {8, 16, 32, 64, 128};
-  // const std::array kNumbersOfSimd = {1, 10, 1000};
-  const std::array kNumbersOfSimd = {1, 1000};
+  const std::array kArithmeticBitSizes = {8, 16, 32, 64, 128};
+  const std::array kBooleanBitSizes = {1000};
 
-  const std::array kBooleanGmwOperationTypes = {
-      // boolean circuit based method
-      T::kAdd,    T::kSub,   T::kMul, T::kDiv,    T::kLt,
-      T::kGt,     T::kEq,    T::kGE,  T::kLE,     T::kInRange,
+  const std::array kNumbersOfSimd = {1, 100, 1000};
+  // const std::array kNumbersOfSimd = {1};
 
-      T::kIsZero, T::kIsNeg, T::kNeg, T::kInt2FL, T::kInt2Fx,
-  };
-
-  const std::array kGarbledCircuitOperationTypes = {
-      // boolean circuit based method
-      T::kAdd,    T::kSub,   T::kMul, T::kDiv,    T::kLt,
-      T::kGt,     T::kEq,    T::kGE,  T::kLE,     T::kInRange,
-
-      T::kIsZero, T::kIsNeg, T::kNeg, T::kInt2FL, T::kInt2Fx,
-  };
-
-  const std::array kBmrOperationTypes = {
-      // boolean circuit based method
-      T::kAdd,    T::kSub,   T::kMul, T::kDiv,    T::kLt,
-      T::kGt,     T::kEq,    T::kGE,  T::kLE,     T::kInRange,
-
-      T::kIsZero, T::kIsNeg, T::kNeg, T::kInt2FL, T::kInt2Fx,
-  };
+  const std::array kBooleanOperationTypes = {T::kIn, T::kOut, T::kXor, T::kAnd, T::kMux, T::kInv};
+  const std::array kArithmeticOperationTypes = {T::kIn, T::kOut, T::kAdd, T::kMul};
 
   std::vector<Combination> combinations;
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kBooleanGmwOperationTypes) {
-        if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
-        }
-
-        else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
-        }
-
-        else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
-                                    operation_type, number_of_simd);
-        }
+  for (const auto bit_size : kBooleanBitSizes) {
+    for (const auto number_of_simd : kNumbersOfSimd) {
+      for (const auto operation_type : kBooleanOperationTypes) {
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
+                                  operation_type, number_of_simd);
+        // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
+        //                           number_of_simd);
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                  number_of_simd);
       }
+
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw, T::kB2Y,
+                                number_of_simd);
+      // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kY2B,
+      //                           number_of_simd);
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, T::kY2B,
+                                number_of_simd);
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kGarbledCircuitOperationTypes) {
-        if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
-        }
-
-        else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
-        }
-
-        else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
-                                    number_of_simd);
-        }
+  for (const auto bit_size : kArithmeticBitSizes) {
+    for (const auto number_of_simd : kNumbersOfSimd) {
+      for (const auto operation_type : kArithmeticOperationTypes) {
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kArithmeticGmw,
+                                  operation_type, number_of_simd);
       }
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw, T::kB2A,
+                                number_of_simd);
+      // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kY2A,
+      //                           number_of_simd);
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, T::kY2A,
+                                number_of_simd);
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kA2B,
+                                number_of_simd);
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kA2Y,
+                                number_of_simd);
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kBmrOperationTypes) {
-        if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
-        }
-
-        else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
-        }
-
-        else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
-                                    number_of_simd);
-        }
-      }
-    }
-  }
-
-  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 1);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 1);
-  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 10);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 10);
-  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 1000);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 1000);
-  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2Fx, 1);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2Fx, 1);
-  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2Fx, 10);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2Fx, 10);
-  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2Fx, 1000);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2Fx, 1000);
+  // added by Liang Zhao
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kAdd, 1000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kAdd, 1);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kAdd, 10000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 1);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 10);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 100);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 1000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 10000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 100000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kMul, 1000000);
 
   return combinations;
 }
@@ -169,7 +136,7 @@ int main(int ac, char* av[]) {
   // if help flag is set - print allowed command line arguments and exit
   if (help_flag) return EXIT_SUCCESS;
 
-  const auto number_of_repetitions{user_options["repetitions"].as<std::size_t>()};
+  const auto number_of_repititions{user_options["repetitions"].as<std::size_t>()};
 
   std::vector<Combination> combinations;
 
@@ -180,59 +147,55 @@ int main(int ac, char* av[]) {
   // // added by Liang Zhao
   // std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
   // const std::string CSV_filename =
-  //     "../../src/examples/benchmark_liangzhao_signed_integer_operation/"
-  //     "benchmark_liangzhao_signed_integer_operation_P" +
+  //     "../../src/examples/benchmark_liangzhao_basic/"
+  //     "benchmark_liangzhao_basic_P" +
   //     party_id + ".csv";
   // encrypto::motion::CreateCsvFile(CSV_filename);
 
   // const std::string txt_filename =
-  //     "../../src/examples/benchmark_liangzhao_signed_integer_operation/"
-  //     "benchmark_liangzhao_signed_integer_operation_P" +
+  //     "../../src/examples/benchmark_liangzhao_basic/"
+  //     "benchmark_liangzhao_basic_P" +
   //     party_id + ".txt";
   // encrypto::motion::CreateTxtFile(txt_filename);
 
   for (const auto combination : combinations) {
     encrypto::motion::AccumulatedRunTimeStatistics accumulated_statistics;
     encrypto::motion::AccumulatedCommunicationStatistics accumulated_communication_statistics;
-    for (std::size_t i = 0; i < number_of_repetitions; ++i) {
+    for (std::size_t i = 0; i < number_of_repititions; ++i) {
       encrypto::motion::PartyPointer party{CreateParty(user_options)};
       // establish communication channels with other parties
-      auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
-                                         combination.protocol_, combination.operation_type_);
+      auto statistics = EvaluateProtocol(party, combination.number_of_simd, combination.bit_size,
+                                         combination.protocol, combination.operation_type);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics =
+      auto communcation_statistics =
           party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
-      accumulated_communication_statistics.Add(communication_statistics);
+      accumulated_communication_statistics.Add(communcation_statistics);
     }
-    // std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
-    //                          encrypto::motion::to_string(combination.operation_type_),
-    //                          combination.bit_size_, combination.number_of_simd_);
     std::cout << encrypto::motion::PrintStatistics(
         fmt::format("Protocol {} operation {} bit size {} SIMD {}",
-                    encrypto::motion::to_string(combination.protocol_),
-                    encrypto::motion::to_string(combination.operation_type_), combination.bit_size_,
-                    combination.number_of_simd_),
+                    encrypto::motion::to_string(combination.protocol),
+                    encrypto::motion::to_string(combination.operation_type), combination.bit_size,
+                    combination.number_of_simd),
         accumulated_statistics, accumulated_communication_statistics);
 
     // // added by Liang Zhao
     // encrypto::motion::WriteToTxt(
-    //     txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
-    //                               encrypto::motion::to_string(combination.operation_type_),
-    //                               combination.bit_size_, combination.number_of_simd_));
+    //     txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol),
+    //                               encrypto::motion::to_string(combination.operation_type),
+    //                               combination.bit_size, combination.number_of_simd));
 
     // encrypto::motion::WriteToTxt(
     //     txt_filename, encrypto::motion::PrintStatistics(
     //                       fmt::format("Protocol {} operation {} bit size {} SIMD {}",
-    //                                   encrypto::motion::to_string(combination.protocol_),
-    //                                   encrypto::motion::to_string(combination.operation_type_),
-    //                                   combination.bit_size_, combination.number_of_simd_),
+    //                                   encrypto::motion::to_string(combination.protocol),
+    //                                   encrypto::motion::to_string(combination.operation_type),
+    //                                   combination.bit_size, combination.number_of_simd),
     //                       accumulated_statistics, accumulated_communication_statistics));
 
     // // added by Liang Zhao
     // encrypto::motion::WriteToCsv(
-    //     fmt::format("{} {}-bit SIMD-{}",
-    //     encrypto::motion::to_string(combination.operation_type_),
-    //                 combination.bit_size_, combination.number_of_simd_),
+    //     fmt::format("{} {}-bit SIMD-{}", encrypto::motion::to_string(combination.operation_type),
+    //                 combination.bit_size, combination.number_of_simd),
     //     CSV_filename, accumulated_statistics, accumulated_communication_statistics);
   }
   return EXIT_SUCCESS;
@@ -264,17 +227,15 @@ std::pair<program_options::variables_map, bool> ParseProgramOptions(int ac, char
   bool print, help;
   boost::program_options::options_description description("Allowed options");
   // clang-format off
-    description.add_options()
-            ("help,h", program_options::bool_switch(&help)->default_value(false), "produce help message")
-            ("disable-logging,l", "disable logging to file")
-            ("print-configuration,p", program_options::bool_switch(&print)->default_value(false), "print configuration")
-            ("configuration-file,f", program_options::value<std::string>(), kConfigFileMessage.data())
-            ("my-id", program_options::value<std::size_t>(), "my party id")
-            ("parties", program_options::value<std::vector<std::string>>()->multitoken(),
-             "info (id,IP,port) for each party e.g., --parties 0,127.0.0.1,23000 1,127.0.0.1,23001")
-            ("online-after-setup", program_options::value<bool>()->default_value(true),
-             "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)")
-            ("repetitions", program_options::value<std::size_t>()->default_value(1), "number of repetitions");
+  description.add_options()
+      ("help,h", program_options::bool_switch(&help)->default_value(false),"produce help message")
+      ("disable-logging,l","disable logging to file")
+      ("print-configuration,p", program_options::bool_switch(&print)->default_value(false), "print configuration")
+      ("configuration-file,f", program_options::value<std::string>(), kConfigFileMessage.data())
+      ("my-id", program_options::value<std::size_t>(), "my party id")
+      ("parties", program_options::value<std::vector<std::string>>()->multitoken(), "info (id,IP,port) for each party e.g., --parties 0,127.0.0.1,23000 1,127.0.0.1,23001")
+      ("online-after-setup", program_options::value<bool>()->default_value(true), "compute the online phase of the gate evaluations after the setup phase for all of them is completed (true/1 or false/0)")
+      ("repetitions", program_options::value<std::size_t>()->default_value(1), "number of repetitions");
   // clang-format on
 
   program_options::variables_map user_options;
@@ -331,10 +292,9 @@ encrypto::motion::PartyPointer CreateParty(const program_options::variables_map&
   const auto number_of_parties{parties_string.size()};
   const auto my_id{user_options["my-id"].as<std::size_t>()};
   if (my_id >= number_of_parties) {
-    throw std::runtime_error(
-        fmt::format("My id needs to be in the range [0, #parties - 1], current my id is {} and "
-                    "#parties is {}",
-                    my_id, number_of_parties));
+    throw std::runtime_error(fmt::format(
+        "My id needs to be in the range [0, #parties - 1], current my id is {} and #parties is {}",
+        my_id, number_of_parties));
   }
 
   encrypto::motion::communication::TcpPartiesConfiguration parties_configuration(number_of_parties);

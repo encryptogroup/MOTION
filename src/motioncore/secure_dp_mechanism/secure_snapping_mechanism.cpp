@@ -26,13 +26,13 @@
 #include "base/backend.h"
 
 namespace encrypto::motion {
-// SecureSnappingMechanism::SecureSnappingMechanism(const SharePointer& other)
-//     : fD_(std::make_unique<ShareWrapper>(other)),
-//       logger_(fD_.get()->Get()->GetRegister()->GetLogger()) {}
+SecureSnappingMechanism::SecureSnappingMechanism(const SharePointer& other)
+    : fD_(std::make_unique<ShareWrapper>(other)),
+      logger_(fD_.get()->Get()->GetRegister()->GetLogger()) {}
 
-// SecureSnappingMechanism::SecureSnappingMechanism(SharePointer&& other)
-//     : fD_(std::make_unique<ShareWrapper>(std::move(other))),
-//       logger_(fD_.get()->Get()->GetRegister()->GetLogger()) {}
+SecureSnappingMechanism::SecureSnappingMechanism(SharePointer&& other)
+    : fD_(std::make_unique<ShareWrapper>(std::move(other))),
+      logger_(fD_.get()->Get()->GetRegister()->GetLogger()) {}
 
 // SecureFloatingPointCircuitABY SecureSnappingMechanism::SnappingAndNoiseAddition() {
 //   using FLType = std::uint64_t;

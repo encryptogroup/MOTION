@@ -30,7 +30,7 @@
 #include <vector>
 #include "algorithm/algorithm_description.h"
 #include "protocols/share_wrapper.h"
-#include "secure_type/secure_floating_point_agmw_ABZS.h"
+// #include "secure_type/secure_floating_point_agmw_ABZS.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "statistics/analysis.h"
@@ -58,19 +58,23 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
                                        em::FloatingPointOperationType operation_type) {
   em::SecureFloatingPointCircuitABY floating_point32_boolean_gmw_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point32_boolean_gmw_share_ABY_1;
+  em::SecureFloatingPointCircuitABY floating_point32_gc_share_ABY_0;
+  em::SecureFloatingPointCircuitABY floating_point32_gc_share_ABY_1;
   em::SecureFloatingPointCircuitABY floating_point32_bmr_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point32_bmr_share_ABY_1;
 
   em::SecureFloatingPointCircuitABY floating_point64_boolean_gmw_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point64_boolean_gmw_share_ABY_1;
+  em::SecureFloatingPointCircuitABY floating_point64_gc_share_ABY_0;
+  em::SecureFloatingPointCircuitABY floating_point64_gc_share_ABY_1;
   em::SecureFloatingPointCircuitABY floating_point64_bmr_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point64_bmr_share_ABY_1;
 
   em::SecureFloatingPointCircuitABY a;
   em::SecureFloatingPointCircuitABY b;
 
-  em::SecureFloatingPointAgmwABZS floating_point_agmw_ABZS_0;
-  em::SecureFloatingPointAgmwABZS floating_point_agmw_ABZS_1;
+  // em::SecureFloatingPointAgmwABZS floating_point_agmw_ABZS_0;
+  // em::SecureFloatingPointAgmwABZS floating_point_agmw_ABZS_1;
 
   std::size_t l = 53;
   std::size_t k = 11;
@@ -87,6 +91,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   floating_point32_boolean_gmw_share_ABY_1 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBooleanGmw>(
           em::ToInput<float, std::true_type>(vector_of_input_float), 0));
+  floating_point32_gc_share_ABY_0 =
+      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+          em::ToInput<float, std::true_type>(vector_of_input_float), 0));
+  floating_point32_gc_share_ABY_1 =
+      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+          em::ToInput<float, std::true_type>(vector_of_input_float), 0));
   floating_point32_bmr_share_ABY_0 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBmr>(
           em::ToInput<float, std::true_type>(vector_of_input_float), 0));
@@ -100,6 +110,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   floating_point64_boolean_gmw_share_ABY_1 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBooleanGmw>(
           em::ToInput<double, std::true_type>(vector_of_input_double), 0));
+  floating_point64_gc_share_ABY_0 =
+      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+          em::ToInput<double, std::true_type>(vector_of_input_double), 0));
+  floating_point64_gc_share_ABY_1 =
+      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+          em::ToInput<double, std::true_type>(vector_of_input_double), 0));
   floating_point64_bmr_share_ABY_0 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBmr>(
           em::ToInput<double, std::true_type>(vector_of_input_double), 0));
@@ -107,10 +123,10 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBmr>(
           em::ToInput<double, std::true_type>(vector_of_input_double), 0));
 
-  floating_point_agmw_ABZS_0 = em::SecureFloatingPointAgmwABZS(
-      party->InFloatingPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_double, l, k, 0));
-  floating_point_agmw_ABZS_1 = em::SecureFloatingPointAgmwABZS(
-      party->InFloatingPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_double, l, k, 0));
+  // floating_point_agmw_ABZS_0 = em::SecureFloatingPointAgmwABZS(
+  //     party->InFloatingPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_double, l, k, 0));
+  // floating_point_agmw_ABZS_1 = em::SecureFloatingPointAgmwABZS(
+  //     party->InFloatingPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_double, l, k, 0));
 
   if (protocol == em::MpcProtocol::kBooleanGmw) {
     switch (bit_size) {
@@ -125,7 +141,24 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
         break;
       }
     }
-  } else if (protocol == em::MpcProtocol::kBmr) {
+  }
+
+  else if (protocol == em::MpcProtocol::kGarbledCircuit) {
+    switch (bit_size) {
+      case 32: {
+        a = floating_point32_gc_share_ABY_0;
+        b = floating_point32_gc_share_ABY_1;
+        break;
+      }
+      case 64: {
+        a = floating_point64_gc_share_ABY_0;
+        b = floating_point64_gc_share_ABY_1;
+        break;
+      }
+    }
+  }
+
+  else if (protocol == em::MpcProtocol::kBmr) {
     switch (bit_size) {
       case 32: {
         a = floating_point32_bmr_share_ABY_0;
@@ -174,12 +207,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
         a.Neg();
         break;
       }
-      case em::FloatingPointOperationType::kEQZ_circuit: {
-        a.EQZ();
+      case em::FloatingPointOperationType::kIsZero_circuit: {
+        a.IsZero();
         break;
       }
-      case em::FloatingPointOperationType::kLTZ_circuit: {
-        a.LTZ();
+      case em::FloatingPointOperationType::kIsNeg_circuit: {
+        a.IsNeg();
         break;
       }
       case em::FloatingPointOperationType::kAbs_circuit: {
@@ -255,85 +288,86 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
     }
   }
 
-  // test simd only with boolean circuit based methods
-  else if (protocol == em::MpcProtocol::kArithmeticGmw) {
-    switch (operation_type) {
-      case em::FloatingPointOperationType::kAdd_agmw: {
-        floating_point_agmw_ABZS_0 + floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kSub_agmw: {
-        floating_point_agmw_ABZS_0 - floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kMul_agmw: {
-        floating_point_agmw_ABZS_0* floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kDiv_agmw: {
-        floating_point_agmw_ABZS_0 / floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kLt_agmw: {
-        floating_point_agmw_ABZS_0 < floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kGt_agmw: {
-        floating_point_agmw_ABZS_0 > floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kEq_agmw: {
-        floating_point_agmw_ABZS_0 == floating_point_agmw_ABZS_1;
-        break;
-      }
-      case em::FloatingPointOperationType::kEQZ_agmw: {
-        floating_point_agmw_ABZS_0.EQZ();
-        break;
-      }
-      case em::FloatingPointOperationType::kLTZ_agmw: {
-        floating_point_agmw_ABZS_0.LTZ();
-        break;
-      }
-      case em::FloatingPointOperationType::kExp2_agmw: {
-        floating_point_agmw_ABZS_0.Exp2();
-        break;
-      }
-      case em::FloatingPointOperationType::kLog2_agmw: {
-        floating_point_agmw_ABZS_0.Log2();
-        break;
-      }
-      case em::FloatingPointOperationType::kExp_agmw: {
-        floating_point_agmw_ABZS_0.Exp();
-        break;
-      }
-      case em::FloatingPointOperationType::kLn_agmw: {
-        floating_point_agmw_ABZS_0.Ln();
-        break;
-      }
-      case em::FloatingPointOperationType::kSqrt_agmw: {
-        floating_point_agmw_ABZS_0.Sqrt();
-        break;
-      }
-      case em::FloatingPointOperationType::kCeil_agmw: {
-        floating_point_agmw_ABZS_0.Ceil();
-        break;
-      }
-      case em::FloatingPointOperationType::kFloor_agmw: {
-        floating_point_agmw_ABZS_0.Floor();
-        break;
-      }
-      case em::FloatingPointOperationType::kNeg_agmw: {
-        floating_point_agmw_ABZS_0.Neg();
-        break;
-      }
-      case em::FloatingPointOperationType::kFL2Int_agmw: {
-        floating_point_agmw_ABZS_0.FL2Int<__uint128_t, __uint128_t>();
-        break;
-      }
-      default:
-        throw std::invalid_argument("Unknown operation type");
-    }
-  } else {
+  // // test simd only with boolean circuit based methods
+  // else if (protocol == em::MpcProtocol::kArithmeticGmw) {
+  //   switch (operation_type) {
+  //     case em::FloatingPointOperationType::kAdd_agmw: {
+  //       floating_point_agmw_ABZS_0 + floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kSub_agmw: {
+  //       floating_point_agmw_ABZS_0 - floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kMul_agmw: {
+  //       floating_point_agmw_ABZS_0* floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kDiv_agmw: {
+  //       floating_point_agmw_ABZS_0 / floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kLt_agmw: {
+  //       floating_point_agmw_ABZS_0 < floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kGt_agmw: {
+  //       floating_point_agmw_ABZS_0 > floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kEq_agmw: {
+  //       floating_point_agmw_ABZS_0 == floating_point_agmw_ABZS_1;
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kEQZ_agmw: {
+  //       floating_point_agmw_ABZS_0.EQZ();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kLTZ_agmw: {
+  //       floating_point_agmw_ABZS_0.LTZ();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kExp2_agmw: {
+  //       floating_point_agmw_ABZS_0.Exp2();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kLog2_agmw: {
+  //       floating_point_agmw_ABZS_0.Log2();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kExp_agmw: {
+  //       floating_point_agmw_ABZS_0.Exp();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kLn_agmw: {
+  //       floating_point_agmw_ABZS_0.Ln();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kSqrt_agmw: {
+  //       floating_point_agmw_ABZS_0.Sqrt();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kCeil_agmw: {
+  //       floating_point_agmw_ABZS_0.Ceil();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kFloor_agmw: {
+  //       floating_point_agmw_ABZS_0.Floor();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kNeg_agmw: {
+  //       floating_point_agmw_ABZS_0.Neg();
+  //       break;
+  //     }
+  //     case em::FloatingPointOperationType::kFL2Int_agmw: {
+  //       floating_point_agmw_ABZS_0.FL2Int<__uint128_t, __uint128_t>();
+  //       break;
+  //     }
+  //     default:
+  //       throw std::invalid_argument("Unknown operation type");
+  //   }
+  // }
+  else {
     throw std::invalid_argument("Invalid MPC protocol");
   }
 

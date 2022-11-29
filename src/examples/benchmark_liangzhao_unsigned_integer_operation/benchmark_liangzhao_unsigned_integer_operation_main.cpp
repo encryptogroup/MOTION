@@ -70,8 +70,9 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::UnsignedIntegerOperationType;
 
   const std::array kBooleanBitSizes = {8, 16, 32, 64, 128};
-  const std::array kNumbersOfSimd = {1, 10, 1000};
-  // const std::array kNumbersOfSimd = {1000};
+  // const std::array kNumbersOfSimd = {1, 10, 1000};
+  // const std::array kNumbersOfSimd = {1,1000};
+  const std::array kNumbersOfSimd = {1000};
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method

@@ -71,12 +71,24 @@ std::vector<Combination> GenerateAllCombinations() {
   const std::array kNumbersOfSimd_1_10_100_1000 = {1, 10, 100, 1000};
   const std::array kNumbersOfSimd_1_10_100 = {1, 10, 100};
   const std::array kNumbersOfSimd_1_10 = {1, 10};
+  const std::array kNumbersOfSimd_1_1000 = {1, 1000};
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
       T::kAdd_circuit,      T::kSub_circuit,      T::kMul_circuit,    T::kDiv_circuit,
       T::kLt_circuit,       T::kGt_circuit,       T::kEq_circuit,     T::kNeg_circuit,
-      T::kEQZ_circuit,      T::kLTZ_circuit,      T::kAbs_circuit,    T::kExp2_circuit,
+      T::kIsZero_circuit,   T::kIsNeg_circuit,    T::kAbs_circuit,    T::kExp2_circuit,
+      T::kLog2_circuit,     T::kExp_circuit,      T::kLn_circuit,     T::kSqr_circuit,
+      T::kSqrt_circuit,     T::kSin_circuit,      T::kCos_circuit,    T::kCeil_circuit,
+      T::kFloor_circuit,    T::kFL2Int_circuit,   T::kFL2Fx_circuit,
+
+      T::kMulPow2m_circuit, T::kDivPow2m_circuit, T::kClampB_circuit, T::kRoundToNearestInt_circuit,
+  };
+  const std::array kGarbledCircuitOperationTypes = {
+      // boolean circuit based method
+      T::kAdd_circuit,      T::kSub_circuit,      T::kMul_circuit,    T::kDiv_circuit,
+      T::kLt_circuit,       T::kGt_circuit,       T::kEq_circuit,     T::kNeg_circuit,
+      T::kIsZero_circuit,   T::kIsNeg_circuit,    T::kAbs_circuit,    T::kExp2_circuit,
       T::kLog2_circuit,     T::kExp_circuit,      T::kLn_circuit,     T::kSqr_circuit,
       T::kSqrt_circuit,     T::kSin_circuit,      T::kCos_circuit,    T::kCeil_circuit,
       T::kFloor_circuit,    T::kFL2Int_circuit,   T::kFL2Fx_circuit,
@@ -87,7 +99,7 @@ std::vector<Combination> GenerateAllCombinations() {
       // boolean circuit based method
       T::kAdd_circuit,      T::kSub_circuit,      T::kMul_circuit,    T::kDiv_circuit,
       T::kLt_circuit,       T::kGt_circuit,       T::kEq_circuit,     T::kNeg_circuit,
-      T::kEQZ_circuit,      T::kLTZ_circuit,      T::kAbs_circuit,    T::kExp2_circuit,
+      T::kIsZero_circuit,   T::kIsNeg_circuit,    T::kAbs_circuit,    T::kExp2_circuit,
       T::kLog2_circuit,     T::kExp_circuit,      T::kLn_circuit,     T::kSqr_circuit,
       T::kSqrt_circuit,     T::kSin_circuit,      T::kCos_circuit,    T::kCeil_circuit,
       T::kFloor_circuit,    T::kFL2Int_circuit,   T::kFL2Fx_circuit,
@@ -95,25 +107,26 @@ std::vector<Combination> GenerateAllCombinations() {
       T::kMulPow2m_circuit, T::kDivPow2m_circuit, T::kClampB_circuit, T::kRoundToNearestInt_circuit,
   };
 
-  const std::array kArithmeticGmwOperationTypes = {
+  // const std::array kArithmeticGmwOperationTypes = {
 
-      // arithmetic gmw share based method
-      T::kAdd_agmw, T::kSub_agmw, T::kMul_agmw, T::kDiv_agmw, T::kLt_agmw, T::kGt_agmw, T::kEq_agmw,
-      T::kEQZ_agmw, T::kLTZ_agmw, T::kExp2_agmw, T::kLog2_agmw,
+  //     // arithmetic gmw share based method
+  //     T::kAdd_agmw, T::kSub_agmw, T::kMul_agmw, T::kDiv_agmw, T::kLt_agmw, T::kGt_agmw, T::kEq_agmw,
+  //     T::kEQZ_agmw, T::kLTZ_agmw, T::kExp2_agmw, T::kLog2_agmw,
 
-      T::kExp_agmw, T::kLn_agmw,
-      // T::kSqr_agmw,
+  //     T::kExp_agmw, T::kLn_agmw,
+  //     // T::kSqr_agmw,
 
-      T::kSqrt_agmw, T::kCeil_agmw, T::kFloor_agmw, T::kNeg_agmw, T::kFL2Int_agmw,
+  //     T::kSqrt_agmw, T::kCeil_agmw, T::kFloor_agmw, T::kNeg_agmw, T::kFL2Int_agmw,
 
-      // TODO: not implemented yet
-      // T::kFL2Fx_agmw,
+  //     // TODO: not implemented yet
+  //     // T::kFL2Fx_agmw,
 
-  };
+  // };
 
   std::vector<Combination> combinations;
 
-  for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBitSizes) {
       for (const auto operation_type : kBooleanGmwOperationTypes) {
         if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
@@ -127,33 +140,48 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
+    for (const auto bit_size : kBitSizes) {
+      for (const auto operation_type : kGarbledCircuitOperationTypes) {
+        if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
+                                 operation_type == T::kRoundToNearestInt_circuit)) {
+          // kClampB_circuit and kRoundToNearestInt_circuit only support 64-bit floating point
+        } else {
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                                    operation_type, number_of_simd);
+        }
+      }
+    }
+  }
+
+  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBitSizes) {
       for (const auto operation_type : kBmrOperationTypes) {
         if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
                                  operation_type == T::kRoundToNearestInt_circuit)) {
           // kClampB_circuit and kRoundToNearestInt_circuit only support 64-bit floating point
         } else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr,
-          operation_type,
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
                                     number_of_simd);
         }
       }
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd_1_10_100) {
-    for (const auto operation_type : kArithmeticGmwOperationTypes) {
-      if ((number_of_simd == 100) &&
-          (operation_type == T::kExp2_agmw || operation_type == T::kLog2_agmw ||
-               operation_type == T::kExp_agmw || operation_type == T::kLn_agmw ||
-               operation_type == T::kSqrt_agmw )) {
-      } else {
-        combinations.emplace_back(128, encrypto::motion::MpcProtocol::kArithmeticGmw,
-                                  operation_type, number_of_simd);
-      }
-    }
-  }
+  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100) {
+  //   for (const auto operation_type : kArithmeticGmwOperationTypes) {
+  //     if ((number_of_simd == 100) &&
+  //         (operation_type == T::kExp2_agmw || operation_type == T::kLog2_agmw ||
+  //          operation_type == T::kExp_agmw || operation_type == T::kLn_agmw ||
+  //          operation_type == T::kSqrt_agmw)) {
+  //     } else {
+  //       combinations.emplace_back(128, encrypto::motion::MpcProtocol::kArithmeticGmw,
+  //                                 operation_type, number_of_simd);
+  //     }
+  //   }
+  // }
 
   // // only for debugging
   // std::size_t number_of_simd = 100;
@@ -163,7 +191,8 @@ std::vector<Combination> GenerateAllCombinations() {
   //            operation_type == T::kExp_agmw || operation_type == T::kLn_agmw ||
   //            operation_type == T::kSqrt_agmw )) {
   //   } else {
-  //     combinations.emplace_back(128, encrypto::motion::MpcProtocol::kArithmeticGmw, operation_type,
+  //     combinations.emplace_back(128, encrypto::motion::MpcProtocol::kArithmeticGmw,
+  //     operation_type,
   //                               number_of_simd);
   //   }
   // }
@@ -206,19 +235,19 @@ int main(int ac, char* av[]) {
 
   combinations = GenerateAllCombinations();
 
-  // added by Liang Zhao
-  std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
-  const std::string CSV_filename =
-      "../../src/examples/benchmark_liangzhao_floating_point_operation/"
-      "benchmark_liangzhao_floating_point_operation_P" +
-      party_id + ".csv";
-  encrypto::motion::CreateCsvFile(CSV_filename);
+  // // added by Liang Zhao
+  // std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
+  // const std::string CSV_filename =
+  //     "../../src/examples/benchmark_liangzhao_floating_point_operation/"
+  //     "benchmark_liangzhao_floating_point_operation_P" +
+  //     party_id + ".csv";
+  // encrypto::motion::CreateCsvFile(CSV_filename);
 
-  const std::string txt_filename =
-      "../../src/examples/benchmark_liangzhao_floating_point_operation/"
-      "benchmark_liangzhao_floating_point_operation_P" +
-      party_id + ".txt";
-  encrypto::motion::CreateTxtFile(txt_filename);
+  // const std::string txt_filename =
+  //     "../../src/examples/benchmark_liangzhao_floating_point_operation/"
+  //     "benchmark_liangzhao_floating_point_operation_P" +
+  //     party_id + ".txt";
+  // encrypto::motion::CreateTxtFile(txt_filename);
 
   for (const auto combination : combinations) {
     encrypto::motion::AccumulatedRunTimeStatistics accumulated_statistics;
@@ -229,12 +258,13 @@ int main(int ac, char* av[]) {
       auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
                                          combination.protocol_, combination.operation_type_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
-    std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
-                             encrypto::motion::to_string(combination.operation_type_),
-                             combination.bit_size_, combination.number_of_simd_);
+    // std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
+    //                          encrypto::motion::to_string(combination.operation_type_),
+    //                          combination.bit_size_, combination.number_of_simd_);
     std::cout << encrypto::motion::PrintStatistics(
         fmt::format("Protocol {} operation {} bit size {} SIMD {}",
                     encrypto::motion::to_string(combination.protocol_),
@@ -242,25 +272,26 @@ int main(int ac, char* av[]) {
                     combination.number_of_simd_),
         accumulated_statistics, accumulated_communication_statistics);
 
-    // added by Liang Zhao
-    encrypto::motion::WriteToTxt(
-        txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
-                                  encrypto::motion::to_string(combination.operation_type_),
-                                  combination.bit_size_, combination.number_of_simd_));
+    // // added by Liang Zhao
+    // encrypto::motion::WriteToTxt(
+    //     txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
+    //                               encrypto::motion::to_string(combination.operation_type_),
+    //                               combination.bit_size_, combination.number_of_simd_));
 
-    encrypto::motion::WriteToTxt(
-        txt_filename, encrypto::motion::PrintStatistics(
-                          fmt::format("Protocol {} operation {} bit size {} SIMD {}",
-                                      encrypto::motion::to_string(combination.protocol_),
-                                      encrypto::motion::to_string(combination.operation_type_),
-                                      combination.bit_size_, combination.number_of_simd_),
-                          accumulated_statistics, accumulated_communication_statistics));
+    // encrypto::motion::WriteToTxt(
+    //     txt_filename, encrypto::motion::PrintStatistics(
+    //                       fmt::format("Protocol {} operation {} bit size {} SIMD {}",
+    //                                   encrypto::motion::to_string(combination.protocol_),
+    //                                   encrypto::motion::to_string(combination.operation_type_),
+    //                                   combination.bit_size_, combination.number_of_simd_),
+    //                       accumulated_statistics, accumulated_communication_statistics));
 
-    // added by Liang Zhao
-    encrypto::motion::WriteToCsv(
-        fmt::format("{} {}-bit SIMD-{}", encrypto::motion::to_string(combination.operation_type_),
-                    combination.bit_size_, combination.number_of_simd_),
-        CSV_filename, accumulated_statistics, accumulated_communication_statistics);
+    // // added by Liang Zhao
+    // encrypto::motion::WriteToCsv(
+    //     fmt::format("{} {}-bit SIMD-{}",
+    //     encrypto::motion::to_string(combination.operation_type_),
+    //                 combination.bit_size_, combination.number_of_simd_),
+    //     CSV_filename, accumulated_statistics, accumulated_communication_statistics);
   }
   return EXIT_SUCCESS;
 }

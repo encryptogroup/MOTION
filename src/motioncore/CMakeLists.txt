@@ -68,6 +68,7 @@ add_library(motion
         secure_type/secure_floating_point_circuit_ABY.cpp
         secure_type/secure_floating_point32_agmw_ABZS.cpp
         secure_type/secure_floating_point64_agmw_ABZS.cpp
+        secure_dp_mechanism/secure_sampling_algorithm.cpp
         secure_dp_mechanism/secure_snapping_mechanism.cpp
         secure_dp_mechanism/secure_integer_scaling_laplace_mechanism.cpp
         secure_dp_mechanism/secure_integer_scaling_gaussian_mechanism.cpp

@@ -28,16 +28,54 @@
 
 namespace encrypto::motion {
 
+class Logger;
+
 /// \brief class to wrap sampling algorithms
 class SamplingAlgorithm {
  public:
-  SamplingAlgorithm() : share_(nullptr){};
+  SamplingAlgorithm() = default;
 
-  SamplingAlgorithm(const SharePointer& share) : share_(share) {}
+  SamplingAlgorithm(const SamplingAlgorithm& other) : SamplingAlgorithm(*other.share_) {}
 
-  SamplingAlgorithm(const ShareWrapper& sa) : share_(sa.Get()) {}
+  SamplingAlgorithm(SamplingAlgorithm&& other) : SamplingAlgorithm(std::move(*other.share_)) {
+    other.share_->Get().reset();
+  }
 
-  SamplingAlgorithm(const SamplingAlgorithm& sa) : share_(sa.share_) {}
+  SamplingAlgorithm(const ShareWrapper& other) : SamplingAlgorithm(*other) {}
+
+  SamplingAlgorithm(ShareWrapper&& other) : SamplingAlgorithm(std::move(*other)) {
+    other.Get().reset();
+  }
+
+  SamplingAlgorithm(const SharePointer& other);
+
+  SamplingAlgorithm(SharePointer&& other);
+
+  SamplingAlgorithm& operator=(const SamplingAlgorithm& other) {
+    this->share_ = other.share_;
+    this->logger_ = other.logger_;
+    return *this;
+  }
+
+  SamplingAlgorithm& operator=(SamplingAlgorithm&& other) {
+    this->share_ = std::move(other.share_);
+    this->logger_ = std::move(other.logger_);
+    return *this;
+  }
+
+  ShareWrapper& Get() { return *share_; }
+
+  const ShareWrapper& Get() const { return *share_; }
+
+  ShareWrapper& operator->() { return *share_; }
+
+  const ShareWrapper& operator->() const { return *share_; }
+
+  //   SamplingAlgorithm() : share_(nullptr){};
+
+  //   SamplingAlgorithm(const SharePointer& other);
+
+  //   SamplingAlgorithm(const ShareWrapper& other) : SamplingAlgorithm(*other) {}
 
  public:
   // each party generates random boolean gmw bits locally
@@ -240,6 +278,7 @@ class SamplingAlgorithm {
       std::size_t fixed_point_fraction_bit_size) const;
 
  private:
-  SharePointer share_;
+  std::shared_ptr<ShareWrapper> share_{nullptr};
+  std::shared_ptr<Logger> logger_{nullptr};
 };
 }  // namespace encrypto::motion

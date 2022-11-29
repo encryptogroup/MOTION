@@ -1,0 +1,197 @@
+liangzhao@aw17r4:/media/liangzhao/d5c709c3-5e6f-4fa2-b422-007a6f243cda/MOTION_for_encrypto_server_benchmark/MOTION/build/bin$ ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 99221bed-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 23847
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.213 ms      0.207 ms      0.175 ms
+MT Setup                 8.084 ms      0.195 ms     15.832 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               348.278 ms    352.920 ms     44.439 ms
+OT Extension Setup      56.135 ms     49.985 ms     49.014 ms
+---------------------------------------------------------------------------
+Preprocessing Total    414.373 ms    414.034 ms     28.482 ms
+Gates Setup              0.159 ms      0.081 ms      0.120 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            10.492 ms      2.318 ms     18.647 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     426.861 ms    418.802 ms     35.443 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.036 MiB in 391 messages
+Received: 0.036 MiB in 391 messages
+===========================================================================
+
+
+===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 10
+===========================================================================
+MOTION version: 99221bed-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 23847
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.188 ms      0.179 ms      0.020 ms
+MT Setup                 8.205 ms      3.543 ms     16.040 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               357.607 ms    364.088 ms     37.608 ms
+OT Extension Setup      33.907 ms     30.357 ms     21.745 ms
+---------------------------------------------------------------------------
+Preprocessing Total    401.208 ms    394.091 ms     38.751 ms
+Gates Setup              0.082 ms      0.079 ms      0.013 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            13.230 ms      0.643 ms     18.823 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     415.173 ms    412.370 ms     34.075 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.049 MiB in 391 messages
+Received: 0.049 MiB in 391 messages
+===========================================================================
+
+
+===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 100
+===========================================================================
+MOTION version: 99221bed-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 23847
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.088 ms      1.093 ms      0.112 ms
+MT Setup                 7.683 ms      2.029 ms      6.978 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               354.170 ms    338.489 ms     44.744 ms
+OT Extension Setup      67.544 ms     78.466 ms     55.291 ms
+---------------------------------------------------------------------------
+Preprocessing Total    430.973 ms    422.432 ms     43.244 ms
+Gates Setup              0.077 ms      0.072 ms      0.017 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            13.765 ms      1.336 ms     20.119 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     445.476 ms    436.878 ms     50.995 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.183 MiB in 391 messages
+Received: 0.183 MiB in 391 messages
+===========================================================================
+
+
+===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 99221bed-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 23847
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             11.826 ms     11.116 ms      1.397 ms
+MT Setup                69.281 ms    100.489 ms     49.718 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               371.203 ms    377.325 ms     47.096 ms
+OT Extension Setup     294.396 ms    254.780 ms     78.223 ms
+---------------------------------------------------------------------------
+Preprocessing Total    747.335 ms    751.665 ms     35.817 ms
+Gates Setup              0.124 ms      0.119 ms      0.071 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             9.921 ms      5.106 ms     17.589 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     758.009 ms    763.401 ms     40.646 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.522 MiB in 391 messages
+Received: 1.522 MiB in 391 messages
+===========================================================================
+
+
+===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 10000
+===========================================================================
+MOTION version: 99221bed-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 23847
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            104.687 ms    109.085 ms     11.189 ms
+MT Setup               182.741 ms    214.190 ms     88.191 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               363.988 ms    367.231 ms     42.434 ms
+OT Extension Setup    2537.670 ms   2426.034 ms    145.112 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3189.774 ms   3167.856 ms     82.582 ms
+Gates Setup              3.811 ms      3.880 ms      3.570 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            11.399 ms      3.677 ms     16.349 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3206.402 ms   3174.368 ms     87.392 ms
+===========================================================================
+Communication with each other party:
+Sent: 14.912 MiB in 391 messages
+Received: 14.912 MiB in 391 messages
+===========================================================================
+
+
+===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 100000
+===========================================================================
+MOTION version: 99221bed-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 23847
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2850.514 ms   2811.310 ms    106.612 ms
+MT Setup              1392.146 ms   1284.939 ms    518.903 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               338.504 ms    304.947 ms     70.979 ms
+OT Extension Setup   25065.605 ms  24733.127 ms   1721.037 ms
+---------------------------------------------------------------------------
+Preprocessing Total  29647.559 ms  28765.757 ms   2044.852 ms
+Gates Setup             57.813 ms     73.289 ms     40.164 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            46.388 ms     38.028 ms     30.864 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   29756.359 ms  28880.952 ms   2063.534 ms
+===========================================================================
+Communication with each other party:
+Sent: 148.809 MiB in 403 messages
+Received: 148.809 MiB in 403 messages
+===========================================================================

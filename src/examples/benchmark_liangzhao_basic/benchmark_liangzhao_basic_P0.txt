@@ -1,0 +1,1782 @@
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation IN bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.447 ms      0.000 ms      0.000 ms
+Gates Setup              0.124 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.521 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       1.874 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation IN bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.370 ms      0.000 ms      0.000 ms
+Gates Setup              0.991 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             1.902 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       4.908 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.016 MiB in 5 messages
+Received: 0.015 MiB in 4 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation OUT bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.816 ms      0.000 ms -nan       ms
+Gates Setup              0.349 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             4.452 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       9.926 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.019 MiB in 4 messages
+Received: 0.019 MiB in 4 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation OUT bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.229 ms      0.000 ms      0.000 ms
+Gates Setup              0.149 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             4.806 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       5.765 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.019 MiB in 4 messages
+Received: 0.019 MiB in 4 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation XOR bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.190 ms      0.000 ms      0.000 ms
+Gates Setup              0.161 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.502 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       2.959 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation XOR bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.287 ms      0.000 ms -nan       ms
+Gates Setup              0.536 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.431 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       1.852 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation AND bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.077 ms      0.000 ms      0.000 ms
+MT Setup                 0.311 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                99.936 ms      0.000 ms      0.000 ms
+OT Extension Setup       1.065 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    101.613 ms      0.000 ms      0.000 ms
+Gates Setup              0.102 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             3.259 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     105.578 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.089 MiB in 391 messages
+Received: 0.089 MiB in 391 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation AND bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                73.835 ms      0.000 ms -nan       ms
+OT Extension Setup      13.283 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     87.384 ms      0.000 ms      0.000 ms
+Gates Setup             36.419 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.510 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     131.140 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.537 MiB in 4388 messages
+Received: 0.537 MiB in 4388 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation MUX bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               126.485 ms      0.000 ms -nan       ms
+OT Extension Setup      11.951 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    138.682 ms      0.000 ms      0.000 ms
+Gates Setup              0.239 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.583 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     140.072 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.035 MiB in 389 messages
+Received: 0.035 MiB in 389 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation MUX bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                74.026 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.738 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.037 ms      0.000 ms      0.000 ms
+Gates Setup             28.132 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             1.182 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     107.932 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.537 MiB in 4388 messages
+Received: 0.537 MiB in 4388 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation INV bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.169 ms      0.000 ms      0.000 ms
+Gates Setup              0.418 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.355 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       1.485 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation INV bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.587 ms      0.000 ms      0.000 ms
+Gates Setup              1.365 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.778 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       6.460 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation B2Y bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.353 ms      0.000 ms      0.000 ms
+Gates Setup              0.275 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.921 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      17.609 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.016 MiB in 5 messages
+Received: 0.016 MiB in 5 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation Y2B bit size 1000 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.268 ms      0.000 ms -nan       ms
+Gates Setup              0.085 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.301 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       1.241 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation IN bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.098 ms      0.000 ms -nan       ms
+Gates Setup              0.096 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.027 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       0.655 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation OUT bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.157 ms      0.000 ms -nan       ms
+Gates Setup              0.073 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.211 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       0.879 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation ADD bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.587 ms      0.000 ms -nan       ms
+Gates Setup              0.240 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.196 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       2.525 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.017 ms      0.000 ms -nan       ms
+MT Setup                 0.021 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               123.983 ms      0.000 ms -nan       ms
+OT Extension Setup       0.826 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    125.063 ms      0.000 ms      0.000 ms
+Gates Setup              0.084 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.195 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     130.200 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.035 MiB in 391 messages
+Received: 0.035 MiB in 391 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation B2A bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.046 ms      0.000 ms -nan       ms
+SP Setup                13.469 ms      0.000 ms -nan       ms
+SB Presetup              0.001 ms      0.000 ms -nan       ms
+SB Setup                13.609 ms      0.000 ms -nan       ms
+Base OTs                67.507 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.421 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     82.390 ms      0.000 ms -nan       ms
+Gates Setup              0.159 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.095 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      83.070 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.037 MiB in 391 messages
+Received: 0.026 MiB in 263 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation Y2A bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.021 ms      0.000 ms -nan       ms
+SP Setup                43.882 ms      0.000 ms -nan       ms
+SB Presetup              0.001 ms      0.000 ms -nan       ms
+SB Setup                46.891 ms      0.000 ms -nan       ms
+Base OTs                79.351 ms      0.000 ms -nan       ms
+OT Extension Setup       0.426 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    126.891 ms      0.000 ms -nan       ms
+Gates Setup              0.122 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.284 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     130.981 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.037 MiB in 391 messages
+Received: 0.026 MiB in 263 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2B bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                74.057 ms      0.000 ms -nan       ms
+OT Extension Setup      63.505 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    137.885 ms      0.000 ms      0.000 ms
+Gates Setup              9.417 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             4.663 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     153.385 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.038 MiB in 425 messages
+Received: 0.038 MiB in 425 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2Y bit size 8 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                72.338 ms      0.000 ms -nan       ms
+OT Extension Setup      58.051 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    130.745 ms      0.000 ms -nan       ms
+Gates Setup              0.778 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             2.373 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     134.732 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.038 MiB in 425 messages
+Received: 0.038 MiB in 425 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation IN bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.215 ms      0.000 ms -nan       ms
+Gates Setup              0.088 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.041 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       0.923 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation OUT bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.421 ms      0.000 ms -nan       ms
+Gates Setup              0.224 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.600 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       4.217 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation ADD bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.340 ms      0.000 ms -nan       ms
+Gates Setup              0.195 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.100 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       2.443 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.000 ms      0.000 ms
+MT Setup                46.143 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               109.243 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.724 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    156.278 ms      0.000 ms -nan       ms
+Gates Setup              0.087 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.059 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     157.000 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.035 MiB in 391 messages
+Received: 0.035 MiB in 391 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation B2A bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.123 ms      0.000 ms -nan       ms
+SP Setup                43.912 ms      0.000 ms      0.000 ms
+SB Presetup              0.002 ms      0.000 ms      0.000 ms
+SB Setup                44.184 ms      0.000 ms      0.000 ms
+Base OTs               114.419 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.447 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    159.599 ms      0.000 ms -nan       ms
+Gates Setup              0.368 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.278 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     161.534 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.043 MiB in 391 messages
+Received: 0.028 MiB in 263 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation Y2A bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.035 ms      0.000 ms      0.000 ms
+SP Setup                 2.949 ms      0.000 ms      0.000 ms
+SB Presetup              0.002 ms      0.000 ms -nan       ms
+SB Setup                 3.030 ms      0.000 ms      0.000 ms
+Base OTs               101.491 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.662 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.484 ms      0.000 ms -nan       ms
+Gates Setup              0.104 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.258 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     106.322 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.043 MiB in 391 messages
+Received: 0.028 MiB in 263 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2B bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               124.135 ms      0.000 ms -nan       ms
+OT Extension Setup      48.799 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    173.056 ms      0.000 ms -nan       ms
+Gates Setup             43.254 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             1.030 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     225.472 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.044 MiB in 465 messages
+Received: 0.044 MiB in 465 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2Y bit size 16 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               115.667 ms      0.000 ms      0.000 ms
+OT Extension Setup       1.016 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    116.889 ms      0.000 ms -nan       ms
+Gates Setup             97.089 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             1.184 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     215.689 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.044 MiB in 465 messages
+Received: 0.044 MiB in 465 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation IN bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.202 ms      0.000 ms      0.000 ms
+Gates Setup             15.141 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.046 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      20.179 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation OUT bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.248 ms      0.000 ms -nan       ms
+Gates Setup              0.078 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.047 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       0.949 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation ADD bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.218 ms      0.000 ms -nan       ms
+Gates Setup              0.079 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.033 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       3.154 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.011 ms      0.000 ms      0.000 ms
+MT Setup                40.312 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                92.308 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.721 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    133.460 ms      0.000 ms -nan       ms
+Gates Setup              0.084 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.053 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     134.096 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.035 MiB in 391 messages
+Received: 0.035 MiB in 391 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation B2A bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.091 ms      0.000 ms -nan       ms
+SP Setup                42.260 ms      0.000 ms -nan       ms
+SB Presetup              0.001 ms      0.000 ms -nan       ms
+SB Setup                42.417 ms      0.000 ms      0.000 ms
+Base OTs                93.155 ms      0.000 ms -nan       ms
+OT Extension Setup       0.604 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    136.449 ms      0.000 ms      0.000 ms
+Gates Setup              0.104 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.277 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     137.255 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.067 MiB in 391 messages
+Received: 0.042 MiB in 263 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation Y2A bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.069 ms      0.000 ms -nan       ms
+SP Setup                80.918 ms      0.000 ms      0.000 ms
+SB Presetup              0.001 ms      0.000 ms -nan       ms
+SB Setup                87.279 ms      0.000 ms -nan       ms
+Base OTs                76.287 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.436 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    169.254 ms      0.000 ms -nan       ms
+Gates Setup              0.161 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.457 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     174.493 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.067 MiB in 391 messages
+Received: 0.042 MiB in 263 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2B bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                85.278 ms      0.000 ms -nan       ms
+OT Extension Setup       0.685 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total     86.200 ms      0.000 ms -nan       ms
+Gates Setup            134.875 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             8.344 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     229.863 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.053 MiB in 545 messages
+Received: 0.053 MiB in 545 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2Y bit size 32 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                97.441 ms      0.000 ms -nan       ms
+OT Extension Setup       0.781 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     98.409 ms      0.000 ms      0.000 ms
+Gates Setup             50.522 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             9.372 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     158.764 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.053 MiB in 545 messages
+Received: 0.053 MiB in 545 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation IN bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.105 ms      0.000 ms -nan       ms
+Gates Setup              0.070 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.043 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       6.120 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation OUT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.154 ms      0.000 ms      0.000 ms
+Gates Setup              0.080 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             2.909 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation       4.813 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation ADD bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.158 ms      0.000 ms -nan       ms
+Gates Setup              0.144 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.038 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       6.394 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.010 ms      0.000 ms -nan       ms
+MT Setup                 0.050 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                79.521 ms      0.000 ms -nan       ms
+OT Extension Setup       1.181 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     80.896 ms      0.000 ms      0.000 ms
+Gates Setup              0.098 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.046 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      82.423 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.036 MiB in 391 messages
+Received: 0.036 MiB in 391 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation B2A bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.262 ms      0.000 ms -nan       ms
+SP Setup                 1.655 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 1.880 ms      0.000 ms -nan       ms
+Base OTs               108.816 ms      0.000 ms      0.000 ms
+OT Extension Setup       1.570 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    112.695 ms      0.000 ms -nan       ms
+Gates Setup              0.091 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.194 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     113.373 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.164 MiB in 391 messages
+Received: 0.154 MiB in 263 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation Y2A bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.320 ms      0.000 ms      0.000 ms
+SP Setup                 1.677 ms      0.000 ms      0.000 ms
+SB Presetup              0.001 ms      0.000 ms      0.000 ms
+SB Setup                 1.944 ms      0.000 ms -nan       ms
+Base OTs                90.493 ms      0.000 ms -nan       ms
+OT Extension Setup       1.424 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total     94.311 ms      0.000 ms      0.000 ms
+Gates Setup              0.160 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.166 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      95.007 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.164 MiB in 391 messages
+Received: 0.154 MiB in 263 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2B bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                79.985 ms      0.000 ms      0.000 ms
+OT Extension Setup      69.255 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    149.386 ms      0.000 ms      0.000 ms
+Gates Setup             12.860 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            49.095 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     211.685 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.073 MiB in 705 messages
+Received: 0.073 MiB in 705 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2Y bit size 64 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               162.639 ms      0.000 ms -nan       ms
+OT Extension Setup       2.150 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    166.562 ms      0.000 ms -nan       ms
+Gates Setup            141.082 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             2.723 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     310.866 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.073 MiB in 705 messages
+Received: 0.073 MiB in 705 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation IN bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.173 ms      0.000 ms -nan       ms
+Gates Setup              0.102 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.045 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       0.953 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation OUT bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.548 ms      0.000 ms -nan       ms
+Gates Setup              0.331 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.102 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation       2.594 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation ADD bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      0.658 ms      0.000 ms      0.000 ms
+Gates Setup              0.386 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.121 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      10.197 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 3 messages
+Received: 0.000 MiB in 3 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation MUL bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.060 ms      0.000 ms      0.000 ms
+MT Setup                84.548 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                65.082 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.813 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    150.796 ms      0.000 ms -nan       ms
+Gates Setup              0.293 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.219 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     152.714 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.039 MiB in 391 messages
+Received: 0.039 MiB in 391 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation B2A bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              5.457 ms      0.000 ms -nan       ms
+SP Setup                60.997 ms      0.000 ms -nan       ms
+SB Presetup              0.002 ms      0.000 ms -nan       ms
+SB Setup                72.245 ms      0.000 ms      0.000 ms
+Base OTs               108.596 ms      0.000 ms      0.000 ms
+OT Extension Setup      16.207 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    202.978 ms      0.000 ms      0.000 ms
+Gates Setup              0.126 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.525 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     204.266 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.549 MiB in 391 messages
+Received: 1.036 MiB in 263 messages
+===========================================================================
+
+
+BMR===========================================================================
+Protocol BMR operation Y2A bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              1.807 ms      0.000 ms -nan       ms
+SP Setup                58.252 ms      0.000 ms      0.000 ms
+SB Presetup              0.001 ms      0.000 ms      0.000 ms
+SB Setup                69.976 ms      0.000 ms      0.000 ms
+Base OTs                96.720 ms      0.000 ms      0.000 ms
+OT Extension Setup      14.007 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total    182.791 ms      0.000 ms      0.000 ms
+Gates Setup              0.140 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             0.315 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     183.727 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.549 MiB in 391 messages
+Received: 1.036 MiB in 263 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2B bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                94.407 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.902 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Preprocessing Total     95.414 ms      0.000 ms      0.000 ms
+Gates Setup            106.282 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online             5.665 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     207.794 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.111 MiB in 1025 messages
+Received: 0.111 MiB in 1025 messages
+===========================================================================
+
+
+ArithmeticGMW===========================================================================
+Protocol ArithmeticGMW operation A2Y bit size 128 SIMD 1
+===========================================================================
+MOTION version: 40cbb369-dirty @ master
+invocation: ./benchmark_liangzhao_basic --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 452062
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                84.259 ms      0.000 ms -nan       ms
+OT Extension Setup       1.269 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     85.745 ms      0.000 ms -nan       ms
+Gates Setup             56.641 ms      0.000 ms -nan       ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online            58.730 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     202.070 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.111 MiB in 1025 messages
+Received: 0.111 MiB in 1025 messages
+===========================================================================
+
+

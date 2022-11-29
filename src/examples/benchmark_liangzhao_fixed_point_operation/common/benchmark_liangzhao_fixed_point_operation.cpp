@@ -30,7 +30,7 @@
 #include <vector>
 #include "algorithm/algorithm_description.h"
 #include "protocols/share_wrapper.h"
-#include "secure_type/secure_fixed_point_agmw_CS.h"
+// #include "secure_type/secure_fixed_point_agmw_CS.h"
 #include "secure_type/secure_fixed_point_circuit_CBMC.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "statistics/analysis.h"
@@ -62,34 +62,46 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   em::SecureFixedPointCircuitCBMC fixed_point_bmr_share_CBMC_0;
   em::SecureFixedPointCircuitCBMC fixed_point_bmr_share_CBMC_1;
 
-  em::SecureFixedPointAgmwCS fixed_point_agmw_CS_0;
-  em::SecureFixedPointAgmwCS fixed_point_agmw_CS_1;
+  em::SecureFixedPointCircuitCBMC fixed_point_gc_share_CBMC_0;
+  em::SecureFixedPointCircuitCBMC fixed_point_gc_share_CBMC_1;
 
-  std::size_t k_agmw = 41;
-  std::size_t f_agmw = 20;
+  // em::SecureFixedPointAgmwCS fixed_point_agmw_CS_0;
+  // em::SecureFixedPointAgmwCS fixed_point_agmw_CS_1;
 
-  std::size_t k_bgmw_bmr = 64;
-  std::size_t f_bgmw_bmr = 16;
+  // std::size_t k_agmw = 41;
+  // std::size_t f_agmw = 20;
+
+  std::size_t k_bgmw_gc_bmr = 64;
+  std::size_t f_bgmw_gc_bmr = 16;
 
   std::vector<double> vector_of_input_1 = rand_range_double_vector(0, 1, number_of_simd);
   std::vector<double> vector_of_input_2 = rand_range_double_vector(0, 1, number_of_simd);
 
   fixed_point_boolean_gmw_share_CBMC_0 =
       em::SecureFixedPointCircuitCBMC(party->In<em::MpcProtocol::kBooleanGmw>(
-          em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_1, f_bgmw_bmr), 0));
+          em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_1, f_bgmw_gc_bmr), 0));
   fixed_point_boolean_gmw_share_CBMC_1 =
       em::SecureFixedPointCircuitCBMC(party->In<em::MpcProtocol::kBooleanGmw>(
-          em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_2, f_bgmw_bmr), 0));
+          em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_2, f_bgmw_gc_bmr), 0));
+
+  fixed_point_gc_share_CBMC_0 =
+      em::SecureFixedPointCircuitCBMC(party->In<em::MpcProtocol::kGarbledCircuit>(
+          em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_1, f_bgmw_gc_bmr), 0));
+  fixed_point_gc_share_CBMC_1 =
+      em::SecureFixedPointCircuitCBMC(party->In<em::MpcProtocol::kGarbledCircuit>(
+          em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_2, f_bgmw_gc_bmr), 0));
 
   fixed_point_bmr_share_CBMC_0 = em::SecureFixedPointCircuitCBMC(party->In<em::MpcProtocol::kBmr>(
-      em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_1, f_bgmw_bmr), 0));
+      em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_1, f_bgmw_gc_bmr), 0));
   fixed_point_bmr_share_CBMC_1 = em::SecureFixedPointCircuitCBMC(party->In<em::MpcProtocol::kBmr>(
-      em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_2, f_bgmw_bmr), 0));
+      em::FixedPointToInput<std::uint64_t, std::int64_t>(vector_of_input_2, f_bgmw_gc_bmr), 0));
 
-  fixed_point_agmw_CS_0 = em::SecureFixedPointAgmwCS(
-      party->InFixedPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_1, k_agmw, f_agmw, 0));
-  fixed_point_agmw_CS_1 = em::SecureFixedPointAgmwCS(
-      party->InFixedPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_2, k_agmw, f_agmw, 0));
+  // fixed_point_agmw_CS_0 = em::SecureFixedPointAgmwCS(
+  //     party->InFixedPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_1, k_agmw, f_agmw,
+  //     0));
+  // fixed_point_agmw_CS_1 = em::SecureFixedPointAgmwCS(
+  //     party->InFixedPoint<em::MpcProtocol::kArithmeticGmw>(vector_of_input_2, k_agmw, f_agmw,
+  //     0));
 
   if (protocol == em::MpcProtocol::kBooleanGmw) {
     switch (operation_type) {
@@ -125,12 +137,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
         fixed_point_boolean_gmw_share_CBMC_0 == fixed_point_boolean_gmw_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kEQZ_circuit: {
-        fixed_point_boolean_gmw_share_CBMC_0.EQZ();
+      case em::FixedPointOperationType::kIsZero_circuit: {
+        fixed_point_boolean_gmw_share_CBMC_0.IsZero();
         break;
       }
-      case em::FixedPointOperationType::kLTZ_circuit: {
-        fixed_point_boolean_gmw_share_CBMC_0.LTZ();
+      case em::FixedPointOperationType::kIsNeg_circuit: {
+        fixed_point_boolean_gmw_share_CBMC_0.IsNeg();
         break;
       }
       case em::FixedPointOperationType::kExp2_P1045_circuit: {
@@ -236,12 +248,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
         fixed_point_bmr_share_CBMC_0 == fixed_point_bmr_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kEQZ_circuit: {
-        fixed_point_bmr_share_CBMC_0.EQZ();
+      case em::FixedPointOperationType::kIsZero_circuit: {
+        fixed_point_bmr_share_CBMC_0.IsZero();
         break;
       }
-      case em::FixedPointOperationType::kLTZ_circuit: {
-        fixed_point_bmr_share_CBMC_0.LTZ();
+      case em::FixedPointOperationType::kIsNeg_circuit: {
+        fixed_point_bmr_share_CBMC_0.IsNeg();
         break;
       }
       case em::FixedPointOperationType::kExp2_P1045_circuit: {
@@ -313,96 +325,207 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
     }
   }
 
-  else if (protocol == em::MpcProtocol::kArithmeticGmw) {
+  else if (protocol == em::MpcProtocol::kGarbledCircuit) {
     switch (operation_type) {
-      case em::FixedPointOperationType::kAdd_agmw: {
-        fixed_point_agmw_CS_0 + fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kAdd_circuit: {
+        fixed_point_gc_share_CBMC_0 + fixed_point_gc_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kSub_agmw: {
-        fixed_point_agmw_CS_0 - fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kSub_circuit: {
+        fixed_point_gc_share_CBMC_0 - fixed_point_gc_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kMul_agmw: {
-        fixed_point_agmw_CS_0* fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kMul_circuit: {
+        fixed_point_gc_share_CBMC_0* fixed_point_gc_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kDiv_agmw: {
-        fixed_point_agmw_CS_0 / fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kDiv_circuit: {
+        fixed_point_gc_share_CBMC_0 / fixed_point_gc_share_CBMC_1;
         break;
       }
-      // case em::FixedPointOperationType::kDivConst_agmw: {
-      //   fixed_point_agmw_CS_0.DivConst(3);
+      // case em::FixedPointOperationType::kDiv_Goldschmidt_circuit: {
+      //   fixed_point_gc_share_CBMC_0.Div_Goldschmidt(fixed_point_gc_share_CBMC_1);
       //   break;
       // }
-      case em::FixedPointOperationType::kLt_agmw: {
-        fixed_point_agmw_CS_0 < fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kLt_circuit: {
+        fixed_point_gc_share_CBMC_0 < fixed_point_gc_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kGt_agmw: {
-        fixed_point_agmw_CS_0 > fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kGt_circuit: {
+        fixed_point_gc_share_CBMC_0 > fixed_point_gc_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kRoundTowardsZero_agmw: {
-        fixed_point_agmw_CS_0.RoundTowardsZero();
+      case em::FixedPointOperationType::kEq_circuit: {
+        fixed_point_gc_share_CBMC_0 == fixed_point_gc_share_CBMC_1;
         break;
       }
-      case em::FixedPointOperationType::kFx2IntWithRoundTowardsZero_agmw: {
-        fixed_point_agmw_CS_0.Fx2IntWithRoundTowardsZero();
+      case em::FixedPointOperationType::kIsZero_circuit: {
+        fixed_point_gc_share_CBMC_0.IsZero();
         break;
       }
-      case em::FixedPointOperationType::kNeg_agmw: {
-        fixed_point_agmw_CS_0.Neg();
+      case em::FixedPointOperationType::kIsNeg_circuit: {
+        fixed_point_gc_share_CBMC_0.IsNeg();
         break;
       }
-      case em::FixedPointOperationType::kAbs_agmw: {
-        fixed_point_agmw_CS_0.Abs();
+      case em::FixedPointOperationType::kExp2_P1045_circuit: {
+        fixed_point_gc_share_CBMC_0.Exp2_P1045();
         break;
       }
-      case em::FixedPointOperationType::kEq_agmw: {
-        fixed_point_agmw_CS_0 == fixed_point_agmw_CS_1;
+      case em::FixedPointOperationType::kExp2_P1045_Neg_0_1_circuit: {
+        fixed_point_gc_share_CBMC_0.Exp2_P1045_Neg_0_1();
         break;
       }
-      case em::FixedPointOperationType::kEQZ_agmw: {
-        fixed_point_agmw_CS_0.EQZ();
+      case em::FixedPointOperationType::kExp_circuit: {
+        fixed_point_gc_share_CBMC_0.Exp();
         break;
       }
-      case em::FixedPointOperationType::kLTZ_agmw: {
-        fixed_point_agmw_CS_0.LTZ();
+      case em::FixedPointOperationType::kLog2_P2508_circuit: {
+        fixed_point_gc_share_CBMC_0.Log2_P2508();
         break;
       }
-      case em::FixedPointOperationType::kExp2_P1045_agmw: {
-        fixed_point_agmw_CS_0.Exp2_P1045();
+      case em::FixedPointOperationType::kLn_circuit: {
+        fixed_point_gc_share_CBMC_0.Ln();
         break;
       }
-      case em::FixedPointOperationType::kLog2_P2508_agmw: {
-        fixed_point_agmw_CS_0.Log2_P2508();
-        break;
-      }
-      case em::FixedPointOperationType::kExp_agmw: {
-        fixed_point_agmw_CS_0.Exp();
-        break;
-      }
-      case em::FixedPointOperationType::kLn_agmw: {
-        fixed_point_agmw_CS_0.Ln();
-        break;
-      }
-      // case em::FixedPointOperationType::kSqrt_agmw: {
-      //   fixed_point_agmw_CS_0.Sqrt();
+      // case em::FixedPointOperationType::kSqr_circuit: {
+      //   fixed_point_gc_share_CBMC_0.Sqr();
       //   break;
       // }
-      case em::FixedPointOperationType::kSqrt_P0132_agmw: {
-        fixed_point_agmw_CS_0.Sqrt_P0132();
+      // case em::FixedPointOperationType::kSqrt_circuit: {
+      //   fixed_point_gc_share_CBMC_0.Sqrt();
+      //   break;
+      // }
+      case em::FixedPointOperationType::kSqrt_P0132_circuit: {
+        fixed_point_gc_share_CBMC_0.Sqrt_P0132();
         break;
       }
-      case em::FixedPointOperationType::kFx2FL_agmw: {
-        fixed_point_agmw_CS_0.Fx2FL(64, 53, 11);
+      case em::FixedPointOperationType::kCeil_circuit: {
+        fixed_point_gc_share_CBMC_0.Ceil();
+        break;
+      }
+      case em::FixedPointOperationType::kFloor_circuit: {
+        fixed_point_gc_share_CBMC_0.Floor();
+        break;
+      }
+      case em::FixedPointOperationType::kFx2Int_circuit: {
+        fixed_point_gc_share_CBMC_0.Fx2Int(64);
+        break;
+      }
+      case em::FixedPointOperationType::kFx2FL_circuit: {
+        fixed_point_gc_share_CBMC_0.Fx2FL(64);
+        break;
+      }
+      case em::FixedPointOperationType::kNeg_circuit: {
+        fixed_point_gc_share_CBMC_0.Neg();
+        break;
+      }
+      case em::FixedPointOperationType::kAbs_circuit: {
+        fixed_point_gc_share_CBMC_0.Abs();
+        break;
+      }
+      case em::FixedPointOperationType::kRoundedFx2Int_circuit: {
+        fixed_point_gc_share_CBMC_0.RoundedFx2Int();
+        break;
+      }
+      case em::FixedPointOperationType::kSin_P3307_0_1_circuit: {
+        fixed_point_gc_share_CBMC_0.Sin_P3307_0_1();
         break;
       }
       default:
         throw std::invalid_argument("Unknown operation type");
     }
   }
+
+  // else if (protocol == em::MpcProtocol::kArithmeticGmw) {
+  //   switch (operation_type) {
+  //     case em::FixedPointOperationType::kAdd_agmw: {
+  //       fixed_point_agmw_CS_0 + fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kSub_agmw: {
+  //       fixed_point_agmw_CS_0 - fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kMul_agmw: {
+  //       fixed_point_agmw_CS_0* fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kDiv_agmw: {
+  //       fixed_point_agmw_CS_0 / fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     // case em::FixedPointOperationType::kDivConst_agmw: {
+  //     //   fixed_point_agmw_CS_0.DivConst(3);
+  //     //   break;
+  //     // }
+  //     case em::FixedPointOperationType::kLt_agmw: {
+  //       fixed_point_agmw_CS_0 < fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kGt_agmw: {
+  //       fixed_point_agmw_CS_0 > fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kRoundTowardsZero_agmw: {
+  //       fixed_point_agmw_CS_0.RoundTowardsZero();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kFx2IntWithRoundTowardsZero_agmw: {
+  //       fixed_point_agmw_CS_0.Fx2IntWithRoundTowardsZero();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kNeg_agmw: {
+  //       fixed_point_agmw_CS_0.Neg();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kAbs_agmw: {
+  //       fixed_point_agmw_CS_0.Abs();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kEq_agmw: {
+  //       fixed_point_agmw_CS_0 == fixed_point_agmw_CS_1;
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kEQZ_agmw: {
+  //       fixed_point_agmw_CS_0.EQZ();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kLTZ_agmw: {
+  //       fixed_point_agmw_CS_0.LTZ();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kExp2_P1045_agmw: {
+  //       fixed_point_agmw_CS_0.Exp2_P1045();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kLog2_P2508_agmw: {
+  //       fixed_point_agmw_CS_0.Log2_P2508();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kExp_agmw: {
+  //       fixed_point_agmw_CS_0.Exp();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kLn_agmw: {
+  //       fixed_point_agmw_CS_0.Ln();
+  //       break;
+  //     }
+  //     // case em::FixedPointOperationType::kSqrt_agmw: {
+  //     //   fixed_point_agmw_CS_0.Sqrt();
+  //     //   break;
+  //     // }
+  //     case em::FixedPointOperationType::kSqrt_P0132_agmw: {
+  //       fixed_point_agmw_CS_0.Sqrt_P0132();
+  //       break;
+  //     }
+  //     case em::FixedPointOperationType::kFx2FL_agmw: {
+  //       fixed_point_agmw_CS_0.Fx2FL(64, 53, 11);
+  //       break;
+  //     }
+  //     default:
+  //       throw std::invalid_argument("Unknown operation type");
+  //   }
+  // }
 
   else {
     throw std::invalid_argument("Invalid MPC protocol");

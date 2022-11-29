@@ -1,0 +1,1860 @@
+===========================================================================
+Protocol BooleanGMW operation UINT_ADD bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.016 ms      0.014 ms      0.008 ms
+MT Setup                23.373 ms      4.608 ms     22.759 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.645 ms      2.557 ms      3.660 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    112.398 ms    107.451 ms     29.882 ms
+Gates Setup              0.850 ms      0.816 ms      0.135 ms
+Gates Online            23.377 ms     39.209 ms     23.075 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     141.926 ms    159.747 ms     27.565 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 467 messages
+Received: 0.038 MiB in 446 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_SUB bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.013 ms      0.002 ms
+MT Setup                27.529 ms      7.599 ms     22.480 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.387 ms      3.100 ms      3.319 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.543 ms     91.531 ms     31.229 ms
+Gates Setup              0.763 ms      0.792 ms      0.155 ms
+Gates Online            50.021 ms     52.392 ms     20.787 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     161.771 ms    151.650 ms     41.174 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 467 messages
+Received: 0.038 MiB in 446 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MUL bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.015 ms      0.006 ms
+MT Setup                 4.865 ms      6.346 ms      3.185 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.373 ms      1.128 ms      5.490 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     83.997 ms     96.986 ms     21.718 ms
+Gates Setup              0.799 ms      0.803 ms      0.064 ms
+Gates Online            59.019 ms     36.472 ms     50.920 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     148.855 ms    156.765 ms     50.637 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.052 MiB in 561 messages
+Received: 0.043 MiB in 540 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_DIV bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.015 ms      0.001 ms
+MT Setup                32.258 ms     45.477 ms     20.795 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.531 ms      0.791 ms      2.882 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    130.852 ms    150.385 ms     29.419 ms
+Gates Setup              0.864 ms      0.807 ms      0.101 ms
+Gates Online          2465.386 ms   2668.477 ms    772.524 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2604.506 ms   2799.613 ms    793.922 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.054 MiB in 605 messages
+Received: 0.045 MiB in 584 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LT bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.012 ms      0.003 ms
+MT Setup                18.342 ms      0.034 ms     22.438 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.981 ms      5.433 ms     14.428 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    113.296 ms    114.099 ms     31.557 ms
+Gates Setup              0.835 ms      0.843 ms      0.116 ms
+Gates Online            91.201 ms     93.256 ms     27.745 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     210.997 ms    218.456 ms     50.482 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 459 messages
+Received: 0.037 MiB in 438 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GT bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.012 ms      0.001 ms
+MT Setup                23.092 ms     15.058 ms     22.811 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.273 ms      2.421 ms      6.960 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    107.116 ms    113.592 ms     35.473 ms
+Gates Setup              0.831 ms      0.816 ms      0.071 ms
+Gates Online            90.135 ms     95.594 ms     35.608 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     203.766 ms    211.146 ms     66.311 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 459 messages
+Received: 0.037 MiB in 438 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_EQ bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.009 ms      0.010 ms      0.002 ms
+MT Setup                27.593 ms     37.483 ms     22.251 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.015 ms      2.328 ms      4.824 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    107.181 ms    104.616 ms     27.937 ms
+Gates Setup              0.818 ms      0.832 ms      0.081 ms
+Gates Online            40.964 ms     51.343 ms     25.810 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     153.900 ms    158.106 ms     29.410 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 435 messages
+Received: 0.036 MiB in 414 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_IsZero bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.011 ms      0.011 ms      0.001 ms
+MT Setup                27.442 ms     42.135 ms     22.394 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.296 ms      1.780 ms      3.340 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    111.031 ms    111.439 ms     21.142 ms
+Gates Setup              0.782 ms      0.821 ms      0.118 ms
+Gates Online            36.223 ms     11.640 ms     34.885 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     153.146 ms    144.413 ms     34.148 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 435 messages
+Received: 0.036 MiB in 414 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GE bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.011 ms      0.011 ms      0.002 ms
+MT Setup                31.387 ms     33.840 ms     20.532 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.245 ms      1.183 ms      5.341 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    116.705 ms    110.753 ms     16.108 ms
+Gates Setup              0.876 ms      0.854 ms      0.075 ms
+Gates Online            78.627 ms     88.907 ms     26.502 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     201.434 ms    200.300 ms     29.968 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 459 messages
+Received: 0.037 MiB in 438 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LE bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.012 ms      0.001 ms
+MT Setup                 4.971 ms      0.536 ms     13.543 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.099 ms      5.641 ms      5.006 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     99.193 ms    108.909 ms     16.644 ms
+Gates Setup              1.013 ms      0.890 ms      0.420 ms
+Gates Online            67.635 ms     53.622 ms     18.800 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     173.399 ms    166.813 ms     19.632 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 459 messages
+Received: 0.037 MiB in 438 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_NEG bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.011 ms      0.012 ms      0.001 ms
+MT Setup                13.721 ms      0.031 ms     20.921 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.431 ms     10.421 ms      5.813 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.157 ms     79.765 ms     35.563 ms
+Gates Setup              0.841 ms      0.838 ms      0.050 ms
+Gates Online           244.531 ms    267.739 ms     78.378 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     357.839 ms    356.824 ms     69.463 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 437 messages
+Received: 0.036 MiB in 416 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MOD bit size 8 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.016 ms      0.015 ms      0.004 ms
+MT Setup                18.374 ms      0.561 ms     22.086 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.271 ms      3.975 ms      3.716 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    106.074 ms    107.826 ms     29.209 ms
+Gates Setup              0.894 ms      0.913 ms      0.069 ms
+Gates Online          2050.627 ms   2818.398 ms   1232.351 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2164.321 ms   2947.151 ms   1237.633 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 621 messages
+Received: 0.047 MiB in 600 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_ADD bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.014 ms      0.002 ms
+MT Setup                 4.712 ms      6.086 ms      3.583 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.944 ms      1.584 ms      3.436 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     94.191 ms    107.906 ms     21.472 ms
+Gates Setup              0.813 ms      0.825 ms      0.068 ms
+Gates Online            38.115 ms     49.509 ms     19.197 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     137.982 ms    154.969 ms     34.236 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 547 messages
+Received: 0.042 MiB in 526 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_SUB bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.014 ms      0.003 ms
+MT Setup                 3.278 ms      0.039 ms      3.993 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.229 ms      4.264 ms      6.373 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     94.993 ms    101.370 ms     17.179 ms
+Gates Setup              0.780 ms      0.775 ms      0.137 ms
+Gates Online            14.781 ms      9.804 ms     12.003 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     116.162 ms    120.409 ms     14.961 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 547 messages
+Received: 0.042 MiB in 526 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MUL bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.019 ms      0.016 ms      0.009 ms
+MT Setup                 3.027 ms      0.452 ms      3.285 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.659 ms      4.830 ms      6.138 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.520 ms     68.954 ms     21.205 ms
+Gates Setup              0.759 ms      0.764 ms      0.112 ms
+Gates Online            43.310 ms     24.613 ms     39.076 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     127.317 ms    107.042 ms     55.267 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.076 MiB in 993 messages
+Received: 0.068 MiB in 972 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_DIV bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.024 ms      0.022 ms      0.009 ms
+MT Setup                 9.550 ms      5.200 ms      8.220 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.446 ms      2.394 ms      2.069 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     88.784 ms     85.097 ms     18.947 ms
+Gates Setup              0.800 ms      0.794 ms      0.091 ms
+Gates Online          9341.147 ms  10126.147 ms   2715.635 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9437.707 ms  10197.308 ms   2721.013 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.087 MiB in 1173 messages
+Received: 0.078 MiB in 1152 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LT bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.010 ms      0.010 ms      0.002 ms
+MT Setup                 4.377 ms      0.036 ms      4.910 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.342 ms      2.520 ms      3.093 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     74.826 ms     67.042 ms     17.604 ms
+Gates Setup              0.785 ms      0.780 ms      0.068 ms
+Gates Online            72.567 ms     69.745 ms     47.087 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     153.993 ms    175.099 ms     43.925 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.049 MiB in 505 messages
+Received: 0.040 MiB in 484 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GT bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.014 ms      0.003 ms
+MT Setup                 3.579 ms      3.447 ms      2.922 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.859 ms      2.048 ms      4.412 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     81.092 ms     92.442 ms     20.741 ms
+Gates Setup              0.859 ms      0.853 ms      0.068 ms
+Gates Online            68.114 ms     50.601 ms     48.480 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     156.083 ms    164.099 ms     54.696 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.049 MiB in 505 messages
+Received: 0.040 MiB in 484 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_EQ bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.012 ms      0.003 ms
+MT Setup                 8.989 ms      0.032 ms     17.925 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.694 ms     13.257 ms      5.792 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    104.106 ms    110.102 ms     24.905 ms
+Gates Setup              0.826 ms      0.849 ms      0.084 ms
+Gates Online           107.743 ms     95.770 ms     19.919 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     219.547 ms    213.126 ms     33.716 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 451 messages
+Received: 0.037 MiB in 430 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_IsZero bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.012 ms      0.003 ms
+MT Setup                22.485 ms     43.530 ms     22.466 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.912 ms      2.922 ms      5.585 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    108.055 ms    108.931 ms     19.226 ms
+Gates Setup              0.829 ms      0.802 ms      0.087 ms
+Gates Online           109.265 ms    125.941 ms     50.568 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     223.659 ms    237.439 ms     52.928 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 451 messages
+Received: 0.037 MiB in 430 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GE bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.015 ms      0.003 ms
+MT Setup                 3.790 ms      5.599 ms      3.253 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.902 ms      2.544 ms      4.572 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     98.752 ms    109.701 ms     19.695 ms
+Gates Setup              0.865 ms      0.882 ms      0.159 ms
+Gates Online            83.255 ms     63.936 ms     50.889 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     188.714 ms    173.967 ms     51.187 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.049 MiB in 505 messages
+Received: 0.040 MiB in 484 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LE bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.014 ms      0.014 ms      0.004 ms
+MT Setup                 5.407 ms      6.556 ms      4.466 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.184 ms      1.141 ms      4.108 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     93.263 ms     81.348 ms     19.379 ms
+Gates Setup              0.859 ms      0.807 ms      0.140 ms
+Gates Online            95.766 ms     84.370 ms     47.937 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     197.017 ms    166.593 ms     58.755 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.049 MiB in 505 messages
+Received: 0.040 MiB in 484 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_NEG bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.011 ms      0.012 ms      0.002 ms
+MT Setup                23.227 ms     15.754 ms     22.740 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.421 ms      3.019 ms      6.009 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    102.846 ms    110.023 ms     16.959 ms
+Gates Setup              0.861 ms      0.859 ms      0.058 ms
+Gates Online           656.577 ms    645.619 ms     19.027 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     766.945 ms    759.427 ms     31.423 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.046 MiB in 453 messages
+Received: 0.037 MiB in 432 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MOD bit size 16 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.024 ms      0.023 ms      0.007 ms
+MT Setup                 6.063 ms      8.920 ms      5.864 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.896 ms      1.399 ms      3.231 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     76.771 ms     76.504 ms      5.665 ms
+Gates Setup              1.013 ms      0.930 ms      0.324 ms
+Gates Online         10180.281 ms  10117.254 ms    362.617 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   10264.801 ms  10207.179 ms    360.409 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.089 MiB in 1205 messages
+Received: 0.080 MiB in 1184 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_ADD bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.018 ms      0.018 ms      0.006 ms
+MT Setup                 2.679 ms      0.050 ms      3.289 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.324 ms      3.781 ms      3.786 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     79.355 ms     71.187 ms     25.721 ms
+Gates Setup              0.823 ms      0.869 ms      0.082 ms
+Gates Online            19.446 ms     14.604 ms     13.086 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     104.439 ms    116.186 ms     27.440 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.062 MiB in 739 messages
+Received: 0.053 MiB in 718 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_SUB bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.014 ms      0.015 ms      0.003 ms
+MT Setup                 3.355 ms      3.906 ms      3.122 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.254 ms      3.005 ms      4.191 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     74.897 ms     63.440 ms     24.368 ms
+Gates Setup              0.662 ms      0.681 ms      0.123 ms
+Gates Online            12.930 ms     15.072 ms      4.575 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      93.095 ms     70.726 ms     25.288 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.062 MiB in 739 messages
+Received: 0.053 MiB in 718 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MUL bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.033 ms      0.031 ms      0.022 ms
+MT Setup                 2.658 ms      3.573 ms      3.034 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.052 ms      3.652 ms      4.999 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     63.733 ms     59.533 ms     12.850 ms
+Gates Setup              1.104 ms      1.100 ms      0.203 ms
+Gates Online            41.994 ms     35.530 ms     16.743 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     111.277 ms    104.433 ms     17.046 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.172 MiB in 2657 messages
+Received: 0.163 MiB in 2636 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_DIV bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.058 ms      0.047 ms      0.035 ms
+MT Setup                 9.258 ms      9.569 ms      7.444 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.979 ms      1.718 ms      4.018 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     80.192 ms     79.447 ms     12.315 ms
+Gates Setup              1.150 ms      1.110 ms      0.239 ms
+Gates Online         12071.617 ms  12584.780 ms   2316.570 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   12159.257 ms  12663.129 ms   2314.741 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.168 MiB in 2591 messages
+Received: 0.160 MiB in 2570 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LT bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.016 ms      0.004 ms
+MT Setup                 8.547 ms      6.476 ms     12.701 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.062 ms      1.435 ms      1.545 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     92.223 ms     74.340 ms     27.768 ms
+Gates Setup              0.887 ms      0.890 ms      0.062 ms
+Gates Online            98.460 ms     98.339 ms     37.100 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     197.600 ms    196.444 ms     53.798 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.054 MiB in 599 messages
+Received: 0.045 MiB in 578 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GT bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.013 ms      0.003 ms
+MT Setup                 4.971 ms      6.355 ms      2.965 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.107 ms      1.486 ms      3.822 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     86.024 ms     73.717 ms     18.615 ms
+Gates Setup              0.851 ms      0.843 ms      0.085 ms
+Gates Online            82.808 ms    101.041 ms     46.631 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     175.765 ms    181.332 ms     46.342 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.054 MiB in 599 messages
+Received: 0.045 MiB in 578 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_EQ bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.012 ms      0.001 ms
+MT Setup                 4.637 ms      6.643 ms      3.483 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.722 ms      0.998 ms      2.877 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     97.419 ms    108.605 ms     21.092 ms
+Gates Setup              0.793 ms      0.796 ms      0.059 ms
+Gates Online           115.466 ms    106.295 ms     40.296 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     219.623 ms    209.925 ms     43.615 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.047 MiB in 483 messages
+Received: 0.038 MiB in 462 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_IsZero bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.010 ms      0.011 ms      0.003 ms
+MT Setup                 2.727 ms      2.252 ms      3.220 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.816 ms      2.775 ms      6.113 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     81.679 ms     72.976 ms     17.491 ms
+Gates Setup              0.788 ms      0.795 ms      0.097 ms
+Gates Online            96.695 ms     97.950 ms     64.366 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     184.459 ms    196.493 ms     64.857 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.047 MiB in 483 messages
+Received: 0.038 MiB in 462 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GE bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.013 ms      0.002 ms
+MT Setup                 7.709 ms      8.611 ms     11.918 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.124 ms      0.830 ms      3.120 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.439 ms     76.139 ms     27.461 ms
+Gates Setup              0.787 ms      0.806 ms      0.118 ms
+Gates Online           101.007 ms    102.699 ms     42.312 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     184.986 ms    174.785 ms     57.621 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.054 MiB in 599 messages
+Received: 0.045 MiB in 578 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LE bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.014 ms      0.004 ms
+MT Setup                 4.012 ms      3.644 ms      4.317 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.000 ms      2.082 ms      5.713 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.771 ms     75.354 ms     17.604 ms
+Gates Setup              0.828 ms      0.798 ms      0.067 ms
+Gates Online            73.341 ms     95.188 ms     39.587 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     158.724 ms    162.968 ms     41.882 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.054 MiB in 599 messages
+Received: 0.045 MiB in 578 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_NEG bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.014 ms      0.004 ms
+MT Setup                18.712 ms      3.227 ms     22.318 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.011 ms      2.255 ms      3.370 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    104.253 ms    110.315 ms     25.759 ms
+Gates Setup              0.851 ms      0.802 ms      0.097 ms
+Gates Online          1192.700 ms   1315.232 ms    371.755 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1303.533 ms   1431.680 ms    369.239 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.047 MiB in 485 messages
+Received: 0.038 MiB in 464 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MOD bit size 32 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.056 ms      0.035 ms      0.038 ms
+MT Setup                10.902 ms     10.326 ms     13.274 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.700 ms      5.307 ms      3.749 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     83.711 ms     80.940 ms     15.583 ms
+Gates Setup              1.287 ms      1.368 ms      0.257 ms
+Gates Online         13688.178 ms  13275.702 ms   2205.047 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   13780.506 ms  13345.000 ms   2212.373 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.172 MiB in 2655 messages
+Received: 0.163 MiB in 2634 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_ADD bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.018 ms      0.019 ms      0.004 ms
+MT Setup                 8.051 ms      5.570 ms     12.608 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.381 ms      2.873 ms      2.318 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     73.991 ms     70.768 ms     19.719 ms
+Gates Setup              0.803 ms      0.836 ms      0.158 ms
+Gates Online            20.070 ms     20.520 ms      2.822 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      99.594 ms     96.464 ms     18.623 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.088 MiB in 1187 messages
+Received: 0.079 MiB in 1166 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_SUB bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.017 ms      0.017 ms      0.003 ms
+MT Setup                 9.403 ms      7.755 ms     11.149 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       1.822 ms      1.073 ms      1.471 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     82.740 ms     68.346 ms     27.553 ms
+Gates Setup              0.758 ms      0.724 ms      0.087 ms
+Gates Online            20.505 ms     18.026 ms     12.969 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     108.602 ms     97.115 ms     28.154 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.088 MiB in 1187 messages
+Received: 0.079 MiB in 1166 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MUL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.089 ms      0.082 ms      0.042 ms
+MT Setup                 6.501 ms      0.245 ms     12.700 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.816 ms     13.127 ms      6.130 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     75.505 ms     68.993 ms     22.233 ms
+Gates Setup              4.035 ms      3.592 ms      1.104 ms
+Gates Online           100.707 ms     88.347 ms     16.637 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     184.829 ms    171.103 ms     25.492 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.543 MiB in 9121 messages
+Received: 0.534 MiB in 9100 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_DIV bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.147 ms      0.085 ms      0.100 ms
+MT Setup                14.823 ms     14.703 ms     11.443 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.016 ms      3.152 ms      2.755 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     99.965 ms     86.209 ms     26.634 ms
+Gates Setup              4.741 ms      4.744 ms      1.063 ms
+Gates Online         63990.207 ms  62008.134 ms   3993.502 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   64102.588 ms  62111.033 ms   4003.157 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.528 MiB in 8863 messages
+Received: 0.519 MiB in 8842 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.017 ms      0.004 ms
+MT Setup                 5.653 ms      6.106 ms      5.550 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.096 ms      1.205 ms      4.692 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     88.362 ms     81.729 ms     22.277 ms
+Gates Setup              0.850 ms      0.832 ms      0.131 ms
+Gates Online            94.605 ms     99.408 ms     61.748 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     190.229 ms    177.250 ms     63.949 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.065 MiB in 789 messages
+Received: 0.056 MiB in 768 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.015 ms      0.004 ms
+MT Setup                 2.867 ms      0.055 ms      3.305 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.924 ms      4.508 ms      2.766 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     83.668 ms     70.948 ms     18.986 ms
+Gates Setup              0.857 ms      0.857 ms      0.067 ms
+Gates Online           108.436 ms     93.432 ms     74.598 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     198.373 ms    155.719 ms     78.138 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.065 MiB in 789 messages
+Received: 0.056 MiB in 768 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_EQ bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.012 ms      0.005 ms
+MT Setup                 5.465 ms      6.654 ms      2.756 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.055 ms      0.985 ms      2.273 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     81.476 ms     80.621 ms     17.391 ms
+Gates Setup              0.795 ms      0.820 ms      0.095 ms
+Gates Online           125.388 ms    131.881 ms     41.893 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     213.569 ms    212.107 ms     40.184 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 547 messages
+Received: 0.042 MiB in 526 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_IsZero bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.013 ms      0.003 ms
+MT Setup                 1.495 ms      0.216 ms      2.707 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.417 ms      6.543 ms      4.712 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     80.717 ms     66.071 ms     19.630 ms
+Gates Setup              0.785 ms      0.788 ms      0.082 ms
+Gates Online            72.015 ms     44.886 ms     54.771 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     158.832 ms    136.836 ms     60.965 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 547 messages
+Received: 0.042 MiB in 526 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GE bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.012 ms      0.011 ms      0.004 ms
+MT Setup                 2.073 ms      0.042 ms      3.116 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.392 ms      4.902 ms      5.903 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     77.047 ms     68.120 ms     19.734 ms
+Gates Setup              0.813 ms      0.827 ms      0.070 ms
+Gates Online           109.037 ms    138.190 ms     59.399 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     192.175 ms    208.422 ms     57.076 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.065 MiB in 789 messages
+Received: 0.056 MiB in 768 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LE bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.017 ms      0.016 ms      0.005 ms
+MT Setup                 5.031 ms      1.867 ms      4.617 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.415 ms      4.804 ms      4.783 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     89.158 ms     82.024 ms     22.582 ms
+Gates Setup              0.875 ms      0.846 ms      0.272 ms
+Gates Online            59.372 ms     33.971 ms     47.166 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     154.509 ms    113.297 ms     60.054 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.065 MiB in 789 messages
+Received: 0.056 MiB in 768 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_NEG bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.015 ms      0.002 ms
+MT Setup                36.174 ms     45.163 ms     18.087 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.302 ms      1.180 ms      4.891 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    112.562 ms    108.332 ms     30.137 ms
+Gates Setup              0.911 ms      0.888 ms      0.128 ms
+Gates Online          2543.864 ms   2794.308 ms    794.691 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2664.786 ms   2929.287 ms    796.870 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 549 messages
+Received: 0.043 MiB in 528 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MOD bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.111 ms      0.088 ms      0.070 ms
+MT Setup                15.184 ms     15.363 ms     11.270 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.582 ms      3.088 ms      2.061 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     83.630 ms     83.298 ms     11.781 ms
+Gates Setup              4.866 ms      4.194 ms      2.082 ms
+Gates Online         60562.434 ms  61603.371 ms   8965.723 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   60658.554 ms  61718.996 ms   8959.916 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.535 MiB in 8991 messages
+Received: 0.527 MiB in 8970 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_ADD bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.022 ms      0.022 ms      0.008 ms
+MT Setup                12.593 ms      5.177 ms     15.631 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.208 ms      3.808 ms      3.922 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     82.471 ms     67.917 ms     30.401 ms
+Gates Setup              0.900 ms      0.913 ms      0.162 ms
+Gates Online            25.042 ms     25.453 ms      3.351 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     113.093 ms     99.055 ms     31.114 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.147 MiB in 2211 messages
+Received: 0.138 MiB in 2190 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_SUB bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.024 ms      0.019 ms      0.010 ms
+MT Setup                 3.601 ms      5.634 ms      3.194 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.531 ms      2.635 ms      4.893 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     64.237 ms     61.436 ms     14.711 ms
+Gates Setup              0.751 ms      0.694 ms      0.151 ms
+Gates Online            25.103 ms     24.990 ms      2.514 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      94.063 ms     91.602 ms     14.788 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.147 MiB in 2211 messages
+Received: 0.138 MiB in 2190 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MUL bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.256 ms      0.216 ms      0.156 ms
+MT Setup                 2.291 ms      1.694 ms      1.794 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      13.743 ms     12.249 ms      3.989 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     72.688 ms     68.168 ms     14.105 ms
+Gates Setup             12.812 ms     12.016 ms      1.635 ms
+Gates Online           265.939 ms    267.794 ms     14.866 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     356.719 ms    353.497 ms     19.311 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.996 MiB in 34465 messages
+Received: 1.987 MiB in 34444 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_DIV bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.199 ms      0.171 ms      0.050 ms
+MT Setup                 2.604 ms      0.976 ms      2.944 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      16.771 ms     16.527 ms      6.456 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     79.406 ms     78.191 ms      4.945 ms
+Gates Setup             15.061 ms     14.228 ms      4.767 ms
+Gates Online        209866.873 ms 206845.881 ms  27594.189 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  209969.494 ms 206934.144 ms  27593.511 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.952 MiB in 33695 messages
+Received: 1.943 MiB in 33674 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LT bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.018 ms      0.018 ms      0.003 ms
+MT Setup                 4.677 ms      6.121 ms      3.265 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.338 ms      1.296 ms      4.037 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     73.541 ms     71.385 ms     15.193 ms
+Gates Setup              0.882 ms      0.837 ms      0.138 ms
+Gates Online           140.908 ms    153.799 ms     60.378 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     221.204 ms    227.972 ms     67.358 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.087 MiB in 1171 messages
+Received: 0.078 MiB in 1150 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GT bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.017 ms      0.018 ms      0.003 ms
+MT Setup                 3.658 ms      5.024 ms      3.039 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.152 ms      1.187 ms      2.848 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.140 ms     69.345 ms     15.921 ms
+Gates Setup              0.833 ms      0.844 ms      0.091 ms
+Gates Online            68.737 ms     36.270 ms     64.140 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     153.061 ms    138.521 ms     58.027 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.087 MiB in 1171 messages
+Received: 0.078 MiB in 1150 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_EQ bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.013 ms      0.012 ms      0.004 ms
+MT Setup                 3.201 ms      0.931 ms      4.240 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.387 ms      8.525 ms      6.293 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     82.612 ms     82.966 ms     20.369 ms
+Gates Setup              0.847 ms      0.776 ms      0.117 ms
+Gates Online            63.340 ms     27.926 ms     59.617 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     152.418 ms    146.735 ms     60.644 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.059 MiB in 675 messages
+Received: 0.050 MiB in 654 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_IsZero bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.014 ms      0.015 ms      0.001 ms
+MT Setup                 3.915 ms      1.202 ms      3.710 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.949 ms      4.546 ms      3.231 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     86.125 ms     80.451 ms     20.749 ms
+Gates Setup              0.843 ms      0.884 ms      0.127 ms
+Gates Online            62.967 ms     49.329 ms     56.105 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     154.992 ms    134.735 ms     59.816 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.059 MiB in 675 messages
+Received: 0.050 MiB in 654 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_GE bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.017 ms      0.018 ms      0.004 ms
+MT Setup                 2.296 ms      0.080 ms      3.062 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.826 ms      5.405 ms      5.534 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     92.922 ms     98.718 ms     19.541 ms
+Gates Setup              0.858 ms      0.852 ms      0.084 ms
+Gates Online            92.974 ms     84.189 ms     62.226 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     192.108 ms    189.554 ms     52.584 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.087 MiB in 1171 messages
+Received: 0.078 MiB in 1150 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_LE bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.018 ms      0.018 ms      0.006 ms
+MT Setup                 8.567 ms      6.623 ms     12.772 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.580 ms      1.690 ms      5.114 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     80.742 ms     69.164 ms     27.628 ms
+Gates Setup              0.778 ms      0.766 ms      0.110 ms
+Gates Online            84.765 ms     66.735 ms     52.923 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     171.023 ms    198.392 ms     48.489 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.087 MiB in 1171 messages
+Received: 0.078 MiB in 1150 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_NEG bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.016 ms      0.016 ms      0.001 ms
+MT Setup                23.211 ms     36.564 ms     22.708 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.977 ms      2.279 ms      4.219 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    115.145 ms    106.540 ms     30.895 ms
+Gates Setup              0.847 ms      0.864 ms      0.067 ms
+Gates Online          4965.284 ms   5468.510 ms   1549.593 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5089.009 ms   5592.832 ms   1565.118 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.059 MiB in 677 messages
+Received: 0.050 MiB in 656 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation UINT_MOD bit size 128 SIMD 1
+===========================================================================
+MOTION version: 1c3a59a3 @ dev
+invocation: ./benchmark_liangzhao_unsigned_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 21435
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.284 ms      0.250 ms      0.170 ms
+MT Setup                 3.136 ms      1.698 ms      3.454 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      17.654 ms     17.099 ms      6.651 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     80.795 ms     80.957 ms      4.151 ms
+Gates Setup             14.785 ms     14.294 ms      1.276 ms
+Gates Online        219557.575 ms 217422.301 ms  13379.048 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  219661.310 ms 217534.006 ms  13379.135 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.967 MiB in 33951 messages
+Received: 1.958 MiB in 33930 messages
+===========================================================================
