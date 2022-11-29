@@ -71,8 +71,8 @@ std::vector<Combination> GenerateAllCombinations() {
 
   const std::array kBooleanBitSizes = {8, 16, 32, 64, 128};
   // const std::array kNumbersOfSimd = {1, 10, 1000};
-  // const std::array kNumbersOfSimd = {1,1000};
-  const std::array kNumbersOfSimd = {1000};
+  const std::array kNumbersOfSimd_1_1000 = {1,1000};
+  const std::array kNumbersOfSimd_1000 = {1000};
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
@@ -94,7 +94,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::vector<Combination> combinations;
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
+  for (const auto number_of_simd : kNumbersOfSimd_1000) {
     for (const auto bit_size : kBooleanBitSizes) {
       for (const auto operation_type : kBooleanGmwOperationTypes) {
         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
@@ -103,7 +103,7 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBooleanBitSizes) {
       for (const auto operation_type : kBooleanGmwOperationTypes) {
         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit,
@@ -112,7 +112,7 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBooleanBitSizes) {
       for (const auto operation_type : kBooleanGmwOperationTypes) {
         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
