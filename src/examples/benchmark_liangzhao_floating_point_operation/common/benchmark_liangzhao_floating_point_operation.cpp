@@ -173,7 +173,8 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
     }
   }
 
-  if (protocol == em::MpcProtocol::kBooleanGmw || protocol == em::MpcProtocol::kBmr) {
+  if (protocol == em::MpcProtocol::kBooleanGmw || protocol == em::MpcProtocol::kBmr ||
+      protocol == em::MpcProtocol::kGarbledCircuit) {
     switch (operation_type) {
       case em::FloatingPointOperationType::kAdd_circuit: {
         a + b;
