@@ -99,35 +99,35 @@ std::vector<Combination> GenerateAllCombinations() {
       T::kSin_P3307_0_1_circuit,
   };
 
-  // const std::array kBmrOperationTypes = {
-  //     // boolean circuit based method
-  //     T::kAdd_circuit,
-  //     T::kSub_circuit,
-  //     T::kMul_circuit,
-  //     T::kDiv_circuit,
-  //     // T::kDiv_Goldschmidt_circuit,
-  //     T::kLt_circuit,
-  //     T::kGt_circuit,
-  //     T::kEq_circuit,
-  //     T::kIsZero_circuit,
-  //     T::kIsNeg_circuit,
-  //     T::kExp2_P1045_circuit,
-  //     T::kExp2_P1045_Neg_0_1_circuit,
-  //     T::kExp_circuit,
-  //     T::kLog2_P2508_circuit,
-  //     T::kLn_circuit,
-  //     // T::kSqrt_circuit,
-  //     T::kSqrt_P0132_circuit,
-  //     T::kCeil_circuit,
-  //     T::kFloor_circuit,
-  //     T::kFx2Int_circuit,
-  //     T::kFx2FL_circuit,
-  //     T::kNeg_circuit,
-  //     T::kAbs_circuit,
+  const std::array kBmrOperationTypes = {
+      // boolean circuit based method
+      T::kAdd_circuit,
+      T::kSub_circuit,
+      T::kMul_circuit,
+      T::kDiv_circuit,
+      // T::kDiv_Goldschmidt_circuit,
+      T::kLt_circuit,
+      T::kGt_circuit,
+      T::kEq_circuit,
+      T::kIsZero_circuit,
+      T::kIsNeg_circuit,
+      T::kExp2_P1045_circuit,
+      T::kExp2_P1045_Neg_0_1_circuit,
+      T::kExp_circuit,
+      T::kLog2_P2508_circuit,
+      T::kLn_circuit,
+      // T::kSqrt_circuit,
+      T::kSqrt_P0132_circuit,
+      T::kCeil_circuit,
+      T::kFloor_circuit,
+      T::kFx2Int_circuit,
+      T::kFx2FL_circuit,
+      T::kNeg_circuit,
+      T::kAbs_circuit,
 
-  //     T::kRoundedFx2Int_circuit,
-  //     T::kSin_P3307_0_1_circuit,
-  // };
+      T::kRoundedFx2Int_circuit,
+      T::kSin_P3307_0_1_circuit,
+  };
 
   const std::array kGarbledCircuitOperationTypes = {
       // boolean circuit based method
@@ -200,12 +200,12 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto operation_type : kBmrOperationTypes) {
-      combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, operation_type,
-                                number_of_simd);
-    }
-  }
+  // for (const auto number_of_simd : kNumbersOfSimd) {
+  //   for (const auto operation_type : kBmrOperationTypes) {
+  //     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, operation_type,
+  //                               number_of_simd);
+  //   }
+  // }
 
   // for (const auto number_of_simd : kNumbersOfSimd) {
   //   for (const auto operation_type : kArithmeticGmwOperationTypes) {
