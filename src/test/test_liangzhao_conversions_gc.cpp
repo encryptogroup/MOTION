@@ -163,10 +163,15 @@ TEST_P(ConversionTest, B2Y) {
 
         encrypto::motion::ShareWrapper share_input(temporary_share);
         EXPECT_EQ(share_input->GetBitLength(), this->number_of_wires_);
+
+        std::cout << "share_input.Convert<MpcProtocol::kGarbledCircuit>()" << std::endl;
+
         const auto share_conversion{share_input.Convert<MpcProtocol::kGarbledCircuit>()};
         auto share_output{share_conversion.Out(output_owner)};
 
+        std::cout << "party run" << std::endl;
         motion_parties.at(party_id)->Run();
+        std::cout << "party run finish" << std::endl;
 
         if (party_id == output_owner) {
           for (auto i = 0ull; i < this->number_of_wires_; ++i) {
@@ -190,10 +195,13 @@ TEST_P(ConversionTest, B2Y) {
   }
 }
 
-constexpr std::array<std::size_t, 2> kConversionNumberOfParties{2, 3};
-constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
-constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
-constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
+constexpr std::array<std::size_t, 1> kConversionNumberOfParties{2};
+// constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
+// constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
+// constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
+constexpr std::array<std::size_t, 1> kConversionNumberOfWires{10};
+constexpr std::array<std::size_t, 1> kConversionNumberOfSimd{2};
+constexpr std::array<bool, 1> kConversionOnlineAfterSetup{false};
 
 INSTANTIATE_TEST_SUITE_P(ConversionTestSuite, ConversionTest,
                          testing::Combine(testing::ValuesIn(kConversionNumberOfParties),

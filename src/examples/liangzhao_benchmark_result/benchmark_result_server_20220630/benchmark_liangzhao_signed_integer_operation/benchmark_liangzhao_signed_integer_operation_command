@@ -1,7 +1,8 @@
 # benchmark BooleanGMW and GarbledCircuit
 # network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
 # log: Segmentation fault before GarbledCircuit
-# status: 2022.11.30 07:35 - 
+# time: 2022.11.30 07:35 - 11:17
+# status: done
 ./benchmark_liangzhao_signed_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
 ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
 
@@ -9,7 +10,8 @@
 
 # benchmark BooleanGMW and BMR
 # network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
+# time: 2022.11.30 11:17
 # status: 
-./benchmark_liangzhao_signed_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167 --repetitions 10
-./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167 --repetitions 10
-./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167 --repetitions 10
+./benchmark_liangzhao_signed_integer_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+./benchmark_liangzhao_signed_integer_operation --my-id 2 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10

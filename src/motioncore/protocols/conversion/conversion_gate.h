@@ -35,8 +35,6 @@
 // otherwise, server compile error
 #include <variant>
 
-
-
 namespace encrypto::motion::proto::bmr {
 
 class Share;
@@ -50,6 +48,14 @@ class Share;
 using SharePointer = std::shared_ptr<Share>;
 
 }  // namespace encrypto::motion::proto::boolean_gmw
+
+// added by Liang Zhao
+namespace encrypto::motion::proto::garbled_circuit {
+
+class Share;
+using SharePointer = std::shared_ptr<Share>;
+
+}  // namespace encrypto::motion::proto::garbled_circuit
 
 namespace encrypto::motion {
 
@@ -161,7 +167,7 @@ class BooleanGmwToGCGate final : public OneGate {
 
   void EvaluateOnline() final override;
 
-  const proto::bmr::SharePointer GetOutputAsGCShare() const;
+  const proto::garbled_circuit::SharePointer GetOutputAsGCShare() const;
 
   const SharePointer GetOutputAsShare() const;
 
@@ -178,6 +184,11 @@ class BooleanGmwToGCGate final : public OneGate {
 
   std::size_t number_of_simd_ = 0;
   std::size_t number_of_wires_ = 0;
+  std::size_t my_id_ = 0;
+  std::size_t bitlength_ = 0;
+
+  ReusableFiberPromise<std::vector<BitVector<>>>* garblers_input_promise_;
+  ReusableFiberPromise<std::vector<BitVector<>>>* evaluators_input_promise_;
 
   /// Promise is only required if the gate for own input is created.
   std::unique_ptr<GOt128Sender> ots_for_evaluators_inputs_{nullptr};

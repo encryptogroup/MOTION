@@ -697,33 +697,11 @@ ShareWrapper ShareWrapper::BmrToBooleanGmw() const {
 // 1. both the garbler and evaluator secret share their Boolean GMW share and get GC share.
 // 2. they both XOR the GC share.
 ShareWrapper ShareWrapper::BooleanGmwToGC() const {
-  std::size_t party_id = share_->GetBackend().GetCommunicationLayer().GetMyId();
-
-  std::vector<WirePointer> parent = share_->GetWires();
-
-  std::size_t number_of_wires = parent.size();
-
-  std::vector<BitVector<>> boolean_gmw_value_vector;
-  boolean_gmw_value_vector.reserve(parent.size());
-
-  // wait for parent wire to obtain a value
-  for (std::size_t i = 0; i < number_of_wires; ++i) {
-    auto boolean_gmw_wire = std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(parent.at(i));
-    assert(boolean_gmw_wire);
-    boolean_gmw_wire->GetIsReadyCondition().Wait();
-    assert(!boolean_gmw_wire->GetValues().GetData().empty());
-    boolean_gmw_value_vector.emplace_back(boolean_gmw_wire->GetValues());
-  }
-
-  // both the garbler and evaluator secret share their Boolean GMW share and get GC share.
-  // 1. the garbler first share his Boolean Gmw share value
-  ShareWrapper gc_share_garbler = share_->GetBackend().GarbledCircuitInput(
-      static_cast<std::size_t>(GarbledCircuitRole::kGarbler), boolean_gmw_value_vector);
-
-  ShareWrapper gc_share_evaluator = share_->GetBackend().GarbledCircuitInput(
-      static_cast<std::size_t>(GarbledCircuitRole::kEvaluator), boolean_gmw_value_vector);
-
-  return gc_share_garbler ^ gc_share_evaluator;
+  auto boolean_gmw_share = std::dynamic_pointer_cast<proto::boolean_gmw::Share>(share_);
+  assert(boolean_gmw_share);
+  auto boolean_gmw_to_gc_gate{
+      share_->GetRegister()->EmplaceGate<BooleanGmwToGCGate>(boolean_gmw_share)};
+  return ShareWrapper(boolean_gmw_to_gc_gate->GetOutputAsShare());
 }
 
 // added by Liang Zhao
