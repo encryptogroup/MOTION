@@ -58,15 +58,15 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
                                        em::FloatingPointOperationType operation_type) {
   em::SecureFloatingPointCircuitABY floating_point32_boolean_gmw_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point32_boolean_gmw_share_ABY_1;
-  em::SecureFloatingPointCircuitABY floating_point32_gc_share_ABY_0;
-  em::SecureFloatingPointCircuitABY floating_point32_gc_share_ABY_1;
+  // em::SecureFloatingPointCircuitABY floating_point32_gc_share_ABY_0;
+  // em::SecureFloatingPointCircuitABY floating_point32_gc_share_ABY_1;
   em::SecureFloatingPointCircuitABY floating_point32_bmr_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point32_bmr_share_ABY_1;
 
   em::SecureFloatingPointCircuitABY floating_point64_boolean_gmw_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point64_boolean_gmw_share_ABY_1;
-  em::SecureFloatingPointCircuitABY floating_point64_gc_share_ABY_0;
-  em::SecureFloatingPointCircuitABY floating_point64_gc_share_ABY_1;
+  // em::SecureFloatingPointCircuitABY floating_point64_gc_share_ABY_0;
+  // em::SecureFloatingPointCircuitABY floating_point64_gc_share_ABY_1;
   em::SecureFloatingPointCircuitABY floating_point64_bmr_share_ABY_0;
   em::SecureFloatingPointCircuitABY floating_point64_bmr_share_ABY_1;
 
@@ -91,12 +91,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   floating_point32_boolean_gmw_share_ABY_1 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBooleanGmw>(
           em::ToInput<float, std::true_type>(vector_of_input_float), 0));
-  floating_point32_gc_share_ABY_0 =
-      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
-          em::ToInput<float, std::true_type>(vector_of_input_float), 0));
-  floating_point32_gc_share_ABY_1 =
-      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
-          em::ToInput<float, std::true_type>(vector_of_input_float), 0));
+  // floating_point32_gc_share_ABY_0 =
+  //     em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+  //         em::ToInput<float, std::true_type>(vector_of_input_float), 0));
+  // floating_point32_gc_share_ABY_1 =
+  //     em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+  //         em::ToInput<float, std::true_type>(vector_of_input_float), 0));
   floating_point32_bmr_share_ABY_0 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBmr>(
           em::ToInput<float, std::true_type>(vector_of_input_float), 0));
@@ -110,12 +110,12 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   floating_point64_boolean_gmw_share_ABY_1 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBooleanGmw>(
           em::ToInput<double, std::true_type>(vector_of_input_double), 0));
-  floating_point64_gc_share_ABY_0 =
-      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
-          em::ToInput<double, std::true_type>(vector_of_input_double), 0));
-  floating_point64_gc_share_ABY_1 =
-      em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
-          em::ToInput<double, std::true_type>(vector_of_input_double), 0));
+  // floating_point64_gc_share_ABY_0 =
+  //     em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+  //         em::ToInput<double, std::true_type>(vector_of_input_double), 0));
+  // floating_point64_gc_share_ABY_1 =
+  //     em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kGarbledCircuit>(
+  //         em::ToInput<double, std::true_type>(vector_of_input_double), 0));
   floating_point64_bmr_share_ABY_0 =
       em::SecureFloatingPointCircuitABY(party->In<em::MpcProtocol::kBmr>(
           em::ToInput<double, std::true_type>(vector_of_input_double), 0));
