@@ -143,20 +143,20 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
     }
   }
 
-  else if (protocol == em::MpcProtocol::kGarbledCircuit) {
-    switch (bit_size) {
-      case 32: {
-        a = floating_point32_gc_share_ABY_0;
-        b = floating_point32_gc_share_ABY_1;
-        break;
-      }
-      case 64: {
-        a = floating_point64_gc_share_ABY_0;
-        b = floating_point64_gc_share_ABY_1;
-        break;
-      }
-    }
-  }
+  // else if (protocol == em::MpcProtocol::kGarbledCircuit) {
+  //   switch (bit_size) {
+  //     case 32: {
+  //       a = floating_point32_gc_share_ABY_0;
+  //       b = floating_point32_gc_share_ABY_1;
+  //       break;
+  //     }
+  //     case 64: {
+  //       a = floating_point64_gc_share_ABY_0;
+  //       b = floating_point64_gc_share_ABY_1;
+  //       break;
+  //     }
+  //   }
+  // }
 
   else if (protocol == em::MpcProtocol::kBmr) {
     switch (bit_size) {
