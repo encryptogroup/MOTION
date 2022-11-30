@@ -284,7 +284,7 @@ ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint64_0_1(
   std::vector<T> vector_of_1023(num_of_simd, 1023);
 
   SecureUnsignedInteger secure_unsigned_integer_constant_1023 = SecureUnsignedInteger(
-      (share_->Get())->GetBackend().ConstantBooleanGmwInput(ToInput<T>(vector_of_1023)));
+      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(ToInput<T>(vector_of_1023)));
 
   //   std::cout << "UniformFloatingPoint64_0_1 222" << std::endl;
   //   std::cout << "222" << std::endl;
@@ -400,7 +400,7 @@ ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint32_0_1(
   std::vector<T> vector_of_127(num_of_simd, 127);
 
   SecureUnsignedInteger secure_unsigned_integer_constant_127 = SecureUnsignedInteger(
-      (share_->Get())->GetBackend().ConstantBooleanGmwInput(ToInput<T>(vector_of_127)));
+      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(ToInput<T>(vector_of_127)));
 
   //   std::cout << "UniformFloatingPoint32_0_1 222" << std::endl;
   //   std::cout << "222" << std::endl;

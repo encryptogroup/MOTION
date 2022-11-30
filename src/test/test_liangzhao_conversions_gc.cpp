@@ -182,7 +182,7 @@ TEST_P(ConversionTest, B2Y) {
 
             std::cout << "wire_single.As<encrypto::motion::BitVector<>>(): "
                       << share_output.GetWire(i).As<encrypto::motion::BitVector<>>() << std::endl;
-            // EXPECT_EQ(wire_single->GetPublicValues(), global_input.at(input_owner).at(i));
+            EXPECT_EQ(share_output.GetWire(i).As<encrypto::motion::BitVector<>>(), global_input.at(input_owner).at(i));
           }
         }
         motion_parties.at(party_id)->Finish();
@@ -196,12 +196,12 @@ TEST_P(ConversionTest, B2Y) {
 }
 
 constexpr std::array<std::size_t, 1> kConversionNumberOfParties{2};
-// constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
-// constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
-// constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
-constexpr std::array<std::size_t, 1> kConversionNumberOfWires{1};
-constexpr std::array<std::size_t, 1> kConversionNumberOfSimd{1};
-constexpr std::array<bool, 1> kConversionOnlineAfterSetup{false};
+constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
+constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
+constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
+// constexpr std::array<std::size_t, 1> kConversionNumberOfWires{10};
+// constexpr std::array<std::size_t, 1> kConversionNumberOfSimd{10};
+// constexpr std::array<bool, 1> kConversionOnlineAfterSetup{false};
 
 INSTANTIATE_TEST_SUITE_P(ConversionTestSuite, ConversionTest,
                          testing::Combine(testing::ValuesIn(kConversionNumberOfParties),

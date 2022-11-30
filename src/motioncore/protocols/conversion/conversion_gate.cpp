@@ -496,7 +496,7 @@ BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(par
     // output_wires_ = (evaluators_gc_shares[0])->GetWires();
   }
 
-  output_wires_ = garbler_input_gate->GetOutputAsGarbledCircuitShare()->GetWires();
+  // output_wires_ = garbler_input_gate->GetOutputAsGarbledCircuitShare()->GetWires();
 
   assert(gate_id_ >= 0);
 }
@@ -504,7 +504,7 @@ BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(par
 void BooleanGmwToGCGate::EvaluateSetup() {}
 
 void BooleanGmwToGCGate::EvaluateOnline() {
-  std::cout << "BooleanGmwToGCGate::EvaluateOnline" << std::endl;
+  // std::cout << "BooleanGmwToGCGate::EvaluateOnline" << std::endl;
 
   // wait for parents Boolean Gmw wires to be ready
   for (auto i = 0ull; i < parent_.size(); ++i) {
@@ -513,7 +513,7 @@ void BooleanGmwToGCGate::EvaluateOnline() {
     boolean_gmw_wire->GetIsReadyCondition().Wait();
   }
 
-  std::cout << "wait for parents Boolean Gmw wires to be ready" << std::endl;
+  // std::cout << "wait for parents Boolean Gmw wires to be ready" << std::endl;
 
   // std::shared_ptr<motion::Share> boolean_gmw_share_parent =
   //     std::make_shared<proto::boolean_gmw::Share>(parent_);
@@ -528,10 +528,10 @@ void BooleanGmwToGCGate::EvaluateOnline() {
     assert(gmw_wire);
     boolean_gmw_share_bitvector.emplace_back(gmw_wire->GetValues());
 
-    std::cout << "gmw_wire->GetValues(): " << gmw_wire->GetValues() << std::endl;
+    // std::cout << "gmw_wire->GetValues(): " << gmw_wire->GetValues() << std::endl;
   }
 
-  std::cout << "000" << std::endl;
+  // std::cout << "000" << std::endl;
 
   if (is_garbler_) {
     garblers_input_promise_->set_value(boolean_gmw_share_bitvector);
@@ -540,6 +540,7 @@ void BooleanGmwToGCGate::EvaluateOnline() {
   else {
     evaluators_input_promise_->set_value(boolean_gmw_share_bitvector);
   }
+  // std::cout << "111" << std::endl;
 }
 
 const proto::garbled_circuit::SharePointer BooleanGmwToGCGate::GetOutputAsGCShare() const {
