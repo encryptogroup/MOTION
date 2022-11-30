@@ -426,6 +426,60 @@ const SharePointer ArithmeticGmwToBmrGate::GetOutputAsShare() const {
   return result;
 }
 
+// =================================================================================================
+
+// added by Liang Zhao
+GCToBooleanGmwGate::GCToBooleanGmwGate(const SharePointer& parent) : OneGate(parent->GetBackend()) {
+  // is_garbler_ = backend_.GetCommunicationLayer().GetMyId() ==
+  //               static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+  // is_evaluator_ = !is_garbler_;
+
+  parent_ = parent->GetWires();
+  output_wires_.resize(parent_.size());
+  for (auto& wire : output_wires_) {
+    wire = GetRegister().EmplaceWire<proto::boolean_gmw::Wire>(backend_,
+                                                               parent_[0]->GetNumberOfSimdValues());
+  }
+}
+
+void GCToBooleanGmwGate::EvaluateSetup() {}
+
+void GCToBooleanGmwGate::EvaluateOnline() {
+  for (auto& wire : parent_) {
+    wire->GetIsReadyCondition().Wait();
+  }
+
+  // BitVector<> permutation_bits;
+  // permutation_bits.Reserve(parent_.size() * parent_[0]->GetNumberOfSimdValues());
+  // for (std::size_t wire_i = 0; wire_i < output_wires_.size(); ++wire_i) {
+  //   auto gc_parent_wire{std::dynamic_pointer_cast<garbled_circuit::Wire>(parent_[wire_i])};
+  //   assert(gc_parent_wire);
+  //   permutation_bits.Append(gc_parent_wire->CopyPermutationBits());
+  // }
+
+  for (std::size_t wire_i = 0; wire_i < output_wires_.size(); ++wire_i) {
+    auto gc_parent_wire{std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[wire_i])};
+    assert(gc_parent_wire);
+    auto output_wire{std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(output_wires_[wire_i])};
+    assert(output_wire);
+    output_wire->GetMutableValues() = gc_parent_wire->CopyPermutationBits();
+  }
+}
+
+const proto::boolean_gmw::SharePointer GCToBooleanGmwGate::GetOutputAsGmwShare() const {
+  auto result = std::make_shared<proto::boolean_gmw::Share>(output_wires_);
+  assert(result);
+  return result;
+}
+
+const SharePointer GCToBooleanGmwGate::GetOutputAsShare() const {
+  auto result = std::static_pointer_cast<Share>(GetOutputAsGmwShare());
+  assert(result);
+  return result;
+}
+
+// =================================================================================================
+
 // added by Liang Zhao
 BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(parent->GetBackend()) {
   is_garbler_ = backend_.GetCommunicationLayer().GetMyId() ==
@@ -463,7 +517,8 @@ BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(par
   // std::cout << "before secret sharing boolean Gmw" << std::endl;
 
   // // the garbler secret share his Boolean Gmw share
-  // auto garbler_input_gate = GetRegister().EmplaceGate<proto::garbled_circuit::InputGateGarbler>(
+  // auto garbler_input_gate =
+  // GetRegister().EmplaceGate<proto::garbled_circuit::InputGateGarbler>(
   //     garbler_id, number_of_wires_, number_of_simd_, parent->GetBackend());
 
   // std::cout << "after secret sharing boolean Gmw" << std::endl;

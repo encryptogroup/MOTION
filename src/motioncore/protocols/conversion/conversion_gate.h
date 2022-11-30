@@ -200,27 +200,27 @@ class BooleanGmwToGCGate final : public OneGate {
       label_source_;
 };
 
-// // added by Liang Zhao
-// class GCToBooleanGmwGate final : public OneGate {
-//  public:
-//   using ValueType = std::vector<BitVector<>>;
-//   GCToBooleanGmwGate(const SharePointer& parent);
+// added by Liang Zhao
+class GCToBooleanGmwGate final : public OneGate {
+ public:
+  using ValueType = std::vector<BitVector<>>;
+  GCToBooleanGmwGate(const SharePointer& parent);
 
-//   ~GCToBooleanGmwGate() final = default;
+  ~GCToBooleanGmwGate() final = default;
 
-//   void EvaluateSetup() final override;
+  void EvaluateSetup() final override;
 
-//   void EvaluateOnline() final override;
+  void EvaluateOnline() final override;
 
-//   bool NeedsSetup() const override { return false; }
+  bool NeedsSetup() const override { return false; }
 
-//   const proto::boolean_gmw::SharePointer GetOutputAsGmwShare() const;
+  const proto::boolean_gmw::SharePointer GetOutputAsGmwShare() const;
 
-//   const SharePointer GetOutputAsShare() const;
+  const SharePointer GetOutputAsShare() const;
 
-//   GCToBooleanGmwGate() = delete;
+  GCToBooleanGmwGate() = delete;
 
-//   GCToBooleanGmwGate(const Gate&) = delete;
-// };
+  GCToBooleanGmwGate(const Gate&) = delete;
+};
 
 }  // namespace encrypto::motion

@@ -705,7 +705,13 @@ ShareWrapper ShareWrapper::BooleanGmwToGC() const {
 }
 
 // added by Liang Zhao
-ShareWrapper ShareWrapper::GCToBooleanGmw() const {}
+// both the garbler and evaluator set the permutaiton bit as Boolean Gmw share
+ShareWrapper ShareWrapper::GCToBooleanGmw() const {
+  auto gc_share = std::dynamic_pointer_cast<proto::garbled_circuit::Share>(share_);
+  assert(gc_share);
+  auto gc_to_boolean_gmw_gate{share_->GetRegister()->EmplaceGate<GCToBooleanGmwGate>(gc_share)};
+  return ShareWrapper(gc_to_boolean_gmw_gate->GetOutputAsShare());
+}
 
 // added by Liang Zhao
 // TODO: implement
@@ -1696,7 +1702,7 @@ ShareWrapper ShareWrapper::Subset(std::span<const std::size_t> positions) {
   return ShareWrapper(subset_gate->GetOutputAsShare());
 }
 
-std::vector<ShareWrapper> ShareWrapper::Unsimdify() {
+std::vector<ShareWrapper> ShareWrapper::Unsimdify() const {
   auto unsimdify_gate = share_->GetRegister()->EmplaceGate<UnsimdifyGate>(share_);
   std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
   std::vector<ShareWrapper> result(shares.size());

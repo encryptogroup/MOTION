@@ -808,4 +808,17 @@ auto FromTwosComplement(const std::vector<T>& input) {
   return result;
 }
 
+
+// check if all elements of vector equal to value
+template <typename T>
+bool VectorAllEqualToValue(const std::vector<T> & v, T value) {
+  if (v.size() == 0) {
+    return false;
+  }
+  if (v[0] != value) {
+    return false;
+  }
+
+  return std::equal(v.begin() + 1, v.end(), v.begin());
+}
 }  // namespace encrypto::motion

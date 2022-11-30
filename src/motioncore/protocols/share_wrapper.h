@@ -187,7 +187,7 @@ class ShareWrapper {
   /// \throws invalid_argument if any of the shares internally has an inconsistent number of SIMD
   /// values across the wires.
   /// \throws invalid_argument if this->share_ is "empty", i.e., contains 0 SIMD values.
-  std::vector<ShareWrapper> Unsimdify();
+  std::vector<ShareWrapper> Unsimdify() const;
 
   /// \brief constructs a SimdifyGate that composes the shares in input into a "larger" share with
   /// all the input shares as SIMD values in one share.
@@ -1318,7 +1318,7 @@ class ShareWrapper {
   ShareWrapper GCToBooleanGmw() const;
 
   // added by Liang Zhao
-// TODO:
+  // TODO:
   ShareWrapper ArithmeticGmwToGC() const;
 
   void ShareConsistencyCheck() const;
