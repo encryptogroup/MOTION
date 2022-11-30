@@ -110,8 +110,8 @@ std::vector<Combination> GenerateAllCombinations() {
   // const std::array kArithmeticGmwOperationTypes = {
 
   //     // arithmetic gmw share based method
-  //     T::kAdd_agmw, T::kSub_agmw, T::kMul_agmw, T::kDiv_agmw, T::kLt_agmw, T::kGt_agmw, T::kEq_agmw,
-  //     T::kEQZ_agmw, T::kLTZ_agmw, T::kExp2_agmw, T::kLog2_agmw,
+  //     T::kAdd_agmw, T::kSub_agmw, T::kMul_agmw, T::kDiv_agmw, T::kLt_agmw, T::kGt_agmw,
+  //     T::kEq_agmw, T::kEQZ_agmw, T::kLTZ_agmw, T::kExp2_agmw, T::kLog2_agmw,
 
   //     T::kExp_agmw, T::kLn_agmw,
   //     // T::kSqr_agmw,
@@ -125,30 +125,15 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::vector<Combination> combinations;
 
-  // // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
-  // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
-  //   for (const auto bit_size : kBitSizes) {
-  //     for (const auto operation_type : kBooleanGmwOperationTypes) {
-  //       if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
-  //                                operation_type == T::kRoundToNearestInt_circuit)) {
-  //         // kClampB_circuit and kRoundToNearestInt_circuit only support 64-bit floating point
-  //       } else {
-  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
-  //                                   operation_type, number_of_simd);
-  //       }
-  //     }
-  //   }
-  // }
-
   // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
   for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBitSizes) {
-      for (const auto operation_type : kGarbledCircuitOperationTypes) {
+      for (const auto operation_type : kBooleanGmwOperationTypes) {
         if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
                                  operation_type == T::kRoundToNearestInt_circuit)) {
           // kClampB_circuit and kRoundToNearestInt_circuit only support 64-bit floating point
         } else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit,
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
                                     operation_type, number_of_simd);
         }
       }
@@ -158,17 +143,32 @@ std::vector<Combination> GenerateAllCombinations() {
   // // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
   // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
   //   for (const auto bit_size : kBitSizes) {
-  //     for (const auto operation_type : kBmrOperationTypes) {
+  //     for (const auto operation_type : kGarbledCircuitOperationTypes) {
   //       if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
   //                                operation_type == T::kRoundToNearestInt_circuit)) {
   //         // kClampB_circuit and kRoundToNearestInt_circuit only support 64-bit floating point
   //       } else {
-  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
-  //                                   number_of_simd);
+  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit,
+  //                                   operation_type, number_of_simd);
   //       }
   //     }
   //   }
   // }
+
+  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
+    for (const auto bit_size : kBitSizes) {
+      for (const auto operation_type : kBmrOperationTypes) {
+        if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
+                                 operation_type == T::kRoundToNearestInt_circuit)) {
+          // kClampB_circuit and kRoundToNearestInt_circuit only support 64-bit floating point
+        } else {
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                    number_of_simd);
+        }
+      }
+    }
+  }
 
   // for (const auto number_of_simd : kNumbersOfSimd_1_10_100) {
   //   for (const auto operation_type : kArithmeticGmwOperationTypes) {
