@@ -439,6 +439,8 @@ BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(par
   for ([[maybe_unused]] const auto& wire : parent_)
     assert(wire->GetProtocol() == MpcProtocol::kBooleanGmw);
 
+  own_output_wires_ = false;
+
   output_wires_.resize(parent_.size());
   // for (auto& w : output_wires_) {
   //   w = GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(backend_,
@@ -494,10 +496,7 @@ BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(par
     // output_wires_ = (evaluators_gc_shares[0])->GetWires();
   }
 
-
   output_wires_ = garbler_input_gate->GetOutputAsGarbledCircuitShare()->GetWires();
-
-
 
   assert(gate_id_ >= 0);
 }
@@ -529,7 +528,7 @@ void BooleanGmwToGCGate::EvaluateOnline() {
     assert(gmw_wire);
     boolean_gmw_share_bitvector.emplace_back(gmw_wire->GetValues());
 
-    std::cout<<"gmw_wire->GetValues(): "<<gmw_wire->GetValues()<<std::endl;
+    std::cout << "gmw_wire->GetValues(): " << gmw_wire->GetValues() << std::endl;
   }
 
   std::cout << "000" << std::endl;
@@ -541,8 +540,6 @@ void BooleanGmwToGCGate::EvaluateOnline() {
   else {
     evaluators_input_promise_->set_value(boolean_gmw_share_bitvector);
   }
-
-
 }
 
 const proto::garbled_circuit::SharePointer BooleanGmwToGCGate::GetOutputAsGCShare() const {
@@ -556,12 +553,6 @@ const SharePointer BooleanGmwToGCGate::GetOutputAsShare() const {
   assert(result);
   return result;
 }
-
-
-
-
-
-
 
 // TODO: improve BooleanGmwToGCGate
 // // added by Liang Zhao
