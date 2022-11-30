@@ -106,6 +106,11 @@ void InputGateGarbler::EvaluateSetup() {
     assert(gc_wire);
     gc_wire->GetMutableKeys() = Block128Vector::MakeRandom(number_of_simd_);
     // set the bits at positions where we will store the r vector to 0
+
+    // commented by Liang Zhao
+    // ? why set to zero at these positions
+    // ? for each key, its size is kKappa/2
+
     for (auto& key : gc_wire->GetMutableKeys()) {
       BitSpan key_span(key.data(), kKappa);
       key_span.Set(false, 0);
@@ -123,6 +128,7 @@ void InputGateGarbler::EvaluateOnline() {
   auto& provider{dynamic_cast<ThreeHalvesGarblerProvider&>(GetGarbledCircuitProvider())};
   const Block128& offset{provider.GetOffset()};
 
+  // garbler's input
   if (is_my_input_) {
     if constexpr (kDebug) {
       if (!input_promise_future_.has_value()) {
@@ -517,7 +523,8 @@ AndGateEvaluator::AndGateEvaluator(motion::SharePointer parent_a, motion::ShareP
 void AndGateEvaluator::EvaluateSetup() {
   auto& provider{dynamic_cast<ThreeHalvesEvaluatorProvider&>(GetGarbledCircuitProvider())};
   provider.WaitSetup();
-  garbled_tables_msg_future_.wait(); }
+  garbled_tables_msg_future_.wait();
+}
 
 void AndGateEvaluator::EvaluateOnline() {
   auto& provider{dynamic_cast<ThreeHalvesEvaluatorProvider&>(GetGarbledCircuitProvider())};
