@@ -128,26 +128,26 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   signed_integer_boolean_gmw_share_1_U128 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kBooleanGmw>(em::ToInput<U128>(vector_of_input_U128), 0));
 
-  signed_integer_gc_share_0_U8 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
-  signed_integer_gc_share_1_U8 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
-  signed_integer_gc_share_0_U16 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
-  signed_integer_gc_share_1_U16 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
-  signed_integer_gc_share_0_U32 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
-  signed_integer_gc_share_1_U32 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
-  signed_integer_gc_share_0_U64 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
-  signed_integer_gc_share_1_U64 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
-  signed_integer_gc_share_0_U128 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
-  signed_integer_gc_share_1_U128 = em::SecureSignedInteger(
-      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
+  // signed_integer_gc_share_0_U8 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
+  // signed_integer_gc_share_1_U8 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
+  // signed_integer_gc_share_0_U16 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
+  // signed_integer_gc_share_1_U16 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
+  // signed_integer_gc_share_0_U32 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
+  // signed_integer_gc_share_1_U32 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
+  // signed_integer_gc_share_0_U64 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
+  // signed_integer_gc_share_1_U64 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
+  // signed_integer_gc_share_0_U128 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
+  // signed_integer_gc_share_1_U128 = em::SecureSignedInteger(
+  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
 
   signed_integer_bmr_share_0_U8 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kBmr>(em::ToInput<U8>(vector_of_input_U8), 0));
@@ -230,37 +230,41 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       default:
         throw std::invalid_argument("Invalid bit size");
     }
-  } else if (protocol == encrypto::motion::MpcProtocol::kGarbledCircuit) {
-    switch (bit_size) {
-      case 8: {
-        a = signed_integer_gc_share_0_U8;
-        b = signed_integer_gc_share_1_U8;
-        break;
-      }
-      case 16: {
-        a = signed_integer_gc_share_0_U16;
-        b = signed_integer_gc_share_1_U16;
-        break;
-      }
-      case 32: {
-        a = signed_integer_gc_share_0_U32;
-        b = signed_integer_gc_share_1_U32;
-        break;
-      }
-      case 64: {
-        a = signed_integer_gc_share_0_U64;
-        b = signed_integer_gc_share_1_U64;
-        break;
-      }
-      case 128: {
-        a = signed_integer_gc_share_0_U128;
-        b = signed_integer_gc_share_1_U128;
-        break;
-      }
-      default:
-        throw std::invalid_argument("Invalid bit size");
-    }
-  } else {
+  }
+  
+  //  else if (protocol == encrypto::motion::MpcProtocol::kGarbledCircuit) {
+  //   switch (bit_size) {
+  //     case 8: {
+  //       a = signed_integer_gc_share_0_U8;
+  //       b = signed_integer_gc_share_1_U8;
+  //       break;
+  //     }
+  //     case 16: {
+  //       a = signed_integer_gc_share_0_U16;
+  //       b = signed_integer_gc_share_1_U16;
+  //       break;
+  //     }
+  //     case 32: {
+  //       a = signed_integer_gc_share_0_U32;
+  //       b = signed_integer_gc_share_1_U32;
+  //       break;
+  //     }
+  //     case 64: {
+  //       a = signed_integer_gc_share_0_U64;
+  //       b = signed_integer_gc_share_1_U64;
+  //       break;
+  //     }
+  //     case 128: {
+  //       a = signed_integer_gc_share_0_U128;
+  //       b = signed_integer_gc_share_1_U128;
+  //       break;
+  //     }
+  //     default:
+  //       throw std::invalid_argument("Invalid bit size");
+  //   }
+  // } 
+  
+  else {
     throw std::invalid_argument("Invalid MPC protocol");
   }
 

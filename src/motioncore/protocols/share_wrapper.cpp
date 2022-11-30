@@ -580,6 +580,7 @@ ShareWrapper ShareWrapper::Convert() const {
   constexpr auto kArithmeticGmw = MpcProtocol::kArithmeticGmw;
   constexpr auto kBooleanGmw = MpcProtocol::kBooleanGmw;
   constexpr auto kBmr = MpcProtocol::kBmr;
+  constexpr auto kGarbledCircuit = MpcProtocol::kGarbledCircuit;
   if (share_->GetProtocol() == P) {
     throw std::runtime_error("Trying to convert share to MpcProtocol it is already in");
   }
@@ -595,7 +596,14 @@ ShareWrapper ShareWrapper::Convert() const {
   } else if constexpr (P == kBooleanGmw) {
     if (share_->GetProtocol() == kArithmeticGmw) {  // kArithmeticGmw --(over kBmr)--> kBooleanGmw
       return this->Convert<kBmr>().Convert<kBooleanGmw>();
-    } else {  // kBmr -> kBooleanGmw
+    }
+
+    // added by Liang Zhao
+    else if (share_->GetProtocol() == kGarbledCircuit) {  // kGarbledCircuit -> kBooleanGmw
+      return GCToBooleanGmw();
+    }
+
+    else if (share_->GetProtocol() == kBmr) {  // kBmr -> kBooleanGmw
       return BmrToBooleanGmw();
     }
   } else if constexpr (P == kBmr) {
@@ -604,7 +612,18 @@ ShareWrapper ShareWrapper::Convert() const {
     } else {  // kBooleanGmw -> kBmr
       return BooleanGmwToBmr();
     }
-  } else {
+  }
+
+  // added by Liang Zhao
+  else if constexpr (P == kGarbledCircuit) {
+    if (share_->GetProtocol() == kBooleanGmw) {  // kBooleanGmw -> kGarbledCircuit
+      return BooleanGmwToGC();
+    } else {  // kArithmeticGmw -> kGarbledCircuit
+      return ArithmeticGmwToGC();
+    }
+  }
+
+  else {
     throw std::runtime_error("Unknown MpcProtocol");
   }
 }
@@ -613,6 +632,9 @@ ShareWrapper ShareWrapper::Convert() const {
 template ShareWrapper ShareWrapper::Convert<MpcProtocol::kArithmeticGmw>() const;
 template ShareWrapper ShareWrapper::Convert<MpcProtocol::kBooleanGmw>() const;
 template ShareWrapper ShareWrapper::Convert<MpcProtocol::kBmr>() const;
+
+// added by Liang Zhao
+template ShareWrapper ShareWrapper::Convert<MpcProtocol::kGarbledCircuit>() const;
 
 ShareWrapper ShareWrapper::ArithmeticGmwToBmr() const {
   auto arithmetic_gmw_to_bmr_gate{
@@ -668,6 +690,48 @@ ShareWrapper ShareWrapper::BmrToBooleanGmw() const {
   auto bmr_to_boolean_gmw_gate{share_->GetRegister()->EmplaceGate<BmrToBooleanGmwGate>(bmr_share)};
   return ShareWrapper(bmr_to_boolean_gmw_gate->GetOutputAsShare());
 }
+
+// added by Liang Zhao
+// TODO: improve according to ABY paper using OT, which is more efficient
+// current approach:
+// 1. both the garbler and evaluator secret share their Boolean GMW share and get GC share.
+// 2. they both XOR the GC share.
+ShareWrapper ShareWrapper::BooleanGmwToGC() const {
+  std::size_t party_id = share_->GetBackend().GetCommunicationLayer().GetMyId();
+
+  std::vector<WirePointer> parent = share_->GetWires();
+
+  std::size_t number_of_wires = parent.size();
+
+  std::vector<BitVector<>> boolean_gmw_value_vector;
+  boolean_gmw_value_vector.reserve(parent.size());
+
+  // wait for parent wire to obtain a value
+  for (std::size_t i = 0; i < number_of_wires; ++i) {
+    auto boolean_gmw_wire = std::dynamic_pointer_cast<proto::boolean_gmw::Wire>(parent.at(i));
+    assert(boolean_gmw_wire);
+    boolean_gmw_wire->GetIsReadyCondition().Wait();
+    assert(!boolean_gmw_wire->GetValues().GetData().empty());
+    boolean_gmw_value_vector.emplace_back(boolean_gmw_wire->GetValues());
+  }
+
+  // both the garbler and evaluator secret share their Boolean GMW share and get GC share.
+  // 1. the garbler first share his Boolean Gmw share value
+  ShareWrapper gc_share_garbler = share_->GetBackend().GarbledCircuitInput(
+      static_cast<std::size_t>(GarbledCircuitRole::kGarbler), boolean_gmw_value_vector);
+
+  ShareWrapper gc_share_evaluator = share_->GetBackend().GarbledCircuitInput(
+      static_cast<std::size_t>(GarbledCircuitRole::kEvaluator), boolean_gmw_value_vector);
+
+  return gc_share_garbler ^ gc_share_evaluator;
+}
+
+// added by Liang Zhao
+ShareWrapper ShareWrapper::GCToBooleanGmw() const {}
+
+// added by Liang Zhao
+// TODO: implement
+ShareWrapper ShareWrapper::ArithmeticGmwToGC() const {}
 
 ShareWrapper ShareWrapper::Out(std::size_t output_owner) const {
   assert(share_);
@@ -2088,15 +2152,18 @@ template ShareWrapper ShareWrapper::EQ<__uint128_t>(const ShareWrapper& arithmet
 //   //   auto rec_and_bit_decompose_gate =
 //   //
 //   //
-//   // std::make_shared<proto::arithmetic_gmw::ReconstructArithmeticGmwShareAndBitDecomposeGate<T>>(
+//   //
+//   std::make_shared<proto::arithmetic_gmw::ReconstructArithmeticGmwShareAndBitDecomposeGate<T>>(
 //       //           arithmetic_gmw_share_c);
 //       //   share_->GetRegister()->RegisterNextGate(rec_and_bit_decompose_gate);
 //       //   ShareWrapper boolean_value_c =
-//       // std::static_pointer_cast<Share>(rec_and_bit_decompose_gate->GetOutputAsBooleanGmwValue());
+//       //
+//       std::static_pointer_cast<Share>(rec_and_bit_decompose_gate->GetOutputAsBooleanGmwValue());
 //       //   ShareWrapper arithmetic_value_c =
 //       //
 //       //
-//       // std::static_pointer_cast<Share>(rec_and_bit_decompose_gate->GetOutputAsArithmeticGmwValue());
+//       //
+//       std::static_pointer_cast<Share>(rec_and_bit_decompose_gate->GetOutputAsArithmeticGmwValue());
 //       //   boolean_value_c->SetAsPubliclyKnownShare();
 //       //   arithmetic_value_c->SetAsPubliclyKnownShare();
 
@@ -2115,17 +2182,23 @@ template ShareWrapper ShareWrapper::EQ<__uint128_t>(const ShareWrapper& arithmet
 //                                                       const ShareWrapper& arithmetic_gmw_share_b,
 //                                                       std::size_t bit_length_l) const;
 
-// template ShareWrapper ShareWrapper::EQC<std::uint16_t>(const ShareWrapper& arithmetic_gmw_share_a,
-//                                                        const ShareWrapper& arithmetic_gmw_share_b,
-//                                                        std::size_t bit_length_l) const;
+// template ShareWrapper ShareWrapper::EQC<std::uint16_t>(const ShareWrapper&
+// arithmetic_gmw_share_a,
+//                                                        const ShareWrapper&
+//                                                        arithmetic_gmw_share_b, std::size_t
+//                                                        bit_length_l) const;
 
-// template ShareWrapper ShareWrapper::EQC<std::uint32_t>(const ShareWrapper& arithmetic_gmw_share_a,
-//                                                        const ShareWrapper& arithmetic_gmw_share_b,
-//                                                        std::size_t bit_length_l) const;
+// template ShareWrapper ShareWrapper::EQC<std::uint32_t>(const ShareWrapper&
+// arithmetic_gmw_share_a,
+//                                                        const ShareWrapper&
+//                                                        arithmetic_gmw_share_b, std::size_t
+//                                                        bit_length_l) const;
 
-// template ShareWrapper ShareWrapper::EQC<std::uint64_t>(const ShareWrapper& arithmetic_gmw_share_a,
-//                                                        const ShareWrapper& arithmetic_gmw_share_b,
-//                                                        std::size_t bit_length_l) const;
+// template ShareWrapper ShareWrapper::EQC<std::uint64_t>(const ShareWrapper&
+// arithmetic_gmw_share_a,
+//                                                        const ShareWrapper&
+//                                                        arithmetic_gmw_share_b, std::size_t
+//                                                        bit_length_l) const;
 
 // template ShareWrapper ShareWrapper::EQC<__uint128_t>(const ShareWrapper& arithmetic_gmw_share_a,
 //                                                      const ShareWrapper& arithmetic_gmw_share_b,
@@ -5684,13 +5757,10 @@ ShareWrapper ShareWrapper::BooleanValueSelection(const ShareWrapper& boolean_gmw
 
   // share_->GetRegister()->RegisterNextGate(boolean_value_selection_gate_cast);
 
-// TODO: 
-auto boolean_value_selection_gate = share_->GetRegister()->EmplaceGate<proto::BooleanValueSelectionGate>(
-      *boolean_gmw_share_a, *boolean_gmw_share_b, *boolean_gmw_share_c);
-
-
-
-
+  // TODO:
+  auto boolean_value_selection_gate =
+      share_->GetRegister()->EmplaceGate<proto::BooleanValueSelectionGate>(
+          *boolean_gmw_share_a, *boolean_gmw_share_b, *boolean_gmw_share_c);
 
   motion::proto::boolean_gmw::SharePointer boolean_gmw_share_selection_result =
       boolean_value_selection_gate->GetOutputAsBooleanShare();

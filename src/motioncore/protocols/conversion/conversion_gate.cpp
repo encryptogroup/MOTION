@@ -513,6 +513,7 @@ void BooleanGmwToGCGate::EvaluateOnline() {
           output_wires_[wire_i])};
       assert(gc_wire);
 
+      // key_0 xor x_0^B dot R
       for (std::size_t simd_j = 0; simd_j < number_of_simd_; ++simd_j) {
         // const Block128& offset_or_zero = inputs[wire_i][simd_j] ? offset : zero;
         const Block128& offset_or_zero = boolean_gmw_wire_value[simd_j] ? offset : zero;
@@ -525,6 +526,11 @@ void BooleanGmwToGCGate::EvaluateOnline() {
         std::transform(lhs_data, lhs_data + Block128::kBlockSize, rhs_data, output_data,
                        [](const std::uint8_t& lhs, const std::uint8_t& rhs) { return lhs ^ rhs; });
       }
+
+      // key_0 xor (1-x_0^B) dot R
+
+
+      
     }
 
     // a pair of labels for each wire and simd value

@@ -70,7 +70,10 @@ add_executable(motiontest
 
         # test_liangzhao_EQ_EQZ_LTBits_LTC_LTS_LTZ.cpp # not tested
 
-        test_liangzhao_sampling_algorithm.cpp
+        # test_liangzhao_sampling_algorithm.cpp 
+
+        # test_liangzhao_conversions.cpp
+        test_liangzhao_conversions_gc.cpp
 )
 
 target_link_libraries(motiontest PRIVATE

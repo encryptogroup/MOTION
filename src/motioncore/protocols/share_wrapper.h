@@ -1310,6 +1310,17 @@ class ShareWrapper {
 
   ShareWrapper BmrToBooleanGmw() const;
 
+  // added by Liang Zhao
+  // TODO: improve according to ABY paper using OT, which is more efficient
+  ShareWrapper BooleanGmwToGC() const;
+
+  // added by Liang Zhao
+  ShareWrapper GCToBooleanGmw() const;
+
+  // added by Liang Zhao
+// TODO:
+  ShareWrapper ArithmeticGmwToGC() const;
+
   void ShareConsistencyCheck() const;
 
  public:

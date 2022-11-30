@@ -97,26 +97,9 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::vector<Combination> combinations;
 
-  // for (const auto number_of_simd : kNumbersOfSimd) {
-  //   for (const auto bit_size : kBooleanBitSizes) {
-  //     for (const auto operation_type : kBooleanGmwOperationTypes) {
-  //       if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
-  //       }
-
-  //       else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
-  //       }
-
-  //       else {
-  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
-  //                                   operation_type, number_of_simd);
-  //       }
-  //     }
-  //   }
-  // }
-
   for (const auto number_of_simd : kNumbersOfSimd) {
     for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kGarbledCircuitOperationTypes) {
+      for (const auto operation_type : kBooleanGmwOperationTypes) {
         if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
         }
 
@@ -124,8 +107,8 @@ std::vector<Combination> GenerateAllCombinations() {
         }
 
         else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
-                                    number_of_simd);
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
+                                    operation_type, number_of_simd);
         }
       }
     }
@@ -133,7 +116,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
   // for (const auto number_of_simd : kNumbersOfSimd) {
   //   for (const auto bit_size : kBooleanBitSizes) {
-  //     for (const auto operation_type : kBmrOperationTypes) {
+  //     for (const auto operation_type : kGarbledCircuitOperationTypes) {
   //       if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
   //       }
 
@@ -141,12 +124,29 @@ std::vector<Combination> GenerateAllCombinations() {
   //       }
 
   //       else {
-  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
   //                                   number_of_simd);
   //       }
   //     }
   //   }
   // }
+
+  for (const auto number_of_simd : kNumbersOfSimd) {
+    for (const auto bit_size : kBooleanBitSizes) {
+      for (const auto operation_type : kBmrOperationTypes) {
+        if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
+        }
+
+        else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
+        }
+
+        else {
+          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                    number_of_simd);
+        }
+      }
+    }
+  }
 
   // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 1);
   // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kInt2FL, 1);
