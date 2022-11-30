@@ -103,6 +103,9 @@ std::shared_ptr<garbled_circuit::InputGate> Provider::MakeInputGate(std::size_t 
                                                                     std::size_t number_of_wires,
                                                                     std::size_t number_of_simd,
                                                                     Backend& backend) {
+  // std::cout << "backend.GetCommunicationLayer().GetMyId(): "
+  //           << backend.GetCommunicationLayer().GetMyId() << std::endl;
+
   assert(backend.GetCommunicationLayer().GetMyId() ==
              static_cast<std::size_t>(GarbledCircuitRole::kGarbler) ||
          backend.GetCommunicationLayer().GetMyId() ==

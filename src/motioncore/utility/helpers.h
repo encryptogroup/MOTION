@@ -808,10 +808,43 @@ auto FromTwosComplement(const std::vector<T>& input) {
   return result;
 }
 
+template <typename T>
+T BoolArrayToInteger(const bool bool_array[], unsigned count) {
+  T tmp;
+  T integer_output = 0;
+
+  // TEMP_FAILURE_RETRY tmp_int_array[count];
+  // for (unsigned i = 0; i < count; i++) {
+  //   tmp_int_array[i] = ((T)bool_array[i] << (count - i - 1));
+  // }
+  // unsigned head = 0;
+  // unsigned tail = count - 1;
+
+  for (unsigned i = 0; i < count; i++) {
+    tmp = bool_array[i];
+    integer_output |= (T(tmp) << (i));
+  }
+
+  return integer_output;
+}
+
+template <typename T>
+T BoolVectorToInteger(const std::vector<bool>& bool_vector) {
+  T tmp;
+  T integer_output = 0;
+  std::size_t count = bool_vector.size();
+
+  for (unsigned i = 0; i < count; i++) {
+    tmp = bool_vector[i];
+    integer_output |= T(tmp) << (i);
+  }
+
+  return integer_output;
+}
 
 // check if all elements of vector equal to value
 template <typename T>
-bool VectorAllEqualToValue(const std::vector<T> & v, T value) {
+bool VectorAllEqualToValue(const std::vector<T>& v, T value) {
   if (v.size() == 0) {
     return false;
   }

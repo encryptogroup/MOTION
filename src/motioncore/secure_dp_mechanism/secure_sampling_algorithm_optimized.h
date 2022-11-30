@@ -39,35 +39,35 @@ class SecureFloatingPointCircuitABY;
 class SecureFixedPointCircuitCBMC;
 
 /// \brief class to wrap sampling algorithms
-class SecureSamplingAlgorithm {
+class SecureSamplingAlgorithm_optimized {
  public:
-  SecureSamplingAlgorithm() = default;
+  SecureSamplingAlgorithm_optimized() = default;
 
-  SecureSamplingAlgorithm(const SecureSamplingAlgorithm& other)
-      : SecureSamplingAlgorithm(*other.share_) {}
+  SecureSamplingAlgorithm_optimized(const SecureSamplingAlgorithm_optimized& other)
+      : SecureSamplingAlgorithm_optimized(*other.share_) {}
 
-  SecureSamplingAlgorithm(SecureSamplingAlgorithm&& other)
-      : SecureSamplingAlgorithm(std::move(*other.share_)) {
+  SecureSamplingAlgorithm_optimized(SecureSamplingAlgorithm_optimized&& other)
+      : SecureSamplingAlgorithm_optimized(std::move(*other.share_)) {
     other.share_->Get().reset();
   }
 
-  SecureSamplingAlgorithm(const ShareWrapper& other) : SecureSamplingAlgorithm(*other) {}
+  SecureSamplingAlgorithm_optimized(const ShareWrapper& other) : SecureSamplingAlgorithm_optimized(*other) {}
 
-  SecureSamplingAlgorithm(ShareWrapper&& other) : SecureSamplingAlgorithm(std::move(*other)) {
+  SecureSamplingAlgorithm_optimized(ShareWrapper&& other) : SecureSamplingAlgorithm_optimized(std::move(*other)) {
     other.Get().reset();
   }
 
-  SecureSamplingAlgorithm(const SharePointer& other);
+  SecureSamplingAlgorithm_optimized(const SharePointer& other);
 
-  SecureSamplingAlgorithm(SharePointer&& other);
+  SecureSamplingAlgorithm_optimized(SharePointer&& other);
 
-  SecureSamplingAlgorithm& operator=(const SecureSamplingAlgorithm& other) {
+  SecureSamplingAlgorithm_optimized& operator=(const SecureSamplingAlgorithm_optimized& other) {
     this->share_ = other.share_;
     this->logger_ = other.logger_;
     return *this;
   }
 
-  SecureSamplingAlgorithm& operator=(SecureSamplingAlgorithm&& other) {
+  SecureSamplingAlgorithm_optimized& operator=(SecureSamplingAlgorithm_optimized&& other) {
     this->share_ = std::move(other.share_);
     this->logger_ = std::move(other.logger_);
     return *this;
@@ -81,13 +81,18 @@ class SecureSamplingAlgorithm {
 
   const ShareWrapper& operator->() const { return *share_; }
 
-  //   SecureSamplingAlgorithm() : share_(nullptr){};
+  //   SecureSamplingAlgorithm_optimized() : share_(nullptr){};
 
-  //   SecureSamplingAlgorithm(const SharePointer& other);
+  //   SecureSamplingAlgorithm_optimized(const SharePointer& other);
 
-  //   SecureSamplingAlgorithm(const ShareWrapper& other) : SecureSamplingAlgorithm(*other) {}
+  //   SecureSamplingAlgorithm_optimized(const ShareWrapper& other) : SecureSamplingAlgorithm_optimized(*other) {}
 
  public:
+
+
+  ShareWrapper BooleanGmwBitsZeroCompensation(const ShareWrapper& share_bits,
+                                              const std::size_t num_of_total_bits) const;
+
   // each party generates random boolean gmw bits locally
   ShareWrapper GenerateRandomBooleanGmwBits(const std::size_t num_of_bits,
                                             const std::size_t num_of_simd) const;
@@ -110,8 +115,6 @@ class SecureSamplingAlgorithm {
   template <typename T>
   ShareWrapper GenerateRandomUnsignedIntegerGC(T m, const std::size_t num_of_simd) const;
 
-  ShareWrapper BooleanGmwBitsZeroCompensation(const ShareWrapper& share_bits,
-                                              const std::size_t num_of_total_bits) const;
 
   // generate a geometric random variable x, i.e.,
   // count the number of 0s in random bits until the first 1 (including the first 1 bit),

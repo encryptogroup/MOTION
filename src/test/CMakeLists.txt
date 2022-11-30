@@ -73,7 +73,10 @@ add_executable(motiontest
         # test_liangzhao_conversions.cpp
         # test_liangzhao_conversions_gc.cpp # test passed
 
-        test_liangzhao_sampling_algorithm.cpp # testing
+        # test_liangzhao_random_integer_algorithm.cpp # test passed
+        # test_liangzhao_simple_geometric.cpp # test passed
+        # test_liangzhao_uniformly_sampling.cpp # test passed
+        test_liangzhao_geometricExp.cpp # testing
 )
 
 target_link_libraries(motiontest PRIVATE

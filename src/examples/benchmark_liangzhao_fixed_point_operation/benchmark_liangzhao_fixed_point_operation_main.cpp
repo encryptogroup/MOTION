@@ -67,7 +67,7 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::FixedPointOperationType;
 
   const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1, 10, 100, 1000};
+  const std::array kNumbersOfSimd = {1, 1000};
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
@@ -99,35 +99,35 @@ std::vector<Combination> GenerateAllCombinations() {
       T::kSin_P3307_0_1_circuit,
   };
 
-  const std::array kBmrOperationTypes = {
-      // boolean circuit based method
-      T::kAdd_circuit,
-      T::kSub_circuit,
-      T::kMul_circuit,
-      T::kDiv_circuit,
-      // T::kDiv_Goldschmidt_circuit,
-      T::kLt_circuit,
-      T::kGt_circuit,
-      T::kEq_circuit,
-      T::kIsZero_circuit,
-      T::kIsNeg_circuit,
-      T::kExp2_P1045_circuit,
-      T::kExp2_P1045_Neg_0_1_circuit,
-      T::kExp_circuit,
-      T::kLog2_P2508_circuit,
-      T::kLn_circuit,
-      // T::kSqrt_circuit,
-      T::kSqrt_P0132_circuit,
-      T::kCeil_circuit,
-      T::kFloor_circuit,
-      T::kFx2Int_circuit,
-      T::kFx2FL_circuit,
-      T::kNeg_circuit,
-      T::kAbs_circuit,
+  // const std::array kBmrOperationTypes = {
+  //     // boolean circuit based method
+  //     T::kAdd_circuit,
+  //     T::kSub_circuit,
+  //     T::kMul_circuit,
+  //     T::kDiv_circuit,
+  //     // T::kDiv_Goldschmidt_circuit,
+  //     T::kLt_circuit,
+  //     T::kGt_circuit,
+  //     T::kEq_circuit,
+  //     T::kIsZero_circuit,
+  //     T::kIsNeg_circuit,
+  //     T::kExp2_P1045_circuit,
+  //     T::kExp2_P1045_Neg_0_1_circuit,
+  //     T::kExp_circuit,
+  //     T::kLog2_P2508_circuit,
+  //     T::kLn_circuit,
+  //     // T::kSqrt_circuit,
+  //     T::kSqrt_P0132_circuit,
+  //     T::kCeil_circuit,
+  //     T::kFloor_circuit,
+  //     T::kFx2Int_circuit,
+  //     T::kFx2FL_circuit,
+  //     T::kNeg_circuit,
+  //     T::kAbs_circuit,
 
-      T::kRoundedFx2Int_circuit,
-      T::kSin_P3307_0_1_circuit,
-  };
+  //     T::kRoundedFx2Int_circuit,
+  //     T::kSin_P3307_0_1_circuit,
+  // };
 
   const std::array kGarbledCircuitOperationTypes = {
       // boolean circuit based method
@@ -268,7 +268,8 @@ int main(int ac, char* av[]) {
       auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
                                          combination.protocol_, combination.operation_type_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
     // std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
@@ -297,7 +298,8 @@ int main(int ac, char* av[]) {
 
     // // added by Liang Zhao
     // encrypto::motion::WriteToCsv(
-    //     fmt::format("{} {}-bit SIMD-{}", encrypto::motion::to_string(combination.operation_type_),
+    //     fmt::format("{} {}-bit SIMD-{}",
+    //     encrypto::motion::to_string(combination.operation_type_),
     //                 combination.bit_size_, combination.number_of_simd_),
     //     CSV_filename, accumulated_statistics, accumulated_communication_statistics);
   }

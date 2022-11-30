@@ -21,7 +21,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-#include "secure_sampling_algorithm.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
 #include <fmt/format.h>
 #include <iterator>
 
@@ -36,15 +36,15 @@
 
 namespace encrypto::motion {
 
-SecureSamplingAlgorithm::SecureSamplingAlgorithm(const SharePointer& other)
+SecureSamplingAlgorithm_naive::SecureSamplingAlgorithm_naive(const SharePointer& other)
     : share_(std::make_unique<ShareWrapper>(other)),
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
-SecureSamplingAlgorithm::SecureSamplingAlgorithm(SharePointer&& other)
+SecureSamplingAlgorithm_naive::SecureSamplingAlgorithm_naive(SharePointer&& other)
     : share_(std::make_unique<ShareWrapper>(std::move(other))),
       logger_(share_.get()->Get()->GetRegister()->GetLogger()) {}
 
-ShareWrapper SecureSamplingAlgorithm::GenerateRandomBooleanGmwBits(
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomBooleanGmwBits(
     const std::size_t num_of_bits, const std::size_t num_of_simd) const {
   std::vector<BitVector<>> random_bitvector_vector;
   random_bitvector_vector.reserve(num_of_bits);
@@ -65,8 +65,41 @@ ShareWrapper SecureSamplingAlgorithm::GenerateRandomBooleanGmwBits(
   return boolean_gmw_share_random_bits;
 }
 
+ShareWrapper SecureSamplingAlgorithm_naive::BooleanGmwBitsZeroCompensation(
+    const ShareWrapper& boolean_gmw_share_bits, const std::size_t num_of_total_bits) const {
+  //   std::size_t T_size = sizeof(UintType) * 8;
+
+  std::size_t boolean_gmw_share_bits_vector_size = boolean_gmw_share_bits.Split().size();
+
+  //   std::cout << "boolean_gmw_share_bits_vector_size: " << boolean_gmw_share_bits_vector_size
+  //             << std::endl;
+
+  //   assert(boolean_gmw_share_bits_vector_size > num_of_total_bits);
+
+  std::vector<ShareWrapper> boolean_gmw_share_bits_vector = boolean_gmw_share_bits.Split();
+
+  //   ShareWrapper constant_boolean_gmw_share_zero =
+  //   boolean_gmw_share_bits_vector[0] ^ boolean_gmw_share_bits_vector[0];
+  ShareWrapper constant_boolean_gmw_share_zero =
+      boolean_gmw_share_bits_vector[0].CreateConstantAsBooleanGmwInput(false);
+
+  std::vector<ShareWrapper> boolean_gmw_share_bits_with_zero_compensation_vector(num_of_total_bits);
+  for (std::size_t i = 0; i < num_of_total_bits; i++) {
+    boolean_gmw_share_bits_with_zero_compensation_vector[i] = constant_boolean_gmw_share_zero;
+  }
+
+  for (std::size_t i = 0; i < boolean_gmw_share_bits_vector_size; i++) {
+    boolean_gmw_share_bits_with_zero_compensation_vector[i] = boolean_gmw_share_bits_vector[i];
+  }
+
+  return ShareWrapper::Concatenate(boolean_gmw_share_bits_with_zero_compensation_vector);
+}
+
+// =================================================================================================
+// generate random integers
+
 template <typename T>
-ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2(
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2(
     std::size_t bit_size_k, const std::size_t num_of_simd) const {
   assert(sizeof(T) * 8 >= bit_size_k);
   std::size_t T_size = sizeof(T) * 8;
@@ -93,19 +126,19 @@ ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2(
   return boolean_gmw_random_unsigned_integer;
 }
 
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint8_t>(
-    std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint16_t>(
-    std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint32_t>(
-    std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<std::uint64_t>(
-    std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerPow2<__uint128_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+    std::uint8_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+    std::uint16_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+    std::uint32_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+    std::uint64_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<__uint128_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
 
 template <typename T>
-ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW(
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW(
     T m, const std::size_t num_of_simd) const {
   std::size_t T_size = sizeof(T) * 8;
   ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
@@ -115,19 +148,19 @@ ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW(
   return random_unsigned_integer_0_m.Get();
 }
 
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint8_t>(
-    std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint16_t>(
-    std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint32_t>(
-    std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<std::uint64_t>(
-    std::uint64_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
+    std::uint8_t>(std::uint8_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
+    std::uint16_t>(std::uint16_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
+    std::uint32_t>(std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
+    std::uint64_t>(std::uint64_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
     __uint128_t m, const std::size_t num_of_simd) const;
 
 template <typename T>
-ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR(
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR(
     T m, const std::size_t num_of_simd) const {
   std::size_t T_size = sizeof(T) * 8;
   ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
@@ -137,42 +170,45 @@ ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR(
   return random_unsigned_integer_bmr_share_0_m;
 }
 
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint8_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<std::uint8_t>(
     std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint16_t>(
-    std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint32_t>(
-    std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<std::uint64_t>(
-    std::uint64_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
+    std::uint16_t>(std::uint16_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
+    std::uint32_t>(std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
+    std::uint64_t>(std::uint64_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
     __uint128_t m, const std::size_t num_of_simd) const;
 
-// TODO: need conversion from Boolean Gmw to Garbled circuit
+// // TODO: need conversion from Boolean Gmw to Garbled circuit
 template <typename T>
-ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC(
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC(
     T m, const std::size_t num_of_simd) const {
-  //   std::size_t T_size = sizeof(T) * 8;
-  //   ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size,
-  //   num_of_simd); SecureUnsignedInteger random_unsigned_integer =
-  //       SecureUnsignedInteger(boolean_gc_share_random_bits.Convert<MpcProtocol::kGarbledCircuit,
-  //       >());
-  //   ShareWrapper random_unsigned_integer_gc_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
-  //   return random_unsigned_integer_gc_share_0_m;
+  std::size_t T_size = sizeof(T) * 8;
+  ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
+  SecureUnsignedInteger random_unsigned_integer =
+      SecureUnsignedInteger(boolean_gmw_share_random_bits.Convert<MpcProtocol::kGarbledCircuit>());
+  ShareWrapper random_unsigned_integer_gc_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
+  return random_unsigned_integer_gc_share_0_m;
 }
 
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint8_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint8_t>(
     std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint16_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint16_t>(
     std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint32_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint32_t>(
     std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<std::uint64_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint64_t>(
     std::uint64_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm::GenerateRandomUnsignedIntegerGC<__uint128_t>(
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<__uint128_t>(
     __uint128_t m, const std::size_t num_of_simd) const;
 
-ShareWrapper SecureSamplingAlgorithm::SimpleGeometricSampling_1(
+// =================================================================================================
+// Geometric(p = 0.5)
+
+// TODO: what if input random_bits are BMR or GC
+ShareWrapper SecureSamplingAlgorithm_naive::SimpleGeometricSampling_1(
     const ShareWrapper& random_bits) const {
   ShareWrapper random_bits_pre_or = random_bits.PreOrL();
 
@@ -206,7 +242,7 @@ ShareWrapper SecureSamplingAlgorithm::SimpleGeometricSampling_1(
   return hamming_weight;
 }
 
-ShareWrapper SecureSamplingAlgorithm::SimpleGeometricSampling_0(
+ShareWrapper SecureSamplingAlgorithm_naive::SimpleGeometricSampling_0(
     const ShareWrapper& random_bits) const {
   ShareWrapper random_bits_pre_or = random_bits.PreOrL();
 
@@ -220,7 +256,10 @@ ShareWrapper SecureSamplingAlgorithm::SimpleGeometricSampling_0(
   return hamming_weight;
 }
 
-ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint64_0_1(
+// =================================================================================================
+// uniformly random floating-point
+
+ShareWrapper SecureSamplingAlgorithm_naive::UniformFloatingPoint64_0_1(
     const ShareWrapper& random_bits_of_length_52,
     const ShareWrapper& random_bits_of_length_1022) const {
   //   std::cout << "UniformFloatingPoint64_0_1" << std::endl;
@@ -336,7 +375,7 @@ ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint64_0_1(
   return ShareWrapper::Concatenate(boolean_gmw_share_uniform_floating_point_vector);
 }
 
-ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint32_0_1(
+ShareWrapper SecureSamplingAlgorithm_naive::UniformFloatingPoint32_0_1(
     const ShareWrapper& random_bits_of_length_23,
     const ShareWrapper& random_bits_of_length_126) const {
   //   std::cout << "UniformFloatingPoint32_0_1" << std::endl;
@@ -452,10 +491,52 @@ ShareWrapper SecureSamplingAlgorithm::UniformFloatingPoint32_0_1(
   return ShareWrapper::Concatenate(boolean_gmw_share_uniform_floating_point_vector);
 }
 
+// =================================================================================================
+// uniformly random fixed-point
+ShareWrapper SecureSamplingAlgorithm_naive::UniformFixedPoint_0_1(
+    const ShareWrapper& random_bits_of_length_fixed_point_fraction,
+    const std::size_t fixed_point_bit_size) const {
+  ShareWrapper fixed_point_boolean_gmw_share_0_1 = BooleanGmwBitsZeroCompensation(
+      random_bits_of_length_fixed_point_fraction, fixed_point_bit_size);
+
+  return fixed_point_boolean_gmw_share_0_1;
+}
+
+ShareWrapper SecureSamplingAlgorithm_naive::UniformFixedPoint_0_1_Up(
+    const ShareWrapper& random_bits_of_length_fixed_point_fraction,
+    const std::size_t fixed_point_bit_size) const {
+  // uniform fixed point in [0,1)
+  ShareWrapper boolean_gmw_share_uniform_fixed_point_0_1 =
+      UniformFixedPoint_0_1(random_bits_of_length_fixed_point_fraction, fixed_point_bit_size);
+
+  std::vector<ShareWrapper> random_bits_of_length_fixed_point_fraction_vector =
+      random_bits_of_length_fixed_point_fraction.Split();
+
+  //   ShareWrapper constant_boolean_gmw_share_one =
+  //       random_bits_of_length_fixed_point_fraction_vector[0] ^
+  //       (~random_bits_of_length_fixed_point_fraction_vector[0]);
+  ShareWrapper constant_boolean_gmw_share_one =
+      random_bits_of_length_fixed_point_fraction_vector[0].CreateConstantAsBooleanGmwInput(true);
+
+  ShareWrapper fixed_point_boolean_gmw_share_minimum_representable_value =
+      BooleanGmwBitsZeroCompensation(constant_boolean_gmw_share_one, fixed_point_bit_size);
+
+  // convert it to field (0,1] by adding the minimum representable fixed point value
+  ShareWrapper boolean_gmw_share_uniform_fixed_point_0_1_up =
+      (SecureUnsignedInteger(fixed_point_boolean_gmw_share_minimum_representable_value) +
+       SecureUnsignedInteger(boolean_gmw_share_uniform_fixed_point_0_1))
+          .Get();
+
+  return boolean_gmw_share_uniform_fixed_point_0_1_up;
+}
+
+// ====================================================================
+// naive floating-point version
+
 template <typename FloatType, typename UintType, typename IntType, typename A>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
-    const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
-    const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistributionEXP(
+    const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
+    const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
     std::size_t iteration_2) const {
@@ -661,16 +742,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
   //   }
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP<
-    float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
-    const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistributionEXP<
+    float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
     std::size_t iteration_2) const;
 
-template std::vector<ShareWrapper>
-SecureSamplingAlgorithm::FLGeometricDistributionEXP<double, std::uint64_t, std::int64_t>(
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistributionEXP<
+    double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
@@ -678,8 +759,8 @@ SecureSamplingAlgorithm::FLGeometricDistributionEXP<double, std::uint64_t, std::
     std::size_t iteration_2) const;
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
-    const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistributionEXP(
+    const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     std::size_t iteration_2) const {
   std::size_t num_of_simd_geo = constant_unsigned_integer_numerator_vector.size();
@@ -699,9 +780,10 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
   // if the denominator vector's elements are all ones, we can skip the first for loop iterations
   //   if (denominator_are_all_ones) {
   std::vector<FloatType> vector_of_exp_neg_one(num_of_simd_geo * iteration_2, std::exp(-1.0));
-  SecureFloatingPointCircuitABY floating_point_constant_exp_neg_one =
-      SecureFloatingPointCircuitABY((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType, std::true_type>(vector_of_exp_neg_one)));
+  SecureFloatingPointCircuitABY floating_point_constant_exp_neg_one = SecureFloatingPointCircuitABY(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(vector_of_exp_neg_one)));
 
   ShareWrapper floating_point_Bernoulli_distribution_parameter_p =
       floating_point_constant_exp_neg_one.Get();
@@ -728,7 +810,9 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
   for (std::size_t j = 0; j < iteration_2; j++) {
     std::vector<UintType> vector_of_constant_j(num_of_simd_geo, j);
     boolean_gmw_share_constant_j.emplace_back(
-        (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(ToInput<UintType>(vector_of_constant_j)));
+        (share_->Get())
+            ->GetBackend()
+            .ConstantAsBooleanGmwInput(ToInput<UintType>(vector_of_constant_j)));
   }
 
   // invert boolean_gmw_share_b2_vector
@@ -738,9 +822,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
     boolean_gmw_share_b2_invert_vector.emplace_back(~boolean_gmw_share_b2_vector[i]);
   }
 
-  std::vector<ShareWrapper> boolean_gmw_share_v =
-      share_->InvertBinaryTreeSelection(boolean_gmw_share_constant_j,
-      boolean_gmw_share_b2_invert_vector);
+  std::vector<ShareWrapper> boolean_gmw_share_v = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_constant_j, boolean_gmw_share_b2_invert_vector);
 
   SecureUnsignedInteger unsigned_integer_w = SecureUnsignedInteger(boolean_gmw_share_v[0]);
 
@@ -748,8 +831,10 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
   // the numerator's vector elements are not all ones
   if (!numerator_are_all_ones) {
     ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
-        ((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-            ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+        ((share_->Get())
+             ->GetBackend()
+             .ConstantAsBooleanGmwInput(
+                 ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
 
     // TODO: optimize using floating-point division instead
     SecureUnsignedInteger unsigned_integer_geometric_sample =
@@ -782,22 +867,20 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP(
   //   }
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP<
-    float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2)
-    const;
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistributionEXP<
+    float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLGeometricDistributionEXP<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistributionEXP<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2)
-    const;
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2) const;
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution(
-    const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
-    const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistribution(
+    const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
+    const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
@@ -829,10 +912,11 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution
   //   ShareWrapper unsigned_integer_denominator_geo =
   //       ShareWrapper::Simdify(unsigned_integer_denominator_geo_vector);
 
-//   std::vector<std::uint64_t> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
-//   std::vector<std::uint64_t> constant_unsigned_integer_denominator_geo_vector(num_of_simd_total);
-  std::vector<UintType,A> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
-  std::vector<UintType,A> constant_unsigned_integer_denominator_geo_vector(num_of_simd_total);
+  //   std::vector<std::uint64_t> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
+  //   std::vector<std::uint64_t>
+  //   constant_unsigned_integer_denominator_geo_vector(num_of_simd_total);
+  std::vector<UintType> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
+  std::vector<UintType> constant_unsigned_integer_denominator_geo_vector(num_of_simd_total);
 
   for (std::size_t i = 0; i < num_of_simd_dlap; i++) {
     for (std::size_t j = 0; j < num_of_simd_geo; j++) {
@@ -897,16 +981,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution
   return boolean_gmw_share_discrete_laplace_sample_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
-    float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
-    const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistribution<
+    float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
     std::size_t iteration_2, std::size_t iteration_3) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistribution<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -916,8 +1000,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDis
     std::size_t iteration_2, std::size_t iteration_3) const;
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution(
-    const std::vector<UintType,A>& constant_unsigned_integer_numerator_vector,
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistribution(
+    const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
     std::size_t iteration_3) const {
@@ -946,7 +1030,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution
   //   ShareWrapper unsigned_integer_denominator_geo =
   //       ShareWrapper::Simdify(unsigned_integer_denominator_geo_vector);
 
-  std::vector<UintType,A> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
+  std::vector<UintType> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
   for (std::size_t i = 0; i < num_of_simd_dlap; i++) {
     for (std::size_t j = 0; j < num_of_simd_geo; j++) {
       constant_unsigned_integer_numerator_geo_vector[i * num_of_simd_geo + j] =
@@ -1006,14 +1090,14 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution
   return boolean_gmw_share_discrete_laplace_sample_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
-    float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistribution<
+    float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
     std::size_t iteration_3) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDistribution<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistribution<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
@@ -1021,14 +1105,13 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteLaplaceDis
     std::size_t iteration_3) const;
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution(
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t
-    iteration_1, std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const
-    {
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const {
   //   using UintType = std::uint64_t;
 
   std::size_t FLType_size = sizeof(FloatType) * 8;
@@ -1077,8 +1160,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
           constant_unsigned_integer_numerator_dlap_vector,
           constant_unsigned_integer_denominator_dlap_vector,
           random_floating_point_0_1_boolean_gmw_share_dlap,
-          random_unsigned_integer_boolean_gmw_share_dlap,
-          boolean_gmw_share_bernoulli_sample_dlap, iteration_1, iteration_2, iteration_3);
+          random_unsigned_integer_boolean_gmw_share_dlap, boolean_gmw_share_bernoulli_sample_dlap,
+          iteration_1, iteration_2, iteration_3);
 
   // std::cout << "222" << std::endl;
   std::vector<FloatType> constant_floating_point_sigma_square_div_t_vector(num_of_simd_dgau);
@@ -1093,14 +1176,18 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
 
   // std::cout << "333" << std::endl;
   SecureFloatingPointCircuitABY constant_floating_point_sigma_square_div_t =
-      SecureFloatingPointCircuitABY((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType,
-          std::true_type>(constant_floating_point_sigma_square_div_t_vector)));
+      SecureFloatingPointCircuitABY(
+          (share_->Get())
+              ->GetBackend()
+              .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(
+                  constant_floating_point_sigma_square_div_t_vector)));
 
   SecureFloatingPointCircuitABY constant_floating_point_two_mul_sigma_square =
-      SecureFloatingPointCircuitABY((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType,
-          std::true_type>(constant_floating_point_two_mul_sigma_square_vector)));
+      SecureFloatingPointCircuitABY(
+          (share_->Get())
+              ->GetBackend()
+              .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(
+                  constant_floating_point_two_mul_sigma_square_vector)));
 
   // std::cout << "444" << std::endl;
   ShareWrapper boolean_gmw_share_Y = boolean_gmw_share_discrete_laplace_sample_vector[0];
@@ -1129,9 +1216,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
                                              num_of_simd_dgau);
 
   // std::cout << "666" << std::endl;
-  std::vector<ShareWrapper> boolean_gmw_share_result_vector =
-      share_->InvertBinaryTreeSelection(boolean_gmw_share_Y_reshape,
-      boolean_gmw_share_choice_reshape);
+  std::vector<ShareWrapper> boolean_gmw_share_result_vector = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_Y_reshape, boolean_gmw_share_choice_reshape);
 
   //   // only for debug
   boolean_gmw_share_result_vector.emplace_back(
@@ -1155,33 +1241,31 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
   return boolean_gmw_share_result_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution<
     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t
-    iteration_1, std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4)
-    const;
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t
-    iteration_1, std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4)
-    const;
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution(
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t
-    iteration_2, std::size_t iteration_3, std::size_t iteration_4) const {
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t iteration_4) const {
   //   using UintType = std::uint64_t;
 
   std::size_t FLType_size = sizeof(FloatType) * 8;
@@ -1225,8 +1309,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
   std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
       FLDiscreteLaplaceDistribution<FloatType, UintType, IntType, A>(
           constant_unsigned_integer_numerator_dlap_vector,
-          random_floating_point_0_1_boolean_gmw_share_dlap,
-          boolean_gmw_share_bernoulli_sample_dlap, iteration_2, iteration_3);
+          random_floating_point_0_1_boolean_gmw_share_dlap, boolean_gmw_share_bernoulli_sample_dlap,
+          iteration_2, iteration_3);
 
   //   std::cout << "222" << std::endl;
   std::vector<FloatType> constant_floating_point_sigma_square_div_t_vector(num_of_simd_dgau);
@@ -1240,14 +1324,18 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
 
   //   std::cout << "333" << std::endl;
   SecureFloatingPointCircuitABY constant_floating_point_sigma_square_div_t =
-      SecureFloatingPointCircuitABY((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType,
-          std::true_type>(constant_floating_point_sigma_square_div_t_vector)));
+      SecureFloatingPointCircuitABY(
+          (share_->Get())
+              ->GetBackend()
+              .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(
+                  constant_floating_point_sigma_square_div_t_vector)));
 
   SecureFloatingPointCircuitABY constant_floating_point_two_mul_sigma_square =
-      SecureFloatingPointCircuitABY((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType,
-          std::true_type>(constant_floating_point_two_mul_sigma_square_vector)));
+      SecureFloatingPointCircuitABY(
+          (share_->Get())
+              ->GetBackend()
+              .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(
+                  constant_floating_point_two_mul_sigma_square_vector)));
 
   //   std::cout << "444" << std::endl;
   ShareWrapper boolean_gmw_share_Y = boolean_gmw_share_discrete_laplace_sample_vector[0];
@@ -1276,9 +1364,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
                                              num_of_simd_dgau);
 
   //   std::cout << "666" << std::endl;
-  std::vector<ShareWrapper> boolean_gmw_share_result_vector =
-      share_->InvertBinaryTreeSelection(boolean_gmw_share_Y_reshape,
-      boolean_gmw_share_choice_reshape);
+  std::vector<ShareWrapper> boolean_gmw_share_result_vector = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_Y_reshape, boolean_gmw_share_choice_reshape);
 
   //   // only for debug
   boolean_gmw_share_result_vector.emplace_back(
@@ -1302,31 +1389,30 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistributio
   return boolean_gmw_share_result_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution<
     float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t
-    iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t iteration_4) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm::FLDiscreteGaussianDistribution<
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t
-    iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t iteration_4) const;
 
 // TODO: after benchmarking, use more floating-point
 template <typename FloatType, typename UintType>
-std::vector<ShareWrapper> SecureSamplingAlgorithm::FLSymmetricBinomialDistribution(
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLSymmetricBinomialDistribution(
     std::vector<double> constant_sqrt_n_vector,
     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
     const ShareWrapper& boolean_gmw_share_random_bits,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const
-    {
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const {
   std::size_t num_of_simd = constant_sqrt_n_vector.size();
   //   using UintType = std::uint64_t;
   std::size_t FLType_size = sizeof(FloatType) * 8;
@@ -1354,8 +1440,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLSymmetricBinomialDistributi
           FloatType(constant_m_vector[i * iteration + j]) / 4.0;
 
       constant_sqrt_n_mul_sqrt_lnn_div_2_vector[i * iteration + j] =
-          UintType(floor(constant_sqrt_n_vector[i] * sqrt(log(constant_sqrt_n_vector[i])
-          / 2.0)));
+          UintType(floor(constant_sqrt_n_vector[i] * sqrt(log(constant_sqrt_n_vector[i]) / 2.0)));
 
       constant_neg_sqrt_n_mul_lnn_div_2_vector[i * iteration + j] =
           -constant_sqrt_n_mul_sqrt_lnn_div_2_vector[i * iteration + j];
@@ -1381,8 +1466,9 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLSymmetricBinomialDistributi
   ShareWrapper signed_integer_constant_boolean_gmw_share_m =
       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(ToInput<UintType>(constant_m_vector));
   ShareWrapper floating_point_constant_boolean_gmw_share_m_div_4 =
-      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType, std::true_type>(constant_m_div_4_vector));
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(constant_m_div_4_vector));
 
   // std::cout << "111"<< std::endl;
   SecureSignedInteger signed_integer_i =
@@ -1391,18 +1477,24 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLSymmetricBinomialDistributi
       SecureSignedInteger(random_unsigned_integer_boolean_gmw_share);
 
   ShareWrapper constant_boolean_gmw_share_neg_sqrt_n_mul_lnn_div_2 =
-      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<UintType>(constant_neg_sqrt_n_mul_lnn_div_2_vector));
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(ToInput<UintType>(constant_neg_sqrt_n_mul_lnn_div_2_vector));
   ShareWrapper constant_boolean_gmw_share_sqrt_n_mul_lnn_div_2 =
-      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<UintType>(constant_sqrt_n_mul_sqrt_lnn_div_2_vector));
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(ToInput<UintType>(constant_sqrt_n_mul_sqrt_lnn_div_2_vector));
 
   ShareWrapper constant_boolean_gmw_share_p_coefficient_1 =
-      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType, std::true_type>(constant_p_coefficient_1_vector));
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(
+              ToInput<FloatType, std::true_type>(constant_p_coefficient_1_vector));
   ShareWrapper constant_boolean_gmw_share_p_coefficient_2 =
-      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-          ToInput<FloatType, std::true_type>(constant_p_coefficient_2_vector));
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(
+              ToInput<FloatType, std::true_type>(constant_p_coefficient_2_vector));
 
   // std::cout << "222"<< std::endl;
 
@@ -1485,17 +1577,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm::FLSymmetricBinomialDistributi
 
 // constant_sqrt_n * sqrt(2) < 2^(64)
 template std::vector<ShareWrapper>
-SecureSamplingAlgorithm::FLSymmetricBinomialDistribution<double, std::uint64_t>(
+SecureSamplingAlgorithm_naive::FLSymmetricBinomialDistribution<double, std::uint64_t>(
     std::vector<double> constant_sqrt_n_vector,
     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
     const ShareWrapper& boolean_gmw_share_random_bits,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration)
-    const;
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const;
 
 // // constant_sqrt_n * sqrt(2) < 2^(128)
 // template std::vector<ShareWrapper>
-// SecureSamplingAlgorithm::FLSymmetricBinomialDistribution<double, __uint128_t, __int128_t>(
+// SecureSamplingAlgorithm_naive::FLSymmetricBinomialDistribution<double, __uint128_t, __int128_t>(
 //     std::vector<double> constant_sqrt_n_vector,
 //     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
 //     const ShareWrapper& boolean_gmw_share_random_bits,
@@ -1503,963 +1594,902 @@ SecureSamplingAlgorithm::FLSymmetricBinomialDistribution<double, std::uint64_t>(
 //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration)
 //     const;
 
-ShareWrapper SecureSamplingAlgorithm::BooleanGmwBitsZeroCompensation(
-    const ShareWrapper& boolean_gmw_share_bits, const std::size_t num_of_total_bits) const {
-  //   std::size_t T_size = sizeof(UintType) * 8;
+// =================================================================================================================
+// naive version fixed-point arithmetic
 
-  std::size_t boolean_gmw_share_bits_vector_size = boolean_gmw_share_bits.Split().size();
+template <typename FixType, typename UintType, typename IntType, typename A>
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxGeometricDistributionEXP(
+    const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
+    const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const {
+  std::size_t num_of_simd = constant_unsigned_integer_numerator_vector.size();
 
-  //   std::cout << "boolean_gmw_share_bits_vector_size: " << boolean_gmw_share_bits_vector_size
-  //             << std::endl;
+  assert(constant_unsigned_integer_numerator_vector.size() ==
+         constant_unsigned_integer_denominator_vector.size());
+  assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
+         (iteration_1 + iteration_2) * num_of_simd);
+  assert(random_unsigned_integer_boolean_gmw_share->GetNumberOfSimdValues() ==
+         iteration_1 * num_of_simd);
 
-  //   assert(boolean_gmw_share_bits_vector_size > num_of_total_bits);
+  //   using UintType = std::uint64_t;
+  //   using IntType = std::int64_t;
+  //   std::size_t fixed_point_fraction_bit_size = 16;
 
-  std::vector<ShareWrapper> boolean_gmw_share_bits_vector = boolean_gmw_share_bits.Split();
+  // if numerator or denominator are all ones, we can avoid some computations in MPC
+  bool numerator_are_all_ones =
+      VectorAllEqualToValue<UintType>(constant_unsigned_integer_numerator_vector, UintType(1));
+  bool denominator_are_all_ones =
+      VectorAllEqualToValue<UintType>(constant_unsigned_integer_denominator_vector, UintType(1));
 
-  //   ShareWrapper constant_boolean_gmw_share_zero =
-  //   boolean_gmw_share_bits_vector[0] ^ boolean_gmw_share_bits_vector[0];
-  ShareWrapper constant_boolean_gmw_share_zero =
-      boolean_gmw_share_bits_vector[0].CreateConstantAsBooleanGmwInput(false);
+  assert(!denominator_are_all_ones);
+
+  // case 1: denominator are not all ones
+  //   if (!denominator_are_all_ones) {
+  //   std::cout << " if (!denominator_are_all_ones)" << std::endl;
+  ShareWrapper unsigned_integer_boolean_gmw_share_denominator =
+      ((share_->Get())
+           ->GetBackend()
+           .ConstantAsBooleanGmwInput(
+               ToInput<UintType>(constant_unsigned_integer_denominator_vector)));
+
+  // convert denominator to fixed point type in plaintext instead of converting in MPC
+  //   computation
+  std::vector<FixType> constant_fixed_point_denominator_vector(num_of_simd);
+  for (std::size_t i = 0; i < num_of_simd; i++) {
+    UintType denominator_tmp = constant_unsigned_integer_denominator_vector[i];
+    constant_fixed_point_denominator_vector[i] = FixType(IntType(denominator_tmp));
+
+    std::cout << "denominator_tmp: " << denominator_tmp << std::endl;
+    std::cout << "constant_fixed_point_denominator_vector[i] : "
+              << constant_fixed_point_denominator_vector[i] << std::endl;
+  }
+
+  // ============================================================
+  ShareWrapper fixed_point_boolean_gmw_share_denominator =
+      ((share_->Get())
+           ->GetBackend()
+           .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+               constant_fixed_point_denominator_vector, fixed_point_fraction_bit_size)));
+  // ============================================================
+  // TODO: use BMR
+
+  // ============================================================
+
+  std::vector<ShareWrapper> fixed_point_boolean_gmw_share_denominator_expand =
+      ShareWrapper::SimdifyDuplicateVertical(fixed_point_boolean_gmw_share_denominator.Unsimdify(),
+                                             iteration_1);
+
+  ShareWrapper fixed_point_boolean_gmw_share_denominator_simdify =
+      ShareWrapper::Simdify(fixed_point_boolean_gmw_share_denominator_expand);
+
+  SecureFixedPointCircuitCBMC fixed_point_random_unsigned_integer =
+      SecureUnsignedInteger(random_unsigned_integer_boolean_gmw_share)
+          .Int2Fx(fixed_point_fraction_bit_size);
+
+  SecureFixedPointCircuitCBMC fixed_point_unsigned_integer_denominator_simdify =
+      SecureFixedPointCircuitCBMC(fixed_point_boolean_gmw_share_denominator_simdify);
+
+  SecureFixedPointCircuitCBMC fixed_point_random_unsigned_integer_div_denominator =
+      fixed_point_random_unsigned_integer / fixed_point_unsigned_integer_denominator_simdify;
+
+  SecureFixedPointCircuitCBMC fixed_point_exp_neg_random_unsigned_integer_div_denominator =
+      fixed_point_random_unsigned_integer_div_denominator.Neg().Exp();
+  // ============================================================
+  // TODO: use BMR for division
+  // TODO: use BMR for Neg
+  // TODO: use exp2_p1045_neg_0_1 instead of exp
+  // fixed_point_random_unsigned_integer =
+  // fixed_point_random_unsigned_integer.Get().Convert<MpcProtocol::kBmr>();
+  // fixed_point_random_unsigned_integer =
+  // fixed_point_random_unsigned_integer.Get().Convert<MpcProtocol::kBmr>();
+
+  // ============================================================
+
+  // ============================================================
+
+  std::vector<FixType> vector_of_exp_neg_one(num_of_simd * iteration_2, std::exp(-1.0));
+  SecureFixedPointCircuitCBMC fixed_point_constant_exp_neg_one = SecureFixedPointCircuitCBMC(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+              vector_of_exp_neg_one, fixed_point_fraction_bit_size)));
+
+  ShareWrapper fixed_point_Bernoulli_distribution_parameter_p = ShareWrapper::Simdify(
+      std::vector{fixed_point_exp_neg_random_unsigned_integer_div_denominator.Get(),
+                  fixed_point_constant_exp_neg_one.Get()});
+
+  ShareWrapper boolean_gmw_share_Bernoulli_sample =
+      SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share) <
+      SecureFixedPointCircuitCBMC(fixed_point_Bernoulli_distribution_parameter_p);
+
+  std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_unsimdify =
+      boolean_gmw_share_Bernoulli_sample.Unsimdify();
+  std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_part_1_vector(
+      boolean_gmw_share_Bernoulli_sample_unsimdify.begin(),
+      boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd);
+
+  std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_part_2_vector(
+      boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd,
+      boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd +
+          iteration_2 * num_of_simd);
+
+  std::vector<ShareWrapper> boolean_gmw_share_b1_vector = ShareWrapper::SimdifyReshapeHorizontal(
+      boolean_gmw_share_Bernoulli_sample_part_1_vector, iteration_1, num_of_simd);
+
+  std::vector<ShareWrapper> boolean_gmw_share_b2_vector = ShareWrapper::SimdifyReshapeHorizontal(
+      boolean_gmw_share_Bernoulli_sample_part_2_vector, iteration_2, num_of_simd);
+
+  std::vector<ShareWrapper> random_unsigned_integer_boolean_gmw_share_for_b1_vector =
+      ShareWrapper::SimdifyReshapeHorizontal(random_unsigned_integer_boolean_gmw_share.Unsimdify(),
+                                             iteration_1, num_of_simd);
+
+  std::vector<ShareWrapper> boolean_gmw_share_u = share_->InvertBinaryTreeSelection(
+      random_unsigned_integer_boolean_gmw_share_for_b1_vector, boolean_gmw_share_b1_vector);
+
+  std::vector<ShareWrapper> boolean_gmw_share_constant_j;
+  boolean_gmw_share_constant_j.reserve(iteration_2);
+  for (std::size_t j = 0; j < iteration_2; j++) {
+    std::vector<UintType> vector_of_constant_j(num_of_simd, j);
+    boolean_gmw_share_constant_j.emplace_back(
+        (share_->Get())
+            ->GetBackend()
+            .ConstantAsBooleanGmwInput(ToInput<UintType>(vector_of_constant_j)));
+  }
+
+  std::vector<ShareWrapper> boolean_gmw_share_b2_invert_vector;
+  boolean_gmw_share_b2_invert_vector.reserve(iteration_2);
+  for (std::size_t i = 0; i < iteration_2; i++) {
+    boolean_gmw_share_b2_invert_vector.emplace_back(~boolean_gmw_share_b2_vector[i]);
+  }
+
+  std::vector<ShareWrapper> boolean_gmw_share_v = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_constant_j, boolean_gmw_share_b2_invert_vector);
+
+  SecureUnsignedInteger unsigned_integer_w =
+      SecureUnsignedInteger(boolean_gmw_share_v[0]) *
+          SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_denominator) +
+      SecureUnsignedInteger(boolean_gmw_share_u[0]);
+
+  // case 1.1
+  // numerator's vector elements are not all equal to one
+  if (!numerator_are_all_ones) {
+    ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
+        ((share_->Get())
+             ->GetBackend()
+             .ConstantAsBooleanGmwInput(
+                 ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+
+    // ============================================================
+    SecureUnsignedInteger unsigned_integer_geometric_sample =
+        unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
+    // ============================================================
+    // TODO: use fixed-point or unsigned integer (BMR) for division
+
+    // ============================================================
+
+    ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] & boolean_gmw_share_v[1]);
+
+    std::vector<ShareWrapper> result_vector;
+    result_vector.reserve(2);
+    result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
+    result_vector.emplace_back(boolean_gmw_share_success_flag);
+
+    // // only for debug
+    result_vector.emplace_back(fixed_point_boolean_gmw_share_denominator_simdify);          // 2
+    result_vector.emplace_back(fixed_point_random_unsigned_integer.Get());                  // 3
+    result_vector.emplace_back(fixed_point_unsigned_integer_denominator_simdify.Get());     // 4
+    result_vector.emplace_back(fixed_point_random_unsigned_integer_div_denominator.Get());  // 5
+    result_vector.emplace_back(boolean_gmw_share_v[0]);                                     // 6
+    result_vector.emplace_back(boolean_gmw_share_u[0]);                                     // 7
+    result_vector.emplace_back(unsigned_integer_w.Get());                                   // 8
+
+    return result_vector;
+  }
+
+  // case 1.2
+  // if the numerator's vector elements are all equal to one, we can save computations
+  else {
+    // save MPC computation here
+    SecureUnsignedInteger unsigned_integer_geometric_sample = unsigned_integer_w;
+
+    ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] & boolean_gmw_share_v[1]);
+
+    std::vector<ShareWrapper> result_vector;
+    result_vector.reserve(2);
+    result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
+    result_vector.emplace_back(boolean_gmw_share_success_flag);
+
+    // // only for debug
+    result_vector.emplace_back(fixed_point_boolean_gmw_share_denominator_simdify);          // 2
+    result_vector.emplace_back(fixed_point_random_unsigned_integer.Get());                  // 3
+    result_vector.emplace_back(fixed_point_unsigned_integer_denominator_simdify.Get());     // 4
+    result_vector.emplace_back(fixed_point_random_unsigned_integer_div_denominator.Get());  // 5
+    result_vector.emplace_back(boolean_gmw_share_v[0]);                                     // 6
+    result_vector.emplace_back(boolean_gmw_share_u[0]);                                     // 7
+    result_vector.emplace_back(unsigned_integer_w.Get());                                   // 8
+
+    return result_vector;
+  }
+}
+
+// TODO: use exp2_p1045_neg_0_1
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxGeometricDistributionEXP<
+    double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
+    const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const;
+
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxGeometricDistributionEXP<
+    double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename FixType, typename UintType, typename IntType, typename A>
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxGeometricDistributionEXP(
+    const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
+    std::size_t fixed_point_fraction_bit_size) const {
+  std::size_t num_of_simd = constant_unsigned_integer_numerator_vector.size();
+
+  assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
+         (iteration_2)*num_of_simd);
+
+  //   using UintType = std::uint64_t;
+  //   using IntType = std::int64_t;
+  //   std::size_t fixed_point_fraction_bit_size = 16;
+
+  // if numerator or denominator are all ones, we can avoid some computations in MPC
+  bool numerator_are_all_ones =
+      VectorAllEqualToValue<UintType>(constant_unsigned_integer_numerator_vector, UintType(1));
+  bool denominator_are_all_ones = true;
+
+  // case 2
+  // if the denominator vector's elements are all ones, we can save computations
+  //   if (denominator_are_all_ones) {
+  std::vector<FixType> vector_of_exp_neg_one(num_of_simd * iteration_2, std::exp(-1.0));
+  SecureFixedPointCircuitCBMC fixed_point_constant_exp_neg_one = SecureFixedPointCircuitCBMC(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+              vector_of_exp_neg_one, fixed_point_fraction_bit_size)));
+  //   std::cout << "666" << std::endl;
+  ShareWrapper fixed_point_Bernoulli_distribution_parameter_p =
+      fixed_point_constant_exp_neg_one.Get();
+
+  //   std::cout << "777" << std::endl;
+
+  ShareWrapper boolean_gmw_share_Bernoulli_sample =
+      SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share) <
+      SecureFixedPointCircuitCBMC(fixed_point_Bernoulli_distribution_parameter_p);
+
+  //       // only for debug
+  // ShareWrapper boolean_gmw_share_Bernoulli_sample =
+  //       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share) <
+  //       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share);
+
+  //   std::cout << "888" << std::endl;
+
+  std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_unsimdify =
+      boolean_gmw_share_Bernoulli_sample.Unsimdify();
+  //   std::cout << "999" << std::endl;
+
+  std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_part_2_vector(
+      boolean_gmw_share_Bernoulli_sample_unsimdify.begin(),
+      boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_2 * num_of_simd);
+
+  // std::cout << "boolean_gmw_share_Bernoulli_sample_part_2_vector.size(): "
+  //           << boolean_gmw_share_Bernoulli_sample_part_2_vector.size() << std::endl;
+
+  std::vector<ShareWrapper> boolean_gmw_share_b2_vector = ShareWrapper::SimdifyReshapeHorizontal(
+      boolean_gmw_share_Bernoulli_sample_part_2_vector, iteration_2, num_of_simd);
+
+  //   std::cout << "333" << std::endl;
+  std::vector<ShareWrapper> boolean_gmw_share_constant_j;
+  boolean_gmw_share_constant_j.reserve(iteration_2);
+  for (std::size_t j = 0; j < iteration_2; j++) {
+    std::vector<UintType> vector_of_constant_j(num_of_simd, j);
+    boolean_gmw_share_constant_j.emplace_back(
+        (share_->Get())
+            ->GetBackend()
+            .ConstantAsBooleanGmwInput(ToInput<UintType>(vector_of_constant_j)));
+  }
+
+  // invert boolean_gmw_share_b2_vector
+  std::vector<ShareWrapper> boolean_gmw_share_b2_invert_vector;
+  boolean_gmw_share_b2_invert_vector.reserve(iteration_2);
+  for (std::size_t i = 0; i < iteration_2; i++) {
+    boolean_gmw_share_b2_invert_vector.emplace_back(~boolean_gmw_share_b2_vector[i]);
+  }
+
+  std::vector<ShareWrapper> boolean_gmw_share_v = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_constant_j, boolean_gmw_share_b2_invert_vector);
+
+  // save MPC computation here
+  SecureUnsignedInteger unsigned_integer_w = SecureUnsignedInteger(boolean_gmw_share_v[0]);
+
+  // case 2.1
+  // the numerator's vector elements are not all ones
+  if (!numerator_are_all_ones) {
+    ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
+        ((share_->Get())
+             ->GetBackend()
+             .ConstantAsBooleanGmwInput(
+                 ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+    // ============================================================
+    SecureUnsignedInteger unsigned_integer_geometric_sample =
+        unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
+    // ============================================================
+    // TODO: use fixed-point or unsigned integer (BMR) for division
+
+    // ============================================================
+
+    ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_v[1]);
+
+    std::vector<ShareWrapper> result_vector;
+    result_vector.reserve(2);
+    result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
+    result_vector.emplace_back(boolean_gmw_share_success_flag);
+
+    return result_vector;
+  }
+
+  // case 2.2
+  // if the numerator's vector elements are all ones, we can save computations
+  else {
+    // save MPC computation here
+    SecureUnsignedInteger unsigned_integer_geometric_sample = unsigned_integer_w;
+
+    ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_v[1]);
+
+    std::vector<ShareWrapper> result_vector;
+    result_vector.reserve(2);
+    result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
+    result_vector.emplace_back(boolean_gmw_share_success_flag);
+
+    return result_vector;
+  }
+}
+
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxGeometricDistributionEXP<
+    double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
+    std::size_t fixed_point_fraction_bit_size) const;
+
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxGeometricDistributionEXP<
+    double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
+    std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename FixType, typename UintType, typename IntType, typename A>
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteLaplaceDistribution(
+    const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
+    const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3,
+    std::size_t fixed_point_fraction_bit_size) const {
+  //   using UintType = std::uint64_t;
+  //   std::size_t fixed_point_fraction_bit_size = 16;
+
+  // same as FLGeometricDistributionEXP except with more iteration_3
+  std::size_t num_of_simd_geo = iteration_3;
+  std::size_t num_of_simd_dlap = constant_unsigned_integer_numerator_vector.size();
+  std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo;
+
+  assert(constant_unsigned_integer_numerator_vector.size() ==
+         constant_unsigned_integer_denominator_vector.size());
+  assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
+         (iteration_1 + iteration_2) * num_of_simd_total);
+  assert(random_unsigned_integer_boolean_gmw_share->GetNumberOfSimdValues() ==
+         iteration_1 * num_of_simd_total);
+  assert(boolean_gmw_share_bernoulli_sample->GetNumberOfSimdValues() == num_of_simd_total);
+
+  //   std::vector<ShareWrapper> unsigned_integer_numerator_geo_vector =
+  //       ShareWrapper::SimdifyDuplicateVertical(
+  //           unsigned_integer_boolean_gmw_share_numerator.Unsimdify(), num_of_simd_geo);
+  //   ShareWrapper unsigned_integer_numerator_geo =
+  //       ShareWrapper::Simdify(unsigned_integer_numerator_geo_vector);
+
+  //   std::vector<ShareWrapper> unsigned_integer_denominator_geo_vector =
+  //       ShareWrapper::SimdifyDuplicateVertical(
+  //           unsigned_integer_boolean_gmw_share_denominator.Unsimdify(), num_of_simd_geo);
+  //   ShareWrapper unsigned_integer_denominator_geo =
+  //       ShareWrapper::Simdify(unsigned_integer_denominator_geo_vector);
+
+  std::vector<UintType, A> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
+  std::vector<UintType, A> constant_unsigned_integer_denominator_geo_vector(num_of_simd_total);
+  for (std::size_t i = 0; i < num_of_simd_dlap; i++) {
+    for (std::size_t j = 0; j < num_of_simd_geo; j++) {
+      constant_unsigned_integer_numerator_geo_vector[i * num_of_simd_geo + j] =
+          constant_unsigned_integer_numerator_vector[i];
+      constant_unsigned_integer_denominator_geo_vector[i * num_of_simd_geo + j] =
+          constant_unsigned_integer_denominator_vector[i];
+    }
+  }
+
+  std::vector<ShareWrapper> geometric_sample_vector =
+      FxGeometricDistributionEXP<FixType, UintType, IntType, A>(
+          constant_unsigned_integer_numerator_geo_vector,
+          constant_unsigned_integer_denominator_geo_vector,
+          random_fixed_point_0_1_boolean_gmw_share, random_unsigned_integer_boolean_gmw_share,
+          iteration_1, iteration_2, fixed_point_fraction_bit_size);
+
+  ShareWrapper boolean_gmw_share_sign = boolean_gmw_share_bernoulli_sample;
+  ShareWrapper unsigned_integer_geometric_sample_boolean_gmw_share_magnitude =
+      geometric_sample_vector[0];
+  ShareWrapper boolean_gmw_share_magnitude_EQZ =
+      SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude).IsZero();
+
+  // magnitude*(1-2*sign)
+  SecureSignedInteger signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign =
+      SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude)
+          .Neg(boolean_gmw_share_sign);
+
+  ShareWrapper boolean_gmw_share_choice =
+      ~(boolean_gmw_share_sign & boolean_gmw_share_magnitude_EQZ) & geometric_sample_vector[1];
 
   std::vector<ShareWrapper>
-  boolean_gmw_share_bits_with_zero_compensation_vector(num_of_total_bits); for (std::size_t i =
-  0; i < num_of_total_bits; i++) {
-    boolean_gmw_share_bits_with_zero_compensation_vector[i] = constant_boolean_gmw_share_zero;
+      signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector =
+          ShareWrapper::SimdifyReshapeHorizontal(
+              signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get().Unsimdify(),
+              iteration_3, num_of_simd_dlap);
+
+  std::vector<ShareWrapper> boolean_gmw_share_choice_reshape_vector =
+      ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_3,
+                                             num_of_simd_dlap);
+
+  std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
+      share_->InvertBinaryTreeSelection(
+          signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector,
+          boolean_gmw_share_choice_reshape_vector);
+
+  //   // only for debug
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_sign);  //
+  //   2 boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_geometric_sample_boolean_gmw_share_magnitude);  // 3
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_numerator_geo);  // 4
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_denominator_geo);  // 5
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get()); //
+  //       6
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_choice);
+  //
+  //   7
+
+  return boolean_gmw_share_discrete_laplace_sample_vector;
+}
+
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_naive::FxDiscreteLaplaceDistribution<double, std::uint64_t, std::int64_t>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3,
+    std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename FixType, typename UintType, typename IntType, typename A>
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteLaplaceDistribution(
+    const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const {
+  //   using UintType = std::uint64_t;
+
+  // same as FLGeometricDistributionEXP except with more iteration_3
+  std::size_t num_of_simd_geo = iteration_3;
+  std::size_t num_of_simd_dlap = constant_unsigned_integer_numerator_vector.size();
+  std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo;
+
+  //   assert(constant_unsigned_integer_numerator_vector.size() ==
+  //          constant_unsigned_integer_denominator_vector.size());
+  assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
+         (iteration_2)*num_of_simd_total);
+  assert(boolean_gmw_share_bernoulli_sample->GetNumberOfSimdValues() == num_of_simd_total);
+
+  //   std::vector<ShareWrapper> unsigned_integer_numerator_geo_vector =
+  //       ShareWrapper::SimdifyDuplicateVertical(
+  //           unsigned_integer_boolean_gmw_share_numerator.Unsimdify(), num_of_simd_geo);
+  //   ShareWrapper unsigned_integer_numerator_geo =
+  //       ShareWrapper::Simdify(unsigned_integer_numerator_geo_vector);
+
+  //   std::vector<ShareWrapper> unsigned_integer_denominator_geo_vector =
+  //       ShareWrapper::SimdifyDuplicateVertical(
+  //           unsigned_integer_boolean_gmw_share_denominator.Unsimdify(), num_of_simd_geo);
+  //   ShareWrapper unsigned_integer_denominator_geo =
+  //       ShareWrapper::Simdify(unsigned_integer_denominator_geo_vector);
+
+  std::vector<UintType, A> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
+  for (std::size_t i = 0; i < num_of_simd_dlap; i++) {
+    for (std::size_t j = 0; j < num_of_simd_geo; j++) {
+      constant_unsigned_integer_numerator_geo_vector[i * num_of_simd_geo + j] =
+          constant_unsigned_integer_numerator_vector[i];
+    }
+  }
+  //   std::cout << "444" << std::endl;
+  std::vector<ShareWrapper> geometric_sample_vector =
+      FxGeometricDistributionEXP<FixType, UintType, IntType, A>(
+          constant_unsigned_integer_numerator_geo_vector, random_fixed_point_0_1_boolean_gmw_share,
+          iteration_2, fixed_point_fraction_bit_size);
+
+  //   std::cout << "555" << std::endl;
+  ShareWrapper boolean_gmw_share_sign = boolean_gmw_share_bernoulli_sample;
+  ShareWrapper unsigned_integer_geometric_sample_boolean_gmw_share_magnitude =
+      geometric_sample_vector[0];
+  ShareWrapper boolean_gmw_share_magnitude_EQZ =
+      SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude).IsZero();
+
+  // magnitude*(1-2*sign)
+  SecureSignedInteger signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign =
+      SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude)
+          .Neg(boolean_gmw_share_sign);
+
+  ShareWrapper boolean_gmw_share_choice =
+      ~(boolean_gmw_share_sign & boolean_gmw_share_magnitude_EQZ) & geometric_sample_vector[1];
+
+  std::vector<ShareWrapper>
+      signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector =
+          ShareWrapper::SimdifyReshapeHorizontal(
+              signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get().Unsimdify(),
+              iteration_3, num_of_simd_dlap);
+
+  std::vector<ShareWrapper> boolean_gmw_share_choice_reshape_vector =
+      ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_3,
+                                             num_of_simd_dlap);
+
+  std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
+      share_->InvertBinaryTreeSelection(
+          signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector,
+          boolean_gmw_share_choice_reshape_vector);
+
+  //   // only for debug
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_sign);  //
+  //   2 boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_geometric_sample_boolean_gmw_share_magnitude);  // 3
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_numerator_geo);  // 4
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_denominator_geo);  // 5
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
+  //       unsigned_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get()); //
+  //       6
+  //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_choice);
+  //
+  //   7
+
+  return boolean_gmw_share_discrete_laplace_sample_vector;
+}
+
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteLaplaceDistribution<
+    double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const;
+
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteLaplaceDistribution<
+    double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename FixType, typename UintType, typename IntType, typename A>
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteGaussianDistribution(
+    const std::vector<double>& constant_fixed_point_sigma_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
+    std::size_t fixed_point_fraction_bit_size) const {
+  //   using UintType = std::uint64_t;
+  //   using IntType = std::int64_t;
+  //   std::size_t fixed_point_fraction_bit_size = 16;
+
+  std::size_t num_of_simd_dgau = constant_fixed_point_sigma_vector.size();
+  std::size_t num_of_simd_geo = iteration_3;
+  std::size_t num_of_simd_dlap = iteration_4;
+  std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo * num_of_simd_dgau;
+
+  assert(random_fixed_point_0_1_boolean_gmw_share_dlap->GetNumberOfSimdValues() ==
+         (iteration_1 + iteration_2) * num_of_simd_total);
+  assert(random_unsigned_integer_boolean_gmw_share_dlap->GetNumberOfSimdValues() ==
+         iteration_1 * num_of_simd_total);
+
+  assert(boolean_gmw_share_bernoulli_sample_dlap->GetNumberOfSimdValues() == num_of_simd_total);
+  assert(random_fixed_point_0_1_boolean_gmw_share_dgau->GetNumberOfSimdValues() ==
+         iteration_4 * num_of_simd_dgau);
+
+  //   std::cout << "000" << std::endl;
+
+  std::vector<UintType> constant_unsigned_integer_t_vector(num_of_simd_dgau);
+  for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
+    constant_unsigned_integer_t_vector[i] = floor(constant_fixed_point_sigma_vector[i]) + 1;
   }
 
-  for (std::size_t i = 0; i < boolean_gmw_share_bits_vector_size; i++) {
-    boolean_gmw_share_bits_with_zero_compensation_vector[i] = boolean_gmw_share_bits_vector[i];
+  //   std::vector<UintType> constant_unsigned_integer_t_dlap_vector(num_of_simd_dgau *
+  //   num_of_simd_dlap);
+  std::vector<UintType> constant_unsigned_integer_numerator_dlap_vector(num_of_simd_dgau *
+                                                                        num_of_simd_dlap);
+  std::vector<UintType> constant_unsigned_integer_denominator_dlap_vector(num_of_simd_dgau *
+                                                                          num_of_simd_dlap);
+
+  //   std::cout << "111" << std::endl;
+  for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
+    for (std::size_t j = 0; j < num_of_simd_dlap; j++) {
+      //   constant_unsigned_integer_t_dlap_vector[i * num_of_simd_dlap + j] =
+      //       constant_unsigned_integer_t_vector[i];
+      constant_unsigned_integer_denominator_dlap_vector[i * num_of_simd_dlap + j] =
+          constant_unsigned_integer_t_vector[i];
+      constant_unsigned_integer_numerator_dlap_vector[i * num_of_simd_dlap + j] = UintType(1);
+    }
   }
 
-  return ShareWrapper::Concatenate(boolean_gmw_share_bits_with_zero_compensation_vector);
+  std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
+      FxDiscreteLaplaceDistribution<FixType, UintType, IntType, A>(
+          constant_unsigned_integer_numerator_dlap_vector,
+          constant_unsigned_integer_denominator_dlap_vector,
+          random_fixed_point_0_1_boolean_gmw_share_dlap,
+          random_unsigned_integer_boolean_gmw_share_dlap, boolean_gmw_share_bernoulli_sample_dlap,
+          iteration_1, iteration_2, iteration_3, fixed_point_fraction_bit_size);
+
+  //   std::cout << "222" << std::endl;
+  std::vector<FixType> constant_fixed_point_sigma_square_div_t_vector(num_of_simd_dgau);
+  std::vector<FixType> constant_fixed_point_two_mul_sigma_square_vector(num_of_simd_dgau);
+  for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
+    constant_fixed_point_sigma_square_div_t_vector[i] =
+        constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i] /
+        FixType(constant_unsigned_integer_t_vector[i]);
+    constant_fixed_point_two_mul_sigma_square_vector[i] =
+        2.0 * constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i];
+  }
+
+  //   std::cout << "333" << std::endl;
+  SecureFixedPointCircuitCBMC constant_fixed_point_sigma_square_div_t = SecureFixedPointCircuitCBMC(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+              constant_fixed_point_sigma_square_div_t_vector, fixed_point_fraction_bit_size)));
+
+  SecureFixedPointCircuitCBMC constant_fixed_point_two_mul_pow2_sigma = SecureFixedPointCircuitCBMC(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+              constant_fixed_point_two_mul_sigma_square_vector, fixed_point_fraction_bit_size)));
+
+  //   std::cout << "444" << std::endl;
+  ShareWrapper boolean_gmw_share_Y = boolean_gmw_share_discrete_laplace_sample_vector[0];
+  SecureFixedPointCircuitCBMC fixed_point_C_bernoulli_parameter =
+      (((SecureSignedInteger(boolean_gmw_share_Y).Int2Fx().Abs() -
+         SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
+             constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4))))
+            .Sqr()) /
+       (SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
+           constant_fixed_point_two_mul_pow2_sigma.Get().Unsimdify(), iteration_4)))))
+          .Neg()
+          .Exp();
+
+  //   std::cout << "555" << std::endl;
+  ShareWrapper boolean_gmw_share_bernoulli =
+      SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share_dgau) <
+      fixed_point_C_bernoulli_parameter;
+
+  ShareWrapper boolean_gmw_share_choice =
+      boolean_gmw_share_bernoulli & boolean_gmw_share_discrete_laplace_sample_vector[1];
+
+  std::vector<ShareWrapper> boolean_gmw_share_Y_reshape = ShareWrapper::SimdifyReshapeHorizontal(
+      boolean_gmw_share_Y.Unsimdify(), iteration_4, num_of_simd_dgau);
+  std::vector<ShareWrapper> boolean_gmw_share_choice_reshape =
+      ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_4,
+                                             num_of_simd_dgau);
+
+  //   std::cout << "666" << std::endl;
+  std::vector<ShareWrapper> boolean_gmw_share_result_vector = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_Y_reshape, boolean_gmw_share_choice_reshape);
+
+  //   // only for debug
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       boolean_gmw_share_discrete_laplace_sample_vector[0]);  // 2
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       boolean_gmw_share_discrete_laplace_sample_vector[1]);                               //
+  //   3
+  //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_bernoulli);              //
+  //   4
+  //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_choice);                 //
+  //   5
+  //   boolean_gmw_share_result_vector.emplace_back(fixed_point_C_bernoulli_parameter.Get());  //
+  //   6
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       SecureSignedInteger(boolean_gmw_share_Y).Get());  // 7
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       SecureFixedPointCircuitCBMC(
+  //           ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
+  //               constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4)))
+  //           .Get());  // 8
+
+  return boolean_gmw_share_result_vector;
 }
 
-ShareWrapper SecureSamplingAlgorithm::UniformFixedPoint_0_1(
-    const ShareWrapper& random_bits_of_length_fixed_point_fraction,
-    const std::size_t fixed_point_bit_size) const {
-  ShareWrapper fixed_point_boolean_gmw_share_0_1 = BooleanGmwBitsZeroCompensation(
-      random_bits_of_length_fixed_point_fraction, fixed_point_bit_size);
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteGaussianDistribution<
+    double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    const std::vector<double>& constant_fixed_point_sigma_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
+    std::size_t fixed_point_fraction_bit_size) const;
 
-  return fixed_point_boolean_gmw_share_0_1;
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteGaussianDistribution<
+    double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<double>& constant_fixed_point_sigma_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+    std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
+    std::size_t fixed_point_fraction_bit_size) const;
+
+template <typename FixType, typename UintType, typename IntType, typename A>
+std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteGaussianDistribution(
+    const std::vector<double>& constant_fixed_point_sigma_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t iteration_4,
+    std::size_t fixed_point_fraction_bit_size) const {
+  //   using UintType = std::uint64_t;
+  //   using IntType = std::int64_t;
+  //   std::size_t fixed_point_fraction_bit_size = 16;
+
+  std::size_t num_of_simd_dgau = constant_fixed_point_sigma_vector.size();
+  std::size_t num_of_simd_geo = iteration_3;
+  std::size_t num_of_simd_dlap = iteration_4;
+  std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo * num_of_simd_dgau;
+
+  assert(random_fixed_point_0_1_boolean_gmw_share_dlap->GetNumberOfSimdValues() ==
+         (iteration_2)*num_of_simd_total);
+
+  assert(boolean_gmw_share_bernoulli_sample_dlap->GetNumberOfSimdValues() == num_of_simd_total);
+  assert(random_fixed_point_0_1_boolean_gmw_share_dgau->GetNumberOfSimdValues() ==
+         iteration_4 * num_of_simd_dgau);
+
+  //   std::cout << "000" << std::endl;
+
+  std::vector<UintType> constant_unsigned_integer_t_vector(num_of_simd_dgau);
+  for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
+    constant_unsigned_integer_t_vector[i] = floor(constant_fixed_point_sigma_vector[i]) + 1;
+  }
+
+  // t = 1
+  assert(VectorAllEqualToValue<UintType>(constant_unsigned_integer_t_vector, UintType(1)));
+
+  //   std::vector<UintType> constant_unsigned_integer_t_dlap_vector(num_of_simd_dgau *
+  //   num_of_simd_dlap);
+  std::vector<UintType> constant_unsigned_integer_numerator_dlap_vector(num_of_simd_dgau *
+                                                                        num_of_simd_dlap);
+
+  //   std::cout << "111" << std::endl;
+  for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
+    for (std::size_t j = 0; j < num_of_simd_dlap; j++) {
+      //   constant_unsigned_integer_t_dlap_vector[i * num_of_simd_dlap + j] =
+      //       constant_unsigned_integer_t_vector[i];
+      constant_unsigned_integer_numerator_dlap_vector[i * num_of_simd_dlap + j] = UintType(1);
+    }
+  }
+
+  std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
+      FxDiscreteLaplaceDistribution<FixType, UintType, IntType, A>(
+          constant_unsigned_integer_numerator_dlap_vector,
+          random_fixed_point_0_1_boolean_gmw_share_dlap, boolean_gmw_share_bernoulli_sample_dlap,
+          iteration_2, iteration_3, fixed_point_fraction_bit_size);
+
+  //   std::cout << "222" << std::endl;
+  std::vector<FixType> constant_fixed_point_sigma_square_div_t_vector(num_of_simd_dgau);
+  std::vector<FixType> constant_fixed_point_two_mul_sigma_square_vector(num_of_simd_dgau);
+  for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
+    constant_fixed_point_sigma_square_div_t_vector[i] =
+        constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i];
+    constant_fixed_point_two_mul_sigma_square_vector[i] =
+        2.0 * constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i];
+  }
+
+  //   std::cout << "333" << std::endl;
+  SecureFixedPointCircuitCBMC constant_fixed_point_sigma_square_div_t = SecureFixedPointCircuitCBMC(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+              constant_fixed_point_sigma_square_div_t_vector, fixed_point_fraction_bit_size)));
+
+  SecureFixedPointCircuitCBMC constant_fixed_point_two_mul_pow2_sigma = SecureFixedPointCircuitCBMC(
+      (share_->Get())
+          ->GetBackend()
+          .ConstantAsBooleanGmwInput(FixedPointToInput<UintType, IntType>(
+              constant_fixed_point_two_mul_sigma_square_vector, fixed_point_fraction_bit_size)));
+
+  //   std::cout << "444" << std::endl;
+  ShareWrapper boolean_gmw_share_Y = boolean_gmw_share_discrete_laplace_sample_vector[0];
+  SecureFixedPointCircuitCBMC fixed_point_C_bernoulli_parameter =
+      (((SecureSignedInteger(boolean_gmw_share_Y).Int2Fx().Abs() -
+         SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
+             constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4))))
+            .Sqr()) /
+       (SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
+           constant_fixed_point_two_mul_pow2_sigma.Get().Unsimdify(), iteration_4)))))
+          .Neg()
+          .Exp();
+
+  //   std::cout << "555" << std::endl;
+  ShareWrapper boolean_gmw_share_bernoulli =
+      SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share_dgau) <
+      fixed_point_C_bernoulli_parameter;
+
+  ShareWrapper boolean_gmw_share_choice =
+      boolean_gmw_share_bernoulli & boolean_gmw_share_discrete_laplace_sample_vector[1];
+
+  std::vector<ShareWrapper> boolean_gmw_share_Y_reshape = ShareWrapper::SimdifyReshapeHorizontal(
+      boolean_gmw_share_Y.Unsimdify(), iteration_4, num_of_simd_dgau);
+  std::vector<ShareWrapper> boolean_gmw_share_choice_reshape =
+      ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_4,
+                                             num_of_simd_dgau);
+
+  //   std::cout << "666" << std::endl;
+  std::vector<ShareWrapper> boolean_gmw_share_result_vector = share_->InvertBinaryTreeSelection(
+      boolean_gmw_share_Y_reshape, boolean_gmw_share_choice_reshape);
+
+  //   // only for debug
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       boolean_gmw_share_discrete_laplace_sample_vector[0]);  // 2
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       boolean_gmw_share_discrete_laplace_sample_vector[1]);                               //
+  //   3
+  //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_bernoulli); //
+  //   4
+  //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_choice); //
+  //   5
+  //   boolean_gmw_share_result_vector.emplace_back(fixed_point_C_bernoulli_parameter.Get()); //
+  //   6
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       SecureSignedInteger(boolean_gmw_share_Y).Get());  // 7
+  //   boolean_gmw_share_result_vector.emplace_back(
+  //       SecureFixedPointCircuitCBMC(
+  //           ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
+  //               constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4)))
+  //           .Get());  // 8
+
+  return boolean_gmw_share_result_vector;
 }
 
-ShareWrapper SecureSamplingAlgorithm::UniformFixedPoint_0_1_Up(
-    const ShareWrapper& random_bits_of_length_fixed_point_fraction,
-    const std::size_t fixed_point_bit_size) const {
-  // uniform fixed point in [0,1)
-  ShareWrapper boolean_gmw_share_uniform_fixed_point_0_1 =
-      UniformFixedPoint_0_1(random_bits_of_length_fixed_point_fraction, fixed_point_bit_size);
-
-  std::vector<ShareWrapper> random_bits_of_length_fixed_point_fraction_vector =
-      random_bits_of_length_fixed_point_fraction.Split();
-
-  //   ShareWrapper constant_boolean_gmw_share_one =
-  //       random_bits_of_length_fixed_point_fraction_vector[0] ^
-  //       (~random_bits_of_length_fixed_point_fraction_vector[0]);
-  ShareWrapper constant_boolean_gmw_share_one =
-      random_bits_of_length_fixed_point_fraction_vector[0].CreateConstantAsBooleanGmwInput(false);
-
-  ShareWrapper fixed_point_boolean_gmw_share_minimum_representable_value =
-      BooleanGmwBitsZeroCompensation(constant_boolean_gmw_share_one, fixed_point_bit_size);
-
-  // convert it to field (0,1] by adding the minimum representable fixed point value
-  ShareWrapper boolean_gmw_share_uniform_fixed_point_0_1_up =
-      (SecureUnsignedInteger(fixed_point_boolean_gmw_share_minimum_representable_value) +
-       SecureUnsignedInteger(boolean_gmw_share_uniform_fixed_point_0_1))
-          .Get();
-
-  return boolean_gmw_share_uniform_fixed_point_0_1_up;
-}
-
-// =================================================================================================================
-// fixed-point arithmetic
-
-// template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP(
-//     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
-//     const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const {
-//   std::size_t num_of_simd = constant_unsigned_integer_numerator_vector.size();
-
-//   assert(constant_unsigned_integer_numerator_vector.size() ==
-//          constant_unsigned_integer_denominator_vector.size());
-//   assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
-//          (iteration_1 + iteration_2) * num_of_simd);
-//   assert(random_unsigned_integer_boolean_gmw_share->GetNumberOfSimdValues() ==
-//          iteration_1 * num_of_simd);
-
-//   //   using UintType = std::uint64_t;
-//   //   using IntType = std::int64_t;
-//   //   std::size_t fixed_point_fraction_bit_size = 16;
-
-//   // if numerator or denominator are all ones, we can avoid some computations in MPC
-//   bool numerator_are_all_ones =
-//       VectorAllEqualToValue<UintType>(constant_unsigned_integer_numerator_vector, UintType(1));
-//   bool denominator_are_all_ones =
-//       VectorAllEqualToValue<UintType>(constant_unsigned_integer_denominator_vector, UintType(1));
-
-//   assert(!denominator_are_all_ones);
-
-//   // case 1: denominator are not all ones
-//   //   if (!denominator_are_all_ones) {
-//   //   std::cout << " if (!denominator_are_all_ones)" << std::endl;
-//   ShareWrapper unsigned_integer_boolean_gmw_share_denominator =
-//       ((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-//           ToInput<UintType>(constant_unsigned_integer_denominator_vector)));
-
-//   // convert denominator to fixed point type in plaintext instead of converting in MPC
-//   computation std::vector<FixType> constant_fixed_point_denominator_vector(num_of_simd); for
-//   (std::size_t i = 0; i < num_of_simd; i++) {
-//     UintType denominator_tmp = constant_unsigned_integer_denominator_vector[i];
-//     constant_fixed_point_denominator_vector[i] = FixType(IntType(denominator_tmp));
-
-//     std::cout << "denominator_tmp: " << denominator_tmp << std::endl;
-//     std::cout << "constant_fixed_point_denominator_vector[i] : "
-//               << constant_fixed_point_denominator_vector[i] << std::endl;
-//   }
-
-//   // ============================================================
-//   ShareWrapper fixed_point_boolean_gmw_share_denominator =
-//       ((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           constant_fixed_point_denominator_vector, fixed_point_fraction_bit_size)));
-//   // ============================================================
-//   // TODO: use BMR
-
-//   // ============================================================
-
-//   std::vector<ShareWrapper> fixed_point_boolean_gmw_share_denominator_expand =
-//       ShareWrapper::SimdifyDuplicateVertical(fixed_point_boolean_gmw_share_denominator.Unsimdify(),
-//                                              iteration_1);
-
-//   ShareWrapper fixed_point_boolean_gmw_share_denominator_simdify =
-//       ShareWrapper::Simdify(fixed_point_boolean_gmw_share_denominator_expand);
-
-//   SecureFixedPointCircuitCBMC fixed_point_random_unsigned_integer =
-//       SecureUnsignedInteger(random_unsigned_integer_boolean_gmw_share)
-//           .Int2Fx(fixed_point_fraction_bit_size);
-
-//   SecureFixedPointCircuitCBMC fixed_point_unsigned_integer_denominator_simdify =
-//       SecureFixedPointCircuitCBMC(fixed_point_boolean_gmw_share_denominator_simdify);
-
-//   SecureFixedPointCircuitCBMC fixed_point_random_unsigned_integer_div_denominator =
-//       fixed_point_random_unsigned_integer / fixed_point_unsigned_integer_denominator_simdify;
-
-//   SecureFixedPointCircuitCBMC fixed_point_exp_neg_random_unsigned_integer_div_denominator =
-//       fixed_point_random_unsigned_integer_div_denominator.Neg().Exp();
-//   // ============================================================
-//   // TODO: use BMR for division
-//   // TODO: use BMR for Neg
-//   // TODO: use exp2_p1045_neg_0_1 instead of exp
-//   // fixed_point_random_unsigned_integer =
-//   // fixed_point_random_unsigned_integer.Get().Convert<MpcProtocol::kBmr>();
-//   // fixed_point_random_unsigned_integer =
-//   // fixed_point_random_unsigned_integer.Get().Convert<MpcProtocol::kBmr>();
-
-//   // ============================================================
-
-//   // ============================================================
-
-//   std::vector<FixType> vector_of_exp_neg_one(num_of_simd * iteration_2, std::exp(-1.0));
-//   SecureFixedPointCircuitCBMC fixed_point_constant_exp_neg_one = SecureFixedPointCircuitCBMC(
-//       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           vector_of_exp_neg_one, fixed_point_fraction_bit_size)));
-
-//   ShareWrapper fixed_point_Bernoulli_distribution_parameter_p = ShareWrapper::Simdify(
-//       std::vector{fixed_point_exp_neg_random_unsigned_integer_div_denominator.Get(),
-//                   fixed_point_constant_exp_neg_one.Get()});
-
-//   ShareWrapper boolean_gmw_share_Bernoulli_sample =
-//       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share) <
-//       SecureFixedPointCircuitCBMC(fixed_point_Bernoulli_distribution_parameter_p);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_unsimdify =
-//       boolean_gmw_share_Bernoulli_sample.Unsimdify();
-//   std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_part_1_vector(
-//       boolean_gmw_share_Bernoulli_sample_unsimdify.begin(),
-//       boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_part_2_vector(
-//       boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd,
-//       boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd +
-//           iteration_2 * num_of_simd);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_b1_vector = ShareWrapper::SimdifyReshapeHorizontal(
-//       boolean_gmw_share_Bernoulli_sample_part_1_vector, iteration_1, num_of_simd);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_b2_vector = ShareWrapper::SimdifyReshapeHorizontal(
-//       boolean_gmw_share_Bernoulli_sample_part_2_vector, iteration_2, num_of_simd);
-
-//   std::vector<ShareWrapper> random_unsigned_integer_boolean_gmw_share_for_b1_vector =
-//       ShareWrapper::SimdifyReshapeHorizontal(random_unsigned_integer_boolean_gmw_share.Unsimdify(),
-//                                              iteration_1, num_of_simd);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_u = share_->InvertBinaryTreeSelection(
-//       random_unsigned_integer_boolean_gmw_share_for_b1_vector, boolean_gmw_share_b1_vector);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_constant_j;
-//   boolean_gmw_share_constant_j.reserve(iteration_2);
-//   for (std::size_t j = 0; j < iteration_2; j++) {
-//     std::vector<UintType> vector_of_constant_j(num_of_simd, j);
-//     boolean_gmw_share_constant_j.emplace_back(
-//         (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(ToInput<UintType>(vector_of_constant_j)));
-//   }
-
-//   std::vector<ShareWrapper> boolean_gmw_share_b2_invert_vector;
-//   boolean_gmw_share_b2_invert_vector.reserve(iteration_2);
-//   for (std::size_t i = 0; i < iteration_2; i++) {
-//     boolean_gmw_share_b2_invert_vector.emplace_back(~boolean_gmw_share_b2_vector[i]);
-//   }
-
-//   std::vector<ShareWrapper> boolean_gmw_share_v =
-//       share_->InvertBinaryTreeSelection(boolean_gmw_share_constant_j,
-//       boolean_gmw_share_b2_invert_vector);
-
-//   SecureUnsignedInteger unsigned_integer_w =
-//       SecureUnsignedInteger(boolean_gmw_share_v[0]) *
-//           SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_denominator) +
-//       SecureUnsignedInteger(boolean_gmw_share_u[0]);
-
-//   // case 1.1
-//   // numerator's vector elements are not all equal to one
-//   if (!numerator_are_all_ones) {
-//     ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
-//         ((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-//             ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-
-//     // ============================================================
-//     SecureUnsignedInteger unsigned_integer_geometric_sample =
-//         unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
-//     // ============================================================
-//     // TODO: use fixed-point or unsigned integer (BMR) for division
-
-//     // ============================================================
-
-//     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] &
-//     boolean_gmw_share_v[1]);
-
-//     std::vector<ShareWrapper> result_vector;
-//     result_vector.reserve(2);
-//     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
-//     result_vector.emplace_back(boolean_gmw_share_success_flag);
-
-//     // // only for debug
-//     result_vector.emplace_back(fixed_point_boolean_gmw_share_denominator_simdify);          // 2
-//     result_vector.emplace_back(fixed_point_random_unsigned_integer.Get());                  // 3
-//     result_vector.emplace_back(fixed_point_unsigned_integer_denominator_simdify.Get());     // 4
-//     result_vector.emplace_back(fixed_point_random_unsigned_integer_div_denominator.Get());  // 5
-//     result_vector.emplace_back(boolean_gmw_share_v[0]);                                     // 6
-//     result_vector.emplace_back(boolean_gmw_share_u[0]);                                     // 7
-//     result_vector.emplace_back(unsigned_integer_w.Get());                                   // 8
-
-//     return result_vector;
-//   }
-
-//   // case 1.2
-//   // if the numerator's vector elements are all equal to one, we can save computations
-//   else {
-//     // save MPC computation here
-//     SecureUnsignedInteger unsigned_integer_geometric_sample = unsigned_integer_w;
-
-//     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] &
-//     boolean_gmw_share_v[1]);
-
-//     std::vector<ShareWrapper> result_vector;
-//     result_vector.reserve(2);
-//     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
-//     result_vector.emplace_back(boolean_gmw_share_success_flag);
-
-//     // // only for debug
-//     result_vector.emplace_back(fixed_point_boolean_gmw_share_denominator_simdify);          // 2
-//     result_vector.emplace_back(fixed_point_random_unsigned_integer.Get());                  // 3
-//     result_vector.emplace_back(fixed_point_unsigned_integer_denominator_simdify.Get());     // 4
-//     result_vector.emplace_back(fixed_point_random_unsigned_integer_div_denominator.Get());  // 5
-//     result_vector.emplace_back(boolean_gmw_share_v[0]);                                     // 6
-//     result_vector.emplace_back(boolean_gmw_share_u[0]);                                     // 7
-//     result_vector.emplace_back(unsigned_integer_w.Get());                                   // 8
-
-//     return result_vector;
-//   }
-// }
-
-// // TODO: use exp2_p1045_neg_0_1
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
-//     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-//     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
-//     const std::vector<std::uint32_t>& constant_unsigned_integer_denominator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const;
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
-//     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t fixed_point_fraction_bit_size) const;
-
-// template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP(
-//     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
-//     std::size_t fixed_point_fraction_bit_size) const {
-//   std::size_t num_of_simd = constant_unsigned_integer_numerator_vector.size();
-
-//   assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
-//          (iteration_2)*num_of_simd);
-
-//   //   using UintType = std::uint64_t;
-//   //   using IntType = std::int64_t;
-//   //   std::size_t fixed_point_fraction_bit_size = 16;
-
-//   // if numerator or denominator are all ones, we can avoid some computations in MPC
-//   bool numerator_are_all_ones =
-//       VectorAllEqualToValue<UintType>(constant_unsigned_integer_numerator_vector, UintType(1));
-//   bool denominator_are_all_ones = true;
-
-//   // case 2
-//   // if the denominator vector's elements are all ones, we can save computations
-//   //   if (denominator_are_all_ones) {
-//   std::vector<FixType> vector_of_exp_neg_one(num_of_simd * iteration_2, std::exp(-1.0));
-//   SecureFixedPointCircuitCBMC fixed_point_constant_exp_neg_one = SecureFixedPointCircuitCBMC(
-//       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           vector_of_exp_neg_one, fixed_point_fraction_bit_size)));
-//   //   std::cout << "666" << std::endl;
-//   ShareWrapper fixed_point_Bernoulli_distribution_parameter_p =
-//       fixed_point_constant_exp_neg_one.Get();
-
-//   //   std::cout << "777" << std::endl;
-
-//   ShareWrapper boolean_gmw_share_Bernoulli_sample =
-//       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share) <
-//       SecureFixedPointCircuitCBMC(fixed_point_Bernoulli_distribution_parameter_p);
-
-//   //       // only for debug
-//   // ShareWrapper boolean_gmw_share_Bernoulli_sample =
-//   //       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share) <
-//   //       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share);
-
-//   //   std::cout << "888" << std::endl;
-
-//   std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_unsimdify =
-//       boolean_gmw_share_Bernoulli_sample.Unsimdify();
-//   //   std::cout << "999" << std::endl;
-
-//   std::vector<ShareWrapper> boolean_gmw_share_Bernoulli_sample_part_2_vector(
-//       boolean_gmw_share_Bernoulli_sample_unsimdify.begin(),
-//       boolean_gmw_share_Bernoulli_sample_unsimdify.begin() + iteration_2 * num_of_simd);
-
-//   // std::cout << "boolean_gmw_share_Bernoulli_sample_part_2_vector.size(): "
-//   //           << boolean_gmw_share_Bernoulli_sample_part_2_vector.size() << std::endl;
-
-//   std::vector<ShareWrapper> boolean_gmw_share_b2_vector = ShareWrapper::SimdifyReshapeHorizontal(
-//       boolean_gmw_share_Bernoulli_sample_part_2_vector, iteration_2, num_of_simd);
-
-//   //   std::cout << "333" << std::endl;
-//   std::vector<ShareWrapper> boolean_gmw_share_constant_j;
-//   boolean_gmw_share_constant_j.reserve(iteration_2);
-//   for (std::size_t j = 0; j < iteration_2; j++) {
-//     std::vector<UintType> vector_of_constant_j(num_of_simd, j);
-//     boolean_gmw_share_constant_j.emplace_back(
-//         (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(ToInput<UintType>(vector_of_constant_j)));
-//   }
-
-//   // invert boolean_gmw_share_b2_vector
-//   std::vector<ShareWrapper> boolean_gmw_share_b2_invert_vector;
-//   boolean_gmw_share_b2_invert_vector.reserve(iteration_2);
-//   for (std::size_t i = 0; i < iteration_2; i++) {
-//     boolean_gmw_share_b2_invert_vector.emplace_back(~boolean_gmw_share_b2_vector[i]);
-//   }
-
-//   std::vector<ShareWrapper> boolean_gmw_share_v =
-//       share_->InvertBinaryTreeSelection(boolean_gmw_share_constant_j,
-//       boolean_gmw_share_b2_invert_vector);
-
-//   // save MPC computation here
-//   SecureUnsignedInteger unsigned_integer_w = SecureUnsignedInteger(boolean_gmw_share_v[0]);
-
-//   // case 2.1
-//   // the numerator's vector elements are not all ones
-//   if (!numerator_are_all_ones) {
-//     ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
-//         ((share_->Get())->GetBackend().ConstantAsBooleanGmwInput(
-//             ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-//     // ============================================================
-//     SecureUnsignedInteger unsigned_integer_geometric_sample =
-//         unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
-//     // ============================================================
-//     // TODO: use fixed-point or unsigned integer (BMR) for division
-
-//     // ============================================================
-
-//     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_v[1]);
-
-//     std::vector<ShareWrapper> result_vector;
-//     result_vector.reserve(2);
-//     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
-//     result_vector.emplace_back(boolean_gmw_share_success_flag);
-
-//     return result_vector;
-//   }
-
-//   // case 2.2
-//   // if the numerator's vector elements are all ones, we can save computations
-//   else {
-//     // save MPC computation here
-//     SecureUnsignedInteger unsigned_integer_geometric_sample = unsigned_integer_w;
-
-//     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_v[1]);
-
-//     std::vector<ShareWrapper> result_vector;
-//     result_vector.reserve(2);
-//     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
-//     result_vector.emplace_back(boolean_gmw_share_success_flag);
-
-//     return result_vector;
-//   }
-// }
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
-//     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-//     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
-//     std::size_t fixed_point_fraction_bit_size) const;
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxGeometricDistributionEXP<
-//     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share, std::size_t iteration_2,
-//     std::size_t fixed_point_fraction_bit_size) const;
-
-// template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution(
-//     const std::vector<UintType, A>& constant_unsigned_integer_numerator_vector,
-//     const std::vector<UintType, A>& constant_unsigned_integer_denominator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t iteration_3,
-//     std::size_t fixed_point_fraction_bit_size) const {
-//   //   using UintType = std::uint64_t;
-//   //   std::size_t fixed_point_fraction_bit_size = 16;
-
-//   // same as FLGeometricDistributionEXP except with more iteration_3
-//   std::size_t num_of_simd_geo = iteration_3;
-//   std::size_t num_of_simd_dlap = constant_unsigned_integer_numerator_vector.size();
-//   std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo;
-
-//   assert(constant_unsigned_integer_numerator_vector.size() ==
-//          constant_unsigned_integer_denominator_vector.size());
-//   assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
-//          (iteration_1 + iteration_2) * num_of_simd_total);
-//   assert(random_unsigned_integer_boolean_gmw_share->GetNumberOfSimdValues() ==
-//          iteration_1 * num_of_simd_total);
-//   assert(boolean_gmw_share_bernoulli_sample->GetNumberOfSimdValues() == num_of_simd_total);
-
-//   //   std::vector<ShareWrapper> unsigned_integer_numerator_geo_vector =
-//   //       ShareWrapper::SimdifyDuplicateVertical(
-//   //           unsigned_integer_boolean_gmw_share_numerator.Unsimdify(), num_of_simd_geo);
-//   //   ShareWrapper unsigned_integer_numerator_geo =
-//   //       ShareWrapper::Simdify(unsigned_integer_numerator_geo_vector);
-
-//   //   std::vector<ShareWrapper> unsigned_integer_denominator_geo_vector =
-//   //       ShareWrapper::SimdifyDuplicateVertical(
-//   //           unsigned_integer_boolean_gmw_share_denominator.Unsimdify(), num_of_simd_geo);
-//   //   ShareWrapper unsigned_integer_denominator_geo =
-//   //       ShareWrapper::Simdify(unsigned_integer_denominator_geo_vector);
-
-//   std::vector<std::uint64_t> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
-//   std::vector<std::uint64_t> constant_unsigned_integer_denominator_geo_vector(num_of_simd_total);
-//   for (std::size_t i = 0; i < num_of_simd_dlap; i++) {
-//     for (std::size_t j = 0; j < num_of_simd_geo; j++) {
-//       constant_unsigned_integer_numerator_geo_vector[i * num_of_simd_geo + j] =
-//           constant_unsigned_integer_numerator_vector[i];
-//       constant_unsigned_integer_denominator_geo_vector[i * num_of_simd_geo + j] =
-//           constant_unsigned_integer_denominator_vector[i];
-//     }
-//   }
-
-//   std::vector<ShareWrapper> geometric_sample_vector =
-//       FxGeometricDistributionEXP<FixType, UintType, IntType, A>(
-//           constant_unsigned_integer_numerator_geo_vector,
-//           constant_unsigned_integer_denominator_geo_vector,
-//           random_fixed_point_0_1_boolean_gmw_share, random_unsigned_integer_boolean_gmw_share,
-//           iteration_1, iteration_2, fixed_point_fraction_bit_size);
-
-//   ShareWrapper boolean_gmw_share_sign = boolean_gmw_share_bernoulli_sample;
-//   ShareWrapper unsigned_integer_geometric_sample_boolean_gmw_share_magnitude =
-//       geometric_sample_vector[0];
-//   ShareWrapper boolean_gmw_share_magnitude_EQZ =
-//       SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude).IsZero();
-
-//   // magnitude*(1-2*sign)
-//   SecureSignedInteger signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign =
-//       SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude)
-//           .Neg(boolean_gmw_share_sign);
-
-//   ShareWrapper boolean_gmw_share_choice =
-//       ~(boolean_gmw_share_sign & boolean_gmw_share_magnitude_EQZ) & geometric_sample_vector[1];
-
-//   std::vector<ShareWrapper>
-//       signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector =
-//           ShareWrapper::SimdifyReshapeHorizontal(
-//               signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get().Unsimdify(),
-//               iteration_3, num_of_simd_dlap);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_choice_reshape_vector =
-//       ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_3,
-//                                              num_of_simd_dlap);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
-//       share_->InvertBinaryTreeSelection(
-//           signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector,
-//           boolean_gmw_share_choice_reshape_vector);
-
-//   //   // only for debug
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_sign);  //
-//   //   2 boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_geometric_sample_boolean_gmw_share_magnitude);  // 3
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_numerator_geo);  // 4
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_denominator_geo);  // 5
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get()); //
-//   //       6
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_choice);
-//   //
-//   //   7
-
-//   return boolean_gmw_share_discrete_laplace_sample_vector;
-// }
-
-// template std::vector<ShareWrapper>
-// SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution<double, std::uint64_t, std::int64_t>(
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t iteration_3,
-//     std::size_t fixed_point_fraction_bit_size) const;
-
-// template <typename FixType, typename UintType>
-// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution(
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
-//     std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const {
-//   //   using UintType = std::uint64_t;
-
-//   // same as FLGeometricDistributionEXP except with more iteration_3
-//   std::size_t num_of_simd_geo = iteration_3;
-//   std::size_t num_of_simd_dlap = constant_unsigned_integer_numerator_vector.size();
-//   std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo;
-
-//   //   assert(constant_unsigned_integer_numerator_vector.size() ==
-//   //          constant_unsigned_integer_denominator_vector.size());
-//   assert(random_fixed_point_0_1_boolean_gmw_share->GetNumberOfSimdValues() ==
-//          (iteration_2)*num_of_simd_total);
-//   assert(boolean_gmw_share_bernoulli_sample->GetNumberOfSimdValues() == num_of_simd_total);
-
-//   //   std::vector<ShareWrapper> unsigned_integer_numerator_geo_vector =
-//   //       ShareWrapper::SimdifyDuplicateVertical(
-//   //           unsigned_integer_boolean_gmw_share_numerator.Unsimdify(), num_of_simd_geo);
-//   //   ShareWrapper unsigned_integer_numerator_geo =
-//   //       ShareWrapper::Simdify(unsigned_integer_numerator_geo_vector);
-
-//   //   std::vector<ShareWrapper> unsigned_integer_denominator_geo_vector =
-//   //       ShareWrapper::SimdifyDuplicateVertical(
-//   //           unsigned_integer_boolean_gmw_share_denominator.Unsimdify(), num_of_simd_geo);
-//   //   ShareWrapper unsigned_integer_denominator_geo =
-//   //       ShareWrapper::Simdify(unsigned_integer_denominator_geo_vector);
-
-//   std::vector<std::uint64_t> constant_unsigned_integer_numerator_geo_vector(num_of_simd_total);
-//   for (std::size_t i = 0; i < num_of_simd_dlap; i++) {
-//     for (std::size_t j = 0; j < num_of_simd_geo; j++) {
-//       constant_unsigned_integer_numerator_geo_vector[i * num_of_simd_geo + j] =
-//           constant_unsigned_integer_numerator_vector[i];
-//     }
-//   }
-//   //   std::cout << "444" << std::endl;
-//   std::vector<ShareWrapper> geometric_sample_vector =
-//       FxGeometricDistributionEXP<FixType, UintType, IntType, A>(
-//           constant_unsigned_integer_numerator_geo_vector,
-//           random_fixed_point_0_1_boolean_gmw_share, iteration_2, fixed_point_fraction_bit_size);
-
-//   //   std::cout << "555" << std::endl;
-//   ShareWrapper boolean_gmw_share_sign = boolean_gmw_share_bernoulli_sample;
-//   ShareWrapper unsigned_integer_geometric_sample_boolean_gmw_share_magnitude =
-//       geometric_sample_vector[0];
-//   ShareWrapper boolean_gmw_share_magnitude_EQZ =
-//       SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude).IsZero();
-
-//   // magnitude*(1-2*sign)
-//   SecureSignedInteger signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign =
-//       SecureSignedInteger(unsigned_integer_geometric_sample_boolean_gmw_share_magnitude)
-//           .Neg(boolean_gmw_share_sign);
-
-//   ShareWrapper boolean_gmw_share_choice =
-//       ~(boolean_gmw_share_sign & boolean_gmw_share_magnitude_EQZ) & geometric_sample_vector[1];
-
-//   std::vector<ShareWrapper>
-//       signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector =
-//           ShareWrapper::SimdifyReshapeHorizontal(
-//               signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get().Unsimdify(),
-//               iteration_3, num_of_simd_dlap);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_choice_reshape_vector =
-//       ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_3,
-//                                              num_of_simd_dlap);
-
-//   std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
-//       share_->InvertBinaryTreeSelection(
-//           signed_integer_with_magnitude_mul_one_minus_two_mul_as_sign_reshape_vector,
-//           boolean_gmw_share_choice_reshape_vector);
-
-//   //   // only for debug
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_sign);  //
-//   //   2 boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_geometric_sample_boolean_gmw_share_magnitude);  // 3
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_numerator_geo);  // 4
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_denominator_geo);  // 5
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(
-//   //       unsigned_integer_with_magnitude_mul_one_minus_two_mul_as_sign.Get()); //
-//   //       6
-//   //   boolean_gmw_share_discrete_laplace_sample_vector.emplace_back(boolean_gmw_share_choice);
-//   //
-//   //   7
-
-//   return boolean_gmw_share_discrete_laplace_sample_vector;
-// }
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution<
-//     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-//     const std::vector<std::uint32_t>& constant_unsigned_integer_numerator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
-//     std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const;
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteLaplaceDistribution<
-//     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
-//     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample, std::size_t iteration_2,
-//     std::size_t iteration_3, std::size_t fixed_point_fraction_bit_size) const;
-
-// template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution(
-//     const std::vector<double>& constant_fixed_point_sigma_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
-//     std::size_t fixed_point_fraction_bit_size) const {
-//   //   using UintType = std::uint64_t;
-//   //   using IntType = std::int64_t;
-//   //   std::size_t fixed_point_fraction_bit_size = 16;
-
-//   std::size_t num_of_simd_dgau = constant_fixed_point_sigma_vector.size();
-//   std::size_t num_of_simd_geo = iteration_3;
-//   std::size_t num_of_simd_dlap = iteration_4;
-//   std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo * num_of_simd_dgau;
-
-//   assert(random_fixed_point_0_1_boolean_gmw_share_dlap->GetNumberOfSimdValues() ==
-//          (iteration_1 + iteration_2) * num_of_simd_total);
-//   assert(random_unsigned_integer_boolean_gmw_share_dlap->GetNumberOfSimdValues() ==
-//          iteration_1 * num_of_simd_total);
-
-//   assert(boolean_gmw_share_bernoulli_sample_dlap->GetNumberOfSimdValues() == num_of_simd_total);
-//   assert(random_fixed_point_0_1_boolean_gmw_share_dgau->GetNumberOfSimdValues() ==
-//          iteration_4 * num_of_simd_dgau);
-
-//   //   std::cout << "000" << std::endl;
-
-//   std::vector<UintType> constant_unsigned_integer_t_vector(num_of_simd_dgau);
-//   for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
-//     constant_unsigned_integer_t_vector[i] = floor(constant_fixed_point_sigma_vector[i]) + 1;
-//   }
-
-//   //   std::vector<UintType> constant_unsigned_integer_t_dlap_vector(num_of_simd_dgau *
-//   //   num_of_simd_dlap);
-//   std::vector<UintType> constant_unsigned_integer_numerator_dlap_vector(num_of_simd_dgau *
-//                                                                         num_of_simd_dlap);
-//   std::vector<UintType> constant_unsigned_integer_denominator_dlap_vector(num_of_simd_dgau *
-//                                                                           num_of_simd_dlap);
-
-//   //   std::cout << "111" << std::endl;
-//   for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
-//     for (std::size_t j = 0; j < num_of_simd_dlap; j++) {
-//       //   constant_unsigned_integer_t_dlap_vector[i * num_of_simd_dlap + j] =
-//       //       constant_unsigned_integer_t_vector[i];
-//       constant_unsigned_integer_denominator_dlap_vector[i * num_of_simd_dlap + j] =
-//           constant_unsigned_integer_t_vector[i];
-//       constant_unsigned_integer_numerator_dlap_vector[i * num_of_simd_dlap + j] = UintType(1);
-//     }
-//   }
-
-//   std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
-//       FxDiscreteLaplaceDistribution<FixType, UintType, IntType, A>(
-//           constant_unsigned_integer_numerator_dlap_vector,
-//           constant_unsigned_integer_denominator_dlap_vector,
-//           random_fixed_point_0_1_boolean_gmw_share_dlap,
-//           random_unsigned_integer_boolean_gmw_share_dlap,
-//           boolean_gmw_share_bernoulli_sample_dlap, iteration_1, iteration_2, iteration_3,
-//           fixed_point_fraction_bit_size);
-
-//   //   std::cout << "222" << std::endl;
-//   std::vector<FixType> constant_fixed_point_sigma_square_div_t_vector(num_of_simd_dgau);
-//   std::vector<FixType> constant_fixed_point_two_mul_sigma_square_vector(num_of_simd_dgau);
-//   for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
-//     constant_fixed_point_sigma_square_div_t_vector[i] =
-//         constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i] /
-//         FixType(constant_unsigned_integer_t_vector[i]);
-//     constant_fixed_point_two_mul_sigma_square_vector[i] =
-//         2.0 * constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i];
-//   }
-
-//   //   std::cout << "333" << std::endl;
-//   SecureFixedPointCircuitCBMC constant_fixed_point_sigma_square_div_t =
-//   SecureFixedPointCircuitCBMC(
-//       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           constant_fixed_point_sigma_square_div_t_vector, fixed_point_fraction_bit_size)));
-
-//   SecureFixedPointCircuitCBMC constant_fixed_point_two_mul_pow2_sigma =
-//   SecureFixedPointCircuitCBMC(
-//       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           constant_fixed_point_two_mul_sigma_square_vector, fixed_point_fraction_bit_size)));
-
-//   //   std::cout << "444" << std::endl;
-//   ShareWrapper boolean_gmw_share_Y = boolean_gmw_share_discrete_laplace_sample_vector[0];
-//   SecureFixedPointCircuitCBMC fixed_point_C_bernoulli_parameter =
-//       (((SecureSignedInteger(boolean_gmw_share_Y).Int2Fx().Abs() -
-//          SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
-//              constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4))))
-//             .Sqr()) /
-//        (SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
-//            constant_fixed_point_two_mul_pow2_sigma.Get().Unsimdify(), iteration_4)))))
-//           .Neg()
-//           .Exp();
-
-//   //   std::cout << "555" << std::endl;
-//   ShareWrapper boolean_gmw_share_bernoulli =
-//       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share_dgau) <
-//       fixed_point_C_bernoulli_parameter;
-
-//   ShareWrapper boolean_gmw_share_choice =
-//       boolean_gmw_share_bernoulli & boolean_gmw_share_discrete_laplace_sample_vector[1];
-
-//   std::vector<ShareWrapper> boolean_gmw_share_Y_reshape = ShareWrapper::SimdifyReshapeHorizontal(
-//       boolean_gmw_share_Y.Unsimdify(), iteration_4, num_of_simd_dgau);
-//   std::vector<ShareWrapper> boolean_gmw_share_choice_reshape =
-//       ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_4,
-//                                              num_of_simd_dgau);
-
-//   //   std::cout << "666" << std::endl;
-//   std::vector<ShareWrapper> boolean_gmw_share_result_vector =
-//       share_->InvertBinaryTreeSelection(boolean_gmw_share_Y_reshape,
-//       boolean_gmw_share_choice_reshape);
-
-//   //   // only for debug
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       boolean_gmw_share_discrete_laplace_sample_vector[0]);  // 2
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       boolean_gmw_share_discrete_laplace_sample_vector[1]);                               //
-//   3
-//   //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_bernoulli);              //
-//   4
-//   //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_choice);                 //
-//   5
-//   //   boolean_gmw_share_result_vector.emplace_back(fixed_point_C_bernoulli_parameter.Get());  //
-//   6
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       SecureSignedInteger(boolean_gmw_share_Y).Get());  // 7
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       SecureFixedPointCircuitCBMC(
-//   //           ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
-//   //               constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4)))
-//   //           .Get());  // 8
-
-//   return boolean_gmw_share_result_vector;
-// }
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
-//     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-//     const std::vector<double>& constant_fixed_point_sigma_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
-//     std::size_t fixed_point_fraction_bit_size) const;
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
-//     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
-//     const std::vector<double>& constant_fixed_point_sigma_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
-//     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4,
-//     std::size_t fixed_point_fraction_bit_size) const;
-
-// template <typename FixType, typename UintType, typename IntType, typename A>
-// std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution(
-//     const std::vector<double>& constant_fixed_point_sigma_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
-//     std::size_t iteration_3, std::size_t iteration_4,
-//     std::size_t fixed_point_fraction_bit_size) const {
-//   //   using UintType = std::uint64_t;
-//   //   using IntType = std::int64_t;
-//   //   std::size_t fixed_point_fraction_bit_size = 16;
-
-//   std::size_t num_of_simd_dgau = constant_fixed_point_sigma_vector.size();
-//   std::size_t num_of_simd_geo = iteration_3;
-//   std::size_t num_of_simd_dlap = iteration_4;
-//   std::size_t num_of_simd_total = num_of_simd_dlap * num_of_simd_geo * num_of_simd_dgau;
-
-//   assert(random_fixed_point_0_1_boolean_gmw_share_dlap->GetNumberOfSimdValues() ==
-//          (iteration_2)*num_of_simd_total);
-
-//   assert(boolean_gmw_share_bernoulli_sample_dlap->GetNumberOfSimdValues() == num_of_simd_total);
-//   assert(random_fixed_point_0_1_boolean_gmw_share_dgau->GetNumberOfSimdValues() ==
-//          iteration_4 * num_of_simd_dgau);
-
-//   //   std::cout << "000" << std::endl;
-
-//   std::vector<UintType> constant_unsigned_integer_t_vector(num_of_simd_dgau);
-//   for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
-//     constant_unsigned_integer_t_vector[i] = floor(constant_fixed_point_sigma_vector[i]) + 1;
-//   }
-
-//   // t = 1
-//   assert(VectorAllEqualToValue<UintType>(constant_unsigned_integer_t_vector, UintType(1)));
-
-//   //   std::vector<UintType> constant_unsigned_integer_t_dlap_vector(num_of_simd_dgau *
-//   //   num_of_simd_dlap);
-//   std::vector<UintType> constant_unsigned_integer_numerator_dlap_vector(num_of_simd_dgau *
-//                                                                         num_of_simd_dlap);
-
-//   //   std::cout << "111" << std::endl;
-//   for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
-//     for (std::size_t j = 0; j < num_of_simd_dlap; j++) {
-//       //   constant_unsigned_integer_t_dlap_vector[i * num_of_simd_dlap + j] =
-//       //       constant_unsigned_integer_t_vector[i];
-//       constant_unsigned_integer_numerator_dlap_vector[i * num_of_simd_dlap + j] = UintType(1);
-//     }
-//   }
-
-//   std::vector<ShareWrapper> boolean_gmw_share_discrete_laplace_sample_vector =
-//       FxDiscreteLaplaceDistribution<FixType, UintType, IntType, A>(
-//           constant_unsigned_integer_numerator_dlap_vector,
-//           random_fixed_point_0_1_boolean_gmw_share_dlap, boolean_gmw_share_bernoulli_sample_dlap,
-//           iteration_2, iteration_3, fixed_point_fraction_bit_size);
-
-//   //   std::cout << "222" << std::endl;
-//   std::vector<FixType> constant_fixed_point_sigma_square_div_t_vector(num_of_simd_dgau);
-//   std::vector<FixType> constant_fixed_point_two_mul_sigma_square_vector(num_of_simd_dgau);
-//   for (std::size_t i = 0; i < num_of_simd_dgau; i++) {
-//     constant_fixed_point_sigma_square_div_t_vector[i] =
-//         constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i];
-//     constant_fixed_point_two_mul_sigma_square_vector[i] =
-//         2.0 * constant_fixed_point_sigma_vector[i] * constant_fixed_point_sigma_vector[i];
-//   }
-
-//   //   std::cout << "333" << std::endl;
-//   SecureFixedPointCircuitCBMC constant_fixed_point_sigma_square_div_t =
-//   SecureFixedPointCircuitCBMC(
-//       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           constant_fixed_point_sigma_square_div_t_vector, fixed_point_fraction_bit_size)));
-
-//   SecureFixedPointCircuitCBMC constant_fixed_point_two_mul_pow2_sigma =
-//   SecureFixedPointCircuitCBMC(
-//       (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(FixedPointToInput<UintType,
-//       IntType>(
-//           constant_fixed_point_two_mul_sigma_square_vector, fixed_point_fraction_bit_size)));
-
-//   //   std::cout << "444" << std::endl;
-//   ShareWrapper boolean_gmw_share_Y = boolean_gmw_share_discrete_laplace_sample_vector[0];
-//   SecureFixedPointCircuitCBMC fixed_point_C_bernoulli_parameter =
-//       (((SecureSignedInteger(boolean_gmw_share_Y).Int2Fx().Abs() -
-//          SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
-//              constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4))))
-//             .Sqr()) /
-//        (SecureFixedPointCircuitCBMC(ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
-//            constant_fixed_point_two_mul_pow2_sigma.Get().Unsimdify(), iteration_4)))))
-//           .Neg()
-//           .Exp();
-
-//   //   std::cout << "555" << std::endl;
-//   ShareWrapper boolean_gmw_share_bernoulli =
-//       SecureFixedPointCircuitCBMC(random_fixed_point_0_1_boolean_gmw_share_dgau) <
-//       fixed_point_C_bernoulli_parameter;
-
-//   ShareWrapper boolean_gmw_share_choice =
-//       boolean_gmw_share_bernoulli & boolean_gmw_share_discrete_laplace_sample_vector[1];
-
-//   std::vector<ShareWrapper> boolean_gmw_share_Y_reshape = ShareWrapper::SimdifyReshapeHorizontal(
-//       boolean_gmw_share_Y.Unsimdify(), iteration_4, num_of_simd_dgau);
-//   std::vector<ShareWrapper> boolean_gmw_share_choice_reshape =
-//       ShareWrapper::SimdifyReshapeHorizontal(boolean_gmw_share_choice.Unsimdify(), iteration_4,
-//                                              num_of_simd_dgau);
-
-//   //   std::cout << "666" << std::endl;
-//   std::vector<ShareWrapper> boolean_gmw_share_result_vector =
-//       share_->InvertBinaryTreeSelection(boolean_gmw_share_Y_reshape,
-//       boolean_gmw_share_choice_reshape);
-
-//   //   // only for debug
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       boolean_gmw_share_discrete_laplace_sample_vector[0]);  // 2
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       boolean_gmw_share_discrete_laplace_sample_vector[1]);                               //
-//   3
-//   //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_bernoulli);              //
-//   4
-//   //   boolean_gmw_share_result_vector.emplace_back(boolean_gmw_share_choice);                 //
-//   5
-//   //   boolean_gmw_share_result_vector.emplace_back(fixed_point_C_bernoulli_parameter.Get());  //
-//   6
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       SecureSignedInteger(boolean_gmw_share_Y).Get());  // 7
-//   //   boolean_gmw_share_result_vector.emplace_back(
-//   //       SecureFixedPointCircuitCBMC(
-//   //           ShareWrapper::Simdify(ShareWrapper::SimdifyDuplicateVertical(
-//   //               constant_fixed_point_sigma_square_div_t.Get().Unsimdify(), iteration_4)))
-//   //           .Get());  // 8
-
-//   return boolean_gmw_share_result_vector;
-// }
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
-//     double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
-//     const std::vector<double>& constant_fixed_point_sigma_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
-//     std::size_t iteration_3, std::size_t iteration_4,
-//     std::size_t fixed_point_fraction_bit_size) const;
-
-// template std::vector<ShareWrapper> SecureSamplingAlgorithm::FxDiscreteGaussianDistribution<
-//     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
-//     const std::vector<double>& constant_fixed_point_sigma_vector,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
-//     std::size_t iteration_3, std::size_t iteration_4,
-//     std::size_t fixed_point_fraction_bit_size) const;
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteGaussianDistribution<
+    double, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    const std::vector<double>& constant_fixed_point_sigma_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t iteration_4,
+    std::size_t fixed_point_fraction_bit_size) const;
+
+template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FxDiscreteGaussianDistribution<
+    double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
+    const std::vector<double>& constant_fixed_point_sigma_vector,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+    const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+    std::size_t iteration_3, std::size_t iteration_4,
+    std::size_t fixed_point_fraction_bit_size) const;
 
 }  // namespace encrypto::motion
