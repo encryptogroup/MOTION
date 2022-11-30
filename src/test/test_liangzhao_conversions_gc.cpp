@@ -199,8 +199,8 @@ constexpr std::array<std::size_t, 1> kConversionNumberOfParties{2};
 // constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
 // constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
 // constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
-constexpr std::array<std::size_t, 1> kConversionNumberOfWires{10};
-constexpr std::array<std::size_t, 1> kConversionNumberOfSimd{2};
+constexpr std::array<std::size_t, 1> kConversionNumberOfWires{1};
+constexpr std::array<std::size_t, 1> kConversionNumberOfSimd{1};
 constexpr std::array<bool, 1> kConversionOnlineAfterSetup{false};
 
 INSTANTIATE_TEST_SUITE_P(ConversionTestSuite, ConversionTest,

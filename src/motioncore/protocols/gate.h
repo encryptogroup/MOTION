@@ -111,6 +111,9 @@ class Gate {
 
   bool own_output_wires_{true};
 
+  // added by Liang Zhao
+  // bool own_output_wires_{false};
+
   Gate(Backend& backend);
 
   Register& GetRegister();

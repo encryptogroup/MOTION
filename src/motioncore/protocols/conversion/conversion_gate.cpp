@@ -489,9 +489,15 @@ BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(par
     evaluators_input_promise_ = &evaluator_input_gate->GetInputPromise();
     evaluators_gc_shares.emplace_back(garbler_input_gate->GetOutputAsGarbledCircuitShare());
     evaluators_gc_shares.emplace_back(evaluator_input_gate->GetOutputAsGarbledCircuitShare());
+
     output_wires_ = (evaluators_gc_shares[0] ^ evaluators_gc_shares[1])->GetWires();
     // output_wires_ = (evaluators_gc_shares[0])->GetWires();
   }
+
+
+  output_wires_ = garbler_input_gate->GetOutputAsGarbledCircuitShare()->GetWires();
+
+
 
   assert(gate_id_ >= 0);
 }
@@ -550,6 +556,12 @@ const SharePointer BooleanGmwToGCGate::GetOutputAsShare() const {
   assert(result);
   return result;
 }
+
+
+
+
+
+
 
 // TODO: improve BooleanGmwToGCGate
 // // added by Liang Zhao
