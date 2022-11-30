@@ -40,6 +40,13 @@
 #include "utility/constants.h"
 #include "utility/fiber_condition.h"
 
+// added by Liang Zhao
+#include "protocols/garbled_circuit/garbled_circuit_constants.h"
+#include "protocols/garbled_circuit/garbled_circuit_gate.h"
+#include "protocols/garbled_circuit/garbled_circuit_provider.h"
+#include "protocols/garbled_circuit/garbled_circuit_share.h"
+#include "protocols/garbled_circuit/garbled_circuit_wire.h"
+
 namespace encrypto::motion {
 
 BmrToBooleanGmwGate::BmrToBooleanGmwGate(const SharePointer& parent)
@@ -417,6 +424,127 @@ const SharePointer ArithmeticGmwToBmrGate::GetOutputAsShare() const {
   auto result = std::static_pointer_cast<Share>(GetOutputAsBmrShare());
   assert(result);
   return result;
+}
+
+// added by Liang Zhao
+BooleanGmwToGCGate::BooleanGmwToGCGate(const SharePointer& parent) : OneGate(parent->GetBackend()) {
+  is_garbler_ = backend_.GetCommunicationLayer().GetMyId() ==
+                static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+  is_evaluator_ = !is_garbler_;
+
+  parent_ = parent->GetWires();
+
+  assert(parent_.size() > 0);
+  assert(parent_.at(0)->GetBitLength() > 0);
+  for ([[maybe_unused]] const auto& wire : parent_)
+    assert(wire->GetProtocol() == MpcProtocol::kBooleanGmw);
+
+  output_wires_.resize(parent_.size());
+  // for (auto& w : output_wires_) {
+  //   w = GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(backend_,
+  //   parent_[0]->GetNumberOfSimdValues());
+  // }
+  number_of_simd_ = parent_[0]->GetNumberOfSimdValues();
+  number_of_wires_ = parent_.size();
+
+  for (auto& wire : output_wires_) {
+    wire =
+        std::make_shared<encrypto::motion::proto::garbled_circuit::Wire>(backend_, number_of_simd_);
+  }
+
+  assert(gate_id_ >= 0);
+}
+
+void BooleanGmwToGCGate::EvaluateSetup() {
+  // the garbler samples key_0 randomly
+  if (is_garbler_) {
+    for (auto& wire : output_wires_) {
+      auto gc_wire =
+          std::dynamic_pointer_cast<encrypto::motion::proto::garbled_circuit::Wire>(wire);
+      assert(gc_wire);
+      gc_wire->GetMutableKeys() = Block128Vector::MakeRandom(number_of_simd_);
+      // set the bits at positions where we will store the r vector to 0
+
+      // commented by Liang Zhao
+      // ? why set to zero at these positions
+      // ? for each key, its size is kKappa/2
+
+      for (auto& key : gc_wire->GetMutableKeys()) {
+        BitSpan key_span(key.data(), kKappa);
+        key_span.Set(false, 0);
+        key_span.Set(false, encrypto::motion::proto::garbled_circuit::kGarbledRowBitSize);
+      }
+
+      gc_wire->SetSetupIsReady();
+    }
+  }
+}
+
+void BooleanGmwToGCGate::EvaluateOnline() {
+  // as OT sender, the garbler has input: (key_0 xor x_0^B dot R, key_0 xor (1-x_0^B) dot R)
+  if (is_garbler_) {
+    if constexpr (kDebug) {
+      if (!ots_for_evaluators_inputs_) {
+        throw std::logic_error("OT object must be instantiated for evaluator's input gates");
+      }
+    }
+    auto& provider{
+        dynamic_cast<encrypto::motion::proto::garbled_circuit::ThreeHalvesGarblerProvider&>(
+            GetGarbledCircuitProvider())};
+
+    // get the global R
+    const Block128& offset = provider.GetOffset();
+
+    // prepare the OT inputs: (key_0 xor x_0^B dot R, key_0 xor (1-x_0^B) dot R)
+    auto zero = Block128::MakeZero();
+
+    // send the labels corresponding to the inputs to the evaluator
+    // std::vector<BitVector<>> inputs{input_promise_future_->second.get()};
+    std::vector<std::uint8_t> input_labels(Block128::kBlockSize * number_of_wires_ *
+                                           number_of_simd_);
+
+    for (std::size_t wire_i = 0; wire_i < number_of_wires_; ++wire_i) {
+      // get the Boolean GMW wire value x_0^B
+      auto boolean_gmw_wire_value =
+          std::dynamic_pointer_cast<encrypto::motion::proto::boolean_gmw::Wire>(parent_[wire_i])
+              ->GetValues();
+
+      auto gc_wire{std::dynamic_pointer_cast<encrypto::motion::proto::garbled_circuit::Wire>(
+          output_wires_[wire_i])};
+      assert(gc_wire);
+
+      for (std::size_t simd_j = 0; simd_j < number_of_simd_; ++simd_j) {
+        // const Block128& offset_or_zero = inputs[wire_i][simd_j] ? offset : zero;
+        const Block128& offset_or_zero = boolean_gmw_wire_value[simd_j] ? offset : zero;
+        const auto lhs_data{std::assume_aligned<Block128::kBlockSize>(
+            reinterpret_cast<const std::uint8_t* __restrict__>(offset_or_zero.data()))};
+        const auto rhs_data{std::assume_aligned<Block128::kBlockSize>(
+            reinterpret_cast<const std::uint8_t* __restrict__>(gc_wire->GetKeys()[simd_j].data()))};
+        auto output_data{reinterpret_cast<std::uint8_t* __restrict__>(
+            input_labels.data() + Block128::kBlockSize * (number_of_simd_ * wire_i + simd_j))};
+        std::transform(lhs_data, lhs_data + Block128::kBlockSize, rhs_data, output_data,
+                       [](const std::uint8_t& lhs, const std::uint8_t& rhs) { return lhs ^ rhs; });
+      }
+    }
+
+    // a pair of labels for each wire and simd value
+    Block128Vector labels(2 * number_of_wires_ * number_of_simd_);
+    for (std::size_t wire_i = 0; wire_i < number_of_wires_; ++wire_i) {
+      auto gc_wire{std::dynamic_pointer_cast<encrypto::motion::proto::garbled_circuit::Wire>(
+          output_wires_[wire_i])};
+      for (std::size_t simd_j = 0; simd_j < number_of_simd_; ++simd_j) {
+        labels[2 * (wire_i * number_of_simd_ + simd_j)] = gc_wire->GetKeys()[simd_j];
+        labels[2 * (wire_i * number_of_simd_ + simd_j) + 1] = gc_wire->GetKeys()[simd_j] ^ offset;
+      }
+    }
+    ots_for_evaluators_inputs_->WaitSetup();
+    ots_for_evaluators_inputs_->SetInputs(std::move(labels));
+    ots_for_evaluators_inputs_->SendMessages();
+  }
+
+  // as OT receiver, the evaluator has choice bit x_1^B
+  else {
+  }
 }
 
 }  // namespace encrypto::motion

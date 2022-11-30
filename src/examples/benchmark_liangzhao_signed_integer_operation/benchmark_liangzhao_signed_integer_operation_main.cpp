@@ -97,22 +97,22 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::vector<Combination> combinations;
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kBooleanGmwOperationTypes) {
-        if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
-        }
+  // for (const auto number_of_simd : kNumbersOfSimd) {
+  //   for (const auto bit_size : kBooleanBitSizes) {
+  //     for (const auto operation_type : kBooleanGmwOperationTypes) {
+  //       if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2FL)) {
+  //       }
 
-        else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
-        }
+  //       else if ((bit_size == 8 || bit_size == 16) && (operation_type == T::kInt2Fx)) {
+  //       }
 
-        else {
-          combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
-                                    operation_type, number_of_simd);
-        }
-      }
-    }
-  }
+  //       else {
+  //         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                                   operation_type, number_of_simd);
+  //       }
+  //     }
+  //   }
+  // }
 
   for (const auto number_of_simd : kNumbersOfSimd) {
     for (const auto bit_size : kBooleanBitSizes) {

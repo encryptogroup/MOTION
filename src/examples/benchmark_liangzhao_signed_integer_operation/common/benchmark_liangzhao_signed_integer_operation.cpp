@@ -128,25 +128,25 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   signed_integer_boolean_gmw_share_1_U128 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kBooleanGmw>(em::ToInput<U128>(vector_of_input_U128), 0));
 
-  signed_integer_bmr_share_0_U8 = em::SecureSignedInteger(
+  signed_integer_gc_share_0_U8 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
-  signed_integer_bmr_share_1_U8 = em::SecureSignedInteger(
+  signed_integer_gc_share_1_U8 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
-  signed_integer_bmr_share_0_U16 = em::SecureSignedInteger(
+  signed_integer_gc_share_0_U16 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
-  signed_integer_bmr_share_1_U16 = em::SecureSignedInteger(
+  signed_integer_gc_share_1_U16 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
-  signed_integer_bmr_share_0_U32 = em::SecureSignedInteger(
+  signed_integer_gc_share_0_U32 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
-  signed_integer_bmr_share_1_U32 = em::SecureSignedInteger(
+  signed_integer_gc_share_1_U32 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
-  signed_integer_bmr_share_0_U64 = em::SecureSignedInteger(
+  signed_integer_gc_share_0_U64 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
-  signed_integer_bmr_share_1_U64 = em::SecureSignedInteger(
+  signed_integer_gc_share_1_U64 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
-  signed_integer_bmr_share_0_U128 = em::SecureSignedInteger(
+  signed_integer_gc_share_0_U128 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
-  signed_integer_bmr_share_1_U128 = em::SecureSignedInteger(
+  signed_integer_gc_share_1_U128 = em::SecureSignedInteger(
       party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
 
   signed_integer_bmr_share_0_U8 = em::SecureSignedInteger(
