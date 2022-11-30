@@ -32,6 +32,10 @@
 // added by Liang Zhao
 #include "oblivious_transfer/ot_provider.h"
 
+// otherwise, server compile error
+#include <variant>
+
+
 
 namespace encrypto::motion::proto::bmr {
 
