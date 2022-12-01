@@ -193,19 +193,19 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto operation_type : kGarbledCircuitOperationTypes) {
-      combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
-                                number_of_simd);
-    }
-  }
-
   // for (const auto number_of_simd : kNumbersOfSimd) {
-  //   for (const auto operation_type : kBmrOperationTypes) {
-  //     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, operation_type,
+  //   for (const auto operation_type : kGarbledCircuitOperationTypes) {
+  //     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
   //                               number_of_simd);
   //   }
   // }
+
+  for (const auto number_of_simd : kNumbersOfSimd) {
+    for (const auto operation_type : kBmrOperationTypes) {
+      combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                number_of_simd);
+    }
+  }
 
   // for (const auto number_of_simd : kNumbersOfSimd) {
   //   for (const auto operation_type : kArithmeticGmwOperationTypes) {
