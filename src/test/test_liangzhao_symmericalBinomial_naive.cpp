@@ -189,7 +189,7 @@ TEST(SecureSamplingAlgorithm_naive,
 
           std::vector<ShareWrapper> share_result =
               SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
-                  .FLSymmetricBinomialDistribution<double, IntType>(
+                  .FLSymmetricBinomialDistribution_BGMW<double, IntType>(
                       sqrt_n_vector,
                       encrypto::motion::ShareWrapper::Simdify(
                           share_signed_integer_geometric_sample_vector),

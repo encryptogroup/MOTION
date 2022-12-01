@@ -294,7 +294,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP1_0_1_1_Sim
           if (denominator != 1) {
             share_result =
                 SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
-                    .FLDiscreteGaussianDistribution<FLType, T, T_int, A>(
+                    .FLDiscreteGaussianDistribution_BGMW<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
                             share_random_floating_point_0_1_dlap_vector),
@@ -307,7 +307,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP1_0_1_1_Sim
           } else {
             share_result =
                 SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
-                    .FLDiscreteGaussianDistribution<FLType, T, T_int, A>(
+                    .FLDiscreteGaussianDistribution_BGMW<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
                             share_random_floating_point_0_1_dlap_vector),

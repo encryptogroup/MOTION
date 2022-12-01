@@ -38,6 +38,11 @@
 #include "utility/constants.h"
 #include "utility/logger.h"
 
+#include "protocols/garbled_circuit/garbled_circuit_constants.h"
+#include "protocols/garbled_circuit/garbled_circuit_gate.h"
+#include "protocols/garbled_circuit/garbled_circuit_wire.h"
+#include "protocols/garbled_circuit/garbled_circuit_share.h"
+
 namespace encrypto::motion {
 
 SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& position_ids)
@@ -167,6 +172,13 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
             GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, position_ids_.size()));
         break;
       }
+
+      case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(backend_, position_ids_.size()));
+        break;
+      }
+
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
         output_wires_.emplace_back(
             GetRegister().EmplaceWire<proto::ConstantBooleanWire>(backend_, position_ids_.size()));
@@ -358,6 +370,13 @@ void SubsetGate::EvaluateOnline() {
       }
       break;
     }
+
+// added by Liang Zhao
+
+
+
+
+
     case encrypto::motion::MpcProtocol::kBooleanConstant: {
       for (std::size_t i = 0; i < parent_.size(); ++i) {
         auto in = std::dynamic_pointer_cast<proto::ConstantBooleanWire>(parent_[i]);

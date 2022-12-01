@@ -242,7 +242,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteLaplaceDistributionEXP1_0_1_1_Simd
           if (denominator != 1) {
             share_result =
                 SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
-                    .FLDiscreteLaplaceDistribution<FLType, T, T_int, A>(
+                    .FLDiscreteLaplaceDistribution_BGMW<FLType, T, T_int, A>(
                         unsigned_integer_numerator_vector, unsigned_integer_denominator_vector,
                         encrypto::motion::ShareWrapper::Simdify(
                             share_random_floating_point_0_1_vector),
@@ -253,7 +253,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteLaplaceDistributionEXP1_0_1_1_Simd
           } else {
             share_result =
                 SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
-                    .FLDiscreteLaplaceDistribution<FLType, T, T_int, A>(
+                    .FLDiscreteLaplaceDistribution_BGMW<FLType, T, T_int, A>(
                         unsigned_integer_numerator_vector,
                         encrypto::motion::ShareWrapper::Simdify(
                             share_random_floating_point_0_1_vector),

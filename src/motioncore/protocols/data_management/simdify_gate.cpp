@@ -40,6 +40,12 @@
 #include "utility/constants.h"
 #include "utility/logger.h"
 
+// added by Liang Zhao
+#include "protocols/garbled_circuit/garbled_circuit_constants.h"
+#include "protocols/garbled_circuit/garbled_circuit_gate.h"
+#include "protocols/garbled_circuit/garbled_circuit_share.h"
+#include "protocols/garbled_circuit/garbled_circuit_wire.h"
+
 namespace encrypto::motion {
 
 SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
@@ -211,6 +217,14 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
             GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, output_number_of_simd_values_));
         break;
       }
+
+        // added by Liang Zhao
+      case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+        output_wires_.emplace_back(GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(
+            backend_, output_number_of_simd_values_));
+        break;
+      }
+
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
         output_wires_.emplace_back(GetRegister().EmplaceWire<proto::ConstantBooleanWire>(
             backend_, output_number_of_simd_values_));
@@ -222,6 +236,7 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
         break;
       }
       default:
+        std::cout << "001" << std::endl;
         throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
     }
   }
@@ -254,6 +269,41 @@ void SimdifyGate::EvaluateSetup() {
         }
         output_simd_offset += input_number_of_simd;
       }
+      out->SetSetupIsReady();
+    }
+  }
+
+  // added by Liang Zhao
+  else if (parent_[0]->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+    for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+      auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+      assert(out);
+
+      // // TODO: test the two methods below, which is faster
+      // // out->GetMutableKeys().resize(output_number_of_simd_values_);
+      // out->GetMutableKeys() = Block128Vector::MakeRandom(output_number_of_simd_values_);
+      // for (auto& key : out->GetMutableKeys()) {
+      //   BitSpan key_span(key.data(), kKappa);
+      //   key_span.Set(false, 0);
+      //   key_span.Set(false, encrypto::motion::proto::garbled_circuit::kGarbledRowBitSize);
+      // }
+
+      // for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
+      //   auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+      //       parent_[j * output_wires_.size() + i]);
+      //   assert(in);
+      //   // in->GetSetupReadyCondition()->Wait();
+      //   // The input wires may have different numbers of SIMD values.
+      //   const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+
+      //   // out->GetMutableKeys().Append(in->GetKeys());
+      //   for (std::size_t k = 0; k < input_number_of_simd; ++k) {
+      //     // out->GetMutableSecretKeys()[output_simd_offset + k] = in->GetSecretKeys()[k];
+
+      //   }
+      //   // output_simd_offset += input_number_of_simd;
+      // }
+
       out->SetSetupIsReady();
     }
   }
@@ -421,6 +471,38 @@ void SimdifyGate::EvaluateOnline() {
       }
       break;
     }
+
+      // added by Liang Zhao
+    case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+      const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
+      for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        assert(out);
+        // TODO:
+        out->GetMutableKeys().resize(output_number_of_simd_values_);
+        // out->GetMutablePublicKeys().resize(number_of_parties * output_number_of_simd_values_);
+        std::size_t output_simd_offset{0};
+        for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
+          auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+              parent_[j * output_wires_.size() + i]);
+          assert(in);
+
+          // out->GetMutablePublicValues().Append(in->GetPublicValues());
+          // std::copy_n(in->GetPublicKeys().begin(), in->GetPublicKeys().size(),
+          //             out->GetMutablePublicKeys().begin() + output_simd_offset *
+          //             number_of_parties);
+          // const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+
+          const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+          for (std::size_t k = 0; k < input_number_of_simd; ++k) {
+            out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];
+          }
+          output_simd_offset += input_number_of_simd;
+        }
+      }
+      break;
+    }
+
     case encrypto::motion::MpcProtocol::kBooleanConstant: {
       for (std::size_t i = 0; i < output_wires_.size(); ++i) {
         auto out = std::dynamic_pointer_cast<proto::ConstantBooleanWire>(output_wires_[i]);
@@ -450,6 +532,7 @@ void SimdifyGate::EvaluateOnline() {
       break;
     }
     default:
+      std::cout << "002" << std::endl;
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
   }
 }
@@ -590,6 +673,15 @@ SharePointer SimdifyGate::GetOutputAsShare() {
       share = std::static_pointer_cast<Share>(tmp);
       break;
     }
+
+      // added by Liang Zhao
+    case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+      auto tmp = std::make_shared<proto::garbled_circuit::Share>(output_wires_);
+      assert(tmp);
+      share = std::static_pointer_cast<Share>(tmp);
+      break;
+    }
+
     case encrypto::motion::MpcProtocol::kBooleanConstant: {
       auto tmp = std::make_shared<proto::ConstantBooleanShare>(output_wires_);
       assert(tmp);
@@ -603,6 +695,7 @@ SharePointer SimdifyGate::GetOutputAsShare() {
       break;
     }
     default:
+      std::cout << "003" << std::endl;
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
   }
   return share;

@@ -79,6 +79,7 @@ std::vector<Combination> GenerateAllCombinations() {
       // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
+// only for debugging
       T::kDiv
   };
 
@@ -87,6 +88,7 @@ std::vector<Combination> GenerateAllCombinations() {
       // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
+// only for debugging
       T::kDiv
   };
 
@@ -95,6 +97,7 @@ std::vector<Combination> GenerateAllCombinations() {
       // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
+// only for debugging
       T::kDiv
   };
 
