@@ -478,7 +478,6 @@ void SimdifyGate::EvaluateOnline() {
       for (std::size_t i = 0; i < output_wires_.size(); ++i) {
         auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
         assert(out);
-        // TODO:
         out->GetMutableKeys().resize(output_number_of_simd_values_);
         // out->GetMutablePublicKeys().resize(number_of_parties * output_number_of_simd_values_);
         std::size_t output_simd_offset{0};
@@ -486,13 +485,6 @@ void SimdifyGate::EvaluateOnline() {
           auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
               parent_[j * output_wires_.size() + i]);
           assert(in);
-
-          // out->GetMutablePublicValues().Append(in->GetPublicValues());
-          // std::copy_n(in->GetPublicKeys().begin(), in->GetPublicKeys().size(),
-          //             out->GetMutablePublicKeys().begin() + output_simd_offset *
-          //             number_of_parties);
-          // const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
-
           const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
           for (std::size_t k = 0; k < input_number_of_simd; ++k) {
             out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];

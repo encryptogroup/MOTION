@@ -38,10 +38,11 @@
 #include "utility/constants.h"
 #include "utility/logger.h"
 
+// added by Liang Zhao
 #include "protocols/garbled_circuit/garbled_circuit_constants.h"
 #include "protocols/garbled_circuit/garbled_circuit_gate.h"
-#include "protocols/garbled_circuit/garbled_circuit_wire.h"
 #include "protocols/garbled_circuit/garbled_circuit_share.h"
+#include "protocols/garbled_circuit/garbled_circuit_wire.h"
 
 namespace encrypto::motion {
 
@@ -174,8 +175,8 @@ SubsetGate::SubsetGate(const SharePointer& parent, std::vector<std::size_t>&& po
       }
 
       case encrypto::motion::MpcProtocol::kGarbledCircuit: {
-        output_wires_.emplace_back(
-            GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(backend_, position_ids_.size()));
+        output_wires_.emplace_back(GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(
+            backend_, position_ids_.size()));
         break;
       }
 
@@ -235,6 +236,27 @@ void SubsetGate::EvaluateSetup() {
           out->GetMutableSecretKeys()[k] = in->GetSecretKeys()[position_ids_[k]];
         }
       }
+      out->SetSetupIsReady();
+    }
+  }
+
+  // added by Liang Zhao
+  else if (parent_[0]->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+    for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+      auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+      assert(in);
+      auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+      assert(out);
+      // in->GetSetupReadyCondition()->Wait();
+
+      // for (std::size_t j = 0; j < parent_.size(); ++j) {
+      //   BitVectorSubsetImplementation(in->GetPermutationBits(), out->GetMutablePermutationBits(),
+      //                                 position_ids_);
+      //   out->GetMutableSecretKeys().resize(position_ids_.size());
+      //   for (std::size_t k = 0; k < position_ids_.size(); ++k) {
+      //     out->GetMutableSecretKeys()[k] = in->GetSecretKeys()[position_ids_[k]];
+      //   }
+      // }
       out->SetSetupIsReady();
     }
   }
@@ -371,11 +393,24 @@ void SubsetGate::EvaluateOnline() {
       break;
     }
 
-// added by Liang Zhao
+      // added by Liang Zhao
+    case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+      const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
+      for (std::size_t i = 0; i < parent_.size(); ++i) {
+        auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+        assert(in);
+        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        assert(out);
 
-
-
-
+        out->GetMutableKeys().resize(position_ids_.size() * number_of_parties);
+        std::size_t element_counter{0};
+        for (std::size_t j : position_ids_) {
+          out->GetMutableKeys()[element_counter] = in->GetKeys()[j];
+          element_counter++;
+        }
+      }
+      break;
+    }
 
     case encrypto::motion::MpcProtocol::kBooleanConstant: {
       for (std::size_t i = 0; i < parent_.size(); ++i) {
@@ -501,6 +536,15 @@ const SharePointer SubsetGate::GetOutputAsShare() {
       result = std::static_pointer_cast<Share>(tmp);
       break;
     }
+
+      // added by Liang Zhao
+    case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+      auto tmp = std::make_shared<proto::garbled_circuit::Share>(output_wires_);
+      assert(tmp);
+      result = std::static_pointer_cast<Share>(tmp);
+      break;
+    }
+
     case encrypto::motion::MpcProtocol::kBooleanConstant: {
       auto tmp = std::make_shared<proto::ConstantBooleanShare>(output_wires_);
       assert(tmp);
