@@ -76,20 +76,26 @@ std::vector<Combination> GenerateAllCombinations() {
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
-      T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
-      T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+      // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
+      // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+
+      T::kDiv
   };
 
   const std::array kBmrOperationTypes = {
       // boolean circuit based method
-      T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
-      T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+      // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
+      // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+
+      T::kDiv
   };
 
   const std::array kGarbledCircuitOperationTypes = {
       // boolean circuit based method
-      T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
-      T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+      // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
+      // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
+
+      T::kDiv
   };
 
   std::vector<Combination> combinations;

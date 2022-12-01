@@ -463,8 +463,11 @@ std::vector<T> discrete_gaussian_distribution_EXP(double sigma, T numerator, T d
         T t = floor(sigma) + 1;
         // T numerator = 1;
         // T denominator = t;
-        T numerator = numerator;
-        T denominator = denominator;
+        // T numerator = numerator;
+        // std::cout<<"denominator: "<<denominator<<std::endl;
+        // T denominator = denominator;
+        // std::cout<<"denominator: "<<denominator<<std::endl;
+
 
         assert(denominator == 1);
 

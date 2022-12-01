@@ -82,16 +82,16 @@ std::vector<Combination> GenerateAllCombinations() {
       for (const auto operation_type : kBooleanOperationTypes) {
         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
                                   operation_type, number_of_simd);
-        // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
-        //                           number_of_simd);
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
+                                  number_of_simd);
         combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
                                   number_of_simd);
       }
 
       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw, T::kB2Y,
                                 number_of_simd);
-      // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kY2B,
-      //                           number_of_simd);
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kY2B,
+                                number_of_simd);
       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, T::kY2B,
                                 number_of_simd);
     }
@@ -105,8 +105,8 @@ std::vector<Combination> GenerateAllCombinations() {
       }
       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw, T::kB2A,
                                 number_of_simd);
-      // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kY2A,
-      //                           number_of_simd);
+      combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kY2A,
+                                number_of_simd);
       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, T::kY2A,
                                 number_of_simd);
       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kArithmeticGmw, T::kA2B,

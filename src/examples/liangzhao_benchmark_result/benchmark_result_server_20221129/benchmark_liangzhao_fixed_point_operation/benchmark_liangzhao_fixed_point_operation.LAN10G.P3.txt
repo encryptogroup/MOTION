@@ -1,0 +1,2853 @@
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+===========================================================================
+Protocol BooleanGMW operation Fx_Add_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.034 ms      0.031 ms      0.015 ms
+MT Setup                32.877 ms     42.749 ms     17.157 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.161 ms      4.352 ms      2.623 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    130.529 ms    129.779 ms     24.480 ms
+Gates Setup              0.377 ms      0.371 ms      0.114 ms
+Gates Online            35.330 ms     27.091 ms     18.147 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     171.313 ms    165.175 ms     30.444 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.073 MiB in 1160 messages
+Received: 0.073 MiB in 1158 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Sub_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.034 ms      0.027 ms      0.015 ms
+MT Setup                18.848 ms     21.080 ms     20.537 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.540 ms      6.043 ms      4.169 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    106.922 ms    113.294 ms     21.870 ms
+Gates Setup              0.396 ms      0.419 ms      0.054 ms
+Gates Online            22.403 ms     22.670 ms      2.007 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     134.287 ms    138.990 ms     21.736 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.073 MiB in 1160 messages
+Received: 0.073 MiB in 1158 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Mul_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.246 ms      0.203 ms      0.137 ms
+MT Setup                27.269 ms     42.530 ms     17.744 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.425 ms      8.695 ms      5.707 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    113.273 ms    114.918 ms     26.360 ms
+Gates Setup              7.452 ms      6.675 ms      2.012 ms
+Gates Online           126.219 ms    121.279 ms     18.011 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     252.027 ms    241.784 ms     37.359 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.766 MiB in 13256 messages
+Received: 0.766 MiB in 13254 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Div_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.351 ms      0.291 ms      0.180 ms
+MT Setup                16.201 ms     13.578 ms     15.722 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.362 ms      6.889 ms      7.967 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    119.711 ms    121.715 ms     26.020 ms
+Gates Setup              8.150 ms      7.783 ms      1.144 ms
+Gates Online        126449.975 ms 131658.300 ms  15213.323 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  126585.538 ms 131769.023 ms  15216.616 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.032 MiB in 17868 messages
+Received: 1.032 MiB in 17866 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Lt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.022 ms      0.023 ms      0.004 ms
+MT Setup                23.035 ms     35.652 ms     19.792 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.002 ms      5.331 ms      2.550 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    133.219 ms    130.773 ms     21.704 ms
+Gates Setup              0.383 ms      0.398 ms      0.130 ms
+Gates Online            47.225 ms     22.748 ms     53.430 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     186.152 ms    178.499 ms     61.416 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 762 messages
+Received: 0.050 MiB in 760 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Gt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.023 ms      0.023 ms      0.001 ms
+MT Setup                40.377 ms     43.882 ms     12.832 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.332 ms      3.208 ms      3.119 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    140.272 ms    154.698 ms     19.615 ms
+Gates Setup              0.405 ms      0.400 ms      0.051 ms
+Gates Online            38.938 ms     26.926 ms     37.779 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     184.845 ms    181.671 ms     36.221 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 762 messages
+Received: 0.050 MiB in 760 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Eq_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.016 ms      0.004 ms
+MT Setup                20.477 ms     36.636 ms     19.645 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.655 ms      2.783 ms      3.747 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    131.235 ms    141.944 ms     17.869 ms
+Gates Setup              0.326 ms      0.345 ms      0.080 ms
+Gates Online            61.214 ms     56.857 ms     64.592 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     197.518 ms    178.695 ms     59.458 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.037 MiB in 520 messages
+Received: 0.036 MiB in 518 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_IsZero_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.018 ms      0.018 ms      0.004 ms
+MT Setup                11.769 ms      4.321 ms     16.482 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.281 ms      6.157 ms      3.081 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    119.764 ms    117.365 ms     21.479 ms
+Gates Setup              0.309 ms      0.299 ms      0.052 ms
+Gates Online            61.536 ms     42.750 ms     62.971 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     186.360 ms    157.794 ms     69.657 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.037 MiB in 520 messages
+Received: 0.036 MiB in 518 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_IsNeg_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     44.953 ms     44.725 ms      0.585 ms
+Gates Setup              0.388 ms      0.376 ms      0.045 ms
+Gates Online            45.316 ms     45.453 ms      0.712 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      98.157 ms     97.227 ms      3.076 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.002 MiB in 8 messages
+Received: 0.002 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Exp2_P1045_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.343 ms      0.332 ms      0.143 ms
+MT Setup                19.502 ms     10.774 ms     17.995 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.768 ms      9.789 ms      4.332 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    108.698 ms    118.695 ms     23.536 ms
+Gates Setup              9.459 ms      9.088 ms      1.861 ms
+Gates Online           315.698 ms    302.797 ms     46.665 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     440.597 ms    415.038 ms     56.858 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.201 MiB in 20820 messages
+Received: 1.201 MiB in 20818 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Exp2_P1045_Neg_0_1_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.153 ms      0.141 ms      0.058 ms
+MT Setup                39.866 ms     43.426 ms     12.162 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.711 ms      9.558 ms      5.408 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    120.786 ms    124.977 ms     22.616 ms
+Gates Setup              4.348 ms      4.161 ms      0.710 ms
+Gates Online           211.490 ms    211.508 ms     24.503 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     342.820 ms    329.185 ms     40.903 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.548 MiB in 9428 messages
+Received: 0.548 MiB in 9426 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Exp_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.923 ms      0.861 ms      0.179 ms
+MT Setup                 5.165 ms      4.306 ms      3.016 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      12.471 ms     11.638 ms      4.761 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.681 ms    112.956 ms     16.523 ms
+Gates Setup             13.197 ms     12.202 ms      2.901 ms
+Gates Online           434.142 ms    431.331 ms     31.445 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     558.969 ms    560.809 ms     35.872 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.938 MiB in 33682 messages
+Received: 1.938 MiB in 33680 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Log2_P2508_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              5.452 ms      5.003 ms      1.233 ms
+MT Setup                14.770 ms     11.113 ms      9.059 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      51.211 ms     53.556 ms     11.378 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    169.097 ms    173.639 ms     20.939 ms
+Gates Setup             56.637 ms     56.931 ms      4.664 ms
+Gates Online          2459.825 ms   2366.991 ms    264.105 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2697.323 ms   2534.901 ms    266.860 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.746 MiB in 152406 messages
+Received: 8.746 MiB in 152404 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Ln_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.215 ms      1.772 ms      1.119 ms
+MT Setup                19.290 ms     14.873 ms     10.272 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      44.746 ms     52.086 ms     13.806 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    153.427 ms    151.236 ms     15.730 ms
+Gates Setup             59.962 ms     61.512 ms      3.763 ms
+Gates Online          2339.498 ms   2321.616 ms     78.665 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2560.132 ms   2539.433 ms     82.392 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.483 MiB in 165268 messages
+Received: 9.483 MiB in 165266 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Sqrt_P0132_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.946 ms      1.135 ms      0.291 ms
+MT Setup                 8.105 ms      8.547 ms      4.303 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      28.412 ms     26.505 ms      7.935 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    128.116 ms    130.070 ms     20.294 ms
+Gates Setup             29.418 ms     27.447 ms      2.682 ms
+Gates Online          1407.304 ms   1303.992 ms    238.826 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1573.265 ms   1510.247 ms    250.858 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.472 MiB in 77874 messages
+Received: 4.472 MiB in 77872 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Ceil_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.022 ms      0.022 ms      0.004 ms
+MT Setup                32.057 ms     43.187 ms     18.490 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.006 ms      5.868 ms      4.200 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    138.490 ms    137.181 ms     25.765 ms
+Gates Setup              0.656 ms      0.348 ms      0.960 ms
+Gates Online            65.173 ms     61.935 ms     31.795 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     223.049 ms    223.174 ms     44.121 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.051 MiB in 772 messages
+Received: 0.051 MiB in 770 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Floor_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     36.572 ms     44.070 ms     16.202 ms
+Gates Setup              0.385 ms      0.398 ms      0.071 ms
+Gates Online            45.606 ms     45.906 ms      1.620 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      89.243 ms     95.521 ms     16.818 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.002 MiB in 8 messages
+Received: 0.002 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx2Int_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.025 ms      0.030 ms      0.008 ms
+MT Setup                36.289 ms     38.470 ms     15.748 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.136 ms      5.486 ms      3.627 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    134.069 ms    153.099 ms     22.425 ms
+Gates Setup              0.432 ms      0.382 ms      0.186 ms
+Gates Online            31.469 ms     26.639 ms     15.077 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     170.698 ms    181.299 ms     24.115 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.068 MiB in 1070 messages
+Received: 0.068 MiB in 1068 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx2FL_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.109 ms      0.112 ms      0.010 ms
+MT Setup                40.384 ms     44.860 ms     12.603 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.666 ms      2.927 ms      2.768 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    116.545 ms    117.317 ms     18.575 ms
+Gates Setup              2.261 ms      2.230 ms      0.385 ms
+Gates Online           993.568 ms    733.932 ms    786.712 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1118.832 ms   1210.068 ms    793.467 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.340 MiB in 5828 messages
+Received: 0.340 MiB in 5826 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Neg_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.020 ms      0.020 ms      0.001 ms
+MT Setup                14.886 ms      2.446 ms     19.775 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.853 ms      4.941 ms      3.897 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    125.318 ms    121.289 ms     24.635 ms
+Gates Setup              0.352 ms      0.345 ms      0.087 ms
+Gates Online          1855.374 ms   2730.432 ms   1173.083 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1987.954 ms   2876.839 ms   1178.675 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.037 MiB in 522 messages
+Received: 0.037 MiB in 520 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Abs_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.019 ms      0.018 ms      0.001 ms
+MT Setup                27.529 ms     36.584 ms     21.025 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.540 ms      3.887 ms      3.258 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    136.544 ms    153.400 ms     21.249 ms
+Gates Setup              0.345 ms      0.328 ms      0.051 ms
+Gates Online          2336.693 ms   2786.612 ms    856.827 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2479.962 ms   2962.632 ms    868.027 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.037 MiB in 524 messages
+Received: 0.037 MiB in 522 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_kRoundedFx2Int_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     44.808 ms     44.872 ms      0.657 ms
+Gates Setup              0.387 ms      0.411 ms      0.075 ms
+Gates Online            45.469 ms     45.652 ms      1.052 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      97.605 ms     97.086 ms      2.268 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.002 MiB in 8 messages
+Received: 0.002 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Sin_P3307_0_1_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.149 ms      0.109 ms      0.110 ms
+MT Setup                26.301 ms     46.016 ms     19.806 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.534 ms      4.021 ms      4.275 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    111.175 ms    121.320 ms     24.583 ms
+Gates Setup              3.744 ms      3.771 ms      0.678 ms
+Gates Online           183.801 ms    166.544 ms     29.816 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     303.494 ms    298.118 ms     38.894 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.479 MiB in 8248 messages
+Received: 0.479 MiB in 8246 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Add_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             26.461 ms     27.732 ms      7.831 ms
+MT Setup                64.216 ms     54.859 ms     21.605 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     164.354 ms    172.950 ms     25.578 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    352.657 ms    352.838 ms     18.519 ms
+Gates Setup              0.719 ms      0.696 ms      0.237 ms
+Gates Online            58.267 ms     54.862 ms     20.028 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     416.115 ms    410.815 ms     20.246 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.062 MiB in 1160 messages
+Received: 8.047 MiB in 1158 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Sub_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             27.907 ms     28.777 ms      4.736 ms
+MT Setup                66.499 ms     61.519 ms     26.730 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     180.335 ms    184.765 ms     39.967 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    349.740 ms    343.431 ms     30.236 ms
+Gates Setup              0.650 ms      0.661 ms      0.149 ms
+Gates Online            39.765 ms     38.662 ms      8.507 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     394.398 ms    372.441 ms     26.145 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.062 MiB in 1160 messages
+Received: 8.047 MiB in 1158 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Mul_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            239.622 ms    234.171 ms     20.433 ms
+MT Setup               528.752 ms    517.371 ms     27.137 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1703.199 ms   1736.649 ms    106.888 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2529.214 ms   2534.447 ms    115.282 ms
+Gates Setup              5.405 ms      5.169 ms      0.772 ms
+Gates Online           236.365 ms    197.157 ms    103.291 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2775.392 ms   2781.444 ms     90.271 ms
+===========================================================================
+Communication with each other party:
+Sent: 103.866 MiB in 13256 messages
+Received: 103.850 MiB in 13254 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Div_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            300.709 ms    304.978 ms      8.029 ms
+MT Setup               693.185 ms    690.338 ms      7.730 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2302.884 ms   2323.394 ms    111.518 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3362.988 ms   3350.600 ms    108.291 ms
+Gates Setup              6.464 ms      6.192 ms      0.861 ms
+Gates Online        130661.031 ms 130176.912 ms  10743.774 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  134036.285 ms 133532.729 ms  10756.923 ms
+===========================================================================
+Communication with each other party:
+Sent: 140.395 MiB in 17868 messages
+Received: 140.379 MiB in 17866 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Lt_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              6.163 ms      6.038 ms      1.749 ms
+MT Setup                25.694 ms     22.371 ms      8.922 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      98.314 ms     99.907 ms     19.554 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    216.798 ms    225.904 ms     33.078 ms
+Gates Setup              0.766 ms      0.773 ms      0.158 ms
+Gates Online            67.995 ms     46.927 ms     39.372 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     290.390 ms    276.808 ms     46.942 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.910 MiB in 762 messages
+Received: 4.895 MiB in 760 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Gt_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              6.692 ms      6.596 ms      0.408 ms
+MT Setup                34.033 ms     25.122 ms     19.695 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      99.617 ms     99.364 ms     20.766 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    222.197 ms    205.307 ms     25.254 ms
+Gates Setup              0.670 ms      0.621 ms      0.138 ms
+Gates Online            89.935 ms     77.876 ms     49.484 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     317.843 ms    305.288 ms     50.463 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.910 MiB in 762 messages
+Received: 4.895 MiB in 760 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Eq_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.561 ms      2.579 ms      0.501 ms
+MT Setup                16.571 ms     16.980 ms      7.396 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      41.208 ms     43.027 ms     10.872 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    151.084 ms    157.485 ms     18.792 ms
+Gates Setup              0.653 ms      0.618 ms      0.111 ms
+Gates Online           112.746 ms    107.973 ms     29.897 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     269.815 ms    267.038 ms     40.558 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.993 MiB in 520 messages
+Received: 2.978 MiB in 518 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_IsZero_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.611 ms      2.588 ms      0.657 ms
+MT Setup                16.730 ms     11.863 ms      9.578 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      36.873 ms     38.216 ms      7.705 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    146.651 ms    152.863 ms     17.078 ms
+Gates Setup              0.728 ms      0.699 ms      0.155 ms
+Gates Online            91.818 ms     79.454 ms     43.376 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     244.261 ms    217.123 ms     51.869 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.993 MiB in 520 messages
+Received: 2.978 MiB in 518 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_IsNeg_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     32.374 ms     42.572 ms     18.391 ms
+Gates Setup              0.781 ms      0.847 ms      0.129 ms
+Gates Online            45.198 ms     48.593 ms      7.529 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      85.330 ms     96.651 ms     19.169 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.969 MiB in 8 messages
+Received: 1.954 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Exp2_P1045_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            351.996 ms    351.401 ms     10.348 ms
+MT Setup               814.504 ms    804.922 ms     28.113 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2729.380 ms   2743.528 ms    119.336 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3969.214 ms   3971.182 ms    117.175 ms
+Gates Setup              7.570 ms      7.053 ms      1.824 ms
+Gates Online           343.886 ms    339.213 ms     87.102 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4325.073 ms   4379.340 ms     98.721 ms
+===========================================================================
+Communication with each other party:
+Sent: 163.775 MiB in 20820 messages
+Received: 163.760 MiB in 20818 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Exp2_P1045_Neg_0_1_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            179.395 ms    179.918 ms     11.384 ms
+MT Setup               379.478 ms    359.459 ms     61.465 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1234.689 ms   1257.120 ms     65.388 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1879.161 ms   1871.889 ms     95.917 ms
+Gates Setup              3.324 ms      3.255 ms      0.299 ms
+Gates Online           292.078 ms    302.109 ms     70.767 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2178.827 ms   2199.320 ms    106.635 ms
+===========================================================================
+Communication with each other party:
+Sent: 73.547 MiB in 9428 messages
+Received: 73.532 MiB in 9426 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Exp_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            558.939 ms    551.379 ms     17.089 ms
+MT Setup              1312.598 ms   1317.235 ms     14.614 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    4360.621 ms   4337.093 ms     94.644 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6292.681 ms   6259.229 ms     91.033 ms
+Gates Setup             12.606 ms     11.650 ms      2.464 ms
+Gates Online           503.783 ms    507.143 ms     88.169 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6813.566 ms   6864.024 ms    105.528 ms
+===========================================================================
+Communication with each other party:
+Sent: 265.645 MiB in 33682 messages
+Received: 265.630 MiB in 33680 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Log2_P2508_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2482.101 ms   2482.144 ms     15.893 ms
+MT Setup              5985.280 ms   5984.494 ms     31.063 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   20207.554 ms  20195.940 ms    180.575 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  28761.936 ms  28766.826 ms    188.805 ms
+Gates Setup             57.005 ms     58.480 ms      4.753 ms
+Gates Online          2170.067 ms   2226.896 ms    237.164 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   30998.033 ms  31024.134 ms    240.312 ms
+===========================================================================
+Communication with each other party:
+Sent: 1205.971 MiB in 152406 messages
+Received: 1205.956 MiB in 152404 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Ln_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2683.185 ms   2686.998 ms     19.552 ms
+MT Setup              6443.672 ms   6446.324 ms     37.964 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   22230.954 ms  22083.150 ms    304.825 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  31428.198 ms  31256.107 ms    303.640 ms
+Gates Setup             60.536 ms     60.590 ms      3.634 ms
+Gates Online          2196.392 ms   2211.959 ms    168.455 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   33690.820 ms  33494.835 ms    316.657 ms
+===========================================================================
+Communication with each other party:
+Sent: 1307.841 MiB in 165268 messages
+Received: 1307.826 MiB in 165266 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Sqrt_P0132_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1252.782 ms   1246.762 ms      8.791 ms
+MT Setup              3035.251 ms   3029.728 ms     25.460 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   10032.039 ms  10016.071 ms    105.357 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  14398.822 ms  14398.336 ms     94.416 ms
+Gates Setup             26.593 ms     26.235 ms      2.020 ms
+Gates Online          1218.481 ms   1207.304 ms    146.166 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   15649.682 ms  15654.175 ms    100.986 ms
+===========================================================================
+Communication with each other party:
+Sent: 615.657 MiB in 77874 messages
+Received: 615.642 MiB in 77872 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Ceil_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.407 ms      7.418 ms      1.337 ms
+MT Setup                29.627 ms     23.736 ms     12.399 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      81.733 ms     76.968 ms      8.521 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    201.928 ms    194.740 ms     30.171 ms
+Gates Setup              0.748 ms      0.791 ms      0.205 ms
+Gates Online            35.721 ms     34.264 ms     14.013 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     242.905 ms    229.818 ms     41.158 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.989 MiB in 772 messages
+Received: 4.974 MiB in 770 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Floor_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     32.458 ms     43.462 ms     18.424 ms
+Gates Setup              0.741 ms      0.748 ms      0.111 ms
+Gates Online            32.790 ms     32.044 ms      6.637 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      72.070 ms     84.029 ms     21.240 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.969 MiB in 8 messages
+Received: 1.954 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx2Int_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             10.067 ms     10.164 ms      2.207 ms
+MT Setup                42.626 ms     35.264 ms     13.464 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     119.183 ms    124.151 ms     17.661 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    260.241 ms    249.998 ms     35.354 ms
+Gates Setup              0.736 ms      0.722 ms      0.118 ms
+Gates Online            34.282 ms     34.979 ms      6.905 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     299.240 ms    285.243 ms     36.504 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.350 MiB in 1070 messages
+Received: 7.334 MiB in 1068 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx2FL_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            127.587 ms    131.192 ms     19.306 ms
+MT Setup               273.079 ms    237.475 ms     73.875 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     729.685 ms    716.143 ms     32.156 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1210.240 ms   1201.192 ms     85.028 ms
+Gates Setup              1.962 ms      1.896 ms      0.253 ms
+Gates Online           451.344 ms    353.914 ms    219.741 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1668.178 ms   1573.053 ms    268.445 ms
+===========================================================================
+Communication with each other party:
+Sent: 45.042 MiB in 5828 messages
+Received: 45.026 MiB in 5826 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Neg_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.594 ms      2.631 ms      0.192 ms
+MT Setup                12.124 ms      9.218 ms      7.074 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      39.474 ms     39.434 ms      8.528 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    145.724 ms    154.544 ms     18.725 ms
+Gates Setup              0.762 ms      0.743 ms      0.154 ms
+Gates Online          2776.893 ms   2782.535 ms     43.246 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2929.938 ms   2942.727 ms     45.151 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.010 MiB in 522 messages
+Received: 2.994 MiB in 520 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Abs_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.481 ms      2.645 ms      0.302 ms
+MT Setup                12.516 ms     12.772 ms      4.334 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      35.993 ms     36.539 ms      9.378 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    136.081 ms    136.334 ms     19.646 ms
+Gates Setup              0.673 ms      0.567 ms      0.239 ms
+Gates Online          2507.382 ms   2774.700 ms    758.231 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2651.181 ms   2892.775 ms    749.750 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.033 MiB in 524 messages
+Received: 3.018 MiB in 522 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_kRoundedFx2Int_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     32.096 ms     43.830 ms     18.344 ms
+Gates Setup              0.802 ms      0.722 ms      0.205 ms
+Gates Online            28.702 ms     31.273 ms      4.793 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      67.306 ms     78.249 ms     19.378 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.969 MiB in 8 messages
+Received: 1.954 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation Fx_Sin_P3307_0_1_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            167.960 ms    169.082 ms     13.953 ms
+MT Setup               316.986 ms    317.728 ms      4.474 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1055.497 ms   1027.012 ms     46.425 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1636.217 ms   1613.806 ms     46.432 ms
+Gates Setup              3.124 ms      3.101 ms      0.313 ms
+Gates Online           259.638 ms    230.524 ms     88.447 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1904.203 ms   1897.214 ms    118.448 ms
+===========================================================================
+Communication with each other party:
+Sent: 64.201 MiB in 8248 messages
+Received: 64.186 MiB in 8246 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Add_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.986 ms      1.324 ms      2.437 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     95.741 ms    107.023 ms     19.893 ms
+Gates Setup              7.137 ms      7.369 ms      1.186 ms
+Gates Online            53.823 ms     54.480 ms      1.811 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     161.913 ms    173.323 ms     20.530 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.063 MiB in 707 messages
+Received: 0.063 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Sub_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.699 ms      6.737 ms      3.025 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     95.440 ms    107.789 ms     21.433 ms
+Gates Setup             12.782 ms      6.757 ms     15.126 ms
+Gates Online            50.267 ms     54.359 ms     15.110 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     164.530 ms    148.247 ms     34.085 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.063 MiB in 707 messages
+Received: 0.063 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Mul_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      19.808 ms     20.845 ms      8.707 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     97.971 ms    113.919 ms     21.849 ms
+Gates Setup            205.647 ms    197.559 ms     12.707 ms
+Gates Online            65.299 ms     64.069 ms      5.459 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     372.816 ms    380.721 ms     28.014 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.225 MiB in 30107 messages
+Received: 3.225 MiB in 30105 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Div_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      20.418 ms     15.679 ms     11.478 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.794 ms     90.809 ms     24.063 ms
+Gates Setup            289.157 ms    285.195 ms     15.985 ms
+Gates Online           593.645 ms    631.456 ms     73.407 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     994.468 ms   1013.626 ms     59.413 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.555 MiB in 42462 messages
+Received: 4.555 MiB in 42460 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Lt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.068 ms      2.150 ms      2.298 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     92.622 ms    107.592 ms     20.578 ms
+Gates Setup             11.309 ms      7.405 ms     13.665 ms
+Gates Online            58.389 ms     58.003 ms      3.378 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     166.991 ms    168.321 ms     27.818 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.064 MiB in 712 messages
+Received: 0.064 MiB in 710 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Gt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.442 ms      4.194 ms      2.340 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     96.395 ms     93.686 ms     21.434 ms
+Gates Setup             11.471 ms      7.359 ms     12.627 ms
+Gates Online            59.354 ms     59.376 ms      3.624 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     172.270 ms    158.603 ms     29.005 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.064 MiB in 712 messages
+Received: 0.064 MiB in 710 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Eq_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.773 ms      2.174 ms      2.349 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.060 ms    108.385 ms     12.280 ms
+Gates Setup              6.059 ms      6.331 ms      1.220 ms
+Gates Online            45.685 ms     45.965 ms      1.202 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     162.037 ms    167.274 ms     12.845 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.063 MiB in 707 messages
+Received: 0.063 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_IsZero_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.551 ms      1.430 ms      2.060 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     98.241 ms    107.731 ms     17.718 ms
+Gates Setup              5.961 ms      6.315 ms      0.809 ms
+Gates Online            47.091 ms     45.904 ms      2.727 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     156.485 ms    165.843 ms     17.751 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.063 MiB in 707 messages
+Received: 0.063 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_IsNeg_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     41.550 ms     44.299 ms     12.415 ms
+Gates Setup              0.386 ms      0.395 ms      0.055 ms
+Gates Online            46.079 ms     45.506 ms      2.759 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      94.266 ms     99.302 ms     12.962 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.002 MiB in 8 messages
+Received: 0.002 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Exp2_P1045_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      18.181 ms     20.193 ms      5.385 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    100.756 ms    117.042 ms     17.176 ms
+Gates Setup            255.019 ms    254.609 ms      9.363 ms
+Gates Online            65.177 ms     60.704 ms     12.972 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     425.455 ms    424.750 ms     15.580 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.963 MiB in 36957 messages
+Received: 3.963 MiB in 36955 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Exp2_P1045_Neg_0_1_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      13.945 ms     16.204 ms      4.950 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     85.031 ms     81.948 ms     16.549 ms
+Gates Setup            109.866 ms    107.676 ms      6.345 ms
+Gates Online            53.465 ms     53.845 ms      4.934 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     252.716 ms    254.623 ms     17.568 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.659 MiB in 15547 messages
+Received: 1.659 MiB in 15545 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Exp_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      28.791 ms     31.063 ms      5.708 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    107.543 ms    126.545 ms     23.201 ms
+Gates Setup            440.380 ms    438.369 ms     14.964 ms
+Gates Online            94.209 ms     91.798 ms     34.498 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     645.996 ms    662.138 ms     44.930 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.160 MiB in 66674 messages
+Received: 7.160 MiB in 66671 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Log2_P2508_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      62.872 ms     58.848 ms     13.559 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    146.423 ms    140.289 ms     17.872 ms
+Gates Setup           1359.369 ms   1359.931 ms     31.582 ms
+Gates Online           404.347 ms    383.288 ms     44.884 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1919.486 ms   1921.122 ms     55.170 ms
+===========================================================================
+Communication with each other party:
+Sent: 21.633 MiB in 201217 messages
+Received: 21.632 MiB in 201215 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Ln_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      65.871 ms     67.928 ms     14.853 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    151.491 ms    162.419 ms     29.690 ms
+Gates Setup           1553.691 ms   1547.707 ms     35.264 ms
+Gates Online           477.541 ms    475.011 ms     48.100 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2187.006 ms   2195.048 ms     55.036 ms
+===========================================================================
+Communication with each other party:
+Sent: 24.831 MiB in 230934 messages
+Received: 24.831 MiB in 230931 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Sqrt_P0132_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      19.445 ms     19.893 ms      6.138 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     95.664 ms    105.054 ms     22.521 ms
+Gates Setup            171.606 ms    172.617 ms      5.786 ms
+Gates Online            60.004 ms     59.667 ms      4.698 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     331.509 ms    341.832 ms     23.804 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.718 MiB in 25387 messages
+Received: 2.718 MiB in 25385 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Ceil_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.647 ms      5.074 ms      2.867 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    106.901 ms    108.983 ms      9.057 ms
+Gates Setup             11.617 ms      6.660 ms     13.662 ms
+Gates Online            56.094 ms     58.661 ms      5.638 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     186.756 ms    180.365 ms     23.049 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.063 MiB in 702 messages
+Received: 0.063 MiB in 700 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Floor_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     37.253 ms     43.809 ms     16.440 ms
+Gates Setup              0.450 ms      0.437 ms      0.067 ms
+Gates Online             7.433 ms      4.268 ms     12.837 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      51.000 ms     54.997 ms     22.398 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.003 MiB in 10 messages
+Received: 0.002 MiB in 7 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx2Int_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.139 ms      4.987 ms      3.820 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     89.673 ms     83.722 ms     19.529 ms
+Gates Setup             10.880 ms     11.200 ms      0.976 ms
+Gates Online            48.775 ms     50.101 ms      3.447 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     154.942 ms    153.561 ms     19.829 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.140 MiB in 1422 messages
+Received: 0.140 MiB in 1420 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx2FL_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.426 ms      7.681 ms      2.901 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.646 ms     72.462 ms     15.938 ms
+Gates Setup             46.741 ms     45.844 ms      3.114 ms
+Gates Online            50.147 ms     50.402 ms      2.928 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     180.122 ms    174.604 ms     16.685 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.597 MiB in 5644 messages
+Received: 0.597 MiB in 5642 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Neg_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.165 ms      3.772 ms      4.276 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     99.179 ms    106.597 ms     16.973 ms
+Gates Setup              6.265 ms      6.125 ms      0.942 ms
+Gates Online            45.972 ms     44.856 ms      2.363 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     155.936 ms    161.537 ms     15.213 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.064 MiB in 712 messages
+Received: 0.064 MiB in 710 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Abs_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       2.855 ms      1.912 ms      1.855 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     98.126 ms    108.009 ms     19.980 ms
+Gates Setup              8.971 ms      8.839 ms      2.137 ms
+Gates Online            46.027 ms     45.790 ms      1.527 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     159.499 ms    169.027 ms     21.132 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.095 MiB in 969 messages
+Received: 0.095 MiB in 967 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_kRoundedFx2Int_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     41.531 ms     45.448 ms     12.380 ms
+Gates Setup              0.465 ms      0.409 ms      0.197 ms
+Gates Online            44.394 ms     44.307 ms      0.896 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      93.489 ms     96.925 ms     12.915 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.002 MiB in 8 messages
+Received: 0.002 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Sin_P3307_0_1_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.881 ms     10.810 ms      4.360 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     85.024 ms     74.498 ms     18.139 ms
+Gates Setup            113.204 ms    114.669 ms     11.607 ms
+Gates Online            50.587 ms     50.108 ms      2.050 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     252.697 ms    236.949 ms     25.295 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.542 MiB in 14457 messages
+Received: 1.542 MiB in 14455 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Add_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      83.346 ms     79.806 ms     12.746 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    151.008 ms    143.600 ms     17.493 ms
+Gates Setup            139.470 ms    137.698 ms     13.872 ms
+Gates Online            66.551 ms     61.871 ms     17.248 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     362.766 ms    360.929 ms     14.491 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.314 MiB in 707 messages
+Received: 20.298 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Sub_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      87.260 ms     87.110 ms     17.563 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    156.488 ms    159.220 ms     16.918 ms
+Gates Setup            143.822 ms    138.951 ms     50.529 ms
+Gates Online            79.665 ms     70.781 ms     23.857 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     385.677 ms    384.277 ms     48.500 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.314 MiB in 707 messages
+Received: 20.298 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Mul_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5858.078 ms   5860.247 ms    191.055 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   5945.598 ms   5949.557 ms    198.019 ms
+Gates Setup          10827.848 ms  10855.349 ms    211.130 ms
+Gates Online           310.739 ms    272.096 ms    195.488 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   17099.663 ms  17161.943 ms    259.425 ms
+===========================================================================
+Communication with each other party:
+Sent: 1730.027 MiB in 30107 messages
+Received: 1730.012 MiB in 30105 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Div_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    8279.478 ms   8194.442 ms    296.945 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   8350.181 ms   8280.358 ms    297.528 ms
+Gates Setup          14907.903 ms  14876.644 ms    363.588 ms
+Gates Online          3049.772 ms   2997.336 ms    401.857 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   26326.571 ms  26365.875 ms    306.369 ms
+===========================================================================
+Communication with each other party:
+Sent: 2448.515 MiB in 42462 messages
+Received: 2448.499 MiB in 42460 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Lt_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      94.848 ms     96.242 ms     11.414 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    176.370 ms    172.752 ms     16.431 ms
+Gates Setup            140.731 ms    131.153 ms     23.559 ms
+Gates Online            77.659 ms     60.423 ms     52.228 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     400.737 ms    385.518 ms     59.804 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.605 MiB in 712 messages
+Received: 20.589 MiB in 710 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Gt_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      95.137 ms    101.683 ms     14.066 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    182.165 ms    173.278 ms     24.923 ms
+Gates Setup            125.161 ms    126.617 ms     10.028 ms
+Gates Online            78.671 ms     62.103 ms     49.466 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     392.578 ms    378.982 ms     53.842 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.605 MiB in 712 messages
+Received: 20.589 MiB in 710 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Eq_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      93.252 ms     95.323 ms     14.986 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    171.671 ms    159.069 ms     30.518 ms
+Gates Setup            151.022 ms    137.959 ms     43.983 ms
+Gates Online            31.716 ms     30.586 ms      5.968 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     360.252 ms    340.474 ms     47.757 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.314 MiB in 707 messages
+Received: 20.298 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_IsZero_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      73.549 ms     71.000 ms     12.055 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    151.464 ms    143.890 ms     22.072 ms
+Gates Setup            127.058 ms    129.674 ms     20.729 ms
+Gates Online            44.384 ms     44.431 ms     18.358 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     328.800 ms    323.983 ms     25.396 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.314 MiB in 707 messages
+Received: 20.298 MiB in 705 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_IsNeg_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     28.989 ms     44.180 ms     20.129 ms
+Gates Setup              0.774 ms      0.702 ms      0.131 ms
+Gates Online            27.322 ms     28.024 ms      5.276 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      65.436 ms     68.577 ms     22.182 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.969 MiB in 8 messages
+Received: 1.954 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Exp2_P1045_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    7225.146 ms   7225.695 ms    165.110 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   7296.035 ms   7278.732 ms    164.698 ms
+Gates Setup          13065.135 ms  13103.502 ms    231.130 ms
+Gates Online           451.425 ms    505.051 ms    139.491 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   20826.546 ms  20838.166 ms    117.640 ms
+===========================================================================
+Communication with each other party:
+Sent: 2128.379 MiB in 36957 messages
+Received: 2128.364 MiB in 36955 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Exp2_P1045_Neg_0_1_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    3022.416 ms   3033.240 ms    166.405 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3087.248 ms   3123.986 ms    164.525 ms
+Gates Setup           5531.923 ms   5557.315 ms    168.022 ms
+Gates Online           310.306 ms    378.523 ms    167.212 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8937.203 ms   8862.801 ms    211.714 ms
+===========================================================================
+Communication with each other party:
+Sent: 883.312 MiB in 15547 messages
+Received: 883.297 MiB in 15545 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Exp_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   12950.719 ms  12968.007 ms    179.282 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  13021.466 ms  13015.581 ms    179.817 ms
+Gates Setup          23630.687 ms  23735.434 ms    278.897 ms
+Gates Online           540.844 ms    467.907 ms    333.421 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   37206.599 ms  37114.830 ms    263.345 ms
+===========================================================================
+Communication with each other party:
+Sent: 3857.396 MiB in 66674 messages
+Received: 3857.373 MiB in 66671 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Log2_P2508_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   41354.686 ms  41266.398 ms    662.165 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  41448.061 ms  41348.947 ms    665.303 ms
+Gates Setup          71037.852 ms  70899.196 ms    943.436 ms
+Gates Online          1305.186 ms   1305.477 ms    538.394 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  113807.382 ms 113595.496 ms    874.081 ms
+===========================================================================
+Communication with each other party:
+Sent: 11680.679 MiB in 201217 messages
+Received: 11680.663 MiB in 201215 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Ln_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   47778.924 ms  47385.566 ms    773.881 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  47849.026 ms  47458.779 ms    778.382 ms
+Gates Setup          81642.191 ms  81806.527 ms    681.624 ms
+Gates Online          1283.856 ms    767.287 ms    790.220 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  130795.621 ms 130874.935 ms    615.121 ms
+===========================================================================
+Communication with each other party:
+Sent: 13409.696 MiB in 230934 messages
+Received: 13409.673 MiB in 230931 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Sqrt_P0132_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    4865.954 ms   4887.241 ms    149.132 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   4933.615 ms   4964.260 ms    147.250 ms
+Gates Setup           9062.149 ms   9033.628 ms    298.412 ms
+Gates Online           410.659 ms    409.852 ms    173.788 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   14429.164 ms  14461.896 ms    201.076 ms
+===========================================================================
+Communication with each other party:
+Sent: 1455.543 MiB in 25387 messages
+Received: 1455.527 MiB in 25385 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Ceil_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      92.181 ms     93.681 ms      9.784 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    161.715 ms    164.612 ms     20.161 ms
+Gates Setup            124.998 ms    124.920 ms     19.119 ms
+Gates Online            65.980 ms     66.350 ms     16.487 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     369.242 ms    373.532 ms     17.384 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.023 MiB in 702 messages
+Received: 20.008 MiB in 700 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Floor_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     39.214 ms     43.913 ms     12.295 ms
+Gates Setup              0.839 ms      0.841 ms      0.167 ms
+Gates Online            32.465 ms     33.945 ms      9.096 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      82.213 ms     85.453 ms     12.546 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.984 MiB in 10 messages
+Received: 1.969 MiB in 7 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx2Int_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     230.594 ms    217.802 ms     42.497 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    311.468 ms    291.906 ms     56.718 ms
+Gates Setup            407.062 ms    406.015 ms     51.265 ms
+Gates Online            89.737 ms     80.731 ms     36.728 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     822.151 ms    807.284 ms     56.484 ms
+===========================================================================
+Communication with each other party:
+Sent: 61.894 MiB in 1422 messages
+Received: 61.878 MiB in 1420 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx2FL_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1104.226 ms   1098.023 ms     73.805 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1177.718 ms   1198.510 ms     74.674 ms
+Gates Setup           2038.491 ms   2057.038 ms    108.374 ms
+Gates Online           199.058 ms    210.748 ms     69.383 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3428.716 ms   3447.895 ms     90.419 ms
+===========================================================================
+Communication with each other party:
+Sent: 311.078 MiB in 5644 messages
+Received: 311.063 MiB in 5642 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Neg_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      97.103 ms    100.398 ms     12.205 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    182.028 ms    178.957 ms     18.067 ms
+Gates Setup            139.715 ms    133.451 ms     16.136 ms
+Gates Online            43.122 ms     38.957 ms      8.568 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     376.414 ms    381.156 ms      9.938 ms
+===========================================================================
+Communication with each other party:
+Sent: 20.605 MiB in 712 messages
+Received: 20.589 MiB in 710 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Abs_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     182.838 ms    166.220 ms     35.381 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    254.674 ms    243.090 ms     31.751 ms
+Gates Setup            310.734 ms    300.403 ms     28.527 ms
+Gates Online            64.908 ms     57.433 ms     16.662 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     646.517 ms    654.551 ms     34.023 ms
+===========================================================================
+Communication with each other party:
+Sent: 39.211 MiB in 969 messages
+Received: 39.195 MiB in 967 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_kRoundedFx2Int_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     29.564 ms     30.292 ms     15.148 ms
+Gates Setup              0.826 ms      0.865 ms      0.092 ms
+Gates Online            30.352 ms     31.974 ms      4.357 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      72.271 ms     80.514 ms     15.887 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.969 MiB in 8 messages
+Received: 1.954 MiB in 6 messages
+===========================================================================
+===========================================================================
+Protocol BMR operation Fx_Sin_P3307_0_1_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 9f96ae3f @ dev
+invocation: ./benchmark_liangzhao_fixed_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 773766
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2756.008 ms   2756.473 ms    114.609 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2827.306 ms   2835.224 ms    115.358 ms
+Gates Setup           5113.564 ms   5091.636 ms    273.441 ms
+Gates Online           233.505 ms    191.888 ms     91.547 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8188.165 ms   8140.190 ms    148.719 ms
+===========================================================================
+Communication with each other party:
+Sent: 819.925 MiB in 14457 messages
+Received: 819.909 MiB in 14455 messages
+===========================================================================

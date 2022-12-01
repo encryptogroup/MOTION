@@ -6,6 +6,9 @@
 #include <bits/stdc++.h>
 #include <iostream>
 
+#include <openssl/rand.h>
+#include <algorithm>
+
 template <typename T>
 T bool_vector_hamming_weight(std::vector<bool> bool_vector) {
   T r = 0;
@@ -156,41 +159,92 @@ float uniform_floating_point32_0_1(const std::vector<bool>& random_bit_mantissa,
   return uniform_floating_point_float;
 }
 
+// double rand_range_double(double min, double max) {
+//   double range = (max - min);
+//   double div = RAND_MAX / range;
+//   return min + (std::rand() / div);
+// }
+
 double rand_range_double(double min, double max) {
-  double range = (max - min);
-  double div = RAND_MAX / range;
-  return min + (std::rand() / div);
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dist(min, max);
+  return dist(gen);
 }
+
+// std::vector<float> rand_range_float_vector(double min, double max, std::size_t num_of_elements) {
+//   std::vector<float> result_vector(num_of_elements);
+//   for (std::size_t i = 0; i < num_of_elements; i++) {
+//     float range = (max - min);
+//     float div = RAND_MAX / range;
+//     result_vector[i] = min + (std::rand() / div);
+//   }
+//   return result_vector;
+// }
 
 std::vector<float> rand_range_float_vector(double min, double max, std::size_t num_of_elements) {
-  std::vector<float> result_vector(num_of_elements);
+  std::vector<float> result_vector;
+  result_vector.reserve(num_of_elements);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dist(min, max);
+
   for (std::size_t i = 0; i < num_of_elements; i++) {
-    float range = (max - min);
-    float div = RAND_MAX / range;
-    result_vector[i] = min + (std::rand() / div);
+    result_vector.emplace_back(dist(gen));
   }
   return result_vector;
 }
 
+// std::vector<double> rand_range_double_vector(double min, double max, std::size_t num_of_elements)
+// {
+//   std::vector<double> result_vector(num_of_elements);
+//   for (std::size_t i = 0; i < num_of_elements; i++) {
+//     double range = (max - min);
+//     double div = RAND_MAX / range;
+//     result_vector[i] = min + (std::rand() / div);
+//   }
+//   return result_vector;
+// }
+
 std::vector<double> rand_range_double_vector(double min, double max, std::size_t num_of_elements) {
-  std::vector<double> result_vector(num_of_elements);
+  std::vector<double> result_vector;
+  result_vector.reserve(num_of_elements);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dist(min, max);
+
   for (std::size_t i = 0; i < num_of_elements; i++) {
-    double range = (max - min);
-    double div = RAND_MAX / range;
-    result_vector[i] = min + (std::rand() / div);
+    result_vector.emplace_back(dist(gen));
   }
   return result_vector;
 }
+
+// template <typename T>
+// std::vector<T> rand_range_integer_vector(double min, double max, std::size_t num_of_elements) {
+//   std::vector<T> result_vector(num_of_elements);
+//   for (std::size_t i = 0; i < num_of_elements; i++) {
+//     double range = (max - min);
+//     double div = RAND_MAX / range;
+//     result_vector[i] = min + (std::rand() / div);
+//   }
+//   return result_vector;
+// }
 
 template <typename T>
 std::vector<T> rand_range_integer_vector(double min, double max, std::size_t num_of_elements) {
-  std::vector<T> result_vector(num_of_elements);
+  std::vector<T> random_numbers;
+  random_numbers.reserve(num_of_elements);
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_real_distribution<> dist(min, max);
+
   for (std::size_t i = 0; i < num_of_elements; i++) {
-    double range = (max - min);
-    double div = RAND_MAX / range;
-    result_vector[i] = min + (std::rand() / div);
+    random_numbers.emplace_back(dist(gen));
   }
-  return result_vector;
+  return random_numbers;
 }
 
 template std::vector<std::int32_t> rand_range_integer_vector<std::int32_t>(

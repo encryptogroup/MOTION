@@ -85,30 +85,30 @@ encrypto::motion::ShareWrapper DummyBmrShare(encrypto::motion::PartyPointer& par
       std::make_shared<encrypto::motion::proto::bmr::Share>(wires));
 }
 
-// encrypto::motion::ShareWrapper DummyGCShare(encrypto::motion::PartyPointer& party,
-//                                              std::size_t number_of_wires,
-//                                              std::size_t number_of_simd) {
-//   std::vector<encrypto::motion::WirePointer> wires(number_of_wires);
-//   const encrypto::motion::BitVector<> dummy_input(number_of_simd);
+encrypto::motion::ShareWrapper DummyGCShare(encrypto::motion::PartyPointer& party,
+                                             std::size_t number_of_wires,
+                                             std::size_t number_of_simd) {
+  std::vector<encrypto::motion::WirePointer> wires(number_of_wires);
+  const encrypto::motion::BitVector<> dummy_input(number_of_simd);
 
-//   encrypto::motion::BackendPointer backend{party->GetBackend()};
-//   encrypto::motion::RegisterPointer register_pointer{backend->GetRegister()};
+  encrypto::motion::BackendPointer backend{party->GetBackend()};
+  encrypto::motion::RegisterPointer register_pointer{backend->GetRegister()};
 
-//   for (auto& w : wires) {
-//     auto gc_wire{
-//         register_pointer->EmplaceWire<encrypto::motion::proto::garbled_circuit::Wire>(dummy_input, *backend)};
-//     w = gc_wire;
-//     gc_wire->GetMutablePublicKeys() = encrypto::motion::Block128Vector::MakeZero(
-//         backend->GetConfiguration()->GetNumOfParties() * number_of_simd);
-//     gc_wire->GetMutableSecretKeys() = encrypto::motion::Block128Vector::MakeZero(number_of_simd);
-//     gc_wire->GetMutablePermutationBits() = encrypto::motion::BitVector<>(number_of_simd);
-//     gc_wire->SetSetupIsReady();
-//     gc_wire->SetOnlineFinished();
-//   }
+  for (auto& w : wires) {
+    auto gc_wire{
+        register_pointer->EmplaceWire<encrypto::motion::proto::garbled_circuit::Wire>(dummy_input, *backend)};
+    w = gc_wire;
+    gc_wire->GetMutablePublicKeys() = encrypto::motion::Block128Vector::MakeZero(
+        backend->GetConfiguration()->GetNumOfParties() * number_of_simd);
+    gc_wire->GetMutableSecretKeys() = encrypto::motion::Block128Vector::MakeZero(number_of_simd);
+    gc_wire->GetMutablePermutationBits() = encrypto::motion::BitVector<>(number_of_simd);
+    gc_wire->SetSetupIsReady();
+    gc_wire->SetOnlineFinished();
+  }
 
-//   return encrypto::motion::ShareWrapper(
-//       std::make_shared<encrypto::motion::proto::bmr::Share>(wires));
-// }
+  return encrypto::motion::ShareWrapper(
+      std::make_shared<encrypto::motion::proto::bmr::Share>(wires));
+}
 
 encrypto::motion::ShareWrapper DummyBooleanGmwShare(encrypto::motion::PartyPointer& party,
                                                     std::size_t number_of_wires,

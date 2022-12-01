@@ -562,7 +562,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
 
   assert(!denominator_are_all_ones);
 
-  // case 1: denominator are not all ones
+  // ! case 1: denominator are not all ones
   //   if (!denominator_are_all_ones) {
   //   std::cout << " if (!denominator_are_all_ones)" << std::endl;
   ShareWrapper unsigned_integer_boolean_gmw_share_denominator =
@@ -601,6 +601,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
   SecureFloatingPointCircuitABY floating_point_unsigned_integer_denominator_simdify =
       SecureFloatingPointCircuitABY(floating_point_boolean_gmw_share_denominator_simdify);
 
+  // TODO: this division can be saved by compute e^(-1/t) alone
   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
 
@@ -613,6 +614,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
           ->GetBackend()
           .ConstantAsBooleanGmwInput(ToInput<FloatType, std::true_type>(vector_of_exp_neg_one)));
 
+// TODO: use unsigned integer comparison instead
   // merge the floating-point comparison operation together
   ShareWrapper floating_point_Bernoulli_distribution_parameter_p = ShareWrapper::Simdify(
       std::vector{floating_point_exp_neg_random_unsigned_integer_div_denominator.Get(),
@@ -685,6 +687,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
                  ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
 
     // TODO: optimize integer division with floating-point division
+    // TODO: using Garbled Circuit for division instead
     SecureUnsignedInteger unsigned_integer_geometric_sample =
         unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
 
@@ -776,7 +779,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
       VectorAllEqualToValue<UintType>(constant_unsigned_integer_numerator_vector, UintType(1));
   bool denominator_are_all_ones = true;
 
-  // case 2
+  // ! case 2: 
   // if the denominator vector's elements are all ones, we can skip the first for loop iterations
   //   if (denominator_are_all_ones) {
   std::vector<FloatType> vector_of_exp_neg_one(num_of_simd_geo * iteration_2, std::exp(-1.0));
@@ -1242,7 +1245,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistr
 }
 
 template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution<
-    float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
@@ -1390,7 +1393,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistr
 }
 
 template std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteGaussianDistribution<
-    float, std::uint32_t, std::int32_t, std::allocator<std::uint32_t>>(
+    float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
     const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
@@ -1557,20 +1560,21 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLSymmetricBinomialDist
   std::vector<ShareWrapper> boolean_gmw_share_result_vector = share_->InvertBinaryTreeSelection(
       signed_integer_i_reshape_vector, boolean_gmw_share_choice_reshape_vector);
 
-  //   // only for debug
-  //   boolean_gmw_share_result_vector.emplace_back(floating_point_p_i.Get()); // 2
-  //   boolean_gmw_share_result_vector.emplace_back(signed_integer_i.Get()); // 3
-  // boolean_gmw_share_result_vector.emplace_back((signed_integer_i.Int2FL(FLType_size).Get()));
-  //   // 4 boolean_gmw_share_result_vector.emplace_back(
-  //       (boolean_gmw_share_i_in_range_condition.Get()));                                  // 5
-  //   boolean_gmw_share_result_vector.emplace_back((floating_point_pow2_s.Get()));          // 6
-  //   boolean_gmw_share_result_vector.emplace_back((floating_point_p_i_mul_f.Get()));       // 7
-  //   boolean_gmw_share_result_vector.emplace_back((boolean_gmw_share_choice.Get()));       // 8
-  //   boolean_gmw_share_result_vector.emplace_back((boolean_gmw_share_Bernoulli_c.Get()));  // 9
-  //   boolean_gmw_share_result_vector.emplace_back(
-  //       (random_floating_point_0_1_boolean_gmw_share.Get())); // 10
-  // boolean_gmw_share_result_vector.emplace_back((signed_integer_s.Int2FL(FLType_size).Get()));
-  //   // 11
+    // only for debug
+    boolean_gmw_share_result_vector.emplace_back(floating_point_p_i.Get()); // 2
+    boolean_gmw_share_result_vector.emplace_back(signed_integer_i.Get()); // 3
+  boolean_gmw_share_result_vector.emplace_back((signed_integer_i.Int2FL(FLType_size).Get()));
+    // 4 
+    boolean_gmw_share_result_vector.emplace_back(
+        (boolean_gmw_share_i_in_range_condition.Get()));                                  // 5
+    boolean_gmw_share_result_vector.emplace_back((floating_point_pow2_s.Get()));          // 6
+    boolean_gmw_share_result_vector.emplace_back((floating_point_p_i_mul_f.Get()));       // 7
+    boolean_gmw_share_result_vector.emplace_back((boolean_gmw_share_choice.Get()));       // 8
+    boolean_gmw_share_result_vector.emplace_back((boolean_gmw_share_Bernoulli_c.Get()));  // 9
+    boolean_gmw_share_result_vector.emplace_back(
+        (random_floating_point_0_1_boolean_gmw_share.Get())); // 10
+  boolean_gmw_share_result_vector.emplace_back((signed_integer_s.Int2FL(FLType_size).Get()));
+    // 11
 
   return boolean_gmw_share_result_vector;
 }

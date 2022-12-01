@@ -70,13 +70,22 @@ add_executable(motiontest
 
         # test_liangzhao_EQ_EQZ_LTBits_LTC_LTS_LTZ.cpp # not tested
 
+        # test_liangzhao_invertbinarytree.cpp # not tested
+
         # test_liangzhao_conversions.cpp
         # test_liangzhao_conversions_gc.cpp # test passed
 
         # test_liangzhao_random_integer_algorithm.cpp # test passed
         # test_liangzhao_simple_geometric.cpp # test passed
         # test_liangzhao_uniformly_sampling.cpp # test passed
-        test_liangzhao_geometricExp.cpp # testing
+
+        # testing for naive algorithms
+        # test_liangzhao_geometricExp_naive.cpp # test passed
+        # test_liangzhao_discreteLaplace_naive.cpp # test passed
+        # test_liangzhao_discreteGaussian_naive.cpp # test passed
+        test_liangzhao_symmericalBinomial_naive.cpp # testing
+
+        # testing for optimized algorithms
 )
 
 target_link_libraries(motiontest PRIVATE
