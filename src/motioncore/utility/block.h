@@ -28,6 +28,10 @@
 #include <vector>
 #include "config.h"
 
+// added by Liang Zhao
+#include <iostream>
+using namespace std;
+
 namespace encrypto::motion {
 
 // XXX this should be a class due to its many functions (see
@@ -287,6 +291,10 @@ struct Block128Vector {
   /// \param other
   /// \pre \p other is has the same size as this Block128Vector.
   Block128Vector& operator^=(const Block128Vector& __restrict__ other) {
+
+    // std::cout<<"operator^=: "<<std::endl;
+    // std::cout<<"size(): "<<size()<<std::endl;
+    // std::cout<<"other.size(): "<<other.size()<<std::endl;
     assert(size() == other.size());
     auto k0 = reinterpret_cast<std::byte* __restrict__>(
         __builtin_assume_aligned(block_vector.data(), kBlockAlignment));
@@ -301,6 +309,10 @@ struct Block128Vector {
   /// \param other
   /// \pre \p other is has the same size as this Block128Vector.
   Block128Vector operator^(const Block128Vector& __restrict__ other) const {
+
+    //     std::cout<<"operator^: "<<std::endl;
+    // std::cout<<"size(): "<<size()<<std::endl;
+    // std::cout<<"other.size(): "<<other.size()<<std::endl;
     assert(size() == other.size());
     Block128Vector result(size());
     auto k0 = reinterpret_cast<const std::byte* __restrict__>(

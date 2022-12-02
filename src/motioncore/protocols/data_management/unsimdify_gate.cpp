@@ -40,6 +40,12 @@
 #include "utility/constants.h"
 #include "utility/logger.h"
 
+// added by Liang Zhao
+#include "protocols/garbled_circuit/garbled_circuit_constants.h"
+#include "protocols/garbled_circuit/garbled_circuit_gate.h"
+#include "protocols/garbled_circuit/garbled_circuit_share.h"
+#include "protocols/garbled_circuit/garbled_circuit_wire.h"
+
 namespace encrypto::motion {
 
 UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBackend()) {
@@ -200,6 +206,14 @@ UnsimdifyGate::UnsimdifyGate(const SharePointer& parent) : OneGate(parent->GetBa
             GetRegister().EmplaceWire<proto::bmr::Wire>(backend_, std::size_t(1)));
         break;
       }
+
+        // added by Liang Zhao
+      case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+        output_wires_.emplace_back(
+            GetRegister().EmplaceWire<proto::garbled_circuit::Wire>(backend_, std::size_t(1)));
+        break;
+      }
+
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
         output_wires_.emplace_back(
             GetRegister().EmplaceWire<proto::ConstantBooleanWire>(backend_, std::size_t(1)));
@@ -235,6 +249,25 @@ void UnsimdifyGate::EvaluateSetup() {
         out->GetMutablePermutationBits() = in->GetPermutationBits().Subset(j, j + 1);
         out->GetMutableSecretKeys().resize(1);
         out->GetMutableSecretKeys()[0] = in->GetSecretKeys()[j];
+        out->SetSetupIsReady();
+      }
+    }
+  }
+
+  // added by Liang Zhao
+  else if (parent_[0]->GetProtocol() == MpcProtocol::kGarbledCircuit) {
+    for (std::size_t i = 0; i < parent_.size(); ++i) {
+      auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+      assert(in);
+      // in->GetSetupReadyCondition()->Wait();
+      for (std::size_t j = 0; j < parent_[0]->GetNumberOfSimdValues(); ++j) {
+        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+            output_wires_[j * parent_.size() + i]);
+        assert(out);
+
+        // out->GetMutablePermutationBits() = in->GetPermutationBits().Subset(j, j + 1);
+        // out->GetMutableSecretKeys().resize(1);
+        // out->GetMutableSecretKeys()[0] = in->GetSecretKeys()[j];
         out->SetSetupIsReady();
       }
     }
@@ -396,6 +429,29 @@ void UnsimdifyGate::EvaluateOnline() {
       }
       break;
     }
+
+    // added by Liang Zhao
+    case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+      const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
+      for (std::size_t i = 0; i < parent_.size(); ++i) {
+        auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+        assert(in);
+        for (std::size_t j = 0; j < input_numer_of_simd; ++j) {
+          auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+              output_wires_[j * parent_.size() + i]);
+          assert(out);
+          out->GetMutableKeys().resize(1);
+          out->GetMutableKeys()[0] = in->GetMutableKeys()[j];
+
+          // out->GetMutablePublicValues() = in->GetPublicValues().Subset(j, j + 1);
+          // out->GetMutablePublicKeys().resize(number_of_parties);
+          // std::copy_n(in->GetPublicKeys().begin() + j * number_of_parties, number_of_parties,
+          //             out->GetMutablePublicKeys().begin());
+        }
+      }
+      break;
+    }
+
     case encrypto::motion::MpcProtocol::kBooleanConstant: {
       for (std::size_t i = 0; i < parent_.size(); ++i) {
         auto in = std::dynamic_pointer_cast<proto::ConstantBooleanWire>(parent_[i]);
@@ -572,6 +628,15 @@ std::vector<SharePointer> UnsimdifyGate::GetOutputAsVectorOfShares() {
         share = std::static_pointer_cast<Share>(tmp);
         break;
       }
+
+        // added by Liang Zhao
+      case encrypto::motion::MpcProtocol::kGarbledCircuit: {
+        auto tmp = std::make_shared<proto::garbled_circuit::Share>(output_wires);
+        assert(tmp);
+        share = std::static_pointer_cast<Share>(tmp);
+        break;
+      }
+
       case encrypto::motion::MpcProtocol::kBooleanConstant: {
         auto tmp = std::make_shared<proto::ConstantBooleanShare>(output_wires);
         assert(tmp);

@@ -1669,6 +1669,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
   ShareWrapper floating_point_gc_share_denominator_simdify =
       ShareWrapper::Simdify(floating_point_gc_share_denominator_expand);
 
+std::cout<<"001"<<std::endl;
+
   // convert the random unsigned integer to floating-point numbers
   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer =
       SecureUnsignedInteger(random_unsigned_integer_gc_share).Int2FL(FLType_size);
@@ -1690,6 +1692,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
           ->GetBackend()
           .ConstantAsGCInput(ToInput<FloatType, std::true_type>(vector_of_exp_neg_one)));
 
+std::cout<<"002"<<std::endl;
+
   // TODO: use unsigned integer comparison instead
   // merge the floating-point comparison operation together
   ShareWrapper floating_point_Bernoulli_distribution_parameter_p = ShareWrapper::Simdify(
@@ -1699,6 +1703,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
   ShareWrapper gc_share_Bernoulli_sample =
       SecureFloatingPointCircuitABY(random_floating_point_0_1_gc_share) <
       SecureFloatingPointCircuitABY(floating_point_Bernoulli_distribution_parameter_p);
+
+std::cout<<"003"<<std::endl;
 
   std::vector<ShareWrapper> gc_share_Bernoulli_sample_unsimdify =
       gc_share_Bernoulli_sample.Unsimdify();
@@ -1711,12 +1717,17 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
       gc_share_Bernoulli_sample_unsimdify.begin() + iteration_1 * num_of_simd_geo +
           iteration_2 * num_of_simd_geo);
 
+std::cout<<"004"<<std::endl;
+
   std::vector<ShareWrapper> gc_share_b1_vector = ShareWrapper::SimdifyReshapeHorizontal(
       gc_share_Bernoulli_sample_part_1_vector, iteration_1, num_of_simd_geo);
 
   std::vector<ShareWrapper> gc_share_b2_vector = ShareWrapper::SimdifyReshapeHorizontal(
       gc_share_Bernoulli_sample_part_2_vector, iteration_2, num_of_simd_geo);
 
+
+
+std::cout<<"005"<<std::endl;
   std::vector<ShareWrapper> random_unsigned_integer_gc_share_unsimdify =
       random_unsigned_integer_gc_share.Unsimdify();
   //   std::vector<ShareWrapper> random_unsigned_integer_gc_share_for_b1_vector =
@@ -1725,10 +1736,10 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
   std::vector<ShareWrapper> random_unsigned_integer_gc_share_for_b1_vector =
       ShareWrapper::SimdifyReshapeHorizontal(random_unsigned_integer_gc_share_unsimdify,
                                              iteration_1, num_of_simd_geo);
-
+std::cout<<"006"<<std::endl;
   std::vector<ShareWrapper> gc_share_u = share_->InvertBinaryTreeSelection(
       random_unsigned_integer_gc_share_for_b1_vector, gc_share_b1_vector);
-
+std::cout<<"007"<<std::endl;
   std::vector<ShareWrapper> gc_share_constant_j;
   gc_share_constant_j.reserve(iteration_2);
   for (std::size_t j = 0; j < iteration_2; j++) {
@@ -1752,7 +1763,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
       SecureUnsignedInteger(gc_share_v[0]) *
           SecureUnsignedInteger(unsigned_integer_gc_share_denominator) +
       SecureUnsignedInteger(gc_share_u[0]);
-
+std::cout<<"008"<<std::endl;
   // case 1.1
   // numerator's vector elements are not all equal to one
   if (!numerator_are_all_ones) {
@@ -1761,14 +1772,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
              ->GetBackend()
              .ConstantAsGCInput(
                  ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-
+std::cout<<"009"<<std::endl;
     // TODO: optimize integer division with floating-point division
     // TODO: using Garbled Circuit for division instead
     SecureUnsignedInteger unsigned_integer_geometric_sample =
         unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_gc_share_numerator);
 
+std::cout<<"010"<<std::endl;
     ShareWrapper gc_share_success_flag = (gc_share_u[1] & gc_share_v[1]);
 
+std::cout<<"011"<<std::endl;
     std::vector<ShareWrapper> result_vector;
     result_vector.reserve(2);
     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());

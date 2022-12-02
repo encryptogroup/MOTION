@@ -55,6 +55,8 @@ add_executable(motiontest
         # test_liangzhao_fixed_point_circuit_CBMC_bmr.cpp # ! need test, log2_p1045 (.stat not available) and cos circuit not available
         # test_liangzhao_fixed_point_circuit_CBMC_gc.cpp # ! need test, log2_p1045 (.stat not available) and cos circuit not available
 
+        test_liangzhao_debug.cpp # only for debugging purposes
+
         # test_ot.cpp # test passed
         # test_liangzhao_ot_flavors.cpp # test passed, but need to compile with test_ot.cpp together
 
@@ -73,11 +75,12 @@ add_executable(motiontest
         # test_liangzhao_invertbinarytree.cpp # not tested
 
         # test_liangzhao_conversions.cpp
-        # test_liangzhao_conversions_gc.cpp # test passed
+        # test_liangzhao_conversions_garbled_circuit.cpp # test passed
 
-        # test_liangzhao_simdify_gate.cpp # testing
-        test_liangzhao_debug.cpp # testing
-
+        # test_liangzhao_simdify_gate_garbled_circuit.cpp # test passed
+        # test_liangzhao_subset_gate_garbled_circuit.cpp # test passed
+        # test_liangzhao_unsimdify_gate_garbled_circuit.cpp # test passed
+        
         # test_liangzhao_random_integer_algorithm.cpp # test passed
         # test_liangzhao_simple_geometric.cpp # test passed
         # test_liangzhao_uniformly_sampling.cpp # test passed
@@ -86,7 +89,7 @@ add_executable(motiontest
         # test_liangzhao_geometricExp_naive.cpp # test passed
         # test_liangzhao_discreteLaplace_naive.cpp # test passed
         # test_liangzhao_discreteGaussian_naive.cpp # test passed
-        # test_liangzhao_symmericalBinomial_naive.cpp # testing
+        # test_liangzhao_symmericalBinomial_naive.cpp # test passed
 
         # testing for optimized algorithms
 )

@@ -236,7 +236,7 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
         break;
       }
       default:
-        std::cout << "001" << std::endl;
+        // std::cout << "001" << std::endl;
         throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
     }
   }
@@ -275,36 +275,40 @@ void SimdifyGate::EvaluateSetup() {
 
   // added by Liang Zhao
   else if (parent_[0]->GetProtocol() == MpcProtocol::kGarbledCircuit) {
-    for (std::size_t i = 0; i < output_wires_.size(); ++i) {
-      auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
-      assert(out);
+    bool is_garbler =
+        GetCommunicationLayer().GetMyId() == static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+    if (is_garbler) {
+      for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        assert(out);
 
-      // // TODO: test the two methods below, which is faster
-      // // out->GetMutableKeys().resize(output_number_of_simd_values_);
-      // out->GetMutableKeys() = Block128Vector::MakeRandom(output_number_of_simd_values_);
-      // for (auto& key : out->GetMutableKeys()) {
-      //   BitSpan key_span(key.data(), kKappa);
-      //   key_span.Set(false, 0);
-      //   key_span.Set(false, encrypto::motion::proto::garbled_circuit::kGarbledRowBitSize);
-      // }
+        out->GetMutableKeys().resize(output_number_of_simd_values_);
 
-      // for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
-      //   auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
-      //       parent_[j * output_wires_.size() + i]);
-      //   assert(in);
-      //   // in->GetSetupReadyCondition()->Wait();
-      //   // The input wires may have different numbers of SIMD values.
-      //   const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+        std::size_t output_simd_offset{0};
+        for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
+          auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+              parent_[j * output_wires_.size() + i]);
+          assert(in);
+          const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+          // std::cout << "input_number_of_simd: " << input_number_of_simd << std::endl;
 
-      //   // out->GetMutableKeys().Append(in->GetKeys());
-      //   for (std::size_t k = 0; k < input_number_of_simd; ++k) {
-      //     // out->GetMutableSecretKeys()[output_simd_offset + k] = in->GetSecretKeys()[k];
+          for (std::size_t k = 0; k < input_number_of_simd; ++k) {
+            out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];
+            // std::cout << in->GetMutableKeys()[k].AsString() << std::endl;
+          }
+          output_simd_offset += input_number_of_simd;
 
-      //   }
-      //   // output_simd_offset += input_number_of_simd;
-      // }
+          out->SetSetupIsReady();
+        }
+      }
+    } else {
+      for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        assert(out);
 
-      out->SetSetupIsReady();
+        out->GetMutableKeys().resize(output_number_of_simd_values_);
+
+      }
     }
   }
 }
@@ -475,21 +479,35 @@ void SimdifyGate::EvaluateOnline() {
       // added by Liang Zhao
     case encrypto::motion::MpcProtocol::kGarbledCircuit: {
       const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
-      for (std::size_t i = 0; i < output_wires_.size(); ++i) {
-        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
-        assert(out);
-        out->GetMutableKeys().resize(output_number_of_simd_values_);
-        // out->GetMutablePublicKeys().resize(number_of_parties * output_number_of_simd_values_);
-        std::size_t output_simd_offset{0};
-        for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
-          auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
-              parent_[j * output_wires_.size() + i]);
-          assert(in);
-          const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
-          for (std::size_t k = 0; k < input_number_of_simd; ++k) {
-            out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];
+      // std::cout << "in->GetMutableKeys()[k].AsString(): " << std::endl;
+
+      bool is_garbler = GetCommunicationLayer().GetMyId() ==
+                        static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+      if (is_garbler) {
+        for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        }
+      } else {
+        for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+          auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+          assert(out);
+
+          // std::cout << "output_number_of_simd_values_: " << output_number_of_simd_values_
+          //           << std::endl;
+          out->GetMutableKeys().resize(output_number_of_simd_values_);
+          std::size_t output_simd_offset{0};
+          for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
+            auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+                parent_[j * output_wires_.size() + i]);
+            assert(in);
+            const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+            // std::cout << "input_number_of_simd: " << input_number_of_simd << std::endl;
+
+            for (std::size_t k = 0; k < input_number_of_simd; ++k) {
+              out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];
+              // std::cout << in->GetMutableKeys()[k].AsString() << std::endl;
+            }
+            output_simd_offset += input_number_of_simd;
           }
-          output_simd_offset += input_number_of_simd;
         }
       }
       break;

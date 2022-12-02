@@ -1,0 +1,2760 @@
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+===========================================================================
+Protocol BooleanGMW operation FL_Add_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.114 ms      0.095 ms      0.071 ms
+MT Setup                40.164 ms     43.623 ms     12.465 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.187 ms      5.038 ms      4.515 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    130.444 ms    125.807 ms     19.129 ms
+Gates Setup              1.206 ms      1.289 ms      0.169 ms
+Gates Online           156.770 ms    119.050 ms     76.089 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     294.497 ms    281.409 ms     72.811 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.243 MiB in 4112 messages
+Received: 0.243 MiB in 4108 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sub_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.081 ms      0.082 ms      0.006 ms
+MT Setup                43.950 ms     43.656 ms      1.013 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.810 ms      7.291 ms      4.377 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    136.721 ms    145.817 ms     19.430 ms
+Gates Setup              1.283 ms      1.366 ms      0.183 ms
+Gates Online           196.379 ms    156.716 ms    124.040 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     340.471 ms    313.373 ms    129.422 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.239 MiB in 4038 messages
+Received: 0.239 MiB in 4034 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Mul_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.203 ms      0.178 ms      0.102 ms
+MT Setup                41.300 ms     43.608 ms      9.936 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.786 ms      3.462 ms      4.162 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    129.290 ms    121.454 ms     24.622 ms
+Gates Setup              2.703 ms      2.794 ms      0.610 ms
+Gates Online           103.328 ms     98.335 ms     14.806 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     240.980 ms    235.854 ms     27.960 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.376 MiB in 6430 messages
+Received: 0.376 MiB in 6426 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Div_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.270 ms      0.226 ms      0.091 ms
+MT Setup                18.107 ms     15.045 ms     14.883 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.941 ms      6.427 ms      2.978 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    104.509 ms     93.195 ms     27.275 ms
+Gates Setup              4.551 ms      4.749 ms      0.777 ms
+Gates Online           730.169 ms    704.172 ms     89.720 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     847.388 ms    800.735 ms    111.333 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.649 MiB in 11188 messages
+Received: 0.649 MiB in 11184 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Lt_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.024 ms      0.023 ms      0.011 ms
+MT Setup                27.675 ms     42.150 ms     19.980 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.130 ms      5.215 ms      3.009 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    130.901 ms    143.359 ms     33.176 ms
+Gates Setup              0.407 ms      0.352 ms      0.094 ms
+Gates Online            42.812 ms     28.851 ms     38.083 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     179.430 ms    167.929 ms     55.901 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.055 MiB in 834 messages
+Received: 0.055 MiB in 830 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Gt_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.020 ms      0.018 ms      0.007 ms
+MT Setup                32.913 ms     43.775 ms     17.637 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.206 ms      1.662 ms      2.790 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    128.795 ms    149.793 ms     32.451 ms
+Gates Setup              0.429 ms      0.435 ms      0.082 ms
+Gates Online            34.557 ms     30.264 ms     14.754 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     168.717 ms    188.680 ms     41.017 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.055 MiB in 834 messages
+Received: 0.055 MiB in 830 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Eq_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.016 ms      0.015 ms      0.006 ms
+MT Setup                39.622 ms     43.156 ms     12.590 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.784 ms      7.451 ms      3.216 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    133.798 ms    150.912 ms     27.325 ms
+Gates Setup              0.408 ms      0.412 ms      0.059 ms
+Gates Online           117.654 ms    132.273 ms     49.114 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     257.533 ms    236.071 ms     54.011 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.034 MiB in 460 messages
+Received: 0.033 MiB in 456 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Neg_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     32.176 ms     38.798 ms     18.741 ms
+Gates Setup              0.462 ms      0.463 ms      0.051 ms
+Gates Online             3.350 ms      3.269 ms      0.342 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      42.001 ms     45.397 ms     18.356 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.004 MiB in 12 messages
+Received: 0.003 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsZero_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.016 ms      0.002 ms
+MT Setup                40.430 ms     43.649 ms     10.612 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.948 ms      4.632 ms      2.641 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    142.181 ms    153.207 ms     18.271 ms
+Gates Setup              0.446 ms      0.445 ms      0.068 ms
+Gates Online           187.828 ms    206.951 ms    105.556 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     336.148 ms    252.630 ms    115.327 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.033 MiB in 458 messages
+Received: 0.033 MiB in 454 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsNeg_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     36.699 ms     44.291 ms     16.637 ms
+Gates Setup              0.498 ms      0.487 ms      0.077 ms
+Gates Online             3.861 ms      3.522 ms      1.778 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      47.632 ms     55.661 ms     17.713 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.004 MiB in 12 messages
+Received: 0.003 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Abs_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     40.321 ms     44.291 ms     12.414 ms
+Gates Setup              0.476 ms      0.472 ms      0.062 ms
+Gates Online             4.043 ms      3.377 ms      2.105 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      50.230 ms     53.186 ms     12.923 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.004 MiB in 12 messages
+Received: 0.003 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp2_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.434 ms      0.283 ms      0.264 ms
+MT Setup                26.244 ms     43.491 ms     20.160 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.323 ms     10.969 ms      4.068 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    115.266 ms    123.752 ms     31.453 ms
+Gates Setup              7.198 ms      7.425 ms      0.891 ms
+Gates Online           334.006 ms    318.918 ms     67.518 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     462.903 ms    471.289 ms     58.957 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.147 MiB in 19878 messages
+Received: 1.147 MiB in 19874 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Log2_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.354 ms      0.310 ms      0.204 ms
+MT Setup                16.821 ms     18.107 ms     16.959 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.888 ms      9.354 ms      5.485 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    119.702 ms    118.174 ms     16.626 ms
+Gates Setup              7.838 ms      8.641 ms      1.330 ms
+Gates Online           465.493 ms    412.693 ms    145.999 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     599.283 ms    561.284 ms    146.355 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.242 MiB in 21536 messages
+Received: 1.242 MiB in 21532 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.365 ms      0.306 ms      0.150 ms
+MT Setup                 4.846 ms      5.161 ms      2.531 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      12.368 ms      8.769 ms      7.838 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    103.686 ms    107.083 ms     20.995 ms
+Gates Setup              7.786 ms      7.294 ms      1.507 ms
+Gates Online           381.717 ms    357.182 ms     50.968 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     499.771 ms    484.256 ms     61.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.339 MiB in 23216 messages
+Received: 1.338 MiB in 23212 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Ln_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.255 ms      0.258 ms      0.055 ms
+MT Setup                26.997 ms     37.026 ms     19.020 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      11.257 ms     10.541 ms      5.859 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    128.358 ms    129.445 ms     32.050 ms
+Gates Setup              6.437 ms      6.045 ms      1.171 ms
+Gates Online           385.641 ms    367.261 ms     57.869 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     527.140 ms    517.654 ms     64.014 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.049 MiB in 18158 messages
+Received: 1.049 MiB in 18154 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sqr_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.070 ms      0.071 ms      0.021 ms
+MT Setup                24.478 ms     10.622 ms     20.189 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.342 ms      9.651 ms      6.006 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    104.601 ms     78.958 ms     34.386 ms
+Gates Setup              1.171 ms      1.119 ms      0.186 ms
+Gates Online            68.517 ms     61.073 ms     17.554 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     179.735 ms    176.124 ms     42.098 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.208 MiB in 3498 messages
+Received: 0.208 MiB in 3494 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sqrt_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.092 ms      0.097 ms      0.024 ms
+MT Setup                23.652 ms     16.181 ms     21.178 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.083 ms      7.110 ms      3.184 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    111.273 ms    120.126 ms     27.549 ms
+Gates Setup              1.873 ms      1.759 ms      0.301 ms
+Gates Online           940.639 ms    816.082 ms    451.010 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1061.251 ms    728.861 ms    449.461 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.312 MiB in 5308 messages
+Received: 0.311 MiB in 5304 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sin_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.173 ms      0.169 ms      0.027 ms
+MT Setup                26.175 ms     42.979 ms     18.367 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.344 ms     10.447 ms      6.343 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    116.222 ms    107.617 ms     25.214 ms
+Gates Setup              4.368 ms      3.842 ms      1.524 ms
+Gates Online           256.459 ms    249.798 ms     37.657 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     383.381 ms    387.433 ms     43.880 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.628 MiB in 10828 messages
+Received: 0.628 MiB in 10824 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Cos_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.174 ms      0.187 ms      0.049 ms
+MT Setup                30.564 ms     42.831 ms     17.731 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.702 ms      3.720 ms      4.207 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    119.620 ms    113.904 ms     32.127 ms
+Gates Setup              4.094 ms      3.889 ms      0.696 ms
+Gates Online           341.961 ms    340.170 ms     81.018 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     472.469 ms    414.628 ms     80.116 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.630 MiB in 10852 messages
+Received: 0.630 MiB in 10848 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Ceil_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.031 ms      0.032 ms      0.004 ms
+MT Setup                21.547 ms     10.265 ms     18.662 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.323 ms      3.942 ms      3.965 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    113.234 ms    113.456 ms     26.615 ms
+Gates Setup              0.504 ms      0.458 ms      0.112 ms
+Gates Online            88.168 ms     48.366 ms     54.331 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     208.253 ms    196.845 ms     53.202 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.076 MiB in 1202 messages
+Received: 0.076 MiB in 1198 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Floor_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.030 ms      0.030 ms      0.003 ms
+MT Setup                24.584 ms     35.461 ms     19.832 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.692 ms      5.207 ms      3.853 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    120.749 ms    114.680 ms     20.249 ms
+Gates Setup              0.451 ms      0.426 ms      0.049 ms
+Gates Online            80.617 ms     57.906 ms     52.900 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     207.497 ms    191.149 ms     61.446 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.076 MiB in 1198 messages
+Received: 0.076 MiB in 1194 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL2Int_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.083 ms      0.084 ms      0.024 ms
+MT Setup                37.717 ms     44.413 ms     14.927 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.574 ms      3.559 ms      3.702 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    120.815 ms    117.761 ms     26.913 ms
+Gates Setup              1.904 ms      2.007 ms      0.358 ms
+Gates Online           116.532 ms     95.666 ms     53.883 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     244.425 ms    222.018 ms     61.745 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.300 MiB in 5084 messages
+Received: 0.299 MiB in 5080 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL2Fx_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.105 ms      0.101 ms      0.011 ms
+MT Setup                23.511 ms     13.183 ms     18.027 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.561 ms      3.540 ms      4.222 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    112.672 ms     92.628 ms     36.017 ms
+Gates Setup              2.224 ms      1.696 ms      0.960 ms
+Gates Online           327.173 ms    323.155 ms    124.094 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     449.701 ms    419.192 ms    144.734 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.310 MiB in 5272 messages
+Received: 0.310 MiB in 5268 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_MulPow2m_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.019 ms      0.019 ms      0.003 ms
+MT Setup                11.129 ms      2.741 ms     16.209 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.142 ms      6.057 ms     12.242 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    121.548 ms    115.556 ms     15.654 ms
+Gates Setup              0.418 ms      0.434 ms      0.067 ms
+Gates Online           103.205 ms     66.029 ms     99.787 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     231.315 ms    184.688 ms    105.214 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.041 MiB in 586 messages
+Received: 0.041 MiB in 582 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_DivPow2m_circuit bit size 32 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.018 ms      0.019 ms      0.004 ms
+MT Setup                12.565 ms      6.883 ms     15.905 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.205 ms      3.531 ms      2.729 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    117.728 ms    114.696 ms     22.583 ms
+Gates Setup              0.399 ms      0.387 ms      0.058 ms
+Gates Online            87.772 ms     32.203 ms     87.319 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     210.978 ms    166.584 ms     74.449 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.041 MiB in 586 messages
+Received: 0.041 MiB in 582 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Add_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.159 ms      0.175 ms      0.038 ms
+MT Setup                21.673 ms     32.725 ms     19.868 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.352 ms      5.332 ms      4.990 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    109.237 ms    117.041 ms     28.645 ms
+Gates Setup              3.230 ms      3.391 ms      0.657 ms
+Gates Online           278.765 ms    216.333 ms    118.501 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     397.432 ms    378.640 ms    122.675 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.531 MiB in 9124 messages
+Received: 0.530 MiB in 9120 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sub_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.170 ms      0.165 ms      0.021 ms
+MT Setup                27.408 ms     20.739 ms     18.168 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.290 ms      4.107 ms      6.131 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    116.591 ms    117.480 ms     10.566 ms
+Gates Setup              3.418 ms      3.071 ms      0.799 ms
+Gates Online           317.194 ms    252.926 ms    129.554 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     444.503 ms    373.433 ms    134.513 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.524 MiB in 9004 messages
+Received: 0.523 MiB in 9000 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Mul_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.345 ms      0.363 ms      0.104 ms
+MT Setup                23.197 ms     27.641 ms     18.832 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      12.887 ms     13.174 ms      6.047 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    106.844 ms    108.613 ms     25.644 ms
+Gates Setup              8.567 ms      7.940 ms      1.682 ms
+Gates Online           267.390 ms    248.334 ms     33.921 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     389.499 ms    398.494 ms     38.947 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.300 MiB in 22534 messages
+Received: 1.300 MiB in 22530 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Div_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.707 ms      0.583 ms      0.224 ms
+MT Setup                 5.253 ms      3.800 ms      3.176 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      19.899 ms     20.863 ms      5.778 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    103.430 ms     98.177 ms     11.721 ms
+Gates Setup             16.808 ms     16.612 ms      1.709 ms
+Gates Online          2549.949 ms   2532.835 ms    175.433 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2679.165 ms   2652.912 ms    174.972 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.637 MiB in 45880 messages
+Received: 2.637 MiB in 45876 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Lt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.037 ms      0.034 ms      0.012 ms
+MT Setup                28.597 ms     19.556 ms     18.511 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.173 ms      7.389 ms      5.384 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    125.006 ms    112.982 ms     28.601 ms
+Gates Setup              0.530 ms      0.476 ms      0.176 ms
+Gates Online            83.191 ms     42.428 ms     99.020 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     215.573 ms    188.449 ms    100.616 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.080 MiB in 1252 messages
+Received: 0.080 MiB in 1248 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Gt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.031 ms      0.032 ms      0.004 ms
+MT Setup                11.789 ms      2.320 ms     16.643 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.902 ms      4.208 ms      5.354 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     94.858 ms     81.817 ms     26.483 ms
+Gates Setup              0.432 ms      0.422 ms      0.059 ms
+Gates Online            80.182 ms     38.286 ms    100.526 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     180.371 ms    152.615 ms    107.718 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.080 MiB in 1252 messages
+Received: 0.080 MiB in 1248 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Eq_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.014 ms      0.005 ms
+MT Setup                16.908 ms      7.824 ms     17.602 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.079 ms      2.728 ms      4.482 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    113.088 ms    113.520 ms     25.506 ms
+Gates Setup              0.400 ms      0.412 ms      0.047 ms
+Gates Online           104.083 ms     74.446 ms     68.747 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     222.217 ms    252.199 ms     80.559 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.038 MiB in 524 messages
+Received: 0.038 MiB in 520 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Neg_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     36.484 ms     44.385 ms     16.454 ms
+Gates Setup              0.481 ms      0.474 ms      0.059 ms
+Gates Online             3.343 ms      3.179 ms      0.296 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      47.134 ms     54.264 ms     17.024 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.004 MiB in 12 messages
+Received: 0.003 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsZero_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.020 ms      0.020 ms      0.006 ms
+MT Setup                11.678 ms      3.801 ms     16.083 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.216 ms      3.893 ms      2.786 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    123.635 ms    116.111 ms     19.107 ms
+Gates Setup              0.402 ms      0.396 ms      0.032 ms
+Gates Online           139.767 ms    164.073 ms    114.092 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     269.119 ms    286.160 ms    115.834 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.038 MiB in 522 messages
+Received: 0.037 MiB in 518 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsNeg_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     36.448 ms     44.313 ms     16.464 ms
+Gates Setup              0.483 ms      0.498 ms      0.040 ms
+Gates Online             3.039 ms      3.001 ms      0.267 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      45.971 ms     54.269 ms     16.531 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.004 MiB in 12 messages
+Received: 0.003 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Abs_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     40.601 ms     44.325 ms     12.331 ms
+Gates Setup              0.746 ms      0.498 ms      0.818 ms
+Gates Online             3.352 ms      2.952 ms      0.515 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      51.627 ms     55.170 ms     13.162 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.004 MiB in 12 messages
+Received: 0.003 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp2_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.679 ms      0.721 ms      0.139 ms
+MT Setup                 5.125 ms      5.060 ms      2.970 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      26.416 ms     25.778 ms      5.422 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    125.477 ms    132.165 ms     14.643 ms
+Gates Setup             18.570 ms     17.848 ms      1.605 ms
+Gates Online          4421.361 ms   4486.318 ms   1203.853 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4574.340 ms   4612.451 ms   1194.134 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.488 MiB in 43260 messages
+Received: 2.488 MiB in 43256 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Log2_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.656 ms      0.689 ms      0.088 ms
+MT Setup                 3.810 ms      2.696 ms      2.408 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      28.828 ms     30.044 ms      7.411 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    124.526 ms    129.952 ms     14.578 ms
+Gates Setup             16.904 ms     16.241 ms      1.954 ms
+Gates Online          2109.030 ms   2110.164 ms    189.127 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2258.440 ms   2232.456 ms    191.586 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.300 MiB in 39980 messages
+Received: 2.300 MiB in 39976 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.520 ms      1.430 ms      0.560 ms
+MT Setup                 8.846 ms      8.129 ms      6.267 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      28.188 ms     27.639 ms      9.685 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    122.108 ms    115.810 ms     16.469 ms
+Gates Setup             27.512 ms     26.334 ms      3.312 ms
+Gates Online          4364.164 ms   4356.357 ms   1155.155 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4522.108 ms   4543.195 ms   1154.122 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.758 MiB in 65396 messages
+Received: 3.757 MiB in 65392 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Ln_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.103 ms      1.192 ms      0.250 ms
+MT Setup                 9.405 ms      5.195 ms      6.330 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      34.419 ms     32.288 ms     14.243 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    126.041 ms    119.499 ms     20.397 ms
+Gates Setup             29.817 ms     28.740 ms      3.316 ms
+Gates Online          6307.830 ms   6514.045 ms    582.645 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6470.783 ms   6662.428 ms    585.367 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.132 MiB in 71934 messages
+Received: 4.132 MiB in 71930 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sqr_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.214 ms      0.220 ms      0.037 ms
+MT Setup                25.349 ms     32.057 ms     16.294 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.615 ms     12.008 ms      5.425 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.660 ms    100.203 ms     20.260 ms
+Gates Setup              5.443 ms      5.230 ms      0.805 ms
+Gates Online           139.533 ms    136.731 ms     14.533 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     257.411 ms    266.789 ms     27.274 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.787 MiB in 13590 messages
+Received: 0.787 MiB in 13586 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sqrt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.531 ms      0.540 ms      0.187 ms
+MT Setup                 5.557 ms      6.209 ms      2.359 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      12.911 ms     12.078 ms      5.555 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     96.566 ms     88.466 ms     18.862 ms
+Gates Setup              9.261 ms      9.117 ms      1.047 ms
+Gates Online          2295.937 ms   2327.736 ms    131.209 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2410.712 ms   2436.119 ms    142.301 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.488 MiB in 25810 messages
+Received: 1.488 MiB in 25806 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sin_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.266 ms      0.313 ms      0.134 ms
+MT Setup                32.331 ms     44.329 ms     20.088 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.230 ms      9.888 ms      5.746 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    114.858 ms    115.881 ms     28.346 ms
+Gates Setup              4.281 ms      4.342 ms      0.796 ms
+Gates Online           256.845 ms    249.887 ms     26.709 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     382.370 ms    374.963 ms     30.113 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.643 MiB in 11080 messages
+Received: 0.642 MiB in 11076 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Cos_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.252 ms      0.207 ms      0.131 ms
+MT Setup                27.584 ms     36.605 ms     19.841 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      10.831 ms      8.114 ms      5.313 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    116.874 ms    114.473 ms     26.016 ms
+Gates Setup              4.019 ms      3.995 ms      0.536 ms
+Gates Online           264.394 ms    245.080 ms     31.427 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     391.414 ms    395.781 ms     33.712 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.645 MiB in 11104 messages
+Received: 0.644 MiB in 11100 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Ceil_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.061 ms      0.048 ms      0.026 ms
+MT Setup                39.882 ms     42.530 ms     12.357 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.275 ms      6.347 ms      5.030 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    132.566 ms    133.526 ms     20.600 ms
+Gates Setup              0.690 ms      0.747 ms      0.142 ms
+Gates Online            75.587 ms     52.272 ms     49.729 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     213.814 ms    204.241 ms     44.745 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.133 MiB in 2194 messages
+Received: 0.133 MiB in 2190 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Floor_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.054 ms      0.051 ms      0.014 ms
+MT Setup                40.797 ms     44.133 ms     10.365 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.857 ms      2.583 ms      4.213 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    137.335 ms    155.787 ms     28.108 ms
+Gates Setup              0.900 ms      0.823 ms      0.425 ms
+Gates Online            65.112 ms     45.659 ms     32.087 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     208.425 ms    210.715 ms     37.097 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.133 MiB in 2188 messages
+Received: 0.133 MiB in 2184 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL2Int_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.132 ms      0.136 ms      0.043 ms
+MT Setup                26.686 ms     37.220 ms     17.552 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.470 ms      6.657 ms      4.508 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    102.931 ms    110.006 ms     18.574 ms
+Gates Setup              3.709 ms      4.051 ms      0.773 ms
+Gates Online           128.784 ms    119.696 ms     16.118 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     239.781 ms    234.432 ms     26.582 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.565 MiB in 9726 messages
+Received: 0.565 MiB in 9722 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL2Fx_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.175 ms      0.185 ms      0.018 ms
+MT Setup                29.210 ms     42.689 ms     19.469 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.983 ms      7.487 ms      5.652 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    122.541 ms    132.738 ms     32.589 ms
+Gates Setup              4.045 ms      3.894 ms      0.755 ms
+Gates Online           382.962 ms    419.637 ms     98.307 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     516.796 ms    565.505 ms    108.711 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.580 MiB in 9978 messages
+Received: 0.580 MiB in 9974 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_MulPow2m_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.021 ms      0.019 ms      0.006 ms
+MT Setup                 2.623 ms      1.896 ms      1.982 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.714 ms      5.677 ms      3.708 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    115.577 ms    116.280 ms      3.243 ms
+Gates Setup              0.390 ms      0.429 ms      0.050 ms
+Gates Online            50.978 ms     36.317 ms     64.711 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     171.442 ms    156.528 ms     65.244 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 650 messages
+Received: 0.045 MiB in 646 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_DivPow2m_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.020 ms      0.020 ms      0.008 ms
+MT Setup                10.723 ms      2.057 ms     16.645 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.992 ms      7.010 ms      3.334 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    112.801 ms    107.616 ms     27.197 ms
+Gates Setup              0.402 ms      0.378 ms      0.058 ms
+Gates Online            60.572 ms     39.478 ms     77.052 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     178.784 ms    141.253 ms     79.337 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.045 MiB in 650 messages
+Received: 0.045 MiB in 646 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_ClampB_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.029 ms      0.031 ms      0.008 ms
+MT Setup                15.011 ms      4.423 ms     19.017 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.212 ms      7.255 ms      5.462 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    113.938 ms    112.486 ms     21.743 ms
+Gates Setup              0.434 ms      0.454 ms      0.056 ms
+Gates Online            41.511 ms     41.342 ms      4.493 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     160.592 ms    159.634 ms     22.949 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.080 MiB in 1254 messages
+Received: 0.080 MiB in 1250 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_RoundToNearestInt_circuit bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.052 ms      0.055 ms      0.011 ms
+MT Setup                40.387 ms     43.566 ms     12.867 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.105 ms      4.699 ms      3.332 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    130.085 ms    134.213 ms     27.386 ms
+Gates Setup              0.904 ms      0.945 ms      0.303 ms
+Gates Online            74.709 ms     77.711 ms     24.812 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     210.069 ms    212.595 ms     37.504 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.151 MiB in 2500 messages
+Received: 0.150 MiB in 2496 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Add_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             91.112 ms     94.486 ms     11.057 ms
+MT Setup               282.775 ms    239.023 ms    128.348 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     948.864 ms    994.771 ms    150.994 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1396.826 ms   1399.086 ms     48.664 ms
+Gates Setup              1.302 ms      1.281 ms      0.129 ms
+Gates Online           267.454 ms    278.614 ms     53.926 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1671.599 ms   1675.751 ms     50.697 ms
+===========================================================================
+Communication with each other party:
+Sent: 32.366 MiB in 4112 messages
+Received: 32.343 MiB in 4108 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sub_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             95.727 ms     95.289 ms      5.405 ms
+MT Setup               245.978 ms    201.398 ms     81.648 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     914.558 ms    922.105 ms    115.018 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1331.891 ms   1317.369 ms     53.628 ms
+Gates Setup              2.640 ms      1.567 ms      4.218 ms
+Gates Online           277.972 ms    260.532 ms     53.602 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1617.320 ms   1616.874 ms     48.282 ms
+===========================================================================
+Communication with each other party:
+Sent: 31.779 MiB in 4038 messages
+Received: 31.756 MiB in 4034 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Mul_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            129.659 ms    133.106 ms     15.511 ms
+MT Setup               340.473 ms    295.495 ms    132.956 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1584.797 ms   1699.903 ms    155.720 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2143.973 ms   2195.036 ms    111.449 ms
+Gates Setup              2.075 ms      2.144 ms      0.168 ms
+Gates Online           272.223 ms    281.332 ms     66.882 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2422.889 ms   2434.127 ms    120.839 ms
+===========================================================================
+Communication with each other party:
+Sent: 50.753 MiB in 6430 messages
+Received: 50.729 MiB in 6426 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Div_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            190.215 ms    185.786 ms     12.618 ms
+MT Setup               514.746 ms    387.038 ms    200.246 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2922.617 ms   2876.641 ms    334.340 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3702.416 ms   3618.737 ms    205.545 ms
+Gates Setup              3.409 ms      3.538 ms      0.333 ms
+Gates Online           676.784 ms    657.120 ms     65.392 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4387.507 ms   4315.374 ms    187.691 ms
+===========================================================================
+Communication with each other party:
+Sent: 88.297 MiB in 11188 messages
+Received: 88.274 MiB in 11184 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Lt_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.401 ms      7.206 ms      1.101 ms
+MT Setup                30.224 ms     27.358 ms      8.056 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     148.162 ms    142.730 ms     16.642 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    267.274 ms    254.722 ms     25.989 ms
+Gates Setup              0.784 ms      0.819 ms      0.114 ms
+Gates Online           192.336 ms    190.150 ms     75.890 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     466.824 ms    466.979 ms     71.145 ms
+===========================================================================
+Communication with each other party:
+Sent: 6.433 MiB in 834 messages
+Received: 6.410 MiB in 830 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Gt_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.169 ms      7.247 ms      0.853 ms
+MT Setup                55.093 ms     44.389 ms     27.131 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     133.690 ms    127.875 ms     26.216 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    280.419 ms    272.883 ms     25.372 ms
+Gates Setup              0.772 ms      0.787 ms      0.087 ms
+Gates Online           190.880 ms    141.676 ms     85.570 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     478.201 ms    426.676 ms     90.018 ms
+===========================================================================
+Communication with each other party:
+Sent: 6.433 MiB in 834 messages
+Received: 6.410 MiB in 830 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Eq_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.165 ms      1.196 ms      0.116 ms
+MT Setup                 6.212 ms      6.215 ms      3.096 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      24.806 ms     24.834 ms      4.549 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    109.993 ms    102.233 ms     19.607 ms
+Gates Setup              0.743 ms      0.772 ms      0.152 ms
+Gates Online           154.716 ms    150.596 ms     25.967 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     271.157 ms    269.617 ms     33.954 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.471 MiB in 460 messages
+Received: 3.448 MiB in 456 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Neg_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     15.305 ms      3.500 ms     18.126 ms
+Gates Setup              0.809 ms      0.864 ms      0.118 ms
+Gates Online            79.024 ms     78.531 ms     10.449 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     101.980 ms    108.643 ms     17.781 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.953 MiB in 12 messages
+Received: 2.930 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsZero_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.174 ms      1.240 ms      0.093 ms
+MT Setup                 6.553 ms      4.068 ms      3.307 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      25.677 ms     25.474 ms      5.326 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    126.147 ms    136.472 ms     17.313 ms
+Gates Setup              0.760 ms      0.733 ms      0.109 ms
+Gates Online           255.970 ms    256.172 ms     34.996 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     389.294 ms    384.608 ms     37.183 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.456 MiB in 458 messages
+Received: 3.433 MiB in 454 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsNeg_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      7.619 ms      3.602 ms     12.275 ms
+Gates Setup              0.790 ms      0.794 ms      0.076 ms
+Gates Online            72.271 ms     73.456 ms     11.714 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      89.248 ms     93.186 ms     18.181 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.953 MiB in 12 messages
+Received: 2.930 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Abs_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     31.468 ms     42.667 ms     18.336 ms
+Gates Setup              0.834 ms      0.746 ms      0.144 ms
+Gates Online            75.849 ms     79.393 ms     15.527 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     114.413 ms    127.191 ms     26.032 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.953 MiB in 12 messages
+Received: 2.930 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp2_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            347.326 ms    337.006 ms     28.236 ms
+MT Setup               859.714 ms    799.706 ms    150.786 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    4824.544 ms   5097.124 ms    482.613 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6104.055 ms   6148.706 ms    477.616 ms
+Gates Setup              5.723 ms      5.396 ms      1.063 ms
+Gates Online           497.490 ms    416.924 ms    168.514 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6610.996 ms   6721.751 ms    439.464 ms
+===========================================================================
+Communication with each other party:
+Sent: 157.255 MiB in 19878 messages
+Received: 157.232 MiB in 19874 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Log2_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            382.498 ms    390.679 ms     16.269 ms
+MT Setup               840.196 ms    839.581 ms      8.647 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5562.974 ms   5672.248 ms    318.014 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6845.727 ms   6935.129 ms    327.660 ms
+Gates Setup              6.280 ms      6.039 ms      0.637 ms
+Gates Online           477.719 ms    475.468 ms     28.752 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7334.240 ms   7404.330 ms    325.723 ms
+===========================================================================
+Communication with each other party:
+Sent: 170.388 MiB in 21536 messages
+Received: 170.365 MiB in 21532 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            392.680 ms    388.162 ms     13.446 ms
+MT Setup               911.250 ms    910.501 ms     10.855 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5806.303 ms   5876.393 ms    435.089 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   7169.361 ms   7235.770 ms    436.340 ms
+Gates Setup              6.397 ms      6.493 ms      0.393 ms
+Gates Online           433.004 ms    421.208 ms     23.290 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7612.290 ms   7706.032 ms    424.290 ms
+===========================================================================
+Communication with each other party:
+Sent: 183.700 MiB in 23216 messages
+Received: 183.677 MiB in 23212 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Ln_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            311.998 ms    313.803 ms     15.874 ms
+MT Setup               713.513 ms    697.628 ms     45.411 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    4629.945 ms   4629.506 ms    347.432 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   5718.283 ms   5713.845 ms    312.217 ms
+Gates Setup              5.193 ms      4.934 ms      0.967 ms
+Gates Online           462.363 ms    437.528 ms    151.029 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6189.986 ms   6110.095 ms    232.573 ms
+===========================================================================
+Communication with each other party:
+Sent: 143.634 MiB in 18158 messages
+Received: 143.611 MiB in 18154 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sqr_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             65.334 ms     72.978 ms     14.326 ms
+MT Setup               167.836 ms    178.218 ms     21.353 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     925.508 ms    951.686 ms     87.669 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1249.321 ms   1281.790 ms     97.702 ms
+Gates Setup              1.343 ms      1.291 ms      0.147 ms
+Gates Online           122.993 ms    117.558 ms     25.010 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1377.933 ms   1397.987 ms    108.306 ms
+===========================================================================
+Communication with each other party:
+Sent: 27.532 MiB in 3498 messages
+Received: 27.509 MiB in 3494 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sqrt_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            103.578 ms    103.833 ms     14.889 ms
+MT Setup               261.130 ms    189.439 ms    125.597 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1282.403 ms   1350.079 ms    137.718 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1724.324 ms   1726.419 ms     73.214 ms
+Gates Setup              5.226 ms      1.600 ms     10.881 ms
+Gates Online           500.448 ms    506.911 ms     47.459 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2234.945 ms   2266.410 ms     75.601 ms
+===========================================================================
+Communication with each other party:
+Sent: 41.806 MiB in 5308 messages
+Received: 41.782 MiB in 5304 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sin_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            206.477 ms    213.424 ms     14.274 ms
+MT Setup               442.604 ms    405.143 ms    103.317 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2844.465 ms   2853.408 ms    194.115 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3582.124 ms   3558.040 ms    132.195 ms
+Gates Setup              3.370 ms      3.364 ms      0.430 ms
+Gates Online           303.307 ms    286.645 ms     49.428 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3893.003 ms   3878.891 ms    115.371 ms
+===========================================================================
+Communication with each other party:
+Sent: 85.566 MiB in 10828 messages
+Received: 85.543 MiB in 10824 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Cos_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            203.400 ms    216.349 ms     18.103 ms
+MT Setup               414.000 ms    416.548 ms      8.044 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2802.018 ms   2741.799 ms    130.647 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3495.850 ms   3443.704 ms    130.590 ms
+Gates Setup              3.322 ms      3.355 ms      0.560 ms
+Gates Online           325.929 ms    311.884 ms     38.663 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3829.334 ms   3771.612 ms    136.063 ms
+===========================================================================
+Communication with each other party:
+Sent: 85.758 MiB in 10852 messages
+Received: 85.735 MiB in 10848 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Ceil_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             13.769 ms     14.118 ms      2.202 ms
+MT Setup                57.677 ms     48.359 ms     20.593 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     272.768 ms    269.000 ms     35.608 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    450.660 ms    453.681 ms     38.045 ms
+Gates Setup              0.831 ms      0.797 ms      0.134 ms
+Gates Online           121.258 ms    125.339 ms     21.070 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     578.296 ms    565.786 ms     36.102 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.348 MiB in 1202 messages
+Received: 9.325 MiB in 1198 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Floor_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             12.386 ms     12.646 ms      1.606 ms
+MT Setup                48.808 ms     48.059 ms      1.210 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     275.400 ms    271.928 ms     17.005 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    449.996 ms    446.413 ms     21.063 ms
+Gates Setup              0.824 ms      0.884 ms      0.148 ms
+Gates Online           116.028 ms     99.912 ms     24.860 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     572.399 ms    562.233 ms     35.965 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.316 MiB in 1198 messages
+Received: 9.293 MiB in 1194 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL2Int_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            105.718 ms    112.020 ms     13.551 ms
+MT Setup               211.574 ms    209.810 ms     18.177 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1325.345 ms   1303.809 ms    141.464 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1743.255 ms   1765.862 ms    140.702 ms
+Gates Setup              1.674 ms      1.679 ms      0.200 ms
+Gates Online           208.854 ms    186.003 ms     66.640 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1958.299 ms   1973.741 ms    123.011 ms
+===========================================================================
+Communication with each other party:
+Sent: 40.094 MiB in 5084 messages
+Received: 40.071 MiB in 5080 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL2Fx_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            109.378 ms    112.110 ms     11.785 ms
+MT Setup               256.970 ms    249.791 ms     68.522 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1382.565 ms   1435.920 ms    138.669 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1830.897 ms   1879.890 ms    125.778 ms
+Gates Setup              1.750 ms      1.717 ms      0.222 ms
+Gates Online           282.793 ms    287.491 ms     59.877 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2120.181 ms   2074.338 ms    128.897 ms
+===========================================================================
+Communication with each other party:
+Sent: 41.587 MiB in 5272 messages
+Received: 41.564 MiB in 5268 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_MulPow2m_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.406 ms      3.772 ms      0.733 ms
+MT Setup                20.331 ms     14.383 ms     11.881 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      64.555 ms     66.347 ms     13.011 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    190.765 ms    192.396 ms     11.712 ms
+Gates Setup              0.732 ms      0.740 ms      0.132 ms
+Gates Online           164.295 ms    153.576 ms     53.628 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     362.088 ms    343.442 ms     55.138 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.473 MiB in 586 messages
+Received: 4.450 MiB in 582 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_DivPow2m_circuit bit size 32 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.766 ms      3.884 ms      0.255 ms
+MT Setup                21.222 ms     20.570 ms     11.222 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      62.381 ms     59.147 ms      9.643 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    176.797 ms    167.469 ms     23.072 ms
+Gates Setup              0.736 ms      0.704 ms      0.111 ms
+Gates Online           143.157 ms    138.547 ms     43.470 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     327.148 ms    319.410 ms     55.337 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.473 MiB in 586 messages
+Received: 4.450 MiB in 582 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Add_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            178.492 ms    186.752 ms     18.579 ms
+MT Setup               351.340 ms    337.605 ms     41.049 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2409.762 ms   2481.373 ms    214.639 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3003.830 ms   3056.808 ms    189.964 ms
+Gates Setup              2.744 ms      2.590 ms      0.467 ms
+Gates Online           270.999 ms    264.355 ms     37.877 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3281.560 ms   3347.948 ms    194.564 ms
+===========================================================================
+Communication with each other party:
+Sent: 72.030 MiB in 9124 messages
+Received: 72.007 MiB in 9120 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Sub_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            163.763 ms    161.064 ms     15.682 ms
+MT Setup               354.959 ms    325.247 ms     77.156 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2285.373 ms   2250.207 ms    189.809 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2876.289 ms   2828.110 ms    172.870 ms
+Gates Setup              2.590 ms      2.641 ms      0.123 ms
+Gates Online           301.139 ms    270.663 ms     83.074 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3184.076 ms   3190.312 ms    153.478 ms
+===========================================================================
+Communication with each other party:
+Sent: 71.080 MiB in 9004 messages
+Received: 71.056 MiB in 9000 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Mul_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            385.459 ms    382.277 ms     10.339 ms
+MT Setup               941.170 ms    894.511 ms     97.866 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5477.517 ms   5755.663 ms    632.509 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6873.897 ms   7056.220 ms    551.231 ms
+Gates Setup              7.039 ms      6.884 ms      0.564 ms
+Gates Online           445.810 ms    337.653 ms    247.383 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7331.448 ms   7237.122 ms    409.481 ms
+===========================================================================
+Communication with each other party:
+Sent: 178.302 MiB in 22534 messages
+Received: 178.279 MiB in 22530 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Div_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            795.211 ms    794.957 ms     14.352 ms
+MT Setup              1573.567 ms   1578.323 ms     16.801 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   11605.813 ms  11858.194 ms    768.041 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  14045.748 ms  14318.644 ms    760.167 ms
+Gates Setup             13.767 ms     14.244 ms      1.461 ms
+Gates Online          1983.509 ms   1984.558 ms     50.625 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   16048.758 ms  16379.093 ms    740.784 ms
+===========================================================================
+Communication with each other party:
+Sent: 362.516 MiB in 45880 messages
+Received: 362.493 MiB in 45876 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Lt_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             14.883 ms     15.228 ms      2.574 ms
+MT Setup                63.888 ms     61.298 ms     17.223 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     282.315 ms    262.592 ms     33.956 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    455.378 ms    452.388 ms     30.568 ms
+Gates Setup              0.783 ms      0.713 ms      0.155 ms
+Gates Online           119.809 ms    117.986 ms     33.606 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     581.606 ms    588.842 ms     35.702 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.744 MiB in 1252 messages
+Received: 9.721 MiB in 1248 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Gt_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             12.765 ms     12.902 ms      2.052 ms
+MT Setup                49.375 ms     50.559 ms      4.142 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     307.641 ms    309.827 ms     20.147 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    447.751 ms    444.956 ms     29.086 ms
+Gates Setup              0.847 ms      0.830 ms      0.239 ms
+Gates Online           147.586 ms     97.213 ms     71.789 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     602.032 ms    567.737 ms     73.467 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.744 MiB in 1252 messages
+Received: 9.721 MiB in 1248 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Eq_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.337 ms      2.412 ms      0.339 ms
+MT Setup                 8.421 ms      7.268 ms      2.175 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      50.509 ms     50.588 ms     10.158 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    152.320 ms    148.207 ms     22.955 ms
+Gates Setup              0.745 ms      0.748 ms      0.100 ms
+Gates Online           173.332 ms    163.756 ms     46.313 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     332.353 ms    318.544 ms     59.853 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.978 MiB in 524 messages
+Received: 3.955 MiB in 520 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Neg_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     19.869 ms      6.887 ms     19.992 ms
+Gates Setup              0.794 ms      0.749 ms      0.125 ms
+Gates Online            71.528 ms     72.916 ms     14.695 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      97.949 ms     94.590 ms     28.264 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.953 MiB in 12 messages
+Received: 2.930 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsZero_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.257 ms      2.159 ms      0.323 ms
+MT Setup                 9.219 ms      7.336 ms      3.558 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      51.200 ms     50.394 ms      8.957 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    142.732 ms    126.492 ms     22.791 ms
+Gates Setup              0.749 ms      0.744 ms      0.093 ms
+Gates Online           227.637 ms    247.059 ms     70.916 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     376.982 ms    387.080 ms     69.696 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.962 MiB in 522 messages
+Received: 3.939 MiB in 518 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_IsNeg_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     27.616 ms     27.878 ms     19.714 ms
+Gates Setup              0.802 ms      0.753 ms      0.096 ms
+Gates Online            80.032 ms     78.498 ms     10.530 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     114.710 ms    114.133 ms     18.333 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.953 MiB in 12 messages
+Received: 2.930 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Abs_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     27.945 ms     43.712 ms     19.872 ms
+Gates Setup              0.866 ms      0.900 ms      0.158 ms
+Gates Online            72.616 ms     73.601 ms     11.313 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     108.076 ms    120.243 ms     22.388 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.953 MiB in 12 messages
+Received: 2.930 MiB in 8 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation FL_Exp2_circuit bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 2a8247e6 @ dev
+invocation: ./benchmark_liangzhao_floating_point_operation --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 --repetitions 10
+by lzhao@simx1, PID 934885
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            712.323 ms    702.496 ms     20.372 ms
+MT Setup              1887.455 ms   1710.904 ms    427.243 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    9056.495 ms   8985.079 ms    563.091 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  11722.914 ms  11583.041 ms    582.507 ms
+Gates Setup             13.903 ms     14.372 ms      1.522 ms
+Gates Online          2458.351 ms   2501.997 ms    291.102 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   14199.778 ms  13969.700 ms    554.453 ms
+===========================================================================
+Communication with each other party:
+Sent: 342.430 MiB in 43260 messages
+Received: 342.407 MiB in 43256 messages
+===========================================================================

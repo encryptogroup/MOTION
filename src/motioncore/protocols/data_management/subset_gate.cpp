@@ -402,7 +402,7 @@ void SubsetGate::EvaluateOnline() {
         auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
         assert(out);
 
-        out->GetMutableKeys().resize(position_ids_.size() * number_of_parties);
+        out->GetMutableKeys().resize(position_ids_.size());
         std::size_t element_counter{0};
         for (std::size_t j : position_ids_) {
           out->GetMutableKeys()[element_counter] = in->GetKeys()[j];

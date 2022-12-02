@@ -122,6 +122,8 @@ void InputGateGarbler::EvaluateSetup() {
 }
 
 void InputGateGarbler::EvaluateOnline() {
+  std::cout << "InputGateGarbler::EvaluateOnline" << std::endl;
+
   // Wait for the wire labels to get generated.
   WaitSetup();
 
@@ -183,6 +185,13 @@ void InputGateGarbler::EvaluateOnline() {
     ots_for_evaluators_inputs_->SetInputs(std::move(labels));
     ots_for_evaluators_inputs_->SendMessages();
   }
+
+  // // only for debugging
+  // std::cout << "gc_wire->GetKeys()[wire_i]: " << std::endl;
+  // for (std::size_t wire_i = 0; wire_i < number_of_wires_; ++wire_i) {
+  //   auto gc_wire{std::dynamic_pointer_cast<garbled_circuit::Wire>(output_wires_[wire_i])};
+  //   std::cout << (gc_wire->GetKeys()[wire_i]).AsString() << std::endl;
+  // }
 }
 
 InputGateEvaluator::InputGateEvaluator(std::size_t input_owner_id, std::size_t number_of_wires,
@@ -217,6 +226,7 @@ InputGateEvaluator::InputGateEvaluator(std::vector<BitVector<>>&& input, std::si
 void InputGateEvaluator::EvaluateSetup() {}
 
 void InputGateEvaluator::EvaluateOnline() {
+  std::cout << "InputGateEvaluator::EvaluateOnline" << std::endl;
   if (is_my_input_) {
     auto& ot_receiver{std::get<std::unique_ptr<GOt128Receiver>>(label_source_)};
     ot_receiver->WaitSetup();
@@ -250,6 +260,13 @@ void InputGateEvaluator::EvaluateOnline() {
       std::copy_n(wire_block_ptr, number_of_simd_, gc_wire->GetMutableKeys().data());
     }
   }
+
+  // // only for debugging
+  // std::cout << "gc_wire->GetKeys()[wire_i]: " << std::endl;
+  // for (std::size_t wire_i = 0; wire_i < number_of_wires_; ++wire_i) {
+  //   auto gc_wire{std::dynamic_pointer_cast<garbled_circuit::Wire>(output_wires_[wire_i])};
+  //   std::cout << (gc_wire->GetKeys()[wire_i]).AsString() << std::endl;
+  // }
 }
 
 OutputGate::OutputGate(motion::SharePointer parent, std::size_t output_owner)
