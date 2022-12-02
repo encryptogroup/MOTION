@@ -33,6 +33,12 @@
 #include "test_constants.h"
 #include "test_helpers.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#else
+#include <unistd.h>
+#endif
+
 namespace {
 using namespace encrypto::motion;
 
@@ -47,10 +53,10 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
     std::size_t num_of_simd = 10;
     const std::vector<T> kZeroV_1K(num_of_simd, 0);
     for (auto number_of_parties : kNumberOfPartiesList) {
-      std::size_t output_owner = 0;
+      std::size_t output_owner = 1;
 
-      std::size_t simd_1 = 4;
-      std::size_t simd_2 = 10;
+      std::size_t simd_1 = 10;
+      std::size_t simd_2 = 20;
       std::size_t simd_3 = simd_1 + simd_2;
 
       std::vector<T> const_input_1 = ::RandomVector<T>(simd_1),
@@ -88,33 +94,70 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
           // }
 
           std::cout << "before input" << std::endl;
-          encrypto::motion::ShareWrapper share_input_1 =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1), output_owner);
-          encrypto::motion::ShareWrapper share_input_1K =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K), output_owner);
+          // encrypto::motion::ShareWrapper share_input_1 =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1),
+          //     output_owner);
 
-          encrypto::motion::ShareWrapper share_input_2 =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2), output_owner);
-          encrypto::motion::ShareWrapper share_input_2K =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K), output_owner);
+          // encrypto::motion::ShareWrapper share_input_1K =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K),
+          //     output_owner);
 
-          encrypto::motion::ShareWrapper share_input_3 =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_3), output_owner);
+          // encrypto::motion::ShareWrapper share_input_2 =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2),
+          //     output_owner);
+          // encrypto::motion::ShareWrapper share_input_2K =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K),
+          //     output_owner);
+
+          // encrypto::motion::ShareWrapper share_input_3 =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_3),
+          //     output_owner);
+
+          auto [share_input_1, share_input_1_promise] =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8, simd_1);
+
+          // auto [share_input_1K, share_input_1K_promise] =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K),
+          //                                                      output_owner);
+
+          auto [share_input_2, share_input_2_promise] =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8, simd_2);
+
+          // auto [share_input_2K, share_input_2K_promise] =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K),
+          //                                                      output_owner);
+
+          auto [share_input_3, share_input_3_promise] =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8, simd_3);
 
           // auto share_add_1 = share_input_1 & share_input_2;
           // auto share_add_1K = share_input_1K & share_input_1K;
 
+          if (party_id == output_owner) {
+            share_input_1_promise->set_value(ToInput<T>(const_input_1));
+            share_input_2_promise->set_value(ToInput<T>(const_input_2));
+            share_input_3_promise->set_value(ToInput<T>(const_input_3));
+          }
+          std::cout << "after input" << std::endl;
           share_input_1_vector.reserve(2);
-          share_input_1_vector.emplace_back(share_input_1);
-          share_input_1_vector.emplace_back(share_input_2);
+          share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_1));
+
+          share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_2));
+
+
+          //  sleep(10);
+
           encrypto::motion::ShareWrapper share_input_1_simdify =
-              share_input_1.Simdify(share_input_1_vector);
+              encrypto::motion::ShareWrapper(share_input_1).Simdify(share_input_1_vector);
+
+          std::cout << "001" << std::endl;
+          //  sleep(10);
 
           encrypto::motion::ShareWrapper share_input_1_simdify_and =
-              share_input_1_simdify & share_input_3;
+              share_input_1_simdify & encrypto::motion::ShareWrapper(share_input_3);
 
           encrypto::motion::ShareWrapper share_input_1_simdify_xor =
-              share_input_1_simdify ^ share_input_3;
+              share_input_1_simdify ^ encrypto::motion::ShareWrapper(share_input_3);
 
           encrypto::motion::ShareWrapper share_input_1_simdify_inv = ~share_input_1_simdify;
 
@@ -128,9 +171,11 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
           encrypto::motion::ShareWrapper share_input_1_simdify_inv_out =
               share_input_1_simdify_inv.Out(output_owner);
 
-          auto share_output_1 = share_input_1.Out(output_owner);
-          auto share_output_2 = share_input_2.Out(output_owner);
-          auto share_output_3 = share_input_3.Out(output_owner);
+// encrypto::motion::ShareWrapper input_0(input_share_0);
+
+          auto share_output_1 =( encrypto::motion::ShareWrapper(share_input_1)).Out();
+          auto share_output_2 = encrypto::motion::ShareWrapper(share_input_2).Out(output_owner);
+          auto share_output_3 = encrypto::motion::ShareWrapper(share_input_3).Out(output_owner);
           // auto share_output_1K = share_add_1K.Out(output_owner);
 
           std::cout << "party run" << std::endl;
@@ -176,11 +221,11 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
             share_input_1_2_out.Append(share_input_2_out_result);
             EXPECT_EQ(share_input_1_simdify_out_result, share_input_1_2_out);
 
-            // EXPECT_EQ(share_input_1_simdify_and_out_result,
-            //           share_input_1_2_out & share_input_3_out_result);
+            EXPECT_EQ(share_input_1_simdify_and_out_result,
+                      share_input_1_2_out & share_input_3_out_result);
             EXPECT_EQ(share_input_1_simdify_xor_out_result,
                       share_input_1_2_out ^ share_input_3_out_result);
-            // EXPECT_EQ(share_input_1_simdify_inv_out_result, ~share_input_1_2_out);
+            EXPECT_EQ(share_input_1_simdify_inv_out_result, ~share_input_1_2_out);
           }
 
           motion_parties.at(party_id)->Finish();
