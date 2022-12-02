@@ -94,54 +94,53 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
           // }
 
           std::cout << "before input" << std::endl;
-          // encrypto::motion::ShareWrapper share_input_1 =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1),
-          //     output_owner);
 
-          // encrypto::motion::ShareWrapper share_input_1K =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K),
-          //     output_owner);
+          // =================================================
 
-          // encrypto::motion::ShareWrapper share_input_2 =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2),
-          //     output_owner);
-          // encrypto::motion::ShareWrapper share_input_2K =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K),
-          //     output_owner);
+          encrypto::motion::ShareWrapper share_input_1 =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1),
+                                                               output_owner);
 
-          // encrypto::motion::ShareWrapper share_input_3 =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_3),
-          //     output_owner);
+          encrypto::motion::ShareWrapper share_input_1K =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K),
+                                                               output_owner);
 
-          auto [share_input_1, share_input_1_promise] =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8, simd_1);
+          encrypto::motion::ShareWrapper share_input_2 =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2),
+                                                               output_owner);
+          encrypto::motion::ShareWrapper share_input_2K =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K),
+                                                               output_owner);
 
-          // auto [share_input_1K, share_input_1K_promise] =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K),
-          //                                                      output_owner);
+          encrypto::motion::ShareWrapper share_input_3 =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_3),
+                                                               output_owner);
 
-          auto [share_input_2, share_input_2_promise] =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8, simd_2);
+          // =================================================
 
-          // auto [share_input_2K, share_input_2K_promise] =
-          //     motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K),
-          //                                                      output_owner);
+          // auto [share_input_1, share_input_1_promise] =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8,
+          //     simd_1);
 
-          auto [share_input_3, share_input_3_promise] =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8, simd_3);
+          // auto [share_input_2, share_input_2_promise] =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8,
+          //     simd_2);
 
-          // auto share_add_1 = share_input_1 & share_input_2;
-          // auto share_add_1K = share_input_1K & share_input_1K;
+          // auto [share_input_3, share_input_3_promise] =
+          //     motion_parties.at(party_id)->In<kGarbledCircuit>(output_owner, sizeof(T) * 8,
+          //     simd_3);
 
-          if (party_id == output_owner) {
-            share_input_1_promise->set_value(ToInput<T>(const_input_1));
-            share_input_2_promise->set_value(ToInput<T>(const_input_2));
-            share_input_3_promise->set_value(ToInput<T>(const_input_3));
-          }
+          // if (party_id == output_owner) {
+          //   share_input_1_promise->set_value(ToInput<T>(const_input_1));
+          //   share_input_2_promise->set_value(ToInput<T>(const_input_2));
+          //   share_input_3_promise->set_value(ToInput<T>(const_input_3));
+          // }
+
+          // =================================================
+
           std::cout << "after input" << std::endl;
           share_input_1_vector.reserve(2);
           share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_1));
-
           share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_2));
 
           //  sleep(10);
@@ -186,50 +185,72 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
           motion_parties.at(party_id)->Run();
 
           if (party_id == output_owner) {
-            encrypto::motion::BitVector<> share_input_1_simdify_out_result =
-                share_input_1_simdify_out.As<encrypto::motion::BitVector<>>();
+            std::vector<encrypto::motion::BitVector<>> share_input_1_simdify_out_result =
+                share_input_1_simdify_out.As<std::vector<encrypto::motion::BitVector<>>>();
 
-            encrypto::motion::BitVector<> share_input_1_simdify_and_out_result =
-                share_input_1_simdify_and_out.As<encrypto::motion::BitVector<>>();
+            std::vector<encrypto::motion::BitVector<>> share_input_1_simdify_and_out_result =
+                share_input_1_simdify_and_out.As<std::vector<encrypto::motion::BitVector<>>>();
 
-            encrypto::motion::BitVector<> share_input_1_simdify_xor_out_result =
-                share_input_1_simdify_xor_out.As<encrypto::motion::BitVector<>>();
+            std::vector<encrypto::motion::BitVector<>> share_input_1_simdify_xor_out_result =
+                share_input_1_simdify_xor_out.As<std::vector<encrypto::motion::BitVector<>>>();
 
-            encrypto::motion::BitVector<> share_input_1_simdify_inv_out_result =
-                share_input_1_simdify_inv_out.As<encrypto::motion::BitVector<>>();
+            std::vector<encrypto::motion::BitVector<>> share_input_1_simdify_inv_out_result =
+                share_input_1_simdify_inv_out.As<std::vector<encrypto::motion::BitVector<>>>();
 
-            encrypto::motion::BitVector<> share_input_1_out_result =
-                share_output_1.As<encrypto::motion::BitVector<>>();
+            for (std::size_t i = 0; i < sizeof(T) * 8; i++) {
+              std::cout << "i: " << i << std::endl;
 
-            encrypto::motion::BitVector<> share_input_2_out_result =
-                share_output_2.As<encrypto::motion::BitVector<>>();
+              std::cout << "share_input_1_simdify_out_result.As<encrypto::motion::BitVector<>: "
+                        << share_input_1_simdify_out_result[i] << std::endl;
 
-            encrypto::motion::BitVector<> share_input_3_out_result =
-                share_output_3.As<encrypto::motion::BitVector<>>();
+              std::cout << "share_input_1_simdify_and_out_result.As<encrypto::motion::BitVector<>: "
+                        << share_input_1_simdify_and_out_result[i] << std::endl;
 
-            std::cout << "share_output_1.As<encrypto::motion::BitVector<>: "
-                      << share_output_1.As<encrypto::motion::BitVector<>>() << std::endl;
+              std::cout << "share_input_1_simdify_xor_out_result.As<encrypto::motion::BitVector<>: "
+                        << share_input_1_simdify_xor_out_result[i] << std::endl;
 
-            std::cout << "share_output_2.As<encrypto::motion::BitVector<>: "
-                      << share_output_2.As<encrypto::motion::BitVector<>>() << std::endl;
+              std::cout << "share_input_1_simdify_inv_out_result.As<encrypto::motion::BitVector<>: "
+                        << share_input_1_simdify_inv_out_result[i] << std::endl;
 
-            std::cout << "share_output_3.As<encrypto::motion::BitVector<>: "
-                      << share_output_3.As<encrypto::motion::BitVector<>>() << std::endl;
+              EXPECT_EQ(share_input_1_simdify_out_result[i], share_input_1_2_out);
+            }
 
-            std::cout << "share_input_1_simdify_out_result: " << share_input_1_simdify_out_result
-                      << std::endl;
+            // encrypto::motion::BitVector<> share_input_1_out_result =
+            //     share_output_1.As<encrypto::motion::BitVector<>>();
 
-            encrypto::motion::BitVector<> circuit_result_1 =
-                share_output_1.As<encrypto::motion::BitVector<>>();
-            encrypto::motion::BitVector<> share_input_1_2_out = share_input_1_out_result;
-            share_input_1_2_out.Append(share_input_2_out_result);
-            EXPECT_EQ(share_input_1_simdify_out_result, share_input_1_2_out);
+            // encrypto::motion::BitVector<> share_input_2_out_result =
+            //     share_output_2.As<encrypto::motion::BitVector<>>();
 
-            EXPECT_EQ(share_input_1_simdify_and_out_result,
-                      share_input_1_2_out & share_input_3_out_result);
-            EXPECT_EQ(share_input_1_simdify_xor_out_result,
-                      share_input_1_2_out ^ share_input_3_out_result);
-            EXPECT_EQ(share_input_1_simdify_inv_out_result, ~share_input_1_2_out);
+            // encrypto::motion::BitVector<> share_input_3_out_result =
+            //     share_output_3.As<encrypto::motion::BitVector<>>();
+
+            // std::cout << "share_output_1.As<encrypto::motion::BitVector<>: "
+            //           << share_output_1.As<encrypto::motion::BitVector<>>() << std::endl;
+
+            // std::cout << "share_output_2.As<encrypto::motion::BitVector<>: "
+            //           << share_output_2.As<encrypto::motion::BitVector<>>() << std::endl;
+
+            // std::cout << "share_output_3.As<encrypto::motion::BitVector<>: "
+            //           << share_output_3.As<encrypto::motion::BitVector<>>() << std::endl;
+
+            // std::cout << "share_input_1_simdify_out_result: " << share_input_1_simdify_out_result
+            //           << std::endl;
+
+            // std::cout << "share_input1_xor_out: " << share_input1_xor_out.As
+            //           << std::endl;
+
+            // encrypto::motion::BitVector<> circuit_result_1 =
+            //     share_output_1.As<encrypto::motion::BitVector<>>();
+            // encrypto::motion::BitVector<> share_input_1_2_out = share_input_1_out_result;
+            // share_input_1_2_out.Append(share_input_2_out_result);
+
+            // EXPECT_EQ(share_input_1_simdify_out_result, share_input_1_2_out);
+
+            // EXPECT_EQ(share_input_1_simdify_and_out_result,
+            //           share_input_1_2_out & share_input_3_out_result);
+            // EXPECT_EQ(share_input_1_simdify_xor_out_result,
+            //           share_input_1_2_out ^ share_input_3_out_result);
+            // EXPECT_EQ(share_input_1_simdify_inv_out_result, ~share_input_1_2_out);
           }
 
           motion_parties.at(party_id)->Finish();
