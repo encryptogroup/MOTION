@@ -288,13 +288,19 @@ void SimdifyGate::EvaluateSetup() {
         for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
           auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
               parent_[j * output_wires_.size() + i]);
+
           assert(in);
+          in->WaitSetup();
           const std::size_t input_number_of_simd{in->GetNumberOfSimdValues()};
+          // std::cout << "number_of_input_shares_: " << number_of_input_shares_ << std::endl;
           // std::cout << "input_number_of_simd: " << input_number_of_simd << std::endl;
+          // std::cout << "output_simd_offset: " << output_simd_offset << std::endl;
 
           for (std::size_t k = 0; k < input_number_of_simd; ++k) {
-            out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];
-            // std::cout << in->GetMutableKeys()[k].AsString() << std::endl;
+            // std::cout << "k: " << k << std::endl;
+            out->GetMutableKeys()[output_simd_offset + k] = in->GetKeys()[k];
+            // std::cout << out->GetMutableKeys()[output_simd_offset + k].AsString() << std::endl;
+            std::cout << in->GetKeys()[k].AsString() << std::endl;
           }
           output_simd_offset += input_number_of_simd;
 
@@ -307,7 +313,6 @@ void SimdifyGate::EvaluateSetup() {
         assert(out);
 
         out->GetMutableKeys().resize(output_number_of_simd_values_);
-
       }
     }
   }
@@ -503,7 +508,7 @@ void SimdifyGate::EvaluateOnline() {
             // std::cout << "input_number_of_simd: " << input_number_of_simd << std::endl;
 
             for (std::size_t k = 0; k < input_number_of_simd; ++k) {
-              out->GetMutableKeys()[output_simd_offset + k] = in->GetMutableKeys()[k];
+              out->GetMutableKeys()[output_simd_offset + k] = in->GetKeys()[k];
               // std::cout << in->GetMutableKeys()[k].AsString() << std::endl;
             }
             output_simd_offset += input_number_of_simd;

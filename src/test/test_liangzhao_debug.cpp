@@ -38,7 +38,6 @@ using namespace encrypto::motion;
 
 auto random_value = std::mt19937{};
 
-
 // added by Liang Zhao
 TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
   constexpr auto kGarbledCircuit = encrypto::motion::MpcProtocol::kGarbledCircuit;
@@ -48,7 +47,7 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
     std::size_t num_of_simd = 10;
     const std::vector<T> kZeroV_1K(num_of_simd, 0);
     for (auto number_of_parties : kNumberOfPartiesList) {
-      std::size_t output_owner = std::rand() % number_of_parties;
+      std::size_t output_owner = 0;
 
       std::size_t simd_1 = 4;
       std::size_t simd_2 = 10;
@@ -90,17 +89,17 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
 
           std::cout << "before input" << std::endl;
           encrypto::motion::ShareWrapper share_input_1 =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1), 0);
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1), output_owner);
           encrypto::motion::ShareWrapper share_input_1K =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K), 0);
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_1K), output_owner);
 
           encrypto::motion::ShareWrapper share_input_2 =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2), 0);
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2), output_owner);
           encrypto::motion::ShareWrapper share_input_2K =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K), 0);
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_2K), output_owner);
 
           encrypto::motion::ShareWrapper share_input_3 =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_3), 0);
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(const_input_3), output_owner);
 
           // auto share_add_1 = share_input_1 & share_input_2;
           // auto share_add_1K = share_input_1K & share_input_1K;
@@ -112,13 +111,22 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
               share_input_1.Simdify(share_input_1_vector);
 
           encrypto::motion::ShareWrapper share_input_1_simdify_and =
+              share_input_1_simdify & share_input_3;
+
+          encrypto::motion::ShareWrapper share_input_1_simdify_xor =
               share_input_1_simdify ^ share_input_3;
+
+          encrypto::motion::ShareWrapper share_input_1_simdify_inv = ~share_input_1_simdify;
 
           encrypto::motion::ShareWrapper share_input_1_simdify_out =
               share_input_1_simdify.Out(output_owner);
 
           encrypto::motion::ShareWrapper share_input_1_simdify_and_out =
               share_input_1_simdify_and.Out(output_owner);
+          encrypto::motion::ShareWrapper share_input_1_simdify_xor_out =
+              share_input_1_simdify_xor.Out(output_owner);
+          encrypto::motion::ShareWrapper share_input_1_simdify_inv_out =
+              share_input_1_simdify_inv.Out(output_owner);
 
           auto share_output_1 = share_input_1.Out(output_owner);
           auto share_output_2 = share_input_2.Out(output_owner);
@@ -135,6 +143,12 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
             encrypto::motion::BitVector<> share_input_1_simdify_and_out_result =
                 share_input_1_simdify_and_out.As<encrypto::motion::BitVector<>>();
 
+            encrypto::motion::BitVector<> share_input_1_simdify_xor_out_result =
+                share_input_1_simdify_xor_out.As<encrypto::motion::BitVector<>>();
+
+            encrypto::motion::BitVector<> share_input_1_simdify_inv_out_result =
+                share_input_1_simdify_inv_out.As<encrypto::motion::BitVector<>>();
+
             encrypto::motion::BitVector<> share_input_1_out_result =
                 share_output_1.As<encrypto::motion::BitVector<>>();
 
@@ -150,24 +164,23 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
             std::cout << "share_output_2.As<encrypto::motion::BitVector<>: "
                       << share_output_2.As<encrypto::motion::BitVector<>>() << std::endl;
 
+            std::cout << "share_output_3.As<encrypto::motion::BitVector<>: "
+                      << share_output_3.As<encrypto::motion::BitVector<>>() << std::endl;
+
             std::cout << "share_input_1_simdify_out_result: " << share_input_1_simdify_out_result
                       << std::endl;
 
-            // encrypto::motion::BitVector<> circuit_result_1 =
-            // share_output_1.As<encrypto::motion::BitVector<>>();
+            encrypto::motion::BitVector<> circuit_result_1 =
+                share_output_1.As<encrypto::motion::BitVector<>>();
             encrypto::motion::BitVector<> share_input_1_2_out = share_input_1_out_result;
             share_input_1_2_out.Append(share_input_2_out_result);
             EXPECT_EQ(share_input_1_simdify_out_result, share_input_1_2_out);
 
-            EXPECT_EQ(share_input_1_simdify_and_out_result, share_input_1_2_out^share_input_3_out_result);
-
-
-
-            // const std::vector<T>& circuit_result_1K = {wire_1K->GetValues()};
-            // for (auto i = 0u; i < circuit_result_1K.size(); ++i) {
-            //   T expected_result_1K = const_input_1K[i] + const_input_2K[i];
-            //   EXPECT_EQ(circuit_result_1K[i], expected_result_1K);
-            // }
+            // EXPECT_EQ(share_input_1_simdify_and_out_result,
+            //           share_input_1_2_out & share_input_3_out_result);
+            EXPECT_EQ(share_input_1_simdify_xor_out_result,
+                      share_input_1_2_out ^ share_input_3_out_result);
+            // EXPECT_EQ(share_input_1_simdify_inv_out_result, ~share_input_1_2_out);
           }
 
           motion_parties.at(party_id)->Finish();
@@ -179,7 +192,7 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {
     // lambdas don't support templates, but only auto types. So, let's try to trick them.
-    template_test(static_cast<std::uint8_t>(0));   // test passed
+    template_test(static_cast<std::uint8_t>(0));  // test passed
     // template_test(static_cast<std::uint16_t>(0));  // test passed
     // template_test(static_cast<std::uint32_t>(0));  // test passed
     // template_test(static_cast<std::uint64_t>(0));  // test passed
