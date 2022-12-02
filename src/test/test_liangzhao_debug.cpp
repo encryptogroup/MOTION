@@ -144,7 +144,6 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
 
           share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_2));
 
-
           //  sleep(10);
 
           encrypto::motion::ShareWrapper share_input_1_simdify =
@@ -171,12 +170,17 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
           encrypto::motion::ShareWrapper share_input_1_simdify_inv_out =
               share_input_1_simdify_inv.Out(output_owner);
 
-// encrypto::motion::ShareWrapper input_0(input_share_0);
+          // encrypto::motion::ShareWrapper input_0(input_share_0);
 
-          auto share_output_1 =( encrypto::motion::ShareWrapper(share_input_1)).Out();
-          auto share_output_2 = encrypto::motion::ShareWrapper(share_input_2).Out(output_owner);
-          auto share_output_3 = encrypto::motion::ShareWrapper(share_input_3).Out(output_owner);
+          auto share_output_1 = (encrypto::motion::ShareWrapper(share_input_1)).Out();
+          auto share_output_2 = encrypto::motion::ShareWrapper(share_input_2).Out();
+          auto share_output_3 = encrypto::motion::ShareWrapper(share_input_3).Out();
           // auto share_output_1K = share_add_1K.Out(output_owner);
+
+          encrypto::motion::ShareWrapper share_input1_xor =
+              ShareWrapper(share_input_1) ^ ShareWrapper(share_input_1);
+
+          auto share_input1_xor_out = share_input1_xor.Out();
 
           std::cout << "party run" << std::endl;
           motion_parties.at(party_id)->Run();
