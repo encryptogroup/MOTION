@@ -55,7 +55,7 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
     for (auto number_of_parties : kNumberOfPartiesList) {
       std::size_t output_owner = 1;
 
-      std::size_t simd_1 = 10;
+      std::size_t simd_1 = 100;
       std::size_t simd_2 = 20;
       std::size_t simd_3 = simd_1 + simd_2;
 
@@ -197,8 +197,18 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
             std::vector<encrypto::motion::BitVector<>> share_input_1_simdify_inv_out_result =
                 share_input_1_simdify_inv_out.As<std::vector<encrypto::motion::BitVector<>>>();
 
+            std::vector<encrypto::motion::BitVector<>> const_1_bitvector =
+                ToInput<T>(const_input_1);
+            std::vector<encrypto::motion::BitVector<>> const_2_bitvector =
+                ToInput<T>(const_input_2);
+            std::vector<encrypto::motion::BitVector<>> const_3_bitvector =
+                ToInput<T>(const_input_3);
+
             for (std::size_t i = 0; i < sizeof(T) * 8; i++) {
               std::cout << "i: " << i << std::endl;
+
+              encrypto::motion::BitVector<> const_1_2 = const_1_bitvector[i];
+              const_1_2.Append(const_2_bitvector[i]);
 
               std::cout << "share_input_1_simdify_out_result.As<encrypto::motion::BitVector<>: "
                         << share_input_1_simdify_out_result[i] << std::endl;
@@ -212,7 +222,13 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
               std::cout << "share_input_1_simdify_inv_out_result.As<encrypto::motion::BitVector<>: "
                         << share_input_1_simdify_inv_out_result[i] << std::endl;
 
-              // EXPECT_EQ(share_input_1_simdify_out_result[i], share_input_1_2_out);
+              EXPECT_EQ(share_input_1_simdify_out_result[i], const_1_2);
+
+              EXPECT_EQ(share_input_1_simdify_and_out_result[i],
+                        const_1_2 & const_3_bitvector[i]);
+              EXPECT_EQ(share_input_1_simdify_xor_out_result[i],
+                        const_1_2  ^ const_3_bitvector[i]);
+              EXPECT_EQ(share_input_1_simdify_inv_out_result[i], ~const_1_2);
             }
 
             // encrypto::motion::BitVector<> share_input_1_out_result =

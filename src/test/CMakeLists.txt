@@ -74,12 +74,12 @@ add_executable(motiontest
 
         # test_liangzhao_invertbinarytree.cpp # not tested
 
-        # test_liangzhao_conversions.cpp
-        # test_liangzhao_conversions_garbled_circuit.cpp # test passed
+        test_liangzhao_conversions.cpp
+        test_liangzhao_conversions_garbled_circuit.cpp # test passed
 
-        # test_liangzhao_simdify_gate_garbled_circuit.cpp # test passed
-        # test_liangzhao_subset_gate_garbled_circuit.cpp # test passed
-        # test_liangzhao_unsimdify_gate_garbled_circuit.cpp # test passed
+        test_liangzhao_simdify_gate_garbled_circuit.cpp # test passed
+        test_liangzhao_subset_gate_garbled_circuit.cpp # test passed
+        test_liangzhao_unsimdify_gate_garbled_circuit.cpp # test passed
         
         # test_liangzhao_random_integer_algorithm.cpp # test passed
         # test_liangzhao_simple_geometric.cpp # test passed

@@ -53,7 +53,7 @@ using namespace encrypto::motion;
 // number of parties, wires, SIMD values, online-after-setup flag
 using ConversionParametersType = std::tuple<std::size_t, std::size_t, std::size_t, bool>;
 
-class ConversionTest : public testing::TestWithParam<ConversionParametersType> {
+class ConversionGCTest : public testing::TestWithParam<ConversionParametersType> {
  public:
   void SetUp() override {
     auto parameters = GetParam();
@@ -67,7 +67,7 @@ class ConversionTest : public testing::TestWithParam<ConversionParametersType> {
   bool online_after_setup_ = false;
 };
 
-TEST_P(ConversionTest, Y2B) {
+TEST_P(ConversionGCTest, Y2B) {
   constexpr auto kGarbledCircuit = encrypto::motion::MpcProtocol::kGarbledCircuit;
   std::srand(0);
   const std::size_t input_owner = std::rand() % this->number_of_parties_,
@@ -140,7 +140,7 @@ TEST_P(ConversionTest, Y2B) {
 }
 
 // test passed
-TEST_P(ConversionTest, B2Y) {
+TEST_P(ConversionGCTest, B2Y) {
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
   std::srand(0);
   const std::size_t input_owner = std::rand() % this->number_of_parties_,
@@ -219,12 +219,12 @@ constexpr std::array<std::size_t, 3> kConversionNumberOfWires{1, 10, 64};
 constexpr std::array<std::size_t, 3> kConversionNumberOfSimd{1, 10, 64};
 constexpr std::array<bool, 2> kConversionOnlineAfterSetup{false, true};
 
-INSTANTIATE_TEST_SUITE_P(ConversionTestSuite, ConversionTest,
+INSTANTIATE_TEST_SUITE_P(ConversionGCTestSuite, ConversionGCTest,
                          testing::Combine(testing::ValuesIn(kConversionNumberOfParties),
                                           testing::ValuesIn(kConversionNumberOfWires),
                                           testing::ValuesIn(kConversionNumberOfSimd),
                                           testing::ValuesIn(kConversionOnlineAfterSetup)),
-                         [](const testing::TestParamInfo<ConversionTest::ParamType>& info) {
+                         [](const testing::TestParamInfo<ConversionGCTest::ParamType>& info) {
                            const auto mode =
                                static_cast<bool>(std::get<3>(info.param)) ? "Seq" : "Par";
                            std::string name = fmt::format(

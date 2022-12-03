@@ -243,7 +243,7 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
 }
 
 void SimdifyGate::EvaluateSetup() {
-std::cout<<"SimdifyGate::EvaluateSetup"<<std::endl;
+  std::cout << "SimdifyGate::EvaluateSetup" << std::endl;
 
   if constexpr (kDebug) {
     GetLogger().LogDebug(
@@ -281,7 +281,7 @@ std::cout<<"SimdifyGate::EvaluateSetup"<<std::endl;
         GetCommunicationLayer().GetMyId() == static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
 
     if (is_garbler) {
-      std::cout<<"is_garbler"<<std::endl;
+      std::cout << "is_garbler" << std::endl;
       for (std::size_t i = 0; i < output_wires_.size(); ++i) {
         auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
         assert(out);
@@ -307,9 +307,8 @@ std::cout<<"SimdifyGate::EvaluateSetup"<<std::endl;
             // std::cout << out->GetMutableKeys()[output_simd_offset + k].AsString() << std::endl;
           }
           output_simd_offset += input_number_of_simd;
-
-          out->SetSetupIsReady();
         }
+        out->SetSetupIsReady();
       }
     } else {
       for (std::size_t i = 0; i < output_wires_.size(); ++i) {
