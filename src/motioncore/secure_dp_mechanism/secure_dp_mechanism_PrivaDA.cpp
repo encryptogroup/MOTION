@@ -234,28 +234,20 @@ SecureSignedInteger SecureDPMechanism_PrivaDA::FL32DiscreteLaplaceNoiseGeneratio
 
   switch (fD_->Get()->GetProtocol()) {
     case MpcProtocol::kBooleanGmw: {
-      return SecureSamplingAlgorithm_optimized(fD_->Get())
-          .FL32DiscreteLaplaceNoiseGeneration<IntType>(
-              random_floating_point_0_1_boolean_gmw_share_rx,
-              random_floating_point_0_1_boolean_gmw_share_ry, alpha_dlap_);
+      return FL32DiscreteLaplaceNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_rx,
+                                                    random_floating_point_0_1_boolean_gmw_share_ry);
     }
 
     case MpcProtocol::kGarbledCircuit: {
-      return SecureSamplingAlgorithm_optimized(fD_->Get())
-          .FL32DiscreteLaplaceNoiseGeneration<IntType>(
-              random_floating_point_0_1_boolean_gmw_share_rx
-                  .Convert<MpcProtocol::kGarbledCircuit>(),
-              random_floating_point_0_1_boolean_gmw_share_ry
-                  .Convert<MpcProtocol::kGarbledCircuit>(),
-              alpha_dlap_);
+      return FL32DiscreteLaplaceNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_rx.Convert<MpcProtocol::kGarbledCircuit>(),
+          random_floating_point_0_1_boolean_gmw_share_ry.Convert<MpcProtocol::kGarbledCircuit>());
     }
 
     case MpcProtocol::kBmr: {
-      return SecureSamplingAlgorithm_optimized(fD_->Get())
-          .FL32DiscreteLaplaceNoiseGeneration<IntType>(
-              random_floating_point_0_1_boolean_gmw_share_rx.Convert<MpcProtocol::kBmr>(),
-              random_floating_point_0_1_boolean_gmw_share_ry.Convert<MpcProtocol::kBmr>(),
-              alpha_dlap_);
+      return FL32DiscreteLaplaceNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_rx.Convert<MpcProtocol::kBmr>(),
+          random_floating_point_0_1_boolean_gmw_share_ry.Convert<MpcProtocol::kBmr>());
     }
   }
 }
@@ -307,28 +299,20 @@ SecureSignedInteger SecureDPMechanism_PrivaDA::FL64DiscreteLaplaceNoiseGeneratio
 
   switch (fD_->Get()->GetProtocol()) {
     case MpcProtocol::kBooleanGmw: {
-      return SecureSamplingAlgorithm_optimized(fD_->Get())
-          .FL64DiscreteLaplaceNoiseGeneration<IntType>(
-              random_floating_point_0_1_boolean_gmw_share_rx,
-              random_floating_point_0_1_boolean_gmw_share_ry, alpha_dlap_);
+      return FL64DiscreteLaplaceNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_rx,
+                                                    random_floating_point_0_1_boolean_gmw_share_ry);
     }
 
     case MpcProtocol::kGarbledCircuit: {
-      return SecureSamplingAlgorithm_optimized(fD_->Get())
-          .FL64DiscreteLaplaceNoiseGeneration<IntType>(
-              random_floating_point_0_1_boolean_gmw_share_rx
-                  .Convert<MpcProtocol::kGarbledCircuit>(),
-              random_floating_point_0_1_boolean_gmw_share_ry
-                  .Convert<MpcProtocol::kGarbledCircuit>(),
-              alpha_dlap_);
+      return FL64DiscreteLaplaceNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_rx.Convert<MpcProtocol::kGarbledCircuit>(),
+          random_floating_point_0_1_boolean_gmw_share_ry.Convert<MpcProtocol::kGarbledCircuit>());
     }
 
     case MpcProtocol::kBmr: {
-      return SecureSamplingAlgorithm_optimized(fD_->Get())
-          .FL64DiscreteLaplaceNoiseGeneration<IntType>(
-              random_floating_point_0_1_boolean_gmw_share_rx.Convert<MpcProtocol::kBmr>(),
-              random_floating_point_0_1_boolean_gmw_share_ry.Convert<MpcProtocol::kBmr>(),
-              alpha_dlap_);
+      return FL64DiscreteLaplaceNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_rx.Convert<MpcProtocol::kBmr>(),
+          random_floating_point_0_1_boolean_gmw_share_ry.Convert<MpcProtocol::kBmr>());
     }
   }
 }

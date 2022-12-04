@@ -97,8 +97,27 @@ SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL32GaussianNoise
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .UniformFloatingPoint32_0_1(random_bits_of_length_23_u2, random_bits_of_length_126_u2);
 
-  return FL32GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
-                                     random_floating_point_0_1_boolean_gmw_share_u2);
+  //   return FL32GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
+  //                                      random_floating_point_0_1_boolean_gmw_share_u2);
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      return FL32GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
+                                         random_floating_point_0_1_boolean_gmw_share_u2);
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      return FL32GaussianNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_u1.Convert<MpcProtocol::kGarbledCircuit>(),
+          random_floating_point_0_1_boolean_gmw_share_u2.Convert<MpcProtocol::kGarbledCircuit>());
+    }
+
+    case MpcProtocol::kBmr: {
+      return FL32GaussianNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_u1.Convert<MpcProtocol::kBmr>(),
+          random_floating_point_0_1_boolean_gmw_share_u2.Convert<MpcProtocol::kBmr>());
+    }
+  }
 }
 
 SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL32GaussianNoiseGeneration(
@@ -139,8 +158,27 @@ SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL64GaussianNoise
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .UniformFloatingPoint64_0_1(random_bits_of_length_52_u2, random_bits_of_length_1022_u2);
 
-  return FL64GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
-                                     random_floating_point_0_1_boolean_gmw_share_u2);
+  //   return FL64GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
+  //                                      random_floating_point_0_1_boolean_gmw_share_u2);
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      return FL64GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
+                                         random_floating_point_0_1_boolean_gmw_share_u2);
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      return FL64GaussianNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_u1.Convert<MpcProtocol::kGarbledCircuit>(),
+          random_floating_point_0_1_boolean_gmw_share_u2.Convert<MpcProtocol::kGarbledCircuit>());
+    }
+
+    case MpcProtocol::kBmr: {
+      return FL64GaussianNoiseGeneration(
+          random_floating_point_0_1_boolean_gmw_share_u1.Convert<MpcProtocol::kBmr>(),
+          random_floating_point_0_1_boolean_gmw_share_u2.Convert<MpcProtocol::kBmr>());
+    }
+  }
 }
 
 // Lap(lambda) = lambda * (ln(uniform_floating_point64_0_1) - ln(uniform_floating_point64_0_1))
