@@ -32,6 +32,9 @@
 #include "utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.h"
 #include "utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.h"
 
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
+
 namespace encrypto::motion {
 
 class Logger;
@@ -39,43 +42,46 @@ class Logger;
 class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
-class SecureGaussianMechanism;
+class SecureGaussianMechanism_CrypTen;
+
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
 
 // reference: CRYPTEN: Secure Multi-Party Computation Meets Machine Learning
 // ! note: the Gaussian random variable sampling algorithm in this paper is not secure, only for
 // ! benchmarking purposes
 
-class SecureGaussianMechanism {
+class SecureGaussianMechanism_CrypTen {
  public:
   // using T = std::uint64_t;
 
-  SecureGaussianMechanism() = default;
+  SecureGaussianMechanism_CrypTen() = default;
 
-  SecureGaussianMechanism(const SecureGaussianMechanism& other)
-      : SecureGaussianMechanism(*other.fD_) {}
+  SecureGaussianMechanism_CrypTen(const SecureGaussianMechanism_CrypTen& other)
+      : SecureGaussianMechanism_CrypTen(*other.fD_) {}
 
-  SecureGaussianMechanism(SecureGaussianMechanism&& other)
-      : SecureGaussianMechanism(std::move(*other.fD_)) {
+  SecureGaussianMechanism_CrypTen(SecureGaussianMechanism_CrypTen&& other)
+      : SecureGaussianMechanism_CrypTen(std::move(*other.fD_)) {
     other.fD_->Get().reset();
   }
 
-  SecureGaussianMechanism(const ShareWrapper& other) : SecureGaussianMechanism(*other) {}
+  SecureGaussianMechanism_CrypTen(const ShareWrapper& other) : SecureGaussianMechanism_CrypTen(*other) {}
 
-  SecureGaussianMechanism(ShareWrapper&& other) : SecureGaussianMechanism(std::move(*other)) {
+  SecureGaussianMechanism_CrypTen(ShareWrapper&& other) : SecureGaussianMechanism_CrypTen(std::move(*other)) {
     other.Get().reset();
   }
 
-  SecureGaussianMechanism(const SharePointer& other);
+  SecureGaussianMechanism_CrypTen(const SharePointer& other);
 
-  SecureGaussianMechanism(SharePointer&& other);
+  SecureGaussianMechanism_CrypTen(SharePointer&& other);
 
-  SecureGaussianMechanism& operator=(const SecureGaussianMechanism& other) {
+  SecureGaussianMechanism_CrypTen& operator=(const SecureGaussianMechanism_CrypTen& other) {
     this->fD_ = other.fD_;
     this->logger_ = other.logger_;
     return *this;
   }
 
-  SecureGaussianMechanism& operator=(SecureGaussianMechanism&& other) {
+  SecureGaussianMechanism_CrypTen& operator=(SecureGaussianMechanism_CrypTen&& other) {
     this->fD_ = std::move(other.fD_);
     this->logger_ = std::move(other.logger_);
     return *this;
@@ -121,20 +127,6 @@ class SecureGaussianMechanism {
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2);
 
-  //============================================================================
-  // fixed-point version
-  SecureFixedPointCircuitCBMC FxGaussianNoiseAddition();
-
-  SecureFixedPointCircuitCBMC FxGaussianNoiseGeneration();
-
-  // TODO: implement cos in fixed-point
-  // sample from Gaussian distribution with PDF: Gau(x|mu,sigma) =
-  // 1/(sigma*sqrt(2*pi))*e^(-0.5*((x-mu)/sigma)^2) ! Note that the generated Gaussian random
-  // variable is not secure regarding DP can be attacked by (On Significance of the Least
-  // Significant Bits For Differential Privacy)
-  SecureFixedPointCircuitCBMC FxGaussianNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_u1,
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_u2);
 
   //============================================================================
 

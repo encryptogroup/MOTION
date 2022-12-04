@@ -56,7 +56,7 @@ namespace {
 
 // test passed
 // TODO: need intensive re-test, seems to fail once
-TEST(InsecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_Simd_2_3_4_5_10_parties) {
+TEST(SecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;

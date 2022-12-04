@@ -430,6 +430,20 @@ class SecureSamplingAlgorithm_optimized {
 
   // ============================================================
 
+  // reference: CRYPTEN: Secure Multi-Party Computation Meets Machine Learning
+  // ! note: the Gaussian random variable sampling algorithm in this paper is not secure, only for
+  // ! benchmarking purposes
+
+  SecureFloatingPointCircuitABY FL32GaussianNoiseGeneration(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2, double mu, double sigma);
+
+  SecureFloatingPointCircuitABY FL64GaussianNoiseGeneration(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2, double mu, double sigma);
+
+  // ============================================================
+
  private:
   std::shared_ptr<ShareWrapper> share_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};

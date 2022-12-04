@@ -76,7 +76,7 @@ add_library(motion
         secure_dp_mechanism/secure_discrete_laplace_mechanism_CKS.cpp
         secure_dp_mechanism/secure_discrete_gaussian_mechanism_CKS.cpp
         secure_dp_mechanism/secure_dp_mechanism_PrivaDA.cpp
-        secure_dp_mechanism/secure_gaussian_mechanism_KVHSIM.cpp
+        secure_dp_mechanism/secure_gaussian_mechanism_CrypTen.cpp
         utility/MOTION_dp_mechanism_helper/floating_point_operation.cpp
         utility/MOTION_dp_mechanism_helper/fixed_point_operation.cpp
         utility/MOTION_dp_mechanism_helper/snapping_mechanism.cpp
