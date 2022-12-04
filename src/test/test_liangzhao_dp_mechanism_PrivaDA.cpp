@@ -614,7 +614,7 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
   // std::srand(std::time(nullptr));
   auto template_test = [](auto template_variable_1) {
     using T = decltype(template_variable_1);
-    using T_int = get_int_type_t<T>;
+    // using T_int = get_int_type_t<T>;
     using A = std::allocator<T>;
     std::srand(std::time(nullptr));
 
@@ -622,7 +622,13 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
       std::size_t output_owner = 0;
 
       std::size_t num_of_simd_lap_dlap = 1;
-      std::vector<T> fD_vector = rand_range_integer_vector<T>(0, 5, num_of_simd_lap_dlap);
+      std::vector<T> fD_vector;
+
+      if constexpr (std::is_same_v<T, float>) {
+        fD_vector = rand_range_float_vector(0, 5, num_of_simd_lap_dlap);
+      } else if constexpr (std::is_same_v<T, double>) {
+        fD_vector = rand_range_double_vector(0, 5, num_of_simd_lap_dlap);
+      }
 
       std::cout << "fD_vector: " << std::endl;
       for (std::size_t i = 0; i < fD_vector.size(); ++i) {
@@ -646,11 +652,13 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
           encrypto::motion::ShareWrapper share_fD_bgmw =
-              motion_parties.at(party_id)->In<kBooleanGmw>(ToInput<T>(fD_vector), 0);
+              motion_parties.at(party_id)->In<kBooleanGmw>(ToInput<T, std::true_type>(fD_vector),
+                                                           0);
           encrypto::motion::ShareWrapper share_fD_gc =
-              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(fD_vector), 0);
+              motion_parties.at(party_id)->In<kGarbledCircuit>(
+                  ToInput<T, std::true_type>(fD_vector), 0);
           encrypto::motion::ShareWrapper share_fD_bmr =
-              motion_parties.at(party_id)->In<kBmr>(ToInput<T>(fD_vector), 0);
+              motion_parties.at(party_id)->In<kBmr>(ToInput<T, std::true_type>(fD_vector), 0);
 
           SecureDPMechanism_PrivaDA secure_dp_mechanism_PrivaDA_bgmw =
               SecureDPMechanism_PrivaDA(share_fD_bgmw);
@@ -665,31 +673,56 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
           secure_dp_mechanism_PrivaDA_bmr.ParameterSetup(sensitivity, epsilon,
                                                          num_of_simd_lap_dlap);
 
-          SecureSignedInteger signed_integer_discrete_laplace_noise_bgmw =
-              secure_dp_mechanism_PrivaDA_bgmw.FL32LaplaceNoiseGeneration();
-          SecureSignedInteger signed_integer_discrete_laplace_noise_gc =
-              secure_dp_mechanism_PrivaDA_gc.FL32LaplaceNoiseGeneration();
-          SecureSignedInteger signed_integer_discrete_laplace_noise_bmr =
-              secure_dp_mechanism_PrivaDA_bmr.FL32LaplaceNoiseGeneration();
+          SecureFloatingPointCircuitABY floating_point_laplace_noise_bgmw;
+          SecureFloatingPointCircuitABY floating_point_laplace_noise_gc;
+          SecureFloatingPointCircuitABY floating_point_laplace_noise_bmr;
 
-          SecureSignedInteger signed_integer_noisy_fD_bgmw =
-              secure_dp_mechanism_PrivaDA_bgmw.FL32LaplaceNoiseAddition();
-          SecureSignedInteger signed_integer_noisy_fD_gc =
-              secure_dp_mechanism_PrivaDA_gc.FL32LaplaceNoiseAddition();
-          SecureSignedInteger signed_integer_noisy_fD_bmr =
-              secure_dp_mechanism_PrivaDA_bmr.FL32LaplaceNoiseAddition();
+          SecureFloatingPointCircuitABY floating_point_noisy_fD_bgmw;
+          SecureFloatingPointCircuitABY floating_point_noisy_fD_gc;
+          SecureFloatingPointCircuitABY floating_point_noisy_fD_bmr;
 
-          SecureSignedInteger signed_integer_discrete_laplace_noise_out_bgmw =
-              signed_integer_discrete_laplace_noise_bgmw.Out();
-          SecureSignedInteger signed_integer_noisy_fD_out_bgmw = signed_integer_noisy_fD_bgmw.Out();
+          if constexpr (std::is_same_v<T, float>) {
+            floating_point_laplace_noise_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL32LaplaceNoiseGeneration();
+            floating_point_laplace_noise_gc =
+                secure_dp_mechanism_PrivaDA_gc.FL32LaplaceNoiseGeneration();
+            floating_point_laplace_noise_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL32LaplaceNoiseGeneration();
 
-          SecureSignedInteger signed_integer_discrete_laplace_noise_out_gc =
-              signed_integer_discrete_laplace_noise_gc.Out();
-          SecureSignedInteger signed_integer_noisy_fD_out_gc = signed_integer_noisy_fD_gc.Out();
+            floating_point_noisy_fD_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL32LaplaceNoiseAddition();
+            floating_point_noisy_fD_gc = secure_dp_mechanism_PrivaDA_gc.FL32LaplaceNoiseAddition();
+            floating_point_noisy_fD_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL32LaplaceNoiseAddition();
+          } else if constexpr (std::is_same_v<T, double>) {
+            floating_point_laplace_noise_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL64LaplaceNoiseGeneration();
+            floating_point_laplace_noise_gc =
+                secure_dp_mechanism_PrivaDA_gc.FL64LaplaceNoiseGeneration();
+            floating_point_laplace_noise_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL64LaplaceNoiseGeneration();
 
-          SecureSignedInteger signed_integer_discrete_laplace_noise_out_bmr =
-              signed_integer_discrete_laplace_noise_bmr.Out();
-          SecureSignedInteger signed_integer_noisy_fD_out_bmr = signed_integer_noisy_fD_bmr.Out();
+            floating_point_noisy_fD_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL64LaplaceNoiseAddition();
+            floating_point_noisy_fD_gc = secure_dp_mechanism_PrivaDA_gc.FL64LaplaceNoiseAddition();
+            floating_point_noisy_fD_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL64LaplaceNoiseAddition();
+          }
+
+          SecureFloatingPointCircuitABY floating_point_laplace_noise_out_bgmw =
+              floating_point_laplace_noise_bgmw.Out();
+          SecureFloatingPointCircuitABY floating_point_noisy_fD_out_bgmw =
+              floating_point_noisy_fD_bgmw.Out();
+
+          SecureFloatingPointCircuitABY floating_point_laplace_noise_out_gc =
+              floating_point_laplace_noise_gc.Out();
+          SecureFloatingPointCircuitABY floating_point_noisy_fD_out_gc =
+              floating_point_noisy_fD_gc.Out();
+
+          SecureFloatingPointCircuitABY floating_point_laplace_noise_out_bmr =
+              floating_point_laplace_noise_bmr.Out();
+          SecureFloatingPointCircuitABY floating_point_noisy_fD_out_bmr =
+              floating_point_noisy_fD_bmr.Out();
 
           std::cout << "party run" << std::endl;
           motion_parties.at(party_id)->Run();
@@ -698,49 +731,48 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
           if (party_id == 0) {
             std::cout << "party_id: " << party_id << std::endl;
             std::vector<T> share_result_0_out_as_bgmw =
-                signed_integer_discrete_laplace_noise_out_bgmw.AsVector<T>();
+                floating_point_laplace_noise_out_bgmw.AsFloatingPointVector<T>();
 
             for (std::size_t i = 0; i < share_result_0_out_as_bgmw.size(); ++i) {
-              std::cout << "share_result_0_out_as_bgmw[i]: " << T_int(share_result_0_out_as_bgmw[i])
+              std::cout << "share_result_0_out_as_bgmw[i]: " << T(share_result_0_out_as_bgmw[i])
                         << std::endl;
             }
-            std::vector<T> signed_integer_noisy_fD_out_as_bgmw =
-                signed_integer_noisy_fD_out_bgmw.AsVector<T>();
+            std::vector<T> floating_point_noisy_fD_out_as_bgmw =
+                floating_point_noisy_fD_out_bgmw.AsFloatingPointVector<T>();
 
-            for (std::size_t i = 0; i < signed_integer_noisy_fD_out_as_bgmw.size(); ++i) {
-              std::cout << "signed_integer_noisy_fD_out_as_bgmw[i]: "
-                        << T_int(signed_integer_noisy_fD_out_as_bgmw[i]) << std::endl;
+            for (std::size_t i = 0; i < floating_point_noisy_fD_out_as_bgmw.size(); ++i) {
+              std::cout << "floating_point_noisy_fD_out_as_bgmw[i]: "
+                        << T(floating_point_noisy_fD_out_as_bgmw[i]) << std::endl;
             }
 
             std::vector<T> share_result_0_out_as_gc =
-                signed_integer_discrete_laplace_noise_out_gc.AsVector<T>();
+                floating_point_laplace_noise_out_gc.AsFloatingPointVector<T>();
 
             for (std::size_t i = 0; i < share_result_0_out_as_gc.size(); ++i) {
-              std::cout << "share_result_0_out_as_gc[i]: " << T_int(share_result_0_out_as_gc[i])
+              std::cout << "share_result_0_out_as_gc[i]: " << T(share_result_0_out_as_gc[i])
                         << std::endl;
             }
-            std::vector<T> signed_integer_noisy_fD_out_as_gc =
-                signed_integer_noisy_fD_out_gc.AsVector<T>();
+            std::vector<T> floating_point_noisy_fD_out_as_gc =
+                floating_point_noisy_fD_out_gc.AsFloatingPointVector<T>();
 
-            for (std::size_t i = 0; i < signed_integer_noisy_fD_out_as_gc.size(); ++i) {
-              std::cout << "signed_integer_noisy_fD_out_as_gc[i]: "
-                        << T_int(signed_integer_noisy_fD_out_as_gc[i]) << std::endl;
+            for (std::size_t i = 0; i < floating_point_noisy_fD_out_as_gc.size(); ++i) {
+              std::cout << "floating_point_noisy_fD_out_as_gc[i]: "
+                        << T(floating_point_noisy_fD_out_as_gc[i]) << std::endl;
             }
-
 
             std::vector<T> share_result_0_out_as_bmr =
-                signed_integer_discrete_laplace_noise_out_bmr.AsVector<T>();
+                floating_point_laplace_noise_out_bmr.AsFloatingPointVector<T>();
 
             for (std::size_t i = 0; i < share_result_0_out_as_bmr.size(); ++i) {
-              std::cout << "share_result_0_out_as_bmr[i]: " << T_int(share_result_0_out_as_bmr[i])
+              std::cout << "share_result_0_out_as_bmr[i]: " << T(share_result_0_out_as_bmr[i])
                         << std::endl;
             }
-            std::vector<T> signed_integer_noisy_fD_out_as_bmr =
-                signed_integer_noisy_fD_out_bmr.AsVector<T>();
+            std::vector<T> floating_point_noisy_fD_out_as_bmr =
+                floating_point_noisy_fD_out_bmr.AsFloatingPointVector<T>();
 
-            for (std::size_t i = 0; i < signed_integer_noisy_fD_out_as_bmr.size(); ++i) {
-              std::cout << "signed_integer_noisy_fD_out_as_bmr[i]: "
-                        << T_int(signed_integer_noisy_fD_out_as_bmr[i]) << std::endl;
+            for (std::size_t i = 0; i < floating_point_noisy_fD_out_as_bmr.size(); ++i) {
+              std::cout << "floating_point_noisy_fD_out_as_bmr[i]: "
+                        << T(floating_point_noisy_fD_out_as_bmr[i]) << std::endl;
             }
           }
         }
@@ -750,7 +782,8 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
     }
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {
-    template_test(static_cast<std::uint64_t>(0));
+    template_test(static_cast<float>(0));
+    template_test(static_cast<double>(0));
   }
 }
 // not check correctness of the calculation
@@ -763,10 +796,11 @@ TEST(SecureDPMechanismEKMPP, DiscreteLaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3
   constexpr auto kGarbledCircuit = encrypto::motion::MpcProtocol::kGarbledCircuit;
   constexpr auto kBooleanConstant = encrypto::motion::MpcProtocol::kBooleanConstant;
   // std::srand(std::time(nullptr));
-  auto template_test = [](auto template_variable_1) {
+  auto template_test = [](auto template_variable_1,auto template_variable_2) {
     using T = decltype(template_variable_1);
     using T_int = get_int_type_t<T>;
     using A = std::allocator<T>;
+    using FloatType = decltype(template_variable_2);
     std::srand(std::time(nullptr));
 
     for (auto number_of_parties : kNumberOfPartiesList) {
@@ -816,19 +850,42 @@ TEST(SecureDPMechanismEKMPP, DiscreteLaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3
           secure_dp_mechanism_PrivaDA_bmr.ParameterSetup(sensitivity, epsilon,
                                                          num_of_simd_lap_dlap);
 
-          SecureSignedInteger signed_integer_discrete_laplace_noise_bgmw =
-              secure_dp_mechanism_PrivaDA_bgmw.FL32DiscreteLaplaceNoiseGeneration();
-          SecureSignedInteger signed_integer_discrete_laplace_noise_gc =
-              secure_dp_mechanism_PrivaDA_gc.FL32DiscreteLaplaceNoiseGeneration();
-          SecureSignedInteger signed_integer_discrete_laplace_noise_bmr =
-              secure_dp_mechanism_PrivaDA_bmr.FL32DiscreteLaplaceNoiseGeneration();
+          SecureSignedInteger signed_integer_discrete_laplace_noise_bgmw;
+          SecureSignedInteger signed_integer_discrete_laplace_noise_gc;
+          SecureSignedInteger signed_integer_discrete_laplace_noise_bmr;
+          SecureSignedInteger signed_integer_noisy_fD_bgmw;
+          SecureSignedInteger signed_integer_noisy_fD_gc;
+          SecureSignedInteger signed_integer_noisy_fD_bmr;
 
-          SecureSignedInteger signed_integer_noisy_fD_bgmw =
-              secure_dp_mechanism_PrivaDA_bgmw.FL32DiscreteLaplaceNoiseAddition();
-          SecureSignedInteger signed_integer_noisy_fD_gc =
-              secure_dp_mechanism_PrivaDA_gc.FL32DiscreteLaplaceNoiseAddition();
-          SecureSignedInteger signed_integer_noisy_fD_bmr =
-              secure_dp_mechanism_PrivaDA_bmr.FL32DiscreteLaplaceNoiseAddition();
+          if constexpr (std::is_same_v<FloatType, float>) {
+            signed_integer_discrete_laplace_noise_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL32DiscreteLaplaceNoiseGeneration();
+            signed_integer_discrete_laplace_noise_gc =
+                secure_dp_mechanism_PrivaDA_gc.FL32DiscreteLaplaceNoiseGeneration();
+            signed_integer_discrete_laplace_noise_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL32DiscreteLaplaceNoiseGeneration();
+
+            signed_integer_noisy_fD_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL32DiscreteLaplaceNoiseAddition();
+            signed_integer_noisy_fD_gc =
+                secure_dp_mechanism_PrivaDA_gc.FL32DiscreteLaplaceNoiseAddition();
+            signed_integer_noisy_fD_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL32DiscreteLaplaceNoiseAddition();
+          } else if constexpr (std::is_same_v<FloatType, double>) {
+            signed_integer_discrete_laplace_noise_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL64DiscreteLaplaceNoiseGeneration();
+            signed_integer_discrete_laplace_noise_gc =
+                secure_dp_mechanism_PrivaDA_gc.FL64DiscreteLaplaceNoiseGeneration();
+            signed_integer_discrete_laplace_noise_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL64DiscreteLaplaceNoiseGeneration();
+
+            signed_integer_noisy_fD_bgmw =
+                secure_dp_mechanism_PrivaDA_bgmw.FL64DiscreteLaplaceNoiseAddition();
+            signed_integer_noisy_fD_gc =
+                secure_dp_mechanism_PrivaDA_gc.FL64DiscreteLaplaceNoiseAddition();
+            signed_integer_noisy_fD_bmr =
+                secure_dp_mechanism_PrivaDA_bmr.FL64DiscreteLaplaceNoiseAddition();
+          }
 
           SecureSignedInteger signed_integer_discrete_laplace_noise_out_bgmw =
               signed_integer_discrete_laplace_noise_bgmw.Out();
@@ -878,7 +935,6 @@ TEST(SecureDPMechanismEKMPP, DiscreteLaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3
                         << T_int(signed_integer_noisy_fD_out_as_gc[i]) << std::endl;
             }
 
-
             std::vector<T> share_result_0_out_as_bmr =
                 signed_integer_discrete_laplace_noise_out_bmr.AsVector<T>();
 
@@ -901,7 +957,8 @@ TEST(SecureDPMechanismEKMPP, DiscreteLaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3
     }
   };
   for (auto i = 0ull; i < kTestIterations; ++i) {
-    template_test(static_cast<std::uint64_t>(0));
+    template_test(static_cast<std::uint64_t>(0), static_cast<float>(0));
+    template_test(static_cast<std::uint64_t>(0), static_cast<double>(0));
   }
 }
 
