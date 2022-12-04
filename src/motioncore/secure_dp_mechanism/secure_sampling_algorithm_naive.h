@@ -99,9 +99,21 @@ class SecureSamplingAlgorithm_naive {
                                             const std::size_t num_of_simd) const;
 
   // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
-  // without interactions
+  // without interactions, the share is Boolean GWM
   template <typename T>
-  ShareWrapper GenerateRandomUnsignedIntegerPow2(std::size_t bit_size_k,
+  ShareWrapper GenerateRandomUnsignedIntegerPow2BGMW(std::size_t bit_size_k,
+                                                 const std::size_t num_of_simd) const;
+
+  // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
+  // without interactions, convert share to Garbled Circuit
+  template <typename T>
+  ShareWrapper GenerateRandomUnsignedIntegerPow2GC(std::size_t bit_size_k,
+                                                 const std::size_t num_of_simd) const;
+
+  // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
+  // without interactions, convert share to BMR
+  template <typename T>
+  ShareWrapper GenerateRandomUnsignedIntegerPow2BMR(std::size_t bit_size_k,
                                                  const std::size_t num_of_simd) const;
 
   // generate random integer in range [0, m),

@@ -47,7 +47,7 @@ using namespace encrypto::motion;
 namespace {
 
 // test passed
-TEST(BasicRandomNumberGeneration, GenerateRandomUnsignedIntegerPow2_20_Simd_2_3_4_5_10_parties) {
+TEST(BasicRandomNumberGeneration, GenerateRandomUnsignedIntegerPow2BGMW_20_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -92,7 +92,7 @@ TEST(BasicRandomNumberGeneration, GenerateRandomUnsignedIntegerPow2_20_Simd_2_3_
           }
 
           SecureUnsignedInteger share_result =
-              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2<T>(
+              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2BGMW<T>(
                   k, num_of_simd);
 
           encrypto::motion::SecureUnsignedInteger share_result_out = share_result.Out();

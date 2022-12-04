@@ -149,7 +149,7 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 //     //     fD_->GenerateRandomUnsignedIntegerBGMW(T(t_), iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
-//         fD_->GenerateRandomUnsignedIntegerPow2<T>(log2_denominator_,
+//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
 //                                                   iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
@@ -262,7 +262,7 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 //     //     fD_->GenerateRandomUnsignedIntegerBGMW(T(t_), iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
-//         fD_->GenerateRandomUnsignedIntegerPow2<T>(log2_denominator_,
+//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
 //                                                   iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
@@ -373,7 +373,7 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 //     //     fD_->GenerateRandomUnsignedIntegerBGMW(T(t_), iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
-//         fD_->GenerateRandomUnsignedIntegerPow2<T>(log2_denominator_,
+//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
 //                                                   iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =

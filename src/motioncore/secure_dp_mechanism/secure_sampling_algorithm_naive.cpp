@@ -96,10 +96,10 @@ ShareWrapper SecureSamplingAlgorithm_naive::BooleanGmwBitsZeroCompensation(
 }
 
 // =================================================================================================
-// generate random integers locally
+// generate random integers locally using BooleanGMW
 
 template <typename T>
-ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2(
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BGMW(
     std::size_t bit_size_k, const std::size_t num_of_simd) const {
   assert(sizeof(T) * 8 >= bit_size_k);
   std::size_t T_size = sizeof(T) * 8;
@@ -126,19 +126,98 @@ ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2(
   return boolean_gmw_random_unsigned_integer;
 }
 
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BGMW<
     std::uint8_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BGMW<
     std::uint16_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BGMW<
     std::uint32_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BGMW<
     std::uint64_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<__uint128_t>(
-    std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BGMW<
+    __uint128_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+
+template <typename T>
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2GC(
+    std::size_t bit_size_k, const std::size_t num_of_simd) const {
+  assert(sizeof(T) * 8 >= bit_size_k);
+  std::size_t T_size = sizeof(T) * 8;
+
+  // generate random bits to build random unsigned integer in range [0,2^k-1]
+  ShareWrapper boolean_gmw_share_random_bits =
+      GenerateRandomBooleanGmwBits(bit_size_k, num_of_simd);
+
+  // generate constant zero bits
+  std::vector<BitVector<>> constant_zero_bitvector_vector;
+  constant_zero_bitvector_vector.reserve(T_size - bit_size_k);
+
+  // compensate the rest bits with zero bits
+  for (std::size_t i = 0; i < T_size - bit_size_k; i++) {
+    constant_zero_bitvector_vector.emplace_back(num_of_simd);
+  }
+
+  ShareWrapper boolean_gmw_share_constant_zero_bits =
+      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(constant_zero_bitvector_vector);
+
+  ShareWrapper boolean_gmw_random_unsigned_integer = ShareWrapper::Concatenate(
+      std::vector{boolean_gmw_share_random_bits, boolean_gmw_share_constant_zero_bits});
+
+  return boolean_gmw_random_unsigned_integer.Convert<MpcProtocol::kGarbledCircuit>();
+}
+
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2GC<
+    std::uint8_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2GC<
+    std::uint16_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2GC<
+    std::uint32_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2GC<
+    std::uint64_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2GC<
+    __uint128_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+
+template <typename T>
+ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BMR(
+    std::size_t bit_size_k, const std::size_t num_of_simd) const {
+  assert(sizeof(T) * 8 >= bit_size_k);
+  std::size_t T_size = sizeof(T) * 8;
+
+  // generate random bits to build random unsigned integer in range [0,2^k-1]
+  ShareWrapper boolean_gmw_share_random_bits =
+      GenerateRandomBooleanGmwBits(bit_size_k, num_of_simd);
+
+  // generate constant zero bits
+  std::vector<BitVector<>> constant_zero_bitvector_vector;
+  constant_zero_bitvector_vector.reserve(T_size - bit_size_k);
+
+  // compensate the rest bits with zero bits
+  for (std::size_t i = 0; i < T_size - bit_size_k; i++) {
+    constant_zero_bitvector_vector.emplace_back(num_of_simd);
+  }
+
+  ShareWrapper boolean_gmw_share_constant_zero_bits =
+      (share_->Get())->GetBackend().ConstantAsBooleanGmwInput(constant_zero_bitvector_vector);
+
+  ShareWrapper boolean_gmw_random_unsigned_integer = ShareWrapper::Concatenate(
+      std::vector{boolean_gmw_share_random_bits, boolean_gmw_share_constant_zero_bits});
+
+  return boolean_gmw_random_unsigned_integer.Convert<MpcProtocol::kBmr>();
+}
+
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BMR<
+    std::uint8_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BMR<
+    std::uint16_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BMR<
+    std::uint32_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BMR<
+    std::uint64_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2BMR<
+    __uint128_t>(std::size_t bit_size_k, const std::size_t num_of_simd) const;
 
 // =================================================================================================
-// generate random integers
+// ! generate random unsigned integer using modular reduction
+// ! this is expensive
 
 template <typename T, typename T_expand>
 ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW(
@@ -204,7 +283,8 @@ ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC(
       GenerateRandomBooleanGmwBits(T_expand_size, num_of_simd);
   SecureUnsignedInteger random_unsigned_integer =
       SecureUnsignedInteger(boolean_gmw_share_random_bits.Convert<MpcProtocol::kGarbledCircuit>());
-  SecureUnsignedInteger random_unsigned_integer_gc_share_0_m = random_unsigned_integer.Mod(T_expand(m));
+  SecureUnsignedInteger random_unsigned_integer_gc_share_0_m =
+      random_unsigned_integer.Mod(T_expand(m));
 
   return random_unsigned_integer_gc_share_0_m.TruncateToHalfSize();
 }

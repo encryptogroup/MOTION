@@ -148,7 +148,7 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
 //     //     num_of_simd_total_);
 
 //     ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//         fD_->GenerateRandomUnsignedIntegerPow2<T>(log2_denominator_,
+//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
 //                                                   iteration_1_ * num_of_simd_total_);
 
 //     ShareWrapper boolean_gmw_share_bernoulli_sample =
@@ -243,7 +243,7 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
 //     //     num_of_simd_total_);
 
 //     ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//         fD_->GenerateRandomUnsignedIntegerPow2<T>(log2_denominator_,
+//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
 //                                                   iteration_1_ * num_of_simd_total_);
 
 //     // std::cout << "333" << std::endl;
@@ -336,7 +336,7 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
 //     //     num_of_simd_total_);
 
 //     ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//         fD_->GenerateRandomUnsignedIntegerPow2<T>(log2_denominator_,
+//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
 //                                                   iteration_1_ * num_of_simd_total_);
 
 //     // std::cout << "333" << std::endl;

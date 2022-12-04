@@ -99,21 +99,34 @@ class SecureSamplingAlgorithm_optimized {
                                             const std::size_t num_of_simd) const;
 
   // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
-  // without interactions
+  // without interactions, the share is Boolean GWM
   template <typename T>
-  ShareWrapper GenerateRandomUnsignedIntegerPow2(std::size_t bit_size_k,
+  ShareWrapper GenerateRandomUnsignedIntegerPow2BGMW(std::size_t bit_size_k,
                                                  const std::size_t num_of_simd) const;
+
+  // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
+  // without interactions, convert share to Garbled Circuit
+  template <typename T>
+  ShareWrapper GenerateRandomUnsignedIntegerPow2GC(std::size_t bit_size_k,
+                                                 const std::size_t num_of_simd) const;
+
+  // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
+  // without interactions, convert share to BMR
+  template <typename T>
+  ShareWrapper GenerateRandomUnsignedIntegerPow2BMR(std::size_t bit_size_k,
+                                                 const std::size_t num_of_simd) const;
+
 
   // generate random integer in range [0, m),
   // with security parameter s = sizeof(T) * 8 - upper_bound_of_m
   // TODO: generate 256-bit circuit for mod to improve security parameters
-  template <typename T>
+  template <typename T, typename T_expand = get_expanded_type<T>>
   ShareWrapper GenerateRandomUnsignedIntegerBGMW(T m, const std::size_t num_of_simd) const;
 
-  template <typename T>
+  template <typename T, typename T_expand = get_expanded_type<T>>
   ShareWrapper GenerateRandomUnsignedIntegerBMR(T m, const std::size_t num_of_simd) const;
 
-  template <typename T>
+  template <typename T, typename T_expand = get_expanded_type<T>>
   ShareWrapper GenerateRandomUnsignedIntegerGC(T m, const std::size_t num_of_simd) const;
 
   // generate a geometric random variable x, i.e.,
