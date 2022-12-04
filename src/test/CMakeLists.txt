@@ -95,9 +95,9 @@ add_executable(motiontest
 
         # testing for optimized algorithms
         test_liangzhao_geometricExp_optimized.cpp # testing
-        test_liangzhao_discreteLaplace_optimized.cpp # testing
-        test_liangzhao_discreteGaussian_optimized.cpp # testing
-        test_liangzhao_symmericalBinomial_optimized.cpp # testing
+        # test_liangzhao_discreteLaplace_optimized.cpp # testing
+        # test_liangzhao_discreteGaussian_optimized.cpp # testing
+        # test_liangzhao_symmericalBinomial_optimized.cpp # testing
 
         # testing for insecure Laplace and discrete Laplace mechanism: paper (Differentially Private Data Aggregation with Optimal Utility)
         # test_liangzhao_dp_mechanism_PrivaDA.cpp # test passed, need intensive re-test, seems to fail once
