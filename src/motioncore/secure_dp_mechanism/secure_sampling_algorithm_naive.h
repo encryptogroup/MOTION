@@ -107,13 +107,13 @@ class SecureSamplingAlgorithm_naive {
   // generate random integer in range [0, m),
   // with security parameter s = sizeof(T) * 8 - upper_bound_of_m
   // TODO: generate 256-bit circuit for mod to improve security parameters
-  template <typename T>
+  template <typename T, typename T_expand = get_expanded_type<T>>
   ShareWrapper GenerateRandomUnsignedIntegerBGMW(T m, const std::size_t num_of_simd) const;
 
-  template <typename T>
+  template <typename T, typename T_expand = get_expanded_type<T>>
   ShareWrapper GenerateRandomUnsignedIntegerBMR(T m, const std::size_t num_of_simd) const;
 
-  template <typename T>
+  template <typename T, typename T_expand = get_expanded_type<T>>
   ShareWrapper GenerateRandomUnsignedIntegerGC(T m, const std::size_t num_of_simd) const;
 
   // generate a geometric random variable x, i.e.,

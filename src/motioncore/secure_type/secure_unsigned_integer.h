@@ -142,8 +142,7 @@ class SecureUnsignedInteger {
   ShareWrapper operator==(const T& constant_value) const;
 
   // multiplication each Boolean bit of *this with a bit share
-  SecureUnsignedInteger MulBooleanBit(
-      const ShareWrapper& boolean_gmw_bmr_gc_bit_share_other) const;
+  SecureUnsignedInteger MulBooleanBit(const ShareWrapper& boolean_gmw_bmr_gc_bit_share_other) const;
 
   /// \brief equals to zero
   ShareWrapper IsZero() const;
@@ -196,6 +195,11 @@ class SecureUnsignedInteger {
   /// \brief constructs a SubsetGate that returns values stored at positions in this->share_.
   /// Internally calls SecureUnsignedInteger Subset(std::span<std::size_t> positions).
   SecureUnsignedInteger Subset(std::vector<size_t>&& positions);
+
+  // added by Liang Zhao
+  // truncate the this SecureUnsignedInteger to a half size SecureUnsignedInteger that takes the
+  // bits from the least significant bit
+  ShareWrapper TruncateToHalfSize();
 
   /// \brief decomposes this->share_->Get() into shares with exactly 1 SIMD value.
   /// See the description in ShareWrapper::Unsimdify for reference.

@@ -96,7 +96,7 @@ ShareWrapper SecureSamplingAlgorithm_naive::BooleanGmwBitsZeroCompensation(
 }
 
 // =================================================================================================
-// generate random integers
+// generate random integers locally
 
 template <typename T>
 ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2(
@@ -137,75 +137,91 @@ template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedInteg
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerPow2<__uint128_t>(
     std::size_t bit_size_k, const std::size_t num_of_simd) const;
 
-template <typename T>
+// =================================================================================================
+// generate random integers
+
+template <typename T, typename T_expand>
 ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW(
     T m, const std::size_t num_of_simd) const {
-  std::size_t T_size = sizeof(T) * 8;
-  ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
+  std::size_t T_expand_size = sizeof(T_expand) * 8;
+  ShareWrapper boolean_gmw_share_random_bits =
+      GenerateRandomBooleanGmwBits(T_expand_size, num_of_simd);
   SecureUnsignedInteger random_unsigned_integer =
       SecureUnsignedInteger(boolean_gmw_share_random_bits);
-  SecureUnsignedInteger random_unsigned_integer_0_m = random_unsigned_integer.Mod(m);
-  return random_unsigned_integer_0_m.Get();
+  SecureUnsignedInteger random_unsigned_integer_bgmw_0_m = random_unsigned_integer.Mod(T_expand(m));
+
+  return random_unsigned_integer_bgmw_0_m.TruncateToHalfSize();
 }
 
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
-    std::uint8_t>(std::uint8_t m, const std::size_t num_of_simd) const;
+    std::uint8_t, std::uint16_t>(std::uint8_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
-    std::uint16_t>(std::uint16_t m, const std::size_t num_of_simd) const;
+    std::uint16_t, std::uint32_t>(std::uint16_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
-    std::uint32_t>(std::uint32_t m, const std::size_t num_of_simd) const;
+    std::uint32_t, std::uint64_t>(std::uint32_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
-    std::uint64_t>(std::uint64_t m, const std::size_t num_of_simd) const;
+    std::uint64_t, __uint128_t>(std::uint64_t m, const std::size_t num_of_simd) const;
 
-// this need 256-bit modular reduction circuit
+// ! this need 256-bit modular reduction circuit
 // template ShareWrapper
 // SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
 //     __uint128_t m, const std::size_t num_of_simd) const;
 
-template <typename T>
+template <typename T, typename T_expand>
 ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR(
     T m, const std::size_t num_of_simd) const {
-  std::size_t T_size = sizeof(T) * 8;
-  ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
+  std::size_t T_expand_size = sizeof(T_expand) * 8;
+  ShareWrapper boolean_gmw_share_random_bits =
+      GenerateRandomBooleanGmwBits(T_expand_size, num_of_simd);
   SecureUnsignedInteger random_unsigned_integer =
       SecureUnsignedInteger(boolean_gmw_share_random_bits.Convert<MpcProtocol::kBmr>());
-  ShareWrapper random_unsigned_integer_bmr_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
-  return random_unsigned_integer_bmr_share_0_m;
+
+  SecureUnsignedInteger random_unsigned_integer_bmr_share_0_m =
+      random_unsigned_integer.Mod(T_expand(m));
+
+  return random_unsigned_integer_bmr_share_0_m.TruncateToHalfSize();
 }
 
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<std::uint8_t>(
-    std::uint8_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
-    std::uint16_t>(std::uint16_t m, const std::size_t num_of_simd) const;
+    std::uint8_t, std::uint16_t>(std::uint8_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
-    std::uint32_t>(std::uint32_t m, const std::size_t num_of_simd) const;
+    std::uint16_t, std::uint32_t>(std::uint16_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
-    std::uint64_t>(std::uint64_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
-    __uint128_t m, const std::size_t num_of_simd) const;
+    std::uint32_t, std::uint64_t>(std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<
+    std::uint64_t, __uint128_t>(std::uint64_t m, const std::size_t num_of_simd) const;
 
-// // TODO: need conversion from Boolean Gmw to Garbled circuit
-template <typename T>
+// ! this need 256-bit modular reduction circuit
+// template ShareWrapper
+// SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
+//     __uint128_t m, const std::size_t num_of_simd) const;
+
+template <typename T, typename T_expand>
 ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC(
     T m, const std::size_t num_of_simd) const {
-  std::size_t T_size = sizeof(T) * 8;
-  ShareWrapper boolean_gmw_share_random_bits = GenerateRandomBooleanGmwBits(T_size, num_of_simd);
+  std::size_t T_expand_size = sizeof(T_expand) * 8;
+  ShareWrapper boolean_gmw_share_random_bits =
+      GenerateRandomBooleanGmwBits(T_expand_size, num_of_simd);
   SecureUnsignedInteger random_unsigned_integer =
       SecureUnsignedInteger(boolean_gmw_share_random_bits.Convert<MpcProtocol::kGarbledCircuit>());
-  ShareWrapper random_unsigned_integer_gc_share_0_m = ((random_unsigned_integer.Mod(m)).Get());
-  return random_unsigned_integer_gc_share_0_m;
+  SecureUnsignedInteger random_unsigned_integer_gc_share_0_m = random_unsigned_integer.Mod(T_expand(m));
+
+  return random_unsigned_integer_gc_share_0_m.TruncateToHalfSize();
 }
 
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint8_t>(
-    std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint16_t>(
-    std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint32_t>(
-    std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<std::uint64_t>(
-    std::uint64_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<__uint128_t>(
-    __uint128_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<
+    std::uint8_t, std::uint16_t>(std::uint8_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<
+    std::uint16_t, std::uint32_t>(std::uint16_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<
+    std::uint32_t, std::uint64_t>(std::uint32_t m, const std::size_t num_of_simd) const;
+template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<
+    std::uint64_t, __uint128_t>(std::uint64_t m, const std::size_t num_of_simd) const;
+
+// ! this need 256-bit modular reduction circuit
+// template ShareWrapper
+// SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerGC<__uint128_t>(
+//     __uint128_t m, const std::size_t num_of_simd) const;
 
 // =================================================================================================
 // Geometric(p = 0.5)

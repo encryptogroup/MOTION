@@ -162,4 +162,26 @@ template <typename T>
 using get_shrink_type_t = typename get_shrink_type<T>::type;
 
 
+template <typename T>
+struct get_expanded_type {};
+template <>
+struct get_expanded_type<std::uint8_t> {
+  using type = std::uint16_t;
+};
+template <>
+struct get_expanded_type<std::uint16_t> {
+  using type = std::uint32_t;
+};
+template <>
+struct get_expanded_type<std::uint32_t> {
+  using type = std::uint64_t;
+};
+template <>
+struct get_expanded_type<std::uint64_t> {
+  using type = __uint128_t;
+};
+template <typename T>
+using get_expanded_type_t = typename get_expanded_type<T>::type;
+
+
 }  // namespace encrypto::motion

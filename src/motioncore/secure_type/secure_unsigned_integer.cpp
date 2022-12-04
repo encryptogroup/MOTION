@@ -809,6 +809,24 @@ SecureUnsignedInteger SecureUnsignedInteger::Subset(std::vector<size_t>&& positi
   return Subset(std::span<const std::size_t>(positions));
 }
 
+// added by Liang Zhao
+ShareWrapper SecureUnsignedInteger::TruncateToHalfSize() {
+  std::size_t bitlength = share_->Get()->GetBitLength();
+  ShareWrapper unwrap{this->Get()};
+
+  std::vector<ShareWrapper> truncated_unsigned_integer_vector;
+  truncated_unsigned_integer_vector.reserve(bitlength / 2);
+
+  std::vector<ShareWrapper> unsigned_integer_vector = unwrap.Split();
+
+  for (std::size_t i = 0; i < bitlength / 2; i++) {
+    // truncated_unsigned_integer_vector.emplace_back(unsigned_integer_vector[bitlength-i-1]);
+    truncated_unsigned_integer_vector.emplace_back(unsigned_integer_vector[i]);
+  }
+
+  return (ShareWrapper::Concatenate(truncated_unsigned_integer_vector));
+}
+
 std::vector<SecureUnsignedInteger> SecureUnsignedInteger::Unsimdify() const {
   auto unsimdify_gate = share_->Get()->GetRegister()->EmplaceGate<UnsimdifyGate>(share_->Get());
   std::vector<SharePointer> shares{unsimdify_gate->GetOutputAsVectorOfShares()};
