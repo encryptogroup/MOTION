@@ -786,6 +786,7 @@ TEST(SecureDPMechanismEKMPP, LaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_
     template_test(static_cast<double>(0));
   }
 }
+
 // not check correctness of the calculation
 // only check if implementation is correct
 TEST(SecureDPMechanismEKMPP, DiscreteLaplaceNoiseGeneration_BGMW_GC_BMR_Simd_2_3_4_5_10_parties) {
