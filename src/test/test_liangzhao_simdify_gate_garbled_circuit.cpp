@@ -143,6 +143,7 @@ TEST_P(BooleanSimdifyTest, GarbledCircuit) {
         if (party_id == this->input_owner_) {
           this->CheckCorrectness(share_output.As<std::vector<encrypto::motion::BitVector<>>>());
         }
+        std::cout << "party finish" << std::endl;
         this->motion_parties_.at(party_id)->Finish();
       }));
     }
@@ -153,10 +154,16 @@ TEST_P(BooleanSimdifyTest, GarbledCircuit) {
 }
 
 // test for garbled circuit simdify gate
+// constexpr std::array<std::size_t, 1> kBooleanNumberOfParties{2};
+// constexpr std::array<std::size_t, 2> kBooleanNumberOfWires{1, 64};
+// constexpr std::array<std::size_t, 3> kBooleanNumberOfSimd{1, 64, 100};
+// constexpr std::array<bool, 2> kBooleanOnlineAfterSetup{false, true};
+
+// only for debugging
 constexpr std::array<std::size_t, 1> kBooleanNumberOfParties{2};
-constexpr std::array<std::size_t, 2> kBooleanNumberOfWires{1, 64};
-constexpr std::array<std::size_t, 3> kBooleanNumberOfSimd{1, 64, 100};
-constexpr std::array<bool, 2> kBooleanOnlineAfterSetup{false, true};
+constexpr std::array<std::size_t, 1> kBooleanNumberOfWires{1};
+constexpr std::array<std::size_t, 1> kBooleanNumberOfSimd{1};
+constexpr std::array<bool, 1> kBooleanOnlineAfterSetup{false};
 
 INSTANTIATE_TEST_SUITE_P(DataManagementTestSuite, BooleanSimdifyTest,
                          testing::Combine(testing::ValuesIn(kBooleanNumberOfParties),

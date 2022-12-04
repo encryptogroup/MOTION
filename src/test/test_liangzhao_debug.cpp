@@ -138,7 +138,7 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
 
           // =================================================
 
-          std::cout << "after input" << std::endl;
+          // std::cout << "after input" << std::endl;
           share_input_1_vector.reserve(2);
           share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_1));
           share_input_1_vector.emplace_back(encrypto::motion::ShareWrapper(share_input_2));
@@ -148,7 +148,7 @@ TEST(SimdifyGate, SimdifyGate_GarbledCircuit_1_1K_Simd_2_parties) {
           encrypto::motion::ShareWrapper share_input_1_simdify =
               encrypto::motion::ShareWrapper(share_input_1).Simdify(share_input_1_vector);
 
-          std::cout << "001" << std::endl;
+          // std::cout << "001" << std::endl;
           //  sleep(10);
 
           encrypto::motion::ShareWrapper share_input_1_simdify_and =

@@ -1669,7 +1669,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLGeometricDistribution
   ShareWrapper floating_point_gc_share_denominator_simdify =
       ShareWrapper::Simdify(floating_point_gc_share_denominator_expand);
 
-std::cout<<"001"<<std::endl;
+// std::cout<<"001"<<std::endl;
 
   // convert the random unsigned integer to floating-point numbers
   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer =

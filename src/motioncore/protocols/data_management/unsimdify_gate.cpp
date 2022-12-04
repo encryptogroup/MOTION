@@ -256,20 +256,29 @@ void UnsimdifyGate::EvaluateSetup() {
 
   // added by Liang Zhao
   else if (parent_[0]->GetProtocol() == MpcProtocol::kGarbledCircuit) {
-    for (std::size_t i = 0; i < parent_.size(); ++i) {
-      auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
-      assert(in);
-      // in->GetSetupReadyCondition()->Wait();
-      for (std::size_t j = 0; j < parent_[0]->GetNumberOfSimdValues(); ++j) {
-        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
-            output_wires_[j * parent_.size() + i]);
-        assert(out);
+    bool is_garbler =
+        GetCommunicationLayer().GetMyId() == static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
 
-        // out->GetMutablePermutationBits() = in->GetPermutationBits().Subset(j, j + 1);
-        // out->GetMutableSecretKeys().resize(1);
-        // out->GetMutableSecretKeys()[0] = in->GetSecretKeys()[j];
-        out->SetSetupIsReady();
+    // this party is the garbler
+    if (is_garbler) {
+      for (std::size_t i = 0; i < parent_.size(); ++i) {
+        auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+        assert(in);
+        in->WaitSetup();
+        // in->GetSetupReadyCondition()->Wait();
+        for (std::size_t j = 0; j < parent_[0]->GetNumberOfSimdValues(); ++j) {
+          auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+              output_wires_[j * parent_.size() + i]);
+          assert(out);
+          out->GetMutableKeys().resize(1);
+          out->GetMutableKeys()[0] = in->GetMutableKeys()[j];
+          out->SetSetupIsReady();
+        }
       }
+    }
+
+    // this party is the evaluator
+    else {
     }
   }
 }
@@ -433,22 +442,29 @@ void UnsimdifyGate::EvaluateOnline() {
     // added by Liang Zhao
     case encrypto::motion::MpcProtocol::kGarbledCircuit: {
       const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
-      for (std::size_t i = 0; i < parent_.size(); ++i) {
-        auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
-        assert(in);
-        for (std::size_t j = 0; j < input_numer_of_simd; ++j) {
-          auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
-              output_wires_[j * parent_.size() + i]);
-          assert(out);
-          out->GetMutableKeys().resize(1);
-          out->GetMutableKeys()[0] = in->GetMutableKeys()[j];
+      bool is_garbler = GetCommunicationLayer().GetMyId() ==
+                        static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
 
-          // out->GetMutablePublicValues() = in->GetPublicValues().Subset(j, j + 1);
-          // out->GetMutablePublicKeys().resize(number_of_parties);
-          // std::copy_n(in->GetPublicKeys().begin() + j * number_of_parties, number_of_parties,
-          //             out->GetMutablePublicKeys().begin());
+      // this party is the garbler
+      if (is_garbler) {
+      }
+
+      // this party is the evaluator
+      else {
+        for (std::size_t i = 0; i < parent_.size(); ++i) {
+          auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+          assert(in);
+          for (std::size_t j = 0; j < input_numer_of_simd; ++j) {
+            auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(
+                output_wires_[j * parent_.size() + i]);
+            assert(out);
+            out->GetMutableKeys().resize(1);
+            out->GetMutableKeys()[0] = in->GetMutableKeys()[j];
+
+          }
         }
       }
+
       break;
     }
 

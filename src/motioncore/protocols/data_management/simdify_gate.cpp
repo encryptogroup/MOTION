@@ -243,7 +243,7 @@ SimdifyGate::SimdifyGate(std::span<SharePointer> parents)
 }
 
 void SimdifyGate::EvaluateSetup() {
-  std::cout << "SimdifyGate::EvaluateSetup" << std::endl;
+  // std::cout << "SimdifyGate::EvaluateSetup" << std::endl;
 
   if constexpr (kDebug) {
     GetLogger().LogDebug(
@@ -280,8 +280,9 @@ void SimdifyGate::EvaluateSetup() {
     bool is_garbler =
         GetCommunicationLayer().GetMyId() == static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
 
+// this party is the garbler
     if (is_garbler) {
-      std::cout << "is_garbler" << std::endl;
+      // std::cout << "is_garbler" << std::endl;
       for (std::size_t i = 0; i < output_wires_.size(); ++i) {
         auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
         assert(out);
@@ -310,13 +311,17 @@ void SimdifyGate::EvaluateSetup() {
         }
         out->SetSetupIsReady();
       }
-    } else {
-      for (std::size_t i = 0; i < output_wires_.size(); ++i) {
-        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
-        assert(out);
 
-        out->GetMutableKeys().resize(output_number_of_simd_values_);
-      }
+    } 
+    
+    // this party is the evaluator
+    else {
+      // for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        // auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        // assert(out);
+
+        // out->GetMutableKeys().resize(output_number_of_simd_values_);
+      // }
     }
   }
 }
@@ -356,6 +361,7 @@ void AstraSimdifyOnline(std::span<WirePointer> parent_wires, WirePointer output_
 }
 
 void SimdifyGate::EvaluateOnline() {
+  // std::cout << "SimdifyGate::EvaluateOnline" << std::endl;
   WaitSetup();
   if constexpr (kDebug) {
     GetLogger().LogDebug(
@@ -487,20 +493,24 @@ void SimdifyGate::EvaluateOnline() {
       // added by Liang Zhao
     case encrypto::motion::MpcProtocol::kGarbledCircuit: {
       const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
+
+      // std::cout << "MpcProtocol::kGarbledCircuit" << std::endl;
       // std::cout << "in->GetMutableKeys()[k].AsString(): " << std::endl;
 
       bool is_garbler = GetCommunicationLayer().GetMyId() ==
                         static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+
+      // std::cout << "is_garbler: " << is_garbler << std::endl;
       if (is_garbler) {
-        for (std::size_t i = 0; i < output_wires_.size(); ++i) {
-        }
+        // for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        // }
       } else {
         for (std::size_t i = 0; i < output_wires_.size(); ++i) {
           auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
           assert(out);
 
           // std::cout << "output_number_of_simd_values_: " << output_number_of_simd_values_
-          //           << std::endl;
+                    // << std::endl;
           out->GetMutableKeys().resize(output_number_of_simd_values_);
           std::size_t output_simd_offset{0};
           for (std::size_t j = 0; j < number_of_input_shares_; ++j) {
@@ -550,7 +560,7 @@ void SimdifyGate::EvaluateOnline() {
       break;
     }
     default:
-      std::cout << "002" << std::endl;
+      // std::cout << "002" << std::endl;
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
   }
 }
@@ -713,7 +723,7 @@ SharePointer SimdifyGate::GetOutputAsShare() {
       break;
     }
     default:
-      std::cout << "003" << std::endl;
+      // std::cout << "003" << std::endl;
       throw std::invalid_argument(fmt::format("Unrecognized MpcProtocol in SimdifyGate"));
   }
   return share;

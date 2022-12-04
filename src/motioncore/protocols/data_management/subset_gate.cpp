@@ -216,6 +216,7 @@ void BitVectorSubsetImplementation(const BitVector<Allocator>& in, BitVector<All
 }
 
 void SubsetGate::EvaluateSetup() {
+  // std::cout << "SubsetGate::EvaluateSetup" << std::endl;
   if constexpr (kDebug) {
     GetLogger().LogDebug(
         fmt::format("Nothing to do in the setup phase of SubsetGate with id#{}", gate_id_));
@@ -242,22 +243,46 @@ void SubsetGate::EvaluateSetup() {
 
   // added by Liang Zhao
   else if (parent_[0]->GetProtocol() == MpcProtocol::kGarbledCircuit) {
-    for (std::size_t i = 0; i < output_wires_.size(); ++i) {
-      auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
-      assert(in);
-      auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
-      assert(out);
-      // in->GetSetupReadyCondition()->Wait();
+    bool is_garbler =
+        GetCommunicationLayer().GetMyId() == static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
 
-      // for (std::size_t j = 0; j < parent_.size(); ++j) {
-      //   BitVectorSubsetImplementation(in->GetPermutationBits(), out->GetMutablePermutationBits(),
-      //                                 position_ids_);
-      //   out->GetMutableSecretKeys().resize(position_ids_.size());
-      //   for (std::size_t k = 0; k < position_ids_.size(); ++k) {
-      //     out->GetMutableSecretKeys()[k] = in->GetSecretKeys()[position_ids_[k]];
-      //   }
+    // this party is the garbler
+    if (is_garbler) {
+      // std::cout << "this party is the garbler" << std::endl;
+      for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        // std::cout << "i: " << i << std::endl;
+        auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+        assert(in);
+        in->WaitSetup();
+        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        assert(out);
+        // std::cout << "001" << std::endl;
+        out->GetMutableKeys().resize(position_ids_.size());
+        // std::cout<<"position_ids_.size(): "<<position_ids_.size()<<std::endl;
+        std::size_t element_counter{0};
+        for (std::size_t j : position_ids_) {
+          // std::cout<<"j: "<<j<<std::endl;
+          // std::cout<<"in->GetKeys()[j]: "<<in->GetKeys()[j].AsString()<<std::endl;
+          out->GetMutableKeys()[element_counter] = in->GetKeys()[j];
+          element_counter++;
+        }
+
+        out->SetSetupIsReady();
+      }
+
+      // std::cout << "SubsetGate::EvaluateSetup finished" << std::endl;
+    }
+
+    // this party is the evaluator
+    else {
+      // std::cout << "this party is the evaluator" << std::endl;
+      // for (std::size_t i = 0; i < output_wires_.size(); ++i) {
+        // auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+        // assert(out);
+
+        // out->GetMutableKeys().resize(position_ids_.size());
       // }
-      out->SetSetupIsReady();
+      // std::cout << "SubsetGate::EvaluateSetup finished" << std::endl;
     }
   }
 }
@@ -298,6 +323,8 @@ void ArithmeticConstantSubsetOnline(WirePointer parent_wire, WirePointer output_
 }
 
 void SubsetGate::EvaluateOnline() {
+  // std::cout << "SubsetGate::EvaluateOnline" << std::endl;
+
   WaitSetup();
   if constexpr (kDebug) {
     GetLogger().LogDebug(
@@ -396,17 +423,30 @@ void SubsetGate::EvaluateOnline() {
       // added by Liang Zhao
     case encrypto::motion::MpcProtocol::kGarbledCircuit: {
       const std::size_t number_of_parties{GetConfiguration().GetNumOfParties()};
-      for (std::size_t i = 0; i < parent_.size(); ++i) {
-        auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
-        assert(in);
-        auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
-        assert(out);
 
-        out->GetMutableKeys().resize(position_ids_.size());
-        std::size_t element_counter{0};
-        for (std::size_t j : position_ids_) {
-          out->GetMutableKeys()[element_counter] = in->GetKeys()[j];
-          element_counter++;
+      bool is_garbler = GetCommunicationLayer().GetMyId() ==
+                        static_cast<std::size_t>(GarbledCircuitRole::kGarbler);
+
+      // this party is the garbler
+      if (is_garbler) {
+        // std::cout << "this party is the evaluator" << std::endl;
+      }
+
+      // this party is the evaluator
+      else {
+        // std::cout << "this party is the evaluator" << std::endl;
+        for (std::size_t i = 0; i < parent_.size(); ++i) {
+          auto in = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(parent_[i]);
+          assert(in);
+          auto out = std::dynamic_pointer_cast<proto::garbled_circuit::Wire>(output_wires_[i]);
+          assert(out);
+
+          out->GetMutableKeys().resize(position_ids_.size());
+          std::size_t element_counter{0};
+          for (std::size_t j : position_ids_) {
+            out->GetMutableKeys()[element_counter] = in->GetKeys()[j];
+            element_counter++;
+          }
         }
       }
       break;
