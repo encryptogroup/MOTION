@@ -2019,6 +2019,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistri
     }
   }
 
+//   std::cout<<"000"<< std::endl;
+
   std::vector<ShareWrapper> geometric_sample_vector =
       FLGeometricDistributionEXP_GC<FloatType, UintType, IntType, A>(
           constant_unsigned_integer_numerator_geo_vector,
@@ -2026,6 +2028,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_naive::FLDiscreteLaplaceDistri
           random_floating_point_0_1_gc_share, random_unsigned_integer_gc_share,
           iteration_1, iteration_2);
 
+//   std::cout<<"111"<< std::endl;
   ShareWrapper gc_share_sign = gc_share_bernoulli_sample;
   ShareWrapper unsigned_integer_geometric_sample_gc_share_magnitude =
       geometric_sample_vector[0];
