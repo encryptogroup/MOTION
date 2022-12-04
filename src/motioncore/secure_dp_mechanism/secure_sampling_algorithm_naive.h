@@ -314,8 +314,7 @@ class SecureSamplingAlgorithm_naive {
       const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const;
 
-
-// ============================================================
+  // ============================================================
   // sampling algorithms based on floating-point arithmetic, BMR
 
   // sample from a Geometric distribution (PDF: (1 - p)^k * p), where p =
@@ -397,6 +396,7 @@ class SecureSamplingAlgorithm_naive {
       const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const;
 
+  // ============================================================
 
  private:
   std::shared_ptr<ShareWrapper> share_{nullptr};

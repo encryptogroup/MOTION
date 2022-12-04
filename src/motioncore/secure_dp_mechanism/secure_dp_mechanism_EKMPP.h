@@ -25,11 +25,13 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-#include "secure_dp_mechanism/secure_laplace_discrete_laplace_mechanism_EKMPP.h"
-#include "secure_type/secure_floating_point_agmw_ABZS.h"
+// #include "secure_type/secure_floating_point_agmw_ABZS.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
 #include "utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.h"
 #include "utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.h"
+
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
 
 namespace encrypto::motion {
 
@@ -40,16 +42,19 @@ class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
 class SecureLaplaceDiscreteLaplaceMechanismEKMPP;
 
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
+
 // reference: Differentially Private Data Aggregation with Optimal Utility
-// ! note: the Laplace random variable sampling algorithm in this paper is not secure, only for
-// benchmarking purposes
+// ! note: the Laplace or discrete Laplace sampling algorithm in this paper is not secure, only for
+// ! benchmarking purposes
 
 class SecureLaplaceDiscreteLaplaceMechanismEKMPP {
  public:
   using T = std::uint64_t;
-  using  IntType = std::uint64_t;
-  using  IntType_int = std::int64_t;
-  std::size_t IntType_size =sizeof(IntType)*8;
+  using IntType = std::uint64_t;
+  using IntType_int = std::int64_t;
+  std::size_t IntType_size = sizeof(IntType) * 8;
 
   SecureLaplaceDiscreteLaplaceMechanismEKMPP() = default;
 
@@ -103,83 +108,47 @@ class SecureLaplaceDiscreteLaplaceMechanismEKMPP {
   // 32-bit floating point version
   SecureFloatingPointCircuitABY FL32LaplaceNoiseAddition();
 
+  // sample from Laplace distribution with PDF: Lap(x|lambda) = 1/(2*lambda) * e^(-|x|/lambda)
   SecureFloatingPointCircuitABY FL32LaplaceNoiseGeneration();
 
-  // sample from Laplace distribution with PDF: Lap(x|lambda) = 1/(2*lambda) * e^(-|x|/lambda)
-  // ! Note that the generated Laplace random variable is not secure regarding differential privacy,
-  // it can be attacked by paper (On Signiﬁcance of the Least Signiﬁcant Bits For Diﬀerential
-  // Privacy)
   SecureFloatingPointCircuitABY FL32LaplaceNoiseGeneration(
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_rx,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_ry);
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_rx,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_ry);
 
   //============================================================================
   // 64-bit floating point version
   SecureFloatingPointCircuitABY FL64LaplaceNoiseAddition();
 
+//   // sample from Laplace distribution with PDF: Lap(x|lambda) = 1/(2*lambda) * e^(-|x|/lambda)
   SecureFloatingPointCircuitABY FL64LaplaceNoiseGeneration();
 
-  // sample from Laplace distribution with PDF: Lap(x|lambda) = 1/(2*lambda) * e^(-|x|/lambda)
-  // ! Note that the generated Laplace random variable is not secure regarding differential privacy,
-  // it can be attacked by paper (On Signiﬁcance of the Least Signiﬁcant Bits For Diﬀerential
-  // Privacy)
   SecureFloatingPointCircuitABY FL64LaplaceNoiseGeneration(
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_rx,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_ry);
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_rx,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_ry);
 
-  //============================================================================
-  // fixed-point version
-  SecureFixedPointCircuitCBMC FxLaplaceNoiseAddition();
-
-  SecureFixedPointCircuitCBMC FxLaplaceNoiseGeneration();
-
-  // sample from Laplace distribution with PDF: Lap(x|lambda) = 1/(2*lambda) * e^(-|x|/lambda),
-  // lambda = l1_sensitivity / epsilon,
-  // satisfy epsilon-DP
-  // ! Note that the generated Laplace random variable is not secure regarding DP
-  // can be attacked by (On Significance of the Least Significant Bits For Differential Privacy)
-  SecureFixedPointCircuitCBMC FxLaplaceNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_rx,
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_ry);
-
-  //============================================================================
   //============================================================================
   SecureSignedInteger FL32DiscreteLaplaceNoiseAddition();
-
-  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration();
 
   // sample from discrete Laplace distribution with PDF: DLap(x|lambda) = (1-lambda)/(1+lambda) *
   // lambda^(|x|),
   // lambda = e^(-epsilon/l1_sensitivity) satisfy epsilon-DP
-  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration(
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_rx,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_ry);
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration();
 
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_rx,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_ry);
 
   //============================================================================
   SecureSignedInteger FL64DiscreteLaplaceNoiseAddition();
 
+  // sample from discrete Laplace distribution with PDF: DLap(x|lambda) = (1-lambda)/(1+lambda) *
+  // lambda^(|x|),
+  // lambda = e^(-epsilon/l1_sensitivity) satisfy epsilon-DP
   SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration();
 
-  // sample from discrete Laplace distribution with PDF: DLap(x|lambda) = (1-lambda)/(1+lambda) *
-  // lambda^(|x|),
-  // lambda = e^(-epsilon/l1_sensitivity) satisfy epsilon-DP
   SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration(
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_rx,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_ry);
-
-  //============================================================================
-
-  SecureSignedInteger FxDiscreteLaplaceNoiseAddition();
-
-  SecureSignedInteger FxDiscreteLaplaceNoiseGeneration();
-
-  // sample from discrete Laplace distribution with PDF: DLap(x|lambda) = (1-lambda)/(1+lambda) *
-  // lambda^(|x|),
-  // lambda = e^(-epsilon/l1_sensitivity) satisfy epsilon-DP
-  SecureSignedInteger FxDiscreteLaplaceNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_rx,
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_ry);
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_rx,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share_ry);
 
   //============================================================================
 
@@ -200,7 +169,7 @@ class SecureLaplaceDiscreteLaplaceMechanismEKMPP {
   std::size_t fixed_point_fraction_bit_size_ = 16;
 
  private:
- // fD_ is 32-bit floating point number, 64-bit floating point number or fixed point number
+  // fD_ is 32-bit floating point number, 64-bit floating point number or fixed point number
   std::shared_ptr<ShareWrapper> fD_{nullptr};
   std::shared_ptr<ShareWrapper> noisy_fD_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};

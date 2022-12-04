@@ -25,8 +25,8 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-#include "secure_type/secure_floating_point32_agmw_ABZS.h"
-#include "secure_type/secure_floating_point64_agmw_ABZS.h"
+// #include "secure_type/secure_floating_point32_agmw_ABZS.h"
+// #include "secure_type/secure_floating_point64_agmw_ABZS.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
 #include "utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.h"
 #include "utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.h"
