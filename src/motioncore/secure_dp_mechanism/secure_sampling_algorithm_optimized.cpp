@@ -3824,25 +3824,32 @@ SecureSamplingAlgorithm_optimized::FL64DiscreteLaplaceNoiseGeneration<std::uint6
 SecureFloatingPointCircuitABY SecureSamplingAlgorithm_optimized::FL32GaussianNoiseGeneration(
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2, double mu, double sigma) {
+        // std::cout<<"001"<< std::endl;
   SecureFloatingPointCircuitABY floating_point_x1 =
       (((SecureFloatingPointCircuitABY(random_floating_point_0_1_boolean_gmw_share_u1).Ln()) *
         float(-2))
            .Sqrt()) *
-      ((SecureFloatingPointCircuitABY(random_floating_point_0_1_boolean_gmw_share_u2) * double(2)))
+      ((SecureFloatingPointCircuitABY(random_floating_point_0_1_boolean_gmw_share_u2) * float(2)))
           .Cos();
 
+        // std::cout<<"002"<< std::endl;
   SecureFloatingPointCircuitABY floating_point_y;
   if (mu != 0) {
+        // std::cout<<"003"<< std::endl;
     floating_point_y = floating_point_x1 * float(sigma) + float(mu);
   } else {
+        // std::cout<<"004"<< std::endl;
     floating_point_y = floating_point_x1 * float(sigma);
   }
+        // std::cout<<"004_1"<< std::endl;
   return floating_point_y;
 }
 
 SecureFloatingPointCircuitABY SecureSamplingAlgorithm_optimized::FL64GaussianNoiseGeneration(
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2, double mu, double sigma) {
+ 
+//    std::cout<<"005"<< std::endl;
   SecureFloatingPointCircuitABY floating_point_x1 =
       (((SecureFloatingPointCircuitABY(random_floating_point_0_1_boolean_gmw_share_u1).Ln()) *
         double(-2))
@@ -3850,12 +3857,16 @@ SecureFloatingPointCircuitABY SecureSamplingAlgorithm_optimized::FL64GaussianNoi
       ((SecureFloatingPointCircuitABY(random_floating_point_0_1_boolean_gmw_share_u2) * double(2)))
           .Cos();
 
+//    std::cout<<"006"<< std::endl;
   SecureFloatingPointCircuitABY floating_point_y;
   if (mu != 0) {
+//    std::cout<<"007"<< std::endl;
     floating_point_y = floating_point_x1 * double(sigma) + double(mu);
   } else {
+//    std::cout<<"008"<< std::endl;
     floating_point_y = floating_point_x1 * double(sigma);
   }
+//    std::cout<<"009"<< std::endl;
   return floating_point_y;
 }
 

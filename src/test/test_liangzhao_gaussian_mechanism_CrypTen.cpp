@@ -34,8 +34,8 @@
 #include "protocols/share_wrapper.h"
 #include "secure_dp_mechanism/secure_discrete_gaussian_mechanism_CKS.h"
 #include "secure_dp_mechanism/secure_discrete_laplace_mechanism_CKS.h"
-#include "secure_dp_mechanism/secure_gaussian_mechanism_CrypTen.h"
 #include "secure_dp_mechanism/secure_dp_mechanism_PrivaDA.h"
+#include "secure_dp_mechanism/secure_gaussian_mechanism_CrypTen.h"
 #include "secure_dp_mechanism/secure_integer_scaling_gaussian_mechanism.h"
 #include "secure_dp_mechanism/secure_integer_scaling_laplace_mechanism.h"
 #include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
@@ -64,7 +64,7 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
     // using T_int = get_int_type_t<T>;
     using T_int = std::int64_t;
     using A = std::allocator<T>;
-    std::srand(std::time(nullptr)); 
+    std::srand(std::time(nullptr));
 
     for (auto number_of_parties : kNumberOfPartiesList) {
       std::size_t output_owner = 0;
@@ -110,6 +110,8 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
                                              random_floating_point_0_1_u2_vector[i])[1];
       }
 
+      std::cout << "after plaintext"<< std::endl;
+
       try {
         std::vector<PartyPointer> motion_parties(
             std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
@@ -144,15 +146,17 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
             share_random_floating_point64_0_1_u2_vector[i] =
                 motion_parties.at(party_id)->In<kBooleanGmw>(
                     ToInput<double, std::true_type>(random_floating_point_0_1_u2_vector[i]), 0);
-
           }
           encrypto::motion::ShareWrapper share_fD =
               motion_parties.at(party_id)->In<kBooleanGmw>(ToInput<T>(fD_vector), 0);
 
-          SecureGaussianMechanism_CrypTen secure_gaussian_mechanism = SecureGaussianMechanism_CrypTen(share_fD);
+          SecureGaussianMechanism_CrypTen secure_gaussian_mechanism =
+              SecureGaussianMechanism_CrypTen(share_fD);
           secure_gaussian_mechanism.ParameterSetup(sensitivity, mu, sigma, num_of_simd_gau,
                                                    fixed_point_bit_size,
                                                    fixed_point_fraction_bit_size);
+
+          std::cout << "after parameter setup" << std::endl;
 
           SecureFloatingPointCircuitABY floating_point32_gaussian_noise =
               secure_gaussian_mechanism.FL32GaussianNoiseGeneration(
@@ -167,9 +171,6 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
               floating_point32_gaussian_noise.Out();
           SecureFloatingPointCircuitABY floating_point64_gaussian_noise_out =
               floating_point64_gaussian_noise.Out();
-
-
-
 
           std::cout << "party run" << std::endl;
           motion_parties.at(party_id)->Run();
@@ -209,6 +210,5 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
     template_test(static_cast<std::uint64_t>(0));
   }
 }
-
 
 }  // namespace

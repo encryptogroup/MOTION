@@ -78,24 +78,24 @@ SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL32GaussianNoise
 
 SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL32GaussianNoiseGeneration() {
   ShareWrapper random_bits_of_length_23_u1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT32_MANTISSA_BITS, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_MANTISSA_BITS, num_of_simd_gauss_);
   ShareWrapper random_bits_of_length_126_u1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT32_EXPONENT_BIAS - 1, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_EXPONENT_BIAS - 1, num_of_simd_gauss_);
   ShareWrapper random_floating_point_0_1_boolean_gmw_share_u1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).UniformFloatingPoint32_0_1(
-          random_bits_of_length_23_u1, random_bits_of_length_126_u1);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .UniformFloatingPoint32_0_1(random_bits_of_length_23_u1, random_bits_of_length_126_u1);
 
   ShareWrapper random_bits_of_length_23_u2 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT32_MANTISSA_BITS, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_MANTISSA_BITS, num_of_simd_gauss_);
   ShareWrapper random_bits_of_length_126_u2 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT32_EXPONENT_BIAS - 1, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_EXPONENT_BIAS - 1, num_of_simd_gauss_);
   ShareWrapper random_floating_point_0_1_boolean_gmw_share_u2 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).UniformFloatingPoint32_0_1(
-          random_bits_of_length_23_u2, random_bits_of_length_126_u2);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .UniformFloatingPoint32_0_1(random_bits_of_length_23_u2, random_bits_of_length_126_u2);
 
   return FL32GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
                                      random_floating_point_0_1_boolean_gmw_share_u2);
@@ -104,9 +104,9 @@ SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL32GaussianNoise
 SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL32GaussianNoiseGeneration(
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2) {
-  SecureSamplingAlgorithm_optimized(fD_->Get()).FL32GaussianNoiseGeneration(
-      random_floating_point_0_1_boolean_gmw_share_u1,
-      random_floating_point_0_1_boolean_gmw_share_u2, mu_, sigma_);
+  return SecureSamplingAlgorithm_optimized(fD_->Get())
+      .FL32GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
+                                   random_floating_point_0_1_boolean_gmw_share_u2, mu_, sigma_);
 }
 
 //============================================================================
@@ -120,24 +120,24 @@ SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL64GaussianNoise
 
 SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL64GaussianNoiseGeneration() {
   ShareWrapper random_bits_of_length_52_u1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT_MANTISSA_BITS, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd_gauss_);
   ShareWrapper random_bits_of_length_1022_u1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd_gauss_);
   ShareWrapper random_floating_point_0_1_boolean_gmw_share_u1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).UniformFloatingPoint64_0_1(
-          random_bits_of_length_52_u1, random_bits_of_length_1022_u1);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .UniformFloatingPoint64_0_1(random_bits_of_length_52_u1, random_bits_of_length_1022_u1);
 
   ShareWrapper random_bits_of_length_52_u2 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT_MANTISSA_BITS, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd_gauss_);
   ShareWrapper random_bits_of_length_1022_u2 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(
-          FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd_gauss_);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd_gauss_);
   ShareWrapper random_floating_point_0_1_boolean_gmw_share_u2 =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).UniformFloatingPoint64_0_1(
-          random_bits_of_length_52_u2, random_bits_of_length_1022_u2);
+      SecureSamplingAlgorithm_optimized(fD_->Get())
+          .UniformFloatingPoint64_0_1(random_bits_of_length_52_u2, random_bits_of_length_1022_u2);
 
   return FL64GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
                                      random_floating_point_0_1_boolean_gmw_share_u2);
@@ -147,9 +147,9 @@ SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL64GaussianNoise
 SecureFloatingPointCircuitABY SecureGaussianMechanism_CrypTen::FL64GaussianNoiseGeneration(
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u1,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_u2) {
-  SecureSamplingAlgorithm_optimized(fD_->Get()).FL32GaussianNoiseGeneration(
-      random_floating_point_0_1_boolean_gmw_share_u1,
-      random_floating_point_0_1_boolean_gmw_share_u2, mu_, sigma_);
+  return SecureSamplingAlgorithm_optimized(fD_->Get())
+      .FL64GaussianNoiseGeneration(random_floating_point_0_1_boolean_gmw_share_u1,
+                                   random_floating_point_0_1_boolean_gmw_share_u2, mu_, sigma_);
 }
 
 //============================================================================
