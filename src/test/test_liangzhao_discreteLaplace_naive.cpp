@@ -346,8 +346,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteLaplaceDistributionEXP_BGMW_2_part
   }
 }
 
-// test passed
-TEST(SecureSamplingAlgorithm_naive, FLDiscreteLaplaceDistributionEXP_2_parties) {
+TEST(SecureSamplingAlgorithm_naive, FLDiscreteLaplaceDistributionEXP_GC_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
