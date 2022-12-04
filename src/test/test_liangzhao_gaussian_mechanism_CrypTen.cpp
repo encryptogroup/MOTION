@@ -53,6 +53,7 @@
 using namespace encrypto::motion;
 
 namespace {
+  
 TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_GC_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;

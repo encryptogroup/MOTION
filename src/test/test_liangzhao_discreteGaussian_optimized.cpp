@@ -808,8 +808,8 @@ TEST(SecureSamplingAlgorithm_optimized, FLDiscreteGaussianDistributionEXP_BGMW_2
 }
 
 
-! BMR
-test passed
+// ! BMR
+// test passed
 TEST(SecureSamplingAlgorithm_optimized, FLDiscreteGaussianDistributionEXP_BMR_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;

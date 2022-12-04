@@ -309,8 +309,8 @@ TEST(SecureSamplingAlgorithm_optimized, FLSymmetricBinomialDistribution_GC_2_par
   }
 }
 
-! BooleanGMW
-test passed
+// ! BooleanGMW
+// test passed
 TEST(SecureSamplingAlgorithm_optimized, FLSymmetricBinomialDistribution_BGMW_2_3_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;

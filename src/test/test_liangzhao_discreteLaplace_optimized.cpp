@@ -658,9 +658,9 @@ TEST(SecureSamplingAlgorithm_optimized, FLDiscreteLaplaceDistributionEXP_BGMW_2_
   }
 }
 
-! BMR
-test passed
-TEST(SecureSamplingAlgorithm_optimized, FLDiscreteLaplaceDistributionEXP_BGMW_2_parties) {
+// ! BMR
+// test passed
+TEST(SecureSamplingAlgorithm_optimized, FLDiscreteLaplaceDistributionEXP_BMR_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
