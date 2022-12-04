@@ -32,7 +32,7 @@
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/share_wrapper.h"
-#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
 #include "secure_dp_mechanism/secure_snapping_mechanism.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "test_helpers.h"
@@ -50,7 +50,7 @@ namespace {
 
 // ! Garbled Circuit
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLSymmetricBinomialDistribution_GC_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -191,7 +191,7 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties
           }
 
           std::vector<ShareWrapper> share_result =
-              SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+              SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                   .FLSymmetricBinomialDistribution_GC<double, IntType>(
                       sqrt_n_vector,
                       encrypto::motion::ShareWrapper::Simdify(
@@ -311,7 +311,7 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties
 
 ! BooleanGMW
 test passed
-TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BGMW_2_3_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLSymmetricBinomialDistribution_BGMW_2_3_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -449,7 +449,7 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BGMW_2_3_par
           }
 
           std::vector<ShareWrapper> share_result =
-              SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+              SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                   .FLSymmetricBinomialDistribution_BGMW<double, IntType>(
                       sqrt_n_vector,
                       encrypto::motion::ShareWrapper::Simdify(
@@ -569,7 +569,7 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BGMW_2_3_par
 
 // ! BMR
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BMR_2_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLSymmetricBinomialDistribution_BMR_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -705,7 +705,7 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BMR_2_partie
           }
 
           std::vector<ShareWrapper> share_result =
-              SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+              SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                   .FLSymmetricBinomialDistribution_BMR<double, IntType>(
                       sqrt_n_vector,
                       encrypto::motion::ShareWrapper::Simdify(

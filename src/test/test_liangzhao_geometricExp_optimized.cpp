@@ -32,7 +32,7 @@
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/share_wrapper.h"
-#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
 #include "secure_dp_mechanism/secure_snapping_mechanism.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "test_helpers.h"
@@ -50,7 +50,7 @@ namespace {
 
 // ! Garbled Circuit
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_GC_2_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLGeometricDistributionEXP_GC_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -213,7 +213,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_GC_2_parties) {
 
           if (denominator != 1) {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                     .FLGeometricDistributionEXP_GC<FLType, T, T_int, A>(
                         unsigned_integer_numerator_vector, unsigned_integer_denominator_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -222,7 +222,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_GC_2_parties) {
                         iteration_1, iteration_2);
 
           } else {
-            share_result = SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+            share_result = SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                                .FLGeometricDistributionEXP_GC<FLType, T, T_int, A>(
                                    unsigned_integer_numerator_vector,
                                    encrypto::motion::ShareWrapper::Simdify(
@@ -334,7 +334,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_GC_2_parties) {
 
 // ! Boolean GMW
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BGMW_2_3_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLGeometricDistributionEXP_BGMW_2_3_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -496,7 +496,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BGMW_2_3_parties)
 
           if (denominator != 1) {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                     .FLGeometricDistributionEXP_BGMW<FLType, T, T_int, A>(
                         unsigned_integer_numerator_vector, unsigned_integer_denominator_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -505,7 +505,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BGMW_2_3_parties)
                         iteration_1, iteration_2);
 
           } else {
-            share_result = SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+            share_result = SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                                .FLGeometricDistributionEXP_BGMW<FLType, T, T_int, A>(
                                    unsigned_integer_numerator_vector,
                                    encrypto::motion::ShareWrapper::Simdify(
@@ -619,7 +619,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BGMW_2_3_parties)
 
 // ! BMR
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BMR_2_3_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLGeometricDistributionEXP_BMR_2_3_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -783,7 +783,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BMR_2_3_parties) 
 
           if (denominator != 1) {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                     .FLGeometricDistributionEXP_BMR<FLType, T, T_int, A>(
                         unsigned_integer_numerator_vector, unsigned_integer_denominator_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -792,7 +792,7 @@ TEST(SecureSamplingAlgorithm_naive, FLGeometricDistributionEXP_BMR_2_3_parties) 
                         iteration_1, iteration_2);
 
           } else {
-            share_result = SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_vector[0])
+            share_result = SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_vector[0])
                                .FLGeometricDistributionEXP_BMR<FLType, T, T_int, A>(
                                    unsigned_integer_numerator_vector,
                                    encrypto::motion::ShareWrapper::Simdify(

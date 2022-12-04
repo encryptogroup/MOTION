@@ -32,7 +32,7 @@
 #include "protocols/bmr/bmr_wire.h"
 #include "protocols/boolean_gmw/boolean_gmw_wire.h"
 #include "protocols/share_wrapper.h"
-#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
 #include "secure_dp_mechanism/secure_snapping_mechanism.h"
 #include "secure_type/secure_unsigned_integer.h"
 #include "test_helpers.h"
@@ -50,7 +50,7 @@ namespace {
 
 // ! Garbled Circuit
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_GC_2_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLDiscreteGaussianDistributionEXP_GC_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -296,7 +296,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_GC_2_parti
           std::vector<ShareWrapper> share_result;
           if (denominator != 1) {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_dlap_vector[0])
                     .FLDiscreteGaussianDistribution_GC<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -309,7 +309,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_GC_2_parti
                         iteration_1, iteration_2, iteration_3, iteration_4);
           } else {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_dlap_vector[0])
                     .FLDiscreteGaussianDistribution_GC<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -436,7 +436,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_GC_2_parti
 
 // ! BooleanGMW
 // test passed
-TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BGMW_2_parties) {
+TEST(SecureSamplingAlgorithm_optimized, FLDiscreteGaussianDistributionEXP_BGMW_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -680,7 +680,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BGMW_2_par
           std::vector<ShareWrapper> share_result;
           if (denominator != 1) {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_dlap_vector[0])
                     .FLDiscreteGaussianDistribution_BGMW<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -693,7 +693,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BGMW_2_par
                         iteration_1, iteration_2, iteration_3, iteration_4);
           } else {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_dlap_vector[0])
                     .FLDiscreteGaussianDistribution_BGMW<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -808,9 +808,9 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BGMW_2_par
 }
 
 
-// ! BMR
-// test passed
-TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BMR_2_parties) {
+! BMR
+test passed
+TEST(SecureSamplingAlgorithm_optimized, FLDiscreteGaussianDistributionEXP_BMR_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -1056,7 +1056,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BMR_2_part
           std::vector<ShareWrapper> share_result;
           if (denominator != 1) {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_dlap_vector[0])
                     .FLDiscreteGaussianDistribution_BMR<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
@@ -1069,7 +1069,7 @@ TEST(SecureSamplingAlgorithm_naive, FLDiscreteGaussianDistributionEXP_BMR_2_part
                         iteration_1, iteration_2, iteration_3, iteration_4);
           } else {
             share_result =
-                SecureSamplingAlgorithm_naive(share_random_floating_point_0_1_dlap_vector[0])
+                SecureSamplingAlgorithm_optimized(share_random_floating_point_0_1_dlap_vector[0])
                     .FLDiscreteGaussianDistribution_BMR<FLType, T, T_int, A>(
                         constant_floating_point_sigma_vector,
                         encrypto::motion::ShareWrapper::Simdify(
