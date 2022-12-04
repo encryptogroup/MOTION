@@ -87,16 +87,16 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties
       std::vector<double> m_vector(num_of_simd, m);
       long double failure_probability_requirement = std::exp2(-40);
 
-      std::vector<long double> optimize_symmetrical_binomial_distribution_iteration_result =
+      SymmetricalBinomialDistributionOptimizationStruct optimize_symmetrical_binomial_distribution_iteration_result =
           optimize_symmetrical_binomial_distribution_iteration(sqrt_n,
                                                                failure_probability_requirement);
 
-      std::size_t iterations = optimize_symmetrical_binomial_distribution_iteration_result[0];
+      std::size_t iterations = optimize_symmetrical_binomial_distribution_iteration_result.iteration;
       long double failure_probability =
-          optimize_symmetrical_binomial_distribution_iteration_result[1];
+          optimize_symmetrical_binomial_distribution_iteration_result.symmetrical_binomial_failure_probability_estimation;
 
-      // only for debug
-      iterations = 50;
+      // // only for debug
+      // iterations = 50;
 
       std::cout << "iterations: " << iterations << std::endl;
       std::cout << "failure_probability: " << failure_probability << std::endl;
@@ -354,8 +354,8 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties
 //       long double failure_probability =
 //           optimize_symmetrical_binomial_distribution_iteration_result[1];
 
-//       // only for debug
-//       iterations = 50;
+//  //     // only for debug
+//  //     iterations = 50;
 
 //       std::cout << "iterations: " << iterations << std::endl;
 //       std::cout << "failure_probability: " << failure_probability << std::endl;
@@ -613,8 +613,8 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties
 //       long double failure_probability =
 //           optimize_symmetrical_binomial_distribution_iteration_result[1];
 
-//       // only for debug
-//       iterations = 50;
+//  //     // only for debug
+// //      iterations = 50;
 
 //       std::cout << "iterations: " << iterations << std::endl;
 //       std::cout << "failure_probability: " << failure_probability << std::endl;

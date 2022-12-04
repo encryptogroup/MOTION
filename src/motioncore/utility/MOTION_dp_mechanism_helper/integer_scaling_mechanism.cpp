@@ -227,20 +227,47 @@ std::vector<long double> symmetrical_binomial_distribution_failure_probability_e
   //    long double failure_probability_symmetric_binomial = probability_pi_less_than_equal_0 +
   //    probability_c_equal_0_and_pi_greater_than_0;
 
-  long double failure_probability_symmetric_binomial = 15.0 / 16;
+  long double failure_probability_symmetric_binomial = 15.0 / 16.0;
   std::vector<long double> result_vector(1);
   result_vector[0] = powl(failure_probability_symmetric_binomial, iteration);
 
   return result_vector;
 }
 
-std::vector<long double> optimize_symmetrical_binomial_distribution_iteration(
+// std::vector<long double> optimize_symmetrical_binomial_distribution_iteration(
+//     double sqrt_n, double total_failure_probability) {
+//   std::size_t iteration_lower_bound = 1;
+//   std::size_t iteration_upper_bound = 2000;
+
+//   double minimum_total_iteration = iteration_upper_bound;
+//   std::vector<long double> result_vector(2);
+
+//   for (std::size_t iteration = iteration_lower_bound; iteration < iteration_upper_bound;
+//        iteration++) {
+//     // std::cout << "iteration: " << iteration << std::endl;
+//     std::vector<long double>
+//         symmetrical_binomial_distribution_failure_probability_estimation_result_vector =
+//             symmetrical_binomial_distribution_failure_probability_estimation(sqrt_n, iteration);
+
+//     if ((iteration < minimum_total_iteration) &&
+//         (symmetrical_binomial_distribution_failure_probability_estimation_result_vector[0] <=
+//          total_failure_probability)) {
+//       minimum_total_iteration = iteration;
+//       result_vector[0] = iteration;
+//       result_vector[1] =
+//           symmetrical_binomial_distribution_failure_probability_estimation_result_vector[0];
+//     }
+//   }
+//   return result_vector;
+// }
+
+SymmetricalBinomialDistributionOptimizationStruct optimize_symmetrical_binomial_distribution_iteration(
     double sqrt_n, double total_failure_probability) {
   std::size_t iteration_lower_bound = 1;
   std::size_t iteration_upper_bound = 2000;
 
   double minimum_total_iteration = iteration_upper_bound;
-  std::vector<long double> result_vector(2);
+  SymmetricalBinomialDistributionOptimizationStruct result_struct{};
 
   for (std::size_t iteration = iteration_lower_bound; iteration < iteration_upper_bound;
        iteration++) {
@@ -253,12 +280,14 @@ std::vector<long double> optimize_symmetrical_binomial_distribution_iteration(
         (symmetrical_binomial_distribution_failure_probability_estimation_result_vector[0] <=
          total_failure_probability)) {
       minimum_total_iteration = iteration;
-      result_vector[0] = iteration;
-      result_vector[1] =
+
+      result_struct.iteration = iteration;
+      result_struct.minimum_total_iteration=minimum_total_iteration;
+      result_struct.symmetrical_binomial_failure_probability_estimation=
           symmetrical_binomial_distribution_failure_probability_estimation_result_vector[0];
     }
   }
-  return result_vector;
+  return result_struct;
 }
 
 // std::vector<double>

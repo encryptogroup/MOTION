@@ -9,6 +9,15 @@
 
 static double binomial_bound = std::exp2(57.0);
 
+struct SymmetricalBinomialDistributionOptimizationStruct {
+  long double iteration;
+  long double minimum_total_iteration;
+  long double minimum_total_MPC_time;
+  long double symmetrical_binomial_failure_probability_estimation;
+
+};
+
+
 using FLType = std::uint64_t;
 using FLType_int = std::int64_t;
 
@@ -29,7 +38,10 @@ std::vector<IntType> symmetrical_binomial_distribution(double constant_sqrt_n, s
 
 std::vector<long double> symmetrical_binomial_distribution_failure_probability_estimation(double sqrt_n, double iteration);
 
-std::vector<long double>
+// std::vector<long double>
+// optimize_symmetrical_binomial_distribution_iteration(double sqrt_n, double total_failure_probability = standard_failure_probability);
+
+SymmetricalBinomialDistributionOptimizationStruct
 optimize_symmetrical_binomial_distribution_iteration(double sqrt_n, double total_failure_probability = standard_failure_probability);
 
 double UnitNormalCDF(double value);

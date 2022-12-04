@@ -74,11 +74,11 @@ void SecureIntegerScalingGaussianMechanism::ParameterSetup(double sensitivity_l1
 
   m_ = T(floor(M_SQRT2 * sqrtN_ + 1));
 
-  std::vector<long double> optimize_symmetrical_binomial_distribution_iteration_result_vector =
+ SymmetricalBinomialDistributionOptimizationStruct optimize_symmetrical_binomial_distribution_iteration_result_struct =
       optimize_symmetrical_binomial_distribution_iteration(sqrtN_, failure_probability_requirement_);
 
-  iteration_ = optimize_symmetrical_binomial_distribution_iteration_result_vector[0];
-  total_failure_probability_ = optimize_symmetrical_binomial_distribution_iteration_result_vector[1];
+  iteration_ = optimize_symmetrical_binomial_distribution_iteration_result_struct.iteration;
+  total_failure_probability_ = optimize_symmetrical_binomial_distribution_iteration_result_struct.symmetrical_binomial_failure_probability_estimation;
 
   std::cout << "2.0 * sigma_ / binomial_bound_: " << 2.0 * sigma_ / binomial_bound_ << std::endl;
   std::cout << "resolution_r_: " << resolution_r_ << std::endl;
