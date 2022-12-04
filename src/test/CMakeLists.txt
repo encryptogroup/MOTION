@@ -83,7 +83,7 @@ add_executable(motiontest
         # test_liangzhao_subset_gate_garbled_circuit.cpp # test passed
         # test_liangzhao_unsimdify_gate_garbled_circuit.cpp # test passed
 
-        # test_liangzhao_random_integer_algorithm.cpp # testing
+        test_liangzhao_random_integer_algorithm.cpp # testing
         # test_liangzhao_simple_geometric.cpp # test passed
         # test_liangzhao_uniformly_sampling.cpp # test passed
 
