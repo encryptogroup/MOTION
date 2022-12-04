@@ -156,8 +156,11 @@ template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedInteg
     std::uint32_t>(std::uint32_t m, const std::size_t num_of_simd) const;
 template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<
     std::uint64_t>(std::uint64_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
-    __uint128_t m, const std::size_t num_of_simd) const;
+
+// this need 256-bit modular reduction circuit
+// template ShareWrapper
+// SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
+//     __uint128_t m, const std::size_t num_of_simd) const;
 
 template <typename T>
 ShareWrapper SecureSamplingAlgorithm_naive::GenerateRandomUnsignedIntegerBMR(
@@ -3687,6 +3690,5 @@ SecureSamplingAlgorithm_naive::FLSymmetricBinomialDistribution_BMR<double, std::
 //     const ShareWrapper& random_unsigned_integer_gc_share,
 //     const ShareWrapper& random_floating_point_0_1_gc_share, std::size_t iteration)
 //     const;
-
 
 }  // namespace encrypto::motion
