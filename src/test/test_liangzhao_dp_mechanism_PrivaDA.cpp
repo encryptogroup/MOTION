@@ -35,7 +35,7 @@
 #include "secure_dp_mechanism/secure_discrete_gaussian_mechanism_CKS.h"
 #include "secure_dp_mechanism/secure_discrete_laplace_mechanism_CKS.h"
 // #include "secure_dp_mechanism/secure_gaussian_mechanism.h"
-#include "secure_dp_mechanism/secure_dp_mechanism_EKMPP.h"
+#include "secure_dp_mechanism/secure_dp_mechanism_PrivaDA.h"
 #include "secure_dp_mechanism/secure_integer_scaling_gaussian_mechanism.h"
 #include "secure_dp_mechanism/secure_integer_scaling_laplace_mechanism.h"
 #include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
@@ -154,8 +154,8 @@ TEST(InsecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_Simd_2_3_4_5_10
           encrypto::motion::ShareWrapper share_fD =
               motion_parties.at(party_id)->In<kBooleanGmw>(ToInput<T>(fD_vector), 0);
 
-          SecureLaplaceDiscreteLaplaceMechanismEKMPP secure_laplace_discrete_laplace_mechanism =
-              SecureLaplaceDiscreteLaplaceMechanismEKMPP(share_fD);
+          SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism =
+              SecureDPMechanism_PrivaDA(share_fD);
           secure_laplace_discrete_laplace_mechanism.ParameterSetup(sensitivity, epsilon,
                                                                    num_of_simd_lap_dlap);
 

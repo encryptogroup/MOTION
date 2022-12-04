@@ -43,7 +43,7 @@ class SecureGaussianMechanism;
 
 // reference: CRYPTEN: Secure Multi-Party Computation Meets Machine Learning
 // ! note: the Gaussian random variable sampling algorithm in this paper is not secure, only for
-// benchmarking purposes
+// ! benchmarking purposes
 
 class SecureGaussianMechanism {
  public:

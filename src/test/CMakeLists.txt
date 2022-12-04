@@ -99,7 +99,11 @@ add_executable(motiontest
         # test_liangzhao_discreteGaussian_optimized.cpp # test passed
         # test_liangzhao_symmericalBinomial_optimized.cpp # test passed
 
-        test_liangzhao_dp_mechanism_EKMPP.cpp # testing
+        # testing for insecure Laplace and discrete Laplace mechanism: Eigner
+        test_liangzhao_dp_mechanism_PrivaDA.cpp # test passed, need intensive re-test, seems to fail once
+
+
+
 )
 
 target_link_libraries(motiontest PRIVATE

@@ -216,8 +216,8 @@ SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FxLaplaceNoi
 
 // SecureFloatingPointCircuitABY
 // SecureIntegerScalingLaplaceMechanism::FLLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP() {
-//   SecureLaplaceDiscreteLaplaceMechanismEKMPP secure_laplace_discrete_laplace_mechanism_EKMPP =
-//       SecureLaplaceDiscreteLaplaceMechanismEKMPP(fD_->Get());
+//   SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism_EKMPP =
+//       SecureDPMechanism_PrivaDA(fD_->Get());
 
 //   secure_laplace_discrete_laplace_mechanism_EKMPP.ParameterSetup(sensitivity_l1_, epsilon_dlap_,
 //                                                                  num_of_simd_lap_);
@@ -243,8 +243,8 @@ SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FxLaplaceNoi
 
 // SecureFixedPointCircuitCBMC
 // SecureIntegerScalingLaplaceMechanism::FxLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP() {
-//   SecureLaplaceDiscreteLaplaceMechanismEKMPP secure_laplace_discrete_laplace_mechanism_EKMPP =
-//       SecureLaplaceDiscreteLaplaceMechanismEKMPP(fD_->Get());
+//   SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism_EKMPP =
+//       SecureDPMechanism_PrivaDA(fD_->Get());
 
 //   secure_laplace_discrete_laplace_mechanism_EKMPP.ParameterSetup(
 //       sensitivity_l1_, epsilon_dlap_, num_of_simd_lap_, fixed_point_bit_size_,

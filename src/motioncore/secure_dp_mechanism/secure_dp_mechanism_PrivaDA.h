@@ -40,7 +40,7 @@ class Logger;
 class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
-class SecureLaplaceDiscreteLaplaceMechanismEKMPP;
+class SecureDPMechanism_PrivaDA;
 
 class SecureSamplingAlgorithm_naive;
 class SecureSamplingAlgorithm_optimized;
@@ -49,45 +49,45 @@ class SecureSamplingAlgorithm_optimized;
 // ! note: the Laplace or discrete Laplace sampling algorithm in this paper is not secure, only for
 // ! benchmarking purposes
 
-class SecureLaplaceDiscreteLaplaceMechanismEKMPP {
+class SecureDPMechanism_PrivaDA {
  public:
   using T = std::uint64_t;
   using IntType = std::uint64_t;
   using IntType_int = std::int64_t;
   std::size_t IntType_size = sizeof(IntType) * 8;
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP() = default;
+  SecureDPMechanism_PrivaDA() = default;
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP(
-      const SecureLaplaceDiscreteLaplaceMechanismEKMPP& other)
-      : SecureLaplaceDiscreteLaplaceMechanismEKMPP(*other.fD_) {}
+  SecureDPMechanism_PrivaDA(
+      const SecureDPMechanism_PrivaDA& other)
+      : SecureDPMechanism_PrivaDA(*other.fD_) {}
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP(SecureLaplaceDiscreteLaplaceMechanismEKMPP&& other)
-      : SecureLaplaceDiscreteLaplaceMechanismEKMPP(std::move(*other.fD_)) {
+  SecureDPMechanism_PrivaDA(SecureDPMechanism_PrivaDA&& other)
+      : SecureDPMechanism_PrivaDA(std::move(*other.fD_)) {
     other.fD_->Get().reset();
   }
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP(const ShareWrapper& other)
-      : SecureLaplaceDiscreteLaplaceMechanismEKMPP(*other) {}
+  SecureDPMechanism_PrivaDA(const ShareWrapper& other)
+      : SecureDPMechanism_PrivaDA(*other) {}
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP(ShareWrapper&& other)
-      : SecureLaplaceDiscreteLaplaceMechanismEKMPP(std::move(*other)) {
+  SecureDPMechanism_PrivaDA(ShareWrapper&& other)
+      : SecureDPMechanism_PrivaDA(std::move(*other)) {
     other.Get().reset();
   }
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP(const SharePointer& other);
+  SecureDPMechanism_PrivaDA(const SharePointer& other);
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP(SharePointer&& other);
+  SecureDPMechanism_PrivaDA(SharePointer&& other);
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP& operator=(
-      const SecureLaplaceDiscreteLaplaceMechanismEKMPP& other) {
+  SecureDPMechanism_PrivaDA& operator=(
+      const SecureDPMechanism_PrivaDA& other) {
     this->fD_ = other.fD_;
     this->logger_ = other.logger_;
     return *this;
   }
 
-  SecureLaplaceDiscreteLaplaceMechanismEKMPP& operator=(
-      SecureLaplaceDiscreteLaplaceMechanismEKMPP&& other) {
+  SecureDPMechanism_PrivaDA& operator=(
+      SecureDPMechanism_PrivaDA&& other) {
     this->fD_ = std::move(other.fD_);
     this->logger_ = std::move(other.logger_);
     return *this;

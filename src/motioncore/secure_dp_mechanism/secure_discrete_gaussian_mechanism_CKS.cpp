@@ -519,8 +519,8 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 // SecureSignedInteger
 // SecureDiscreteGaussianMechanismCKS::FLDiscreteGaussianNoiseGeneration_with_DiscreteLaplaceEKMPP()
 // {
-//   SecureLaplaceDiscreteLaplaceMechanismEKMPP secure_laplace_discrete_laplace_mechanism_EKMPP =
-//       SecureLaplaceDiscreteLaplaceMechanismEKMPP(fD_->Get());
+//   SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism_EKMPP =
+//       SecureDPMechanism_PrivaDA(fD_->Get());
 
 //   secure_laplace_discrete_laplace_mechanism_EKMPP.ParameterSetup(
 //       sensitivity_l1_, epsilon_dlap_, iteration_EKMPP_ * num_of_simd_dgau_);
@@ -569,8 +569,8 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 // SecureSignedInteger
 // SecureDiscreteGaussianMechanismCKS::FxDiscreteGaussianNoiseGeneration_with_DiscreteLaplaceEKMPP()
 // {
-//   SecureLaplaceDiscreteLaplaceMechanismEKMPP secure_laplace_discrete_laplace_mechanism_EKMPP =
-//       SecureLaplaceDiscreteLaplaceMechanismEKMPP(fD_->Get());
+//   SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism_EKMPP =
+//       SecureDPMechanism_PrivaDA(fD_->Get());
 
 //   secure_laplace_discrete_laplace_mechanism_EKMPP.ParameterSetup(
 //       sensitivity_l1_, epsilon_dlap_, iteration_EKMPP_ * num_of_simd_dgau_);

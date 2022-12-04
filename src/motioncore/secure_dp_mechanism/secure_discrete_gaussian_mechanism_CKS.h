@@ -25,7 +25,7 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-#include "secure_dp_mechanism/secure_dp_mechanism_EKMPP.h"
+#include "secure_dp_mechanism/secure_dp_mechanism_PrivaDA.h"
 // #include "secure_type/secure_floating_point32_agmw_ABZS.h"
 // #include "secure_type/secure_floating_point64_agmw_ABZS.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
@@ -39,7 +39,7 @@ class Logger;
 class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
-class SecureLaplaceDiscreteLaplaceMechanismEKMPP;
+class SecureDPMechanism_PrivaDA;
 
 // we use fixed-point, 32-bit floating-point and 64-bit floating-point,
 // reference: The Discrete Gaussian for Differential Privacy

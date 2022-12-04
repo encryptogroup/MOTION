@@ -26,7 +26,7 @@
 
 #include "protocols/share_wrapper.h"
 #include "secure_dp_mechanism/secure_discrete_laplace_mechanism_CKS.h"
-#include "secure_dp_mechanism/secure_dp_mechanism_EKMPP.h"
+#include "secure_dp_mechanism/secure_dp_mechanism_PrivaDA.h"
 #include "secure_type/secure_floating_point32_agmw_ABZS.h"
 #include "secure_type/secure_floating_point64_agmw_ABZS.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
@@ -39,7 +39,7 @@ class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
 class SecureDiscreteLaplaceMechanismCKS;
-class SecureLaplaceDiscreteLaplaceMechanismEKMPP;
+class SecureDPMechanism_PrivaDA;
 
 // reference:
 // https://github.com/google/differential-privacy/blob/main/common_docs/Secure_Noise_Generation.pdf
