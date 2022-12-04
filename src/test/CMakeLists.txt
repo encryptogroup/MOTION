@@ -89,7 +89,7 @@ add_executable(motiontest
 
         # testing for naive algorithms
         # test_liangzhao_geometricExp_naive.cpp # test passed
-        test_liangzhao_discreteLaplace_naive.cpp # testing
+        test_liangzhao_discreteLaplace_naive.cpp # test passed
         # test_liangzhao_discreteGaussian_naive.cpp # testing
         # test_liangzhao_symmericalBinomial_naive.cpp # testing
 
