@@ -87,28 +87,23 @@ add_executable(motiontest
         # test_liangzhao_simple_geometric.cpp # test passed
         # test_liangzhao_uniformly_sampling.cpp # test passed
 
-        # testing for naive algorithms
+        # # testing for naive algorithms
         # test_liangzhao_geometricExp_naive.cpp # test passed
         # test_liangzhao_discreteLaplace_naive.cpp # test passed
         # test_liangzhao_discreteGaussian_naive.cpp # test passed
         # test_liangzhao_symmericalBinomial_naive.cpp # test passed
 
-        # testing for optimized algorithms
-        # test_liangzhao_geometricExp_optimized.cpp # testing, re-test when apply new optimizations
-        # test_liangzhao_discreteLaplace_optimized.cpp # testing, re-test when apply new optimizations
-        # test_liangzhao_discreteGaussian_optimized.cpp # testing, re-test when apply new optimizations
-        test_liangzhao_symmericalBinomial_optimized.cpp # testing
+        # # testing for optimized algorithms
+        # test_liangzhao_geometricExp_optimized.cpp # test passed, re-test when apply new optimizations
+        # test_liangzhao_discreteLaplace_optimized.cpp # test passed, re-test when apply new optimizations
+        # test_liangzhao_discreteGaussian_optimized.cpp # test passed, re-test when apply new optimizations
+        # test_liangzhao_symmericalBinomial_optimized.cpp # test passed, re-test when apply new optimizations
 
-        # testing for insecure Laplace and discrete Laplace mechanism: paper (Differentially Private Data Aggregation with Optimal Utility)
+        # # testing for insecure Laplace and discrete Laplace mechanism: paper (Differentially Private Data Aggregation with Optimal Utility)
         # test_liangzhao_dp_mechanism_PrivaDA.cpp # test passed, need intensive re-test, seems to fail once
 
-        # testing for insecure Gaussian mechanism: paper (CRYPTEN: Secure Multi-Party Computation Meets Machine Learning)
+        # # testing for insecure Gaussian mechanism: paper (CRYPTEN: Secure Multi-Party Computation Meets Machine Learning)
         # test_liangzhao_gaussian_mechanism_CrypTen.cpp # test passed
-
-
-
-
-
 )
 
 target_link_libraries(motiontest PRIVATE
