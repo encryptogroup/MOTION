@@ -56,7 +56,191 @@ namespace {
 
 // test passed
 // TODO: need intensive re-test, seems to fail once
-TEST(SecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_Simd_2_3_4_5_10_parties) {
+TEST(SecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_GC_Simd_2_3_4_5_10_parties) {
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  constexpr auto kBooleanConstant = encrypto::motion::MpcProtocol::kBooleanConstant;
+  constexpr auto kGarbledCircuit = encrypto::motion::MpcProtocol::kGarbledCircuit;
+  // std::srand(std::time(nullptr));
+  auto template_test = [](auto template_variable_1) {
+    using T = decltype(template_variable_1);
+    // using T_int = get_int_type_t<T>;
+    using T_int = std::int64_t;
+    using A = std::allocator<T>;
+    std::srand(std::time(nullptr));
+
+    for (auto number_of_parties : kNumberOfPartiesList) {
+      std::size_t output_owner = 0;
+
+      std::size_t num_of_simd_lap_dlap = 10;
+      std::vector<T> fD_vector = rand_range_integer_vector<T>(0, 5, num_of_simd_lap_dlap);
+      std::size_t fixed_point_fraction_bit_size = 16;
+
+      // only for debugging
+      // std::cout << "fD_vector: " << std::endl;
+      // for (std::size_t i = 0; i < fD_vector.size(); ++i) {
+      //   std::cout << fD_vector[i] << std::endl;
+      // }
+
+      std::vector<double> random_floating_point_0_1_rx_vector =
+          rand_range_double_vector(0, 1, num_of_simd_lap_dlap);
+
+      std::vector<double> random_floating_point_0_1_ry_vector =
+          rand_range_double_vector(0, 1, num_of_simd_lap_dlap);
+
+      // only for debugging
+      // std::cout << "random_floating_point_0_1_rx_vector" << std::endl;
+      // for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+      //   std::cout << random_floating_point_0_1_rx_vector[i] << std::endl;
+      // }
+      // std::cout << "random_floating_point_0_1_ry_vector" << std::endl;
+      // for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+      //   std::cout << random_floating_point_0_1_ry_vector[i] << std::endl;
+      // }
+
+      double sensitivity = 1;
+      double epsilon = 1.5;
+      double lambda_lap = sensitivity / epsilon;
+      double lambda_dlap = std::exp(-epsilon / sensitivity);
+
+      std::vector<double> expect_lap_result(num_of_simd_lap_dlap);
+      std::vector<double> expect_dlap_result(num_of_simd_lap_dlap);
+      for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+        expect_lap_result[i] =
+            laplace_distribution(lambda_lap, random_floating_point_0_1_rx_vector[i],
+                                 random_floating_point_0_1_ry_vector[i]);
+        expect_dlap_result[i] =
+            discrete_laplace_distribution(lambda_dlap, random_floating_point_0_1_rx_vector[i],
+                                          random_floating_point_0_1_ry_vector[i]);
+      }
+
+      try {
+        std::vector<PartyPointer> motion_parties(
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+        for (auto& party : motion_parties) {
+          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+          party->GetConfiguration()->SetOnlineAfterSetup(std::mt19937{}() % 2 == 1);
+        }
+#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(motion_parties.size())
+        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point32_0_1_rx_vector(
+              num_of_simd_lap_dlap);
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point32_0_1_ry_vector(
+              num_of_simd_lap_dlap);
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point64_0_1_rx_vector(
+              num_of_simd_lap_dlap);
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point64_0_1_ry_vector(
+              num_of_simd_lap_dlap);
+
+          for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+            share_random_floating_point32_0_1_rx_vector[i] =
+                motion_parties.at(party_id)->In<kGarbledCircuit>(
+                    ToInput<float, std::true_type>(float(random_floating_point_0_1_rx_vector[i])),
+                    0);
+            share_random_floating_point32_0_1_ry_vector[i] =
+                motion_parties.at(party_id)->In<kGarbledCircuit>(
+                    ToInput<float, std::true_type>(float(random_floating_point_0_1_ry_vector[i])),
+                    0);
+            share_random_floating_point64_0_1_rx_vector[i] =
+                motion_parties.at(party_id)->In<kGarbledCircuit>(
+                    ToInput<double, std::true_type>(random_floating_point_0_1_rx_vector[i]), 0);
+            share_random_floating_point64_0_1_ry_vector[i] =
+                motion_parties.at(party_id)->In<kGarbledCircuit>(
+                    ToInput<double, std::true_type>(random_floating_point_0_1_ry_vector[i]), 0);
+          }
+
+          encrypto::motion::ShareWrapper share_fD =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(ToInput<T>(fD_vector), 0);
+
+          SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism =
+              SecureDPMechanism_PrivaDA(share_fD);
+          secure_laplace_discrete_laplace_mechanism.ParameterSetup(sensitivity, epsilon,
+                                                                   num_of_simd_lap_dlap);
+
+          SecureFloatingPointCircuitABY floating_point32_laplace_noise =
+              secure_laplace_discrete_laplace_mechanism.FL32LaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_ry_vector));
+          SecureFloatingPointCircuitABY floating_point64_laplace_noise =
+              secure_laplace_discrete_laplace_mechanism.FL64LaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_ry_vector));
+
+          SecureFloatingPointCircuitABY floating_point32_laplace_noise_out =
+              floating_point32_laplace_noise.Out();
+          SecureFloatingPointCircuitABY floating_point64_laplace_noise_out =
+              floating_point64_laplace_noise.Out();
+
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl32 =
+              secure_laplace_discrete_laplace_mechanism.FL32DiscreteLaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_ry_vector));
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl64 =
+              secure_laplace_discrete_laplace_mechanism.FL64DiscreteLaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_ry_vector));
+
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl32_out =
+              signed_integer_discrete_laplace_noise_fl32.Out();
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl64_out =
+              signed_integer_discrete_laplace_noise_fl64.Out();
+
+          std::cout << "party run" << std::endl;
+          motion_parties.at(party_id)->Run();
+          motion_parties.at(party_id)->Finish();
+          std::cout << "party finish" << std::endl;
+
+          if (party_id == 0) {
+            std::cout << "party_id: " << party_id << std::endl;
+            std::vector<float> floating_point32_laplace_noise_out_as =
+                floating_point32_laplace_noise_out.AsFloatingPointVector<float>();
+            std::vector<double> floating_point64_laplace_noise_out_as =
+                floating_point64_laplace_noise_out.AsFloatingPointVector<double>();
+
+            std::vector<T> signed_integer_discrete_laplace_noise_fl32_out_as =
+                signed_integer_discrete_laplace_noise_fl32_out.AsVector<T>();
+            std::vector<T> signed_integer_discrete_laplace_noise_fl64_out_as =
+                signed_integer_discrete_laplace_noise_fl64_out.AsVector<T>();
+
+            for (std::size_t i = 0; i < num_of_simd_lap_dlap; ++i) {
+              std::cout << "expect_lap_result[i]: " << expect_lap_result[i] << std::endl;
+              std::cout << "floating_point32_laplace_noise_out_as[i]: "
+                        << floating_point32_laplace_noise_out_as[i] << std::endl;
+              std::cout << "floating_point64_laplace_noise_out_as[i]: "
+                        << floating_point64_laplace_noise_out_as[i] << std::endl;
+
+              double abs_error = 0.01;
+              EXPECT_NEAR(expect_lap_result[i], floating_point32_laplace_noise_out_as[i],
+                          abs_error);
+              EXPECT_NEAR(expect_lap_result[i], floating_point64_laplace_noise_out_as[i],
+                          abs_error);
+
+              std::cout << "expect_dlap_result[i]: " << expect_dlap_result[i] << std::endl;
+              std::cout << "signed_integer_discrete_laplace_noise_fl32_out_as[i]: "
+                        << T_int(signed_integer_discrete_laplace_noise_fl32_out_as[i]) << std::endl;
+              std::cout << "signed_integer_discrete_laplace_noise_fl64_out_as[i]: "
+                        << T_int(signed_integer_discrete_laplace_noise_fl64_out_as[i]) << std::endl;
+              EXPECT_EQ(expect_dlap_result[i],
+                        T_int(signed_integer_discrete_laplace_noise_fl32_out_as[i]));
+              EXPECT_EQ(expect_dlap_result[i],
+                        T_int(signed_integer_discrete_laplace_noise_fl64_out_as[i]));
+            }
+          }
+        }
+      } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
+  };
+  for (auto i = 0ull; i < kTestIterations; ++i) {
+    template_test(static_cast<std::uint64_t>(0));
+  }
+}
+
+TEST(SecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_BGMW_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -153,6 +337,185 @@ TEST(SecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_Simd_2_3_4_5_10_p
 
           encrypto::motion::ShareWrapper share_fD =
               motion_parties.at(party_id)->In<kBooleanGmw>(ToInput<T>(fD_vector), 0);
+
+          SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism =
+              SecureDPMechanism_PrivaDA(share_fD);
+          secure_laplace_discrete_laplace_mechanism.ParameterSetup(sensitivity, epsilon,
+                                                                   num_of_simd_lap_dlap);
+
+          SecureFloatingPointCircuitABY floating_point32_laplace_noise =
+              secure_laplace_discrete_laplace_mechanism.FL32LaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_ry_vector));
+          SecureFloatingPointCircuitABY floating_point64_laplace_noise =
+              secure_laplace_discrete_laplace_mechanism.FL64LaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_ry_vector));
+
+          SecureFloatingPointCircuitABY floating_point32_laplace_noise_out =
+              floating_point32_laplace_noise.Out();
+          SecureFloatingPointCircuitABY floating_point64_laplace_noise_out =
+              floating_point64_laplace_noise.Out();
+
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl32 =
+              secure_laplace_discrete_laplace_mechanism.FL32DiscreteLaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point32_0_1_ry_vector));
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl64 =
+              secure_laplace_discrete_laplace_mechanism.FL64DiscreteLaplaceNoiseGeneration(
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_rx_vector),
+                  ShareWrapper::Simdify(share_random_floating_point64_0_1_ry_vector));
+
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl32_out =
+              signed_integer_discrete_laplace_noise_fl32.Out();
+          SecureSignedInteger signed_integer_discrete_laplace_noise_fl64_out =
+              signed_integer_discrete_laplace_noise_fl64.Out();
+
+          std::cout << "party run" << std::endl;
+          motion_parties.at(party_id)->Run();
+          motion_parties.at(party_id)->Finish();
+          std::cout << "party finish" << std::endl;
+
+          if (party_id == 0) {
+            std::cout << "party_id: " << party_id << std::endl;
+            std::vector<float> floating_point32_laplace_noise_out_as =
+                floating_point32_laplace_noise_out.AsFloatingPointVector<float>();
+            std::vector<double> floating_point64_laplace_noise_out_as =
+                floating_point64_laplace_noise_out.AsFloatingPointVector<double>();
+
+            std::vector<T> signed_integer_discrete_laplace_noise_fl32_out_as =
+                signed_integer_discrete_laplace_noise_fl32_out.AsVector<T>();
+            std::vector<T> signed_integer_discrete_laplace_noise_fl64_out_as =
+                signed_integer_discrete_laplace_noise_fl64_out.AsVector<T>();
+
+            for (std::size_t i = 0; i < num_of_simd_lap_dlap; ++i) {
+              std::cout << "expect_lap_result[i]: " << expect_lap_result[i] << std::endl;
+              std::cout << "floating_point32_laplace_noise_out_as[i]: "
+                        << floating_point32_laplace_noise_out_as[i] << std::endl;
+              std::cout << "floating_point64_laplace_noise_out_as[i]: "
+                        << floating_point64_laplace_noise_out_as[i] << std::endl;
+
+              double abs_error = 0.01;
+              EXPECT_NEAR(expect_lap_result[i], floating_point32_laplace_noise_out_as[i],
+                          abs_error);
+              EXPECT_NEAR(expect_lap_result[i], floating_point64_laplace_noise_out_as[i],
+                          abs_error);
+
+              std::cout << "expect_dlap_result[i]: " << expect_dlap_result[i] << std::endl;
+              std::cout << "signed_integer_discrete_laplace_noise_fl32_out_as[i]: "
+                        << T_int(signed_integer_discrete_laplace_noise_fl32_out_as[i]) << std::endl;
+              std::cout << "signed_integer_discrete_laplace_noise_fl64_out_as[i]: "
+                        << T_int(signed_integer_discrete_laplace_noise_fl64_out_as[i]) << std::endl;
+              EXPECT_EQ(expect_dlap_result[i],
+                        T_int(signed_integer_discrete_laplace_noise_fl32_out_as[i]));
+              EXPECT_EQ(expect_dlap_result[i],
+                        T_int(signed_integer_discrete_laplace_noise_fl64_out_as[i]));
+            }
+          }
+        }
+      } catch (std::exception& e) {
+        std::cerr << e.what() << std::endl;
+      }
+    }
+  };
+  for (auto i = 0ull; i < kTestIterations; ++i) {
+    template_test(static_cast<std::uint64_t>(0));
+  }
+}
+
+TEST(SecureDPMechanismEKMPP, Laplace_DiscreteLaplace_Mechanism_BMR_Simd_2_3_4_5_10_parties) {
+  constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
+  constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
+  constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
+  constexpr auto kBmr = encrypto::motion::MpcProtocol::kBmr;
+  constexpr auto kBooleanConstant = encrypto::motion::MpcProtocol::kBooleanConstant;
+  constexpr auto kGarbledCircuit = encrypto::motion::MpcProtocol::kGarbledCircuit;
+  // std::srand(std::time(nullptr));
+  auto template_test = [](auto template_variable_1) {
+    using T = decltype(template_variable_1);
+    // using T_int = get_int_type_t<T>;
+    using T_int = std::int64_t;
+    using A = std::allocator<T>;
+    std::srand(std::time(nullptr));
+
+    for (auto number_of_parties : kNumberOfPartiesList) {
+      std::size_t output_owner = 0;
+
+      std::size_t num_of_simd_lap_dlap = 10;
+      std::vector<T> fD_vector = rand_range_integer_vector<T>(0, 5, num_of_simd_lap_dlap);
+      std::size_t fixed_point_fraction_bit_size = 16;
+
+      // only for debugging
+      // std::cout << "fD_vector: " << std::endl;
+      // for (std::size_t i = 0; i < fD_vector.size(); ++i) {
+      //   std::cout << fD_vector[i] << std::endl;
+      // }
+
+      std::vector<double> random_floating_point_0_1_rx_vector =
+          rand_range_double_vector(0, 1, num_of_simd_lap_dlap);
+
+      std::vector<double> random_floating_point_0_1_ry_vector =
+          rand_range_double_vector(0, 1, num_of_simd_lap_dlap);
+
+      // only for debugging
+      // std::cout << "random_floating_point_0_1_rx_vector" << std::endl;
+      // for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+      //   std::cout << random_floating_point_0_1_rx_vector[i] << std::endl;
+      // }
+      // std::cout << "random_floating_point_0_1_ry_vector" << std::endl;
+      // for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+      //   std::cout << random_floating_point_0_1_ry_vector[i] << std::endl;
+      // }
+
+      double sensitivity = 1;
+      double epsilon = 1.5;
+      double lambda_lap = sensitivity / epsilon;
+      double lambda_dlap = std::exp(-epsilon / sensitivity);
+
+      std::vector<double> expect_lap_result(num_of_simd_lap_dlap);
+      std::vector<double> expect_dlap_result(num_of_simd_lap_dlap);
+      for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+        expect_lap_result[i] =
+            laplace_distribution(lambda_lap, random_floating_point_0_1_rx_vector[i],
+                                 random_floating_point_0_1_ry_vector[i]);
+        expect_dlap_result[i] =
+            discrete_laplace_distribution(lambda_dlap, random_floating_point_0_1_rx_vector[i],
+                                          random_floating_point_0_1_ry_vector[i]);
+      }
+
+      try {
+        std::vector<PartyPointer> motion_parties(
+            std::move(MakeLocallyConnectedParties(number_of_parties, kPortOffset)));
+        for (auto& party : motion_parties) {
+          party->GetLogger()->SetEnabled(kDetailedLoggingEnabled);
+          party->GetConfiguration()->SetOnlineAfterSetup(std::mt19937{}() % 2 == 1);
+        }
+#pragma omp parallel num_threads(motion_parties.size() + 1) default(shared)
+#pragma omp single
+#pragma omp taskloop num_tasks(motion_parties.size())
+        for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point32_0_1_rx_vector(
+              num_of_simd_lap_dlap);
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point32_0_1_ry_vector(
+              num_of_simd_lap_dlap);
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point64_0_1_rx_vector(
+              num_of_simd_lap_dlap);
+          std::vector<encrypto::motion::ShareWrapper> share_random_floating_point64_0_1_ry_vector(
+              num_of_simd_lap_dlap);
+
+          for (std::size_t i = 0; i < num_of_simd_lap_dlap; i++) {
+            share_random_floating_point32_0_1_rx_vector[i] = motion_parties.at(party_id)->In<kBmr>(
+                ToInput<float, std::true_type>(float(random_floating_point_0_1_rx_vector[i])), 0);
+            share_random_floating_point32_0_1_ry_vector[i] = motion_parties.at(party_id)->In<kBmr>(
+                ToInput<float, std::true_type>(float(random_floating_point_0_1_ry_vector[i])), 0);
+            share_random_floating_point64_0_1_rx_vector[i] = motion_parties.at(party_id)->In<kBmr>(
+                ToInput<double, std::true_type>(random_floating_point_0_1_rx_vector[i]), 0);
+            share_random_floating_point64_0_1_ry_vector[i] = motion_parties.at(party_id)->In<kBmr>(
+                ToInput<double, std::true_type>(random_floating_point_0_1_ry_vector[i]), 0);
+          }
+
+          encrypto::motion::ShareWrapper share_fD =
+              motion_parties.at(party_id)->In<kBmr>(ToInput<T>(fD_vector), 0);
 
           SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism =
               SecureDPMechanism_PrivaDA(share_fD);

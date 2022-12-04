@@ -110,7 +110,7 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
                                              random_floating_point_0_1_u2_vector[i])[1];
       }
 
-      std::cout << "after plaintext"<< std::endl;
+    //   std::cout << "after plaintext"<< std::endl;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -156,7 +156,7 @@ TEST(SecureGaussianMechanismCrypTen, SecureGaussianMechanism_CrypTen_Simd_2_3_4_
                                                    fixed_point_bit_size,
                                                    fixed_point_fraction_bit_size);
 
-          std::cout << "after parameter setup" << std::endl;
+        //   std::cout << "after parameter setup" << std::endl;
 
           SecureFloatingPointCircuitABY floating_point32_gaussian_noise =
               secure_gaussian_mechanism.FL32GaussianNoiseGeneration(

@@ -100,10 +100,10 @@ add_executable(motiontest
         # test_liangzhao_symmericalBinomial_optimized.cpp # test passed
 
         # testing for insecure Laplace and discrete Laplace mechanism: paper (Differentially Private Data Aggregation with Optimal Utility)
-        # test_liangzhao_dp_mechanism_PrivaDA.cpp # test passed, need intensive re-test, seems to fail once
+        test_liangzhao_dp_mechanism_PrivaDA.cpp # test passed, need intensive re-test, seems to fail once
 
         # testing for insecure Gaussian mechanism: paper (CRYPTEN: Secure Multi-Party Computation Meets Machine Learning)
-        test_liangzhao_gaussian_mechanism_CrypTen.cpp
+        test_liangzhao_gaussian_mechanism_CrypTen.cpp # test passed
 
 
 
