@@ -309,8 +309,8 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_GC_2_parties
   }
 }
 
-! BooleanGMW
-test passed
+// ! BooleanGMW
+// test passed
 TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BGMW_2_3_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
@@ -562,8 +562,8 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BGMW_2_3_par
   for (auto i = 0ull; i < kTestIterations; ++i) {
     template_test(static_cast<std::uint64_t>(0), static_cast<std::int64_t>(0),
                   static_cast<double>(0));
-    // template_test(static_cast<__uint128_t>(0), static_cast<__int128_t>(0),
-    // static_cast<double>(0));
+    template_test(static_cast<__uint128_t>(0), static_cast<__int128_t>(0),
+    static_cast<double>(0));
   }
 }
 
@@ -818,8 +818,8 @@ TEST(SecureSamplingAlgorithm_naive, FLSymmetricBinomialDistribution_BMR_2_partie
   for (auto i = 0ull; i < kTestIterations; ++i) {
     template_test(static_cast<std::uint64_t>(0), static_cast<std::int64_t>(0),
                   static_cast<double>(0));
-    // template_test(static_cast<__uint128_t>(0), static_cast<__int128_t>(0),
-    // static_cast<double>(0));
+    template_test(static_cast<__uint128_t>(0), static_cast<__int128_t>(0),
+    static_cast<double>(0));
   }
 }
 
