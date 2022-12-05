@@ -11,7 +11,7 @@
 
 
 # =============================================================================================
-# benchmark GarbledCircuit, BooleanGMW, BMR
+# benchmark BooleanGMW, BMR
 # network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
 # log: 
 # time: 2022.12.05 23:35 -
