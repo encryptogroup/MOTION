@@ -51,6 +51,8 @@ using namespace encrypto::motion;
 
 namespace {
 
+// interface test
+// TODO: add correctness test
 TEST(IntegerScalingLaplaceMechanism,
      SecureIntegerScalingLaplaceMechanismFL_32_64_naive_1_0_1_1_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
