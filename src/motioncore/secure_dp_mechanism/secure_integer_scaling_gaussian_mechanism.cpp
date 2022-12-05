@@ -112,13 +112,13 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive() {
       SecureSamplingAlgorithm_naive(fD_->Get())
           .SimpleGeometricSampling_0(random_bits_for_geometric_sampling);
 
-  std::cout << "003" << std::endl;
+  // std::cout << "003" << std::endl;
   ShareWrapper unsigned_integer_boolean_gmw_share_geometric_sample =
       SecureSamplingAlgorithm_naive(fD_->Get())
           .BooleanBitsShareZeroCompensation(boolean_gmw_share_geometric_sample,
                                             FLOATINGPOINT64_BITS);
-                                            
-  std::cout << "004" << std::endl;
+
+  // std::cout << "004" << std::endl;
 
   ShareWrapper boolean_gmw_share_random_bits =
       SecureSamplingAlgorithm_naive(fD_->Get())
