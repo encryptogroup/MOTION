@@ -143,6 +143,7 @@ SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceN
   SecureSignedInteger signed_integer_discrete_laplace_noise =
       secure_discrete_laplace_mechanism_CKS.FL64DiscreteLaplaceNoiseGeneration_naive();
 
+// less efficient method
   SecureFloatingPointCircuitABY floating_point_laplace_noise =
     (  signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8) )* double(resolution_r_);
 
