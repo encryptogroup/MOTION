@@ -88,10 +88,10 @@ add_executable(motiontest
         # test_liangzhao_uniformly_sampling.cpp # test passed
 
         # # ! testing for naive algorithms
-        test_liangzhao_geometricExp_naive.cpp # test passed
-        test_liangzhao_discreteLaplace_naive.cpp # test passed
-        test_liangzhao_discreteGaussian_naive.cpp # test passed
-        test_liangzhao_symmericalBinomial_naive.cpp # test passed
+        # test_liangzhao_geometricExp_naive.cpp # test passed
+        # test_liangzhao_discreteLaplace_naive.cpp # test passed
+        # test_liangzhao_discreteGaussian_naive.cpp # test passed
+        # test_liangzhao_symmericalBinomial_naive.cpp # test passed
 
         # # ! testing for optimized algorithms
         test_liangzhao_geometricExp_optimized.cpp # test passed, re-test when apply new optimizations
