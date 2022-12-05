@@ -336,8 +336,8 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive(
 // ! optimized version
 SecureFloatingPointCircuitABY
 SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized() {
-  std::cout << "SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration" << std::endl;
-  std::size_t geometric_distribution_sampling_bit_length = 100;
+  std::cout << "SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized" << std::endl;
+ std::size_t geometric_distribution_sampling_bit_length = 100;
   ShareWrapper random_bits_for_geometric_sampling =
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .GenerateRandomBooleanGmwBits(geometric_distribution_sampling_bit_length,
@@ -345,18 +345,48 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized() {
   ShareWrapper boolean_gmw_share_geometric_sample =
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .SimpleGeometricSampling_0(random_bits_for_geometric_sampling);
+
   ShareWrapper unsigned_integer_boolean_gmw_share_geometric_sample =
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .BooleanBitsShareZeroCompensation(boolean_gmw_share_geometric_sample,
                                             FLOATINGPOINT64_BITS);
 
+
   ShareWrapper boolean_gmw_share_random_bits =
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .GenerateRandomBooleanGmwBits(1, iteration_ * num_of_simd_gau_);
 
-  ShareWrapper random_unsigned_integer_boolean_gmw_share =
-      SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomUnsignedIntegerPow2_BGMW<T>(m_, iteration_ * num_of_simd_gau_);
+  ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share;
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      random_unsigned_integer_boolean_gmw_gc_bmr_share =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .GenerateRandomUnsignedInteger_BGMW<T, T_expand>(m_, iteration_ * num_of_simd_gau_);
+      break;
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      random_unsigned_integer_boolean_gmw_gc_bmr_share =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .GenerateRandomUnsignedInteger_GC<T, T_expand>(m_, iteration_ * num_of_simd_gau_);
+      break;
+    }
+
+    case MpcProtocol::kBmr: {
+      random_unsigned_integer_boolean_gmw_gc_bmr_share =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .GenerateRandomUnsignedInteger_BMR<T, T_expand>(m_, iteration_ * num_of_simd_gau_);
+      break;
+    }
+
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
+
+  // ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share =
+  //     SecureSamplingAlgorithm_optimized(fD_->Get())
+  //         .GenerateRandomUnsignedInteger_BGMW(m_, iteration_ * num_of_simd_gau_);
 
   ShareWrapper random_bits_of_length_52 =
       SecureSamplingAlgorithm_optimized(fD_->Get())
@@ -370,9 +400,10 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized() {
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 
-  SecureFloatingPointCircuitABY floating_point_gaussian_noise = FLGaussianNoiseGeneration_optimized(
+  SecureFloatingPointCircuitABY floating_point_gaussian_noise = FLGaussianNoiseGeneration_naive(
       unsigned_integer_boolean_gmw_share_geometric_sample, boolean_gmw_share_random_bits,
-      random_unsigned_integer_boolean_gmw_share, random_floating_point_0_1_boolean_gmw_share);
+      random_unsigned_integer_boolean_gmw_gc_bmr_share,
+      random_floating_point_0_1_boolean_gmw_share);
 
   return floating_point_gaussian_noise;
 }
@@ -381,14 +412,14 @@ SecureFloatingPointCircuitABY
 SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
     const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
     const ShareWrapper& boolean_gmw_share_random_bits,
-    const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share) {
   std::vector<double> constant_sqrt_n_vector(num_of_simd_gau_, sqrtN_);
 
   // sqrtN * sqrt(2) > 2^(64)
   // use 128-bit unsigned integer and 64-bit floating point
   if ((sqrtN_ * M_SQRT2 + 1) * 1.5 >= std::exp2(63)) {
-    std::cout << "FLGaussianNoiseGeneration use __uint128_t" << std::endl;
+    std::cout << "FLGaussianNoiseGeneration_optimized use __uint128_t" << std::endl;
     // extend 64-bit unsigned_integer_boolean_gmw_share_geometric_sample, and 64-bit
     // random_unsigned_integer_boolean_gmw_share to 128-bit
 
@@ -396,10 +427,13 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
         SecureSamplingAlgorithm_optimized(fD_->Get())
             .BooleanBitsShareZeroCompensation(unsigned_integer_boolean_gmw_share_geometric_sample,
                                               sizeof(T_expand) * 8);
-    ShareWrapper random_unsigned_integer_boolean_gmw_share_extension =
+    std::cout << "unsigned_integer_boolean_gmw_share_geometric_sample" << std::endl;
+
+    ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share_extension =
         SecureSamplingAlgorithm_optimized(fD_->Get())
-            .BooleanBitsShareZeroCompensation(random_unsigned_integer_boolean_gmw_share,
+            .BooleanBitsShareZeroCompensation(random_unsigned_integer_boolean_gmw_gc_bmr_share,
                                               sizeof(T_expand) * 8);
+    std::cout << "random_unsigned_integer_boolean_gmw_gc_bmr_share_extension" << std::endl;
 
     // TODO: need test
     std::vector<ShareWrapper> result_vector;
@@ -420,7 +454,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
                                 constant_sqrt_n_vector,
                                 unsigned_integer_boolean_gmw_share_geometric_sample_extension,
                                 boolean_gmw_share_random_bits,
-                                random_unsigned_integer_boolean_gmw_share_extension,
+                                random_unsigned_integer_boolean_gmw_gc_bmr_share_extension,
                                 random_floating_point_0_1_boolean_gmw_share, iteration_);
         break;
       }
@@ -433,8 +467,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
                     unsigned_integer_boolean_gmw_share_geometric_sample_extension
                         .Convert<MpcProtocol::kGarbledCircuit>(),
                     boolean_gmw_share_random_bits.Convert<MpcProtocol::kGarbledCircuit>(),
-                    random_unsigned_integer_boolean_gmw_share_extension
-                        .Convert<MpcProtocol::kGarbledCircuit>(),
+                    random_unsigned_integer_boolean_gmw_gc_bmr_share_extension,
                     random_floating_point_0_1_boolean_gmw_share
                         .Convert<MpcProtocol::kGarbledCircuit>(),
                     iteration_);
@@ -449,8 +482,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
                     unsigned_integer_boolean_gmw_share_geometric_sample_extension
                         .Convert<MpcProtocol::kBmr>(),
                     boolean_gmw_share_random_bits.Convert<MpcProtocol::kBmr>(),
-                    random_unsigned_integer_boolean_gmw_share_extension
-                        .Convert<MpcProtocol::kBmr>(),
+                    random_unsigned_integer_boolean_gmw_gc_bmr_share_extension,
                     random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
                     iteration_);
         break;
@@ -464,9 +496,10 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
     ShareWrapper signed_integer_boolean_gmw_gc_bmr_share_symmetric_binomial_noise =
         result_vector[0];
 
+    // less efficient method
     return SecureSignedInteger(signed_integer_boolean_gmw_gc_bmr_share_symmetric_binomial_noise)
-        .Int2FL(sizeof(double) * 8)
-        .MulPow2m(log2_resolution_r_);
+               .Int2FL(sizeof(double) * 8) *
+           double(resolution_r_);
   }
 
   // sqrtN * sqrt(2) < 2^(64)
@@ -488,7 +521,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
             SecureSamplingAlgorithm_optimized(fD_->Get())
                 .FLSymmetricBinomialDistribution_BGMW<double, T>(
                     constant_sqrt_n_vector, unsigned_integer_boolean_gmw_share_geometric_sample,
-                    boolean_gmw_share_random_bits, random_unsigned_integer_boolean_gmw_share,
+                    boolean_gmw_share_random_bits, random_unsigned_integer_boolean_gmw_gc_bmr_share,
                     random_floating_point_0_1_boolean_gmw_share, iteration_);
         break;
       }
@@ -501,8 +534,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
                     unsigned_integer_boolean_gmw_share_geometric_sample
                         .Convert<MpcProtocol::kGarbledCircuit>(),
                     boolean_gmw_share_random_bits.Convert<MpcProtocol::kGarbledCircuit>(),
-                    random_unsigned_integer_boolean_gmw_share
-                        .Convert<MpcProtocol::kGarbledCircuit>(),
+                    random_unsigned_integer_boolean_gmw_gc_bmr_share,
                     random_floating_point_0_1_boolean_gmw_share
                         .Convert<MpcProtocol::kGarbledCircuit>(),
                     iteration_);
@@ -517,7 +549,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
                     unsigned_integer_boolean_gmw_share_geometric_sample
                         .Convert<MpcProtocol::kBmr>(),
                     boolean_gmw_share_random_bits.Convert<MpcProtocol::kBmr>(),
-                    random_unsigned_integer_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                    random_unsigned_integer_boolean_gmw_gc_bmr_share,
                     random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
                     iteration_);
         break;
