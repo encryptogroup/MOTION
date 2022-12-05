@@ -109,7 +109,11 @@ add_executable(motiontest
         # test_liangzhao_snapping_mechanism.cpp # test passed
 
         # # TODO: add correctness test later
-        test_liangzhao_discrete_laplace_mechanism_CKS.cpp # testing
+        # test_liangzhao_discrete_laplace_mechanism_CKS.cpp # test passed
+        
+        # # TODO: add correctness test later
+        test_liangzhao_discrete_gaussian_mechanism_CKS.cpp # testing
+
 )
 
 target_link_libraries(motiontest PRIVATE

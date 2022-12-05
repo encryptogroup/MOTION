@@ -32,6 +32,9 @@
 #include "utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.h"
 #include "utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.h"
 
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
+
 namespace encrypto::motion {
 
 class Logger;
@@ -41,12 +44,17 @@ class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
 class SecureDPMechanism_PrivaDA;
 
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
+
 // we use fixed-point, 32-bit floating-point and 64-bit floating-point,
 // reference: The Discrete Gaussian for Differential Privacy
 class SecureDiscreteGaussianMechanismCKS {
  public:
   using T = std::uint64_t;
   using T_int = std::int64_t;
+  using T_expand = __uint128_t;
+
   SecureDiscreteGaussianMechanismCKS() = default;
 
   SecureDiscreteGaussianMechanismCKS(const SecureDiscreteGaussianMechanismCKS& other)
@@ -96,81 +104,61 @@ class SecureDiscreteGaussianMechanismCKS {
 
   // =================================================================
   // 32-bit floating-point version
-  SecureSignedInteger FL32DiscreteGaussianNoiseAddition();
 
-  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration();
+  // ! naive version
+  // SecureSignedInteger FL32DiscreteGaussianNoiseAddition();
 
-  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration(
+  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration_naive();
+  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
+      const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share_dlap,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
+  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
+
+  // ! optimized version
+  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration_optimized();
+  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
       const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
-
-  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration(
+  SecureSignedInteger FL32DiscreteGaussianNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
 
   // =================================================================
   // 64-bit floating-point version
-  SecureSignedInteger FL64DiscreteGaussianNoiseAddition();
+  
+  // ! naive version
+  // SecureSignedInteger FL64DiscreteGaussianNoiseAddition();
 
-  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration();
-
-  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration(
+  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration_naive();
+  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration_naive(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
+      const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share_dlap,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
+  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
 
-  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration(
+  // ! optimized version
+  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration_optimized();
+  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration_optimized(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
+      const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share_dlap,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
+  SecureSignedInteger FL64DiscreteGaussianNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
-
-  // =================================================================
-  // fixed-point version
-  SecureSignedInteger FxDiscreteGaussianNoiseAddition();
-
-  SecureSignedInteger FxDiscreteGaussianNoiseGeneration();
-
-  SecureSignedInteger FxDiscreteGaussianNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau);
-
-  SecureSignedInteger FxDiscreteGaussianNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share_dgau);
-
-  // =================================================================
-  // void ParameterSetup_with_DiscreteLaplaceEKMPP(double sensitivity_l1, double sigma,
-  //                                          std::size_t num_of_simd_dgau,
-  //                                          long double failure_probability =
-  //                                          standard_failure_probability, std::size_t
-  //                                          fixed_point_bit_size = 64, std::size_t
-  //                                          fixed_point_fraction_bit_size = 16);
-
-  // SecureSignedInteger FLDiscreteGaussianNoiseAddition_with_DiscreteLaplaceEKMPP();
-
-  // SecureSignedInteger FLDiscreteGaussianNoiseGeneration_with_DiscreteLaplaceEKMPP();
-
-  // SecureSignedInteger FLDiscreteGaussianNoiseGeneration_with_DiscreteLaplaceEKMPP(
-  //     const ShareWrapper& boolean_gmw_share_discrete_laplace_sample,
-  //     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
-
-  // =================================================================
-
-  //   SecureSignedInteger FxDiscreteGaussianNoiseAddition_with_DiscreteLaplaceEKMPP();
-
-  //   SecureSignedInteger FxDiscreteGaussianNoiseGeneration_with_DiscreteLaplaceEKMPP();
-
-  //   SecureSignedInteger FxDiscreteGaussianNoiseGeneration_with_DiscreteLaplaceEKMPP(
-  //       const ShareWrapper& boolean_gmw_share_discrete_laplace_sample,
-  //       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau);
-
   // =================================================================
  public:
   double sensitivity_l1_ = 1;

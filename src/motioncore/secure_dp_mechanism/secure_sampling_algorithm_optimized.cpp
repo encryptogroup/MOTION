@@ -220,7 +220,7 @@ template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedI
 // ! this is expensive
 
 template <typename T, typename T_expand>
-ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGMW(
+ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BGMW(
     T m, const std::size_t num_of_simd) const {
   std::size_t T_expand_size = sizeof(T_expand) * 8;
   ShareWrapper boolean_gmw_share_random_bits =
@@ -232,22 +232,22 @@ ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGM
   return random_unsigned_integer_bgmw_0_m.TruncateToHalfSize();
 }
 
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGMW<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BGMW<
     std::uint8_t, std::uint16_t>(std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGMW<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BGMW<
     std::uint16_t, std::uint32_t>(std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGMW<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BGMW<
     std::uint32_t, std::uint64_t>(std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGMW<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BGMW<
     std::uint64_t, __uint128_t>(std::uint64_t m, const std::size_t num_of_simd) const;
 
 // ! this need 256-bit modular reduction circuit
 // template ShareWrapper
-// SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBGMW<__uint128_t>(
+// SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BGMW<__uint128_t>(
 //     __uint128_t m, const std::size_t num_of_simd) const;
 
 template <typename T, typename T_expand>
-ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR(
+ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BMR(
     T m, const std::size_t num_of_simd) const {
   std::size_t T_expand_size = sizeof(T_expand) * 8;
   ShareWrapper boolean_gmw_share_random_bits =
@@ -261,22 +261,22 @@ ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR
   return random_unsigned_integer_bmr_share_0_m.TruncateToHalfSize();
 }
 
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BMR<
     std::uint8_t, std::uint16_t>(std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BMR<
     std::uint16_t, std::uint32_t>(std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BMR<
     std::uint32_t, std::uint64_t>(std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BMR<
     std::uint64_t, __uint128_t>(std::uint64_t m, const std::size_t num_of_simd) const;
 
 // ! this need 256-bit modular reduction circuit
 // template ShareWrapper
-// SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerBMR<__uint128_t>(
+// SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_BMR<__uint128_t>(
 //     __uint128_t m, const std::size_t num_of_simd) const;
 
 template <typename T, typename T_expand>
-ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC(
+ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_GC(
     T m, const std::size_t num_of_simd) const {
   std::size_t T_expand_size = sizeof(T_expand) * 8;
   ShareWrapper boolean_gmw_share_random_bits =
@@ -289,18 +289,18 @@ ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC(
   return random_unsigned_integer_gc_share_0_m.TruncateToHalfSize();
 }
 
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_GC<
     std::uint8_t, std::uint16_t>(std::uint8_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_GC<
     std::uint16_t, std::uint32_t>(std::uint16_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_GC<
     std::uint32_t, std::uint64_t>(std::uint32_t m, const std::size_t num_of_simd) const;
-template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC<
+template ShareWrapper SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_GC<
     std::uint64_t, __uint128_t>(std::uint64_t m, const std::size_t num_of_simd) const;
 
 // ! this need 256-bit modular reduction circuit
 // template ShareWrapper
-// SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedIntegerGC<__uint128_t>(
+// SecureSamplingAlgorithm_optimized::GenerateRandomUnsignedInteger_GC<__uint128_t>(
 //     __uint128_t m, const std::size_t num_of_simd) const;
 
 // =================================================================================================

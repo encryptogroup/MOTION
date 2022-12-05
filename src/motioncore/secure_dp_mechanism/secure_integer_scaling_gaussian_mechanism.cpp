@@ -110,7 +110,7 @@ SecureFloatingPointCircuitABY SecureIntegerScalingGaussianMechanism::FLGaussianN
 //       fD_->GenerateRandomBooleanGmwBits(1, iteration_ * num_of_simd_gau_);
 
 //   ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//       fD_->GenerateRandomUnsignedIntegerBGMW(m_, iteration_ * num_of_simd_gau_);
+//       fD_->GenerateRandomUnsignedInteger_BGMW(m_, iteration_ * num_of_simd_gau_);
 
 //   ShareWrapper random_bits_of_length_52 =
 //       fD_->GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, iteration_ * num_of_simd_gau_);

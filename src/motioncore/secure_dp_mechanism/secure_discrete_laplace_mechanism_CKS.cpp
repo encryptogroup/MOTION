@@ -151,21 +151,21 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseG
       case MpcProtocol::kBooleanGmw: {
         random_unsigned_integer_boolean_gmw_gc_bmr_share =
             SecureSamplingAlgorithm_naive(fD_->Get())
-                .GenerateRandomUnsignedIntegerBGMW<T, T_expand>(T(denominator_),
+                .GenerateRandomUnsignedInteger_BGMW<T, T_expand>(T(denominator_),
                                                                 iteration_1_ * num_of_simd_total_);
         break;
       }
       case MpcProtocol::kGarbledCircuit: {
         random_unsigned_integer_boolean_gmw_gc_bmr_share =
             SecureSamplingAlgorithm_naive(fD_->Get())
-                .GenerateRandomUnsignedIntegerGC<T, T_expand>(T(denominator_),
+                .GenerateRandomUnsignedInteger_GC<T, T_expand>(T(denominator_),
                                                               iteration_1_ * num_of_simd_total_);
         break;
       }
       case MpcProtocol::kBmr: {
         random_unsigned_integer_boolean_gmw_gc_bmr_share =
             SecureSamplingAlgorithm_naive(fD_->Get())
-                .GenerateRandomUnsignedIntegerBMR<T, T_expand>(T(denominator_),
+                .GenerateRandomUnsignedInteger_BMR<T, T_expand>(T(denominator_),
                                                                iteration_1_ * num_of_simd_total_);
         break;
       }
@@ -349,7 +349,7 @@ SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized(
             .UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
 
     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
-    //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
+    //     fD_->GenerateRandomUnsignedInteger_BGMW(T(denominator_), iteration_1_ *
     //     num_of_simd_total_);
 
     ShareWrapper random_unsigned_integer_boolean_gmw_share =
@@ -534,7 +534,7 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseG
 
     // std::cout << "222" << std::endl;
     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
-    //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
+    //     fD_->GenerateRandomUnsignedInteger_BGMW(T(denominator_), iteration_1_ *
     //     num_of_simd_total_);
 
     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
@@ -549,21 +549,21 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseG
       case MpcProtocol::kBooleanGmw: {
         random_unsigned_integer_boolean_gmw_gc_bmr_share =
             SecureSamplingAlgorithm_naive(fD_->Get())
-                .GenerateRandomUnsignedIntegerBGMW<T, T_expand>(T(denominator_),
+                .GenerateRandomUnsignedInteger_BGMW<T, T_expand>(T(denominator_),
                                                                 iteration_1_ * num_of_simd_total_);
         break;
       }
       case MpcProtocol::kGarbledCircuit: {
         random_unsigned_integer_boolean_gmw_gc_bmr_share =
             SecureSamplingAlgorithm_naive(fD_->Get())
-                .GenerateRandomUnsignedIntegerGC<T, T_expand>(T(denominator_),
+                .GenerateRandomUnsignedInteger_GC<T, T_expand>(T(denominator_),
                                                               iteration_1_ * num_of_simd_total_);
         break;
       }
       case MpcProtocol::kBmr: {
         random_unsigned_integer_boolean_gmw_gc_bmr_share =
             SecureSamplingAlgorithm_naive(fD_->Get())
-                .GenerateRandomUnsignedIntegerBMR<T, T_expand>(T(denominator_),
+                .GenerateRandomUnsignedInteger_BMR<T, T_expand>(T(denominator_),
                                                                iteration_1_ * num_of_simd_total_);
         break;
       }
