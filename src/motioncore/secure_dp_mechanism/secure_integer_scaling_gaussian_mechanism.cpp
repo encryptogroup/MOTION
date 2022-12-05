@@ -102,7 +102,7 @@ void SecureIntegerScalingGaussianMechanism::ParameterSetup(double sensitivity_l1
 // ! naive version
 SecureFloatingPointCircuitABY
 SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive() {
-  std::cout << "SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration" << std::endl;
+  std::cout << "SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive" << std::endl;
   std::size_t geometric_distribution_sampling_bit_length = 100;
   ShareWrapper random_bits_for_geometric_sampling =
       SecureSamplingAlgorithm_naive(fD_->Get())
@@ -111,10 +111,14 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive() {
   ShareWrapper boolean_gmw_share_geometric_sample =
       SecureSamplingAlgorithm_naive(fD_->Get())
           .SimpleGeometricSampling_0(random_bits_for_geometric_sampling);
+
+  std::cout << "003" << std::endl;
   ShareWrapper unsigned_integer_boolean_gmw_share_geometric_sample =
       SecureSamplingAlgorithm_naive(fD_->Get())
           .BooleanBitsShareZeroCompensation(boolean_gmw_share_geometric_sample,
                                             FLOATINGPOINT64_BITS);
+                                            
+  std::cout << "004" << std::endl;
 
   ShareWrapper boolean_gmw_share_random_bits =
       SecureSamplingAlgorithm_naive(fD_->Get())
@@ -125,21 +129,21 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive() {
     case MpcProtocol::kBooleanGmw: {
       random_unsigned_integer_boolean_gmw_gc_bmr_share =
           SecureSamplingAlgorithm_naive(fD_->Get())
-              .GenerateRandomUnsignedInteger_BGMW(m_, iteration_ * num_of_simd_gau_);
+              .GenerateRandomUnsignedInteger_BGMW<T, T_expand>(m_, iteration_ * num_of_simd_gau_);
       break;
     }
 
     case MpcProtocol::kGarbledCircuit: {
       random_unsigned_integer_boolean_gmw_gc_bmr_share =
           SecureSamplingAlgorithm_naive(fD_->Get())
-              .GenerateRandomUnsignedInteger_GC(m_, iteration_ * num_of_simd_gau_);
+              .GenerateRandomUnsignedInteger_GC<T, T_expand>(m_, iteration_ * num_of_simd_gau_);
       break;
     }
 
     case MpcProtocol::kBmr: {
       random_unsigned_integer_boolean_gmw_gc_bmr_share =
           SecureSamplingAlgorithm_naive(fD_->Get())
-              .GenerateRandomUnsignedInteger_BMR(m_, iteration_ * num_of_simd_gau_);
+              .GenerateRandomUnsignedInteger_BMR<T, T_expand>(m_, iteration_ * num_of_simd_gau_);
       break;
     }
 
@@ -183,6 +187,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive(
   // sqrtN * sqrt(2) > 2^(64)
   // use 128-bit unsigned integer and 64-bit floating point
   if ((sqrtN_ * M_SQRT2 + 1) * 1.5 >= std::exp2(63)) {
+    std::cout << "FLGaussianNoiseGeneration_naive use __uint128_t" << std::endl;
     // extend 64-bit unsigned_integer_boolean_gmw_share_geometric_sample, and 64-bit
     // random_unsigned_integer_boolean_gmw_share to 128-bit
 
@@ -190,10 +195,13 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive(
         SecureSamplingAlgorithm_naive(fD_->Get())
             .BooleanBitsShareZeroCompensation(unsigned_integer_boolean_gmw_share_geometric_sample,
                                               sizeof(T_expand) * 8);
+    std::cout << "unsigned_integer_boolean_gmw_share_geometric_sample" << std::endl;
+
     ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share_extension =
         SecureSamplingAlgorithm_naive(fD_->Get())
             .BooleanBitsShareZeroCompensation(random_unsigned_integer_boolean_gmw_gc_bmr_share,
                                               sizeof(T_expand) * 8);
+    std::cout << "random_unsigned_integer_boolean_gmw_gc_bmr_share_extension" << std::endl;
 
     // TODO: need test
     std::vector<ShareWrapper> result_vector;
@@ -382,6 +390,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
   // sqrtN * sqrt(2) > 2^(64)
   // use 128-bit unsigned integer and 64-bit floating point
   if ((sqrtN_ * M_SQRT2 + 1) * 1.5 >= std::exp2(63)) {
+    std::cout << "FLGaussianNoiseGeneration use __uint128_t" << std::endl;
     // extend 64-bit unsigned_integer_boolean_gmw_share_geometric_sample, and 64-bit
     // random_unsigned_integer_boolean_gmw_share to 128-bit
 
@@ -510,8 +519,7 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized(
                     unsigned_integer_boolean_gmw_share_geometric_sample
                         .Convert<MpcProtocol::kBmr>(),
                     boolean_gmw_share_random_bits.Convert<MpcProtocol::kBmr>(),
-                    random_unsigned_integer_boolean_gmw_share
-                        .Convert<MpcProtocol::kBmr>(),
+                    random_unsigned_integer_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
                     random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
                     iteration_);
         break;
