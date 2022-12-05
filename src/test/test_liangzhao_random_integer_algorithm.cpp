@@ -92,7 +92,7 @@ TEST(BasicRandomNumberGeneration, GenerateRandomUnsignedIntegerPow2BGMW_20_Simd_
           }
 
           SecureUnsignedInteger share_result =
-              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2BGMW<T>(
+              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2_BGMW<T>(
                   k, num_of_simd);
 
           encrypto::motion::SecureUnsignedInteger share_result_out = share_result.Out();
@@ -173,7 +173,7 @@ TEST(BasicRandomNumberGeneration, GenerateRandomUnsignedIntegerPow2GC_20_Simd_2_
           }
 
           SecureUnsignedInteger share_result =
-              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2GC<T>(
+              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2_GC<T>(
                   k, num_of_simd);
 
           encrypto::motion::SecureUnsignedInteger share_result_out = share_result.Out();
@@ -254,7 +254,7 @@ TEST(BasicRandomNumberGeneration, GenerateRandomUnsignedIntegerPow2BMR_20_Simd_2
           }
 
           SecureUnsignedInteger share_result =
-              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2BMR<T>(
+              SecureSamplingAlgorithm_naive(share_x).GenerateRandomUnsignedIntegerPow2_BMR<T>(
                   k, num_of_simd);
 
           encrypto::motion::SecureUnsignedInteger share_result_out = share_result.Out();

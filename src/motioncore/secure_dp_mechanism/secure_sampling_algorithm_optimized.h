@@ -91,7 +91,7 @@ class SecureSamplingAlgorithm_optimized {
   //   SecureSamplingAlgorithm_optimized(*other) {}
 
  public:
-  ShareWrapper BooleanGmwBitsZeroCompensation(const ShareWrapper& share_bits,
+  ShareWrapper BooleanBitsShareZeroCompensation(const ShareWrapper& share_bits,
                                               const std::size_t num_of_total_bits) const;
 
   // each party generates random boolean gmw bits locally
@@ -101,19 +101,19 @@ class SecureSamplingAlgorithm_optimized {
   // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
   // without interactions, the share is Boolean GWM
   template <typename T>
-  ShareWrapper GenerateRandomUnsignedIntegerPow2BGMW(std::size_t bit_size_k,
+  ShareWrapper GenerateRandomUnsignedIntegerPow2_BGMW(std::size_t bit_size_k,
                                                      const std::size_t num_of_simd) const;
 
   // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
   // without interactions, convert share to Garbled Circuit
   template <typename T>
-  ShareWrapper GenerateRandomUnsignedIntegerPow2GC(std::size_t bit_size_k,
+  ShareWrapper GenerateRandomUnsignedIntegerPow2_GC(std::size_t bit_size_k,
                                                    const std::size_t num_of_simd) const;
 
   // each party generates random unsigned integer of data type T in range [0, 2^k-1] locally,
   // without interactions, convert share to BMR
   template <typename T>
-  ShareWrapper GenerateRandomUnsignedIntegerPow2BMR(std::size_t bit_size_k,
+  ShareWrapper GenerateRandomUnsignedIntegerPow2_BMR(std::size_t bit_size_k,
                                                     const std::size_t num_of_simd) const;
 
   // generate random integer in range [0, m),
@@ -256,8 +256,8 @@ class SecureSamplingAlgorithm_optimized {
   std::vector<ShareWrapper> FLGeometricDistributionEXP_GC(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
       const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
+      const ShareWrapper& random_floating_point_0_1_gc_share,
+      const ShareWrapper& random_unsigned_integer_gc_share, std::size_t iteration_1,
       std::size_t iteration_2) const;
 
   // a special case for FLGeometricDistributionEXP, where the denominator
@@ -266,7 +266,7 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLGeometricDistributionEXP_GC(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+      const ShareWrapper& random_floating_point_0_1_gc_share,
       std::size_t iteration_2) const;
 
   // sample from a discrete Laplace(t) distribution, where Pr[x] =
@@ -277,9 +277,9 @@ class SecureSamplingAlgorithm_optimized {
   std::vector<ShareWrapper> FLDiscreteLaplaceDistribution_GC(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
       const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_geo,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share_geo,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap, std::size_t iteration_1,
+      const ShareWrapper& random_floating_point_0_1_gc_share_geo,
+      const ShareWrapper& random_unsigned_integer_gc_share_geo,
+      const ShareWrapper& gc_share_bernoulli_sample_dlap, std::size_t iteration_1,
       std::size_t iteration_2, std::size_t iteration_3) const;
 
   // a special case for FLDiscreteLaplaceDistribution, where the denominator
@@ -288,8 +288,8 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLDiscreteLaplaceDistribution_GC(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_geo,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap, std::size_t iteration_2,
+      const ShareWrapper& random_floating_point_0_1_gc_share_geo,
+      const ShareWrapper& gc_share_bernoulli_sample_dlap, std::size_t iteration_2,
       std::size_t iteration_3) const;
 
   // sample from a discrete Gaussian distribution
@@ -298,10 +298,10 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLDiscreteGaussianDistribution_GC(
       const std::vector<double>& constant_floating_point_sigma_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+      const ShareWrapper& random_floating_point_0_1_gc_share_dlap,
+      const ShareWrapper& random_unsigned_integer_gc_share_dlap,
+      const ShareWrapper& gc_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_gc_share_dgau, std::size_t iteration_1,
       std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
   // special case for FLDiscreteGaussianDistribution, where floor(sigma) + 1 =0
@@ -309,9 +309,9 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLDiscreteGaussianDistribution_GC(
       const std::vector<double>& constant_floating_point_sigma_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+      const ShareWrapper& random_floating_point_0_1_gc_share_dlap,
+      const ShareWrapper& gc_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_gc_share_dgau, std::size_t iteration_2,
       std::size_t iteration_3, std::size_t iteration_4) const;
 
   // sample from a symmerical binomial distribution
@@ -321,10 +321,10 @@ class SecureSamplingAlgorithm_optimized {
   template <typename FloatType = double, typename UintType = std::uint64_t>
   std::vector<ShareWrapper> FLSymmetricBinomialDistribution_GC(
       std::vector<double> constant_sqrt_n_vector,
-      const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
-      const ShareWrapper& boolean_gmw_share_random_bits,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const;
+      const ShareWrapper& unsigned_integer_gc_share_geometric_sample,
+      const ShareWrapper& gc_share_random_bits,
+      const ShareWrapper& random_unsigned_integer_gc_share,
+      const ShareWrapper& random_floating_point_0_1_gc_share, std::size_t iteration) const;
 
   // ============================================================
   // sampling algorithms based on floating-point arithmetic, BMR
@@ -338,8 +338,8 @@ class SecureSamplingAlgorithm_optimized {
   std::vector<ShareWrapper> FLGeometricDistributionEXP_BMR(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
       const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
+      const ShareWrapper& random_floating_point_0_1_bmr_share,
+      const ShareWrapper& random_unsigned_integer_bmr_share, std::size_t iteration_1,
       std::size_t iteration_2) const;
 
   // a special case for FLGeometricDistributionEXP, where the denominator
@@ -348,7 +348,7 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLGeometricDistributionEXP_BMR(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+      const ShareWrapper& random_floating_point_0_1_bmr_share,
       std::size_t iteration_2) const;
 
   // sample from a discrete Laplace(t) distribution, where Pr[x] =
@@ -359,9 +359,9 @@ class SecureSamplingAlgorithm_optimized {
   std::vector<ShareWrapper> FLDiscreteLaplaceDistribution_BMR(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
       const std::vector<UintType>& constant_unsigned_integer_denominator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_geo,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share_geo,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap, std::size_t iteration_1,
+      const ShareWrapper& random_floating_point_0_1_bmr_share_geo,
+      const ShareWrapper& random_unsigned_integer_bmr_share_geo,
+      const ShareWrapper& bmr_share_bernoulli_sample_dlap, std::size_t iteration_1,
       std::size_t iteration_2, std::size_t iteration_3) const;
 
   // a special case for FLDiscreteLaplaceDistribution, where the denominator
@@ -370,8 +370,8 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLDiscreteLaplaceDistribution_BMR(
       const std::vector<UintType>& constant_unsigned_integer_numerator_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_geo,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap, std::size_t iteration_2,
+      const ShareWrapper& random_floating_point_0_1_bmr_share_geo,
+      const ShareWrapper& bmr_share_bernoulli_sample_dlap, std::size_t iteration_2,
       std::size_t iteration_3) const;
 
   // sample from a discrete Gaussian distribution
@@ -380,10 +380,10 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLDiscreteGaussianDistribution_BMR(
       const std::vector<double>& constant_floating_point_sigma_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share_dlap,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_1,
+      const ShareWrapper& random_floating_point_0_1_bmr_share_dlap,
+      const ShareWrapper& random_unsigned_integer_bmr_share_dlap,
+      const ShareWrapper& bmr_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_bmr_share_dgau, std::size_t iteration_1,
       std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
   // special case for FLDiscreteGaussianDistribution, where floor(sigma) + 1 =0
@@ -391,9 +391,9 @@ class SecureSamplingAlgorithm_optimized {
             typename IntType = std::make_signed_t<UintType>, typename A = std::allocator<UintType>>
   std::vector<ShareWrapper> FLDiscreteGaussianDistribution_BMR(
       const std::vector<double>& constant_floating_point_sigma_vector,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dlap,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample_dlap,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share_dgau, std::size_t iteration_2,
+      const ShareWrapper& random_floating_point_0_1_bmr_share_dlap,
+      const ShareWrapper& bmr_share_bernoulli_sample_dlap,
+      const ShareWrapper& random_floating_point_0_1_bmr_share_dgau, std::size_t iteration_2,
       std::size_t iteration_3, std::size_t iteration_4) const;
 
   // sample from a symmerical binomial distribution
@@ -403,10 +403,10 @@ class SecureSamplingAlgorithm_optimized {
   template <typename FloatType = double, typename UintType = std::uint64_t>
   std::vector<ShareWrapper> FLSymmetricBinomialDistribution_BMR(
       std::vector<double> constant_sqrt_n_vector,
-      const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
-      const ShareWrapper& boolean_gmw_share_random_bits,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const;
+      const ShareWrapper& unsigned_integer_bmr_share_geometric_sample,
+      const ShareWrapper& bmr_share_random_bits,
+      const ShareWrapper& random_unsigned_integer_bmr_share,
+      const ShareWrapper& random_floating_point_0_1_bmr_share, std::size_t iteration) const;
 
   // ============================================================
   // ! insecure Laplace and discrete Laplace mechanisms from paper (Differentially Private Data

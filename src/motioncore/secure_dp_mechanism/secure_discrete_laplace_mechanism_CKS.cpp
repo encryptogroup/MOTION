@@ -176,7 +176,7 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseG
 
     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
     //     SecureSamplingAlgorithm_naive(fD_->Get())
-    //         .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+    //         .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
     //                                                   iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample =
@@ -354,7 +354,7 @@ SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized(
 
     ShareWrapper random_unsigned_integer_boolean_gmw_share =
         SecureSamplingAlgorithm_optimized(fD_->Get())
-            .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+            .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
                                                       iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample =
@@ -538,7 +538,7 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseG
     //     num_of_simd_total_);
 
     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
-    //     fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+    //     fD_->GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
     //                                                   iteration_1_ * num_of_simd_total_);
 
     ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share;
@@ -747,7 +747,7 @@ SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized(
 
     ShareWrapper random_unsigned_integer_boolean_gmw_share =
         SecureSamplingAlgorithm_optimized(fD_->Get())
-            .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+            .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
                                                       iteration_1_ * num_of_simd_total_);
 
     // std::cout << "333" << std::endl;

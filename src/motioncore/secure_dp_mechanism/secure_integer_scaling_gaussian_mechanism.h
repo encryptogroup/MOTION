@@ -31,6 +31,10 @@
 #include "utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.h"
 #include "utility/MOTION_dp_mechanism_helper/integer_scaling_mechanism.h"
 
+
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
+
 namespace encrypto::motion {
 
 class Logger;
@@ -39,9 +43,14 @@ class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
 
+
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
+
 class SecureIntegerScalingGaussianMechanism {
  public:
   using T = std::uint64_t;
+  using T_expand = __uint128_t;
 
   SecureIntegerScalingGaussianMechanism() = default;
 
@@ -95,11 +104,17 @@ class SecureIntegerScalingGaussianMechanism {
 
   // ============================================================
   // 64-bit floating point, 128-bit unsigned integer
-  SecureFloatingPointCircuitABY FLGaussianNoiseAddition();
+  // SecureFloatingPointCircuitABY FLGaussianNoiseAddition();
 
-  SecureFloatingPointCircuitABY FLGaussianNoiseGeneration();
+  SecureFloatingPointCircuitABY FLGaussianNoiseGeneration_naive();
+  SecureFloatingPointCircuitABY FLGaussianNoiseGeneration_optimized();
 
-  SecureFloatingPointCircuitABY FLGaussianNoiseGeneration(
+  SecureFloatingPointCircuitABY FLGaussianNoiseGeneration_naive(
+      const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
+      const ShareWrapper& boolean_gmw_share_random_bits,
+      const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share,
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share);
+  SecureFloatingPointCircuitABY FLGaussianNoiseGeneration_optimized(
       const ShareWrapper& unsigned_integer_boolean_gmw_share_geometric_sample,
       const ShareWrapper& boolean_gmw_share_random_bits,
       const ShareWrapper& random_unsigned_integer_boolean_gmw_share,

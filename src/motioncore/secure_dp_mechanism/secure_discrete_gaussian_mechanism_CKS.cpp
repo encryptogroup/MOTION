@@ -180,7 +180,7 @@ SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_naive() 
     }
 
     // ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
-    //     fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+    //     fD_->GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
     //                                               iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
@@ -395,7 +395,7 @@ SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimize
     // more efficient method
     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
         SecureSamplingAlgorithm_optimized(fD_->Get())
-            .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+            .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
                                                       iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
@@ -652,7 +652,7 @@ SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_naive() 
 
     // ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
     //     SecureSamplingAlgorithm_naive(fD_->Get())
-    //         .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+    //         .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
     //                                                   iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
@@ -887,7 +887,7 @@ SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimize
 
     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
         SecureSamplingAlgorithm_optimized(fD_->Get())
-            .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+            .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
                                                       iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
