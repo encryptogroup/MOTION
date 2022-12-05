@@ -1022,33 +1022,78 @@ inline std::string to_string(BasicRandomNumberType p) {
 
 // added by Liang Zhao
 enum class DPMechanismType : unsigned int {
-  kSnappingMechanism,
 
-  kDPMechanism_EKMPP_FxLaplace_DP_insecure,
-  kDPMechanism_EKMPP_FL32Laplace_DP_insecure,
-  kDPMechanism_EKMPP_FL64Laplace_DP_insecure,
+  // PrivaDA
+  kDPMechanism_PrivaDA_FxLaplace_noise_generation,  // not implement yet
+  kDPMechanism_PrivaDA_FL32Laplace_noise_generation,
+  kDPMechanism_PrivaDA_FL64Laplace_noise_generation,
 
-  kDPMechanism_EKMPP_FxDiscreteLaplace,
-  kDPMechanism_EKMPP_FL32DiscreteLaplace,
-  kDPMechanism_EKMPP_FL64DiscreteLaplace,
+  kDPMechanism_PrivaDA_FxLaplace_perturbation,  // not implement yet
+  kDPMechanism_PrivaDA_FL32Laplace_perturbation,
+  kDPMechanism_PrivaDA_FL64Laplace_perturbation,
 
-  kGaussianMechanism_KVHSIM_FxGaussian_DP_insecure,
-  kGaussianMechanism_KVHSIM_FL32Gaussian_DP_insecure,
-  kGaussianMechanism_KVHSIM_FL64Gaussian_DP_insecure,
+  kDPMechanism_PrivaDA_FxDiscreteLaplace_noise_generation,  // not implement yet
+  kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation,
+  kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation,
 
-  kDiscreteLaplaceMechanismCKS_FxDiscreteLaplace,
-  kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace,
-  kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace,
+  kDPMechanism_PrivaDA_FxDiscreteLaplace_perturbation,  // not implement yet
+  kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation,
+  kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation,
 
-  kDiscreteGaussianMechanismCKS_FxDiscreteGaussian,
-  kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian,
-  kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian,
+  // CrypTen
+  kGaussianMechanism_CrypTen_FxGaussian_noise_generation,  // not implement yet
+  kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation,
+  kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation,
 
-  kIntegerScalingLaplaceMechanism_FxLaplace,
-  kIntegerScalingLaplaceMechanism_FL32Laplace,
-  kIntegerScalingLaplaceMechanism_FL64Laplace,
+  kGaussianMechanism_CrypTen_FxGaussian_perturbation,  // not implement yet
+  kGaussianMechanism_CrypTen_FL32Gaussian_perturbation,
+  kGaussianMechanism_CrypTen_FL64Gaussian_perturbation,
 
-  kIntegerScalingGaussianMechanism_FLGaussian,
+  // snapping mechanism
+  kSnappingMechanism_noise_generation_naive,
+  kSnappingMechanism_noise_generation_optimized,
+
+  kSnappingMechanism_perturbation_naive,
+  kSnappingMechanism_perturbation_optimized,
+
+  // discrete laplace CKS
+  kDiscreteLaplaceMechanismCKS_FxDiscreteLaplace,  // not implement yet
+  kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive,
+  kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized,
+  kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive,
+  kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+
+  kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+  kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+
+  // discrete gaussian CKS
+  kDiscreteGaussianMechanismCKS_FxDiscreteGaussian,  // not implement yet
+  kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive,
+  kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+  kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive,
+  kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
+
+  kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
+  kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation,
+
+  // integer-scaling Laplace
+  kIntegerScalingLaplaceMechanism_FxLaplace,  // not implement yet
+  kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
+  kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized,
+  kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
+  kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized,
+
+  kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive,
+  kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized,
+  kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive,
+  kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized,
+
+  // integer-scaling Gaussian
+  kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive,
+  kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized,
+
+  kIntegerScalingGaussianMechanism_FLGaussian_perturbation_naive,
+  kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized,
 
   kInvalid
 };
@@ -1056,65 +1101,175 @@ enum class DPMechanismType : unsigned int {
 // added by Liang Zhao
 inline std::string to_string(DPMechanismType p) {
   switch (p) {
-    case DPMechanismType::kSnappingMechanism: {
-      return "BGMW_kSnappingMechanism";
+      // PrivaDA
+    case DPMechanismType::kDPMechanism_PrivaDA_FxLaplace_noise_generation: {
+      return "kDPMechanism_PrivaDA_FxLaplace_noise_generation";
     }
-    case DPMechanismType::kDPMechanism_EKMPP_FxLaplace_DP_insecure: {
-      return "BGMW_kDPMechanism_EKMPP_FxLaplace_DP_insecure";
+    case DPMechanismType::kDPMechanism_PrivaDA_FL32Laplace_noise_generation: {
+      return "kDPMechanism_PrivaDA_FL32Laplace_noise_generation";
     }
-    case DPMechanismType::kDPMechanism_EKMPP_FL32Laplace_DP_insecure: {
-      return "BGMW_kDPMechanism_EKMPP_FL32Laplace_DP_insecure";
+    case DPMechanismType::kDPMechanism_PrivaDA_FL64Laplace_noise_generation: {
+      return "kDPMechanism_PrivaDA_FL64Laplace_noise_generation";
     }
-    case DPMechanismType::kDPMechanism_EKMPP_FL64Laplace_DP_insecure: {
-      return "BGMW_kDPMechanism_EKMPP_FL64Laplace_DP_insecure";
+    case DPMechanismType::kDPMechanism_PrivaDA_FxLaplace_perturbation: {
+      return "kDPMechanism_PrivaDA_FxLaplace_perturbation";
     }
-    case DPMechanismType::kGaussianMechanism_KVHSIM_FxGaussian_DP_insecure: {
-      return "BGMW_kGaussianMechanism_KVHSIM_FxGaussian_DP_insecure";
+    case DPMechanismType::kDPMechanism_PrivaDA_FL32Laplace_perturbation: {
+      return "kDPMechanism_PrivaDA_FL32Laplace_perturbation";
     }
-    case DPMechanismType::kGaussianMechanism_KVHSIM_FL32Gaussian_DP_insecure: {
-      return "BGMW_kGaussianMechanism_KVHSIM_FL32Gaussian_DP_insecure";
+    case DPMechanismType::kDPMechanism_PrivaDA_FL64Laplace_perturbation: {
+      return "kDPMechanism_PrivaDA_FL64Laplace_perturbation";
     }
-    case DPMechanismType::kGaussianMechanism_KVHSIM_FL64Gaussian_DP_insecure: {
-      return "BGMW_kGaussianMechanism_KVHSIM_FL64Gaussian_DP_insecure";
+    case DPMechanismType::kDPMechanism_PrivaDA_FxDiscreteLaplace_noise_generation: {
+      return "kDPMechanism_PrivaDA_FxDiscreteLaplace_noise_generation";
     }
-    case DPMechanismType::kDPMechanism_EKMPP_FxDiscreteLaplace: {
-      return "BGMW_kDPMechanism_EKMPP_FxDiscreteLaplace";
+    case DPMechanismType::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation: {
+      return "kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation";
     }
-    case DPMechanismType::kDPMechanism_EKMPP_FL32DiscreteLaplace: {
-      return "BGMW_kDPMechanism_EKMPP_FL32DiscreteLaplace";
+    case DPMechanismType::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation: {
+      return "kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation";
     }
-    case DPMechanismType::kDPMechanism_EKMPP_FL64DiscreteLaplace: {
-      return "BGMW_kDPMechanism_EKMPP_FL64DiscreteLaplace";
+    case DPMechanismType::kDPMechanism_PrivaDA_FxDiscreteLaplace_perturbation: {
+      return "kDPMechanism_PrivaDA_FxDiscreteLaplace_perturbation";
     }
+    case DPMechanismType::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation: {
+      return "kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation";
+    }
+    case DPMechanismType::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation: {
+      return "kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation";
+    }
+
+      // CrypTen
+    case DPMechanismType::kGaussianMechanism_CrypTen_FxGaussian_noise_generation: {
+      return "kGaussianMechanism_CrypTen_FxGaussian_noise_generation";
+    }
+    case DPMechanismType::kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation: {
+      return "kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation";
+    }
+    case DPMechanismType::kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation: {
+      return "kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation";
+    }
+    case DPMechanismType::kGaussianMechanism_CrypTen_FxGaussian_perturbation: {
+      return "kGaussianMechanism_CrypTen_FxGaussian_perturbation";
+    }
+    case DPMechanismType::kGaussianMechanism_CrypTen_FL32Gaussian_perturbation: {
+      return "kGaussianMechanism_CrypTen_FL32Gaussian_perturbation";
+    }
+    case DPMechanismType::kGaussianMechanism_CrypTen_FL64Gaussian_perturbation: {
+      return "kGaussianMechanism_CrypTen_FL64Gaussian_perturbation";
+    }
+
+      // snapping mechanism
+    case DPMechanismType::kSnappingMechanism_noise_generation_naive: {
+      return "kSnappingMechanism_noise_generation_naive";
+    }
+    case DPMechanismType::kSnappingMechanism_noise_generation_optimized: {
+      return "kSnappingMechanism_noise_generation_optimized";
+    }
+    case DPMechanismType::kSnappingMechanism_perturbation_naive: {
+      return "kSnappingMechanism_perturbation_naive";
+    }
+    case DPMechanismType::kSnappingMechanism_perturbation_optimized: {
+      return "kSnappingMechanism_perturbation_optimized";
+    }
+
+      // discrete laplace CKS
     case DPMechanismType::kDiscreteLaplaceMechanismCKS_FxDiscreteLaplace: {
-      return "BGMW_kDiscreteLaplaceMechanismCKS_FxDiscreteLaplace";
+      return "kDiscreteLaplaceMechanismCKS_FxDiscreteLaplace";
     }
-    case DPMechanismType::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace: {
-      return "BGMW_kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace";
+    case DPMechanismType::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive: {
+      return "kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive";
     }
-    case DPMechanismType::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace: {
-      return "BGMW_kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace";
+    case DPMechanismType::
+        kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized: {
+      return "kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized";
     }
+    case DPMechanismType::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive: {
+      return "kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive";
+    }
+    case DPMechanismType::
+        kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized: {
+      return "kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized";
+    }
+
+    case DPMechanismType::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation: {
+      return "kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation";
+    }
+    case DPMechanismType::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation: {
+      return "kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation";
+    }
+
+      // discrete gaussian CKS
     case DPMechanismType::kDiscreteGaussianMechanismCKS_FxDiscreteGaussian: {
-      return "BGMW_kDiscreteGaussianMechanismCKS_FxDiscreteGaussian";
+      return "kDiscreteGaussianMechanismCKS_FxDiscreteGaussian";
     }
-    case DPMechanismType::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian: {
-      return "BGMW_kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian";
+    case DPMechanismType::
+        kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive: {
+      return "kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive";
     }
-    case DPMechanismType::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian: {
-      return "BGMW_kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian";
+    case DPMechanismType::
+        kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized: {
+      return "kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized";
     }
+    case DPMechanismType::
+        kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive: {
+      return "kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive";
+    }
+    case DPMechanismType::
+        kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized: {
+      return "kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized";
+    }
+
+    case DPMechanismType::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation: {
+      return "kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation";
+    }
+    case DPMechanismType::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation: {
+      return "kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation";
+    }
+
+      // integer-scaling Laplace
     case DPMechanismType::kIntegerScalingLaplaceMechanism_FxLaplace: {
-      return "BGMW_kIntegerScalingLaplaceMechanism_FxLaplace";
+      return "kIntegerScalingLaplaceMechanism_FxLaplace";
     }
-    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL32Laplace: {
-      return "BGMW_kIntegerScalingLaplaceMechanism_FL32Laplace";
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive: {
+      return "kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive";
     }
-    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL64Laplace: {
-      return "BGMW_kIntegerScalingLaplaceMechanism_FL64Laplace";
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized: {
+      return "kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized";
     }
-    case DPMechanismType::kIntegerScalingGaussianMechanism_FLGaussian: {
-      return "BGMW_kIntegerScalingGaussianMechanism_FLGaussian";
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive: {
+      return "kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive";
+    }
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized: {
+      return "kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized";
+    }
+
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive: {
+      return "kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive";
+    }
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized: {
+      return "kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized";
+    }
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive: {
+      return "kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive";
+    }
+    case DPMechanismType::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized: {
+      return "kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized";
+    }
+
+      // integer-scaling Gaussian
+    case DPMechanismType::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive: {
+      return "kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive";
+    }
+    case DPMechanismType::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized: {
+      return "kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized";
+    }
+
+    case DPMechanismType::kIntegerScalingGaussianMechanism_FLGaussian_perturbation_naive: {
+      return "kIntegerScalingGaussianMechanism_FLGaussian_perturbation_naive";
+    }
+    case DPMechanismType::kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized: {
+      return "kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized";
     }
 
     default:

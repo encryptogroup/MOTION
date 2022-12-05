@@ -116,7 +116,7 @@ add_executable(motiontest
 
         # # TODO: add correctness test later
         # test_liangzhao_integer_scaling_laplace_mechanism.cpp # test passed
-        test_liangzhao_integer_scaling_gaussian_mechanism.cpp # testing
+        # test_liangzhao_integer_scaling_gaussian_mechanism.cpp # testing
 )
 
 target_link_libraries(motiontest PRIVATE
