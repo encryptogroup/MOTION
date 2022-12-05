@@ -83,19 +83,26 @@ ShareWrapper SecureSamplingAlgorithm_naive::BooleanBitsShareZeroCompensation(
   //   ShareWrapper constant_boolean_gmw_share_zero =
   //   boolean_gmw_share_bits_vector[0] ^ boolean_gmw_share_bits_vector[0];
 
+
   ShareWrapper constant_boolean_gmw_gc_bmr_share_zero;
-  switch (share_->Get()->GetProtocol()) {
+
+
+  switch (boolean_gmw_gc_bmr_share_bits->GetProtocol()) {
     case MpcProtocol::kBooleanGmw: {
+
+        // std::cout<<"MpcProtocol::kBooleanGmw"<< std::endl;
       constant_boolean_gmw_gc_bmr_share_zero =
           boolean_gmw_gc_bmr_share_bits_vector[0].CreateConstantAsBooleanGmwInput(false);
       break;
     }
     case MpcProtocol::kGarbledCircuit: {
+        // std::cout<<"MpcProtocol::kGarbledCircuit"<< std::endl;
       constant_boolean_gmw_gc_bmr_share_zero =
           boolean_gmw_gc_bmr_share_bits_vector[0].CreateConstantAsGCInput(false);
       break;
     }
     case MpcProtocol::kBmr: {
+        // std::cout<<"MpcProtocol::kBmr"<< std::endl;
       constant_boolean_gmw_gc_bmr_share_zero =
           boolean_gmw_gc_bmr_share_bits_vector[0].CreateConstantAsBmrInput(false);
       break;

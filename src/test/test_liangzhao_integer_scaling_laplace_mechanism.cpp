@@ -56,7 +56,7 @@ namespace {
 
 // ! Garbled Circuit
 TEST(IntegerScalingLaplaceMechanism,
-     SecureIntegerScalingLaplaceMechanismFL_32_64_GC_naive_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingLaplaceMechanismFL_32_64_GC_naive_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -139,7 +139,7 @@ TEST(IntegerScalingLaplaceMechanism,
 
 // ! Garbled Circuit
 TEST(IntegerScalingLaplaceMechanism,
-     SecureIntegerScalingLaplaceMechanismFL_32_64_GC_optimized_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingLaplaceMechanismFL_32_64_GC_optimized_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -225,7 +225,7 @@ TEST(IntegerScalingLaplaceMechanism,
 
 // ! BooleanGMW
 TEST(IntegerScalingLaplaceMechanism,
-     SecureIntegerScalingLaplaceMechanismFL_32_64_BGMW_naive_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingLaplaceMechanismFL_32_64_BGMW_naive_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -308,7 +308,7 @@ TEST(IntegerScalingLaplaceMechanism,
 
 // ! BooleanGMW
 TEST(IntegerScalingLaplaceMechanism,
-     SecureIntegerScalingLaplaceMechanismFL_32_64_BGMW_optimized_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingLaplaceMechanismFL_32_64_BGMW_optimized_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -391,7 +391,7 @@ TEST(IntegerScalingLaplaceMechanism,
 
 // ! BMR
 TEST(IntegerScalingLaplaceMechanism,
-     SecureIntegerScalingLaplaceMechanismFL_32_64_BMR_naive_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingLaplaceMechanismFL_32_64_BMR_naive_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
@@ -474,7 +474,7 @@ TEST(IntegerScalingLaplaceMechanism,
 
 // ! BMR
 TEST(IntegerScalingLaplaceMechanism,
-     SecureIntegerScalingLaplaceMechanismFL_32_64_BMR_optimized_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingLaplaceMechanismFL_32_64_BMR_optimized_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;

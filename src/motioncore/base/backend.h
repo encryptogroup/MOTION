@@ -187,17 +187,17 @@ class Backend : public std::enable_shared_from_this<Backend> {
   // TODO: find better method to input constant value in BMR without interaction
   // TODO: use BmrInput to input constant values 0 and 1 to get bmr_share_0 and bmr_share_1, then
   // use bmr_share_0 and bmr_share_1 to build the BMR shares of other constant values
-  SharePointer ConstantAsBmrInput(bool input = false, std::size_t party_id = 0);
-  SharePointer ConstantAsBmrInput(const BitVector<>& input, std::size_t party_id = 0);
-  SharePointer ConstantAsBmrInput(BitVector<>&& input, std::size_t party_id = 0);
-  SharePointer ConstantAsBmrInput(std::span<const BitVector<>> input, std::size_t party_id = 0);
-  SharePointer ConstantAsBmrInput(std::vector<BitVector<>>&& input, std::size_t party_id = 0);
+  SharePointer ConstantAsBmrInput(bool input = false);
+  SharePointer ConstantAsBmrInput(const BitVector<>& input);
+  SharePointer ConstantAsBmrInput(BitVector<>&& input);
+  SharePointer ConstantAsBmrInput(std::span<const BitVector<>> input);
+  SharePointer ConstantAsBmrInput(std::vector<BitVector<>>&& input);
 
-  SharePointer ConstantAsGCInput(bool input = false, std::size_t party_id = 0);
-  SharePointer ConstantAsGCInput(const BitVector<>& input, std::size_t party_id = 0);
-  SharePointer ConstantAsGCInput(BitVector<>&& input, std::size_t party_id = 0);
-  SharePointer ConstantAsGCInput(std::span<const BitVector<>> input, std::size_t party_id = 0);
-  SharePointer ConstantAsGCInput(std::vector<BitVector<>>&& input, std::size_t party_id = 0);
+  SharePointer ConstantAsGCInput(bool input = false);
+  SharePointer ConstantAsGCInput(const BitVector<>& input);
+  SharePointer ConstantAsGCInput(BitVector<>&& input);
+  SharePointer ConstantAsGCInput(std::span<const BitVector<>> input);
+  SharePointer ConstantAsGCInput(std::vector<BitVector<>>&& input);
 
   SharePointer BmrOutput(const SharePointer& parent, std::size_t output_owner);
 

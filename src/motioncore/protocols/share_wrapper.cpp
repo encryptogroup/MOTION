@@ -10574,7 +10574,8 @@ ShareWrapper ShareWrapper::CreateConstantAsBmrInput(bool constant_value,
 
 ShareWrapper ShareWrapper::CreateConstantAsBmrInput(bool constant_value) const {
   std::size_t num_of_simd = share_->GetNumberOfSimdValues();
-  return share_->GetBackend().ConstantAsBmrInput(constant_value, num_of_simd);
+  std::vector<bool> constant_value_vector(num_of_simd, constant_value);
+  return share_->GetBackend().ConstantAsBmrInput(BitVector<>(constant_value_vector));
 }
 
 ShareWrapper ShareWrapper::CreateConstantAsBmrInput(float constant_value,
@@ -10657,7 +10658,8 @@ ShareWrapper ShareWrapper::CreateConstantAsGCInput(bool constant_value,
 
 ShareWrapper ShareWrapper::CreateConstantAsGCInput(bool constant_value) const {
   std::size_t num_of_simd = share_->GetNumberOfSimdValues();
-  return share_->GetBackend().ConstantAsGCInput(constant_value, num_of_simd);
+  std::vector<bool> constant_value_vector(num_of_simd, constant_value);
+  return share_->GetBackend().ConstantAsGCInput(BitVector<>(constant_value_vector));
 }
 
 ShareWrapper ShareWrapper::CreateConstantAsGCInput(float constant_value,

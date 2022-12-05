@@ -84,7 +84,7 @@ ShareWrapper SecureSamplingAlgorithm_optimized::BooleanBitsShareZeroCompensation
   //   boolean_gmw_share_bits_vector[0] ^ boolean_gmw_share_bits_vector[0];
 
   ShareWrapper constant_boolean_gmw_gc_bmr_share_zero;
-  switch (share_->Get()->GetProtocol()) {
+  switch (boolean_gmw_gc_bmr_share_bits->GetProtocol()) {
     case MpcProtocol::kBooleanGmw: {
       constant_boolean_gmw_gc_bmr_share_zero =
           boolean_gmw_gc_bmr_share_bits_vector[0].CreateConstantAsBooleanGmwInput(false);

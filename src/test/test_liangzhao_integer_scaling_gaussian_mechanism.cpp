@@ -51,12 +51,17 @@ using namespace encrypto::motion;
 
 namespace {
 
+  // interface test
+// TODO: add correctness test
+
 TEST(IntegerScalingGaussianMechanism,
-     SecureIntegerScalingGaussianMechanism_1_0_1_1_Simd_2_3_4_5_10_parties) {
+     SecureIntegerScalingGaussianMechanism_32_64_GC_naive_2_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
   constexpr auto kArithmeticConstant = encrypto::motion::MpcProtocol::kArithmeticConstant;
   constexpr auto kBooleanGmw = encrypto::motion::MpcProtocol::kBooleanGmw;
   constexpr auto kBooleanConstant = encrypto::motion::MpcProtocol::kBooleanConstant;
+    constexpr auto kGarbledCircuit = encrypto::motion::MpcProtocol::kGarbledCircuit;
+  constexpr auto kBmr = encrypto::motion::MpcProtocol::kBmr;
   auto template_test = [](auto template_variable_1) {
     using T = decltype(template_variable_1);
     using T_int = get_int_type_t<T>;
@@ -88,16 +93,18 @@ TEST(IntegerScalingGaussianMechanism,
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          encrypto::motion::ShareWrapper share_fD = motion_parties.at(party_id)->In<kBooleanGmw>(
+          encrypto::motion::ShareWrapper share_fD = motion_parties.at(party_id)->In<kGarbledCircuit>(
               ToInput<double, std::true_type>(fD_vector), 0);
 
           SecureIntegerScalingGaussianMechanism secure_integer_scaling_gaussian_mechanism =
               SecureIntegerScalingGaussianMechanism(share_fD);
           secure_integer_scaling_gaussian_mechanism.ParameterSetup(
               sensitivity, sigma, num_of_simd_gau, failure_probability_requirement);
+std::cout<<"001"<< std::endl;
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise =
-              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration();
+              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_naive();
+std::cout<<"002"<< std::endl;
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise_out =
               floating_point_gaussian_noise.Out();

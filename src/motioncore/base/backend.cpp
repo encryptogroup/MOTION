@@ -290,37 +290,51 @@ SharePointer Backend::BmrInput(std::size_t party_id, std::vector<BitVector<>>&& 
 }
 
 // added by Liang Zhao
-SharePointer Backend::ConstantAsBmrInput(bool input, std::size_t party_id) {
+SharePointer Backend::ConstantAsBmrInput(bool input) {
+  std::size_t party_id = 0;
+  return BmrInput(party_id, BitVector(1, input));
+}
+SharePointer Backend::ConstantAsBmrInput(const BitVector<>& input) {
+  std::size_t party_id = 0;
   return BmrInput(party_id, input);
 }
-SharePointer Backend::ConstantAsBmrInput(const BitVector<>& input, std::size_t party_id) {
+
+SharePointer Backend::ConstantAsBmrInput(BitVector<>&& input) {
+  std::size_t party_id = 0;
   return BmrInput(party_id, input);
 }
-SharePointer Backend::ConstantAsBmrInput(BitVector<>&& input, std::size_t party_id) {
+
+SharePointer Backend::ConstantAsBmrInput(std::span<const BitVector<>> input) {
+  std::size_t party_id = 0;
   return BmrInput(party_id, input);
 }
-SharePointer Backend::ConstantAsBmrInput(std::span<const BitVector<>> input, std::size_t party_id) {
-  return BmrInput(party_id, input);
-}
-SharePointer Backend::ConstantAsBmrInput(std::vector<BitVector<>>&& input, std::size_t party_id) {
+SharePointer Backend::ConstantAsBmrInput(std::vector<BitVector<>>&& input) {
+  std::size_t party_id = 0;
   return BmrInput(party_id, input);
 }
 
 // added by Liang Zhao
 // TODO: optimize by creating constant wire with value 0 and 1
-SharePointer Backend::ConstantAsGCInput(bool input, std::size_t party_id) {
+SharePointer Backend::ConstantAsGCInput(bool input) {
+  // std::cout << "party_id: " << party_id << std::endl;
+
+  std::size_t party_id = 0;
+  return GarbledCircuitInput(party_id, BitVector(1, input));
+}
+SharePointer Backend::ConstantAsGCInput(const BitVector<>& input) {
+  std::size_t party_id = 0;
   return GarbledCircuitInput(party_id, input);
 }
-SharePointer Backend::ConstantAsGCInput(const BitVector<>& input, std::size_t party_id) {
+SharePointer Backend::ConstantAsGCInput(BitVector<>&& input) {
+  std::size_t party_id = 0;
   return GarbledCircuitInput(party_id, input);
 }
-SharePointer Backend::ConstantAsGCInput(BitVector<>&& input, std::size_t party_id) {
+SharePointer Backend::ConstantAsGCInput(std::span<const BitVector<>> input) {
+  std::size_t party_id = 0;
   return GarbledCircuitInput(party_id, input);
 }
-SharePointer Backend::ConstantAsGCInput(std::span<const BitVector<>> input, std::size_t party_id) {
-  return GarbledCircuitInput(party_id, input);
-}
-SharePointer Backend::ConstantAsGCInput(std::vector<BitVector<>>&& input, std::size_t party_id) {
+SharePointer Backend::ConstantAsGCInput(std::vector<BitVector<>>&& input) {
+  std::size_t party_id = 0;
   return GarbledCircuitInput(party_id, input);
 }
 
@@ -491,6 +505,7 @@ template SharePointer Backend::AstraOutput<__uint128_t>(const SharePointer& pare
 
 // added by Liang Zhao
 SharePointer Backend::GarbledCircuitInput(std::size_t party_id, bool input) {
+  std::cout << "party_id: " << party_id << std::endl;
   return GarbledCircuitInput(party_id, BitVector(1, input));
 }
 
