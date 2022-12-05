@@ -1004,7 +1004,7 @@ SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimize
                   sigma_vector,
                   random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
                   random_unsigned_integer_boolean_gmw_share_dlap
-                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                      .Convert<MpcProtocol::kBmr>(),
                   boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kBmr>(),
                   random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kBmr>(),
                   iteration_1_, iteration_2_, iteration_3_, iteration_4_);
