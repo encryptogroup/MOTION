@@ -181,7 +181,7 @@ TEST(IntegerScalingGaussianMechanism,
               sensitivity, sigma, num_of_simd_gau, failure_probability_requirement);
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise =
-              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_naive();
+              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_optimized();
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise_out =
               floating_point_gaussian_noise.Out();
@@ -341,7 +341,7 @@ TEST(IntegerScalingGaussianMechanism,
               sensitivity, sigma, num_of_simd_gau, failure_probability_requirement);
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise =
-              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_naive();
+              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_optimized();
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise_out =
               floating_point_gaussian_noise.Out();
@@ -500,7 +500,7 @@ TEST(IntegerScalingGaussianMechanism,
               sensitivity, sigma, num_of_simd_gau, failure_probability_requirement);
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise =
-              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_naive();
+              secure_integer_scaling_gaussian_mechanism.FLGaussianNoiseGeneration_optimized();
 
           SecureFloatingPointCircuitABY floating_point_gaussian_noise_out =
               floating_point_gaussian_noise.Out();
