@@ -84,7 +84,7 @@ TEST(DiscreteLaplaceMechanism_CKS, SecureDiscreteLaplaceMechanismFL32_GC_Simd_2_
       }
 
       double sensitivity = 1;
-      double scale = 2;
+      double scale = 2.126;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -172,7 +172,7 @@ TEST(DiscreteLaplaceMechanism_CKS, SecureDiscreteLaplaceMechanismFL32_BGMW_Simd_
       }
 
       double sensitivity = 1;
-      double scale = 2;
+      double scale = 2.126;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -260,7 +260,7 @@ TEST(DiscreteLaplaceMechanism_CKS, SecureDiscreteLaplaceMechanismFL32_BMR_Simd_2
       }
 
       double sensitivity = 1;
-      double scale = 2;
+      double scale = 2.126;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -349,7 +349,7 @@ TEST(DiscreteLaplaceMechanism_CKS, SecureDiscreteLaplaceMechanismFL64_GC_Simd_2_
       }
 
       double sensitivity = 1;
-      double scale = 2;
+      double scale = 2.126;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -437,7 +437,7 @@ TEST(DiscreteLaplaceMechanism_CKS, SecureDiscreteLaplaceMechanismFL64_BGMW_Simd_
       }
 
       double sensitivity = 1;
-      double scale = 2;
+      double scale = 2.126;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -525,7 +525,7 @@ TEST(DiscreteLaplaceMechanism_CKS, SecureDiscreteLaplaceMechanismFL64_BMR_Simd_2
       }
 
       double sensitivity = 1;
-      double scale = 2;
+      double scale = 2.126;
 
       try {
         std::vector<PartyPointer> motion_parties(
