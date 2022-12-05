@@ -25,8 +25,10 @@
 #pragma once
 
 #include "protocols/share_wrapper.h"
-#include "secure_type/secure_floating_point32_agmw_ABZS.h"
-#include "secure_type/secure_floating_point64_agmw_ABZS.h"
+// #include "secure_type/secure_floating_point32_agmw_ABZS.h"
+// #include "secure_type/secure_floating_point64_agmw_ABZS.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
 
 namespace encrypto::motion {
@@ -36,6 +38,8 @@ class Logger;
 class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
 
 class SecureSnappingMechanism {
  public:
@@ -82,15 +86,30 @@ class SecureSnappingMechanism {
     clamp_B_ = clamp_B;
   }
 
-  SecureFloatingPointCircuitABY SnappingAndNoiseAddition();
+  SecureFloatingPointCircuitABY NoiseGeneration_naive();
+  SecureFloatingPointCircuitABY NoiseGeneration_optimized();
 
-  SecureFloatingPointCircuitABY SnappingAndNoiseAddition(
-      const ShareWrapper& random_bits_of_length_52, const ShareWrapper& random_bits_of_length_1022,
-      const ShareWrapper& boolean_gmw_share_sign_bit);
+  SecureFloatingPointCircuitABY NoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share,
+      const ShareWrapper& boolean_gmw_gc_bmr_share_sign_bit);
+  SecureFloatingPointCircuitABY NoiseGeneration_optimized(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_gc_bmr_share,
+      const ShareWrapper& boolean_gmw_gc_bmr_share_sign_bit);
 
-  SecureFloatingPointCircuitABY SnappingAndNoiseAddition(
-      const ShareWrapper& floating_point_boolean_gmw_share_uniform_floating_point_0_1,
-      const ShareWrapper& boolean_gmw_share_sign_bit);
+  // SecureFloatingPointCircuitABY SnappingAndNoiseAddition();
+
+  // SecureFloatingPointCircuitABY SnappingAndNoiseAddition(
+  //     const ShareWrapper& random_bits_of_length_52, const ShareWrapper& random_bits_of_length_1022,
+  //     const ShareWrapper& boolean_gmw_share_sign_bit);
+
+  // SecureFloatingPointCircuitABY SnappingAndNoiseAddition(
+  //     const ShareWrapper& floating_point_boolean_gmw_share_uniform_floating_point_0_1,
+  //     const ShareWrapper& boolean_gmw_share_sign_bit);
+
+  SecureFloatingPointCircuitABY SnappingAndNoiseAddition_naive(
+      const ShareWrapper& floating_point_boolean_gmw_gc_bmr_share_laplace_noise);
+  SecureFloatingPointCircuitABY SnappingAndNoiseAddition_optimized(
+      const ShareWrapper& floating_point_boolean_gmw_gc_bmr_share_laplace_noise);
 
   /// \brief constructs an output gate, which reconstructs the cleartext result. The default
   /// parameter for the output owner corresponds to all parties being the output owners.
@@ -120,7 +139,7 @@ class SecureSnappingMechanism {
   double clamp_B_ = 2;
 
  private:
- // fD_ is 64-bit floating point number
+  // fD_ is 64-bit floating point number
   std::shared_ptr<ShareWrapper> fD_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};
 };

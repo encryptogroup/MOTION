@@ -104,6 +104,9 @@ add_executable(motiontest
 
         # # testing for insecure Gaussian mechanism: paper (CRYPTEN: Secure Multi-Party Computation Meets Machine Learning)
         # test_liangzhao_gaussian_mechanism_CrypTen.cpp # test passed
+
+        # TODO: add correctness test later
+        test_liangzhao_snapping_mechanism.cpp # testing
 )
 
 target_link_libraries(motiontest PRIVATE
