@@ -30,8 +30,9 @@
 #include "secure_type/secure_floating_point_circuit_ABY.h"
 #include "utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.h"
 #include "utility/MOTION_dp_mechanism_helper/dp_mechanism_helper.h"
-#include "utility/MOTION_dp_mechanism_helper/discrete_gaussian_mechanism.h"
 
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
 
 namespace encrypto::motion {
 
@@ -41,6 +42,9 @@ class SecureFixedPointCircuitCBMC;
 class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
 
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
+
 // reference: The Discrete Gaussian for Differential Privacy
 // DLap(x | scale) = exp(-abs(x)/scale)*(exp(1/scale)-1)/(exp(1/scale)+1)
 
@@ -48,6 +52,7 @@ class SecureDiscreteLaplaceMechanismCKS {
  public:
   using T = std::uint64_t;
   using T_int = std::int64_t;
+  using T_expand = __uint128_t;
 
   SecureDiscreteLaplaceMechanismCKS() = default;
 
@@ -98,47 +103,53 @@ class SecureDiscreteLaplaceMechanismCKS {
 
   //============================================================================
   // 32-bit floating point version
-  SecureSignedInteger FL32DiscreteLaplaceNoiseAddition();
+  // SecureSignedInteger FL32DiscreteLaplaceNoiseAddition();
 
-  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration();
+  // ! naive version
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration_naive();
 
-  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration(
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+      const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample);
+
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample);
+
+  // ! optimized version
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration_optimized();
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
       const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample);
-
-  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration(
+  SecureSignedInteger FL32DiscreteLaplaceNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample);
   //============================================================================
   // 64-bit floating point version
-  SecureSignedInteger FL64DiscreteLaplaceNoiseAddition();
+  // SecureSignedInteger FL64DiscreteLaplaceNoiseAddition();
 
-  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration();
+  // ! naive version
+  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration_naive();
+  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+      const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample);
+  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration_naive(
+      const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+      const ShareWrapper& boolean_gmw_share_bernoulli_sample);
 
-  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration(
+  // ! optimized version
+  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration_optimized();
+  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
       const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample);
-
-  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration(
+  SecureSignedInteger FL64DiscreteLaplaceNoiseGeneration_optimized(
       const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
       const ShareWrapper& boolean_gmw_share_bernoulli_sample);
 
-  //============================================================================
-  // fixed-point version
-  SecureSignedInteger FxDiscreteLaplaceNoiseAddition();
-
-  SecureSignedInteger FxDiscreteLaplaceNoiseGeneration();
-
-  SecureSignedInteger FxDiscreteLaplaceNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-      const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample);
-
-  SecureSignedInteger FxDiscreteLaplaceNoiseGeneration(
-      const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-      const ShareWrapper& boolean_gmw_share_bernoulli_sample);
   //============================================================================
 
  public:
@@ -157,7 +168,7 @@ class SecureDiscreteLaplaceMechanismCKS {
   // iterations for discrete laplace distribution sampling
   double iteration_3_;
 
-double minimum_total_iteration_;
+  double minimum_total_iteration_;
   double minimum_total_MPC_time_;
   long double geometric_failure_probability_estimation_;
   long double discrete_laplace_failure_probability_estimation_;
@@ -175,7 +186,7 @@ double minimum_total_iteration_;
   std::size_t fixed_point_fraction_bit_size_ = 16;
 
  private:
- // fD_ is 64-bit signed integer
+  // fD_ is a 64-bit signed integer
   std::shared_ptr<ShareWrapper> fD_{nullptr};
   std::shared_ptr<ShareWrapper> noisy_fD_{nullptr};
   std::shared_ptr<Logger> logger_{nullptr};

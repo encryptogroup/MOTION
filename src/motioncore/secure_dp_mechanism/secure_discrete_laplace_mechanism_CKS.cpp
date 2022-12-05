@@ -125,99 +125,389 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
 }
 
 // ============================================================
+// ! naive version
 // 32-bit floating-point version
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseAddition() {
-//   SecureSignedInteger signed_integer_noisy_fD =
-//       SecureSignedInteger(fD_->Get()) + FL32DiscreteLaplaceNoiseGeneration();
-//   noisy_fD_ = std::make_unique<ShareWrapper>(signed_integer_noisy_fD.Get().Get());
-//   return signed_integer_noisy_fD;
-// }
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration() {
-//   std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration" << std::endl;
-//   if (denominator_ != T(1)) {
-//     ShareWrapper random_bits_of_length_23 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT32_MANTISSA_BITS, (iteration_1_ + iteration_2_) * num_of_simd_total_);
-//     ShareWrapper random_bits_of_length_126 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT32_EXPONENT_BIAS - 1, (iteration_1_ + iteration_2_) * num_of_simd_total_);
-//     ShareWrapper random_floating_point_0_1_boolean_gmw_share =
-//         fD_->UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive() {
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration" << std::endl;
+  if (denominator_ != T(1)) {
+    ShareWrapper random_bits_of_length_23 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_MANTISSA_BITS,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    ShareWrapper random_bits_of_length_126 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_EXPONENT_BIAS - 1,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
 
-//     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//     //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
-//     //     num_of_simd_total_);
+    ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share;
 
-//     ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
-//                                                   iteration_1_ * num_of_simd_total_);
+    // generate differenty types of random unsigned integer,
+    // this operation is expensive and the efficiency depends on the MPC protocol
+    switch (fD_->Get()->GetProtocol()) {
+      case MpcProtocol::kBooleanGmw: {
+        random_unsigned_integer_boolean_gmw_gc_bmr_share =
+            SecureSamplingAlgorithm_naive(fD_->Get())
+                .GenerateRandomUnsignedIntegerBGMW<T, T_expand>(T(denominator_),
+                                                                iteration_1_ * num_of_simd_total_);
+        break;
+      }
+      case MpcProtocol::kGarbledCircuit: {
+        random_unsigned_integer_boolean_gmw_gc_bmr_share =
+            SecureSamplingAlgorithm_naive(fD_->Get())
+                .GenerateRandomUnsignedIntegerGC<T, T_expand>(T(denominator_),
+                                                              iteration_1_ * num_of_simd_total_);
+        break;
+      }
+      case MpcProtocol::kBmr: {
+        random_unsigned_integer_boolean_gmw_gc_bmr_share =
+            SecureSamplingAlgorithm_naive(fD_->Get())
+                .GenerateRandomUnsignedIntegerBMR<T, T_expand>(T(denominator_),
+                                                               iteration_1_ * num_of_simd_total_);
+        break;
+      }
+      default: {
+        throw std::runtime_error("Unsupported protocol");
+      }
+    }
 
-//     ShareWrapper boolean_gmw_share_bernoulli_sample =
-//         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+    // ShareWrapper random_unsigned_integer_boolean_gmw_share =
+    //     SecureSamplingAlgorithm_naive(fD_->Get())
+    //         .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+    //                                                   iteration_1_ * num_of_simd_total_);
 
-//     SecureSignedInteger signed_integer_discrete_laplace_noise = FL32DiscreteLaplaceNoiseGeneration(
-//         random_floating_point_0_1_boolean_gmw_share, random_unsigned_integer_boolean_gmw_share,
-//         boolean_gmw_share_bernoulli_sample);
-//     return signed_integer_discrete_laplace_noise;
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
-//   } else {
-//     ShareWrapper random_bits_of_length_23 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT32_MANTISSA_BITS, (iteration_2_)*num_of_simd_total_);
-//     ShareWrapper random_bits_of_length_126 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT32_EXPONENT_BIAS - 1, (iteration_2_)*num_of_simd_total_);
-//     ShareWrapper random_floating_point_0_1_boolean_gmw_share =
-//         fD_->UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL32DiscreteLaplaceNoiseGeneration_naive(random_floating_point_0_1_boolean_gmw_share,
+                                                 random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                                                 boolean_gmw_share_bernoulli_sample);
+    return signed_integer_discrete_laplace_noise;
 
-//     ShareWrapper boolean_gmw_share_bernoulli_sample =
-//         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+  } else {
+    ShareWrapper random_bits_of_length_23 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_MANTISSA_BITS,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_bits_of_length_126 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_EXPONENT_BIAS - 1,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
 
-//     SecureSignedInteger signed_integer_discrete_laplace_noise = FL32DiscreteLaplaceNoiseGeneration(
-//         random_floating_point_0_1_boolean_gmw_share, boolean_gmw_share_bernoulli_sample);
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
-//     return signed_integer_discrete_laplace_noise;
-//   }
-// }
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL32DiscreteLaplaceNoiseGeneration_naive(random_floating_point_0_1_boolean_gmw_share,
+                                                 boolean_gmw_share_bernoulli_sample);
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration(
-//     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
-//   //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+    return signed_integer_discrete_laplace_noise;
+  }
+}
 
-//   assert(denominator_ != 1);
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
 
-//   std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
-//   std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
+  assert(denominator_ != 1);
 
-//   std::vector<ShareWrapper> result_vector =
-//       fD_->FLDiscreteLaplaceDistribution<float, std::uint64_t, std::int64_t>(
-//           numerator_vector, denominator_vector, random_floating_point_0_1_boolean_gmw_share,
-//           random_unsigned_integer_boolean_gmw_share, boolean_gmw_share_bernoulli_sample,
-//           iteration_1_, iteration_2_, iteration_3_);
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
 
-//   ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
-//   return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
-// }
+  std::vector<ShareWrapper> result_vector;
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration(
-//     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
-//   //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BGMW<float, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector, random_floating_point_0_1_boolean_gmw_share,
+                  random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                  boolean_gmw_share_bernoulli_sample, iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
 
-//   assert(denominator_ == 1);
-//   std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
-//   // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<float, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
 
-//   std::vector<ShareWrapper> result_vector =
-//       fD_->FLDiscreteLaplaceDistribution<float, std::uint64_t, std::int64_t>(
-//           numerator_vector, random_floating_point_0_1_boolean_gmw_share,
-//           boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<float, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_1_,
+                  iteration_2_, iteration_3_);
+      break;
+    }
 
-//   ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
-//   return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
-// }
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
 
-// // ============================================================
-// // 64-bit floating-point version
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
+
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+
+  assert(denominator_ == 1);
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+
+  std::vector<ShareWrapper> result_vector;
+
+  //   result_vector = fD_->FLDiscreteLaplaceDistribution<float, std::uint64_t, std::int64_t>(
+  //       numerator_vector, random_floating_point_0_1_boolean_gmw_share,
+  //       boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector = SecureSamplingAlgorithm_naive(fD_->Get())
+                          .FLDiscreteLaplaceDistribution_BGMW<float, std::uint64_t, std::int64_t>(
+                              numerator_vector, random_floating_point_0_1_boolean_gmw_share,
+                              boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<float, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<float, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_2_,
+                  iteration_3_);
+      break;
+    }
+
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
+
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
+
+// ============================================================
+// ! optimized version
+// 32-bit floating-point version
+
+SecureSignedInteger
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized() {
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration" << std::endl;
+  if (denominator_ != T(1)) {
+    ShareWrapper random_bits_of_length_23 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_MANTISSA_BITS,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    ShareWrapper random_bits_of_length_126 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_EXPONENT_BIAS - 1,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
+
+    // ShareWrapper random_unsigned_integer_boolean_gmw_share =
+    //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
+    //     num_of_simd_total_);
+
+    ShareWrapper random_unsigned_integer_boolean_gmw_share =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+                                                      iteration_1_ * num_of_simd_total_);
+
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL32DiscreteLaplaceNoiseGeneration_optimized(random_floating_point_0_1_boolean_gmw_share,
+                                                     random_unsigned_integer_boolean_gmw_share,
+                                                     boolean_gmw_share_bernoulli_sample);
+    return signed_integer_discrete_laplace_noise;
+
+  } else {
+    ShareWrapper random_bits_of_length_23 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_MANTISSA_BITS,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_bits_of_length_126 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT32_EXPONENT_BIAS - 1,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .UniformFloatingPoint32_0_1(random_bits_of_length_23, random_bits_of_length_126);
+
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL32DiscreteLaplaceNoiseGeneration_optimized(random_floating_point_0_1_boolean_gmw_share,
+                                                     boolean_gmw_share_bernoulli_sample);
+
+    return signed_integer_discrete_laplace_noise;
+  }
+}
+
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+
+  assert(denominator_ != 1);
+
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
+
+  std::vector<ShareWrapper> result_vector;
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BGMW<float, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector, random_floating_point_0_1_boolean_gmw_share,
+                  random_unsigned_integer_boolean_gmw_share, boolean_gmw_share_bernoulli_sample,
+                  iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<float, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  random_unsigned_integer_boolean_gmw_share.Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<float, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  random_unsigned_integer_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_1_,
+                  iteration_2_, iteration_3_);
+      break;
+    }
+
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
+
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
+
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+
+  assert(denominator_ == 1);
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+
+  std::vector<ShareWrapper> result_vector;
+
+  //   result_vector = fD_->FLDiscreteLaplaceDistribution<float, std::uint64_t, std::int64_t>(
+  //       numerator_vector, random_floating_point_0_1_boolean_gmw_share,
+  //       boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector = SecureSamplingAlgorithm_optimized(fD_->Get())
+                          .FLDiscreteLaplaceDistribution_BGMW<float, std::uint64_t, std::int64_t>(
+                              numerator_vector, random_floating_point_0_1_boolean_gmw_share,
+                              boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<float, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<float, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_2_,
+                  iteration_3_);
+      break;
+    }
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
+
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
+
+// ============================================================
+// ! naive version
+// 64-bit floating-point version
 // SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseAddition() {
 //   SecureSignedInteger signed_integer_noisy_fD =
 //       SecureSignedInteger(fD_->Get()) + FL64DiscreteLaplaceNoiseGeneration();
@@ -225,191 +515,384 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
 //   return signed_integer_noisy_fD;
 // }
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration() {
-//   std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration" << std::endl;
-//   if (denominator_ != T(1)) {
-//     // std::cout << "000" << std::endl;
-//     ShareWrapper random_bits_of_length_52 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_MANTISSA_BITS, (iteration_1_ + iteration_2_) * num_of_simd_total_);
-//     ShareWrapper random_bits_of_length_1022 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_EXPONENT_BIAS - 1, (iteration_1_ + iteration_2_) * num_of_simd_total_);
-//     // std::cout << "111" << std::endl;
-//     ShareWrapper random_floating_point_0_1_boolean_gmw_share =
-//         fD_->UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive() {
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration" << std::endl;
+  if (denominator_ != T(1)) {
+    // std::cout << "000" << std::endl;
+    ShareWrapper random_bits_of_length_52 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    ShareWrapper random_bits_of_length_1022 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    // std::cout << "111" << std::endl;
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 
-//     // std::cout << "222" << std::endl;
-//     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//     //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
-//     //     num_of_simd_total_);
+    // std::cout << "222" << std::endl;
+    // ShareWrapper random_unsigned_integer_boolean_gmw_share =
+    //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
+    //     num_of_simd_total_);
 
-//     ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
-//                                                   iteration_1_ * num_of_simd_total_);
+    // ShareWrapper random_unsigned_integer_boolean_gmw_share =
+    //     fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+    //                                                   iteration_1_ * num_of_simd_total_);
 
-//     // std::cout << "333" << std::endl;
-//     ShareWrapper boolean_gmw_share_bernoulli_sample =
-//         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+    ShareWrapper random_unsigned_integer_boolean_gmw_gc_bmr_share;
 
-//     SecureSignedInteger signed_integer_discrete_laplace_noise = FL64DiscreteLaplaceNoiseGeneration(
-//         random_floating_point_0_1_boolean_gmw_share, random_unsigned_integer_boolean_gmw_share,
-//         boolean_gmw_share_bernoulli_sample);
-//     return signed_integer_discrete_laplace_noise;
+    // generate differenty types of random unsigned integer,
+    // this operation is expensive and the efficiency depends on the MPC protocol
+    switch (fD_->Get()->GetProtocol()) {
+      case MpcProtocol::kBooleanGmw: {
+        random_unsigned_integer_boolean_gmw_gc_bmr_share =
+            SecureSamplingAlgorithm_naive(fD_->Get())
+                .GenerateRandomUnsignedIntegerBGMW<T, T_expand>(T(denominator_),
+                                                                iteration_1_ * num_of_simd_total_);
+        break;
+      }
+      case MpcProtocol::kGarbledCircuit: {
+        random_unsigned_integer_boolean_gmw_gc_bmr_share =
+            SecureSamplingAlgorithm_naive(fD_->Get())
+                .GenerateRandomUnsignedIntegerGC<T, T_expand>(T(denominator_),
+                                                              iteration_1_ * num_of_simd_total_);
+        break;
+      }
+      case MpcProtocol::kBmr: {
+        random_unsigned_integer_boolean_gmw_gc_bmr_share =
+            SecureSamplingAlgorithm_naive(fD_->Get())
+                .GenerateRandomUnsignedIntegerBMR<T, T_expand>(T(denominator_),
+                                                               iteration_1_ * num_of_simd_total_);
+        break;
+      }
+      default: {
+        throw std::runtime_error("Unsupported protocol");
+      }
+    }
 
-//   } else {
-//     ShareWrapper random_bits_of_length_52 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_MANTISSA_BITS, (iteration_2_)*num_of_simd_total_);
-//     ShareWrapper random_bits_of_length_1022 = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_EXPONENT_BIAS - 1, (iteration_2_)*num_of_simd_total_);
-//     ShareWrapper random_floating_point_0_1_boolean_gmw_share =
-//         fD_->UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
+    // std::cout << "333" << std::endl;
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
-//     ShareWrapper boolean_gmw_share_bernoulli_sample =
-//         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL64DiscreteLaplaceNoiseGeneration_naive(random_floating_point_0_1_boolean_gmw_share,
+                                                 random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                                                 boolean_gmw_share_bernoulli_sample);
+    return signed_integer_discrete_laplace_noise;
 
-//     SecureSignedInteger signed_integer_discrete_laplace_noise = FL64DiscreteLaplaceNoiseGeneration(
-//         random_floating_point_0_1_boolean_gmw_share, boolean_gmw_share_bernoulli_sample);
+  } else {
+    ShareWrapper random_bits_of_length_52 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_bits_of_length_1022 =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 
-//     return signed_integer_discrete_laplace_noise;
-//   }
-// }
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_naive(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration(
-//     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
-//   //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL64DiscreteLaplaceNoiseGeneration_naive(random_floating_point_0_1_boolean_gmw_share,
+                                                 boolean_gmw_share_bernoulli_sample);
 
-//   assert(denominator_ != 1);
+    return signed_integer_discrete_laplace_noise;
+  }
+}
 
-//   std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
-//   std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_gc_bmr_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
 
-//   std::vector<ShareWrapper> result_vector =
-//       fD_->FLDiscreteLaplaceDistribution<double, std::uint64_t, std::int64_t>(
-//           numerator_vector, denominator_vector, random_floating_point_0_1_boolean_gmw_share,
-//           random_unsigned_integer_boolean_gmw_share, boolean_gmw_share_bernoulli_sample,
-//           iteration_1_, iteration_2_, iteration_3_);
+  assert(denominator_ != 1);
 
-//   ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
-//   return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
-// }
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration(
-//     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
-//   //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+  std::vector<ShareWrapper> result_vector;
 
-//   assert(denominator_ == 1);
-//   std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
-//   // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BGMW<double, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector, random_floating_point_0_1_boolean_gmw_share,
+                  random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                  boolean_gmw_share_bernoulli_sample, iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<double, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
 
-//   std::vector<ShareWrapper> result_vector =
-//       fD_->FLDiscreteLaplaceDistribution<double, std::uint64_t, std::int64_t>(
-//           numerator_vector, random_floating_point_0_1_boolean_gmw_share,
-//           boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<double, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  random_unsigned_integer_boolean_gmw_gc_bmr_share,
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_1_,
+                  iteration_2_, iteration_3_);
+      break;
+    }
 
-//   ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
-//   return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
-// }
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
 
-// // =================================================================
-// // fixed-point version
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FxDiscreteLaplaceNoiseAddition() {
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
+
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+
+  assert(denominator_ == 1);
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+
+  std::vector<ShareWrapper> result_vector;
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector = SecureSamplingAlgorithm_naive(fD_->Get())
+                          .FLDiscreteLaplaceDistribution_BGMW<double, std::uint64_t, std::int64_t>(
+                              numerator_vector, random_floating_point_0_1_boolean_gmw_share,
+                              boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<double, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<double, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_2_,
+                  iteration_3_);
+      break;
+    }
+
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
+
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
+
+// ============================================================
+// ! optimized version
+// 64-bit floating-point version
+// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseAddition() {
 //   SecureSignedInteger signed_integer_noisy_fD =
-//       SecureSignedInteger(fD_->Get()) + FxDiscreteLaplaceNoiseGeneration();
+//       SecureSignedInteger(fD_->Get()) + FL64DiscreteLaplaceNoiseGeneration();
 //   noisy_fD_ = std::make_unique<ShareWrapper>(signed_integer_noisy_fD.Get().Get());
 //   return signed_integer_noisy_fD;
 // }
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FxDiscreteLaplaceNoiseGeneration() {
-//   std::cout << "SecureDiscreteLaplaceMechanismCKS::FxDiscreteLaplaceNoiseGeneration" << std::endl;
-//   if (denominator_ != T(1)) {
-//     // std::cout << "000" << std::endl;
-//     ShareWrapper random_bits_of_length_fixed_point_fraction = fD_->GenerateRandomBooleanGmwBits(
-//         fixed_point_fraction_bit_size_, (iteration_1_ + iteration_2_) * num_of_simd_total_);
-//     ShareWrapper random_fixed_point_0_1_boolean_gmw_share = fD_->UniformFixedPoint_0_1(
-//         random_bits_of_length_fixed_point_fraction, fixed_point_bit_size_);
+SecureSignedInteger
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized() {
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration" << std::endl;
+  if (denominator_ != T(1)) {
+    // std::cout << "000" << std::endl;
+    ShareWrapper random_bits_of_length_52 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    ShareWrapper random_bits_of_length_1022 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1,
+                                          (iteration_1_ + iteration_2_) * num_of_simd_total_);
+    // std::cout << "111" << std::endl;
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 
-//     // std::cout << "222" << std::endl;
-//     // ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//     //     fD_->GenerateRandomUnsignedIntegerBGMW(T(denominator_), iteration_1_ *
-//     //     num_of_simd_total_);
+    ShareWrapper random_unsigned_integer_boolean_gmw_share =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
+                                                      iteration_1_ * num_of_simd_total_);
 
-//     ShareWrapper random_unsigned_integer_boolean_gmw_share =
-//         fD_->GenerateRandomUnsignedIntegerPow2BGMW<T>(log2_denominator_,
-//                                                   iteration_1_ * num_of_simd_total_);
+    // std::cout << "333" << std::endl;
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
-//     // std::cout << "333" << std::endl;
-//     ShareWrapper boolean_gmw_share_bernoulli_sample =
-//         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL64DiscreteLaplaceNoiseGeneration_optimized(random_floating_point_0_1_boolean_gmw_share,
+                                                     random_unsigned_integer_boolean_gmw_share,
+                                                     boolean_gmw_share_bernoulli_sample);
+    return signed_integer_discrete_laplace_noise;
 
-//     SecureSignedInteger signed_integer_discrete_laplace_noise = FxDiscreteLaplaceNoiseGeneration(
-//         random_fixed_point_0_1_boolean_gmw_share, random_unsigned_integer_boolean_gmw_share,
-//         boolean_gmw_share_bernoulli_sample);
-//     return signed_integer_discrete_laplace_noise;
+  } else {
+    ShareWrapper random_bits_of_length_52 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_bits_of_length_1022 =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1,
+                                          (iteration_2_)*num_of_simd_total_);
+    ShareWrapper random_floating_point_0_1_boolean_gmw_share =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 
-//   } else {
-//     //     std::cout << "else" << std::endl;
-//     //     std::cout << "000" << std::endl;
-//     // std::cout<<"iteration_2_: "<<iteration_2_ << std::endl;
-//     // std::cout<<"num_of_simd_total_: "<<num_of_simd_total_ << std::endl;
-//     // std::cout<<"fixed_point_bit_size_: "<<fixed_point_bit_size_ << std::endl;
-//     // std::cout<<"fixed_point_fraction_bit_size_: "<<fixed_point_fraction_bit_size_ << std::endl;
+    ShareWrapper boolean_gmw_share_bernoulli_sample =
+        SecureSamplingAlgorithm_optimized(fD_->Get())
+            .GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
-//     ShareWrapper random_bits_of_length_fixed_point_fraction = fD_->GenerateRandomBooleanGmwBits(
-//         fixed_point_fraction_bit_size_, (iteration_2_)*num_of_simd_total_);
-//     ShareWrapper random_fixed_point_0_1_boolean_gmw_share = fD_->UniformFixedPoint_0_1(
-//         random_bits_of_length_fixed_point_fraction, fixed_point_bit_size_);
-//     // std::cout << "111" << std::endl;
-//     ShareWrapper boolean_gmw_share_bernoulli_sample =
-//         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
-//     // std::cout << "222" << std::endl;
-//     SecureSignedInteger signed_integer_discrete_laplace_noise = FxDiscreteLaplaceNoiseGeneration(
-//         random_fixed_point_0_1_boolean_gmw_share, boolean_gmw_share_bernoulli_sample);
+    SecureSignedInteger signed_integer_discrete_laplace_noise =
+        FL64DiscreteLaplaceNoiseGeneration_optimized(random_floating_point_0_1_boolean_gmw_share,
+                                                     boolean_gmw_share_bernoulli_sample);
 
-//     return signed_integer_discrete_laplace_noise;
-//   }
-// }
+    return signed_integer_discrete_laplace_noise;
+  }
+}
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FxDiscreteLaplaceNoiseGeneration(
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
-//   //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& random_unsigned_integer_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
 
-//   assert(denominator_ != 1);
+  assert(denominator_ != 1);
 
-//   std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
-//   std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  std::vector<T> denominator_vector(num_of_simd_dlap_, denominator_);
 
-//   std::vector<ShareWrapper> result_vector = fD_->FxDiscreteLaplaceDistribution(
-//       numerator_vector, denominator_vector, random_fixed_point_0_1_boolean_gmw_share,
-//       random_unsigned_integer_boolean_gmw_share, boolean_gmw_share_bernoulli_sample, iteration_1_,
-//       iteration_2_, iteration_3_, fixed_point_fraction_bit_size_);
+  std::vector<ShareWrapper> result_vector;
 
-//   ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
-//   return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
-// }
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BGMW<double, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector, random_floating_point_0_1_boolean_gmw_share,
+                  random_unsigned_integer_boolean_gmw_share, boolean_gmw_share_bernoulli_sample,
+                  iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<double, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  random_unsigned_integer_boolean_gmw_share.Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_1_, iteration_2_, iteration_3_);
+      break;
+    }
 
-// SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FxDiscreteLaplaceNoiseGeneration(
-//     const ShareWrapper& random_fixed_point_0_1_boolean_gmw_share,
-//     const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
-//   //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<double, std::uint64_t, std::int64_t>(
+                  numerator_vector, denominator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  random_unsigned_integer_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_1_,
+                  iteration_2_, iteration_3_);
+      break;
+    }
 
-//   assert(denominator_ == 1);
-//   std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
-//   // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
 
-//   //   std::cout << "333" << std::endl;
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
 
-//   std::vector<ShareWrapper> result_vector =
-//       fD_->FxDiscreteLaplaceDistribution(numerator_vector, random_fixed_point_0_1_boolean_gmw_share,
-//                                          boolean_gmw_share_bernoulli_sample, iteration_2_,
-//                                          iteration_3_, fixed_point_fraction_bit_size_);
-//   //   std::cout << "444" << std::endl;
+SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized(
+    const ShareWrapper& random_floating_point_0_1_boolean_gmw_share,
+    const ShareWrapper& boolean_gmw_share_bernoulli_sample) {
+  //   num_of_simd_dlap_ = fD_->Get()->GetNumberOfSimdValues();
 
-//   ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
-//   return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
-// }
+  assert(denominator_ == 1);
+  std::vector<T> numerator_vector(num_of_simd_dlap_, numerator_);
+  // std::vector<T> denominator_vector(num_of_simd_dlap_, t_);
+
+  std::vector<ShareWrapper> result_vector;
+
+  switch (fD_->Get()->GetProtocol()) {
+    case MpcProtocol::kBooleanGmw: {
+      result_vector = SecureSamplingAlgorithm_optimized(fD_->Get())
+                          .FLDiscreteLaplaceDistribution_BGMW<double, std::uint64_t, std::int64_t>(
+                              numerator_vector, random_floating_point_0_1_boolean_gmw_share,
+                              boolean_gmw_share_bernoulli_sample, iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kGarbledCircuit: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_GC<double, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_2_, iteration_3_);
+      break;
+    }
+
+    case MpcProtocol::kBmr: {
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteLaplaceDistribution_BMR<double, std::uint64_t, std::int64_t>(
+                  numerator_vector,
+                  random_floating_point_0_1_boolean_gmw_share.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample.Convert<MpcProtocol::kBmr>(), iteration_2_,
+                  iteration_3_);
+      break;
+    }
+
+    default: {
+      throw std::runtime_error("Unsupported protocol");
+    }
+  }
+
+  ShareWrapper signed_integer_boolean_gmw_share_discrete_laplace_noise = result_vector[0];
+  return SecureSignedInteger(signed_integer_boolean_gmw_share_discrete_laplace_noise);
+}
 
 }  // namespace encrypto::motion

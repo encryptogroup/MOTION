@@ -4,16 +4,17 @@
 #include <vector>
 #include "dp_mechanism_helper.h"
 
-#define FLOATINGPOINT_BITS 64
-#define FLOATINGPOINT_MANTISSA_BITS 52
-#define FLOATINGPOINT_EXPONENT_BITS 11
+// double precision floating point
+#define FLOATINGPOINT64_BITS 64
+#define FLOATINGPOINT64_MANTISSA_BITS 52
+#define FLOATINGPOINT64_EXPONENT_BITS 11
 #define FLOATINGPOINT_SIGN_BITS 1
-#define FLOATINGPOINT_EXPONENT_BIAS 1023
+#define FLOATINGPOINT64_EXPONENT_BIAS 1023
 
-#define FLOATINGPOINT_MANTISSA_MASK ((FLType(1) << FLOATINGPOINT_MANTISSA_BITS) - 1)
+#define FLOATINGPOINT_MANTISSA_MASK ((FLType(1) << FLOATINGPOINT64_MANTISSA_BITS) - 1)
 #define FLOATINGPOINT_EXPONENT_MASK \
-  (((FLType(1) << FLOATINGPOINT_EXPONENT_BITS) - 1) << FLOATINGPOINT_MANTISSA_BITS)
-#define FLOATINGPOINT_SIGN_MASK ((FLType(1) << (FLOATINGPOINT_BITS - FLOATINGPOINT_SIGN_BITS)))
+  (((FLType(1) << FLOATINGPOINT64_EXPONENT_BITS) - 1) << FLOATINGPOINT64_MANTISSA_BITS)
+#define FLOATINGPOINT_SIGN_MASK ((FLType(1) << (FLOATINGPOINT64_BITS - FLOATINGPOINT_SIGN_BITS)))
 
 // single precision floating point
 #define FLOATINGPOINT32_BITS 32
@@ -35,11 +36,11 @@ T double_to_int(double double_input);
 
 FLType double_to_bool_array(double double_input);
 
-FLType bool_array_to_int(bool bool_array[], unsigned count = FLOATINGPOINT_BITS);
+FLType bool_array_to_int(bool bool_array[], unsigned count = FLOATINGPOINT64_BITS);
 
-double bool_array_to_double(bool bool_array[], unsigned count = FLOATINGPOINT_BITS);
+double bool_array_to_double(bool bool_array[], unsigned count = FLOATINGPOINT64_BITS);
 
-double int_to_double(FLType int_input, unsigned count = FLOATINGPOINT_BITS);
+double int_to_double(FLType int_input, unsigned count = FLOATINGPOINT64_BITS);
 
 void int_to_bool_array(FLType int_input, bool bool_array[]);
 

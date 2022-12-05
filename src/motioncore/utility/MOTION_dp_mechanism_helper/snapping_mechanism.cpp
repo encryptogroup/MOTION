@@ -129,7 +129,7 @@ FLType get_smallest_greater_or_eq_power_of_two(const FLType lambda) {
     FLType sigma = 0;
     FLType lambda_sign = lambda & FLOATINGPOINT_SIGN_MASK;
 
-    FLType lambda_exponent = (((lambda & FLOATINGPOINT_EXPONENT_MASK) >> FLOATINGPOINT_MANTISSA_BITS) + 1) << FLOATINGPOINT_MANTISSA_BITS;
+    FLType lambda_exponent = (((lambda & FLOATINGPOINT_EXPONENT_MASK) >> FLOATINGPOINT64_MANTISSA_BITS) + 1) << FLOATINGPOINT64_MANTISSA_BITS;
     if (lambda_mantissa == 0) {
         sigma = lambda;
     } else {
@@ -139,7 +139,7 @@ FLType get_smallest_greater_or_eq_power_of_two(const FLType lambda) {
     double *sigma_double = reinterpret_cast<double *>(&sigma);
     //   std::cout << "sigma_double: " << *sigma_double << std::endl;
 
-    FLType m = (FLType) (lambda_exponent >> FLOATINGPOINT_MANTISSA_BITS) - FLOATINGPOINT_EXPONENT_BIAS;
+    FLType m = (FLType) (lambda_exponent >> FLOATINGPOINT64_MANTISSA_BITS) - FLOATINGPOINT64_EXPONENT_BIAS;
 
     return m;
 }
@@ -149,7 +149,7 @@ void divide_by_power_of_two(const FLType x, const FLType m, FLType x_div_pow2_m[
     FLType x_sign = x & FLOATINGPOINT_SIGN_MASK;
 
     FLType x_exponent = x & FLOATINGPOINT_EXPONENT_MASK;
-    x_exponent = ((FLType) (x_exponent >> FLOATINGPOINT_MANTISSA_BITS) - m) << FLOATINGPOINT_MANTISSA_BITS;
+    x_exponent = ((FLType) (x_exponent >> FLOATINGPOINT64_MANTISSA_BITS) - m) << FLOATINGPOINT64_MANTISSA_BITS;
 
     //    FLType x_div_pow2_m = x_mantissa ^ x_exponent ^ x_sign;
     //
@@ -173,23 +173,23 @@ void round_to_nearest_int(const FLType x, FLType x_round_to_nearest_int[]) {
     //    FLType x_exponent = x & FLOATINGPOINT_EXPONENT_MASK;
     //    FLType x_mantissa = x & FLOATINGPOINT_MANTISSA_MASK;
 
-    FLType x_sign = (x >> (FLOATINGPOINT_EXPONENT_BITS + FLOATINGPOINT_MANTISSA_BITS)) << (FLOATINGPOINT_EXPONENT_BITS + FLOATINGPOINT_MANTISSA_BITS);
-    FLType x_exponent = ((x << FLOATINGPOINT_SIGN_BITS) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_MANTISSA_BITS)) << FLOATINGPOINT_MANTISSA_BITS;
-    FLType x_mantissa = (x << (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_EXPONENT_BITS)) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_EXPONENT_BITS);
+    FLType x_sign = (x >> (FLOATINGPOINT64_EXPONENT_BITS + FLOATINGPOINT64_MANTISSA_BITS)) << (FLOATINGPOINT64_EXPONENT_BITS + FLOATINGPOINT64_MANTISSA_BITS);
+    FLType x_exponent = ((x << FLOATINGPOINT_SIGN_BITS) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_MANTISSA_BITS)) << FLOATINGPOINT64_MANTISSA_BITS;
+    FLType x_mantissa = (x << (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_EXPONENT_BITS)) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_EXPONENT_BITS);
 
     FLType mantissa_x_round_to_nearest_int = x_mantissa;
     FLType exponent_x_round_to_nearest_int = x_exponent;
     FLType sign_x_round_to_nearest_int = x_sign;
 
     // TODO: change to unsigned integer operation to save computation
-    std::int16_t unbiased_exponent_num_y = (std::int16_t) (x_exponent >> FLOATINGPOINT_MANTISSA_BITS) - (std::int16_t) (FLOATINGPOINT_EXPONENT_BIAS);
+    std::int16_t unbiased_exponent_num_y = (std::int16_t) (x_exponent >> FLOATINGPOINT64_MANTISSA_BITS) - (std::int16_t) (FLOATINGPOINT64_EXPONENT_BIAS);
 
-    std::cout << "exponent_x_num: " << (x_exponent >> FLOATINGPOINT_MANTISSA_BITS) << std::endl;
+    std::cout << "exponent_x_num: " << (x_exponent >> FLOATINGPOINT64_MANTISSA_BITS) << std::endl;
     std::cout << "unbiased_exponent_num_y: " << unbiased_exponent_num_y << std::endl;
 
     // case 1
     // y >= 52
-    if (unbiased_exponent_num_y > (std::int16_t) (FLOATINGPOINT_MANTISSA_BITS - 1)) {
+    if (unbiased_exponent_num_y > (std::int16_t) (FLOATINGPOINT64_MANTISSA_BITS - 1)) {
         std::cout << "case 1" << std::endl;
         std::cout << "y >= 52" << std::endl;
     }
@@ -203,78 +203,78 @@ void round_to_nearest_int(const FLType x, FLType x_round_to_nearest_int[]) {
         std::cout << "mantissa_x_tmp: " << mantissa_x_tmp << std::endl;
 
         unsigned i;
-        bool mantissa_array[FLOATINGPOINT_MANTISSA_BITS];
-        mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1] = (mantissa_x_tmp) & 1;
-        for (i = 1; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
-            mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1 - i] = ((mantissa_x_tmp >> i) & 1);
+        bool mantissa_array[FLOATINGPOINT64_MANTISSA_BITS];
+        mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1] = (mantissa_x_tmp) & 1;
+        for (i = 1; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
+            mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1 - i] = ((mantissa_x_tmp >> i) & 1);
         }
 
         std::cout << "mantissa_array: ";
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             std::cout << mantissa_array[i];
         }
         std::cout << std::endl;
 
-        bool mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS];
-        mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1] = (unbiased_exponent_num_y == (std::int16_t) (FLOATINGPOINT_MANTISSA_BITS));
+        bool mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS];
+        mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1] = (unbiased_exponent_num_y == (std::int16_t) (FLOATINGPOINT64_MANTISSA_BITS));
 
-        bool mantissa_fraction_msb = mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1] & mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1];
-        for (i = 1; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
-            mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1 - i] = (unbiased_exponent_num_y ==
-                                                                               (std::int16_t) (FLOATINGPOINT_MANTISSA_BITS - i - 1));
-            mantissa_fraction_msb = mantissa_fraction_msb ^ (mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1 - i] &
-                                                             mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1 - i]);
+        bool mantissa_fraction_msb = mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1] & mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1];
+        for (i = 1; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
+            mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1 - i] = (unbiased_exponent_num_y ==
+                                                                               (std::int16_t) (FLOATINGPOINT64_MANTISSA_BITS - i - 1));
+            mantissa_fraction_msb = mantissa_fraction_msb ^ (mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1 - i] &
+                                                             mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1 - i]);
         }
 
         std::cout << "mantissa_fraction_msb_mask: ";
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             std::cout << mantissa_fraction_msb_mask[i];
         }
         std::cout << std::endl;
 
         std::cout << "mantissa_fraction_msb: " << mantissa_fraction_msb << std::endl;
 
-        bool mantissa_fraction_mask[FLOATINGPOINT_MANTISSA_BITS];
+        bool mantissa_fraction_mask[FLOATINGPOINT64_MANTISSA_BITS];
         PreOrL(mantissa_fraction_msb_mask, mantissa_fraction_mask);
 
         std::cout << "mantissa_fraction_mask: ";
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             std::cout << mantissa_fraction_mask[i];
         }
         std::cout << std::endl;
 
-        bool mantissa_integer_mask[FLOATINGPOINT_MANTISSA_BITS];
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        bool mantissa_integer_mask[FLOATINGPOINT64_MANTISSA_BITS];
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             mantissa_integer_mask[i] = !mantissa_fraction_mask[i];
         }
 
         std::cout << "mantissa_integer_mask: ";
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             std::cout << mantissa_integer_mask[i];
         }
         std::cout << std::endl;
 
-        bool mantissa_integer_array[FLOATINGPOINT_MANTISSA_BITS];
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        bool mantissa_integer_array[FLOATINGPOINT64_MANTISSA_BITS];
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             mantissa_integer_array[i] = mantissa_integer_mask[i] & mantissa_array[i];
         }
 
         std::cout << "mantissa_integer_array: ";
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             std::cout << mantissa_integer_array[i];
         }
         std::cout << std::endl;
 
         const unsigned head = 0;
-        const unsigned tail = FLOATINGPOINT_MANTISSA_BITS - 1;
+        const unsigned tail = FLOATINGPOINT64_MANTISSA_BITS - 1;
 
-        bool mantissa_integer_with_fraction_all_ones[FLOATINGPOINT_MANTISSA_BITS];
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        bool mantissa_integer_with_fraction_all_ones[FLOATINGPOINT64_MANTISSA_BITS];
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             mantissa_integer_with_fraction_all_ones[i] = mantissa_integer_array[i] ^ mantissa_fraction_mask[i];
         }
 
         std::cout << "mantissa_integer_with_fraction_all_ones: ";
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             std::cout << mantissa_integer_with_fraction_all_ones[i];
         }
         std::cout << std::endl;
@@ -285,24 +285,24 @@ void round_to_nearest_int(const FLType x, FLType x_round_to_nearest_int[]) {
         std::cout << "mantissa_integer_all_ones: " << mantissa_integer_all_ones << std::endl;
         std::cout << "mantissa_integer_contain_zero: " << mantissa_integer_contain_zero << std::endl;
 
-        FLType mantissa_integer_bit[FLOATINGPOINT_MANTISSA_BITS];
+        FLType mantissa_integer_bit[FLOATINGPOINT64_MANTISSA_BITS];
         // convert integer integer bool array to integer
-        //        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        //        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
         //            mantissa_integer_bit[i] = ((FLType) (mantissa_integer_array[i]) <<
-        //            (FLOATINGPOINT_MANTISSA_BITS - 1 - i));
+        //            (FLOATINGPOINT64_MANTISSA_BITS - 1 - i));
         //        }
         //        FLType mantissa_integer = KOrL(mantissa_integer_bit, head, tail);
-        FLType mantissa_integer = bool_array_to_int(mantissa_integer_array, FLOATINGPOINT_MANTISSA_BITS);
+        FLType mantissa_integer = bool_array_to_int(mantissa_integer_array, FLOATINGPOINT64_MANTISSA_BITS);
 
         std::cout << "mantissa_integer: " << mantissa_integer << std::endl;
 
-        bool mantissa_integer_one_array[FLOATINGPOINT_MANTISSA_BITS];
-        mantissa_integer_one_array[FLOATINGPOINT_MANTISSA_BITS - 1] = 0;
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS - 1; i++) {
+        bool mantissa_integer_one_array[FLOATINGPOINT64_MANTISSA_BITS];
+        mantissa_integer_one_array[FLOATINGPOINT64_MANTISSA_BITS - 1] = 0;
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS - 1; i++) {
             mantissa_integer_one_array[i] = mantissa_fraction_msb_mask[i + 1];
         }
 
-        FLType mantissa_integer_one = bool_array_to_int(mantissa_integer_one_array, FLOATINGPOINT_MANTISSA_BITS);
+        FLType mantissa_integer_one = bool_array_to_int(mantissa_integer_one_array, FLOATINGPOINT64_MANTISSA_BITS);
         std::cout << "mantissa_integer_one: " << mantissa_integer_one << std::endl;
 
         // case 3a
@@ -322,7 +322,7 @@ void round_to_nearest_int(const FLType x, FLType x_round_to_nearest_int[]) {
         else {
             std::cout << "case 3b" << std::endl;
             mantissa_x_round_to_nearest_int = 0;
-            exponent_x_round_to_nearest_int = (((exponent_x_round_to_nearest_int >> FLOATINGPOINT_MANTISSA_BITS) + 1) << FLOATINGPOINT_MANTISSA_BITS);
+            exponent_x_round_to_nearest_int = (((exponent_x_round_to_nearest_int >> FLOATINGPOINT64_MANTISSA_BITS) + 1) << FLOATINGPOINT64_MANTISSA_BITS);
         }
 
     }
@@ -332,7 +332,7 @@ void round_to_nearest_int(const FLType x, FLType x_round_to_nearest_int[]) {
     else if (unbiased_exponent_num_y == -1) {
         std::cout << "case 4" << std::endl;
         mantissa_x_round_to_nearest_int = 0;
-        exponent_x_round_to_nearest_int = ((FLType) (FLOATINGPOINT_EXPONENT_BIAS) << FLOATINGPOINT_MANTISSA_BITS);
+        exponent_x_round_to_nearest_int = ((FLType) (FLOATINGPOINT64_EXPONENT_BIAS) << FLOATINGPOINT64_MANTISSA_BITS);
     }
 
         // case 5
@@ -348,9 +348,9 @@ void round_to_nearest_int(const FLType x, FLType x_round_to_nearest_int[]) {
 }
 
 void multiply_by_power_of_two(const FLType x, FLType m, FLType x_mul_pow2_m[]) {
-    FLType x_sign = (x >> (FLOATINGPOINT_EXPONENT_BITS + FLOATINGPOINT_MANTISSA_BITS)) << (FLOATINGPOINT_EXPONENT_BITS + FLOATINGPOINT_MANTISSA_BITS);
-    FLType x_exponent = (x << FLOATINGPOINT_SIGN_BITS) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_MANTISSA_BITS);
-    FLType x_mantissa = (x << (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_EXPONENT_BITS)) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_EXPONENT_BITS);
+    FLType x_sign = (x >> (FLOATINGPOINT64_EXPONENT_BITS + FLOATINGPOINT64_MANTISSA_BITS)) << (FLOATINGPOINT64_EXPONENT_BITS + FLOATINGPOINT64_MANTISSA_BITS);
+    FLType x_exponent = (x << FLOATINGPOINT_SIGN_BITS) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_MANTISSA_BITS);
+    FLType x_mantissa = (x << (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_EXPONENT_BITS)) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_EXPONENT_BITS);
 
     FLType sign_x_mul_pow2_m = x_sign;
     FLType exponent_x_mul_pow2_m = x_exponent;
@@ -364,7 +364,7 @@ void multiply_by_power_of_two(const FLType x, FLType m, FLType x_mul_pow2_m[]) {
     }
 
     x_mul_pow2_m[0] = sign_x_mul_pow2_m;
-    x_mul_pow2_m[1] = exponent_x_mul_pow2_m << FLOATINGPOINT_MANTISSA_BITS;
+    x_mul_pow2_m[1] = exponent_x_mul_pow2_m << FLOATINGPOINT64_MANTISSA_BITS;
     x_mul_pow2_m[2] = mantissa_x_mul_pow2_m;
 }
 
@@ -492,9 +492,9 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
     //    FLType x_exponent = x & FLOATINGPOINT_EXPONENT_MASK;
     //    FLType x_mantissa = x & FLOATINGPOINT_MANTISSA_MASK;
 
-    FLType x_sign = (x >> (FLOATINGPOINT_EXPONENT_BITS + FLOATINGPOINT_MANTISSA_BITS)) << (FLOATINGPOINT_EXPONENT_BITS + FLOATINGPOINT_MANTISSA_BITS);
-    FLType x_exponent = ((x << FLOATINGPOINT_SIGN_BITS) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_MANTISSA_BITS)) << FLOATINGPOINT_MANTISSA_BITS;
-    FLType x_mantissa = (x << (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_EXPONENT_BITS)) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT_EXPONENT_BITS);
+    FLType x_sign = (x >> (FLOATINGPOINT64_EXPONENT_BITS + FLOATINGPOINT64_MANTISSA_BITS)) << (FLOATINGPOINT64_EXPONENT_BITS + FLOATINGPOINT64_MANTISSA_BITS);
+    FLType x_exponent = ((x << FLOATINGPOINT_SIGN_BITS) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_MANTISSA_BITS)) << FLOATINGPOINT64_MANTISSA_BITS;
+    FLType x_mantissa = (x << (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_EXPONENT_BITS)) >> (FLOATINGPOINT_SIGN_BITS + FLOATINGPOINT64_EXPONENT_BITS);
 
     // FLType result = x;
 
@@ -503,14 +503,14 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
     FLType sign_x_round_to_nearest_int = x_sign;
 
     // TODO: change to unsigned integer operation to save computation
-    int16_t unbiased_exponent_num_y = (int16_t) (x_exponent >> FLOATINGPOINT_MANTISSA_BITS) - (int16_t) (FLOATINGPOINT_EXPONENT_BIAS);
+    int16_t unbiased_exponent_num_y = (int16_t) (x_exponent >> FLOATINGPOINT64_MANTISSA_BITS) - (int16_t) (FLOATINGPOINT64_EXPONENT_BIAS);
 
-    // std::cout << "exponent_x_num: " << (x_exponent >> FLOATINGPOINT_MANTISSA_BITS) << std::endl;
+    // std::cout << "exponent_x_num: " << (x_exponent >> FLOATINGPOINT64_MANTISSA_BITS) << std::endl;
     // std::cout << "unbiased_exponent_num_y: " << unbiased_exponent_num_y << std::endl;
 
     // case 1
     // y >= 52
-    if (unbiased_exponent_num_y > (int16_t) (FLOATINGPOINT_MANTISSA_BITS - 1)) {
+    if (unbiased_exponent_num_y > (int16_t) (FLOATINGPOINT64_MANTISSA_BITS - 1)) {
         // std::cout << "case 1" << std::endl;
         // std::cout << "y >= 52" << std::endl;
         // result = x;
@@ -525,32 +525,32 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
         // std::cout << "mantissa_x_tmp: " << mantissa_x_tmp << std::endl;
 
         unsigned i;
-        bool mantissa_array[FLOATINGPOINT_MANTISSA_BITS];
-        mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1] = (mantissa_x_tmp) & 1;
-        for (i = 1; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
-            mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1 - i] = ((mantissa_x_tmp >> i) & 1);
+        bool mantissa_array[FLOATINGPOINT64_MANTISSA_BITS];
+        mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1] = (mantissa_x_tmp) & 1;
+        for (i = 1; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
+            mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1 - i] = ((mantissa_x_tmp >> i) & 1);
         }
 
         // std::cout << "mantissa_array: ";
-        // for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++)
+        // for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++)
         // {
         //     std::cout << mantissa_array[i];
         // }
         // std::cout << std::endl;
 
-        bool mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS];
-        mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1] = (unbiased_exponent_num_y == (int16_t) (FLOATINGPOINT_MANTISSA_BITS));
+        bool mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS];
+        mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1] = (unbiased_exponent_num_y == (int16_t) (FLOATINGPOINT64_MANTISSA_BITS));
 
-        bool mantissa_fraction_msb = mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1] & mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1];
-        for (i = 1; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
-            mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1 - i] = (unbiased_exponent_num_y ==
-                                                                               (int16_t) (FLOATINGPOINT_MANTISSA_BITS - i - 1));
-            mantissa_fraction_msb = mantissa_fraction_msb ^ (mantissa_fraction_msb_mask[FLOATINGPOINT_MANTISSA_BITS - 1 - i] &
-                                                             mantissa_array[FLOATINGPOINT_MANTISSA_BITS - 1 - i]);
+        bool mantissa_fraction_msb = mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1] & mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1];
+        for (i = 1; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
+            mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1 - i] = (unbiased_exponent_num_y ==
+                                                                               (int16_t) (FLOATINGPOINT64_MANTISSA_BITS - i - 1));
+            mantissa_fraction_msb = mantissa_fraction_msb ^ (mantissa_fraction_msb_mask[FLOATINGPOINT64_MANTISSA_BITS - 1 - i] &
+                                                             mantissa_array[FLOATINGPOINT64_MANTISSA_BITS - 1 - i]);
         }
 
         // std::cout << "mantissa_fraction_msb_mask: ";
-        // for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++)
+        // for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++)
         // {
         //     std::cout << mantissa_fraction_msb_mask[i];
         // }
@@ -558,50 +558,50 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
 
         // std::cout << "mantissa_fraction_msb: " << mantissa_fraction_msb << std::endl;
 
-        bool mantissa_fraction_mask[FLOATINGPOINT_MANTISSA_BITS];
+        bool mantissa_fraction_mask[FLOATINGPOINT64_MANTISSA_BITS];
         PreOrL(mantissa_fraction_msb_mask, mantissa_fraction_mask, 52, ceil_log2_52, max_pow2_log52);
 
         // std::cout << "mantissa_fraction_mask: ";
-        // for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++)
+        // for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++)
         // {
         //     std::cout << mantissa_fraction_mask[i];
         // }
         // std::cout << std::endl;
 
-        bool mantissa_integer_mask[FLOATINGPOINT_MANTISSA_BITS];
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        bool mantissa_integer_mask[FLOATINGPOINT64_MANTISSA_BITS];
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             mantissa_integer_mask[i] = !mantissa_fraction_mask[i];
         }
 
         // std::cout << "mantissa_integer_mask: ";
-        // for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++)
+        // for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++)
         // {
         //     std::cout << mantissa_integer_mask[i];
         // }
         // std::cout << std::endl;
 
-        bool mantissa_integer_array[FLOATINGPOINT_MANTISSA_BITS];
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        bool mantissa_integer_array[FLOATINGPOINT64_MANTISSA_BITS];
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             mantissa_integer_array[i] = mantissa_integer_mask[i] & mantissa_array[i];
         }
 
         // std::cout << "mantissa_integer_array: ";
-        // for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++)
+        // for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++)
         // {
         //     std::cout << mantissa_integer_array[i];
         // }
         // std::cout << std::endl;
 
         const unsigned head = 0;
-        const unsigned tail = FLOATINGPOINT_MANTISSA_BITS - 1;
+        const unsigned tail = FLOATINGPOINT64_MANTISSA_BITS - 1;
 
-        bool mantissa_integer_with_fraction_all_ones[FLOATINGPOINT_MANTISSA_BITS];
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        bool mantissa_integer_with_fraction_all_ones[FLOATINGPOINT64_MANTISSA_BITS];
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
             mantissa_integer_with_fraction_all_ones[i] = mantissa_integer_array[i] ^ mantissa_fraction_mask[i];
         }
 
         // std::cout << "mantissa_integer_with_fraction_all_ones: ";
-        // for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++)
+        // for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++)
         // {
         //     std::cout << mantissa_integer_with_fraction_all_ones[i];
         // }
@@ -613,24 +613,24 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
         // std::cout << "mantissa_integer_all_ones: " << mantissa_integer_all_ones << std::endl;
         // std::cout << "mantissa_integer_contain_zero: " << mantissa_integer_contain_zero << std::endl;
 
-        FLType mantissa_integer_bit[FLOATINGPOINT_MANTISSA_BITS];
+        FLType mantissa_integer_bit[FLOATINGPOINT64_MANTISSA_BITS];
         // convert integer integer bool array to integer
-        //        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        //        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
         //            mantissa_integer_bit[i] = ((FLType) (mantissa_integer_array[i]) <<
-        //            (FLOATINGPOINT_MANTISSA_BITS - 1 - i));
+        //            (FLOATINGPOINT64_MANTISSA_BITS - 1 - i));
         //        }
         //        FLType mantissa_integer = KOrL(mantissa_integer_bit, head, tail);
-        FLType mantissa_integer = bool_array_to_int(mantissa_integer_array, FLOATINGPOINT_MANTISSA_BITS);
+        FLType mantissa_integer = bool_array_to_int(mantissa_integer_array, FLOATINGPOINT64_MANTISSA_BITS);
 
         // std::cout << "mantissa_integer: " << mantissa_integer << std::endl;
 
-        bool mantissa_integer_one_array[FLOATINGPOINT_MANTISSA_BITS];
-        mantissa_integer_one_array[FLOATINGPOINT_MANTISSA_BITS - 1] = 0;
-        for (i = 0; i < FLOATINGPOINT_MANTISSA_BITS - 1; i++) {
+        bool mantissa_integer_one_array[FLOATINGPOINT64_MANTISSA_BITS];
+        mantissa_integer_one_array[FLOATINGPOINT64_MANTISSA_BITS - 1] = 0;
+        for (i = 0; i < FLOATINGPOINT64_MANTISSA_BITS - 1; i++) {
             mantissa_integer_one_array[i] = mantissa_fraction_msb_mask[i + 1];
         }
 
-        FLType mantissa_integer_one = bool_array_to_int(mantissa_integer_one_array, FLOATINGPOINT_MANTISSA_BITS);
+        FLType mantissa_integer_one = bool_array_to_int(mantissa_integer_one_array, FLOATINGPOINT64_MANTISSA_BITS);
         // std::cout << "mantissa_integer_one: " << mantissa_integer_one << std::endl;
 
         // case 3a
@@ -657,7 +657,7 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
         else {
             // std::cout << "case 3b" << std::endl;
             mantissa_x_round_to_nearest_int = 0;
-            exponent_x_round_to_nearest_int = (((exponent_x_round_to_nearest_int >> FLOATINGPOINT_MANTISSA_BITS) + 1) << FLOATINGPOINT_MANTISSA_BITS);
+            exponent_x_round_to_nearest_int = (((exponent_x_round_to_nearest_int >> FLOATINGPOINT64_MANTISSA_BITS) + 1) << FLOATINGPOINT64_MANTISSA_BITS);
 
             // result = sign_x_round_to_nearest_int ^ exponent_x_round_to_nearest_int ^
             // mantissa_x_round_to_nearest_int;
@@ -669,7 +669,7 @@ FLType round_to_nearest_integer_CBMC(FLType x, FLType not_used) {
     else if (unbiased_exponent_num_y == -1) {
         // std::cout << "case 4" << std::endl;
         mantissa_x_round_to_nearest_int = 0;
-        exponent_x_round_to_nearest_int = ((FLType) (FLOATINGPOINT_EXPONENT_BIAS) << FLOATINGPOINT_MANTISSA_BITS);
+        exponent_x_round_to_nearest_int = ((FLType) (FLOATINGPOINT64_EXPONENT_BIAS) << FLOATINGPOINT64_MANTISSA_BITS);
 
         // result = sign_x_round_to_nearest_int ^ exponent_x_round_to_nearest_int ^
         // mantissa_x_round_to_nearest_int;

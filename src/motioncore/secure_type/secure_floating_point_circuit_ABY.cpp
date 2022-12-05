@@ -1192,9 +1192,9 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
 
         ShareWrapper boolean_gmw_bmr_gc_share_x_equal_zero = this->IsZero();
         std::vector<ShareWrapper> floating_point_boolean_gmw_bmr_gc_share_x_exponent_vector(
-            floating_point_boolean_gmw_bmr_gc_share_x_vector.begin() + FLOATINGPOINT_MANTISSA_BITS,
-            floating_point_boolean_gmw_bmr_gc_share_x_vector.begin() + FLOATINGPOINT_MANTISSA_BITS +
-                FLOATINGPOINT_EXPONENT_BITS);
+            floating_point_boolean_gmw_bmr_gc_share_x_vector.begin() + FLOATINGPOINT64_MANTISSA_BITS,
+            floating_point_boolean_gmw_bmr_gc_share_x_vector.begin() + FLOATINGPOINT64_MANTISSA_BITS +
+                FLOATINGPOINT64_EXPONENT_BITS);
         //   std::cout << "000" << std::endl;
 
         // compensate exponent of x with zero bits and convert it to a secure unsigned integer
@@ -1205,7 +1205,7 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
           floating_point_boolean_gmw_bmr_gc_share_x_exponent_compensation_vector[i] =
               constant_boolean_gmw_bmr_gc_share_zero;
         }
-        for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; i++) {
+        for (std::size_t i = 0; i < FLOATINGPOINT64_EXPONENT_BITS; i++) {
           floating_point_boolean_gmw_bmr_gc_share_x_exponent_compensation_vector[i] =
               floating_point_boolean_gmw_bmr_gc_share_x_exponent_vector[i];
         }
@@ -1250,14 +1250,14 @@ SecureFloatingPointCircuitABY SecureFloatingPointCircuitABY::MulPow2m(std::int64
             secure_unsigned_integer_x_exponent_plus_m.Get().Split();
 
         std::vector<ShareWrapper> boolean_gmw_bmr_gc_share_x_mul_pow2_m_vector;
-        boolean_gmw_bmr_gc_share_x_mul_pow2_m_vector.reserve(FLOATINGPOINT_BITS);
+        boolean_gmw_bmr_gc_share_x_mul_pow2_m_vector.reserve(FLOATINGPOINT64_BITS);
 
-        for (std::size_t i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+        for (std::size_t i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
           boolean_gmw_bmr_gc_share_x_mul_pow2_m_vector.emplace_back(
               floating_point_boolean_gmw_bmr_gc_share_x_vector[i]);
         }
 
-        for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; i++) {
+        for (std::size_t i = 0; i < FLOATINGPOINT64_EXPONENT_BITS; i++) {
           boolean_gmw_bmr_gc_share_x_mul_pow2_m_vector.emplace_back(
               boolean_gmw_bmr_gc_share_x_exponent_plus_m_vector[i]);
         }
@@ -1591,16 +1591,16 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
   // std::cout << "111" << std::endl;
 
   // extend the single-precision floating point to the double-precision floating point
-  std::vector<ShareWrapper> double_precision_floating_point_bits_vector(FLOATINGPOINT_BITS);
+  std::vector<ShareWrapper> double_precision_floating_point_bits_vector(FLOATINGPOINT64_BITS);
 
   // fill the mantissa bits of 64-bit floating point
-  for (std::size_t i = 0; i < FLOATINGPOINT_MANTISSA_BITS - FLOATINGPOINT32_MANTISSA_BITS; ++i) {
+  for (std::size_t i = 0; i < FLOATINGPOINT64_MANTISSA_BITS - FLOATINGPOINT32_MANTISSA_BITS; ++i) {
     double_precision_floating_point_bits_vector[i] = constant_boolean_gmw_bmr_gc_share_zero;
   }
-  for (std::size_t i = FLOATINGPOINT_MANTISSA_BITS - FLOATINGPOINT32_MANTISSA_BITS;
-       i < FLOATINGPOINT_MANTISSA_BITS; ++i) {
+  for (std::size_t i = FLOATINGPOINT64_MANTISSA_BITS - FLOATINGPOINT32_MANTISSA_BITS;
+       i < FLOATINGPOINT64_MANTISSA_BITS; ++i) {
     double_precision_floating_point_bits_vector[i] =
-        single_precision_floating_point_bits_vector[i - (FLOATINGPOINT_MANTISSA_BITS -
+        single_precision_floating_point_bits_vector[i - (FLOATINGPOINT64_MANTISSA_BITS -
                                                          FLOATINGPOINT32_MANTISSA_BITS)];
   }
 
@@ -1623,7 +1623,7 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
   // compute the biased exponent of the double precision floating point
   SecureUnsignedInteger unsigned_integer_double_precision_floating_point_biased_exponent =
       unsigned_integer_double_precision_floating_point_exponent +
-      T(T(FLOATINGPOINT_EXPONENT_BIAS) - T(FLOATINGPOINT32_EXPONENT_BIAS));
+      T(T(FLOATINGPOINT64_EXPONENT_BIAS) - T(FLOATINGPOINT32_EXPONENT_BIAS));
 
   // std::cout << "555" << std::endl;
 
@@ -1633,11 +1633,11 @@ SecureFloatingPointCircuitABY::ConvertSinglePrecisionToDoublePrecision() const {
   std::vector<ShareWrapper> double_precision_floating_point_biased_exponent_bit_vector(
       unsigned_integer_double_precision_floating_point_biased_exponent_vector.begin(),
       unsigned_integer_double_precision_floating_point_biased_exponent_vector.begin() +
-          FLOATINGPOINT_EXPONENT_BITS);
-  for (std::size_t i = FLOATINGPOINT_MANTISSA_BITS;
-       i < FLOATINGPOINT_MANTISSA_BITS + FLOATINGPOINT_EXPONENT_BITS; ++i) {
+          FLOATINGPOINT64_EXPONENT_BITS);
+  for (std::size_t i = FLOATINGPOINT64_MANTISSA_BITS;
+       i < FLOATINGPOINT64_MANTISSA_BITS + FLOATINGPOINT64_EXPONENT_BITS; ++i) {
     double_precision_floating_point_bits_vector[i] =
-        double_precision_floating_point_biased_exponent_bit_vector[i - FLOATINGPOINT_MANTISSA_BITS];
+        double_precision_floating_point_biased_exponent_bit_vector[i - FLOATINGPOINT64_MANTISSA_BITS];
   }
   double_precision_floating_point_bits_vector.back() = single_precision_floating_point_sign_bit;
   // std::cout << "666" << std::endl;
@@ -1655,12 +1655,12 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
 
   std::vector<ShareWrapper> double_precision_floating_point_mantissa_bit_vector(
       double_precision_floating_point_bits_vector.begin(),
-      double_precision_floating_point_bits_vector.begin() + FLOATINGPOINT_MANTISSA_BITS);
+      double_precision_floating_point_bits_vector.begin() + FLOATINGPOINT64_MANTISSA_BITS);
 
   std::vector<ShareWrapper> double_precision_floating_point_exponent_bit_vector(
-      double_precision_floating_point_bits_vector.begin() + FLOATINGPOINT_MANTISSA_BITS,
-      double_precision_floating_point_bits_vector.begin() + FLOATINGPOINT_MANTISSA_BITS +
-          FLOATINGPOINT_EXPONENT_BITS);
+      double_precision_floating_point_bits_vector.begin() + FLOATINGPOINT64_MANTISSA_BITS,
+      double_precision_floating_point_bits_vector.begin() + FLOATINGPOINT64_MANTISSA_BITS +
+          FLOATINGPOINT64_EXPONENT_BITS);
 
   ShareWrapper double_precision_floating_point_sign_bit =
       double_precision_floating_point_bits_vector.back();
@@ -1680,7 +1680,7 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
   // fill the mantissa bits of 32-bit floating point
   for (std::size_t i = 0; i < FLOATINGPOINT32_MANTISSA_BITS; ++i) {
     single_precision_floating_point_bits_vector[i] =
-        double_precision_floating_point_bits_vector[i + (FLOATINGPOINT_MANTISSA_BITS -
+        double_precision_floating_point_bits_vector[i + (FLOATINGPOINT64_MANTISSA_BITS -
                                                          FLOATINGPOINT32_MANTISSA_BITS)];
   }
 
@@ -1691,7 +1691,7 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
   for (std::size_t i = 0; i < T_size; ++i) {
     single_precision_floating_point_exponent_bit_vector[i] = constant_boolean_gmw_bmr_gc_share_zero;
   }
-  for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; ++i) {
+  for (std::size_t i = 0; i < FLOATINGPOINT64_EXPONENT_BITS; ++i) {
     single_precision_floating_point_exponent_bit_vector[i] =
         double_precision_floating_point_exponent_bit_vector[i];
   }
@@ -1704,7 +1704,7 @@ SecureFloatingPointCircuitABY::ConvertDoublePrecisionToSinglePrecision() const {
   // compute the biased exponent of the double precision floating point
   SecureUnsignedInteger unsigned_integer_single_precision_floating_point_biased_exponent =
       unsigned_integer_single_precision_floating_point_exponent +
-      T(T(FLOATINGPOINT32_EXPONENT_BIAS) - T(FLOATINGPOINT_EXPONENT_BIAS));
+      T(T(FLOATINGPOINT32_EXPONENT_BIAS) - T(FLOATINGPOINT64_EXPONENT_BIAS));
 
   // std::cout << "555" << std::endl;
 

@@ -76,43 +76,43 @@ template std::uint64_t bool_vector_geometric_sampling(std::vector<bool> bool_vec
 
 double uniform_floating_point64_0_1(const std::vector<bool>& random_bit_mantissa,
                                     const std::vector<bool>& random_bit_exponent) {
-  //   bool floating_point_bool_array[FLOATINGPOINT_BITS];
+  //   bool floating_point_bool_array[FLOATINGPOINT64_BITS];
 
   using T = std::uint16_t;
   using T_int = std::int16_t;
   T_int geo = bool_vector_geometric_sampling<T>(random_bit_exponent);
   //  std::cout << "geo: " << geo << std::endl;
-  T_int biased_exponent = FLOATINGPOINT_EXPONENT_BIAS - geo;
+  T_int biased_exponent = FLOATINGPOINT64_EXPONENT_BIAS - geo;
 
   //  std::cout << "biased_exponent: " << biased_exponent << std::endl;
 
-  std::vector<bool> exponent_bool_vector(FLOATINGPOINT_EXPONENT_BITS);
-  for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; i++) {
+  std::vector<bool> exponent_bool_vector(FLOATINGPOINT64_EXPONENT_BITS);
+  for (std::size_t i = 0; i < FLOATINGPOINT64_EXPONENT_BITS; i++) {
     exponent_bool_vector[i] = ((biased_exponent >> i) & 1);
   }
 
   //  std::cout << "random_bit_mantissa: ";
-  std::vector<bool> uniform_floating_point_bool_vector(FLOATINGPOINT_BITS);
-  for (std::size_t i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+  std::vector<bool> uniform_floating_point_bool_vector(FLOATINGPOINT64_BITS);
+  for (std::size_t i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
     uniform_floating_point_bool_vector[i] = random_bit_mantissa[i];
-    //    std::cout << random_bit_mantissa[FLOATINGPOINT_MANTISSA_BITS - 1 - i];
+    //    std::cout << random_bit_mantissa[FLOATINGPOINT64_MANTISSA_BITS - 1 - i];
   }
   //  std::cout << std::endl;
 
-  for (std::size_t i = 0; i < FLOATINGPOINT_EXPONENT_BITS; i++) {
-    uniform_floating_point_bool_vector[i + FLOATINGPOINT_MANTISSA_BITS] = exponent_bool_vector[i];
+  for (std::size_t i = 0; i < FLOATINGPOINT64_EXPONENT_BITS; i++) {
+    uniform_floating_point_bool_vector[i + FLOATINGPOINT64_MANTISSA_BITS] = exponent_bool_vector[i];
   }
   uniform_floating_point_bool_vector.emplace_back(false);
 
   //  std::cout << "uniform_floating_point_bool_vector: ";
-  //  for (std::size_t i = 0; i < FLOATINGPOINT_BITS; i++) {
+  //  for (std::size_t i = 0; i < FLOATINGPOINT64_BITS; i++) {
   //    std::cout << uniform_floating_point_bool_vector[i];
   //  }
   //  std::cout << std::endl;
 
   //  std::cout << "uniform_floating_point_bool_vector reverse: ";
-  //  for (std::size_t i = 0; i < FLOATINGPOINT_BITS; i++) {
-  //    std::cout << uniform_floating_point_bool_vector[FLOATINGPOINT_BITS - 1 - i];
+  //  for (std::size_t i = 0; i < FLOATINGPOINT64_BITS; i++) {
+  //    std::cout << uniform_floating_point_bool_vector[FLOATINGPOINT64_BITS - 1 - i];
   //  }
   //  std::cout << std::endl;
 
@@ -412,8 +412,8 @@ double ceil_power_of_two(double a_double) {
   std::uint64_t lambda_sign = *a_uint & FLOATINGPOINT_SIGN_MASK;
 
   std::uint64_t lambda_exponent =
-      (((*a_uint & FLOATINGPOINT_EXPONENT_MASK) >> FLOATINGPOINT_MANTISSA_BITS) + 1)
-      << FLOATINGPOINT_MANTISSA_BITS;
+      (((*a_uint & FLOATINGPOINT_EXPONENT_MASK) >> FLOATINGPOINT64_MANTISSA_BITS) + 1)
+      << FLOATINGPOINT64_MANTISSA_BITS;
   if (lambda_mantissa == 0) {
     a_uint_ceil_power_of_two = *a_uint;
   } else {

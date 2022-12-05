@@ -100,21 +100,16 @@ class SecureIntegerScalingLaplaceMechanism {
 
   // =================================================================================================
   // 32-bit floating point version
-  SecureFloatingPointCircuitABY FL32LaplaceNoiseAddition();
+  // SecureFloatingPointCircuitABY FL32LaplaceNoiseAddition();
 
   SecureFloatingPointCircuitABY FL32LaplaceNoiseGeneration();
 
   // =================================================================================================
   // 64-bit floating point version
-  SecureFloatingPointCircuitABY FL64LaplaceNoiseAddition();
+  // SecureFloatingPointCircuitABY FL64LaplaceNoiseAddition();
 
   SecureFloatingPointCircuitABY FL64LaplaceNoiseGeneration();
 
-  // =================================================================================================
-  // fixed point version
-  SecureFloatingPointCircuitABY FxLaplaceNoiseAddition();
-
-  SecureFloatingPointCircuitABY FxLaplaceNoiseGeneration();
 
   // =================================================================================================
 

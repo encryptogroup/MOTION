@@ -557,10 +557,10 @@ float64 int128_to_float64(__uint128_t a, __uint128_t not_used) {
     float64 float64_exponent_bits;
     bool second_mantissa_bit;
 
-    if (a_abs_msb_index > (FLOATINGPOINT_MANTISSA_BITS + 1)) {
+    if (a_abs_msb_index > (FLOATINGPOINT64_MANTISSA_BITS + 1)) {
         std::cout << "if" << std::endl;
         right_shift = true;
-        uint16_t right_shift_bits = a_abs_msb_index - (FLOATINGPOINT_MANTISSA_BITS + 1);
+        uint16_t right_shift_bits = a_abs_msb_index - (FLOATINGPOINT64_MANTISSA_BITS + 1);
         second_mantissa_bit = a_abs & (((float64) (1) << (right_shift_bits - 1)) - 1);
 
         // =============================================================================
@@ -570,23 +570,23 @@ float64 int128_to_float64(__uint128_t a, __uint128_t not_used) {
 
         uint16_t a_abs_round_msb_index = msb_index_reverse_float64(a_abs_round, 128);
         std::cout << "a_abs_round_msb_index: " << std::int64_t(a_abs_round_msb_index) << std::endl;
-        right_shift_bits = a_abs_round_msb_index - (FLOATINGPOINT_MANTISSA_BITS + 1);
+        right_shift_bits = a_abs_round_msb_index - (FLOATINGPOINT64_MANTISSA_BITS + 1);
 
         // =============================================================================
-        float64_mantissa_bits = (a_abs_round >> (right_shift_bits)) & (((float64) (1) << (FLOATINGPOINT_MANTISSA_BITS)) - 1);
-        float64_exponent_bits = right_shift_bits + (uint16_t) (FLOATINGPOINT_EXPONENT_BIAS + FLOATINGPOINT_MANTISSA_BITS);
+        float64_mantissa_bits = (a_abs_round >> (right_shift_bits)) & (((float64) (1) << (FLOATINGPOINT64_MANTISSA_BITS)) - 1);
+        float64_exponent_bits = right_shift_bits + (uint16_t) (FLOATINGPOINT64_EXPONENT_BIAS + FLOATINGPOINT64_MANTISSA_BITS);
     } else {
         std::cout << "else" << std::endl;
         right_shift = false;
-        uint16_t left_shift_bits = (FLOATINGPOINT_MANTISSA_BITS + 1) - a_abs_msb_index;
+        uint16_t left_shift_bits = (FLOATINGPOINT64_MANTISSA_BITS + 1) - a_abs_msb_index;
         std::cout << "left_shift_bits: " << std::int64_t(left_shift_bits) << std::endl;
-        float64_mantissa_bits = (a_abs << (left_shift_bits)) & (((float64) (1) << (FLOATINGPOINT_MANTISSA_BITS)) - 1);
+        float64_mantissa_bits = (a_abs << (left_shift_bits)) & (((float64) (1) << (FLOATINGPOINT64_MANTISSA_BITS)) - 1);
         std::cout << "float64_mantissa_bits: " << float64_mantissa_bits << std::endl;
-        float64_exponent_bits = (uint16_t) (FLOATINGPOINT_EXPONENT_BIAS + FLOATINGPOINT_MANTISSA_BITS) - left_shift_bits;
+        float64_exponent_bits = (uint16_t) (FLOATINGPOINT64_EXPONENT_BIAS + FLOATINGPOINT64_MANTISSA_BITS) - left_shift_bits;
         std::cout << "float64_exponent_bits: " << float64_exponent_bits << std::endl;
     }
 
-    float64_a = ((float64) (float64_sign_bit) << (FLOATINGPOINT_BITS - 1)) ^ (float64_exponent_bits << (FLOATINGPOINT_MANTISSA_BITS)) ^
+    float64_a = ((float64) (float64_sign_bit) << (FLOATINGPOINT64_BITS - 1)) ^ (float64_exponent_bits << (FLOATINGPOINT64_MANTISSA_BITS)) ^
                 (float64_mantissa_bits);
 
 //    if(a == 0){
@@ -620,10 +620,10 @@ float64 int128_to_float64_towards_zero(__uint128_t a, __uint128_t not_used) {
     float64 float64_exponent_bits;
     bool second_mantissa_bit;
 
-    if (a_abs_msb_index > (FLOATINGPOINT_MANTISSA_BITS + 1)) {
+    if (a_abs_msb_index > (FLOATINGPOINT64_MANTISSA_BITS + 1)) {
         std::cout << "if" << std::endl;
         right_shift = true;
-        uint16_t right_shift_bits = a_abs_msb_index - (FLOATINGPOINT_MANTISSA_BITS + 1);
+        uint16_t right_shift_bits = a_abs_msb_index - (FLOATINGPOINT64_MANTISSA_BITS + 1);
         second_mantissa_bit = a_abs & (((float64) (1) << (right_shift_bits - 1)) - 1);
 
         // =============================================================================
@@ -633,23 +633,23 @@ float64 int128_to_float64_towards_zero(__uint128_t a, __uint128_t not_used) {
 //
 //        uint16_t a_abs_round_msb_index = msb_index_reverse_float64(a_abs_round, 128);
 //        std::cout << "a_abs_round_msb_index: " << std::int64_t(a_abs_round_msb_index) << std::endl;
-//        right_shift_bits = a_abs_round_msb_index - (FLOATINGPOINT_MANTISSA_BITS + 1);
+//        right_shift_bits = a_abs_round_msb_index - (FLOATINGPOINT64_MANTISSA_BITS + 1);
 
         // =============================================================================
-        float64_mantissa_bits = (a_abs >> (right_shift_bits)) & (((float64) (1) << (FLOATINGPOINT_MANTISSA_BITS)) - 1);
-        float64_exponent_bits = right_shift_bits + (uint16_t) (FLOATINGPOINT_EXPONENT_BIAS + FLOATINGPOINT_MANTISSA_BITS);
+        float64_mantissa_bits = (a_abs >> (right_shift_bits)) & (((float64) (1) << (FLOATINGPOINT64_MANTISSA_BITS)) - 1);
+        float64_exponent_bits = right_shift_bits + (uint16_t) (FLOATINGPOINT64_EXPONENT_BIAS + FLOATINGPOINT64_MANTISSA_BITS);
     } else {
         std::cout << "else" << std::endl;
         right_shift = false;
-        uint16_t left_shift_bits = (FLOATINGPOINT_MANTISSA_BITS + 1) - a_abs_msb_index;
+        uint16_t left_shift_bits = (FLOATINGPOINT64_MANTISSA_BITS + 1) - a_abs_msb_index;
         std::cout << "left_shift_bits: " << std::int64_t(left_shift_bits) << std::endl;
-        float64_mantissa_bits = (a_abs << (left_shift_bits)) & (((float64) (1) << (FLOATINGPOINT_MANTISSA_BITS)) - 1);
+        float64_mantissa_bits = (a_abs << (left_shift_bits)) & (((float64) (1) << (FLOATINGPOINT64_MANTISSA_BITS)) - 1);
         std::cout << "float64_mantissa_bits: " << float64_mantissa_bits << std::endl;
-        float64_exponent_bits = (uint16_t) (FLOATINGPOINT_EXPONENT_BIAS + FLOATINGPOINT_MANTISSA_BITS) - left_shift_bits;
+        float64_exponent_bits = (uint16_t) (FLOATINGPOINT64_EXPONENT_BIAS + FLOATINGPOINT64_MANTISSA_BITS) - left_shift_bits;
         std::cout << "float64_exponent_bits: " << float64_exponent_bits << std::endl;
     }
 
-    float64_a = ((float64) (float64_sign_bit) << (FLOATINGPOINT_BITS - 1)) ^ (float64_exponent_bits << (FLOATINGPOINT_MANTISSA_BITS)) ^
+    float64_a = ((float64) (float64_sign_bit) << (FLOATINGPOINT64_BITS - 1)) ^ (float64_exponent_bits << (FLOATINGPOINT64_MANTISSA_BITS)) ^
                 (float64_mantissa_bits);
 
     return float64_a;

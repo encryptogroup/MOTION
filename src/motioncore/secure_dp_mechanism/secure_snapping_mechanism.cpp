@@ -40,16 +40,16 @@ SecureFloatingPointCircuitABY SecureSnappingMechanism::NoiseGeneration_naive() {
   std::size_t num_of_simd = fD_->Get()->GetNumberOfSimdValues();
 
   ShareWrapper random_bits_of_length_52 =
-      SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd);
+      SecureSamplingAlgorithm_naive(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, num_of_simd);
   ShareWrapper random_bits_of_length_1022 =
-      SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd);
+      SecureSamplingAlgorithm_naive(fD_->Get())
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1, num_of_simd);
   ShareWrapper boolean_gmw_share_sign_bit =
-      SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(1, num_of_simd);
+      SecureSamplingAlgorithm_naive(fD_->Get()).GenerateRandomBooleanGmwBits(1, num_of_simd);
 
   ShareWrapper floating_point_boolean_gmw_share_uniform_floating_point_0_1 =
-      SecureSamplingAlgorithm_optimized(fD_->Get())
+      SecureSamplingAlgorithm_naive(fD_->Get())
           .UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 
   switch (fD_->Get()->GetProtocol()) {
@@ -80,10 +80,10 @@ SecureFloatingPointCircuitABY SecureSnappingMechanism::NoiseGeneration_optimized
 
   ShareWrapper random_bits_of_length_52 =
       SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd);
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, num_of_simd);
   ShareWrapper random_bits_of_length_1022 =
       SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd);
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1, num_of_simd);
   ShareWrapper boolean_gmw_share_sign_bit =
       SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(1, num_of_simd);
 
@@ -173,10 +173,10 @@ SecureFloatingPointCircuitABY SecureSnappingMechanism::NoiseGeneration_optimized
 
 //   ShareWrapper random_bits_of_length_52 =
 //       SecureSamplingAlgorithm_optimized(fD_->Get())
-//           .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd);
+//           .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, num_of_simd);
 //   ShareWrapper random_bits_of_length_1022 =
 //       SecureSamplingAlgorithm_optimized(fD_->Get())
-//           .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd);
+//           .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1, num_of_simd);
 //   ShareWrapper boolean_gmw_share_sign_bit =
 //       SecureSamplingAlgorithm_optimized(fD_->Get()).GenerateRandomBooleanGmwBits(1, num_of_simd);
 

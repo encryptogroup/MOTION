@@ -577,14 +577,14 @@ int main() {
 //
 //
 //// ============================================================
-//    bool bool_array_list_52[FLOATINGPOINT_MANTISSA_BITS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+//    bool bool_array_list_52[FLOATINGPOINT64_MANTISSA_BITS] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 //                                                            1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 //
-//    bool bool_array_pre_or[FLOATINGPOINT_MANTISSA_BITS];
+//    bool bool_array_pre_or[FLOATINGPOINT64_MANTISSA_BITS];
 //    PreOrL(bool_array_list_52, bool_array_pre_or);
 //
 //    std::cout << "PreOr: " << std::endl;
-//    for (std::size_t i = 0; i < FLOATINGPOINT_MANTISSA_BITS; i++) {
+//    for (std::size_t i = 0; i < FLOATINGPOINT64_MANTISSA_BITS; i++) {
 //        std::cout << bool_array_pre_or[i];
 //    }
 //    std::cout << std::endl;
@@ -592,35 +592,35 @@ int main() {
 //// ============================================================
 //
 //    unsigned head = 0;
-//    unsigned tail = FLOATINGPOINT_MANTISSA_BITS - 1;
+//    unsigned tail = FLOATINGPOINT64_MANTISSA_BITS - 1;
 //
 //    bool K_and_L = KAndL(bool_array_list_52, head, tail);
 //    std::cout << "K_and_L: " << K_and_L << std::endl;
 //
 //// ============================================================
-//    bool bool_array_list_64[FLOATINGPOINT_BITS] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
+//    bool bool_array_list_64[FLOATINGPOINT64_BITS] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,
 //                                                   0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0,};
 
-//    bool bool_array_list_64[FLOATINGPOINT_BITS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//    bool bool_array_list_64[FLOATINGPOINT64_BITS] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 //                                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
-//    bool bool_array_list_64[FLOATINGPOINT_BITS] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//    bool bool_array_list_64[FLOATINGPOINT64_BITS] = {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 //                                                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,};
 //
 //
-//    FLType int_output__ = bool_array_to_int(bool_array_list_64, FLOATINGPOINT_BITS);
+//    FLType int_output__ = bool_array_to_int(bool_array_list_64, FLOATINGPOINT64_BITS);
 //    std::cout << "int_output__: " << int_output__ << std::endl;
 //
 //    std::cout << "bitset: " << std::bitset<64>(int_output__) << std::endl;
 //
-//    double double_output = bool_array_to_double(bool_array_list_64, FLOATINGPOINT_BITS);
+//    double double_output = bool_array_to_double(bool_array_list_64, FLOATINGPOINT64_BITS);
 //    std::cout << "double_output: " << double_output << std::endl;
 //
 
 //    FLType int_input = 23464532346;
-//    bool bool_array[FLOATINGPOINT_BITS];
+//    bool bool_array[FLOATINGPOINT64_BITS];
 //    int_to_bool_array(int_input, bool_array);
 //    unsigned i;
-//    for (i = 0; i < FLOATINGPOINT_BITS; i++) {
+//    for (i = 0; i < FLOATINGPOINT64_BITS; i++) {
 //        std::cout << bool_array[i];
 //    }
 //    std::cout << std::endl;
@@ -704,11 +704,11 @@ int main() {
 //    std::cout<<"hamming_weight: "<<hamming_weight<<std::endl;
 
 
-//    std::vector<bool> random_bit_mantissa(FLOATINGPOINT_MANTISSA_BITS);
-//    std::vector<bool> random_bit_exponent(FLOATINGPOINT_EXPONENT_BIAS - 1);
+//    std::vector<bool> random_bit_mantissa(FLOATINGPOINT64_MANTISSA_BITS);
+//    std::vector<bool> random_bit_exponent(FLOATINGPOINT64_EXPONENT_BIAS - 1);
 ////
-//    random_bit_mantissa = rand_bool_vector(FLOATINGPOINT_MANTISSA_BITS);
-//    random_bit_exponent = rand_bool_vector(FLOATINGPOINT_EXPONENT_BIAS - 1);
+//    random_bit_mantissa = rand_bool_vector(FLOATINGPOINT64_MANTISSA_BITS);
+//    random_bit_exponent = rand_bool_vector(FLOATINGPOINT64_EXPONENT_BIAS - 1);
 ////
 //    double uniform_floating_point = uniform_floating_point64_0_1(random_bit_mantissa, random_bit_exponent);
 //

@@ -104,7 +104,7 @@ SecureFloatingPointCircuitABY SecureIntegerScalingGaussianMechanism::FLGaussianN
 //   ShareWrapper boolean_gmw_share_geometric_sample =
 //       fD_->SimpleGeometricSampling_0(random_bits_for_geometric_sampling);
 //   ShareWrapper unsigned_integer_boolean_gmw_share_geometric_sample =
-//       fD_->BooleanGmwBitsZeroCompensation(boolean_gmw_share_geometric_sample, FLOATINGPOINT_BITS);
+//       fD_->BooleanGmwBitsZeroCompensation(boolean_gmw_share_geometric_sample, FLOATINGPOINT64_BITS);
 
 //   ShareWrapper boolean_gmw_share_random_bits =
 //       fD_->GenerateRandomBooleanGmwBits(1, iteration_ * num_of_simd_gau_);
@@ -113,9 +113,9 @@ SecureFloatingPointCircuitABY SecureIntegerScalingGaussianMechanism::FLGaussianN
 //       fD_->GenerateRandomUnsignedIntegerBGMW(m_, iteration_ * num_of_simd_gau_);
 
 //   ShareWrapper random_bits_of_length_52 =
-//       fD_->GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, iteration_ * num_of_simd_gau_);
+//       fD_->GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, iteration_ * num_of_simd_gau_);
 //   ShareWrapper random_bits_of_length_1022 = fD_->GenerateRandomBooleanGmwBits(
-//       FLOATINGPOINT_EXPONENT_BIAS - 1, iteration_ * num_of_simd_gau_);
+//       FLOATINGPOINT64_EXPONENT_BIAS - 1, iteration_ * num_of_simd_gau_);
 //   ShareWrapper random_floating_point_0_1_boolean_gmw_share =
 //       fD_->UniformFloatingPoint64_0_1(random_bits_of_length_52, random_bits_of_length_1022);
 

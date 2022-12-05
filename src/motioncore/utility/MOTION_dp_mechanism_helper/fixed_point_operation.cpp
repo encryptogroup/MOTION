@@ -1237,9 +1237,9 @@ FixedPointStruct<FxType> FixedPointLog2P2508(FixedPointStruct<FLType>& fixed_poi
   std::size_t k = fixed_point_a.k;
   std::size_t f = fixed_point_a.f;
 
-  std::size_t gamma = FLOATINGPOINT_BITS;
-  std::size_t l_floating_point = FLOATINGPOINT_MANTISSA_BITS + 1;
-  std::size_t k_floating_point = FLOATINGPOINT_EXPONENT_BITS;
+  std::size_t gamma = FLOATINGPOINT64_BITS;
+  std::size_t l_floating_point = FLOATINGPOINT64_MANTISSA_BITS + 1;
+  std::size_t k_floating_point = FLOATINGPOINT64_EXPONENT_BITS;
 
   std::vector<FLType, A> floating_point_a = FixedPointFx2FL<FLType, IntType, IntType_int, A>(
       fixed_point_a, gamma, f, l_floating_point, k_floating_point);
@@ -1349,9 +1349,9 @@ FixedPointStruct<FxType> FixedPointSqrtP0132(FixedPointStruct<FxType>& fixed_poi
   std::size_t k = fixed_point_a.k;
   std::size_t f = fixed_point_a.f;
 
-  std::size_t gamma = FLOATINGPOINT_BITS;
-  std::size_t l_floating_point = FLOATINGPOINT_MANTISSA_BITS + 1;
-  std::size_t k_floating_point = FLOATINGPOINT_EXPONENT_BITS;
+  std::size_t gamma = FLOATINGPOINT64_BITS;
+  std::size_t l_floating_point = FLOATINGPOINT64_MANTISSA_BITS + 1;
+  std::size_t k_floating_point = FLOATINGPOINT64_EXPONENT_BITS;
 
   std::vector<FLType, A> floating_point_a = FixedPointFx2FL<FLType, IntType, IntType_int, A>(
       fixed_point_a, gamma, f, l_floating_point, k_floating_point);
@@ -1528,9 +1528,9 @@ void test_fixed_point_operation() {
   // =======================================================
 
   //    IntType integer_a = 43234252;
-  //    std::size_t gamma = FLOATINGPOINT_BITS;
-  //    std::size_t l_floating_point = FLOATINGPOINT_MANTISSA_BITS+1;
-  //    std::size_t k_floating_point = FLOATINGPOINT_EXPONENT_BITS;
+  //    std::size_t gamma = FLOATINGPOINT64_BITS;
+  //    std::size_t l_floating_point = FLOATINGPOINT64_MANTISSA_BITS+1;
+  //    std::size_t k_floating_point = FLOATINGPOINT64_EXPONENT_BITS;
   //    std::vector<FLType> integer_to_floating_point = IntegerToFloatingPoint_ABZS<FLType, IntType,
   //    IntType_int>(integer_a, gamma, l_floating_point,
   //                                                                                                              k_floating_point);

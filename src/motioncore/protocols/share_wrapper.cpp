@@ -10045,9 +10045,9 @@ FloatingPointShareStruct ShareWrapper::CreateConstantFloatingPointShareStruct(
 
 //   std::size_t num_of_simd = fixed_point_a.v->GetNumberOfSimdValues();
 
-//   std::size_t gamma = FLOATINGPOINT_BITS;
-//   std::size_t l_floating_point = FLOATINGPOINT_MANTISSA_BITS + 1;
-//   std::size_t k_floating_point = FLOATINGPOINT_EXPONENT_BITS;
+//   std::size_t gamma = FLOATINGPOINT64_BITS;
+//   std::size_t l_floating_point = FLOATINGPOINT64_MANTISSA_BITS + 1;
+//   std::size_t k_floating_point = FLOATINGPOINT64_EXPONENT_BITS;
 
 //   FloatingPointShareStruct floating_point_arithmetic_gmw_share_a =
 //       Fx2FL<T>(fixed_point_a, gamma, f, l_floating_point, k_floating_point);
@@ -10181,9 +10181,9 @@ FloatingPointShareStruct ShareWrapper::CreateConstantFloatingPointShareStruct(
 //   std::size_t k = fixed_point_a.k;
 //   std::size_t f = fixed_point_a.f;
 
-//   std::size_t gamma = FLOATINGPOINT_BITS;
-//   std::size_t l_floating_point = FLOATINGPOINT_MANTISSA_BITS + 1;
-//   std::size_t k_floating_point = FLOATINGPOINT_EXPONENT_BITS;
+//   std::size_t gamma = FLOATINGPOINT64_BITS;
+//   std::size_t l_floating_point = FLOATINGPOINT64_MANTISSA_BITS + 1;
+//   std::size_t k_floating_point = FLOATINGPOINT64_EXPONENT_BITS;
 
 //   ShareWrapper constant_arithmetic_gmw_share_one =
 //       CreateConstantArithmeticGmwInput<T>(T(1), num_of_simd);

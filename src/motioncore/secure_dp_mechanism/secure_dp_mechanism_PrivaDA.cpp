@@ -142,20 +142,20 @@ SecureFloatingPointCircuitABY SecureDPMechanism_PrivaDA::FL64LaplaceNoiseGenerat
   // generate randomness in BooleanGMW
   ShareWrapper random_bits_of_length_52_rx =
       SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd_lap_);
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, num_of_simd_lap_);
   ShareWrapper random_bits_of_length_1022_rx =
       SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd_lap_);
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1, num_of_simd_lap_);
   ShareWrapper random_floating_point_0_1_boolean_gmw_share_rx =
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .UniformFloatingPoint64_0_1(random_bits_of_length_52_rx, random_bits_of_length_1022_rx);
 
   ShareWrapper random_bits_of_length_52_ry =
       SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_MANTISSA_BITS, num_of_simd_lap_);
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_MANTISSA_BITS, num_of_simd_lap_);
   ShareWrapper random_bits_of_length_1022_ry =
       SecureSamplingAlgorithm_optimized(fD_->Get())
-          .GenerateRandomBooleanGmwBits(FLOATINGPOINT_EXPONENT_BIAS - 1, num_of_simd_lap_);
+          .GenerateRandomBooleanGmwBits(FLOATINGPOINT64_EXPONENT_BIAS - 1, num_of_simd_lap_);
   ShareWrapper random_floating_point_0_1_boolean_gmw_share_ry =
       SecureSamplingAlgorithm_optimized(fD_->Get())
           .UniformFloatingPoint64_0_1(random_bits_of_length_52_ry, random_bits_of_length_1022_ry);

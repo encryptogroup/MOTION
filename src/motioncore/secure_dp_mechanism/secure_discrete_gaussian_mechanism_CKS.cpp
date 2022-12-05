@@ -252,9 +252,9 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 //             << std::endl;
 //   if (t_ != T(1)) {
 //     ShareWrapper random_bits_of_length_52_dlap = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_MANTISSA_BITS, (iteration_1_ + iteration_2_) * num_of_simd_total_);
+//         FLOATINGPOINT64_MANTISSA_BITS, (iteration_1_ + iteration_2_) * num_of_simd_total_);
 //     ShareWrapper random_bits_of_length_1022_dlap = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_EXPONENT_BIAS - 1, (iteration_1_ + iteration_2_) * num_of_simd_total_);
+//         FLOATINGPOINT64_EXPONENT_BIAS - 1, (iteration_1_ + iteration_2_) * num_of_simd_total_);
 //     ShareWrapper random_floating_point_0_1_boolean_gmw_share_dlap = fD_->UniformFloatingPoint64_0_1(
 //         random_bits_of_length_52_dlap, random_bits_of_length_1022_dlap);
 
@@ -269,9 +269,9 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 //         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
 //     ShareWrapper random_bits_of_length_52_dgau = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_MANTISSA_BITS, (iteration_4_)*num_of_simd_dgau_);
+//         FLOATINGPOINT64_MANTISSA_BITS, (iteration_4_)*num_of_simd_dgau_);
 //     ShareWrapper random_bits_of_length_1022_dgau = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_EXPONENT_BIAS - 1, (iteration_4_)*num_of_simd_dgau_);
+//         FLOATINGPOINT64_EXPONENT_BIAS - 1, (iteration_4_)*num_of_simd_dgau_);
 //     ShareWrapper random_floating_point_0_1_boolean_gmw_share_dgau = fD_->UniformFloatingPoint64_0_1(
 //         random_bits_of_length_52_dgau, random_bits_of_length_1022_dgau);
 
@@ -284,9 +284,9 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 
 //   } else {
 //     ShareWrapper random_bits_of_length_52_dlap = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_MANTISSA_BITS, (iteration_2_)*num_of_simd_total_);
+//         FLOATINGPOINT64_MANTISSA_BITS, (iteration_2_)*num_of_simd_total_);
 //     ShareWrapper random_bits_of_length_1022_dlap = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_EXPONENT_BIAS - 1, (iteration_2_)*num_of_simd_total_);
+//         FLOATINGPOINT64_EXPONENT_BIAS - 1, (iteration_2_)*num_of_simd_total_);
 //     ShareWrapper random_floating_point_0_1_boolean_gmw_share_dlap = fD_->UniformFloatingPoint64_0_1(
 //         random_bits_of_length_52_dlap, random_bits_of_length_1022_dlap);
 
@@ -294,9 +294,9 @@ void SecureDiscreteGaussianMechanismCKS::ParameterSetup(double sensitivity_l1, d
 //         fD_->GenerateRandomBooleanGmwBits(1, num_of_simd_total_);
 
 //     ShareWrapper random_bits_of_length_52_dgau = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_MANTISSA_BITS, (iteration_4_)*num_of_simd_dgau_);
+//         FLOATINGPOINT64_MANTISSA_BITS, (iteration_4_)*num_of_simd_dgau_);
 //     ShareWrapper random_bits_of_length_1022_dgau = fD_->GenerateRandomBooleanGmwBits(
-//         FLOATINGPOINT_EXPONENT_BIAS - 1, (iteration_4_)*num_of_simd_dgau_);
+//         FLOATINGPOINT64_EXPONENT_BIAS - 1, (iteration_4_)*num_of_simd_dgau_);
 //     ShareWrapper random_floating_point_0_1_boolean_gmw_share_dgau = fD_->UniformFloatingPoint64_0_1(
 //         random_bits_of_length_52_dgau, random_bits_of_length_1022_dgau);
 
