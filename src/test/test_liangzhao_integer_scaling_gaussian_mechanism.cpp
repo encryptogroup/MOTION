@@ -51,7 +51,6 @@ using namespace encrypto::motion;
 
 namespace {
 
-
 TEST(IntegerScalingGaussianMechanism,
      SecureIntegerScalingGaussianMechanism_1_0_1_1_Simd_2_3_4_5_10_parties) {
   constexpr auto kArithmeticGmw = encrypto::motion::MpcProtocol::kArithmeticGmw;
