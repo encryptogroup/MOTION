@@ -78,10 +78,10 @@ void SecureIntegerScalingLaplaceMechanism::ParameterSetup(
   std::cout << std::endl;
 }
 
-// // use 32-bit floating point, 64-bit floating point and fixed-point to generate discrete Laplace noise,
-// // then, convert the discrete Laplace noise to 64-bit floating point Laplace noise
-// // =================================================================================================
-// // 32-bit floating point version
+// use 32-bit floating point, 64-bit floating point and fixed-point to generate discrete Laplace
+// noise, then, convert the discrete Laplace noise to 64-bit floating point Laplace noise
+// =================================================================================================
+// 32-bit floating point version
 // SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseAddition() {
 //   SecureFloatingPointCircuitABY floating_point_noisy_fD =
 //       SecureFloatingPointCircuitABY(fD_->Get()) + FL32LaplaceNoiseGeneration();
@@ -89,25 +89,43 @@ void SecureIntegerScalingLaplaceMechanism::ParameterSetup(
 //   return floating_point_noisy_fD;
 // }
 
-// SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration() {
-//   std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration" << std::endl;
-//   SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
-//       SecureDiscreteLaplaceMechanismCKS(fD_->Get());
-//   secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
-//                                                        failure_probability_requirement_);
-//   SecureSignedInteger signed_integer_discrete_laplace_noise =
-//       secure_discrete_laplace_mechanism_CKS.FL32DiscreteLaplaceNoiseGeneration();
+// ! naive version
+SecureFloatingPointCircuitABY
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_naive() {
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration" << std::endl;
+  SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
+      SecureDiscreteLaplaceMechanismCKS(fD_->Get());
+  secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
+                                                       failure_probability_requirement_);
+  SecureSignedInteger signed_integer_discrete_laplace_noise =
+      secure_discrete_laplace_mechanism_CKS.FL32DiscreteLaplaceNoiseGeneration_naive();
 
-//   // SecureFloatingPointCircuitABY floating_point_laplace_noise =
-//   //    ( signed_integer_discrete_laplace_noise.Int2FL(sizeof(float) * 8)) * float(resolution_r_);
-//   SecureFloatingPointCircuitABY floating_point_laplace_noise =
-//       (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8))
-//           .MulPow2m(log2_resolution_r_);
+  // less efficient method
+  SecureFloatingPointCircuitABY floating_point_laplace_noise =
+      (signed_integer_discrete_laplace_noise.Int2FL(sizeof(float) * 8)) * float(resolution_r_);
 
-//   return floating_point_laplace_noise;
-// }
-// // =================================================================================================
-// // 64-bit floating point version
+  return floating_point_laplace_noise;
+}
+
+// ! optimized version
+SecureFloatingPointCircuitABY
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_optimized() {
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration" << std::endl;
+  SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
+      SecureDiscreteLaplaceMechanismCKS(fD_->Get());
+  secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
+                                                       failure_probability_requirement_);
+  SecureSignedInteger signed_integer_discrete_laplace_noise =
+      secure_discrete_laplace_mechanism_CKS.FL32DiscreteLaplaceNoiseGeneration_optimized();
+
+  SecureFloatingPointCircuitABY floating_point_laplace_noise =
+      (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8))
+          .MulPow2m(log2_resolution_r_);
+
+  return floating_point_laplace_noise;
+}
+// =================================================================================================
+// 64-bit floating point version
 // SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseAddition() {
 //   SecureFloatingPointCircuitABY floating_point_noisy_fD =
 //       SecureFloatingPointCircuitABY(fD_->Get()) + FL64LaplaceNoiseGeneration();
@@ -115,118 +133,40 @@ void SecureIntegerScalingLaplaceMechanism::ParameterSetup(
 //   return floating_point_noisy_fD;
 // }
 
-// SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration() {
-//   std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration" << std::endl;
-//   SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
-//       SecureDiscreteLaplaceMechanismCKS(fD_->Get());
-//   secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
-//                                                        failure_probability_requirement_);
-//   SecureSignedInteger signed_integer_discrete_laplace_noise =
-//       secure_discrete_laplace_mechanism_CKS.FL64DiscreteLaplaceNoiseGeneration();
+// ! naive version
+SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_naive() {
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration" << std::endl;
+  SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
+      SecureDiscreteLaplaceMechanismCKS(fD_->Get());
+  secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
+                                                       failure_probability_requirement_);
+  SecureSignedInteger signed_integer_discrete_laplace_noise =
+      secure_discrete_laplace_mechanism_CKS.FL64DiscreteLaplaceNoiseGeneration_naive();
 
-//   // SecureFloatingPointCircuitABY floating_point_laplace_noise =
-//   //   (  signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8) )* double(resolution_r_);
-//   SecureFloatingPointCircuitABY floating_point_laplace_noise =
-//       (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8))
-//           .MulPow2m(log2_resolution_r_);
+  SecureFloatingPointCircuitABY floating_point_laplace_noise =
+    (  signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8) )* double(resolution_r_);
+  // SecureFloatingPointCircuitABY floating_point_laplace_noise =
+  //     (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8))
+  //         .MulPow2m(log2_resolution_r_);
 
-//   return floating_point_laplace_noise;
-// }
+  return floating_point_laplace_noise;
+}
 
+// ! optimized version
+SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_optimized() {
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration" << std::endl;
+  SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
+      SecureDiscreteLaplaceMechanismCKS(fD_->Get());
+  secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
+                                                       failure_probability_requirement_);
+  SecureSignedInteger signed_integer_discrete_laplace_noise =
+      secure_discrete_laplace_mechanism_CKS.FL64DiscreteLaplaceNoiseGeneration_optimized();
 
-//===============================================================
+  SecureFloatingPointCircuitABY floating_point_laplace_noise =
+      (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8))
+          .MulPow2m(log2_resolution_r_);
 
-// void SecureIntegerScalingLaplaceMechanism::ParameterSetup_with_DiscreteLaplaceEKMPP(
-//     double sensitivity_l1, double epsilon, std::size_t num_of_simd_lap,
-//     std::size_t fixed_point_bit_size, std::size_t fixed_point_fraction_bit_size) {
-//   std::cout << "SecureIntegerScalingLaplaceMechanism::ParameterSetup" << std::endl;
-//   std::cout << "epsilon: " << epsilon << std::endl;
-
-//   assert(num_of_simd_lap_ = fD_->Get()->GetNumberOfSimdValues() == num_of_simd_lap);
-
-//   sensitivity_l1_ = sensitivity_l1;
-//   epsilon_ = epsilon;
-
-//   num_of_simd_lap_ = num_of_simd_lap;
-
-//   fixed_point_fraction_bit_size_ = fixed_point_fraction_bit_size;
-//   fixed_point_bit_size_ = fixed_point_bit_size;
-
-//   failure_probability_requirement_ = 0;
-
-//   resolution_r_ = ceil_power_of_two(sensitivity_l1_ / epsilon / pow2_k_);
-//   delta_r_ = sensitivity_l1_ + resolution_r_;
-
-//   lambda_ = resolution_r_ * epsilon_ / delta_r_;
-
-//   scale_ = 1 / lambda_;
-
-//   epsilon_dlap_ = sensitivity_l1_ / scale_;
-//   std::cout << "epsilon_dlap_: " << epsilon_dlap_ << std::endl;
-
-//   lambda_dlap_ = std::exp(-1.0 / scale_);
-//   std::cout << "lambda_dlap_: " << lambda_dlap_ << std::endl;
-
-//   std::cout << "sensitivity_l1_ / epsilon / pow2_k_: " << sensitivity_l1_ / epsilon / pow2_k_
-//             << std::endl;
-//   std::cout << "resolution_r_: " << resolution_r_ << std::endl;
-//   std::cout << "lambda_: " << lambda_ << std::endl;
-//   std::cout << "scale_: " << scale_ << std::endl;
-//   std::cout << std::endl;
-// }
-
-// SecureFloatingPointCircuitABY
-// SecureIntegerScalingLaplaceMechanism::FLLaplaceNoiseAddition_with_DiscreteLaplaceEKMPP() {
-//   SecureFloatingPointCircuitABY floating_point_noisy_fD =
-//       SecureFloatingPointCircuitABY(fD_->Get()) +
-//       FLLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP();
-//   noisy_fD_ = std::make_unique<ShareWrapper>(floating_point_noisy_fD.Get().Get());
-//   return floating_point_noisy_fD;
-// }
-
-// SecureFloatingPointCircuitABY
-// SecureIntegerScalingLaplaceMechanism::FLLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP() {
-//   SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism_EKMPP =
-//       SecureDPMechanism_PrivaDA(fD_->Get());
-
-//   secure_laplace_discrete_laplace_mechanism_EKMPP.ParameterSetup(sensitivity_l1_, epsilon_dlap_,
-//                                                                  num_of_simd_lap_);
-//   SecureSignedInteger signed_integer_discrete_laplace_noise =
-//       secure_laplace_discrete_laplace_mechanism_EKMPP.FL64DiscreteLaplaceNoiseGeneration();
-
-//   SecureFloatingPointCircuitABY floating_point_laplace_noise =
-//       signed_integer_discrete_laplace_noise.Int2FL() * double(resolution_r_);
-
-//   return floating_point_laplace_noise;
-// }
-
-// =============================================================
-
-// SecureFixedPointCircuitCBMC
-// SecureIntegerScalingLaplaceMechanism::FxLaplaceNoiseAddition_with_DiscreteLaplaceEKMPP() {
-//   SecureFixedPointCircuitCBMC fixed_point_noisy_fD =
-//       SecureFixedPointCircuitCBMC(fD_->Get()) +
-//       FxLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP();
-//   noisy_fD_ = std::make_unique<ShareWrapper>(fixed_point_noisy_fD.Get().Get());
-//   return fixed_point_noisy_fD;
-// }
-
-// SecureFixedPointCircuitCBMC
-// SecureIntegerScalingLaplaceMechanism::FxLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP() {
-//   SecureDPMechanism_PrivaDA secure_laplace_discrete_laplace_mechanism_EKMPP =
-//       SecureDPMechanism_PrivaDA(fD_->Get());
-
-//   secure_laplace_discrete_laplace_mechanism_EKMPP.ParameterSetup(
-//       sensitivity_l1_, epsilon_dlap_, num_of_simd_lap_, fixed_point_bit_size_,
-//       fixed_point_fraction_bit_size_);
-
-//   SecureSignedInteger signed_integer_discrete_laplace_noise =
-//       secure_laplace_discrete_laplace_mechanism_EKMPP.FxDiscreteLaplaceNoiseGeneration();
-
-//   SecureFixedPointCircuitCBMC fixed_point_laplace_noise =
-//       signed_integer_discrete_laplace_noise.Int2Fx() * resolution_r_;
-
-//   return fixed_point_laplace_noise;
-// }
+  return floating_point_laplace_noise;
+}
 
 }  // namespace encrypto::motion

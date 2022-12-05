@@ -31,6 +31,9 @@
 #include "secure_type/secure_floating_point64_agmw_ABZS.h"
 #include "secure_type/secure_floating_point_circuit_ABY.h"
 
+#include "secure_dp_mechanism/secure_sampling_algorithm_naive.h"
+#include "secure_dp_mechanism/secure_sampling_algorithm_optimized.h"
+
 namespace encrypto::motion {
 
 class Logger;
@@ -40,6 +43,9 @@ class SecureUnsignedInteger;
 class SecureFloatingPointCircuitABY;
 class SecureDiscreteLaplaceMechanismCKS;
 class SecureDPMechanism_PrivaDA;
+
+class SecureSamplingAlgorithm_naive;
+class SecureSamplingAlgorithm_optimized;
 
 // reference:
 // https://github.com/google/differential-privacy/blob/main/common_docs/Secure_Noise_Generation.pdf
@@ -102,29 +108,15 @@ class SecureIntegerScalingLaplaceMechanism {
   // 32-bit floating point version
   // SecureFloatingPointCircuitABY FL32LaplaceNoiseAddition();
 
-  SecureFloatingPointCircuitABY FL32LaplaceNoiseGeneration();
+  SecureFloatingPointCircuitABY FL32LaplaceNoiseGeneration_naive();
+  SecureFloatingPointCircuitABY FL32LaplaceNoiseGeneration_optimized();
 
   // =================================================================================================
   // 64-bit floating point version
   // SecureFloatingPointCircuitABY FL64LaplaceNoiseAddition();
 
-  SecureFloatingPointCircuitABY FL64LaplaceNoiseGeneration();
-
-
-  // =================================================================================================
-
-  // void ParameterSetup_with_DiscreteLaplaceEKMPP(double sensitivity_l1, double epsilon,
-  //                                               std::size_t num_of_simd_lap,
-  //                                               std::size_t fixed_point_bit_size = 64,
-  //                                               std::size_t fixed_point_fraction_bit_size = 16);
-
-  // SecureFloatingPointCircuitABY FLLaplaceNoiseAddition_with_DiscreteLaplaceEKMPP();
-
-  // SecureFloatingPointCircuitABY FLLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP();
-
-  // SecureFixedPointCircuitCBMC FxLaplaceNoiseAddition_with_DiscreteLaplaceEKMPP();
-
-  // SecureFixedPointCircuitCBMC FxLaplaceNoiseGeneration_with_DiscreteLaplaceEKMPP();
+  SecureFloatingPointCircuitABY FL64LaplaceNoiseGeneration_naive();
+  SecureFloatingPointCircuitABY FL64LaplaceNoiseGeneration_optimized();
 
   // =================================================================================================
  public:
