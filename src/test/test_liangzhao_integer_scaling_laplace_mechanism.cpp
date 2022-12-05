@@ -70,7 +70,7 @@ TEST(IntegerScalingLaplaceMechanism,
       std::vector<double> fD_vector = rand_range_double_vector(0, 2, num_of_simd_lap);
 
       double sensitivity = 1;
-      double epsilon = 1;
+      double epsilon =0.01;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -107,8 +107,8 @@ TEST(IntegerScalingLaplaceMechanism,
 
           if (party_id == 0) {
             std::cout << "party_id: " << party_id << std::endl;
-            std::vector<float> share_result32_0_out_as =
-                floating_point32_laplace_noise_out.AsFloatingPointVector<float>();
+            std::vector<double> share_result32_0_out_as =
+                floating_point32_laplace_noise_out.AsFloatingPointVector<double>();
             std::vector<double> share_result64_0_out_as =
                 floating_point64_laplace_noise_out.AsFloatingPointVector<double>();
 
@@ -149,7 +149,7 @@ TEST(IntegerScalingLaplaceMechanism,
       std::vector<double> fD_vector = rand_range_double_vector(0, 2, num_of_simd_lap);
 
       double sensitivity = 1;
-      double epsilon = 1;
+      double epsilon = 0.01;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -186,8 +186,8 @@ TEST(IntegerScalingLaplaceMechanism,
 
           if (party_id == 0) {
             std::cout << "party_id: " << party_id << std::endl;
-            std::vector<float> share_result32_0_out_as =
-                floating_point32_laplace_noise_out.AsFloatingPointVector<float>();
+            std::vector<double> share_result32_0_out_as =
+                floating_point32_laplace_noise_out.AsFloatingPointVector<double>();
             std::vector<double> share_result64_0_out_as =
                 floating_point64_laplace_noise_out.AsFloatingPointVector<double>();
 

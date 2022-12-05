@@ -102,7 +102,7 @@ SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_naive() {
 
   // less efficient method
   SecureFloatingPointCircuitABY floating_point_laplace_noise =
-      (signed_integer_discrete_laplace_noise.Int2FL(sizeof(float) * 8)) * float(resolution_r_);
+      (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8)) * double(resolution_r_);
 
   return floating_point_laplace_noise;
 }
@@ -145,9 +145,6 @@ SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceN
 
   SecureFloatingPointCircuitABY floating_point_laplace_noise =
     (  signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8) )* double(resolution_r_);
-  // SecureFloatingPointCircuitABY floating_point_laplace_noise =
-  //     (signed_integer_discrete_laplace_noise.Int2FL(sizeof(double) * 8))
-  //         .MulPow2m(log2_resolution_r_);
 
   return floating_point_laplace_noise;
 }
