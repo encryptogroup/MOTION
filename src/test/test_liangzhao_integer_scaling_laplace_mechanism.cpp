@@ -107,8 +107,8 @@ TEST(IntegerScalingLaplaceMechanism,
 
           if (party_id == 0) {
             std::cout << "party_id: " << party_id << std::endl;
-            std::vector<double> share_result32_0_out_as =
-                floating_point32_laplace_noise_out.AsFloatingPointVector<double>();
+            std::vector<float> share_result32_0_out_as =
+                floating_point32_laplace_noise_out.AsFloatingPointVector<float>();
             std::vector<double> share_result64_0_out_as =
                 floating_point64_laplace_noise_out.AsFloatingPointVector<double>();
 
@@ -186,8 +186,8 @@ TEST(IntegerScalingLaplaceMechanism,
 
           if (party_id == 0) {
             std::cout << "party_id: " << party_id << std::endl;
-            std::vector<double> share_result32_0_out_as =
-                floating_point32_laplace_noise_out.AsFloatingPointVector<double>();
+            std::vector<float> share_result32_0_out_as =
+                floating_point32_laplace_noise_out.AsFloatingPointVector<float>();
             std::vector<double> share_result64_0_out_as =
                 floating_point64_laplace_noise_out.AsFloatingPointVector<double>();
 
