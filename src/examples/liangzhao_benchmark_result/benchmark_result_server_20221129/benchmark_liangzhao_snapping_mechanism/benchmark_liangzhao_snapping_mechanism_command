@@ -23,7 +23,7 @@
 ./benchmark_liangzhao_snapping_mechanism --my-id 2 --parties 0,130.83.125.167,23000 1,130.83.125.168,23000 2,130.83.125.169,23000 --repetitions 10
 
 # =============================================================================================
-# benchmark BooleanGMW, BMR
+# benchmark BooleanGMW
 # network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
 # log: 
 # time: 2022.12.06 

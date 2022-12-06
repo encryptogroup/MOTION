@@ -1,5 +1,5 @@
 # add_subdirectory(aes128)
-# add_subdirectory(benchmark_integers)
+add_subdirectory(benchmark_integers)
 # add_subdirectory(benchmark_primitive_operations)
 # add_subdirectory(benchmark_providers)
 # add_subdirectory(example_template)

@@ -73,22 +73,22 @@ std::vector<Combination> GenerateAllCombinations() {
   const std::array kDPMechanismType = {
       // boolean circuit based method
       T::kDPMechanism_PrivaDA_FL32Laplace_noise_generation,
-      T::kDPMechanism_PrivaDA_FL64Laplace_noise_generation,
+      // T::kDPMechanism_PrivaDA_FL64Laplace_noise_generation,
 
-      T::kDPMechanism_PrivaDA_FL32Laplace_perturbation,
-      T::kDPMechanism_PrivaDA_FL64Laplace_perturbation,
+      // T::kDPMechanism_PrivaDA_FL32Laplace_perturbation,
+      // T::kDPMechanism_PrivaDA_FL64Laplace_perturbation,
 
-      T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation,
-      T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation,
+      // T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation,
+      // T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation,
 
-      T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation,
-      T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation,
+      // T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation,
+      // T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation,
 
   };
 
   const std::array kProtocol = {
-      // encrypto::motion::MpcProtocol::kGarbledCircuit, // only for two parties
-      encrypto::motion::MpcProtocol::kBooleanGmw,
+      encrypto::motion::MpcProtocol::kGarbledCircuit, // only for two parties
+      // encrypto::motion::MpcProtocol::kBooleanGmw,
       // encrypto::motion::MpcProtocol::kBmr, // too slow
   };
 
