@@ -67,7 +67,7 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
   const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1, 5, 10, 100, 1000};
+  const std::array kNumbersOfSimd = {1, 10, 100, 1000};
   // const std::array kNumbersOfSimd = {5};
 
   const std::array kDPMechanismType = {

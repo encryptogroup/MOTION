@@ -33,7 +33,7 @@
 #include <boost/program_options.hpp>
 
 #include "base/party.h"
-#include "common/benchmark_liangzhao_snapping_mechanism.h"
+#include "common/benchmark_liangzhao_discrete_laplace_mechanism_CKS.h"
 #include "communication/communication_layer.h"
 #include "communication/tcp_transport.h"
 #include "statistics/analysis.h"
@@ -51,52 +51,210 @@ constexpr std::size_t kIllegalProtocol{100}, kIllegalOperationType{100};
 
 struct Combination {
   Combination(std::size_t bit_size, encrypto::motion::MpcProtocol protocol,
-              encrypto::motion::DPMechanismType operation_type, std::size_t number_of_simd)
+              encrypto::motion::DPMechanismType operation_type, std::size_t number_of_simd,
+              double failure_probability)
       : bit_size_(bit_size),
         protocol_(protocol),
         operation_type_(operation_type),
-        number_of_simd_(number_of_simd) {}
+        number_of_simd_(number_of_simd),
+        failure_probability_(failure_probability) {}
 
   std::size_t bit_size_{0};
   encrypto::motion::MpcProtocol protocol_{kIllegalProtocol};
   encrypto::motion::DPMechanismType operation_type_{kIllegalOperationType};
   std::size_t number_of_simd_{0};
+  double failure_probability_{std::exp2l(-40)};
 };
 
 std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
-  const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1, 10, 100, 1000};
-
-  // // only for debug
-  // const std::array kNumbersOfSimd = {5};
+  // const std::array kBitSizes = {64};
+  // const std::array kNumbersOfSimd = {1, 10};
 
   const std::array kDPMechanismType = {
-      T::kSnappingMechanism_noise_generation_naive,
-      T::kSnappingMechanism_noise_generation_optimized,
-      T::kSnappingMechanism_perturbation_naive,
-      T::kSnappingMechanism_perturbation_optimized,
-      T::kSnappingMechanism_rounding_naive,
-      T::kSnappingMechanism_rounding_optimized,
-  };
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
 
-  const std::array kProtocol = {
-      encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
-      encrypto::motion::MpcProtocol::kBooleanGmw,
-      encrypto::motion::MpcProtocol::kBmr,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
   };
 
   std::vector<Combination> combinations;
+  // double failure_probability_pow2_neg_35 = std::exp2l(-35.0);
+  double failure_probability_pow2_neg_40 = std::exp2l(-40.0);
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto protocol : kProtocol) {
-      for (const auto operation_type : kDPMechanismType) {
-        combinations.emplace_back(64, protocol, operation_type, number_of_simd);
-      }
-    }
-  }
+  std::size_t batch_size = 1;
 
+  // ================================================
+  // ! Garbled Circuit
+  batch_size = 1;
+
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                            T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                            T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  // ================================================
+  // ! Garbled Circuit
+  batch_size = 5;
+
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                            T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                            T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  // ================================================
+  // ! Garbled Circuit
+  batch_size = 10;
+
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                            T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                            T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  // ================================================
+  // ! BooleanGMW
+  batch_size = 1;
+
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+  // ================================================
+  // ! BooleanGMW
+  batch_size = 5;
+
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+  // ================================================
+  // ! BooleanGMW
+  batch_size = 10;
+
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      32, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(
+      64, encrypto::motion::MpcProtocol::kBooleanGmw,
+      T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+      failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                            batch_size, failure_probability_pow2_neg_40);
+
+  // ================================================
   return combinations;
 }
 
@@ -116,14 +274,14 @@ int main(int ac, char* av[]) {
   // // added by Liang Zhao
   // std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
   // const std::string CSV_filename =
-  //     "../../src/examples/benchmark_liangzhao_snapping_mechanism/"
-  //     "benchmark_liangzhao_snapping_mechanism_P" +
+  //     "../../src/examples/benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism/"
+  //     "benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism_P" +
   //     party_id + ".csv";
   // encrypto::motion::CreateCsvFile(CSV_filename);
 
   // const std::string txt_filename =
-  //     "../../src/examples/benchmark_liangzhao_snapping_mechanism/"
-  //     "benchmark_liangzhao_snapping_mechanism_P" +
+  //     "../../src/examples/benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism/"
+  //     "benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism_P" +
   //     party_id + ".txt";
   // encrypto::motion::CreateTxtFile(txt_filename);
 
@@ -134,9 +292,11 @@ int main(int ac, char* av[]) {
       encrypto::motion::PartyPointer party{CreateParty(user_options)};
       // establish communication channels with other parties
       auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
-                                         combination.protocol_, combination.operation_type_);
+                                         combination.protocol_, combination.operation_type_,
+                                         combination.failure_probability_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics =
+          party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
     // std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),

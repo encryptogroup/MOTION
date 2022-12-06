@@ -130,8 +130,8 @@ test millionaires_problem$
 
     # ============================================================
 
-    ./benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
-    ./benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+    ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+    ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
 
     # ============================================================
     

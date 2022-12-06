@@ -55,6 +55,7 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
   fixed_point_fraction_bit_size_ = fixed_point_fraction_bit_size;
 
   failure_probability_requirement_ = failure_probability;
+  std::cout<<"failure_probability_requirement_: "<<failure_probability_requirement_<< std::endl;
 
   // TODO: bound denominator s.t., integer mod still secure
 

@@ -33,7 +33,7 @@
 #include <boost/program_options.hpp>
 
 #include "base/party.h"
-#include "common/benchmark_liangzhao_snapping_mechanism.h"
+#include "common/benchmark_liangzhao_discrete_gaussian_mechanism.h"
 #include "communication/communication_layer.h"
 #include "communication/tcp_transport.h"
 #include "statistics/analysis.h"
@@ -51,7 +51,8 @@ constexpr std::size_t kIllegalProtocol{100}, kIllegalOperationType{100};
 
 struct Combination {
   Combination(std::size_t bit_size, encrypto::motion::MpcProtocol protocol,
-              encrypto::motion::DPMechanismType operation_type, std::size_t number_of_simd)
+              encrypto::motion::DPMechanismType operation_type, std::size_t number_of_simd,
+              double failure_probability)
       : bit_size_(bit_size),
         protocol_(protocol),
         operation_type_(operation_type),
@@ -61,41 +62,117 @@ struct Combination {
   encrypto::motion::MpcProtocol protocol_{kIllegalProtocol};
   encrypto::motion::DPMechanismType operation_type_{kIllegalOperationType};
   std::size_t number_of_simd_{0};
+  double failure_probability_{std::exp2l(-40)};
 };
 
 std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
-  const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1, 10, 100, 1000};
+  // const std::array kBitSizes = {64};
+  // const std::array kNumbersOfSimd = {1, 10};
 
-  // // only for debug
-  // const std::array kNumbersOfSimd = {5};
-
-  const std::array kDPMechanismType = {
-      T::kSnappingMechanism_noise_generation_naive,
-      T::kSnappingMechanism_noise_generation_optimized,
-      T::kSnappingMechanism_perturbation_naive,
-      T::kSnappingMechanism_perturbation_optimized,
-      T::kSnappingMechanism_rounding_naive,
-      T::kSnappingMechanism_rounding_optimized,
-  };
-
-  const std::array kProtocol = {
-      encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
-      encrypto::motion::MpcProtocol::kBooleanGmw,
-      encrypto::motion::MpcProtocol::kBmr,
-  };
+  // const std::array kBooleanGmwOperationTypesSIMD = {
+  //     T::kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace,
+  //     T::kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace,
+  //     T::kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace,
+  //     T::kSecureDiscreteGaussianMechanismCKS_FxDiscreteGaussian,
+  //     T::kSecureDiscreteGaussianMechanismCKS_FL32DiscreteGaussian,
+  //     T::kSecureDiscreteGaussianMechanismCKS_FL64DiscreteGaussian,
+  // };
 
   std::vector<Combination> combinations;
+  double failure_probability_pow2_neg_35 = std::exp2l(-35.0);
+  double failure_probability_pow2_neg_40 = std::exp2l(-40.0);
 
-  for (const auto number_of_simd : kNumbersOfSimd) {
-    for (const auto protocol : kProtocol) {
-      for (const auto operation_type : kDPMechanismType) {
-        combinations.emplace_back(64, protocol, operation_type, number_of_simd);
-      }
-    }
-  }
+  // ================================================
+  // batch_size = 1
+
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace, 1,
+                            failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace, 1,
+                            failure_probability_pow2_neg_40);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace, 1,
+                            failure_probability_pow2_neg_40);
+
+  // // memory overflow
+  //   combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                             T::kSecureDiscreteGaussianMechanismCKS_FxDiscreteGaussian, 1,
+  //                             failure_probability_pow2_neg_40);
+
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kSecureDiscreteGaussianMechanismCKS_FL32DiscreteGaussian, 1,
+                            failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteGaussianMechanismCKS_FL64DiscreteGaussian, 1,
+  //                           failure_probability_pow2_neg_40);
+
+  // ================================================
+  // batch_size = 5
+
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace, 5,
+                            failure_probability_pow2_neg_40);
+  combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+                            T::kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace, 5,
+                            failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace, 5,
+  //                           failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteGaussianMechanismCKS_FxDiscreteGaussian, 5,
+  //                           failure_probability_pow2_neg_40);
+  // memory overflow
+  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteGaussianMechanismCKS_FL32DiscreteGaussian, 5,
+  //                           failure_probability_pow2_neg_40);
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteGaussianMechanismCKS_FL64DiscreteGaussian, 5,
+  //                           failure_probability_pow2_neg_35);
+
+  // ================================================
+  // batch_size = 10
+
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace, 10,
+  //                           failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace, 10,
+  //                           failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace, 10,
+  //                           failure_probability_pow2_neg_40);
+  // ================================================
+  // batch_size = 20
+
+  // memory overflow:
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FxDiscreteLaplace, 20,
+  //                           failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace, 20,
+  //                           failure_probability_pow2_neg_40);
+
+  // memory overflow
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                           T::kSecureDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace, 20,
+  //                           failure_probability_pow2_neg_40);
 
   return combinations;
 }
@@ -113,19 +190,19 @@ int main(int ac, char* av[]) {
 
   combinations = GenerateAllCombinations();
 
-  // // added by Liang Zhao
-  // std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
-  // const std::string CSV_filename =
-  //     "../../src/examples/benchmark_liangzhao_snapping_mechanism/"
-  //     "benchmark_liangzhao_snapping_mechanism_P" +
-  //     party_id + ".csv";
-  // encrypto::motion::CreateCsvFile(CSV_filename);
+  // added by Liang Zhao
+  std::string party_id = std::to_string(user_options.at("my-id").as<std::size_t>());
+  const std::string CSV_filename =
+      "../../src/examples/benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism/"
+      "benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism_P" +
+      party_id + ".csv";
+  encrypto::motion::CreateCsvFile(CSV_filename);
 
-  // const std::string txt_filename =
-  //     "../../src/examples/benchmark_liangzhao_snapping_mechanism/"
-  //     "benchmark_liangzhao_snapping_mechanism_P" +
-  //     party_id + ".txt";
-  // encrypto::motion::CreateTxtFile(txt_filename);
+  const std::string txt_filename =
+      "../../src/examples/benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism/"
+      "benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism_P" +
+      party_id + ".txt";
+  encrypto::motion::CreateTxtFile(txt_filename);
 
   for (const auto combination : combinations) {
     encrypto::motion::AccumulatedRunTimeStatistics accumulated_statistics;
@@ -134,14 +211,15 @@ int main(int ac, char* av[]) {
       encrypto::motion::PartyPointer party{CreateParty(user_options)};
       // establish communication channels with other parties
       auto statistics = EvaluateProtocol(party, combination.number_of_simd_, combination.bit_size_,
-                                         combination.protocol_, combination.operation_type_);
+                                         combination.protocol_, combination.operation_type_,
+                                         combination.failure_probability_);
       accumulated_statistics.Add(statistics);
-      auto communication_statistics = party->GetBackend()->GetCommunicationLayer().GetTransportStatistics();
+      auto communication_statistics = party->GetCommunicationLayer().GetTransportStatistics();
       accumulated_communication_statistics.Add(communication_statistics);
     }
-    // std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
-    //                          encrypto::motion::to_string(combination.operation_type_),
-    //                          combination.bit_size_, combination.number_of_simd_);
+    std::cout << fmt::format(encrypto::motion::to_string(combination.protocol_),
+                             encrypto::motion::to_string(combination.operation_type_),
+                             combination.bit_size_, combination.number_of_simd_);
     std::cout << encrypto::motion::PrintStatistics(
         fmt::format("Protocol {} operation {} bit size {} SIMD {}",
                     encrypto::motion::to_string(combination.protocol_),
@@ -149,26 +227,25 @@ int main(int ac, char* av[]) {
                     combination.number_of_simd_),
         accumulated_statistics, accumulated_communication_statistics);
 
-    // // added by Liang Zhao
-    // encrypto::motion::WriteToTxt(
-    //     txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
-    //                               encrypto::motion::to_string(combination.operation_type_),
-    //                               combination.bit_size_, combination.number_of_simd_));
+    // added by Liang Zhao
+    encrypto::motion::WriteToTxt(
+        txt_filename, fmt::format(encrypto::motion::to_string(combination.protocol_),
+                                  encrypto::motion::to_string(combination.operation_type_),
+                                  combination.bit_size_, combination.number_of_simd_));
 
-    // encrypto::motion::WriteToTxt(
-    //     txt_filename, encrypto::motion::PrintStatistics(
-    //                       fmt::format("Protocol {} operation {} bit size {} SIMD {}",
-    //                                   encrypto::motion::to_string(combination.protocol_),
-    //                                   encrypto::motion::to_string(combination.operation_type_),
-    //                                   combination.bit_size_, combination.number_of_simd_),
-    //                       accumulated_statistics, accumulated_communication_statistics));
+    encrypto::motion::WriteToTxt(
+        txt_filename, encrypto::motion::PrintStatistics(
+                          fmt::format("Protocol {} operation {} bit size {} SIMD {}",
+                                      encrypto::motion::to_string(combination.protocol_),
+                                      encrypto::motion::to_string(combination.operation_type_),
+                                      combination.bit_size_, combination.number_of_simd_),
+                          accumulated_statistics, accumulated_communication_statistics));
 
-    // // added by Liang Zhao
-    // encrypto::motion::WriteToCsv(
-    //     fmt::format("{} {}-bit SIMD-{}",
-    //     encrypto::motion::to_string(combination.operation_type_),
-    //                 combination.bit_size_, combination.number_of_simd_),
-    //     CSV_filename, accumulated_statistics, accumulated_communication_statistics);
+    // added by Liang Zhao
+    encrypto::motion::WriteToCsv(
+        fmt::format("{} {}-bit SIMD-{}", encrypto::motion::to_string(combination.operation_type_),
+                    combination.bit_size_, combination.number_of_simd_),
+        CSV_filename, accumulated_statistics, accumulated_communication_statistics);
   }
   return EXIT_SUCCESS;
 }

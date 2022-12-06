@@ -1,0 +1,33 @@
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureDiscreteLaplaceMechanism_FxDiscreteLaplace bit size 64 SIMD 1
+===========================================================================
+MOTION version: 8150b78b-dirty @ master
+invocation: ./benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism --my-id 0 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001
+by liangzhao@aw17r4, PID 181524
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             75.684 ms      0.000 ms -nan       ms
+MT Setup               187.680 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                80.595 ms      0.000 ms -nan       ms
+OT Extension Setup     333.329 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    677.534 ms      0.000 ms -nan       ms
+Gates Setup            146.026 ms      0.000 ms      0.000 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          8677.405 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9502.170 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 30.739 MiB in 71655 messages
+Received: 30.739 MiB in 71655 messages
+===========================================================================
+
+
