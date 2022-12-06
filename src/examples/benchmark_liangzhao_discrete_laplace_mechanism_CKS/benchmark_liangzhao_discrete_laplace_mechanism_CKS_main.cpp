@@ -232,10 +232,45 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 30;
 
     // no memory overflow
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+// ? if overflow
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
         failure_probability_pow2_neg_40);
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+                              
+    // ================================================
+    // ! Garbled Circuit
+    batch_size = 40;
+
+    // no memory overflow
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
 
 // ? if overflow
     combinations.emplace_back(

@@ -733,16 +733,19 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
 
   // =====================================================
   // TODO: this division can be saved by compute e^(-1/t) alone
-//   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
-//       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
+  //   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
+  //       floating_point_random_unsigned_integer /
+  //       floating_point_unsigned_integer_denominator_simdify;
 
-//   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-//       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
+  //   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator
+  //   =
+  //       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
   // =====================================================
   // TODO: save this division by computing e^(-1/t) first
 
   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-        floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
+      floating_point_random_unsigned_integer.Exp() *
+      FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
 
   // =====================================================
 
@@ -843,15 +846,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     //     floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8);
     //================================================================
     // TODO: convert to BMR integer division
-//     ShareWrapper unsigned_integer_bmr_share_numerator =
-//         ((share_->Get())
-//              ->GetBackend()
-//              .ConstantAsBmrInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+    //     ShareWrapper unsigned_integer_bmr_share_numerator =
+    //         ((share_->Get())
+    //              ->GetBackend()
+    //              .ConstantAsBmrInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
 
-//     SecureUnsignedInteger unsigned_integer_bmr_share_geometric_sample =
-//         SecureUnsignedInteger(unsigned_integer_w.Get().Convert<MpcProtocol::kBmr>) /
-//         SecureUnsignedInteger(unsigned_integer_bmr_share_numerator);
-// SecureUnsignedInteger unsigned_integer_boolean_gmw_share_geometric_sample=SecureUnsignedInteger(unsigned_integer_bmr_share_geometric_sample.Get());
+    //     SecureUnsignedInteger unsigned_integer_bmr_share_geometric_sample =
+    //         SecureUnsignedInteger(unsigned_integer_w.Get().Convert<MpcProtocol::kBmr>) /
+    //         SecureUnsignedInteger(unsigned_integer_bmr_share_numerator);
+    // SecureUnsignedInteger
+    // unsigned_integer_boolean_gmw_share_geometric_sample=SecureUnsignedInteger(unsigned_integer_bmr_share_geometric_sample.Get());
     //================================================================
 
     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] & boolean_gmw_share_v[1]);
@@ -1846,19 +1850,19 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
 
   // =====================================================
   // TODO: this division can be saved by compute e^(-1/t) alone
-//   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
-//       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
+  //   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
+  //       floating_point_random_unsigned_integer /
+  //       floating_point_unsigned_integer_denominator_simdify;
 
-//   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-//       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
+  //   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator
+  //   =
+  //       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
   // =====================================================
   // TODO: save this division by computing e^(-1/t) first
 
   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-        floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
-
-
-
+      floating_point_random_unsigned_integer.Exp() *
+      FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
 
   // =====================================================
 
@@ -1939,15 +1943,30 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   // case 1.1
   // numerator's vector elements are not all equal to one
   if (!numerator_are_all_ones) {
+    // =================================================================
+    // ShareWrapper unsigned_integer_gc_share_numerator =
+    //     ((share_->Get())
+    //          ->GetBackend()
+    //          .ConstantAsGCInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+    // // std::cout<<"009"<<std::endl;
+    // // TODO: optimize integer division with floating-point division
+    // // TODO: using Garbled Circuit for division instead
+    // SecureUnsignedInteger unsigned_integer_geometric_sample =
+    //     unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_gc_share_numerator);
+    // =================================================================
+    // TODO: test if floating-point division is faster
     ShareWrapper unsigned_integer_gc_share_numerator =
         ((share_->Get())
              ->GetBackend()
              .ConstantAsGCInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-    // std::cout<<"009"<<std::endl;
-    // TODO: optimize integer division with floating-point division
-    // TODO: using Garbled Circuit for division instead
+    SecureFloatingPointCircuitABY floating_point_geometric_sample =
+        (unsigned_integer_w.Int2FL(sizeof(double) * 8)) /
+        (SecureUnsignedInteger(unsigned_integer_gc_share_numerator).Int2FL(sizeof(double) * 8))
+            .Floor();
     SecureUnsignedInteger unsigned_integer_geometric_sample =
-        unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_gc_share_numerator);
+        SecureUnsignedInteger((floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8)).Get());
+
+    // =================================================================
 
     // std::cout<<"010"<<std::endl;
     ShareWrapper gc_share_success_flag = (gc_share_u[1] & gc_share_v[1]);
