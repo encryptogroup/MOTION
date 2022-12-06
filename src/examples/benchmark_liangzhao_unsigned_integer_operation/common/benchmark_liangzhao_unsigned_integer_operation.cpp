@@ -128,6 +128,9 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   unsigned_integer_boolean_gmw_share_1_U128 = em::SecureUnsignedInteger(
       party->In<em::MpcProtocol::kBooleanGmw>(em::ToInput<U128>(vector_of_input_U128), 0));
 
+std::cout<<"after input"<<std::endl;
+
+
   unsigned_integer_bmr_share_0_U8 = em::SecureUnsignedInteger(
       party->In<em::MpcProtocol::kBmr>(em::ToInput<U8>(vector_of_input_U8), 0));
   unsigned_integer_bmr_share_1_U8 = em::SecureUnsignedInteger(
@@ -171,6 +174,8 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
 
   if (protocol == encrypto::motion::MpcProtocol::kBooleanGmw) {
+
+    // std::cout<<"protocol == encrypto::motion::MpcProtocol::kBooleanGmw"<<std::endl;
     switch (bit_size) {
       case 8: {
         a = unsigned_integer_boolean_gmw_share_0_U8;
@@ -278,6 +283,7 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       break;
     }
     case em::UnsignedIntegerOperationType::kDiv: {
+      std::cout<<"000"<<std::endl;
       a / b;
       break;
     }
@@ -317,8 +323,10 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       throw std::invalid_argument("Unknown operation type");
   }
 
+// std::cout<<"party run"<<std::endl;
   party->Run();
   party->Finish();
+// std::cout<<"party finish"<<std::endl;
   const auto& statistics = party->GetBackend()->GetRunTimeStatistics();
   return statistics.front();
 }

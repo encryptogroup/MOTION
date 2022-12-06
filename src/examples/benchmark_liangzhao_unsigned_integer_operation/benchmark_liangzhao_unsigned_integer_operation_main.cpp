@@ -77,7 +77,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
-      // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
+      T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
       // only for debugging
