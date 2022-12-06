@@ -132,6 +132,7 @@ std::vector<Combination> GenerateAllCombinations() {
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized,
                               batch_size, failure_probability_pow2_neg_40);
+                              
     // ================================================
     // ! Garbled Circuit
     batch_size = 10;
