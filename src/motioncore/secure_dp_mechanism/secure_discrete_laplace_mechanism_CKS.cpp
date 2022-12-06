@@ -130,7 +130,7 @@ void SecureDiscreteLaplaceMechanismCKS::ParameterSetup(double sensitivity_l1, do
 // 32-bit floating-point version
 
 SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive() {
-  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive" << std::endl;
   if (denominator_ != T(1)) {
     ShareWrapper random_bits_of_length_23 =
         SecureSamplingAlgorithm_naive(fD_->Get())
@@ -335,7 +335,7 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseG
 
 SecureSignedInteger
 SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized() {
-  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized" << std::endl;
   if (denominator_ != T(1)) {
     ShareWrapper random_bits_of_length_23 =
         SecureSamplingAlgorithm_optimized(fD_->Get())
@@ -517,7 +517,7 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseG
 // }
 
 SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive() {
-  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive" << std::endl;
   if (denominator_ != T(1)) {
     // std::cout << "000" << std::endl;
     ShareWrapper random_bits_of_length_52 =
@@ -730,7 +730,7 @@ SecureSignedInteger SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseG
 
 SecureSignedInteger
 SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized() {
-  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized" << std::endl;
   if (denominator_ != T(1)) {
     // std::cout << "000" << std::endl;
     ShareWrapper random_bits_of_length_52 =
