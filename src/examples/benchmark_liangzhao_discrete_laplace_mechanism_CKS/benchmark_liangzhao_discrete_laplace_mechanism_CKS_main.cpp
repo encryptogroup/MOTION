@@ -377,10 +377,13 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! BooleanGMW
     batch_size = 1;
 
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40);
+    // only for debug
+    batch_size=20;
+
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
 
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kBooleanGmw,
