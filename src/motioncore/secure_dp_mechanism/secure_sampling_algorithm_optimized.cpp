@@ -1955,6 +1955,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
         unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_gc_share_numerator);
     // =================================================================
     // TODO: test if floating-point division is faster
+    // for two party using Garbled Circuit, integer division is faster and cost less memory
     // ShareWrapper unsigned_integer_gc_share_numerator =
     //     ((share_->Get())
     //          ->GetBackend()
