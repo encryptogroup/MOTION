@@ -822,28 +822,30 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   // numerator's vector elements are not all equal to one
   if (!numerator_are_all_ones) {
     //================================================================
-    ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
-        ((share_->Get())
-             ->GetBackend()
-             .ConstantAsBooleanGmwInput(
-                 ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-    // TODO: optimize integer division with floating-point division
-    // TODO: using Garbled Circuit for division instead
-    SecureUnsignedInteger unsigned_integer_geometric_sample =
-        unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
-    //================================================================
     // ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
     //     ((share_->Get())
     //          ->GetBackend()
     //          .ConstantAsBooleanGmwInput(
     //              ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-
-    // TODO: test if floating-point division is faster
-    // SecureFloatingPointCircuitABY floating_point_geometric_sample =
-    //     unsigned_integer_w.Int2FL(sizeof(double) * 8) /
-    //     unsigned_integer_boolean_gmw_share_numerator.Int2FL(sizeof(double) * 8);
+    // // TODO: optimize integer division with floating-point division
+    // // TODO: using Garbled Circuit for division instead
     // SecureUnsignedInteger unsigned_integer_geometric_sample =
-    //     floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8);
+    //     unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
+    //================================================================
+    // TODO: test if floating-point division is faster
+    ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
+        ((share_->Get())
+             ->GetBackend()
+             .ConstantAsBooleanGmwInput(
+                 ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+
+    SecureFloatingPointCircuitABY floating_point_geometric_sample =
+        (unsigned_integer_w.Int2FL(sizeof(double) * 8) /
+         (SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator)
+              .Int2FL(sizeof(double) * 8)))
+            .Floor();
+    SecureUnsignedInteger unsigned_integer_geometric_sample =
+        SecureUnsignedInteger(floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8).Get());
     //================================================================
     // TODO: convert to BMR integer division
     //     ShareWrapper unsigned_integer_bmr_share_numerator =
@@ -1960,12 +1962,14 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     //     ((share_->Get())
     //          ->GetBackend()
     //          .ConstantAsGCInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+
     // SecureFloatingPointCircuitABY floating_point_geometric_sample =
     //     (unsigned_integer_w.Int2FL(sizeof(double) * 8)) /
     //     (SecureUnsignedInteger(unsigned_integer_gc_share_numerator).Int2FL(sizeof(double) * 8))
     //         .Floor();
     // SecureUnsignedInteger unsigned_integer_geometric_sample =
-    //     SecureUnsignedInteger((floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8)).Get());
+    //     SecureUnsignedInteger((floating_point_geometric_sample.FL2Int(sizeof(UintType) *
+    //     8)).Get());
 
     // =================================================================
 
