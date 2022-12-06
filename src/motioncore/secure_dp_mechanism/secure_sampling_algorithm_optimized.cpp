@@ -1944,27 +1944,27 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   // numerator's vector elements are not all equal to one
   if (!numerator_are_all_ones) {
     // =================================================================
-    // ShareWrapper unsigned_integer_gc_share_numerator =
-    //     ((share_->Get())
-    //          ->GetBackend()
-    //          .ConstantAsGCInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-    // // std::cout<<"009"<<std::endl;
-    // // TODO: optimize integer division with floating-point division
-    // // TODO: using Garbled Circuit for division instead
-    // SecureUnsignedInteger unsigned_integer_geometric_sample =
-    //     unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_gc_share_numerator);
-    // =================================================================
-    // TODO: test if floating-point division is faster
     ShareWrapper unsigned_integer_gc_share_numerator =
         ((share_->Get())
              ->GetBackend()
              .ConstantAsGCInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-    SecureFloatingPointCircuitABY floating_point_geometric_sample =
-        (unsigned_integer_w.Int2FL(sizeof(double) * 8)) /
-        (SecureUnsignedInteger(unsigned_integer_gc_share_numerator).Int2FL(sizeof(double) * 8))
-            .Floor();
+    // std::cout<<"009"<<std::endl;
+    // TODO: optimize integer division with floating-point division
+    // TODO: using Garbled Circuit for division instead
     SecureUnsignedInteger unsigned_integer_geometric_sample =
-        SecureUnsignedInteger((floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8)).Get());
+        unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_gc_share_numerator);
+    // =================================================================
+    // // TODO: test if floating-point division is faster
+    // ShareWrapper unsigned_integer_gc_share_numerator =
+    //     ((share_->Get())
+    //          ->GetBackend()
+    //          .ConstantAsGCInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+    // SecureFloatingPointCircuitABY floating_point_geometric_sample =
+    //     (unsigned_integer_w.Int2FL(sizeof(double) * 8)) /
+    //     (SecureUnsignedInteger(unsigned_integer_gc_share_numerator).Int2FL(sizeof(double) * 8))
+    //         .Floor();
+    // SecureUnsignedInteger unsigned_integer_geometric_sample =
+    //     SecureUnsignedInteger((floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8)).Get());
 
     // =================================================================
 
