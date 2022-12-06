@@ -68,12 +68,16 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
         party->In<em::MpcProtocol::kBooleanGmw>(em::ToInput<double, std::true_type>(fD_vector), 0);
     share_input_dummy_noise =
         party->In<em::MpcProtocol::kBooleanGmw>(em::ToInput<std::uint64_t>(dummy_noise_vector), 0);
-  } else if (protocol == encrypto::motion::MpcProtocol::kGarbledCircuit) {
+  } 
+  
+  else if (protocol == encrypto::motion::MpcProtocol::kGarbledCircuit) {
     share_input_fD = party->In<em::MpcProtocol::kGarbledCircuit>(
         em::ToInput<double, std::true_type>(fD_vector), 0);
     share_input_dummy_noise = party->In<em::MpcProtocol::kGarbledCircuit>(
         em::ToInput<std::uint64_t>(dummy_noise_vector), 0);
-  } else if (protocol == encrypto::motion::MpcProtocol::kBmr) {
+  } 
+  
+  else if (protocol == encrypto::motion::MpcProtocol::kBmr) {
     share_input_fD =
         party->In<em::MpcProtocol::kBmr>(em::ToInput<double, std::true_type>(fD_vector), 0);
     share_input_dummy_noise =
