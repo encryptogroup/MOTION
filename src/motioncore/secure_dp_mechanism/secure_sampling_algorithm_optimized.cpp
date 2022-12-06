@@ -1846,16 +1846,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
 
   // =====================================================
   // TODO: this division can be saved by compute e^(-1/t) alone
-  SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
-      floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
+//   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
+//       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
 
-  SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-      floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
+//   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
+//       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
   // =====================================================
   // TODO: save this division by computing e^(-1/t) first
 
-  // SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-  //       floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
+  SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
+        floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
 
 
 
