@@ -17,11 +17,12 @@ add_subdirectory(benchmark_liangzhao_floating_point_operation)
 add_subdirectory(benchmark_liangzhao_fixed_point_operation)
 
 add_subdirectory(benchmark_liangzhao_dp_mechanism_PrivaDA)
+add_subdirectory(benchmark_liangzhao_gaussian_mechanism_CrypTen)
+add_subdirectory(benchmark_liangzhao_snapping_mechanism)
 
 # add_subdirectory(benchmark_liangzhao_basic) # need to implement garbled_circuit conversion function
 # add_subdirectory(benchmark_liangzhao_arithmetic_gmw_operation)
 
 # # =================================================================
-# add_subdirectory(benchmark_liangzhao_snapping_mechanism)
 # add_subdirectory(benchmark_liangzhao_discrete_laplace_discrete_gaussian_mechanism)
 # add_subdirectory(benchmark_liangzhao_integer_scaling_mechanism)

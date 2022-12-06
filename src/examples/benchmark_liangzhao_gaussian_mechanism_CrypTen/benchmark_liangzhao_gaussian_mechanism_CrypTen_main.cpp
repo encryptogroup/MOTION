@@ -33,7 +33,7 @@
 #include <boost/program_options.hpp>
 
 #include "base/party.h"
-#include "common/benchmark_liangzhao_dp_mechanism_PrivaDA.h"
+#include "common/benchmark_liangzhao_gaussian_mechanism_CrypTen.h"
 #include "communication/communication_layer.h"
 #include "communication/tcp_transport.h"
 #include "statistics/analysis.h"
@@ -67,29 +67,22 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
   const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1, 10, 100, 1000};
+  const std::array kNumbersOfSimd = {1, 5, 10, 100, 1000};
   // const std::array kNumbersOfSimd = {5};
 
   const std::array kDPMechanismType = {
       // boolean circuit based method
-      T::kDPMechanism_PrivaDA_FL32Laplace_noise_generation,
-      T::kDPMechanism_PrivaDA_FL64Laplace_noise_generation,
+      T::kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation,
+      T::kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation,
 
-      T::kDPMechanism_PrivaDA_FL32Laplace_perturbation,
-      T::kDPMechanism_PrivaDA_FL64Laplace_perturbation,
-
-      T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation,
-      T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation,
-
-      T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation,
-      T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation,
-
+      T::kGaussianMechanism_CrypTen_FL32Gaussian_perturbation,
+      T::kGaussianMechanism_CrypTen_FL64Gaussian_perturbation,
   };
 
   const std::array kProtocol = {
       encrypto::motion::MpcProtocol::kGarbledCircuit, // only for two parties
       encrypto::motion::MpcProtocol::kBooleanGmw,
-      // encrypto::motion::MpcProtocol::kBmr, // too slow
+      encrypto::motion::MpcProtocol::kBmr,
   };
 
   std::vector<Combination> combinations;

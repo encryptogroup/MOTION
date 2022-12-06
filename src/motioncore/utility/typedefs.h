@@ -1056,6 +1056,9 @@ enum class DPMechanismType : unsigned int {
   kSnappingMechanism_perturbation_naive,
   kSnappingMechanism_perturbation_optimized,
 
+  kSnappingMechanism_rounding_naive,
+  kSnappingMechanism_rounding_optimized,
+
   // discrete laplace CKS
   kDiscreteLaplaceMechanismCKS_FxDiscreteLaplace,  // not implement yet
   kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive,
@@ -1171,6 +1174,12 @@ inline std::string to_string(DPMechanismType p) {
     }
     case DPMechanismType::kSnappingMechanism_perturbation_optimized: {
       return "kSnappingMechanism_perturbation_optimized";
+    }
+    case DPMechanismType::kSnappingMechanism_rounding_naive: {
+      return "kSnappingMechanism_rounding_naive";
+    }
+    case DPMechanismType::kSnappingMechanism_rounding_optimized: {
+      return "kSnappingMechanism_rounding_optimized";
     }
 
       // discrete laplace CKS

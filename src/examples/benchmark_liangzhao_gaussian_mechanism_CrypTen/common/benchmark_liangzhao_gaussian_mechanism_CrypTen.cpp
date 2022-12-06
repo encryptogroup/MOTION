@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "benchmark_liangzhao_dp_mechanism_PrivaDA.h"
+#include "benchmark_liangzhao_gaussian_mechanism_CrypTen.h"
 
 #include <openssl/rand.h>
 #include <algorithm>
@@ -31,7 +31,7 @@
 #include "algorithm/algorithm_description.h"
 #include "protocols/share_wrapper.h"
 // #include "secure_dp_mechanism/secure_gaussian_mechanism.h"
-#include "secure_dp_mechanism/secure_dp_mechanism_PrivaDA.h"
+#include "secure_dp_mechanism/secure_gaussian_mechanism_CrypTen.h"
 #include "secure_dp_mechanism/secure_snapping_mechanism.h"
 #include "secure_type/secure_fixed_point_agmw_CS.h"
 #include "secure_type/secure_fixed_point_circuit_CBMC.h"
@@ -105,102 +105,69 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
   double sensitivity_lap_dlap = 1;
   std::vector<float> fD_float_vector = rand_range_float_vector(0, 1, number_of_simd);
   std::vector<double> fD_double_vector = rand_range_double_vector(0, 1, number_of_simd);
-  std::vector<std::uint64_t> fD_uint64_vector = rand_range_integer_vector<std::uint64_t>(0, 1, number_of_simd);
 
   em::ShareWrapper share_input_fD_float;
   em::ShareWrapper share_input_fD_double;
-  em::ShareWrapper share_input_dummy_float_noise;
-  em::ShareWrapper share_input_dummy_double_noise;
-  em::ShareWrapper share_input_dummy_uint64_noise;
+  em::ShareWrapper share_input_fD_dummy_noise;
 
   if (protocol == encrypto::motion::MpcProtocol::kBooleanGmw) {
     share_input_fD_float = party->In<em::MpcProtocol::kBooleanGmw>(
         em::ToInput<float, std::true_type>(fD_float_vector), 0);
     share_input_fD_double = party->In<em::MpcProtocol::kBooleanGmw>(
         em::ToInput<double, std::true_type>(fD_double_vector), 0);
-    share_input_dummy_float_noise = party->In<em::MpcProtocol::kBooleanGmw>(
-        em::ToInput<float, std::true_type>(fD_float_vector), 0);
-    share_input_dummy_double_noise = party->In<em::MpcProtocol::kBooleanGmw>(
+    share_input_fD_dummy_noise = party->In<em::MpcProtocol::kBooleanGmw>(
         em::ToInput<double, std::true_type>(fD_double_vector), 0);
-    share_input_dummy_uint64_noise = party->In<em::MpcProtocol::kBooleanGmw>(
-        em::ToInput<std::uint64_t>(fD_uint64_vector), 0);
   } else if (protocol == encrypto::motion::MpcProtocol::kGarbledCircuit) {
     share_input_fD_float = party->In<em::MpcProtocol::kGarbledCircuit>(
         em::ToInput<float, std::true_type>(fD_float_vector), 0);
     share_input_fD_double = party->In<em::MpcProtocol::kGarbledCircuit>(
         em::ToInput<double, std::true_type>(fD_double_vector), 0);
-    share_input_dummy_float_noise = party->In<em::MpcProtocol::kGarbledCircuit>(
-        em::ToInput<float, std::true_type>(fD_float_vector), 0);
-    share_input_dummy_double_noise = party->In<em::MpcProtocol::kGarbledCircuit>(
+    share_input_fD_dummy_noise = party->In<em::MpcProtocol::kGarbledCircuit>(
         em::ToInput<double, std::true_type>(fD_double_vector), 0);
-    share_input_dummy_uint64_noise = party->In<em::MpcProtocol::kGarbledCircuit>(
-        em::ToInput<std::uint64_t>(fD_uint64_vector), 0);
   } else if (protocol == encrypto::motion::MpcProtocol::kBmr) {
     share_input_fD_float =
         party->In<em::MpcProtocol::kBmr>(em::ToInput<float, std::true_type>(fD_float_vector), 0);
     share_input_fD_double =
         party->In<em::MpcProtocol::kBmr>(em::ToInput<double, std::true_type>(fD_double_vector), 0);
-    share_input_dummy_float_noise =
-        party->In<em::MpcProtocol::kBmr>(em::ToInput<float, std::true_type>(fD_float_vector), 0);
-    share_input_dummy_double_noise =
+    share_input_fD_dummy_noise =
         party->In<em::MpcProtocol::kBmr>(em::ToInput<double, std::true_type>(fD_double_vector), 0);
-    share_input_dummy_uint64_noise =
-        party->In<em::MpcProtocol::kBmr>(em::ToInput<std::uint64_t>(fD_uint64_vector), 0);
   } else {
     throw std::invalid_argument("Unknown operation type");
   }
 
-  double epsilon = 0.01;
-  double lambda_lap = sensitivity_lap_dlap / epsilon;
-  double lambda_dlap = std::exp(-epsilon / sensitivity_lap_dlap);
-  em::SecureDPMechanism_PrivaDA secure_dp_mechanism_PrivaDA_fl32 =
-      em::SecureDPMechanism_PrivaDA(share_input_fD_float);
-  secure_dp_mechanism_PrivaDA_fl32.ParameterSetup(sensitivity_lap_dlap, epsilon, number_of_simd,
-                                                  fixed_point_bit_size,
-                                                  fixed_point_fraction_bit_size);
-  em::SecureDPMechanism_PrivaDA secure_dp_mechanism_PrivaDA_fl64 =
-      em::SecureDPMechanism_PrivaDA(share_input_fD_double);
-  secure_dp_mechanism_PrivaDA_fl64.ParameterSetup(sensitivity_lap_dlap, epsilon, number_of_simd,
-                                                  fixed_point_bit_size,
-                                                  fixed_point_fraction_bit_size);
+  double sensitivity_gau = 1;
+  double mu = 0;
+  double sigma = 1;
+
+  em::SecureGaussianMechanism_CrypTen secure_gaussian_mechanism_CrypTen_fl32 =
+      em::SecureGaussianMechanism_CrypTen(share_input_fD_float);
+  secure_gaussian_mechanism_CrypTen_fl32.ParameterSetup(sensitivity_gau, mu, sigma, number_of_simd,
+                                                fixed_point_bit_size,
+                                                fixed_point_fraction_bit_size);
+  em::SecureGaussianMechanism_CrypTen secure_gaussian_mechanism_CrypTen_fl64 =
+      em::SecureGaussianMechanism_CrypTen(share_input_fD_double);
+  secure_gaussian_mechanism_CrypTen_fl64.ParameterSetup(sensitivity_gau, mu, sigma, number_of_simd,
+                                                fixed_point_bit_size,
+                                                fixed_point_fraction_bit_size);
 
   // ================================================================
   switch (operation_type) {
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL32Laplace_noise_generation: {
-      secure_dp_mechanism_PrivaDA_fl32.FL32LaplaceNoiseGeneration();
+    case em::DPMechanismType::kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation: {
+      secure_gaussian_mechanism_CrypTen_fl32.FL32GaussianNoiseGeneration();
       break;
     }
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL64Laplace_noise_generation: {
-      secure_dp_mechanism_PrivaDA_fl64.FL64LaplaceNoiseGeneration();
+    case em::DPMechanismType::kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation: {
+      secure_gaussian_mechanism_CrypTen_fl64.FL64GaussianNoiseGeneration();
       break;
     }
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL32Laplace_perturbation: {
+    case em::DPMechanismType::kGaussianMechanism_CrypTen_FL32Gaussian_perturbation: {
       em::SecureFloatingPointCircuitABY(share_input_fD_float) +
-          em::SecureFloatingPointCircuitABY(share_input_dummy_float_noise);
+          em::SecureFloatingPointCircuitABY(share_input_fD_dummy_noise);
       break;
     }
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL64Laplace_perturbation: {
+    case em::DPMechanismType::kGaussianMechanism_CrypTen_FL64Gaussian_perturbation: {
       em::SecureFloatingPointCircuitABY(share_input_fD_double) +
-          em::SecureFloatingPointCircuitABY(share_input_dummy_double_noise);
-      break;
-    }
-
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation: {
-      secure_dp_mechanism_PrivaDA_fl32.FL32DiscreteLaplaceNoiseGeneration();
-      break;
-    }
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation: {
-      secure_dp_mechanism_PrivaDA_fl64.FL64DiscreteLaplaceNoiseGeneration();
-      break;
-    }
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation: {
-      em::SecureSignedInteger(share_input_fD_float) +
-          em::SecureSignedInteger(share_input_dummy_uint64_noise);
-      break;
-    }
-    case em::DPMechanismType::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation: {
-      em::SecureSignedInteger(share_input_fD_double) +
-          em::SecureSignedInteger(share_input_dummy_uint64_noise);
+          em::SecureFloatingPointCircuitABY(share_input_fD_dummy_noise);
       break;
     }
 
