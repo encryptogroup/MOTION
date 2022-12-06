@@ -460,10 +460,10 @@ std::vector<Combination> GenerateAllCombinations() {
     //                           batch_size, failure_probability_pow2_neg_40);
 
     // no memory overflow
-    combinations.emplace_back(
-        64, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40);
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
 
     // combinations.emplace_back(
     //     64, encrypto::motion::MpcProtocol::kBooleanGmw,
@@ -477,10 +477,10 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 5;
 
     // no memory overflow
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40);
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
 
     // combinations.emplace_back(
     //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
