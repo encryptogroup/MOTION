@@ -1,0 +1,305 @@
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 
+failure_probability: 9.09495e-13
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 0.135
+failure_probability_requirement_: 9.09495e-13
+numerator_: 7767230
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 40
+minimum_total_iteration: 1120
+minimum_total_MPC_time: 342092
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 8.87681e-13
+upscale_factor: 1
+num_of_simd_geo_: 40
+num_of_simd_dlap_: 1
+num_of_simd_total_: 40
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol BooleanGMW operation kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive bit size 32 SIMD 1
+===========================================================================
+MOTION version: 51ddc26f @ dev
+invocation: ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1221596
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2796.544 ms      0.000 ms      0.000 ms
+MT Setup              6865.889 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   14489.897 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  24259.381 ms      0.000 ms      0.000 ms
+Gates Setup             37.732 ms      0.000 ms -nan       ms
+Gates Online        448112.991 ms      0.000 ms      0.004 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  472429.332 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 681.265 MiB in 93954 messages
+Received: 681.265 MiB in 93954 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 0.135
+failure_probability_requirement_: 9.09495e-13
+numerator_: 7767230
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 40
+minimum_total_iteration: 1120
+minimum_total_MPC_time: 342092
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 8.87681e-13
+upscale_factor: 1
+num_of_simd_geo_: 40
+num_of_simd_dlap_: 1
+num_of_simd_total_: 40
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol BooleanGMW operation kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: 51ddc26f @ dev
+invocation: ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1221596
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1457.982 ms      0.000 ms      0.000 ms
+MT Setup              3425.497 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    7741.425 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  12745.597 ms      0.000 ms -nan       ms
+Gates Setup            808.620 ms      0.000 ms      0.000 ms
+Gates Online          4380.866 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   17953.727 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 409.992 MiB in 68333 messages
+Received: 409.992 MiB in 68332 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 0.135
+failure_probability_requirement_: 9.09495e-13
+numerator_: 7767230
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 40
+minimum_total_iteration: 1120
+minimum_total_MPC_time: 342092
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 8.87681e-13
+upscale_factor: 1
+num_of_simd_geo_: 40
+num_of_simd_dlap_: 1
+num_of_simd_total_: 40
+
+===========================================================================
+Protocol BooleanGMW operation kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation bit size 32 SIMD 1
+===========================================================================
+MOTION version: 51ddc26f @ dev
+invocation: ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1221596
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.088 ms      0.000 ms      0.000 ms
+MT Setup                43.896 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      20.430 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    166.568 ms      0.000 ms      0.000 ms
+Gates Setup              0.225 ms      0.000 ms -nan       ms
+Gates Online            82.265 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     259.884 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.071 MiB in 1156 messages
+Received: 0.071 MiB in 1156 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 0.135
+failure_probability_requirement_: 9.09495e-13
+numerator_: 7767230
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 40
+minimum_total_iteration: 1120
+minimum_total_MPC_time: 342092
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 8.87681e-13
+upscale_factor: 1
+num_of_simd_geo_: 40
+num_of_simd_dlap_: 1
+num_of_simd_total_: 40
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol BooleanGMW operation kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive bit size 64 SIMD 1
+===========================================================================
+MOTION version: 51ddc26f @ dev
+invocation: ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1221596
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           6880.599 ms      0.000 ms -nan       ms
+MT Setup             15531.312 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   33225.371 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  55708.904 ms      0.000 ms -nan       ms
+Gates Setup             78.347 ms      0.000 ms -nan       ms
+Gates Online        404633.871 ms      0.000 ms      0.004 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  460439.112 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 1573.940 MiB in 182422 messages
+Received: 1573.940 MiB in 182422 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 0.135
+failure_probability_requirement_: 9.09495e-13
+numerator_: 7767230
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 40
+minimum_total_iteration: 1120
+minimum_total_MPC_time: 342092
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 8.87681e-13
+upscale_factor: 1
+num_of_simd_geo_: 40
+num_of_simd_dlap_: 1
+num_of_simd_total_: 40
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol BooleanGMW operation kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 51ddc26f @ dev
+invocation: ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1221596
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           4411.714 ms      0.000 ms      0.000 ms
+MT Setup             10899.543 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   25517.656 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  40982.359 ms      0.000 ms -nan       ms
+Gates Setup           1549.265 ms      0.000 ms -nan       ms
+Gates Online          4848.349 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   47400.379 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 1138.639 MiB in 138213 messages
+Received: 1138.639 MiB in 138212 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 0.135
+failure_probability_requirement_: 9.09495e-13
+numerator_: 7767230
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 40
+minimum_total_iteration: 1120
+minimum_total_MPC_time: 342092
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 8.87681e-13
+upscale_factor: 1
+num_of_simd_geo_: 40
+num_of_simd_dlap_: 1
+num_of_simd_total_: 40
+
+===========================================================================
+Protocol BooleanGMW operation kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: 51ddc26f @ dev
+invocation: ./benchmark_liangzhao_discrete_laplace_mechanism_CKS --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1221596
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.056 ms      0.000 ms      0.000 ms
+MT Setup                44.243 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.257 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    136.313 ms      0.000 ms -nan       ms
+Gates Setup              0.356 ms      0.000 ms -nan       ms
+Gates Online           230.511 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     434.100 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.071 MiB in 1156 messages
+Received: 0.071 MiB in 1156 messages
+===========================================================================
