@@ -833,33 +833,33 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     //     unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
     //================================================================
     // TODO: test if floating-point division is faster
-    // For BooleanGMW, integer division is much slower than floating-point division
-    // ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
-    //     ((share_->Get())
-    //          ->GetBackend()
-    //          .ConstantAsBooleanGmwInput(
-    //              ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+    For BooleanGMW, integer division is much slower than floating-point division
+    ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
+        ((share_->Get())
+             ->GetBackend()
+             .ConstantAsBooleanGmwInput(
+                 ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
 
-    // SecureFloatingPointCircuitABY floating_point_geometric_sample =
-    //     (unsigned_integer_w.Int2FL(sizeof(double) * 8) /
-    //      (SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator)
-    //           .Int2FL(sizeof(double) * 8)))
-    //         .Floor();
-    // SecureUnsignedInteger unsigned_integer_geometric_sample =
-    //     SecureUnsignedInteger(floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8).Get());
+    SecureFloatingPointCircuitABY floating_point_geometric_sample =
+        (unsigned_integer_w.Int2FL(sizeof(double) * 8) /
+         (SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator)
+              .Int2FL(sizeof(double) * 8)))
+            .Floor();
+    SecureUnsignedInteger unsigned_integer_geometric_sample =
+        SecureUnsignedInteger(floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8).Get());
     //================================================================
     // TODO: convert to BMR integer division
     // no significant different from the floating division method, less memory
-        ShareWrapper unsigned_integer_bmr_share_numerator =
-            ((share_->Get())
-                 ->GetBackend()
-                 .ConstantAsBmrInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+    //     ShareWrapper unsigned_integer_bmr_share_numerator =
+    //         ((share_->Get())
+    //              ->GetBackend()
+    //              .ConstantAsBmrInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
 
-        SecureUnsignedInteger unsigned_integer_bmr_share_geometric_sample =
-            SecureUnsignedInteger(unsigned_integer_w.Get().Convert<MpcProtocol::kBmr>()) /
-            SecureUnsignedInteger(unsigned_integer_bmr_share_numerator);
-    SecureUnsignedInteger
-    unsigned_integer_geometric_sample=SecureUnsignedInteger(unsigned_integer_bmr_share_geometric_sample.Get().Convert<MpcProtocol::kBooleanGmw>());
+    //     SecureUnsignedInteger unsigned_integer_bmr_share_geometric_sample =
+    //         SecureUnsignedInteger(unsigned_integer_w.Get().Convert<MpcProtocol::kBmr>()) /
+    //         SecureUnsignedInteger(unsigned_integer_bmr_share_numerator);
+    // SecureUnsignedInteger
+    // unsigned_integer_geometric_sample=SecureUnsignedInteger(unsigned_integer_bmr_share_geometric_sample.Get().Convert<MpcProtocol::kBooleanGmw>());
     //================================================================
 
     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] & boolean_gmw_share_v[1]);
