@@ -1,0 +1,2 @@
+Protocol,MT Presetup,MT Setup,SP Presetup,SP Setup,SB Presetup,SB Setup,Base OTs,OT Extension Setup,Preprocessing Total,Gates Setup,Gates Precomputation,Gates Online,Circuit Evaluation,Sent,Sent Messages,Received,Received Messages
+BGMW_kSecureDiscreteLaplaceMechanism_FxDiscreteLaplace 64-bit SIMD-1,68.998,106.056,0.000,0.000,0.000,0.000,80.879,453.258,709.322,236.560,0.000,8555.037,9502.143,30.739,71655,30.739,71655

@@ -1,103 +1,72 @@
-lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 1
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.051 ms      0.047 ms      0.020 ms
-MT Setup                27.631 ms     44.502 ms     22.451 ms
+MT Presetup              0.036 ms      0.035 ms      0.007 ms
+MT Setup                27.517 ms     35.920 ms     21.394 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       3.831 ms      3.093 ms      3.424 ms
+OT Extension Setup       3.197 ms      2.126 ms      3.070 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    105.482 ms    112.971 ms     30.617 ms
-Gates Setup            691.636 ms    744.911 ms    102.996 ms
-Gates Online           196.230 ms    182.066 ms     70.142 ms
+Preprocessing Total    106.391 ms    110.933 ms     29.519 ms
+Gates Setup            429.744 ms    453.754 ms    102.582 ms
+Gates Online           212.401 ms    190.863 ms     76.881 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1000.006 ms    984.490 ms    130.600 ms
+Circuit Evaluation     754.872 ms    797.439 ms    174.846 ms
 ===========================================================================
 Communication with each other party:
-Sent: 1.421 MiB in 20004 messages
+Sent: 2.242 MiB in 31339 messages
 Received: 0.161 MiB in 2704 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 1
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.172 ms      0.163 ms      0.066 ms
-MT Setup                 6.926 ms      6.008 ms      3.213 ms
+MT Presetup              0.188 ms      0.173 ms      0.096 ms
+MT Setup                 6.841 ms      7.745 ms      3.152 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       6.053 ms      6.427 ms      2.550 ms
+OT Extension Setup       5.796 ms      4.738 ms      3.602 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     73.857 ms     71.137 ms      7.154 ms
-Gates Setup           1936.734 ms   1967.925 ms    279.489 ms
-Gates Online           558.077 ms    529.988 ms    102.213 ms
+Preprocessing Total     74.212 ms     72.916 ms      4.694 ms
+Gates Setup           2803.273 ms   2768.479 ms    142.576 ms
+Gates Online           683.598 ms    670.353 ms     89.281 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    2576.876 ms   2537.085 ms    245.686 ms
+Circuit Evaluation    3568.825 ms   3445.942 ms    215.686 ms
 ===========================================================================
 Communication with each other party:
-Sent: 6.498 MiB in 94686 messages
+Sent: 8.560 MiB in 123116 messages
 Received: 1.446 MiB in 25100 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 1
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     12.442 ms      3.945 ms     16.958 ms
-Gates Setup             29.600 ms     29.364 ms     13.237 ms
-Gates Online             7.540 ms      7.988 ms      1.879 ms
----------------------------------------------------------------------------
-Circuit Evaluation      56.368 ms     61.642 ms     29.369 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.139 MiB in 1867 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
@@ -113,84 +82,22 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      5.343 ms      4.502 ms      3.772 ms
-Gates Setup            153.521 ms    160.606 ms     44.114 ms
-Gates Online            28.743 ms     29.773 ms      5.656 ms
+Preprocessing Total      8.077 ms      3.463 ms     12.059 ms
+Gates Setup             30.159 ms     24.094 ms     15.640 ms
+Gates Online             6.730 ms      6.566 ms      0.907 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     196.711 ms    206.223 ms     50.665 ms
+Circuit Evaluation      52.656 ms     46.560 ms     20.739 ms
 ===========================================================================
 Communication with each other party:
-Sent: 0.321 MiB in 4373 messages
+Sent: 0.138 MiB in 1865 messages
 Received: 0.000 MiB in 4 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 1
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.033 ms      0.035 ms      0.006 ms
-MT Setup                18.647 ms     35.032 ms     21.596 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       3.736 ms      3.862 ms      1.752 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     96.107 ms    102.726 ms     28.307 ms
-Gates Setup            227.676 ms    213.788 ms     86.660 ms
-Gates Online           164.850 ms    149.206 ms     55.969 ms
----------------------------------------------------------------------------
-Circuit Evaluation     495.448 ms    529.225 ms    106.319 ms
-===========================================================================
-Communication with each other party:
-Sent: 1.416 MiB in 15799 messages
-Received: 0.161 MiB in 2704 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.429 ms      0.510 ms      0.271 ms
-MT Setup                 7.096 ms      8.979 ms      4.554 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       6.320 ms      4.359 ms      4.607 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     75.668 ms     77.278 ms      5.371 ms
-Gates Setup           1271.348 ms   1242.993 ms     61.999 ms
-Gates Online           633.371 ms    650.264 ms    102.118 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1990.469 ms   1971.235 ms    110.885 ms
-===========================================================================
-Communication with each other party:
-Sent: 6.113 MiB in 73935 messages
-Received: 1.446 MiB in 25100 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
@@ -206,1386 +113,208 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     29.424 ms     22.347 ms     19.807 ms
-Gates Setup              6.473 ms      4.840 ms      4.521 ms
-Gates Online             0.704 ms      0.211 ms      1.443 ms
+Preprocessing Total      3.869 ms      3.712 ms      0.568 ms
+Gates Setup             78.288 ms     77.939 ms     34.922 ms
+Gates Online            17.086 ms     15.061 ms      4.026 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      42.943 ms     53.111 ms     18.664 ms
+Circuit Evaluation     104.614 ms    104.902 ms     37.807 ms
 ===========================================================================
 Communication with each other party:
-Sent: 0.007 MiB in 41 messages
+Sent: 0.319 MiB in 4371 messages
 Received: 0.000 MiB in 4 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 1
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
+MT Presetup              0.536 ms      0.404 ms      0.390 ms
+MT Setup                 4.929 ms      3.377 ms      3.558 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      17.409 ms     19.027 ms      3.650 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     22.111 ms     34.116 ms     19.574 ms
-Gates Setup              8.893 ms      7.846 ms      2.320 ms
-Gates Online             0.428 ms      0.383 ms      0.075 ms
+Preprocessing Total     90.779 ms     91.599 ms      2.911 ms
+Gates Setup             22.769 ms     21.972 ms      2.169 ms
+Gates Online          1387.704 ms   1382.060 ms    159.419 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      38.649 ms     49.592 ms     18.225 ms
+Circuit Evaluation    1507.934 ms   1503.268 ms    160.161 ms
 ===========================================================================
 Communication with each other party:
-Sent: 0.009 MiB in 73 messages
-Received: 0.000 MiB in 4 messages
+Sent: 3.442 MiB in 59955 messages
+Received: 3.442 MiB in 59954 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 1
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.384 ms      0.261 ms      0.254 ms
-MT Setup                 4.051 ms      3.597 ms      2.431 ms
+MT Presetup              3.060 ms      3.238 ms      0.697 ms
+MT Setup                10.741 ms      6.644 ms      6.137 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      12.964 ms     11.901 ms      3.923 ms
+OT Extension Setup      41.433 ms     45.347 ms     10.731 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     84.680 ms     84.072 ms      3.533 ms
-Gates Setup             15.036 ms     14.818 ms      2.327 ms
-Gates Online          1131.249 ms   1134.345 ms     42.374 ms
+Preprocessing Total    132.270 ms    130.219 ms     12.559 ms
+Gates Setup             70.886 ms     69.534 ms      5.363 ms
+Gates Online          8014.966 ms   7757.622 ms    978.994 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1239.163 ms   1237.568 ms     41.884 ms
+Circuit Evaluation    8224.137 ms   7968.548 ms    979.115 ms
 ===========================================================================
 Communication with each other party:
-Sent: 2.142 MiB in 37285 messages
-Received: 2.142 MiB in 37284 messages
+Sent: 12.693 MiB in 221297 messages
+Received: 12.693 MiB in 221296 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 1
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              1.524 ms      1.574 ms      0.696 ms
-MT Setup                15.535 ms     10.824 ms     11.275 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      35.924 ms     33.601 ms     10.700 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    128.477 ms    133.988 ms     17.805 ms
-Gates Setup             56.800 ms     57.150 ms      3.779 ms
-Gates Online          8090.985 ms   8236.821 ms    519.044 ms
----------------------------------------------------------------------------
-Circuit Evaluation    8281.353 ms   8400.125 ms    529.965 ms
-===========================================================================
-Communication with each other party:
-Sent: 9.422 MiB in 164253 messages
-Received: 9.422 MiB in 164252 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.051 ms      0.048 ms      0.009 ms
-MT Setup                 8.140 ms      5.140 ms     13.188 ms
+MT Presetup              0.048 ms      0.049 ms      0.007 ms
+MT Setup                10.964 ms      5.438 ms     15.935 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       6.321 ms      5.670 ms      5.529 ms
+OT Extension Setup       4.238 ms      3.618 ms      2.243 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     84.260 ms     78.402 ms     13.411 ms
-Gates Setup              1.471 ms      1.397 ms      0.634 ms
-Gates Online           268.255 ms    261.295 ms     84.998 ms
+Preprocessing Total     81.892 ms     76.357 ms     16.770 ms
+Gates Setup              1.423 ms      1.291 ms      0.716 ms
+Gates Online           266.247 ms    296.063 ms    116.298 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     370.206 ms    359.209 ms     95.566 ms
+Circuit Evaluation     370.089 ms    372.410 ms    136.940 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.240 MiB in 4105 messages
 Received: 0.240 MiB in 4104 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 1
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.086 ms      0.083 ms      0.010 ms
-MT Setup                 9.516 ms     11.468 ms     12.644 ms
+MT Presetup              0.069 ms      0.059 ms      0.019 ms
+MT Setup                 5.820 ms      1.748 ms      6.559 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       4.946 ms      4.565 ms      2.505 ms
+OT Extension Setup       6.518 ms      6.118 ms      3.075 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     80.285 ms     79.794 ms     12.178 ms
-Gates Setup              3.524 ms      3.663 ms      0.921 ms
-Gates Online           239.461 ms    208.673 ms     87.390 ms
+Preprocessing Total     76.697 ms     79.605 ms      5.025 ms
+Gates Setup              3.176 ms      3.361 ms      0.551 ms
+Gates Online           267.538 ms    218.513 ms     96.589 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     329.627 ms    280.198 ms     84.528 ms
+Circuit Evaluation     354.135 ms    305.271 ms     99.033 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.527 MiB in 9117 messages
 Received: 0.527 MiB in 9116 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 1
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.459 ms      0.418 ms      0.184 ms
-MT Setup                 6.118 ms      3.666 ms      5.811 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      18.484 ms     17.094 ms      7.268 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     91.602 ms     90.313 ms      7.426 ms
-Gates Setup             12.690 ms     11.703 ms      1.669 ms
-Gates Online           801.748 ms    772.906 ms     88.716 ms
----------------------------------------------------------------------------
-Circuit Evaluation     912.292 ms    891.447 ms     89.498 ms
-===========================================================================
-Communication with each other party:
-Sent: 2.110 MiB in 32747 messages
-Received: 2.110 MiB in 32746 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              2.452 ms      1.651 ms      1.493 ms
-MT Setup                11.933 ms      8.585 ms      8.700 ms
+MT Presetup             18.334 ms     13.083 ms     13.245 ms
+MT Setup                63.167 ms     55.071 ms     20.632 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      50.810 ms     47.547 ms     12.674 ms
+OT Extension Setup     251.565 ms    252.882 ms     18.793 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    150.892 ms    148.442 ms     23.154 ms
-Gates Setup             48.811 ms     50.369 ms      5.000 ms
-Gates Online          6266.079 ms   6216.151 ms    739.092 ms
+Preprocessing Total    392.833 ms    395.854 ms     41.102 ms
+Gates Setup            327.201 ms    330.677 ms     11.605 ms
+Gates Online           591.157 ms    597.740 ms     30.113 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    6470.481 ms   6451.993 ms    740.136 ms
+Circuit Evaluation    1317.475 ms   1305.455 ms     73.604 ms
 ===========================================================================
 Communication with each other party:
-Sent: 8.307 MiB in 130655 messages
-Received: 8.307 MiB in 130654 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.073 ms      0.079 ms      0.018 ms
-MT Setup                 4.467 ms      4.803 ms      2.667 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       2.630 ms      1.190 ms      3.542 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     85.745 ms     94.069 ms     22.606 ms
-Gates Setup              0.154 ms      0.156 ms      0.041 ms
-Gates Online            37.043 ms     16.771 ms     44.582 ms
----------------------------------------------------------------------------
-Circuit Evaluation     136.003 ms    117.551 ms     56.642 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.045 MiB in 709 messages
-Received: 0.045 MiB in 708 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 1
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.019 ms      0.017 ms      0.007 ms
-MT Setup                 2.407 ms      0.083 ms      2.875 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       5.539 ms      3.709 ms      5.710 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     88.523 ms     79.872 ms     21.070 ms
-Gates Setup              0.262 ms      0.333 ms      0.087 ms
-Gates Online            22.301 ms     20.735 ms     12.452 ms
----------------------------------------------------------------------------
-Circuit Evaluation     115.436 ms    123.841 ms     19.122 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.071 MiB in 1157 messages
-Received: 0.071 MiB in 1156 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.193 ms      0.177 ms      0.040 ms
-MT Setup                 5.500 ms      4.236 ms      3.187 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       7.020 ms      7.058 ms      2.395 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     78.402 ms     77.688 ms      2.891 ms
-Gates Setup            697.917 ms    702.486 ms     76.738 ms
-Gates Online           259.509 ms    235.789 ms     69.585 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1043.443 ms   1028.482 ms    121.325 ms
-===========================================================================
-Communication with each other party:
-Sent: 5.342 MiB in 20004 messages
-Received: 0.331 MiB in 2704 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              2.834 ms      3.100 ms      0.742 ms
-MT Setup                16.638 ms     16.149 ms      6.170 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      43.761 ms     44.063 ms     11.838 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    122.325 ms    118.204 ms      9.745 ms
-Gates Setup           1737.418 ms   1784.082 ms    110.403 ms
-Gates Online           623.505 ms    627.266 ms    123.913 ms
----------------------------------------------------------------------------
-Circuit Evaluation    2492.013 ms   2547.841 ms    149.001 ms
-===========================================================================
-Communication with each other party:
-Sent: 23.181 MiB in 94686 messages
-Received: 3.186 MiB in 25100 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     12.378 ms      4.266 ms     16.569 ms
-Gates Setup             37.084 ms     26.858 ms     20.997 ms
-Gates Online             8.363 ms      7.331 ms      1.752 ms
----------------------------------------------------------------------------
-Circuit Evaluation      63.156 ms     60.374 ms     22.738 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.571 MiB in 1867 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total      3.883 ms      3.772 ms      0.499 ms
-Gates Setup             58.805 ms     55.631 ms     20.697 ms
-Gates Online            14.917 ms     14.409 ms      2.764 ms
----------------------------------------------------------------------------
-Circuit Evaluation      83.252 ms     78.350 ms     21.976 ms
-===========================================================================
-Communication with each other party:
-Sent: 1.288 MiB in 4373 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.176 ms      0.157 ms      0.038 ms
-MT Setup                 3.136 ms      1.824 ms      3.078 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      10.464 ms      8.371 ms      4.421 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     79.970 ms     75.398 ms     12.808 ms
-Gates Setup            126.308 ms    116.032 ms     33.171 ms
-Gates Online           189.444 ms    202.593 ms     75.883 ms
----------------------------------------------------------------------------
-Circuit Evaluation     400.692 ms    399.700 ms     58.059 ms
-===========================================================================
-Communication with each other party:
-Sent: 7.233 MiB in 15799 messages
-Received: 0.331 MiB in 2704 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              1.525 ms      1.122 ms      1.074 ms
-MT Setup                12.253 ms      7.084 ms      8.239 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      48.459 ms     47.642 ms      6.706 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    115.917 ms    110.566 ms      9.313 ms
-Gates Setup           1002.188 ms   1021.081 ms     95.903 ms
-Gates Online           680.530 ms    714.324 ms    136.367 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1806.232 ms   1781.831 ms    211.059 ms
-===========================================================================
-Communication with each other party:
-Sent: 28.806 MiB in 73935 messages
-Received: 3.186 MiB in 25100 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     32.913 ms     44.337 ms     18.655 ms
-Gates Setup              5.459 ms      4.937 ms      1.553 ms
-Gates Online             0.721 ms      0.264 ms      1.326 ms
----------------------------------------------------------------------------
-Circuit Evaluation      45.151 ms     53.224 ms     17.227 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.049 MiB in 41 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     26.028 ms     30.534 ms     19.471 ms
-Gates Setup             11.582 ms     10.992 ms      2.357 ms
-Gates Online             1.092 ms      0.500 ms      1.812 ms
----------------------------------------------------------------------------
-Circuit Evaluation      44.602 ms     39.835 ms     20.690 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.058 MiB in 73 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              2.424 ms      2.304 ms      0.342 ms
-MT Setup                23.201 ms     10.464 ms     17.438 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      67.507 ms     65.052 ms     12.428 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    157.489 ms    157.462 ms     13.811 ms
-Gates Setup             14.814 ms     14.699 ms      1.785 ms
-Gates Online          1123.855 ms   1126.657 ms     54.799 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1302.811 ms   1308.461 ms     57.442 ms
-===========================================================================
-Communication with each other party:
-Sent: 4.714 MiB in 37285 messages
-Received: 4.714 MiB in 37284 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             15.310 ms     15.328 ms      0.523 ms
-MT Setup                58.231 ms     42.912 ms     26.971 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     169.213 ms    156.988 ms     31.796 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    314.564 ms    320.712 ms     30.807 ms
-Gates Setup             55.842 ms     56.570 ms      5.728 ms
-Gates Online          7859.320 ms   7631.468 ms    798.956 ms
----------------------------------------------------------------------------
-Circuit Evaluation    8234.990 ms   7977.946 ms    802.228 ms
-===========================================================================
-Communication with each other party:
-Sent: 20.839 MiB in 164253 messages
-Received: 20.838 MiB in 164252 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.374 ms      0.370 ms      0.028 ms
-MT Setup                 4.284 ms      2.243 ms      3.132 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      15.671 ms     15.165 ms      6.800 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     87.435 ms     84.316 ms      7.635 ms
-Gates Setup              1.598 ms      1.569 ms      0.475 ms
-Gates Online           257.312 ms    222.034 ms     92.536 ms
----------------------------------------------------------------------------
-Circuit Evaluation     363.145 ms    383.799 ms     90.030 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.499 MiB in 4105 messages
-Received: 0.499 MiB in 4104 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.686 ms      0.664 ms      0.073 ms
-MT Setup                 7.746 ms      6.468 ms      5.737 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      18.687 ms     18.355 ms      5.717 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     97.609 ms     94.510 ms     11.584 ms
-Gates Setup              4.158 ms      3.871 ms      1.289 ms
-Gates Online           322.749 ms    331.266 ms     89.271 ms
----------------------------------------------------------------------------
-Circuit Evaluation     432.322 ms    414.899 ms     92.364 ms
-===========================================================================
-Communication with each other party:
-Sent: 1.136 MiB in 9117 messages
-Received: 1.136 MiB in 9116 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              4.381 ms      3.696 ms      2.228 ms
-MT Setup                21.690 ms     18.657 ms      7.726 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     120.616 ms    131.816 ms     19.589 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    212.637 ms    216.695 ms     13.834 ms
-Gates Setup             12.905 ms     12.561 ms      1.327 ms
-Gates Online           852.324 ms    866.358 ms    123.392 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1084.345 ms   1083.502 ms    115.578 ms
-===========================================================================
-Communication with each other party:
-Sent: 6.407 MiB in 32747 messages
-Received: 6.407 MiB in 32746 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             20.807 ms     19.849 ms      2.538 ms
-MT Setup                60.002 ms     55.106 ms     14.044 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     250.394 ms    245.500 ms     27.087 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    398.541 ms    396.776 ms     21.921 ms
-Gates Setup             48.017 ms     48.260 ms      1.688 ms
-Gates Online          6037.820 ms   6044.428 ms    223.858 ms
----------------------------------------------------------------------------
-Circuit Evaluation    6491.882 ms   6462.017 ms    221.503 ms
-===========================================================================
-Communication with each other party:
-Sent: 24.691 MiB in 130655 messages
-Received: 24.691 MiB in 130654 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.100 ms      0.114 ms      0.044 ms
-MT Setup                 7.683 ms      6.747 ms     12.855 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       5.307 ms      3.718 ms      3.934 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     83.454 ms     76.289 ms     18.533 ms
-Gates Setup              0.132 ms      0.106 ms      0.063 ms
-Gates Online            47.236 ms     20.500 ms     44.858 ms
----------------------------------------------------------------------------
-Circuit Evaluation     155.291 ms    126.771 ms     72.665 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.068 MiB in 709 messages
-Received: 0.068 MiB in 708 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 10
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.062 ms      0.063 ms      0.021 ms
-MT Setup                 2.894 ms      1.124 ms      3.525 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       8.133 ms      9.684 ms      5.787 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     78.648 ms     69.494 ms     19.917 ms
-Gates Setup              0.255 ms      0.299 ms      0.105 ms
-Gates Online            20.585 ms     20.883 ms      5.385 ms
----------------------------------------------------------------------------
-Circuit Evaluation     106.112 ms    104.702 ms     21.910 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.125 MiB in 1157 messages
-Received: 0.125 MiB in 1156 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              1.570 ms      1.516 ms      0.475 ms
-MT Setup                 7.721 ms      6.866 ms      2.191 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      54.885 ms     57.485 ms     12.831 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    131.150 ms    136.124 ms     22.385 ms
-Gates Setup            278.460 ms    272.896 ms     72.853 ms
-Gates Online           210.239 ms    225.407 ms     72.527 ms
----------------------------------------------------------------------------
-Circuit Evaluation     626.213 ms    657.475 ms    129.880 ms
-===========================================================================
-Communication with each other party:
-Sent: 44.190 MiB in 20004 messages
-Received: 2.067 MiB in 2704 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             20.182 ms     20.054 ms      0.868 ms
-MT Setup                60.323 ms     58.658 ms     12.451 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     244.284 ms    250.154 ms     26.689 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    377.915 ms    383.855 ms     26.326 ms
-Gates Setup            657.228 ms    632.580 ms     50.435 ms
-Gates Online           760.319 ms    722.117 ms     92.254 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1805.844 ms   1779.148 ms    102.534 ms
-===========================================================================
-Communication with each other party:
-Sent: 188.796 MiB in 94686 messages
-Received: 20.972 MiB in 25100 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     12.172 ms      4.216 ms     16.402 ms
-Gates Setup             17.754 ms     15.867 ms      8.633 ms
-Gates Online             6.939 ms      5.938 ms      1.807 ms
----------------------------------------------------------------------------
-Circuit Evaluation      40.400 ms     29.200 ms     19.957 ms
-===========================================================================
-Communication with each other party:
-Sent: 4.847 MiB in 1867 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total      4.212 ms      4.212 ms      0.344 ms
-Gates Setup             99.257 ms    104.095 ms     44.124 ms
-Gates Online            25.765 ms     25.856 ms      6.934 ms
----------------------------------------------------------------------------
-Circuit Evaluation     137.764 ms    143.596 ms     53.451 ms
-===========================================================================
-Communication with each other party:
-Sent: 10.860 MiB in 4373 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              1.233 ms      1.248 ms      0.075 ms
-MT Setup                 7.722 ms      7.166 ms      1.241 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      54.211 ms     58.908 ms     12.288 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    125.134 ms    125.227 ms     23.624 ms
-Gates Setup             77.775 ms     80.986 ms     12.169 ms
-Gates Online           192.384 ms    193.012 ms     42.919 ms
----------------------------------------------------------------------------
-Circuit Evaluation     401.276 ms    392.228 ms     36.454 ms
-===========================================================================
-Communication with each other party:
-Sent: 64.844 MiB in 15799 messages
-Received: 2.067 MiB in 2704 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             20.005 ms     19.604 ms      0.695 ms
-MT Setup                65.214 ms     54.905 ms     22.721 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     242.059 ms    246.984 ms     16.284 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    381.295 ms    378.669 ms     19.283 ms
-Gates Setup            396.185 ms    388.028 ms     24.203 ms
-Gates Online           779.722 ms    776.122 ms     50.225 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1567.967 ms   1545.004 ms     56.712 ms
-===========================================================================
-Communication with each other party:
-Sent: 253.879 MiB in 73935 messages
-Received: 20.972 MiB in 25100 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     16.539 ms     13.383 ms     18.809 ms
-Gates Setup              6.847 ms      6.814 ms      0.884 ms
-Gates Online             0.444 ms      0.463 ms      0.079 ms
----------------------------------------------------------------------------
-Circuit Evaluation      30.570 ms     26.828 ms     20.714 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.466 MiB in 41 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     20.593 ms      4.572 ms     19.904 ms
-Gates Setup             13.394 ms     12.510 ms      2.667 ms
-Gates Online             0.520 ms      0.504 ms      0.069 ms
----------------------------------------------------------------------------
-Circuit Evaluation      41.299 ms     32.405 ms     21.210 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.542 MiB in 73 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             40.285 ms     39.532 ms      1.261 ms
-MT Setup               111.709 ms    105.010 ms     35.686 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     433.749 ms    456.927 ms     44.715 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    652.122 ms    658.179 ms     19.380 ms
-Gates Setup             16.096 ms     13.100 ms      7.211 ms
-Gates Online          1034.417 ms   1022.857 ms     48.331 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1708.780 ms   1709.100 ms     38.420 ms
-===========================================================================
-Communication with each other party:
-Sent: 30.992 MiB in 37285 messages
-Received: 30.991 MiB in 37284 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup            137.768 ms    138.140 ms      1.404 ms
-MT Setup               310.858 ms    308.289 ms     12.868 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    1435.721 ms   1413.170 ms     57.827 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total   1941.280 ms   1898.308 ms     61.279 ms
-Gates Setup             49.818 ms     49.983 ms      1.235 ms
-Gates Online          7310.393 ms   7240.504 ms    396.269 ms
----------------------------------------------------------------------------
-Circuit Evaluation    9307.990 ms   9241.638 ms    396.910 ms
-===========================================================================
-Communication with each other party:
-Sent: 137.503 MiB in 164253 messages
-Received: 137.503 MiB in 164252 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              3.776 ms      3.603 ms      0.732 ms
-MT Setup                21.657 ms     17.888 ms     14.389 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      69.591 ms     64.746 ms     17.895 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    161.571 ms    168.044 ms     15.198 ms
-Gates Setup              1.690 ms      1.496 ms      0.468 ms
-Gates Online           243.233 ms    167.275 ms    115.661 ms
----------------------------------------------------------------------------
-Circuit Evaluation     425.137 ms    360.562 ms    126.912 ms
-===========================================================================
-Communication with each other party:
-Sent: 3.143 MiB in 4105 messages
-Received: 3.143 MiB in 4104 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              7.149 ms      6.563 ms      3.755 ms
-MT Setup                32.955 ms     28.774 ms     11.761 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     137.639 ms    138.591 ms     22.689 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    242.550 ms    251.175 ms     18.655 ms
-Gates Setup              3.638 ms      3.376 ms      1.034 ms
-Gates Online           283.396 ms    282.641 ms    117.592 ms
----------------------------------------------------------------------------
-Circuit Evaluation     534.616 ms    553.854 ms    125.788 ms
-===========================================================================
-Communication with each other party:
-Sent: 7.348 MiB in 9117 messages
-Received: 7.348 MiB in 9116 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             52.558 ms     40.772 ms     15.183 ms
-MT Setup               144.076 ms    132.688 ms     27.170 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     650.994 ms    653.126 ms     64.453 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    935.092 ms    924.420 ms     65.335 ms
-Gates Setup             37.753 ms     38.455 ms     10.177 ms
-Gates Online           766.936 ms    773.562 ms     91.950 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1744.415 ms   1746.806 ms     76.016 ms
-===========================================================================
-Communication with each other party:
-Sent: 50.105 MiB in 32747 messages
-Received: 50.104 MiB in 32746 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup            196.981 ms    196.848 ms      1.153 ms
-MT Setup               459.101 ms    456.029 ms     14.062 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    2045.985 ms   2017.764 ms     91.152 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total   2760.827 ms   2743.898 ms     90.605 ms
-Gates Setup             76.448 ms     76.600 ms     48.318 ms
-Gates Online          5660.209 ms   5784.162 ms    382.685 ms
----------------------------------------------------------------------------
-Circuit Evaluation    8501.487 ms   8495.278 ms    393.058 ms
-===========================================================================
-Communication with each other party:
-Sent: 191.305 MiB in 130655 messages
-Received: 191.305 MiB in 130654 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.305 ms      0.296 ms      0.079 ms
-MT Setup                 3.701 ms      1.808 ms      4.422 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      15.153 ms     17.361 ms      6.648 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     90.471 ms     78.809 ms     20.327 ms
-Gates Setup              0.204 ms      0.206 ms      0.036 ms
-Gates Online            60.488 ms     19.118 ms    103.565 ms
----------------------------------------------------------------------------
-Circuit Evaluation     172.683 ms    146.127 ms    113.380 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.294 MiB in 709 messages
-Received: 0.294 MiB in 708 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 100
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.748 ms      0.777 ms      0.234 ms
-MT Setup                 5.486 ms      3.470 ms      5.902 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      25.382 ms     25.673 ms      7.840 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    108.256 ms    123.525 ms     21.729 ms
-Gates Setup              0.391 ms      0.390 ms      0.059 ms
-Gates Online            24.210 ms     19.580 ms     13.807 ms
----------------------------------------------------------------------------
-Circuit Evaluation     138.106 ms    146.244 ms     30.194 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.670 MiB in 1157 messages
-Received: 0.670 MiB in 1156 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             14.998 ms     14.690 ms      4.237 ms
-MT Setup                71.333 ms     65.533 ms     27.438 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     238.996 ms    225.513 ms     25.530 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    389.296 ms    380.888 ms     36.543 ms
-Gates Setup            242.213 ms    241.949 ms      9.677 ms
-Gates Online           396.848 ms    388.082 ms     41.109 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1033.407 ms   1030.410 ms     41.641 ms
-===========================================================================
-Communication with each other party:
-Sent: 432.570 MiB in 20004 messages
+Sent: 698.827 MiB in 31339 messages
 Received: 19.323 MiB in 2704 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 1000
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            205.081 ms    205.263 ms      0.997 ms
-MT Setup               496.024 ms    496.251 ms      3.248 ms
+MT Presetup            205.520 ms    205.057 ms      0.830 ms
+MT Setup               502.154 ms    500.935 ms      6.600 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    2220.619 ms   2213.919 ms     54.584 ms
+OT Extension Setup    2184.070 ms   2204.265 ms     64.266 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   2978.409 ms   2969.202 ms     53.357 ms
-Gates Setup           1889.774 ms   1783.537 ms    306.392 ms
-Gates Online          2439.765 ms   2161.109 ms    353.617 ms
+Preprocessing Total   2947.677 ms   2980.472 ms     65.359 ms
+Gates Setup           3643.873 ms   3719.196 ms    222.449 ms
+Gates Online          3244.225 ms   3252.478 ms    215.103 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    7333.649 ms   7197.909 ms    634.359 ms
+Circuit Evaluation    9884.528 ms   9978.454 ms    362.298 ms
 ===========================================================================
 Communication with each other party:
-Sent: 1843.810 MiB in 94686 messages
+Sent: 2513.762 MiB in 123116 messages
 Received: 197.689 MiB in 25100 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 1000
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     21.823 ms     29.465 ms     19.222 ms
-Gates Setup             36.513 ms     38.662 ms      4.471 ms
-Gates Online             8.973 ms      9.577 ms      1.147 ms
----------------------------------------------------------------------------
-Circuit Evaluation      73.575 ms     75.208 ms     20.037 ms
-===========================================================================
-Communication with each other party:
-Sent: 47.607 MiB in 1867 messages
-Received: 0.000 MiB in 4 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
@@ -1601,84 +330,22 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      3.969 ms      3.962 ms      0.321 ms
-Gates Setup             49.843 ms     47.679 ms      3.300 ms
-Gates Online            14.510 ms     14.270 ms      0.486 ms
+Preprocessing Total     12.241 ms      4.436 ms     15.997 ms
+Gates Setup             33.930 ms     33.246 ms      4.489 ms
+Gates Online             7.742 ms      7.888 ms      1.140 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      72.772 ms     72.401 ms      3.819 ms
+Circuit Evaluation      59.174 ms     53.078 ms     17.128 ms
 ===========================================================================
 Communication with each other party:
-Sent: 106.581 MiB in 4373 messages
+Sent: 46.142 MiB in 1865 messages
 Received: 0.000 MiB in 4 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 1000
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             14.444 ms     14.268 ms      5.000 ms
-MT Setup                72.532 ms     55.641 ms     24.924 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     262.623 ms    253.089 ms     29.993 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    416.736 ms    421.603 ms     35.143 ms
-Gates Setup            323.332 ms    320.547 ms     12.359 ms
-Gates Online           425.135 ms    405.269 ms     69.559 ms
----------------------------------------------------------------------------
-Circuit Evaluation    1171.737 ms   1157.778 ms     85.568 ms
-===========================================================================
-Communication with each other party:
-Sent: 640.855 MiB in 15799 messages
-Received: 19.323 MiB in 2704 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup            205.042 ms    205.157 ms      0.873 ms
-MT Setup               496.187 ms    495.047 ms      5.037 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    2243.379 ms   2239.673 ms     63.320 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total   2997.846 ms   2979.360 ms     57.582 ms
-Gates Setup           2368.309 ms   2378.458 ms    100.435 ms
-Gates Online           814.673 ms    815.025 ms    140.569 ms
----------------------------------------------------------------------------
-Circuit Evaluation    6191.713 ms   6242.708 ms    121.420 ms
-===========================================================================
-Communication with each other party:
-Sent: 2503.477 MiB in 73935 messages
-Received: 197.689 MiB in 25100 messages
-===========================================================================
-===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
@@ -1694,293 +361,137 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     21.115 ms     23.176 ms     20.106 ms
-Gates Setup             14.979 ms     14.315 ms      2.369 ms
-Gates Online             4.205 ms      4.358 ms      1.363 ms
+Preprocessing Total      7.854 ms      3.856 ms     12.021 ms
+Gates Setup             55.569 ms     53.898 ms      9.410 ms
+Gates Online            14.051 ms     13.876 ms      0.758 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      46.567 ms     59.592 ms     19.732 ms
+Circuit Evaluation      82.169 ms     80.690 ms     14.190 ms
 ===========================================================================
 Communication with each other party:
-Sent: 4.636 MiB in 41 messages
+Sent: 105.116 MiB in 4371 messages
 Received: 0.000 MiB in 4 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 1000
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
+MT Presetup            493.524 ms    486.703 ms     15.351 ms
+MT Setup              1194.874 ms   1195.321 ms      9.764 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5182.441 ms   5158.907 ms    126.592 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     20.375 ms     11.045 ms     19.629 ms
-Gates Setup             29.935 ms     29.926 ms      2.055 ms
-Gates Online             4.027 ms      4.380 ms      0.824 ms
+Preprocessing Total   6929.855 ms   6934.077 ms    124.504 ms
+Gates Setup             18.449 ms     18.824 ms      1.780 ms
+Gates Online          1056.255 ms   1043.681 ms     65.704 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      60.607 ms     44.811 ms     20.735 ms
+Circuit Evaluation    8009.326 ms   8009.675 ms    119.421 ms
 ===========================================================================
 Communication with each other party:
-Sent: 5.389 MiB in 73 messages
-Received: 0.000 MiB in 4 messages
+Sent: 471.687 MiB in 59955 messages
+Received: 471.687 MiB in 59954 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 1000
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            311.497 ms    312.933 ms      2.577 ms
-MT Setup               707.660 ms    708.486 ms      7.602 ms
+MT Presetup           1831.004 ms   1835.853 ms      9.242 ms
+MT Setup              4317.511 ms   4316.815 ms     34.318 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    3197.129 ms   3165.573 ms     61.176 ms
+OT Extension Setup   19834.592 ms  19867.360 ms     76.939 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   4277.796 ms   4246.277 ms     71.200 ms
-Gates Setup             11.189 ms     10.245 ms      2.780 ms
-Gates Online           963.961 ms    962.074 ms     65.338 ms
+Preprocessing Total  26041.098 ms  26048.243 ms     99.104 ms
+Gates Setup             66.853 ms     67.280 ms      3.361 ms
+Gates Online          6018.336 ms   5954.958 ms    151.916 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    5257.201 ms   5229.849 ms     98.743 ms
+Circuit Evaluation   32130.666 ms  32086.383 ms    176.345 ms
 ===========================================================================
 Communication with each other party:
-Sent: 292.082 MiB in 37285 messages
-Received: 292.082 MiB in 37284 messages
+Sent: 1748.798 MiB in 221297 messages
+Received: 1748.798 MiB in 221296 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 1000
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup           1377.002 ms   1379.209 ms      8.818 ms
-MT Setup              3049.016 ms   3024.500 ms     32.750 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup   14696.644 ms  14774.450 ms    379.536 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total  19184.597 ms  19258.340 ms    364.478 ms
-Gates Setup             52.112 ms     50.708 ms      3.304 ms
-Gates Online          6617.369 ms   7231.327 ms   1181.659 ms
----------------------------------------------------------------------------
-Circuit Evaluation   25858.664 ms  25600.357 ms    928.885 ms
-===========================================================================
-Communication with each other party:
-Sent: 1296.649 MiB in 164253 messages
-Received: 1296.649 MiB in 164252 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             36.386 ms     26.021 ms     12.467 ms
-MT Setup               107.325 ms     87.683 ms     39.984 ms
+MT Presetup             27.865 ms     27.073 ms      7.354 ms
+MT Setup                97.439 ms     79.858 ms     28.035 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     378.695 ms    381.244 ms     61.269 ms
+OT Extension Setup     362.047 ms    361.744 ms     43.474 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    588.620 ms    543.306 ms     72.322 ms
-Gates Setup              1.139 ms      1.121 ms      0.102 ms
-Gates Online           141.246 ms    104.350 ms     74.687 ms
+Preprocessing Total    566.517 ms    582.304 ms     55.542 ms
+Gates Setup              1.383 ms      1.098 ms      0.478 ms
+Gates Online           137.538 ms    136.773 ms     56.404 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     735.193 ms    749.918 ms    126.050 ms
+Circuit Evaluation     709.565 ms    678.562 ms    107.360 ms
 ===========================================================================
 Communication with each other party:
 Sent: 29.413 MiB in 4105 messages
 Received: 29.413 MiB in 4104 messages
 ===========================================================================
 ===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 1000
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
+MOTION version: 38da9187 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx1, PID 1126823
 ===========================================================================
 Run time statistics over 10 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             81.557 ms     70.446 ms     14.315 ms
-MT Setup               165.677 ms    164.751 ms      2.687 ms
+MT Presetup             69.603 ms     72.208 ms     10.694 ms
+MT Setup               170.698 ms    166.493 ms      8.494 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     816.674 ms    797.736 ms     44.421 ms
+OT Extension Setup     758.109 ms    739.147 ms     53.890 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1123.572 ms   1111.293 ms     47.169 ms
-Gates Setup              2.414 ms      2.273 ms      0.349 ms
-Gates Online           188.851 ms    178.010 ms     48.839 ms
+Preprocessing Total   1074.055 ms   1050.217 ms     63.262 ms
+Gates Setup              2.410 ms      2.285 ms      0.245 ms
+Gates Online           192.711 ms    185.905 ms     56.231 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1319.055 ms   1312.433 ms     76.626 ms
+Circuit Evaluation    1273.662 ms   1247.475 ms     64.005 ms
 ===========================================================================
 Communication with each other party:
 Sent: 69.078 MiB in 9117 messages
 Received: 69.078 MiB in 9116 messages
 ===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup            507.845 ms    508.412 ms      3.731 ms
-MT Setup              1221.366 ms   1222.642 ms     13.480 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    5440.282 ms   5375.796 ms    113.121 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total   7228.617 ms   7190.212 ms    116.773 ms
-Gates Setup              9.804 ms      9.741 ms      0.649 ms
-Gates Online           656.092 ms    641.725 ms     75.775 ms
----------------------------------------------------------------------------
-Circuit Evaluation    7898.755 ms   7880.003 ms    126.769 ms
-===========================================================================
-Communication with each other party:
-Sent: 486.485 MiB in 32747 messages
-Received: 486.485 MiB in 32746 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup           1946.744 ms   1948.080 ms     11.505 ms
-MT Setup              4612.776 ms   4568.916 ms    183.755 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup   21515.359 ms  21834.953 ms    745.440 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total  28134.763 ms  28358.452 ms    625.697 ms
-Gates Setup             45.046 ms     45.863 ms      3.737 ms
-Gates Online          4799.961 ms   4615.601 ms    466.162 ms
----------------------------------------------------------------------------
-Circuit Evaluation   32984.837 ms  33111.797 ms    502.845 ms
-===========================================================================
-Communication with each other party:
-Sent: 1854.690 MiB in 130655 messages
-Received: 1854.690 MiB in 130654 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              2.450 ms      2.432 ms      0.999 ms
-MT Setup                18.151 ms     11.225 ms     10.875 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      49.729 ms     47.590 ms     10.285 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    143.095 ms    138.574 ms     19.311 ms
-Gates Setup              0.176 ms      0.139 ms      0.055 ms
-Gates Online            14.128 ms     11.910 ms      4.092 ms
----------------------------------------------------------------------------
-Circuit Evaluation     161.710 ms    160.088 ms     19.465 ms
-===========================================================================
-Communication with each other party:
-Sent: 2.546 MiB in 709 messages
-Received: 2.545 MiB in 708 messages
-===========================================================================
-===========================================================================
-Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 1000
-===========================================================================
-MOTION version: ca671318 @ dev
-invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1080128
-===========================================================================
-Run time statistics over 10 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              5.243 ms      5.128 ms      1.787 ms
-MT Setup                28.819 ms     24.054 ms     11.745 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     113.357 ms    116.829 ms     23.476 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    220.396 ms    223.106 ms     31.720 ms
-Gates Setup              0.400 ms      0.428 ms      0.081 ms
-Gates Online            28.343 ms     24.680 ms     16.742 ms
----------------------------------------------------------------------------
-Circuit Evaluation     253.571 ms    251.555 ms     42.811 ms
-===========================================================================
-Communication with each other party:
-Sent: 6.094 MiB in 1157 messages
-Received: 6.094 MiB in 1156 messages
-===========================================================================
-lzhao@simx1 ~/MOTION/build/bin $ 

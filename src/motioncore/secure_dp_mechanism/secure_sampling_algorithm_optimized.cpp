@@ -731,12 +731,20 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   SecureFloatingPointCircuitABY floating_point_unsigned_integer_denominator_simdify =
       SecureFloatingPointCircuitABY(floating_point_boolean_gmw_share_denominator_simdify);
 
+  // =====================================================
   // TODO: this division can be saved by compute e^(-1/t) alone
   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
 
   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
+  // =====================================================
+  // TODO: save this division by computing e^(-1/t) first
+
+  // SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
+  //       floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
+
+  // =====================================================
 
   std::vector<FloatType> vector_of_exp_neg_one(num_of_simd_geo * iteration_2, std::exp(-1.0));
   SecureFloatingPointCircuitABY floating_point_constant_exp_neg_one = SecureFloatingPointCircuitABY(
@@ -810,16 +818,41 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   // case 1.1
   // numerator's vector elements are not all equal to one
   if (!numerator_are_all_ones) {
+    //================================================================
     ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
         ((share_->Get())
              ->GetBackend()
              .ConstantAsBooleanGmwInput(
                  ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
-
     // TODO: optimize integer division with floating-point division
     // TODO: using Garbled Circuit for division instead
     SecureUnsignedInteger unsigned_integer_geometric_sample =
         unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
+    //================================================================
+    // ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
+    //     ((share_->Get())
+    //          ->GetBackend()
+    //          .ConstantAsBooleanGmwInput(
+    //              ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+
+    // TODO: test if floating-point division is faster
+    // SecureFloatingPointCircuitABY floating_point_geometric_sample =
+    //     unsigned_integer_w.Int2FL(sizeof(double) * 8) /
+    //     unsigned_integer_boolean_gmw_share_numerator.Int2FL(sizeof(double) * 8);
+    // SecureUnsignedInteger unsigned_integer_geometric_sample =
+    //     floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8);
+    //================================================================
+    // TODO: convert to BMR integer division
+//     ShareWrapper unsigned_integer_bmr_share_numerator =
+//         ((share_->Get())
+//              ->GetBackend()
+//              .ConstantAsBmrInput(ToInput<UintType>(constant_unsigned_integer_numerator_vector)));
+
+//     SecureUnsignedInteger unsigned_integer_bmr_share_geometric_sample =
+//         SecureUnsignedInteger(unsigned_integer_w.Get().Convert<MpcProtocol::kBmr>) /
+//         SecureUnsignedInteger(unsigned_integer_bmr_share_numerator);
+// SecureUnsignedInteger unsigned_integer_boolean_gmw_share_geometric_sample=SecureUnsignedInteger(unsigned_integer_bmr_share_geometric_sample.Get());
+    //================================================================
 
     ShareWrapper boolean_gmw_share_success_flag = (boolean_gmw_share_u[1] & boolean_gmw_share_v[1]);
 
@@ -875,7 +908,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   //   }
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -883,7 +917,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometri
     const ShareWrapper& random_unsigned_integer_boolean_gmw_share, std::size_t iteration_1,
     std::size_t iteration_2) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -1000,12 +1035,14 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   //   }
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration_2) const;
@@ -1807,12 +1844,23 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   SecureFloatingPointCircuitABY floating_point_unsigned_integer_denominator_simdify =
       SecureFloatingPointCircuitABY(floating_point_gc_share_denominator_simdify);
 
+  // =====================================================
   // TODO: this division can be saved by compute e^(-1/t) alone
   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
 
   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
+  // =====================================================
+  // TODO: save this division by computing e^(-1/t) first
+
+  // SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
+  //       floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
+
+
+
+
+  // =====================================================
 
   std::vector<FloatType> vector_of_exp_neg_one(num_of_simd_geo * iteration_2, std::exp(-1.0));
   SecureFloatingPointCircuitABY floating_point_constant_exp_neg_one = SecureFloatingPointCircuitABY(
@@ -2191,7 +2239,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDi
   return gc_share_discrete_laplace_sample_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -2200,7 +2249,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscrete
     const ShareWrapper& gc_share_bernoulli_sample, std::size_t iteration_1, std::size_t iteration_2,
     std::size_t iteration_3) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -2297,14 +2347,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDi
   return gc_share_discrete_laplace_sample_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_gc_share,
     const ShareWrapper& gc_share_bernoulli_sample, std::size_t iteration_2,
     std::size_t iteration_3) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_GC<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_gc_share,
@@ -2440,7 +2492,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteGaussianD
   return gc_share_result_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_gc_share_dlap,
@@ -2449,7 +2502,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscrete
     const ShareWrapper& random_floating_point_0_1_gc_share_dgau, std::size_t iteration_1,
     std::size_t iteration_2, std::size_t iteration_3, std::size_t iteration_4) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_gc_share_dlap,
@@ -2580,7 +2634,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteGaussianD
   return gc_share_result_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_gc_share_dlap,
@@ -2588,7 +2643,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscrete
     const ShareWrapper& random_floating_point_0_1_gc_share_dgau, std::size_t iteration_2,
     std::size_t iteration_3, std::size_t iteration_4) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteGaussianDistribution_GC<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<double>& constant_floating_point_sigma_vector,
     const ShareWrapper& random_floating_point_0_1_gc_share_dlap,
@@ -2994,7 +3050,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   //   }
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -3002,7 +3059,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometri
     const ShareWrapper& random_unsigned_integer_bmr_share, std::size_t iteration_1,
     std::size_t iteration_2) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -3115,12 +3173,14 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
   //   }
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_bmr_share, std::size_t iteration_2) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_bmr_share, std::size_t iteration_2) const;
@@ -3230,7 +3290,8 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDi
   return bmr_share_discrete_laplace_sample_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -3239,7 +3300,8 @@ template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscrete
     const ShareWrapper& bmr_share_bernoulli_sample, std::size_t iteration_1,
     std::size_t iteration_2, std::size_t iteration_3) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const std::vector<std::uint64_t>& constant_unsigned_integer_denominator_vector,
@@ -3338,14 +3400,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDi
   return bmr_share_discrete_laplace_sample_vector;
 }
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
     float, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_bmr_share,
     const ShareWrapper& bmr_share_bernoulli_sample, std::size_t iteration_2,
     std::size_t iteration_3) const;
 
-template std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
+template std::vector<ShareWrapper>
+SecureSamplingAlgorithm_optimized::FLDiscreteLaplaceDistribution_BMR<
     double, std::uint64_t, std::int64_t, std::allocator<std::uint64_t>>(
     const std::vector<std::uint64_t>& constant_unsigned_integer_numerator_vector,
     const ShareWrapper& random_floating_point_0_1_bmr_share,
