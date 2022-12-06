@@ -1,0 +1,93 @@
+# benchmark GarbledCircuit, BooleanGMW, BMR
+# network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
+# log: 
+# time: 2022.12.06 09:09 -  
+# status: done
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+
+
+
+
+# =============================================================================================
+# benchmark BooleanGMW
+# network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
+# log: 
+# time: 2022.12.06 01:01 - 02:03
+# status: done
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.167,23000 1,130.83.125.168,23000 2,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.167,23000 1,130.83.125.168,23000 2,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 2 --parties 0,130.83.125.167,23000 1,130.83.125.168,23000 2,130.83.125.169,23000 --repetitions 10
+
+# =============================================================================================
+# benchmark BooleanGMW
+# network: sudo tc_lan10   # LAN Setting (10Gbit/s Bandwidth, 1ms RTT)
+# log: 
+# time: 2022.12.06 02:03 - 
+# status: doing
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 2 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 3 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 4 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 --repetitions 10
+
+================================================================
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 2 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+
+================================================================
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 2 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 3 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 3,130.83.125.169,23000 --repetitions 10
+
+================================================================
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 2 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 3 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
+
+./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 4 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000 --repetitions 10
