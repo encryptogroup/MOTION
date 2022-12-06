@@ -95,311 +95,313 @@ std::vector<Combination> GenerateAllCombinations() {
 
   if (benchmark_gc) {
     // ================================================
-//     // ! Garbled Circuit
+    // ! Garbled Circuit
 
-//     batch_size = 1;
+    batch_size = 1;
 
-//     // combinations.emplace_back(
-//     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
+    // only for debugging
+    batch_size=40;
 
-//     combinations.emplace_back(
-//         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-//     // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
 
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
 
-//     combinations.emplace_back(
-//         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-//     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
 
-//     // == == == == == == == == == == == == == == == == == == == == == == == ==
-//     // ! Garbled Circuit
-//     batch_size = 5;
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
 
-//     // combinations.emplace_back(
-//     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(
-//         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
-
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(
-//         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
-
-//     // ================================================
-//     // ! Garbled Circuit
-//     batch_size = 10;
-
-//     // combinations.emplace_back(
-//     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(
-//         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
-
-//     // no overflow
-//     combinations.emplace_back(
-//         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(
-//         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
-
-//     // ================================================
-//     // ! Garbled Circuit
-//     batch_size = 20;
-
-//     // combinations.emplace_back(
-//     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(
-//         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-//     //                           batch_size, failure_probability_pow2_neg_40);
-
-//     // ! overflow
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive,
-//     // batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     // no overflow (almost overflow)
-//     combinations.emplace_back(
-//         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//                               T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-//                               batch_size, failure_probability_pow2_neg_40);
-
-//     // ================================================
-//     // ! Garbled Circuit
-//     batch_size = 30;
-
-//     // no memory overflow
-//     // combinations.emplace_back(
-//     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     // ? if overflow
-//     combinations.emplace_back(
-//         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//                               T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-//                               batch_size, failure_probability_pow2_neg_40);
-
-//     // ! overflow
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     // ! overflow
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
-//     //     batch_size, failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//                               T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-//                               batch_size, failure_probability_pow2_neg_40);
-
-//     // ================================================
-//     // ! Garbled Circuit
-//     batch_size = 40;
-
-// // ? if overflow
-//     // combinations.emplace_back(
-//     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     // no overflow
-//     combinations.emplace_back(
-//         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-//         failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//                               T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-//                               batch_size, failure_probability_pow2_neg_40);
-
-//     // ! overflow
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-//     //     failure_probability_pow2_neg_40);
-
-//     // ! overflow
-//     // combinations.emplace_back(
-//     //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
-//     //     batch_size, failure_probability_pow2_neg_40);
-
-//     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-//                               T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-//                               batch_size, failure_probability_pow2_neg_40);
     // ================================================
-    // // ! Garbled Circuit
-    // batch_size = 50;
+    // ! Garbled Circuit
+    batch_size = 5;
 
-    // // combinations.emplace_back(
-    // //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-    // //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-    // // no overflow
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-    //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ================================================
+    // ! Garbled Circuit
+    batch_size = 10;
+
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
 
     // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
     //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
     //                           batch_size, failure_probability_pow2_neg_40);
 
-    // // ! overflow
-    // // combinations.emplace_back(
-    // //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-    // //     failure_probability_pow2_neg_40);
+    // no overflow
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-    // // ! overflow
-    // // combinations.emplace_back(
-    // //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
-    // //     batch_size, failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
 
-    // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40);
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
     // ================================================
-    // // ! Garbled Circuit
-    // batch_size = 60;
+    // ! Garbled Circuit
+    batch_size = 20;
 
-    // // combinations.emplace_back(
-    // //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-    // //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-    // // no overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
     // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive,
+    // batch_size,
     //     failure_probability_pow2_neg_40);
 
-    // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40);
+    // no overflow (almost overflow)
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
 
-    // // ! overflow
-    // // combinations.emplace_back(
-    // //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-    // //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
 
-    // // ! overflow
-    // // combinations.emplace_back(
-    // //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
-    // //     batch_size, failure_probability_pow2_neg_40);
-
-    // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40);
     // ================================================
-    // // ! Garbled Circuit
-    // batch_size = 70;
+    // ! Garbled Circuit
+    batch_size = 30;
 
-    // // combinations.emplace_back(
-    // //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-    // //     failure_probability_pow2_neg_40);
+    // no memory overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-    // // no overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
     // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
     //     failure_probability_pow2_neg_40);
 
-    // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40);
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
 
-    // // ! overflow
-    // // combinations.emplace_back(
-    // //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
-    // //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
 
-    // // ! overflow
-    // // combinations.emplace_back(
-    // //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    // //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
-    // //     batch_size, failure_probability_pow2_neg_40);
+    // ================================================
+    // ! Garbled Circuit
+    batch_size = 40;
 
-    // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40);
+// ? if overflow
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // no overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+    // ================================================
+    // ! Garbled Circuit
+    batch_size = 50;
+
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // no overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+    // ================================================
+    // ! Garbled Circuit
+    batch_size = 60;
+
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // no overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+   // ================================================
+    // ! Garbled Circuit
+    batch_size = 70;
+
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // no overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
+
+    // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+    //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+                              batch_size, failure_probability_pow2_neg_40);
 
     // ================================================
     // ! Garbled Circuit
@@ -412,7 +414,7 @@ std::vector<Combination> GenerateAllCombinations() {
     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
     //     failure_probability_pow2_neg_40);
 
-    // ? if overflow
+    // no overflow (almost overflow)
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
@@ -555,14 +557,14 @@ std::vector<Combination> GenerateAllCombinations() {
     //     failure_probability_pow2_neg_40);
 
 // ! overflow
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
-        failure_probability_pow2_neg_40);
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
+    //     failure_probability_pow2_neg_40);
 
-    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
-                              T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
-                              batch_size, failure_probability_pow2_neg_40);
+    // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //                           T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_perturbation,
+    //                           batch_size, failure_probability_pow2_neg_40);
 
     // ! overflow
     // combinations.emplace_back(
@@ -576,9 +578,9 @@ std::vector<Combination> GenerateAllCombinations() {
     //     T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_noise_generation_optimized, batch_size,
     //     failure_probability_pow2_neg_40);
 
-    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
-                              T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
-                              batch_size, failure_probability_pow2_neg_40);
+    // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //                           T::kDiscreteLaplaceMechanismCKS_FL64DiscreteLaplace_perturbation,
+    //                           batch_size, failure_probability_pow2_neg_40);
   // ================================================
   }
 

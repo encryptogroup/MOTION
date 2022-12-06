@@ -849,6 +849,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     //     SecureUnsignedInteger(floating_point_geometric_sample.FL2Int(sizeof(UintType) * 8).Get());
     //================================================================
     // TODO: convert to BMR integer division
+    // no significant different from the floating division method, less memory
         ShareWrapper unsigned_integer_bmr_share_numerator =
             ((share_->Get())
                  ->GetBackend()
