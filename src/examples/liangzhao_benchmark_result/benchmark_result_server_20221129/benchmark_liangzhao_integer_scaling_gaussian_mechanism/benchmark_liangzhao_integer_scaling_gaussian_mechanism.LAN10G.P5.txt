@@ -1,0 +1,89 @@
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2e1dc0c2 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1226490
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           4091.011 ms      0.000 ms      0.000 ms
+MT Setup             10029.557 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   21444.930 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  35677.549 ms      0.000 ms      0.000 ms
+Gates Setup            221.548 ms      0.000 ms      0.000 ms
+Gates Online        322351.033 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation  358270.900 ms      0.000 ms      0.003 ms
+===========================================================================
+Communication with each other party:
+Sent: 1004.086 MiB in 324288 messages
+Received: 1004.086 MiB in 324288 messages
+===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 2e1dc0c2 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 3,130.83.125.168,23000 4,130.83.125.169,23000
+by lzhao@simx1, PID 1226490
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.025 ms      0.000 ms -nan       ms
+MT Setup               142.058 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     945.960 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1240.153 ms      0.000 ms -nan       ms
+Gates Setup             16.067 ms      0.000 ms -nan       ms
+Gates Online          1640.400 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3225.533 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.677 MiB in 11722 messages
+Received: 0.677 MiB in 11722 messages
+===========================================================================
+
