@@ -833,7 +833,7 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     //     unsigned_integer_w / SecureUnsignedInteger(unsigned_integer_boolean_gmw_share_numerator);
     //================================================================
     // TODO: test if floating-point division is faster
-    For BooleanGMW, integer division is much slower than floating-point division
+    // For BooleanGMW, integer division is much slower than floating-point division
     ShareWrapper unsigned_integer_boolean_gmw_share_numerator =
         ((share_->Get())
              ->GetBackend()
