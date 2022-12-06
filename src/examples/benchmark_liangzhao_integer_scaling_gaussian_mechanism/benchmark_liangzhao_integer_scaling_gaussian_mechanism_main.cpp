@@ -230,6 +230,9 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! BooleanGMW
     batch_size = 1;
 
+    // only for debugging
+    batch_size = 4; 
+
     // on huge improvement
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
     //                           T::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive,
