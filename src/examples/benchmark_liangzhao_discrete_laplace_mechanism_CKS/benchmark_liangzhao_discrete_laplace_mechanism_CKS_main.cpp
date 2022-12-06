@@ -100,7 +100,7 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 1;
 
     // only for debugging
-    batch_size=50;
+    batch_size=40;
 
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
