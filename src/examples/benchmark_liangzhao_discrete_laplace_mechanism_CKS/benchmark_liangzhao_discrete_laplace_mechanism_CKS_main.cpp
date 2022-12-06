@@ -183,7 +183,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // // ================================================
     // // ! Garbled Circuit
-    // batch_size = 20;
+    batch_size = 20;
 
     // combinations.emplace_back(
     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
