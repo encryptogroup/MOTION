@@ -100,7 +100,7 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 1;
 
     // only for debugging
-    batch_size=40;
+    batch_size=50;
 
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
@@ -269,7 +269,7 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit
     batch_size = 40;
 
-// ? if overflow
+// no overflow
     // combinations.emplace_back(
     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
@@ -304,10 +304,11 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit
     batch_size = 50;
 
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40);
+// ? if overflow
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
     // no overflow
     combinations.emplace_back(
