@@ -832,3 +832,4 @@ SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration
 terminate called after throwing an instance of 'std::runtime_error'
   what():  Error while writing to socket: Broken pipe
 Aborted (core dumped)
+lzhao@simx3 ~/MOTION/build/bin $ 
