@@ -403,14 +403,15 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // ================================================
     // ! Garbled Circuit
-    batch_size = 200;
+    // batch_size = 200; // memory overflow
+    batch_size = 100; // ? if overflow
 
     // combinations.emplace_back(
     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
     //     T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_naive, batch_size,
     //     failure_probability_pow2_neg_40);
 
-    // no overflow
+    // ? if overflow
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kDiscreteLaplaceMechanismCKS_FL32DiscreteLaplace_noise_generation_optimized, batch_size,
