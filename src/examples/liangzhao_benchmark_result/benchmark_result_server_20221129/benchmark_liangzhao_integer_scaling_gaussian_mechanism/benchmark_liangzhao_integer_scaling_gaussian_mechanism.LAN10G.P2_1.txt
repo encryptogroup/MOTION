@@ -1,4 +1,4 @@
-lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -11,38 +11,20 @@ m_: 145542782360452235
 iteration_: 430
 total_failure_probability_: 8.86439e-13
 
-SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive
-===========================================================================
-Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive bit size 64 SIMD 1
-===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup             49.721 ms      0.000 ms      0.000 ms
-MT Setup               109.553 ms      0.000 ms -nan       ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     580.673 ms      0.000 ms -nan       ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total    800.176 ms      0.000 ms      0.000 ms
-Gates Setup          15470.405 ms      0.000 ms -nan       ms
-Gates Online          8924.778 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Circuit Evaluation   25200.357 ms      0.000 ms -nan       ms
-===========================================================================
-Communication with each other party:
-Sent: 46.998 MiB in 13574 messages
-Received: 1376.486 MiB in 157454 messages
-===========================================================================
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -59,29 +41,29 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
 ===========================================================================
 Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
 ===========================================================================
-Run time statistics over 1 iterations
+Run time statistics over 3 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             49.824 ms      0.000 ms -nan       ms
-MT Setup               109.233 ms      0.000 ms -nan       ms
+MT Presetup             48.570 ms     46.949 ms      1.186 ms
+MT Setup               156.729 ms    112.418 ms     63.891 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     505.995 ms      0.000 ms      0.000 ms
+OT Extension Setup     530.739 ms    540.719 ms     18.217 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    733.677 ms      0.000 ms      0.000 ms
-Gates Setup           5631.631 ms      0.000 ms -nan       ms
-Gates Online          6219.233 ms      0.000 ms      0.000 ms
+Preprocessing Total    816.230 ms    788.612 ms     37.819 ms
+Gates Setup           8616.082 ms   4950.095 ms   4883.078 ms
+Gates Online          5253.331 ms   3447.616 ms   2482.495 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   12603.148 ms      0.000 ms -nan       ms
+Circuit Evaluation   14694.337 ms   9190.206 ms   7399.941 ms
 ===========================================================================
 Communication with each other party:
 Sent: 46.998 MiB in 13574 messages
@@ -99,37 +81,18 @@ m_: 145542782360452235
 iteration_: 430
 total_failure_probability_: 8.86439e-13
 
-===========================================================================
-Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_naive bit size 64 SIMD 1
-===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     17.336 ms      0.000 ms      0.000 ms
-Gates Setup           1668.427 ms      0.000 ms      0.000 ms
-Gates Online           327.562 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Circuit Evaluation    2020.096 ms      0.000 ms      0.000 ms
-===========================================================================
-Communication with each other party:
-Sent: 0.000 MiB in 4 messages
-Received: 2.830 MiB in 38994 messages
-===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -145,11 +108,11 @@ total_failure_probability_: 8.86439e-13
 ===========================================================================
 Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
 ===========================================================================
-Run time statistics over 1 iterations
+Run time statistics over 3 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -163,11 +126,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      5.261 ms      0.000 ms      0.000 ms
-Gates Setup            285.077 ms      0.000 ms -nan       ms
-Gates Online            56.492 ms      0.000 ms      0.000 ms
+Preprocessing Total     11.626 ms      5.777 ms      8.131 ms
+Gates Setup            216.415 ms    241.226 ms     25.851 ms
+Gates Online            53.939 ms     67.089 ms     10.618 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     377.166 ms      0.000 ms -nan       ms
+Circuit Evaluation     357.870 ms    331.867 ms     19.524 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.000 MiB in 4 messages
@@ -185,38 +148,20 @@ m_: 145542782360452235
 iteration_: 430
 total_failure_probability_: 8.86439e-13
 
-SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive
-===========================================================================
-Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive bit size 64 SIMD 5
-===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup            237.622 ms      0.000 ms -nan       ms
-MT Setup               625.710 ms      0.000 ms -nan       ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    2390.559 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total   3341.616 ms      0.000 ms      0.000 ms
-Gates Setup          21063.805 ms      0.000 ms -nan       ms
-Gates Online         13471.685 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Circuit Evaluation   38310.930 ms      0.000 ms -nan       ms
-===========================================================================
-Communication with each other party:
-Sent: 232.169 MiB in 13574 messages
-Received: 6849.082 MiB in 157454 messages
-===========================================================================
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -233,29 +178,29 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
 ===========================================================================
 Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized bit size 64 SIMD 5
 ===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
 ===========================================================================
-Run time statistics over 1 iterations
+Run time statistics over 3 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            237.835 ms      0.000 ms -nan       ms
-MT Setup               544.070 ms      0.000 ms      0.000 ms
+MT Presetup            237.920 ms    237.611 ms      0.372 ms
+MT Setup               561.131 ms    556.550 ms     12.561 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    2595.970 ms      0.000 ms -nan       ms
+OT Extension Setup    2390.844 ms   2358.521 ms     82.974 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   3452.232 ms      0.000 ms      0.000 ms
-Gates Setup          14164.349 ms      0.000 ms      0.000 ms
-Gates Online         11616.374 ms      0.000 ms -nan       ms
+Preprocessing Total   3257.124 ms   3234.348 ms     91.133 ms
+Gates Setup          15835.177 ms  13663.887 ms   2963.443 ms
+Gates Online         11474.437 ms   9231.669 ms   1993.764 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   29636.790 ms      0.000 ms      0.000 ms
+Circuit Evaluation   30970.184 ms  26556.616 ms   4909.530 ms
 ===========================================================================
 Communication with each other party:
 Sent: 232.169 MiB in 13574 messages
@@ -273,37 +218,18 @@ m_: 145542782360452235
 iteration_: 430
 total_failure_probability_: 8.86439e-13
 
-===========================================================================
-Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_naive bit size 64 SIMD 5
-===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total     11.919 ms      0.000 ms      0.000 ms
-Gates Setup           1616.825 ms      0.000 ms      0.000 ms
-Gates Online           340.430 ms      0.000 ms -nan       ms
----------------------------------------------------------------------------
-Circuit Evaluation    2007.188 ms      0.000 ms -nan       ms
-===========================================================================
-Communication with each other party:
-Sent: 0.000 MiB in 4 messages
-Received: 6.415 MiB in 38994 messages
-===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -319,11 +245,11 @@ total_failure_probability_: 8.86439e-13
 ===========================================================================
 Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized bit size 64 SIMD 5
 ===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
 ===========================================================================
-Run time statistics over 1 iterations
+Run time statistics over 3 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -337,11 +263,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     15.888 ms      0.000 ms -nan       ms
-Gates Setup            242.717 ms      0.000 ms -nan       ms
-Gates Online            52.316 ms      0.000 ms -nan       ms
+Preprocessing Total     28.037 ms      5.884 ms     18.514 ms
+Gates Setup            306.275 ms    149.775 ms    199.646 ms
+Gates Online            64.400 ms     60.504 ms      3.392 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     389.399 ms      0.000 ms -nan       ms
+Circuit Evaluation     440.971 ms    252.968 ms    197.027 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.000 MiB in 4 messages
@@ -359,38 +285,20 @@ m_: 145542782360452235
 iteration_: 430
 total_failure_probability_: 8.86439e-13
 
-SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_naive
-===========================================================================
-Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive bit size 64 SIMD 10
-===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup            473.287 ms      0.000 ms      0.000 ms
-MT Setup              1076.686 ms      0.000 ms -nan       ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    4865.850 ms      0.000 ms -nan       ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total   6482.597 ms      0.000 ms -nan       ms
-Gates Setup          25970.952 ms      0.000 ms -nan       ms
-Gates Online         18462.987 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Circuit Evaluation   51568.336 ms      0.000 ms -nan       ms
-===========================================================================
-Communication with each other party:
-Sent: 463.557 MiB in 13574 messages
-Received: 13690.341 MiB in 157454 messages
-===========================================================================
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -407,29 +315,29 @@ SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
 ===========================================================================
 Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized bit size 64 SIMD 10
 ===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
 ===========================================================================
-Run time statistics over 1 iterations
+Run time statistics over 3 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            474.041 ms      0.000 ms      0.000 ms
-MT Setup              1078.570 ms      0.000 ms      0.000 ms
+MT Presetup            472.938 ms    472.884 ms      0.249 ms
+MT Setup              1106.622 ms   1109.178 ms     17.111 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    5184.428 ms      0.000 ms -nan       ms
+OT Extension Setup    4967.241 ms   4898.671 ms     49.382 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   6825.890 ms      0.000 ms -nan       ms
-Gates Setup          32238.760 ms      0.000 ms      0.000 ms
-Gates Online         20003.788 ms      0.000 ms -nan       ms
+Preprocessing Total   6630.416 ms   6582.421 ms     38.868 ms
+Gates Setup          30375.911 ms  29441.789 ms    947.494 ms
+Gates Online         19452.832 ms  18698.249 ms    869.896 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   59753.481 ms      0.000 ms      0.000 ms
+Circuit Evaluation   57104.103 ms  55398.462 ms   1833.122 ms
 ===========================================================================
 Communication with each other party:
 Sent: 463.557 MiB in 13574 messages
@@ -447,37 +355,18 @@ m_: 145542782360452235
 iteration_: 430
 total_failure_probability_: 8.86439e-13
 
-===========================================================================
-Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_naive bit size 64 SIMD 10
-===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
-===========================================================================
-Run time statistics over 1 iterations
----------------------------------------------------------------------------
-                          mean        median        stddev
----------------------------------------------------------------------------
-MT Presetup              0.000 ms      0.000 ms      0.000 ms
-MT Setup                 0.000 ms      0.000 ms      0.000 ms
-SP Presetup              0.000 ms      0.000 ms      0.000 ms
-SP Setup                 0.000 ms      0.000 ms      0.000 ms
-SB Presetup              0.000 ms      0.000 ms      0.000 ms
-SB Setup                 0.000 ms      0.000 ms      0.000 ms
-Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
-KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
----------------------------------------------------------------------------
-Preprocessing Total      4.071 ms      0.000 ms -nan       ms
-Gates Setup           1461.868 ms      0.000 ms -nan       ms
-Gates Online           244.595 ms      0.000 ms -nan       ms
----------------------------------------------------------------------------
-Circuit Evaluation    1727.218 ms      0.000 ms -nan       ms
-===========================================================================
-Communication with each other party:
-Sent: 0.000 MiB in 4 messages
-Received: 11.193 MiB in 38994 messages
-===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
 failure_probability: 9.09495e-13
 epsilon: 1.435
 delta_: 0.001
@@ -493,11 +382,11 @@ total_failure_probability_: 8.86439e-13
 ===========================================================================
 Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized bit size 64 SIMD 10
 ===========================================================================
-MOTION version: 57270328 @ dev
-invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
-by lzhao@simx2, PID 1262740
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
 ===========================================================================
-Run time statistics over 1 iterations
+Run time statistics over 3 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -511,13 +400,150 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     22.109 ms      0.000 ms -nan       ms
-Gates Setup            204.792 ms      0.000 ms -nan       ms
-Gates Online            48.827 ms      0.000 ms -nan       ms
+Preprocessing Total      5.569 ms      5.360 ms      0.149 ms
+Gates Setup            113.211 ms     82.513 ms     40.045 ms
+Gates Online            42.984 ms     43.389 ms      9.892 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     292.789 ms      0.000 ms -nan       ms
+Circuit Evaluation     174.381 ms    133.686 ms     52.042 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.000 MiB in 4 messages
 Received: 1.581 MiB in 5345 messages
+===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
+===========================================================================
+Run time statistics over 3 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1407.360 ms   1400.827 ms      7.226 ms
+MT Setup              3466.234 ms   3241.042 ms    296.449 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   14784.792 ms  15108.809 ms    531.444 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  19741.620 ms  19858.712 ms    245.904 ms
+Gates Setup          72849.452 ms  72980.887 ms    752.338 ms
+Gates Online         45820.493 ms  43252.991 ms   2544.471 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  139077.444 ms 136877.976 ms   1972.032 ms
+===========================================================================
+Communication with each other party:
+Sent: 1389.409 MiB in 13574 messages
+Received: 41055.396 MiB in 157454 messages
+===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 043b393b @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 3
+by lzhao@simx2, PID 1264184
+===========================================================================
+Run time statistics over 3 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      5.088 ms      4.179 ms      0.662 ms
+Gates Setup            135.409 ms    108.463 ms     23.889 ms
+Gates Online            41.442 ms     63.091 ms     15.323 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     196.455 ms    193.396 ms      7.255 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 4.172 MiB in 5345 messages
 ===========================================================================
