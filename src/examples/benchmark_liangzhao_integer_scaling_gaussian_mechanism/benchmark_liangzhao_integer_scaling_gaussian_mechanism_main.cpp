@@ -231,7 +231,7 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 1;
 
     // only for debugging
-    batch_size = 4; 
+    batch_size = 2; 
 
     // on huge improvement
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
