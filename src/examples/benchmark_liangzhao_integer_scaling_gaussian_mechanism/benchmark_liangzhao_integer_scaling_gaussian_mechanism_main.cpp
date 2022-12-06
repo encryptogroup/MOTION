@@ -95,9 +95,6 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit
     batch_size = 1;
 
-    // only for debugging
-    batch_size = 30;
-
     // no huge improvement
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
     //                           T::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive,
@@ -161,7 +158,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // ================================================
     // ! Garbled Circuit
-    batch_size = 30;  // ? if overflow
+    batch_size = 30;  // no overflow
 
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
     //                           T::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive,
