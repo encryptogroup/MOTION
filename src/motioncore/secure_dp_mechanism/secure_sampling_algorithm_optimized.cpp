@@ -661,7 +661,7 @@ ShareWrapper SecureSamplingAlgorithm_optimized::UniformFixedPoint_0_1_Up(
 }
 
 // ====================================================================
-// ! naive floating-point version in Boolean GMW
+// ! optimized floating-point version in Boolean GMW
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
 std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BGMW(
@@ -733,16 +733,16 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
 
   // =====================================================
   // TODO: this division can be saved by compute e^(-1/t) alone
-  SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
-      floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
+//   SecureFloatingPointCircuitABY floating_point_random_unsigned_integer_div_denominator =
+//       floating_point_random_unsigned_integer / floating_point_unsigned_integer_denominator_simdify;
 
-  SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-      floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
+//   SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
+//       floating_point_random_unsigned_integer_div_denominator.Neg().Exp();
   // =====================================================
   // TODO: save this division by computing e^(-1/t) first
 
-  // SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
-  //       floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
+  SecureFloatingPointCircuitABY floating_point_exp_neg_random_unsigned_integer_div_denominator =
+        floating_point_random_unsigned_integer.Exp()*FloatType(std::exp(-constant_unsigned_integer_denominator_vector[0]));
 
   // =====================================================
 
@@ -861,18 +861,18 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
     result_vector.emplace_back(boolean_gmw_share_success_flag);
 
-    // // only for debug
-    result_vector.emplace_back(floating_point_boolean_gmw_share_denominator_simdify);  //
-    // 2
-    result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
-    result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
-    // 4
-    result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
-    // 5
-    result_vector.emplace_back(boolean_gmw_share_v[0]);  // 6
-    result_vector.emplace_back(boolean_gmw_share_u[0]);  //
-    // 7
-    result_vector.emplace_back(unsigned_integer_w.Get());  // 8
+    // only for debug
+    // result_vector.emplace_back(floating_point_boolean_gmw_share_denominator_simdify);  //
+    // // 2
+    // result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
+    // result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
+    // // 4
+    // result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
+    // // 5
+    // result_vector.emplace_back(boolean_gmw_share_v[0]);  // 6
+    // result_vector.emplace_back(boolean_gmw_share_u[0]);  //
+    // // 7
+    // result_vector.emplace_back(unsigned_integer_w.Get());  // 8
 
     return result_vector;
   }
@@ -890,18 +890,18 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
     result_vector.emplace_back(boolean_gmw_share_success_flag);
 
-    // // only for debug
-    result_vector.emplace_back(floating_point_boolean_gmw_share_denominator_simdify);  //
-    // 2
-    result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
-    result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
-                                                                                            // 4
-    result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
-    // 5
-    result_vector.emplace_back(boolean_gmw_share_v[0]);  // 6
-    result_vector.emplace_back(boolean_gmw_share_u[0]);  //
-    // 7
-    result_vector.emplace_back(unsigned_integer_w.Get());  // 8
+    // only for debug
+    // result_vector.emplace_back(floating_point_boolean_gmw_share_denominator_simdify);  //
+    // // 2
+    // result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
+    // result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
+    //                                                                                         // 4
+    // result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
+    // // 5
+    // result_vector.emplace_back(boolean_gmw_share_v[0]);  // 6
+    // result_vector.emplace_back(boolean_gmw_share_u[0]);  //
+    // // 7
+    // result_vector.emplace_back(unsigned_integer_w.Get());  // 8
 
     return result_vector;
   }
@@ -1773,7 +1773,7 @@ SecureSamplingAlgorithm_optimized::FLSymmetricBinomialDistribution_BGMW<double, 
     const ShareWrapper& random_floating_point_0_1_boolean_gmw_share, std::size_t iteration) const;
 
 // ========================================================================================================================================
-// ! naive floating-point version in Garbled Circuit
+// ! optimized floating-point version in Garbled Circuit
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
 std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_GC(
@@ -1958,18 +1958,18 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     result_vector.emplace_back(unsigned_integer_geometric_sample.Get());
     result_vector.emplace_back(gc_share_success_flag);
 
-    // // only for debug
-    result_vector.emplace_back(floating_point_gc_share_denominator_simdify);  //
-    // 2
-    result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
-    result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
-    // 4
-    result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
-    // 5
-    result_vector.emplace_back(gc_share_v[0]);  // 6
-    result_vector.emplace_back(gc_share_u[0]);  //
-    // 7
-    result_vector.emplace_back(unsigned_integer_w.Get());  // 8
+    // only for debug
+    // result_vector.emplace_back(floating_point_gc_share_denominator_simdify);  //
+    // // 2
+    // result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
+    // result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
+    // // 4
+    // result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
+    // // 5
+    // result_vector.emplace_back(gc_share_v[0]);  // 6
+    // result_vector.emplace_back(gc_share_u[0]);  //
+    // // 7
+    // result_vector.emplace_back(unsigned_integer_w.Get());  // 8
 
     return result_vector;
   }
@@ -1988,17 +1988,17 @@ std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistribu
     result_vector.emplace_back(gc_share_success_flag);
 
     // // only for debug
-    result_vector.emplace_back(floating_point_gc_share_denominator_simdify);  //
-    // 2
-    result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
-    result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
-                                                                                            // 4
-    result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
-    // 5
-    result_vector.emplace_back(gc_share_v[0]);  // 6
-    result_vector.emplace_back(gc_share_u[0]);  //
-    // 7
-    result_vector.emplace_back(unsigned_integer_w.Get());  // 8
+    // result_vector.emplace_back(floating_point_gc_share_denominator_simdify);  //
+    // // 2
+    // result_vector.emplace_back(floating_point_random_unsigned_integer.Get());               // 3
+    // result_vector.emplace_back(floating_point_unsigned_integer_denominator_simdify.Get());  //
+    //                                                                                         // 4
+    // result_vector.emplace_back(floating_point_random_unsigned_integer_div_denominator.Get());
+    // // 5
+    // result_vector.emplace_back(gc_share_v[0]);  // 6
+    // result_vector.emplace_back(gc_share_u[0]);  //
+    // // 7
+    // result_vector.emplace_back(unsigned_integer_w.Get());  // 8
 
     return result_vector;
   }
@@ -2829,7 +2829,7 @@ SecureSamplingAlgorithm_optimized::FLSymmetricBinomialDistribution_GC<double, __
     const ShareWrapper& random_floating_point_0_1_gc_share, std::size_t iteration) const;
 
 // ========================================================================================================================================
-// ! naive floating-point version in BMR
+// ! optimized floating-point version in BMR
 
 template <typename FloatType, typename UintType, typename IntType, typename A>
 std::vector<ShareWrapper> SecureSamplingAlgorithm_optimized::FLGeometricDistributionEXP_BMR(

@@ -94,7 +94,7 @@ add_executable(motiontest
         # test_liangzhao_symmericalBinomial_naive.cpp # test passed
 
         # # ! testing for optimized algorithms
-        test_liangzhao_geometricExp_optimized.cpp # test passed, re-test when apply new optimizations
+        # test_liangzhao_geometricExp_optimized.cpp # test passed, re-test when apply new optimizations
         # test_liangzhao_discreteLaplace_optimized.cpp # test passed, re-test when apply new optimizations
         # test_liangzhao_discreteGaussian_optimized.cpp # test passed, re-test when apply new optimizations
         # test_liangzhao_symmericalBinomial_optimized.cpp # test passed, re-test when apply new optimizations
