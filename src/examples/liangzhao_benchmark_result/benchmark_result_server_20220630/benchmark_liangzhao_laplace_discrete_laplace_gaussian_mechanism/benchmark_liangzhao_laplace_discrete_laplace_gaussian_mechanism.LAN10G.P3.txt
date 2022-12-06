@@ -1,0 +1,1489 @@
+lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxLaplace_DP_insecure bit size 64 SIMD 1
+===========================================================================
+MOTION version: 1aacb083-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1644894
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.504 ms      3.833 ms      1.479 ms
+MT Setup                17.604 ms     17.875 ms      6.208 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                83.650 ms     84.657 ms     10.042 ms
+OT Extension Setup      43.490 ms     41.574 ms      7.434 ms
+---------------------------------------------------------------------------
+Preprocessing Total    149.519 ms    149.704 ms      9.624 ms
+Gates Setup            481.597 ms    465.441 ms     45.399 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online         27272.175 ms  27742.151 ms   2679.395 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   27909.637 ms  28442.899 ms   2661.283 ms
+===========================================================================
+Communication with each other party:
+Sent: 18.883 MiB in 190199 messages
+Received: 18.883 MiB in 190199 messages
+===========================================================================
+
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32Laplace_DP_insecure bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.786 ms      0.617 ms      0.335 ms
+MT Setup                 5.510 ms      5.476 ms      2.166 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                70.475 ms     72.188 ms      3.379 ms
+OT Extension Setup      16.447 ms     15.261 ms      6.409 ms
+---------------------------------------------------------------------------
+Preprocessing Total     95.964 ms     94.073 ms      6.923 ms
+Gates Setup            126.822 ms    126.169 ms     14.261 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1061.183 ms   1059.315 ms     56.742 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1292.663 ms   1288.929 ms     67.406 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.028 MiB in 40969 messages
+Received: 4.028 MiB in 40969 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64Laplace_DP_insecure bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.865 ms      1.737 ms      0.464 ms
+MT Setup                17.333 ms     15.391 ms      8.336 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                73.226 ms     73.335 ms      5.198 ms
+OT Extension Setup      40.397 ms     42.344 ms      9.014 ms
+---------------------------------------------------------------------------
+Preprocessing Total    134.203 ms    133.578 ms      7.295 ms
+Gates Setup            374.595 ms    392.215 ms     37.353 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7506.036 ms   7086.929 ms    685.021 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8021.879 ms   7665.037 ms    684.819 ms
+===========================================================================
+Communication with each other party:
+Sent: 16.920 MiB in 172901 messages
+Received: 16.920 MiB in 172901 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxDiscreteLaplace bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.711 ms      3.246 ms      1.205 ms
+MT Setup                28.561 ms     24.109 ms     12.844 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                80.057 ms     79.300 ms      7.993 ms
+OT Extension Setup      66.008 ms     62.929 ms     11.368 ms
+---------------------------------------------------------------------------
+Preprocessing Total    179.758 ms    175.115 ms     10.980 ms
+Gates Setup            487.729 ms    475.952 ms     53.757 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2814.325 ms   2788.911 ms    179.773 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3488.653 ms   3494.067 ms    191.168 ms
+===========================================================================
+Communication with each other party:
+Sent: 19.365 MiB in 181189 messages
+Received: 19.365 MiB in 181189 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32DiscreteLaplace bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.952 ms      0.779 ms      0.273 ms
+MT Setup                28.637 ms     15.341 ms     59.459 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                72.006 ms     73.094 ms      6.205 ms
+OT Extension Setup      22.753 ms     21.170 ms      6.405 ms
+---------------------------------------------------------------------------
+Preprocessing Total    125.805 ms    105.045 ms     62.497 ms
+Gates Setup             94.034 ms     93.891 ms     19.184 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           630.595 ms    612.348 ms     53.043 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     859.266 ms    839.730 ms     57.152 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.501 MiB in 33035 messages
+Received: 3.501 MiB in 33035 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64DiscreteLaplace bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.222 ms      2.222 ms      0.097 ms
+MT Setup                16.616 ms     13.997 ms      6.102 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                69.569 ms     68.929 ms      5.426 ms
+OT Extension Setup      49.257 ms     46.824 ms      6.767 ms
+---------------------------------------------------------------------------
+Preprocessing Total    139.170 ms    136.341 ms      9.260 ms
+Gates Setup            310.976 ms    298.486 ms     41.956 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          5512.793 ms   5523.974 ms    286.790 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5968.908 ms   5982.810 ms    287.851 ms
+===========================================================================
+Communication with each other party:
+Sent: 13.751 MiB in 131343 messages
+Received: 13.751 MiB in 131343 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FxGaussian_DP_insecure bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              5.284 ms      5.240 ms      0.214 ms
+MT Setup                20.651 ms     18.818 ms      5.998 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                77.811 ms     75.135 ms      9.636 ms
+OT Extension Setup      73.158 ms     77.815 ms     15.739 ms
+---------------------------------------------------------------------------
+Preprocessing Total    178.904 ms    180.119 ms     14.494 ms
+Gates Setup            773.863 ms    773.172 ms     76.552 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          3956.939 ms   3996.601 ms    447.736 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4918.095 ms   4992.109 ms    472.268 ms
+===========================================================================
+Communication with each other party:
+Sent: 30.468 MiB in 306873 messages
+Received: 30.468 MiB in 306873 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL32Gaussian_DP_insecure bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.081 ms      0.844 ms      0.521 ms
+MT Setup                 6.101 ms      5.919 ms      2.520 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                74.847 ms     72.148 ms      8.508 ms
+OT Extension Setup      24.779 ms     21.355 ms      8.999 ms
+---------------------------------------------------------------------------
+Preprocessing Total    107.992 ms    108.122 ms     11.989 ms
+Gates Setup            166.219 ms    163.853 ms     26.828 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1203.233 ms   1207.198 ms     59.964 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1490.588 ms   1512.136 ms     82.144 ms
+===========================================================================
+Communication with each other party:
+Sent: 6.289 MiB in 63639 messages
+Received: 6.289 MiB in 63639 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL64Gaussian_DP_insecure bit size 64 SIMD 1
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              4.368 ms      3.269 ms      1.734 ms
+MT Setup                16.064 ms     13.704 ms      4.789 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                77.033 ms     74.846 ms      7.689 ms
+OT Extension Setup      50.868 ms     54.660 ms      8.206 ms
+---------------------------------------------------------------------------
+Preprocessing Total    149.745 ms    151.263 ms      4.472 ms
+Gates Setup            528.439 ms    512.056 ms     59.537 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7224.344 ms   7129.466 ms    530.079 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7910.912 ms   7768.318 ms    490.808 ms
+===========================================================================
+Communication with each other party:
+Sent: 22.651 MiB in 229945 messages
+Received: 22.651 MiB in 229945 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxLaplace_DP_insecure bit size 64 SIMD 5
+===========================================================================
+MOTION version: 1aacb083-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1644894
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             22.979 ms     18.619 ms      8.360 ms
+MT Setup                61.031 ms     48.487 ms     21.993 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                86.242 ms     91.901 ms     12.139 ms
+OT Extension Setup     138.821 ms    134.176 ms     25.926 ms
+---------------------------------------------------------------------------
+Preprocessing Total    310.625 ms    306.965 ms     17.116 ms
+Gates Setup            563.909 ms    534.524 ms     83.809 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online         28146.428 ms  28773.684 ms   2326.846 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   29027.860 ms  29681.226 ms   2361.147 ms
+===========================================================================
+Communication with each other party:
+Sent: 24.765 MiB in 190199 messages
+Received: 24.765 MiB in 190199 messages
+===========================================================================
+
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32Laplace_DP_insecure bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.713 ms      2.491 ms      0.474 ms
+MT Setup                14.600 ms     15.739 ms      3.693 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                71.224 ms     68.016 ms      6.702 ms
+OT Extension Setup      50.190 ms     50.638 ms      9.157 ms
+---------------------------------------------------------------------------
+Preprocessing Total    140.488 ms    140.785 ms      5.807 ms
+Gates Setup            137.579 ms    116.397 ms     54.003 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1058.190 ms   1041.175 ms     70.457 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1346.220 ms   1303.625 ms    123.549 ms
+===========================================================================
+Communication with each other party:
+Sent: 5.285 MiB in 40969 messages
+Received: 5.285 MiB in 40969 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64Laplace_DP_insecure bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.381 ms      8.028 ms      0.892 ms
+MT Setup                56.689 ms     48.332 ms     19.019 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                71.187 ms     68.153 ms      6.949 ms
+OT Extension Setup     134.826 ms    140.839 ms     20.286 ms
+---------------------------------------------------------------------------
+Preprocessing Total    272.598 ms    274.752 ms     18.651 ms
+Gates Setup            390.637 ms    378.056 ms     34.881 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7231.773 ms   7028.116 ms    535.514 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7903.171 ms   7652.811 ms    531.411 ms
+===========================================================================
+Communication with each other party:
+Sent: 22.262 MiB in 172901 messages
+Received: 22.262 MiB in 172901 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxDiscreteLaplace bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             30.794 ms     30.057 ms      1.709 ms
+MT Setup                92.591 ms     90.356 ms     20.409 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                86.654 ms     91.144 ms     11.938 ms
+OT Extension Setup     259.021 ms    249.217 ms     42.257 ms
+---------------------------------------------------------------------------
+Preprocessing Total    470.941 ms    462.457 ms     52.176 ms
+Gates Setup            468.592 ms    464.361 ms     32.751 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2624.860 ms   2669.099 ms    381.845 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3570.662 ms   3658.063 ms    387.560 ms
+===========================================================================
+Communication with each other party:
+Sent: 30.478 MiB in 181189 messages
+Received: 30.478 MiB in 181189 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32DiscreteLaplace bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.438 ms      3.608 ms      0.342 ms
+MT Setup                20.983 ms     20.227 ms      3.107 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                71.179 ms     71.874 ms      7.750 ms
+OT Extension Setup      62.336 ms     61.533 ms      5.379 ms
+---------------------------------------------------------------------------
+Preprocessing Total    159.556 ms    158.254 ms     11.361 ms
+Gates Setup             94.394 ms     94.441 ms     15.439 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           622.538 ms    577.544 ms     56.826 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     886.707 ms    865.822 ms     59.859 ms
+===========================================================================
+Communication with each other party:
+Sent: 5.420 MiB in 33035 messages
+Received: 5.420 MiB in 33035 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64DiscreteLaplace bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             12.219 ms     10.525 ms      3.429 ms
+MT Setup                65.156 ms     64.964 ms     13.128 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                70.591 ms     70.565 ms      5.720 ms
+OT Extension Setup     171.828 ms    181.489 ms     25.568 ms
+---------------------------------------------------------------------------
+Preprocessing Total    321.316 ms    321.340 ms     27.055 ms
+Gates Setup            324.013 ms    308.828 ms     38.143 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          5224.976 ms   5250.839 ms    411.631 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5875.915 ms   5959.414 ms    408.024 ms
+===========================================================================
+Communication with each other party:
+Sent: 21.053 MiB in 131343 messages
+Received: 21.053 MiB in 131343 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FxGaussian_DP_insecure bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             32.319 ms     26.809 ms     11.207 ms
+MT Setup                82.516 ms     77.628 ms     25.538 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                82.234 ms     85.817 ms     13.264 ms
+OT Extension Setup     210.295 ms    214.789 ms     33.290 ms
+---------------------------------------------------------------------------
+Preprocessing Total    409.092 ms    401.827 ms     47.201 ms
+Gates Setup            730.146 ms    730.617 ms     33.750 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          4206.061 ms   4341.281 ms    664.327 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5353.682 ms   5307.011 ms    672.467 ms
+===========================================================================
+Communication with each other party:
+Sent: 39.968 MiB in 306873 messages
+Received: 39.968 MiB in 306873 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL32Gaussian_DP_insecure bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.781 ms      3.509 ms      0.972 ms
+MT Setup                21.395 ms     19.068 ms      7.916 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                71.412 ms     68.053 ms      9.304 ms
+OT Extension Setup      75.657 ms     72.825 ms     21.531 ms
+---------------------------------------------------------------------------
+Preprocessing Total    173.758 ms    165.917 ms     20.365 ms
+Gates Setup            159.922 ms    149.273 ms     23.571 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1174.087 ms   1201.067 ms     65.246 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1521.358 ms   1522.230 ms     73.231 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.250 MiB in 63639 messages
+Received: 8.250 MiB in 63639 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL64Gaussian_DP_insecure bit size 64 SIMD 5
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             16.067 ms     11.625 ms      7.801 ms
+MT Setup                87.804 ms     64.224 ms     64.175 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                74.457 ms     76.513 ms      7.415 ms
+OT Extension Setup     166.740 ms    160.758 ms     26.436 ms
+---------------------------------------------------------------------------
+Preprocessing Total    346.374 ms    335.331 ms     52.461 ms
+Gates Setup            561.983 ms    548.800 ms     56.489 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7295.654 ms   6913.467 ms    831.578 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8212.117 ms   7858.354 ms    863.675 ms
+===========================================================================
+Communication with each other party:
+Sent: 29.762 MiB in 229945 messages
+Received: 29.762 MiB in 229945 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxLaplace_DP_insecure bit size 64 SIMD 10
+===========================================================================
+MOTION version: 1aacb083-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1644894
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             37.046 ms     34.783 ms      9.148 ms
+MT Setup               107.976 ms    115.811 ms     27.028 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                94.871 ms     86.281 ms     17.110 ms
+OT Extension Setup     271.047 ms    281.035 ms     45.037 ms
+---------------------------------------------------------------------------
+Preprocessing Total    512.343 ms    505.960 ms     44.098 ms
+Gates Setup            521.114 ms    513.249 ms     59.152 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online         28996.248 ms  28036.489 ms   2170.355 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   30036.384 ms  29074.190 ms   2171.998 ms
+===========================================================================
+Communication with each other party:
+Sent: 32.120 MiB in 190199 messages
+Received: 32.120 MiB in 190199 messages
+===========================================================================
+
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32Laplace_DP_insecure bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              5.171 ms      4.886 ms      0.993 ms
+MT Setup                30.169 ms     25.359 ms      7.711 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                72.177 ms     68.070 ms      7.983 ms
+OT Extension Setup      74.450 ms     76.821 ms     12.032 ms
+---------------------------------------------------------------------------
+Preprocessing Total    183.590 ms    179.576 ms     14.249 ms
+Gates Setup            120.799 ms    117.844 ms     17.840 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1069.757 ms   1064.205 ms     77.849 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1384.638 ms   1377.541 ms     88.327 ms
+===========================================================================
+Communication with each other party:
+Sent: 6.856 MiB in 40969 messages
+Received: 6.856 MiB in 40969 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64Laplace_DP_insecure bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             17.733 ms     15.465 ms      4.323 ms
+MT Setup                84.349 ms     69.680 ms     26.687 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                77.530 ms     73.569 ms     10.299 ms
+OT Extension Setup     251.926 ms    246.524 ms     32.085 ms
+---------------------------------------------------------------------------
+Preprocessing Total    433.385 ms    413.324 ms     32.521 ms
+Gates Setup            396.211 ms    386.384 ms     61.270 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7441.568 ms   7278.999 ms    742.530 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8278.656 ms   8100.242 ms    719.134 ms
+===========================================================================
+Communication with each other party:
+Sent: 28.938 MiB in 172901 messages
+Received: 28.938 MiB in 172901 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxDiscreteLaplace bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             45.747 ms     42.766 ms      8.415 ms
+MT Setup               164.765 ms    155.261 ms     19.900 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                97.602 ms     91.051 ms     22.114 ms
+OT Extension Setup     493.744 ms    501.121 ms     58.449 ms
+---------------------------------------------------------------------------
+Preprocessing Total    803.545 ms    806.433 ms     62.938 ms
+Gates Setup            497.122 ms    477.352 ms     59.237 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2718.884 ms   2779.588 ms    254.593 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4027.204 ms   4017.012 ms    213.912 ms
+===========================================================================
+Communication with each other party:
+Sent: 44.369 MiB in 181189 messages
+Received: 44.369 MiB in 181189 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32DiscreteLaplace bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.790 ms      8.981 ms      1.720 ms
+MT Setup                41.029 ms     39.508 ms      4.674 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                74.558 ms     74.117 ms      9.749 ms
+OT Extension Setup     106.593 ms     95.293 ms     14.601 ms
+---------------------------------------------------------------------------
+Preprocessing Total    232.569 ms    226.905 ms     16.704 ms
+Gates Setup             98.823 ms     99.136 ms     19.771 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           652.474 ms    614.759 ms     92.595 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     994.049 ms    964.387 ms     72.106 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.819 MiB in 33035 messages
+Received: 7.819 MiB in 33035 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64DiscreteLaplace bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             26.105 ms     21.687 ms      8.073 ms
+MT Setup               115.233 ms    114.651 ms     20.004 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                72.479 ms     71.751 ms     10.833 ms
+OT Extension Setup     338.687 ms    339.613 ms     52.255 ms
+---------------------------------------------------------------------------
+Preprocessing Total    554.099 ms    543.997 ms     41.968 ms
+Gates Setup            354.258 ms    350.196 ms     43.949 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          5414.520 ms   5445.270 ms    299.135 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6328.734 ms   6410.400 ms    281.313 ms
+===========================================================================
+Communication with each other party:
+Sent: 30.181 MiB in 131343 messages
+Received: 30.181 MiB in 131343 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FxGaussian_DP_insecure bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             50.544 ms     50.707 ms      0.314 ms
+MT Setup               159.823 ms    126.741 ms     54.798 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                90.826 ms     93.720 ms     15.035 ms
+OT Extension Setup     406.345 ms    431.350 ms     56.739 ms
+---------------------------------------------------------------------------
+Preprocessing Total    709.607 ms    705.405 ms     41.221 ms
+Gates Setup            815.981 ms    764.127 ms    108.301 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          4387.104 ms   4424.423 ms    407.135 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5921.778 ms   5995.810 ms    450.381 ms
+===========================================================================
+Communication with each other party:
+Sent: 51.842 MiB in 306873 messages
+Received: 51.842 MiB in 306873 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL32Gaussian_DP_insecure bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.796 ms      7.143 ms      2.036 ms
+MT Setup                47.479 ms     46.881 ms      9.964 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                73.642 ms     71.686 ms     11.617 ms
+OT Extension Setup      94.081 ms     92.802 ms     14.547 ms
+---------------------------------------------------------------------------
+Preprocessing Total    224.479 ms    226.610 ms     19.182 ms
+Gates Setup            151.784 ms    143.554 ms     35.075 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1218.932 ms   1217.859 ms     47.622 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1607.646 ms   1617.725 ms     72.019 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.699 MiB in 63639 messages
+Received: 10.699 MiB in 63639 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL64Gaussian_DP_insecure bit size 64 SIMD 10
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             33.513 ms     28.368 ms     15.634 ms
+MT Setup               101.266 ms     93.550 ms     17.390 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                72.914 ms     70.753 ms      8.044 ms
+OT Extension Setup     326.442 ms    333.999 ms     39.027 ms
+---------------------------------------------------------------------------
+Preprocessing Total    536.033 ms    530.817 ms     50.778 ms
+Gates Setup            513.728 ms    482.701 ms     83.862 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7182.998 ms   7215.810 ms    510.534 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8241.317 ms   8303.144 ms    455.959 ms
+===========================================================================
+Communication with each other party:
+Sent: 38.651 MiB in 229945 messages
+Received: 38.651 MiB in 229945 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxLaplace_DP_insecure bit size 64 SIMD 100
+===========================================================================
+MOTION version: 1aacb083-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1644894
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            318.456 ms    307.973 ms     19.205 ms
+MT Setup               785.658 ms    786.204 ms      4.085 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               129.652 ms    113.804 ms     51.985 ms
+OT Extension Setup    2425.975 ms   2418.413 ms     63.552 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3661.226 ms   3648.970 ms     62.872 ms
+Gates Setup            635.484 ms    600.436 ms     60.281 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online         26949.959 ms  27620.616 ms   3012.288 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   31253.456 ms  31771.665 ms   3034.294 ms
+===========================================================================
+Communication with each other party:
+Sent: 167.385 MiB in 190199 messages
+Received: 167.385 MiB in 190199 messages
+===========================================================================
+
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32Laplace_DP_insecure bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             63.481 ms     61.395 ms     12.687 ms
+MT Setup               190.375 ms    165.370 ms     33.928 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                96.297 ms     71.792 ms     64.658 ms
+OT Extension Setup     614.992 ms    626.636 ms     56.033 ms
+---------------------------------------------------------------------------
+Preprocessing Total    966.879 ms    957.241 ms    114.641 ms
+Gates Setup            138.081 ms    104.035 ms    105.244 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1037.182 ms   1012.607 ms     78.986 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2151.941 ms   2062.643 ms    272.978 ms
+===========================================================================
+Communication with each other party:
+Sent: 35.758 MiB in 40969 messages
+Received: 35.758 MiB in 40969 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64Laplace_DP_insecure bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            293.400 ms    284.404 ms     19.438 ms
+MT Setup               652.897 ms    652.376 ms      4.288 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                77.585 ms     65.331 ms     23.387 ms
+OT Extension Setup    2204.397 ms   2203.198 ms    103.424 ms
+---------------------------------------------------------------------------
+Preprocessing Total   3230.413 ms   3235.092 ms    114.354 ms
+Gates Setup            418.279 ms    405.256 ms     58.328 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          6973.694 ms   6966.272 ms    372.630 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   10629.084 ms  10614.048 ms    403.041 ms
+===========================================================================
+Communication with each other party:
+Sent: 151.762 MiB in 172901 messages
+Received: 151.762 MiB in 172901 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxDiscreteLaplace bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            581.547 ms    571.954 ms     20.023 ms
+MT Setup              1433.030 ms   1429.348 ms      9.556 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               112.256 ms    100.389 ms     45.359 ms
+OT Extension Setup    4765.245 ms   4691.864 ms    161.165 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6894.060 ms   6872.784 ms    146.248 ms
+Gates Setup            705.303 ms    669.796 ms     94.829 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2083.639 ms   2116.735 ms    286.788 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9689.751 ms   9579.116 ms    268.637 ms
+===========================================================================
+Communication with each other party:
+Sent: 298.517 MiB in 181189 messages
+Received: 298.517 MiB in 181189 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32DiscreteLaplace bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            107.123 ms     91.381 ms     24.688 ms
+MT Setup               266.076 ms    252.785 ms     29.468 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                99.760 ms    101.057 ms     18.038 ms
+OT Extension Setup     831.798 ms    844.615 ms     73.873 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1306.403 ms   1269.428 ms     88.524 ms
+Gates Setup            174.104 ms    125.580 ms    127.684 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online           719.062 ms    678.398 ms    125.158 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2212.148 ms   2192.552 ms    270.834 ms
+===========================================================================
+Communication with each other party:
+Sent: 51.722 MiB in 33035 messages
+Received: 51.722 MiB in 33035 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64DiscreteLaplace bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            390.087 ms    382.927 ms     20.840 ms
+MT Setup               905.963 ms    903.861 ms      4.756 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               130.252 ms     78.424 ms     78.925 ms
+OT Extension Setup    3039.980 ms   3046.352 ms     78.378 ms
+---------------------------------------------------------------------------
+Preprocessing Total   4467.940 ms   4482.856 ms    122.213 ms
+Gates Setup            462.397 ms    471.767 ms     48.634 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          5451.354 ms   5446.460 ms    188.946 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   10388.000 ms  10420.298 ms    240.277 ms
+===========================================================================
+Communication with each other party:
+Sent: 197.288 MiB in 131343 messages
+Received: 197.288 MiB in 131343 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FxGaussian_DP_insecure bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            496.648 ms    496.657 ms      2.209 ms
+MT Setup              1225.019 ms   1228.391 ms      9.251 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               165.012 ms    168.961 ms    104.846 ms
+OT Extension Setup    3887.410 ms   3829.260 ms    117.635 ms
+---------------------------------------------------------------------------
+Preprocessing Total   5776.077 ms   5771.332 ms     90.645 ms
+Gates Setup            994.651 ms    925.837 ms    101.082 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          3638.629 ms   3796.036 ms    552.514 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   10417.757 ms  10527.726 ms    590.165 ms
+===========================================================================
+Communication with each other party:
+Sent: 270.255 MiB in 306873 messages
+Received: 270.255 MiB in 306873 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL32Gaussian_DP_insecure bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             88.741 ms     85.059 ms      8.935 ms
+MT Setup               260.741 ms    249.419 ms     23.720 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs               121.988 ms     74.511 ms    128.615 ms
+OT Extension Setup     877.006 ms    905.627 ms     64.996 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1350.128 ms   1309.183 ms    133.617 ms
+Gates Setup            207.443 ms    184.967 ms    137.895 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1185.826 ms   1180.459 ms     57.192 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2759.361 ms   2672.030 ms    261.021 ms
+===========================================================================
+Communication with each other party:
+Sent: 55.761 MiB in 63639 messages
+Received: 55.761 MiB in 63639 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL64Gaussian_DP_insecure bit size 64 SIMD 100
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            379.109 ms    373.078 ms     16.379 ms
+MT Setup               902.800 ms    895.987 ms     24.469 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                88.092 ms     73.684 ms     31.173 ms
+OT Extension Setup    2915.008 ms   2905.002 ms    127.912 ms
+---------------------------------------------------------------------------
+Preprocessing Total   4286.898 ms   4243.749 ms    134.720 ms
+Gates Setup            562.514 ms    550.341 ms     85.840 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          6899.137 ms   6872.395 ms    413.559 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   11757.110 ms  11585.788 ms    429.303 ms
+===========================================================================
+Communication with each other party:
+Sent: 202.158 MiB in 229945 messages
+Received: 202.158 MiB in 229945 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxLaplace_DP_insecure bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 1aacb083-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1644894
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3087.571 ms   3085.392 ms     24.540 ms
+MT Setup              7831.239 ms   7843.279 ms     27.729 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                78.673 ms     73.481 ms     14.791 ms
+OT Extension Setup   24592.920 ms  24636.441 ms    385.614 ms
+---------------------------------------------------------------------------
+Preprocessing Total  35592.278 ms  35657.186 ms    382.942 ms
+Gates Setup            519.309 ms    486.964 ms    115.652 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online         27358.299 ms  27971.882 ms   2932.313 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   63476.829 ms  63852.458 ms   2855.070 ms
+===========================================================================
+Communication with each other party:
+Sent: 1511.345 MiB in 190199 messages
+Received: 1511.345 MiB in 190199 messages
+===========================================================================
+
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32Laplace_DP_insecure bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            688.992 ms    686.707 ms     24.514 ms
+MT Setup              1568.109 ms   1559.319 ms     35.882 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                71.364 ms     67.120 ms     13.983 ms
+OT Extension Setup    5158.922 ms   5157.375 ms    130.105 ms
+---------------------------------------------------------------------------
+Preprocessing Total   7488.530 ms   7458.693 ms    134.139 ms
+Gates Setup             94.677 ms     91.977 ms     16.620 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1541.967 ms   1565.927 ms    147.528 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9131.067 ms   9139.462 ms    138.278 ms
+===========================================================================
+Communication with each other party:
+Sent: 322.921 MiB in 40969 messages
+Received: 322.921 MiB in 40969 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64Laplace_DP_insecure bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2894.119 ms   2891.471 ms     17.814 ms
+MT Setup              6369.673 ms   6364.669 ms     34.776 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                68.826 ms     65.256 ms      9.780 ms
+OT Extension Setup   22368.855 ms  22364.932 ms    176.969 ms
+---------------------------------------------------------------------------
+Preprocessing Total  31702.883 ms  31780.966 ms    191.086 ms
+Gates Setup            395.298 ms    375.766 ms     44.240 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          8993.627 ms   9165.405 ms    335.147 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   41099.631 ms  41142.444 ms    338.889 ms
+===========================================================================
+Communication with each other party:
+Sent: 1372.099 MiB in 172901 messages
+Received: 1372.099 MiB in 172901 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FxDiscreteLaplace bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           5783.409 ms   5792.765 ms     24.038 ms
+MT Setup             14196.018 ms  14170.055 ms    111.023 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                73.264 ms     76.654 ms     13.443 ms
+OT Extension Setup   47207.887 ms  47418.362 ms    697.547 ms
+---------------------------------------------------------------------------
+Preprocessing Total  67262.665 ms  67456.519 ms    657.826 ms
+Gates Setup            473.357 ms    445.886 ms     53.523 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          2981.376 ms   2603.240 ms    834.121 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   70724.151 ms  70374.673 ms    605.310 ms
+===========================================================================
+Communication with each other party:
+Sent: 2837.151 MiB in 181189 messages
+Received: 2837.151 MiB in 181189 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL32DiscreteLaplace bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            999.472 ms   1001.727 ms      4.218 ms
+MT Setup              2464.666 ms   2462.955 ms     12.275 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                81.116 ms     70.692 ms     17.614 ms
+OT Extension Setup    7779.464 ms   7759.450 ms    114.692 ms
+---------------------------------------------------------------------------
+Preprocessing Total  11326.411 ms  11303.024 ms    118.853 ms
+Gates Setup             74.090 ms     72.928 ms      6.293 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1056.953 ms   1184.018 ms    272.952 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   12462.554 ms  12522.618 ms    224.309 ms
+===========================================================================
+Communication with each other party:
+Sent: 490.156 MiB in 33035 messages
+Received: 490.156 MiB in 33035 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureLaplaceDiscreteLaplaceMechanism_FL64DiscreteLaplace bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3897.730 ms   3891.114 ms     25.851 ms
+MT Setup              9093.820 ms   9088.403 ms     45.998 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                77.605 ms     78.730 ms     12.764 ms
+OT Extension Setup   30521.739 ms  30667.219 ms    391.373 ms
+---------------------------------------------------------------------------
+Preprocessing Total  43592.155 ms  43717.057 ms    388.496 ms
+Gates Setup            314.466 ms    307.756 ms     40.455 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          7035.741 ms   7074.663 ms    397.748 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   50949.018 ms  51016.795 ms    174.679 ms
+===========================================================================
+Communication with each other party:
+Sent: 1865.559 MiB in 131343 messages
+Received: 1865.559 MiB in 131343 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FxGaussian_DP_insecure bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           4964.867 ms   4975.029 ms     25.343 ms
+MT Setup             12258.103 ms  12238.416 ms     58.982 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                88.407 ms     83.169 ms     23.407 ms
+OT Extension Setup   39190.604 ms  39567.163 ms    888.103 ms
+---------------------------------------------------------------------------
+Preprocessing Total  56504.218 ms  56834.684 ms    910.814 ms
+Gates Setup            741.729 ms    726.419 ms     79.778 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          8842.325 ms   8280.489 ms   1940.291 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   66096.680 ms  66165.202 ms   1304.628 ms
+===========================================================================
+Communication with each other party:
+Sent: 2440.351 MiB in 306873 messages
+Received: 2440.351 MiB in 306873 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL32Gaussian_DP_insecure bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1036.723 ms   1032.895 ms     15.759 ms
+MT Setup              2476.028 ms   2472.549 ms     16.311 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                73.546 ms     74.149 ms     11.146 ms
+OT Extension Setup    8031.558 ms   8028.361 ms    153.210 ms
+---------------------------------------------------------------------------
+Preprocessing Total  11619.417 ms  11592.053 ms    147.773 ms
+Gates Setup            144.607 ms    142.112 ms     22.228 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          1573.589 ms   1516.324 ms    196.863 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   13343.642 ms  13320.106 ms    145.896 ms
+===========================================================================
+Communication with each other party:
+Sent: 503.486 MiB in 63639 messages
+Received: 503.486 MiB in 63639 messages
+===========================================================================
+
+
+BooleanGMW===========================================================================
+Protocol BooleanGMW operation BGMW_kSecureGaussianMechanism_FL64Gaussian_DP_insecure bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 3fda3e8c-dirty @ master
+invocation: ./benchmark_liangzhao_laplace_discrete_laplace_gaussian_mechanism --my-id 0 --parties 0,130.83.125.166,23000 1,130.83.125.167,23000 2,130.83.125.168,23000 --repetitions 10
+by lzhao@simx2, PID 1621534
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3769.137 ms   3772.052 ms     12.006 ms
+MT Setup              8782.045 ms   8750.014 ms     60.475 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                85.104 ms     83.397 ms     16.079 ms
+OT Extension Setup   29801.662 ms  30026.202 ms    486.390 ms
+---------------------------------------------------------------------------
+Preprocessing Total  42439.812 ms  42543.012 ms    489.609 ms
+Gates Setup            514.267 ms    486.555 ms     63.605 ms
+Gates Precomputation      0.000 ms      0.000 ms      0.000 ms
+Gates Online          9405.902 ms   8712.672 ms   1112.277 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   52368.316 ms  51734.641 ms    891.630 ms
+===========================================================================
+Communication with each other party:
+Sent: 1826.709 MiB in 229945 messages
+Received: 1826.709 MiB in 229945 messages
+===========================================================================
