@@ -230,8 +230,6 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! BooleanGMW
     batch_size = 1;
 
-    // only for debugging
-    batch_size = 2; 
 
     // on huge improvement
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
@@ -253,7 +251,7 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
     // ================================================
     // ! BooleanGMW
-    batch_size = 4;  // ? if overflow
+    batch_size = 2;  // no overflow (almost overflow)
 
     // on huge improvement
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
