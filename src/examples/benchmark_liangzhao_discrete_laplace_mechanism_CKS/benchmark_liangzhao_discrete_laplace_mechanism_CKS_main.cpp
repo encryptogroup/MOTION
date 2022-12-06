@@ -405,7 +405,7 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit
     // batch_size = 200; // memory overflow
     // batch_size = 100; // memory overflow
-    batch_size = 90; // ? if overflow
+    batch_size = 90; //no overflow (almost overflow)
 
     // combinations.emplace_back(
     //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
