@@ -72,7 +72,7 @@ std::vector<Combination> GenerateAllCombinations() {
   // const std::array kBooleanBitSizes = {8, 16, 32, 64, 128};
   const std::array kBooleanBitSizes = {64};
   // const std::array kNumbersOfSimd = {1, 10, 1000};
-  const std::array kNumbersOfSimd_1_1000 = {1,100,1000};
+  const std::array kNumbersOfSimd_1_1000 = {1, 100, 1000};
   // const std::array kNumbersOfSimd_1000 = {1000};
 
   const std::array kBooleanGmwOperationTypes = {
@@ -80,8 +80,8 @@ std::vector<Combination> GenerateAllCombinations() {
       // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
-// only for debugging
-      T::kDiv
+      // only for debugging
+      T::kDiv,
   };
 
   const std::array kBmrOperationTypes = {
@@ -89,8 +89,8 @@ std::vector<Combination> GenerateAllCombinations() {
       // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
-// only for debugging
-      T::kDiv
+      // only for debugging
+      T::kDiv,
   };
 
   const std::array kGarbledCircuitOperationTypes = {
@@ -98,8 +98,8 @@ std::vector<Combination> GenerateAllCombinations() {
       // T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
-// only for debugging
-      T::kDiv
+      // only for debugging
+      T::kDiv,
   };
 
   std::vector<Combination> combinations;
