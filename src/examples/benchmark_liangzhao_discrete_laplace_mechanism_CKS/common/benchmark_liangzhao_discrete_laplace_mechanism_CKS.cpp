@@ -91,7 +91,7 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
 
   // only for debug
   // double scale = 0.135;
-  double scale = 10;
+  double scale = 11.4256;
 
   std::cout << "failure_probability: " << failure_probability << std::endl;
 
