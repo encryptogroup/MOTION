@@ -136,7 +136,7 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
     // ================================================
     // ! Garbled Circuit 32-bit
-    batch_size = 5;
+    batch_size = 10;
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
@@ -173,6 +173,94 @@ std::vector<Combination> GenerateAllCombinations() {
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized,
                               batch_size, failure_probability_pow2_neg_40);
+
+    // ================================================
+    // ! Garbled Circuit 32-bit
+    batch_size = 40;
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! Garbled Circuit 64-bit
+// ? if overflow
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+// ? if overflow
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ================================================
+    // ! Garbled Circuit 32-bit
+    batch_size = 90;
+
+// ? if overflow
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    // ! Garbled Circuit 64-bit
+// ? if overflow
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+// ? if overflow
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized, batch_size,
+        failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive,
+                              batch_size, failure_probability_pow2_neg_40);
+
+    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized,
+                              batch_size, failure_probability_pow2_neg_40);
+
+
+
+
+
   }
 
   if (benchmark_boolean_gmw && num_of_parties == 3) {
