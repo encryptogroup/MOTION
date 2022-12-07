@@ -90,8 +90,8 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       em::SecureDiscreteLaplaceMechanismCKS(share_input_fD);
 
   // only for debug
-  // double scale = 0.135;
-  double scale = 11.4256;
+  double scale = 0.135;
+  // double scale = 2.4256;
 
   std::cout << "failure_probability: " << failure_probability << std::endl;
 
