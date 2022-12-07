@@ -92,7 +92,7 @@ void SecureIntegerScalingLaplaceMechanism::ParameterSetup(
 // ! naive version
 SecureFloatingPointCircuitABY
 SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_naive() {
-  std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_naive" << std::endl;
   SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
       SecureDiscreteLaplaceMechanismCKS(fD_->Get());
   secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
@@ -110,7 +110,7 @@ SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_naive() {
 // ! optimized version
 SecureFloatingPointCircuitABY
 SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_optimized() {
-  std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_optimized" << std::endl;
   SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
       SecureDiscreteLaplaceMechanismCKS(fD_->Get());
   secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
@@ -135,7 +135,7 @@ SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_optimized() {
 
 // ! naive version
 SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_naive() {
-  std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_naive" << std::endl;
   SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
       SecureDiscreteLaplaceMechanismCKS(fD_->Get());
   secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
@@ -152,7 +152,7 @@ SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceN
 
 // ! optimized version
 SecureFloatingPointCircuitABY SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_optimized() {
-  std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration" << std::endl;
+  std::cout << "SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_optimized" << std::endl;
   SecureDiscreteLaplaceMechanismCKS secure_discrete_laplace_mechanism_CKS =
       SecureDiscreteLaplaceMechanismCKS(fD_->Get());
   secure_discrete_laplace_mechanism_CKS.ParameterSetup(sensitivity_l1_, scale_, num_of_simd_lap_,
