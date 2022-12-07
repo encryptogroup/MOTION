@@ -217,7 +217,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // ================================================
     // ! Garbled Circuit 32-bit
-    batch_size = 90;
+    batch_size = 100;
 
 // ? if overflow
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
