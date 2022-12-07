@@ -268,6 +268,9 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! BooleanGMW 32-bit
     batch_size = 1;
 
+    // only for debugging
+    batch_size =100;
+
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
                               batch_size, failure_probability_pow2_neg_40);
