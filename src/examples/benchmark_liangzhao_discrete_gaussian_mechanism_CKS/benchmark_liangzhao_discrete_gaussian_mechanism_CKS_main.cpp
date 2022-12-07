@@ -200,12 +200,12 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 20;
 
 // ? if overflow
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40);
 
-// ? if overflow
+// no overflow
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
