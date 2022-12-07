@@ -85,13 +85,13 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::size_t batch_size = 1;
 
-  std::size_t num_of_parties = 2;
-  // std::size_t num_of_parties = 3;
+  // std::size_t num_of_parties = 2;
+  std::size_t num_of_parties = 3;
   // std::size_t num_of_parties = 5;
-  bool benchmark_gc = true;
-  // bool benchmark_gc = false;
-  // bool benchmark_boolean_gmw = true;
-  bool benchmark_boolean_gmw = false;
+  // bool benchmark_gc = true;
+  bool benchmark_gc = false;
+  bool benchmark_boolean_gmw = true;
+  // bool benchmark_boolean_gmw = false;
 
   if (benchmark_gc && num_of_parties == 2) {
     // ================================================
@@ -188,6 +188,9 @@ std::vector<Combination> GenerateAllCombinations() {
     // ================================================
     // ! BooleanGMW
     batch_size = 1;
+
+  // only for debugging purposes
+    batch_size =2;
 
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
     //                           T::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive,
