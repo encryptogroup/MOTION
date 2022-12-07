@@ -67,8 +67,8 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
   const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1, 1000};
-  // const std::array kNumbersOfSimd = {5};
+  const std::array kNumbersOfSimd = {1,30, 1000};
+  const std::array kNumbersOfSimd = {5};
 
   const std::array kDPMechanismType = {
       // boolean circuit based method
@@ -80,8 +80,8 @@ std::vector<Combination> GenerateAllCombinations() {
   };
 
   const std::array kProtocol = {
-      // encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
-      encrypto::motion::MpcProtocol::kBooleanGmw,
+      encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
+      // encrypto::motion::MpcProtocol::kBooleanGmw,
       // encrypto::motion::MpcProtocol::kBmr,
   };
 
