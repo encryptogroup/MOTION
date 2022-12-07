@@ -197,7 +197,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // ================================================
     // ! Garbled Circuit
-    batch_size = 30;
+    batch_size = 20;
 
 // ? if overflow
     // combinations.emplace_back(
