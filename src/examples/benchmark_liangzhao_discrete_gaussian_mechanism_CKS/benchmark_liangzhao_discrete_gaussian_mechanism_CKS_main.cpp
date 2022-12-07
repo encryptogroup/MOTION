@@ -93,7 +93,7 @@ std::vector<Combination> GenerateAllCombinations() {
   bool benchmark_boolean_gmw = true;
   // bool benchmark_boolean_gmw = false;
   double t = 1;
-  double t = 2; // ! overflow
+  // double t = 2; // ! overflow
 
   if (benchmark_gc && num_of_parties == 2 && t == 1) {
     // ================================================
