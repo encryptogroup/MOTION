@@ -300,7 +300,7 @@ std::vector<Combination> GenerateAllCombinations() {
     //                           batch_size, failure_probability_pow2_neg_40);
     // ================================================
     // ! BooleanGMW
-    batch_size = 10; // ? if overflow
+    batch_size = 10; // ! overflow
 
 // no overflow (almost overflow)
     // combinations.emplace_back(
@@ -353,19 +353,21 @@ std::vector<Combination> GenerateAllCombinations() {
                               T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
                               batch_size, failure_probability_pow2_neg_40);
 
-    combinations.emplace_back(
-        64, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40);
+ // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40);
 
-    combinations.emplace_back(
-        64, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
-        batch_size, failure_probability_pow2_neg_40);
+ // ! overflow
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40);
 
-    combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
-                              T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation,
-                              batch_size, failure_probability_pow2_neg_40);
+    // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //                           T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation,
+    //                           batch_size, failure_probability_pow2_neg_40);
     // ================================================
     // ! BooleanGMW
     batch_size = 5;
