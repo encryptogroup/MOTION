@@ -90,8 +90,8 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       em::SecureDiscreteGaussianMechanismCKS(share_input_fD);
 
   // only for debug
-  double sigma = 0.135;
-  // double sigma = 1.135;
+  // double sigma = 0.135;
+  double sigma = 1.135;
 
   std::cout<<"failure_probability: "<<failure_probability<<std::endl;
 
