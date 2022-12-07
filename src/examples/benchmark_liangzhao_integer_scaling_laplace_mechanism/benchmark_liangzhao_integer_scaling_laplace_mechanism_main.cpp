@@ -433,6 +433,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
 // only for debugging
     batch_size =50; // ! overflow
+    batch_size =30; // ? if overflow
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
