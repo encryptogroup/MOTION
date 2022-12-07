@@ -89,15 +89,18 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::size_t batch_size = 1;
   std::size_t num_of_parties = 5;
-  // bool benchmark_gc = true;
-  bool benchmark_gc = false;
-  bool benchmark_boolean_gmw = true;
-  // bool benchmark_boolean_gmw = false;
+  bool benchmark_gc = true;
+  // bool benchmark_gc = false;
+  // bool benchmark_boolean_gmw = true;
+  bool benchmark_boolean_gmw = false;
 
   if (benchmark_gc && num_of_parties == 2) {
     // ================================================
     // ! Garbled Circuit 32-bit
     batch_size = 1;
+
+    // only for debugging
+    batch_size =30;
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
