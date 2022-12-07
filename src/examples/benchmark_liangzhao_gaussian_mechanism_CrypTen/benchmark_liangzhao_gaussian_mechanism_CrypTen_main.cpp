@@ -67,8 +67,8 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
   const std::array kBitSizes = {64};
-  const std::array kNumbersOfSimd = {1,30, 1000};
-  const std::array kNumbersOfSimd = {5};
+  // const std::array kNumbersOfSimd = {1,30, 1000};
+  const std::array kNumbersOfSimd = {30};
 
   const std::array kDPMechanismType = {
       // boolean circuit based method
