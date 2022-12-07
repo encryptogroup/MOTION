@@ -379,7 +379,7 @@ SecureSignedInteger SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNois
 
 SecureSignedInteger
 SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized() {
-  std::cout << "SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration"
+  std::cout << "SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized"
             << std::endl;
 
   if (t_ != T(1)) {
@@ -603,7 +603,7 @@ SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimize
 
 SecureSignedInteger
 SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_naive() {
-  std::cout << "SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration"
+  std::cout << "SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_naive"
             << std::endl;
   if (t_ != T(1)) {
     ShareWrapper random_bits_of_length_52_dlap =
@@ -868,7 +868,7 @@ SecureSignedInteger SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNois
 
 SecureSignedInteger
 SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimized() {
-  std::cout << "SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration"
+  std::cout << "SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimized"
             << std::endl;
   if (t_ != T(1)) {
     ShareWrapper random_bits_of_length_52_dlap =
