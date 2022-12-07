@@ -90,11 +90,11 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       em::SecureDiscreteGaussianMechanismCKS(share_input_fD);
 
   // only for debug
-  double scale = 0.135;
+  double sigma = 0.135;
 
   std::cout<<"failure_probability: "<<failure_probability<<std::endl;
 
-  secure_discrete_gaussian_mechanism_CKS.ParameterSetup(sensitivity, scale, number_of_simd,
+  secure_discrete_gaussian_mechanism_CKS.ParameterSetup(sensitivity, sigma, number_of_simd,
                                                        failure_probability, fixed_point_bit_size,
                                                        fixed_point_fraction_bit_size);
 
