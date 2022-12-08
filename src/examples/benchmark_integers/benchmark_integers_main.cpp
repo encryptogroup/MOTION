@@ -51,7 +51,8 @@ constexpr std::size_t kIllegalProtocol{100}, kIllegalOperationType{100};
 
 struct Combination {
   Combination(std::size_t bit_size, encrypto::motion::MpcProtocol protocol,
-              encrypto::motion::UnsignedIntegerOperationType operation_type, std::size_t number_of_simd)
+              encrypto::motion::UnsignedIntegerOperationType operation_type,
+              std::size_t number_of_simd)
       : bit_size_(bit_size),
         protocol_(protocol),
         operation_type_(operation_type),
@@ -66,20 +67,19 @@ struct Combination {
 std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::UnsignedIntegerOperationType;
 
-  const std::array kArithmeticBitSizes = { 64};
-  const std::array kNumbersOfSimd = {1,10,100,1000};
-  // const std::array kOperationTypes = {T::kAdd, T::kMul, T::kDiv, T::kEq, T::kGt, T::kSub};
-  const std::array kOperationTypes = { T::kDiv};
+  const std::array kArithmeticBitSizes = {8, 16, 32, 64};
+  const std::array kNumbersOfSimd = {1000};
+  const std::array kOperationTypes = {T::kAdd, T::kMul, T::kDiv, T::kEq, T::kGt, T::kSub};
 
   std::vector<Combination> combinations;
 
   for (const auto bit_size : kArithmeticBitSizes) {
     for (const auto operation_type : kOperationTypes) {
       for (const auto number_of_simd : kNumbersOfSimd) {
-        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kGarbledCircuit, operation_type,
-                                  number_of_simd);
         // combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
         //                           operation_type, number_of_simd);
+        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBmr, operation_type,
+                                  number_of_simd);
       }
     }
   }
@@ -151,7 +151,7 @@ std::pair<program_options::variables_map, bool> ParseProgramOptions(int ac, char
   description.add_options()
       ("help,h", program_options::bool_switch(&help)->default_value(false),"produce help message")
       ("disable-logging,l","disable logging to file")
-      ("print-configuration,p", program_options::bool_switch(&print)->default_value(false), "print configuration")
+      ("print-configuration,p", program_options::bool_switch(&print)->default_value(true), "print configuration")
       ("configuration-file,f", program_options::value<std::string>(), kConfigFileMessage.data())
       ("my-id", program_options::value<std::size_t>(), "my party id")
       ("parties", program_options::value<std::vector<std::string>>()->multitoken(), "info (id,IP,port) for each party e.g., --parties 0,127.0.0.1,23000 1,127.0.0.1,23001")
@@ -172,9 +172,14 @@ std::pair<program_options::variables_map, bool> ParseProgramOptions(int ac, char
 
   // read configuration file
   if (user_options.count("configuration-file")) {
-    std::ifstream ifs(user_options["configuration-file"].as<std::string>().c_str());
-    program_options::variables_map user_option_config_file;
-    program_options::store(program_options::parse_config_file(ifs, description), user_options);
+    // std::ifstream ifs(user_options["configuration-file"].as<std::string>().c_str());
+    // program_options::variables_map user_option_config_file;
+    // program_options::store(program_options::parse_config_file(ifs, description), user_options);
+    // program_options::notify(user_options);
+
+    std::ifstream user_options_file(user_options["configuration-file"].as<std::string>().c_str());
+    program_options::store(program_options::parse_config_file(user_options_file, description),
+                           user_options);
     program_options::notify(user_options);
   }
 

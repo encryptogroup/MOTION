@@ -120,7 +120,7 @@ std::pair<program_options::variables_map, bool> ParseProgramOptions(int ac, char
   description.add_options()
       ("help,h", program_options::bool_switch(&help)->default_value(false),"produce help message")
       ("disable-logging,l","disable logging to file")
-      ("print-configuration,p", program_options::bool_switch(&print)->default_value(false), "print configuration")
+      ("print-configuration,p", program_options::bool_switch(&print)->default_value(true), "print configuration")
       ("configuration-file,f", program_options::value<std::string>(), kConfigFileMessage.data())
       ("my-id", program_options::value<std::size_t>(), "my party id")
       ("parties", program_options::value<std::vector<std::string>>()->multitoken(), "info (id,IP,port) for each party e.g., --parties 0,127.0.0.1,23000 1,127.0.0.1,23001")
