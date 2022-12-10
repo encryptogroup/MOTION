@@ -67,31 +67,31 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
   const std::array kBitSizes = {64};
-  // const std::array kNumbersOfSimd = {1, 10, 50, 90, 100, 1000};
+  const std::array kNumbersOfSimd = {1, 10, 30, 40, 50, 90, 100, 1000};
 
   // only for debugging purposes
-  const std::array kNumbersOfSimd = {30};
+  // const std::array kNumbersOfSimd = {30};
 
   const std::array kDPMechanismType = {
       // boolean circuit based method
-      T::kDPMechanism_PrivaDA_FL32Laplace_noise_generation,
-      // T::kDPMechanism_PrivaDA_FL64Laplace_noise_generation,
+      // T::kDPMechanism_PrivaDA_FL32Laplace_noise_generation,
+      T::kDPMechanism_PrivaDA_FL64Laplace_noise_generation,
 
-      T::kDPMechanism_PrivaDA_FL32Laplace_perturbation,
-      // T::kDPMechanism_PrivaDA_FL64Laplace_perturbation,
+      // T::kDPMechanism_PrivaDA_FL32Laplace_perturbation,
+      T::kDPMechanism_PrivaDA_FL64Laplace_perturbation,
 
-      T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation,
-      // T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation,
+      // T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation,
+      T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation,
 
-      T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation,
-      // T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation,
+      // T::kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation,
+      T::kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation,
 
   };
 
   const std::array kProtocol = {
-      // encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
-      encrypto::motion::MpcProtocol::kBooleanGmw,
-      // encrypto::motion::MpcProtocol::kBmr,  // too slow, 
+      encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
+      // encrypto::motion::MpcProtocol::kBooleanGmw, // for > 3 parties
+      // encrypto::motion::MpcProtocol::kBmr,  // too slow,
   };
 
   std::vector<Combination> combinations;
