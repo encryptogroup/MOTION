@@ -89,8 +89,8 @@ std::vector<Combination> GenerateAllCombinations() {
   };
 
   const std::array kProtocol = {
-      // encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
-      encrypto::motion::MpcProtocol::kBooleanGmw, // for > 3 parties
+      encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
+      encrypto::motion::MpcProtocol::kBooleanGmw, // for >= 2 parties
       // encrypto::motion::MpcProtocol::kBmr,  // too slow,
   };
 
