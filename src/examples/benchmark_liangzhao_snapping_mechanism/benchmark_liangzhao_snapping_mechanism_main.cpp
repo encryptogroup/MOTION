@@ -67,10 +67,10 @@ std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::DPMechanismType;
 
   const std::array kBitSizes = {64};
-  // const std::array kNumbersOfSimd = {1, 10, 30, 50, 90, 100, 1000};
+  const std::array kNumbersOfSimd = {1, 10, 30, 50, 90, 100, 1000};
 
-  // only for debug
-  const std::array kNumbersOfSimd = {30};
+  // // only for debug
+  // const std::array kNumbersOfSimd = {30};
 
   const std::array kDPMechanismType = {
       T::kSnappingMechanism_noise_generation_naive,
@@ -82,7 +82,7 @@ std::vector<Combination> GenerateAllCombinations() {
   };
 
   const std::array kProtocol = {
-      // encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
+      encrypto::motion::MpcProtocol::kGarbledCircuit,  // only for two parties
       encrypto::motion::MpcProtocol::kBooleanGmw,
       // encrypto::motion::MpcProtocol::kBmr, // only for three or more parties
   };
