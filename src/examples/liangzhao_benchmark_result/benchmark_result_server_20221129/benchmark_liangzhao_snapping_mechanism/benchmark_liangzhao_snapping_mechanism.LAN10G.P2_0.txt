@@ -1,30 +1,30 @@
-lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.174 ms      0.174 ms      0.104 ms
-MT Setup                29.108 ms     44.987 ms     22.802 ms
+MT Presetup              0.218 ms      0.207 ms      0.038 ms
+MT Setup                46.611 ms     45.575 ms      2.665 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       5.893 ms      4.293 ms      3.770 ms
+OT Extension Setup       5.097 ms      4.752 ms      2.774 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    104.414 ms    116.989 ms     27.690 ms
-Gates Setup           1974.540 ms   1840.484 ms    373.483 ms
-Gates Online           586.307 ms    583.311 ms     80.416 ms
+Preprocessing Total    116.403 ms    118.792 ms      5.589 ms
+Gates Setup           2075.410 ms   1840.156 ms    459.929 ms
+Gates Online           693.910 ms    722.303 ms     77.314 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    2674.182 ms   2522.796 ms    373.725 ms
+Circuit Evaluation    2895.963 ms   2676.931 ms    499.799 ms
 ===========================================================================
 Communication with each other party:
 Sent: 4.940 MiB in 70657 messages
@@ -33,29 +33,29 @@ Received: 0.737 MiB in 12746 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.112 ms      0.111 ms      0.036 ms
-MT Setup                34.285 ms     47.618 ms     21.697 ms
+MT Presetup              0.130 ms      0.119 ms      0.076 ms
+MT Setup                38.403 ms     47.735 ms     19.087 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       4.097 ms      3.301 ms      2.989 ms
+OT Extension Setup       4.094 ms      3.108 ms      2.767 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    124.598 ms    120.911 ms     31.389 ms
-Gates Setup           1429.451 ms   1435.116 ms    132.177 ms
-Gates Online           513.913 ms    560.960 ms    122.590 ms
+Preprocessing Total    117.167 ms    118.943 ms     23.849 ms
+Gates Setup           1304.542 ms   1305.011 ms    101.549 ms
+Gates Online           496.525 ms    547.030 ms     65.290 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    2076.004 ms   2143.643 ms    182.714 ms
+Circuit Evaluation    1929.210 ms   1922.463 ms     57.582 ms
 ===========================================================================
 Communication with each other party:
 Sent: 4.137 MiB in 59588 messages
@@ -64,11 +64,11 @@ Received: 0.737 MiB in 12746 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -82,11 +82,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     14.441 ms      6.954 ms     16.798 ms
-Gates Setup           1246.030 ms   1256.424 ms    101.087 ms
-Gates Online           170.275 ms    169.783 ms      5.353 ms
+Preprocessing Total     21.471 ms      6.372 ms     20.676 ms
+Gates Setup           1185.937 ms   1253.699 ms     95.887 ms
+Gates Online           169.930 ms    166.815 ms     10.529 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1435.093 ms   1436.156 ms    103.851 ms
+Circuit Evaluation    1383.919 ms   1457.432 ms    107.666 ms
 ===========================================================================
 Communication with each other party:
 Sent: 2.897 MiB in 39854 messages
@@ -95,11 +95,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -113,11 +113,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      4.032 ms      3.765 ms      0.877 ms
-Gates Setup            119.478 ms     85.591 ms     52.152 ms
-Gates Online            31.517 ms     27.455 ms      9.749 ms
+Preprocessing Total      4.222 ms      3.671 ms      1.386 ms
+Gates Setup             92.326 ms    100.668 ms     25.503 ms
+Gates Online            22.583 ms     22.213 ms      2.418 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     160.310 ms    138.255 ms     61.221 ms
+Circuit Evaluation     125.499 ms    130.611 ms     25.892 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.460 MiB in 6205 messages
@@ -126,11 +126,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -144,11 +144,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      6.304 ms      6.691 ms      1.778 ms
-Gates Setup           1151.153 ms   1173.692 ms     67.868 ms
-Gates Online           157.598 ms    155.336 ms      3.690 ms
+Preprocessing Total     14.996 ms      8.019 ms     16.879 ms
+Gates Setup           1057.244 ms   1100.510 ms    111.005 ms
+Gates Online           163.082 ms    163.553 ms      4.472 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1319.502 ms   1346.249 ms     67.812 ms
+Circuit Evaluation    1240.367 ms   1278.445 ms    117.719 ms
 ===========================================================================
 Communication with each other party:
 Sent: 2.514 MiB in 34631 messages
@@ -157,11 +157,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -175,11 +175,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      8.413 ms      4.472 ms     12.046 ms
-Gates Setup             21.461 ms     20.132 ms      5.772 ms
-Gates Online             4.727 ms      4.842 ms      0.476 ms
+Preprocessing Total     13.918 ms      7.065 ms     15.995 ms
+Gates Setup             19.303 ms     17.449 ms      4.973 ms
+Gates Online             4.416 ms      4.453 ms      0.504 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      39.418 ms     34.812 ms     11.986 ms
+Circuit Evaluation      43.000 ms     40.229 ms     14.002 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.076 MiB in 982 messages
@@ -188,29 +188,29 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              1.446 ms      1.376 ms      0.847 ms
-MT Setup                 9.246 ms      7.656 ms      6.665 ms
+MT Presetup              1.861 ms      2.098 ms      0.803 ms
+MT Setup                 4.107 ms      3.639 ms      0.819 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      30.808 ms     33.180 ms      6.231 ms
+OT Extension Setup      36.191 ms     36.150 ms      6.479 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    114.139 ms    110.794 ms     17.662 ms
-Gates Setup             45.076 ms     45.490 ms      5.172 ms
-Gates Online          6208.442 ms   6218.014 ms    333.430 ms
+Preprocessing Total    114.604 ms    108.075 ms     16.928 ms
+Gates Setup             42.772 ms     41.825 ms      3.629 ms
+Gates Online          6259.397 ms   6389.278 ms    233.867 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    6372.320 ms   6407.771 ms    332.925 ms
+Circuit Evaluation    6422.454 ms   6538.420 ms    220.116 ms
 ===========================================================================
 Communication with each other party:
 Sent: 7.375 MiB in 128553 messages
@@ -219,29 +219,29 @@ Received: 7.375 MiB in 128552 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.913 ms      0.720 ms      0.396 ms
-MT Setup                 6.664 ms      5.384 ms      4.647 ms
+MT Presetup              1.469 ms      1.544 ms      0.784 ms
+MT Setup                 7.827 ms      8.336 ms      2.456 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      23.061 ms     20.389 ms      5.583 ms
+OT Extension Setup      22.108 ms     21.991 ms      6.159 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    103.455 ms    101.723 ms     11.874 ms
-Gates Setup             40.077 ms     39.267 ms      5.063 ms
-Gates Online          6146.477 ms   5968.114 ms    868.789 ms
+Preprocessing Total    105.982 ms    101.542 ms     21.582 ms
+Gates Setup             39.996 ms     40.600 ms      1.995 ms
+Gates Online          5510.536 ms   5701.711 ms    325.576 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    6295.067 ms   6132.650 ms    864.558 ms
+Circuit Evaluation    5662.902 ms   5840.960 ms    342.627 ms
 ===========================================================================
 Communication with each other party:
 Sent: 6.106 MiB in 106417 messages
@@ -250,29 +250,29 @@ Received: 6.106 MiB in 106416 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.706 ms      0.647 ms      0.424 ms
-MT Setup                 8.402 ms      9.763 ms      4.603 ms
+MT Presetup              1.315 ms      1.336 ms      0.749 ms
+MT Setup                 5.906 ms      4.391 ms      4.097 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      19.397 ms     20.240 ms      5.040 ms
+OT Extension Setup      23.351 ms     24.600 ms      8.208 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     97.618 ms     94.773 ms      6.343 ms
-Gates Setup             30.787 ms     29.192 ms      4.770 ms
-Gates Online          2623.687 ms   2598.565 ms     68.721 ms
+Preprocessing Total    104.886 ms     99.950 ms     18.056 ms
+Gates Setup             29.460 ms     28.504 ms      4.486 ms
+Gates Online          2686.251 ms   2651.952 ms    109.732 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    2757.947 ms   2728.763 ms     67.974 ms
+Circuit Evaluation    2828.540 ms   2788.783 ms    112.071 ms
 ===========================================================================
 Communication with each other party:
 Sent: 4.623 MiB in 80549 messages
@@ -281,29 +281,29 @@ Received: 4.622 MiB in 80548 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.112 ms      0.126 ms      0.024 ms
-MT Setup                 9.339 ms      5.043 ms      8.451 ms
+MT Presetup              0.106 ms      0.097 ms      0.016 ms
+MT Setup                 7.025 ms      3.057 ms      6.775 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       5.897 ms      5.178 ms      2.911 ms
+OT Extension Setup       7.596 ms      6.371 ms      2.591 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     84.361 ms     78.000 ms     14.381 ms
-Gates Setup              5.156 ms      4.615 ms      1.849 ms
-Gates Online           673.397 ms    617.672 ms    256.116 ms
+Preprocessing Total     88.926 ms     81.444 ms     14.794 ms
+Gates Setup              4.757 ms      4.512 ms      0.655 ms
+Gates Online           693.734 ms    822.912 ms    203.724 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     771.552 ms    747.147 ms    262.742 ms
+Circuit Evaluation     799.236 ms    944.222 ms    213.774 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.775 MiB in 13435 messages
@@ -312,29 +312,29 @@ Received: 0.775 MiB in 13434 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.456 ms      0.440 ms      0.035 ms
-MT Setup                 7.860 ms      7.349 ms      5.564 ms
+MT Presetup              1.190 ms      0.577 ms      0.838 ms
+MT Setup                 7.493 ms      4.550 ms      6.769 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      18.597 ms     18.695 ms      5.664 ms
+OT Extension Setup      19.117 ms     16.318 ms      7.105 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     94.658 ms     95.005 ms      5.180 ms
-Gates Setup             27.861 ms     25.089 ms      3.727 ms
-Gates Online          2391.372 ms   2372.109 ms     66.799 ms
+Preprocessing Total     96.356 ms     93.102 ms      5.394 ms
+Gates Setup             26.314 ms     25.482 ms      3.009 ms
+Gates Online          2394.203 ms   2373.004 ms     58.492 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    2520.454 ms   2504.188 ms     69.667 ms
+Circuit Evaluation    2524.061 ms   2505.116 ms     58.932 ms
 ===========================================================================
 Communication with each other party:
 Sent: 4.025 MiB in 70111 messages
@@ -343,60 +343,1548 @@ Received: 4.024 MiB in 70110 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.034 ms      0.037 ms      0.006 ms
-MT Setup                 7.910 ms      6.455 ms     12.463 ms
+MT Presetup              0.037 ms      0.037 ms      0.002 ms
+MT Setup                14.785 ms      9.901 ms     14.439 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       5.146 ms      4.200 ms      4.248 ms
+OT Extension Setup       2.212 ms      1.663 ms      0.929 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     83.562 ms     79.666 ms     17.841 ms
-Gates Setup              1.458 ms      1.139 ms      0.864 ms
-Gates Online           327.749 ms    308.897 ms    203.816 ms
+Preprocessing Total     92.585 ms     80.662 ms     18.608 ms
+Gates Setup              1.270 ms      1.291 ms      0.207 ms
+Gates Online           387.096 ms    368.034 ms    184.656 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     424.128 ms    418.067 ms    212.406 ms
+Circuit Evaluation     495.638 ms    496.246 ms    190.689 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.176 MiB in 2997 messages
 Received: 0.176 MiB in 2996 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 100
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 10
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             12.615 ms     12.667 ms      0.355 ms
-MT Setup                33.076 ms     28.445 ms     13.221 ms
+MT Presetup              1.271 ms      1.026 ms      0.668 ms
+MT Setup                14.485 ms     13.558 ms      9.382 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     146.209 ms    128.881 ms     28.206 ms
+OT Extension Setup      23.288 ms     20.257 ms      8.630 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    251.014 ms    226.170 ms     37.569 ms
-Gates Setup            767.533 ms    753.333 ms     75.593 ms
-Gates Online           566.775 ms    578.054 ms     93.795 ms
+Preprocessing Total    109.709 ms    109.392 ms     16.478 ms
+Gates Setup           1778.499 ms   1780.336 ms    158.912 ms
+Gates Online           595.924 ms    624.275 ms     42.636 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1592.498 ms   1580.038 ms     95.622 ms
+Circuit Evaluation    2493.128 ms   2510.643 ms    125.404 ms
+===========================================================================
+Communication with each other party:
+Sent: 18.233 MiB in 70657 messages
+Received: 1.607 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.150 ms      0.572 ms      0.750 ms
+MT Setup                 8.453 ms      3.685 ms      6.629 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      26.624 ms     26.262 ms     13.696 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    104.410 ms    100.501 ms     13.605 ms
+Gates Setup           1236.650 ms   1242.584 ms    142.079 ms
+Gates Online           601.984 ms    594.600 ms     30.168 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1949.564 ms   1932.098 ms    174.621 ms
+===========================================================================
+Communication with each other party:
+Sent: 15.056 MiB in 59588 messages
+Received: 1.607 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     20.158 ms      3.487 ms     20.465 ms
+Gates Setup           1177.727 ms   1240.281 ms    132.665 ms
+Gates Online           177.967 ms    178.811 ms     11.724 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1380.392 ms   1440.735 ms    119.806 ms
+===========================================================================
+Communication with each other party:
+Sent: 11.488 MiB in 39854 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.861 ms      3.389 ms      0.873 ms
+Gates Setup             98.732 ms     96.729 ms     56.680 ms
+Gates Online            23.794 ms     23.502 ms      3.218 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     131.400 ms    128.298 ms     61.001 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.875 MiB in 6205 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     13.042 ms      5.873 ms     15.801 ms
+Gates Setup           1012.220 ms   1058.972 ms    146.331 ms
+Gates Online           154.570 ms    159.676 ms      8.655 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1184.694 ms   1259.359 ms    154.592 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.945 MiB in 34631 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     28.060 ms     44.379 ms     20.074 ms
+Gates Setup             17.418 ms     17.978 ms      2.408 ms
+Gates Online             3.199 ms      3.230 ms      0.133 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      53.950 ms     69.002 ms     20.885 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.333 MiB in 982 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             13.215 ms     13.130 ms      0.566 ms
+MT Setup                55.671 ms     57.042 ms     23.244 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     143.039 ms    138.917 ms     16.734 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    294.673 ms    313.366 ms     29.277 ms
+Gates Setup             43.004 ms     44.133 ms      2.946 ms
+Gates Online          5975.140 ms   5882.148 ms    208.790 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6317.637 ms   6191.490 ms    199.499 ms
+===========================================================================
+Communication with each other party:
+Sent: 16.309 MiB in 128553 messages
+Received: 16.309 MiB in 128552 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             12.530 ms     14.880 ms      3.691 ms
+MT Setup                35.885 ms     29.328 ms     16.462 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     132.578 ms    138.737 ms     30.004 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    247.306 ms    242.861 ms     17.974 ms
+Gates Setup             38.765 ms     38.731 ms      1.749 ms
+Gates Online          5641.803 ms   5550.034 ms    475.215 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5935.200 ms   5850.945 ms    484.471 ms
+===========================================================================
+Communication with each other party:
+Sent: 13.495 MiB in 106417 messages
+Received: 13.495 MiB in 106416 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              4.695 ms      4.854 ms      0.382 ms
+MT Setup                52.107 ms     42.026 ms     29.683 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     105.861 ms     99.377 ms     19.053 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    233.999 ms    250.300 ms     25.975 ms
+Gates Setup             29.643 ms     28.159 ms      4.508 ms
+Gates Online          2643.867 ms   2593.944 ms    113.078 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2914.572 ms   2892.988 ms    104.582 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.206 MiB in 80549 messages
+Received: 10.206 MiB in 80548 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.903 ms      0.903 ms      0.063 ms
+MT Setup                10.662 ms     10.083 ms      4.968 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      25.521 ms     26.383 ms      4.498 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    105.456 ms    104.455 ms      3.904 ms
+Gates Setup              5.022 ms      4.879 ms      0.532 ms
+Gates Online           653.165 ms    681.669 ms    142.488 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     780.026 ms    793.691 ms    142.718 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.684 MiB in 13435 messages
+Received: 1.684 MiB in 13434 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              6.453 ms      4.549 ms      2.992 ms
+MT Setup                26.836 ms     23.280 ms      9.770 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     106.111 ms    107.951 ms     21.230 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    210.060 ms    208.694 ms     15.846 ms
+Gates Setup             27.013 ms     24.643 ms      3.761 ms
+Gates Online          2360.245 ms   2370.773 ms     38.135 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2605.539 ms   2638.475 ms     47.303 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.880 MiB in 70111 messages
+Received: 8.880 MiB in 70110 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.262 ms      0.271 ms      0.021 ms
+MT Setup                 3.733 ms      2.526 ms      3.645 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      11.560 ms     13.357 ms      3.135 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.945 ms     77.771 ms      3.073 ms
+Gates Setup              1.021 ms      0.935 ms      0.238 ms
+Gates Online           293.947 ms    318.040 ms    106.718 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     400.097 ms    448.981 ms    113.304 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.359 MiB in 2997 messages
+Received: 0.359 MiB in 2996 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.274 ms      2.421 ms      1.769 ms
+MT Setup                27.740 ms     33.252 ms      9.845 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      59.611 ms     57.958 ms      8.797 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    156.315 ms    149.901 ms     29.478 ms
+Gates Setup           1347.173 ms   1348.017 ms    115.790 ms
+Gates Online           556.019 ms    571.367 ms     87.421 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2067.935 ms   1973.185 ms    168.726 ms
+===========================================================================
+Communication with each other party:
+Sent: 47.233 MiB in 70657 messages
+Received: 3.542 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.461 ms      1.816 ms      1.350 ms
+MT Setup                13.313 ms     10.331 ms      6.033 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      62.626 ms     66.521 ms     16.775 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    134.496 ms    130.700 ms     12.510 ms
+Gates Setup            806.209 ms    782.671 ms     90.687 ms
+Gates Online           489.738 ms    497.860 ms     57.483 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1437.790 ms   1489.648 ms     98.357 ms
+===========================================================================
+Communication with each other party:
+Sent: 38.886 MiB in 59588 messages
+Received: 3.542 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     19.949 ms      3.582 ms     20.263 ms
+Gates Setup            814.778 ms    822.179 ms    151.971 ms
+Gates Online           158.175 ms    159.877 ms     16.926 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     998.357 ms    993.515 ms    167.008 ms
+===========================================================================
+Communication with each other party:
+Sent: 30.207 MiB in 39854 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      4.026 ms      3.542 ms      0.998 ms
+Gates Setup             78.946 ms     69.175 ms     28.139 ms
+Gates Online            25.424 ms     25.696 ms      3.575 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     113.683 ms    105.618 ms     30.624 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.963 MiB in 6205 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.968 ms      3.634 ms     16.736 ms
+Gates Setup            869.532 ms    826.791 ms    110.625 ms
+Gates Online           155.341 ms    160.335 ms      8.502 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1042.075 ms   1014.876 ms    111.994 ms
+===========================================================================
+Communication with each other party:
+Sent: 26.136 MiB in 34631 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      4.301 ms      3.407 ms      1.806 ms
+Gates Setup             17.912 ms     19.945 ms      5.229 ms
+Gates Online             4.436 ms      4.371 ms      0.918 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      32.526 ms     31.829 ms      8.768 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.893 MiB in 982 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             31.655 ms     31.092 ms      1.427 ms
+MT Setup               111.678 ms     75.676 ms     71.141 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     377.258 ms    367.564 ms     58.136 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    581.207 ms    563.762 ms     62.411 ms
+Gates Setup             41.225 ms     43.178 ms      2.763 ms
+Gates Online          6007.470 ms   5947.489 ms    172.521 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6635.470 ms   6667.473 ms    191.074 ms
+===========================================================================
+Communication with each other party:
+Sent: 36.160 MiB in 128553 messages
+Received: 36.160 MiB in 128552 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             27.651 ms     25.639 ms      3.362 ms
+MT Setup                97.600 ms    111.503 ms     21.875 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     317.853 ms    299.625 ms     58.397 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    500.213 ms    489.561 ms     58.925 ms
+Gates Setup             35.205 ms     34.104 ms      2.523 ms
+Gates Online          5359.239 ms   5133.986 ms    367.607 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5900.701 ms   5761.592 ms    372.531 ms
+===========================================================================
+Communication with each other party:
+Sent: 29.917 MiB in 106417 messages
+Received: 29.916 MiB in 106416 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             21.782 ms     19.269 ms      5.977 ms
+MT Setup                62.655 ms     59.399 ms     19.831 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     269.918 ms    287.956 ms     40.827 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    431.446 ms    450.595 ms     38.063 ms
+Gates Setup             26.530 ms     26.747 ms      2.535 ms
+Gates Online          2629.706 ms   2600.437 ms    112.157 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3094.756 ms   3050.206 ms    120.123 ms
+===========================================================================
+Communication with each other party:
+Sent: 22.613 MiB in 80549 messages
+Received: 22.613 MiB in 80548 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.892 ms      2.696 ms      0.551 ms
+MT Setup                18.671 ms     13.331 ms      8.489 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      72.331 ms     71.442 ms     10.555 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    172.317 ms    173.850 ms     15.326 ms
+Gates Setup              5.493 ms      5.295 ms      0.808 ms
+Gates Online           745.953 ms    723.119 ms    265.197 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     936.006 ms    882.402 ms    255.972 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.705 MiB in 13435 messages
+Received: 3.705 MiB in 13434 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             28.642 ms     28.846 ms      0.742 ms
+MT Setup                54.143 ms     54.140 ms      0.932 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     286.393 ms    280.256 ms     16.598 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    439.067 ms    429.812 ms     22.206 ms
+Gates Setup             29.970 ms     26.135 ms      5.037 ms
+Gates Online          2406.756 ms   2432.854 ms     64.209 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2882.589 ms   2908.777 ms     60.338 ms
+===========================================================================
+Communication with each other party:
+Sent: 19.671 MiB in 70111 messages
+Received: 19.671 MiB in 70110 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 30
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.832 ms      0.824 ms      0.091 ms
+MT Setup                 7.168 ms      9.674 ms      4.066 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      19.823 ms     20.990 ms      6.159 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    111.615 ms    101.684 ms     19.326 ms
+Gates Setup              1.373 ms      1.456 ms      0.198 ms
+Gates Online           261.458 ms    305.965 ms    126.401 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     385.897 ms    457.397 ms    128.410 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.763 MiB in 2997 messages
+Received: 0.763 MiB in 2996 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.796 ms      2.806 ms      1.921 ms
+MT Setup                17.227 ms     16.632 ms      4.100 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      87.642 ms     90.552 ms     16.453 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    175.439 ms    173.790 ms     16.668 ms
+Gates Setup           1222.617 ms   1178.513 ms    107.820 ms
+Gates Online           537.760 ms    539.340 ms     82.643 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1943.772 ms   1916.834 ms    190.472 ms
+===========================================================================
+Communication with each other party:
+Sent: 76.770 MiB in 70657 messages
+Received: 5.571 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.925 ms      2.886 ms      2.047 ms
+MT Setup                17.573 ms     17.611 ms      1.564 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      91.417 ms     86.085 ms     12.787 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    165.093 ms    159.697 ms     16.605 ms
+Gates Setup            683.986 ms    693.207 ms     35.492 ms
+Gates Online           515.246 ms    508.936 ms     23.462 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1371.574 ms   1376.858 ms     21.703 ms
+===========================================================================
+Communication with each other party:
+Sent: 63.168 MiB in 59588 messages
+Received: 5.571 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.511 ms      3.503 ms      0.123 ms
+Gates Setup            582.909 ms    568.598 ms     29.236 ms
+Gates Online           149.215 ms    145.894 ms     21.543 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     740.140 ms    730.895 ms     41.940 ms
+===========================================================================
+Communication with each other party:
+Sent: 49.229 MiB in 39854 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.311 ms      3.315 ms     16.079 ms
+Gates Setup             42.617 ms     41.009 ms      6.437 ms
+Gates Online            20.312 ms     20.787 ms      0.999 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      78.862 ms     71.431 ms     22.158 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.098 MiB in 6205 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.549 ms      3.546 ms      0.202 ms
+Gates Setup            553.555 ms    568.633 ms     85.371 ms
+Gates Online           136.140 ms    137.192 ms     14.348 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     698.310 ms    729.395 ms     97.083 ms
+===========================================================================
+Communication with each other party:
+Sent: 42.591 MiB in 34631 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.254 ms      3.233 ms      0.158 ms
+Gates Setup             15.982 ms     16.274 ms      4.404 ms
+Gates Online             3.393 ms      3.040 ms      0.579 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      26.535 ms     24.928 ms      3.320 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.460 MiB in 982 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             53.234 ms     52.636 ms      1.833 ms
+MT Setup               154.075 ms    148.345 ms     24.377 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     565.793 ms    583.071 ms     29.796 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    831.697 ms    840.143 ms     49.486 ms
+Gates Setup             38.631 ms     37.587 ms      2.058 ms
+Gates Online          6035.825 ms   5879.959 ms    433.637 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6911.732 ms   6695.707 ms    438.024 ms
+===========================================================================
+Communication with each other party:
+Sent: 56.989 MiB in 128553 messages
+Received: 56.988 MiB in 128552 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             44.859 ms     42.967 ms      3.102 ms
+MT Setup               125.643 ms    108.624 ms     27.885 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     498.874 ms    459.098 ms     63.534 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    730.536 ms    736.410 ms     49.950 ms
+Gates Setup             35.552 ms     36.094 ms      2.950 ms
+Gates Online          5398.238 ms   5292.837 ms    510.439 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6170.965 ms   6134.335 ms    475.334 ms
+===========================================================================
+Communication with each other party:
+Sent: 47.146 MiB in 106417 messages
+Received: 47.146 MiB in 106416 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             35.825 ms     38.352 ms      6.764 ms
+MT Setup               102.288 ms     97.022 ms     32.708 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     424.885 ms    381.711 ms     64.459 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    658.288 ms    673.922 ms     63.405 ms
+Gates Setup             25.139 ms     26.537 ms      2.488 ms
+Gates Online          2516.906 ms   2522.287 ms     53.743 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3206.901 ms   3207.746 ms     72.376 ms
+===========================================================================
+Communication with each other party:
+Sent: 35.633 MiB in 80549 messages
+Received: 35.633 MiB in 80548 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              4.158 ms      4.031 ms      0.246 ms
+MT Setup                29.226 ms     18.949 ms     13.628 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     115.904 ms    132.366 ms     22.811 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    218.756 ms    222.620 ms      7.353 ms
+Gates Setup              4.985 ms      4.689 ms      0.647 ms
+Gates Online           657.717 ms    589.850 ms    223.058 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     893.607 ms    853.639 ms    223.326 ms
+===========================================================================
+Communication with each other party:
+Sent: 5.825 MiB in 13435 messages
+Received: 5.825 MiB in 13434 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             36.922 ms     33.826 ms      6.160 ms
+MT Setup                85.730 ms     90.992 ms     18.744 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     400.924 ms    407.833 ms     48.629 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    587.113 ms    573.919 ms     50.489 ms
+Gates Setup             20.985 ms     21.912 ms      2.312 ms
+Gates Online          2241.757 ms   2233.636 ms     25.897 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2857.741 ms   2828.916 ms     66.050 ms
+===========================================================================
+Communication with each other party:
+Sent: 30.993 MiB in 70111 messages
+Received: 30.993 MiB in 70110 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 50
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.197 ms      1.368 ms      0.259 ms
+MT Setup                13.314 ms     14.566 ms      5.538 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      28.238 ms     25.469 ms      6.048 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    118.058 ms    108.702 ms     20.902 ms
+Gates Setup              1.518 ms      1.602 ms      0.180 ms
+Gates Online           221.494 ms    236.366 ms     69.437 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     349.086 ms    353.413 ms     80.570 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.187 MiB in 2997 messages
+Received: 1.187 MiB in 2996 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.281 ms      5.026 ms      2.848 ms
+MT Setup                38.017 ms     23.479 ms     22.659 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     126.855 ms    126.136 ms     12.371 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    242.892 ms    236.498 ms     34.092 ms
+Gates Setup            967.518 ms    935.243 ms     70.398 ms
+Gates Online           615.656 ms    580.707 ms    106.252 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1834.182 ms   1822.460 ms    160.297 ms
+===========================================================================
+Communication with each other party:
+Sent: 135.211 MiB in 70657 messages
+Received: 9.440 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.090 ms      6.698 ms      2.918 ms
+MT Setup                54.349 ms     58.816 ms     24.544 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     121.784 ms    116.131 ms     21.209 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    241.492 ms    243.239 ms     21.056 ms
+Gates Setup            592.212 ms    600.872 ms     29.974 ms
+Gates Online           514.824 ms    530.936 ms     60.312 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1354.725 ms   1345.354 ms     75.115 ms
+===========================================================================
+Communication with each other party:
+Sent: 111.184 MiB in 59588 messages
+Received: 9.440 MiB in 12746 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.445 ms      3.460 ms      0.071 ms
+Gates Setup            440.540 ms    447.360 ms     19.515 ms
+Gates Online           120.202 ms    118.883 ms      5.103 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     568.657 ms    575.256 ms     15.744 ms
+===========================================================================
+Communication with each other party:
+Sent: 86.971 MiB in 39854 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.782 ms      3.454 ms     15.778 ms
+Gates Setup             37.839 ms     40.491 ms      4.659 ms
+Gates Online            19.006 ms     18.873 ms      0.368 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      72.917 ms     65.724 ms     19.219 ms
+===========================================================================
+Communication with each other party:
+Sent: 14.322 MiB in 6205 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.620 ms      3.605 ms      0.130 ms
+Gates Setup            420.497 ms    415.440 ms     25.108 ms
+Gates Online           113.960 ms    113.193 ms      5.603 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     542.018 ms    543.454 ms     28.205 ms
+===========================================================================
+Communication with each other party:
+Sent: 75.237 MiB in 34631 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.648 ms      3.129 ms      0.993 ms
+Gates Setup             17.865 ms     16.932 ms      2.922 ms
+Gates Online             3.152 ms      2.898 ms      0.691 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      28.559 ms     25.360 ms      6.145 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.588 MiB in 982 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             96.985 ms     96.999 ms      2.524 ms
+MT Setup               235.695 ms    217.865 ms     35.336 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     999.554 ms    977.874 ms     45.753 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1384.762 ms   1363.670 ms     48.438 ms
+Gates Setup             46.800 ms     38.355 ms     13.974 ms
+Gates Online          6065.816 ms   5768.911 ms    526.931 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    7502.712 ms   7174.687 ms    554.793 ms
+===========================================================================
+Communication with each other party:
+Sent: 96.691 MiB in 128553 messages
+Received: 96.691 MiB in 128552 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             81.074 ms     79.956 ms      2.600 ms
+MT Setup               204.830 ms    195.672 ms     33.537 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     861.886 ms    826.270 ms     57.308 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1230.543 ms   1235.718 ms     68.567 ms
+Gates Setup             53.174 ms     41.018 ms     21.865 ms
+Gates Online          5490.501 ms   5481.661 ms     84.134 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6779.964 ms   6757.072 ms    100.609 ms
+===========================================================================
+Communication with each other party:
+Sent: 79.988 MiB in 106417 messages
+Received: 79.988 MiB in 106416 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             61.285 ms     61.756 ms      1.391 ms
+MT Setup               147.656 ms    131.102 ms     32.975 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     724.620 ms    734.832 ms     72.254 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1000.275 ms   1001.011 ms     45.199 ms
+Gates Setup             46.034 ms     21.055 ms     48.530 ms
+Gates Online          2554.615 ms   2583.449 ms     96.501 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3611.199 ms   3607.013 ms     59.278 ms
+===========================================================================
+Communication with each other party:
+Sent: 60.447 MiB in 80549 messages
+Received: 60.447 MiB in 80548 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             12.429 ms     13.325 ms      4.075 ms
+MT Setup                41.946 ms     32.489 ms     18.912 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     163.344 ms    165.619 ms     15.385 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    285.695 ms    285.609 ms     10.081 ms
+Gates Setup              4.532 ms      4.491 ms      0.316 ms
+Gates Online           515.775 ms    420.905 ms    171.201 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     814.995 ms    740.624 ms    178.360 ms
+===========================================================================
+Communication with each other party:
+Sent: 9.868 MiB in 13435 messages
+Received: 9.868 MiB in 13434 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             65.102 ms     64.548 ms      6.687 ms
+MT Setup               169.372 ms    137.636 ms     55.670 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     630.786 ms    620.308 ms     64.573 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    933.645 ms    962.857 ms     62.601 ms
+Gates Setup             21.274 ms     21.357 ms      2.212 ms
+Gates Online          2251.475 ms   2269.882 ms     35.632 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3212.205 ms   3236.519 ms     80.587 ms
+===========================================================================
+Communication with each other party:
+Sent: 52.575 MiB in 70111 messages
+Received: 52.575 MiB in 70110 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 90
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.224 ms      2.472 ms      0.482 ms
+MT Setup                12.457 ms      8.714 ms      7.845 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      44.354 ms     43.825 ms     10.397 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    134.320 ms    127.241 ms     23.612 ms
+Gates Setup              2.512 ms      1.561 ms      1.815 ms
+Gates Online           209.866 ms    136.953 ms    155.193 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     368.539 ms    282.975 ms    160.626 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.995 MiB in 2997 messages
+Received: 1.995 MiB in 2996 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 100
+===========================================================================
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              6.929 ms      5.701 ms      2.453 ms
+MT Setup                41.248 ms     31.832 ms     16.801 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     146.769 ms    140.022 ms     24.682 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    260.760 ms    257.272 ms     27.519 ms
+Gates Setup            866.283 ms    912.485 ms     76.977 ms
+Gates Online           440.981 ms    437.877 ms     45.355 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1574.827 ms   1549.581 ms     61.605 ms
 ===========================================================================
 Communication with each other party:
 Sent: 150.027 MiB in 70657 messages
@@ -405,29 +1893,29 @@ Received: 10.501 MiB in 12746 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             10.206 ms     10.162 ms      0.157 ms
-MT Setup                35.219 ms     30.481 ms     17.226 ms
+MT Presetup              6.003 ms      5.529 ms      0.755 ms
+MT Setup                27.999 ms     25.891 ms      4.780 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     144.110 ms    139.909 ms     26.330 ms
+OT Extension Setup     162.543 ms    168.537 ms     14.210 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    246.071 ms    247.081 ms     24.916 ms
-Gates Setup            535.975 ms    544.500 ms     25.964 ms
-Gates Online           559.337 ms    584.002 ms     92.798 ms
+Preprocessing Total    248.761 ms    248.673 ms     22.287 ms
+Gates Setup            587.129 ms    575.768 ms     68.275 ms
+Gates Online           552.794 ms    642.854 ms    140.300 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1348.063 ms   1345.491 ms     90.939 ms
+Circuit Evaluation    1394.890 ms   1386.749 ms    196.275 ms
 ===========================================================================
 Communication with each other party:
 Sent: 123.373 MiB in 59588 messages
@@ -436,11 +1924,11 @@ Received: 10.501 MiB in 12746 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -454,11 +1942,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      3.738 ms      3.766 ms      0.126 ms
-Gates Setup            414.632 ms    434.791 ms     37.477 ms
-Gates Online           120.039 ms    120.076 ms      4.348 ms
+Preprocessing Total      3.405 ms      3.425 ms      0.090 ms
+Gates Setup            423.456 ms    425.540 ms     41.510 ms
+Gates Online           125.497 ms    123.776 ms      9.158 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     542.029 ms    563.802 ms     38.604 ms
+Circuit Evaluation     556.205 ms    558.409 ms     46.640 ms
 ===========================================================================
 Communication with each other party:
 Sent: 96.482 MiB in 39854 messages
@@ -467,11 +1955,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -485,11 +1973,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      3.818 ms      3.648 ms      0.569 ms
-Gates Setup             43.618 ms     43.905 ms      8.336 ms
-Gates Online            18.454 ms     18.338 ms      0.315 ms
+Preprocessing Total      3.429 ms      3.413 ms      0.100 ms
+Gates Setup             48.851 ms     40.796 ms     16.321 ms
+Gates Online            20.403 ms     19.045 ms      2.106 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      69.165 ms     68.370 ms      8.554 ms
+Circuit Evaluation      77.358 ms     67.995 ms     19.970 ms
 ===========================================================================
 Communication with each other party:
 Sent: 15.889 MiB in 6205 messages
@@ -498,11 +1986,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -516,11 +2004,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      3.721 ms      3.803 ms      0.202 ms
-Gates Setup            375.969 ms    377.024 ms     36.866 ms
-Gates Online           102.958 ms    103.462 ms      5.765 ms
+Preprocessing Total      3.535 ms      3.514 ms      0.074 ms
+Gates Setup            408.640 ms    393.629 ms     34.775 ms
+Gates Online           114.301 ms    112.799 ms      7.916 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     485.810 ms    490.708 ms     42.133 ms
+Circuit Evaluation     531.157 ms    523.283 ms     37.433 ms
 ===========================================================================
 Communication with each other party:
 Sent: 83.465 MiB in 34631 messages
@@ -529,11 +2017,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -547,11 +2035,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      3.610 ms      3.626 ms      0.121 ms
-Gates Setup             17.776 ms     17.806 ms      2.527 ms
-Gates Online             2.786 ms      2.847 ms      0.116 ms
+Preprocessing Total      3.393 ms      3.340 ms      0.164 ms
+Gates Setup             17.836 ms     16.484 ms      4.378 ms
+Gates Online             3.552 ms      3.225 ms      0.703 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      26.982 ms     28.152 ms      2.575 ms
+Circuit Evaluation      29.869 ms     26.462 ms      7.428 ms
 ===========================================================================
 Communication with each other party:
 Sent: 2.872 MiB in 982 messages
@@ -560,29 +2048,29 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            110.481 ms    108.016 ms      7.445 ms
-MT Setup               245.365 ms    241.304 ms     18.835 ms
+MT Presetup            107.388 ms    108.043 ms      2.160 ms
+MT Setup               257.698 ms    240.226 ms     26.831 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    1112.859 ms   1095.165 ms     48.602 ms
+OT Extension Setup    1081.146 ms   1081.594 ms     32.466 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1534.865 ms   1512.383 ms     50.657 ms
-Gates Setup             39.942 ms     38.651 ms      4.844 ms
-Gates Online          5633.394 ms   5557.719 ms    432.116 ms
+Preprocessing Total   1505.926 ms   1529.956 ms     38.507 ms
+Gates Setup             38.541 ms     38.187 ms      1.226 ms
+Gates Online          6359.565 ms   6277.222 ms    836.767 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    7213.019 ms   7136.038 ms    405.754 ms
+Circuit Evaluation    7910.452 ms   7766.489 ms    822.067 ms
 ===========================================================================
 Communication with each other party:
 Sent: 107.595 MiB in 128553 messages
@@ -591,29 +2079,29 @@ Received: 107.595 MiB in 128552 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             89.752 ms     89.638 ms      1.561 ms
-MT Setup               219.038 ms    222.057 ms     30.514 ms
+MT Presetup             90.062 ms     89.979 ms      2.768 ms
+MT Setup               202.109 ms    198.968 ms      6.234 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     973.248 ms    936.600 ms     63.247 ms
+OT Extension Setup     940.990 ms    929.483 ms     60.829 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1349.839 ms   1342.690 ms     70.336 ms
-Gates Setup             40.668 ms     31.857 ms     20.401 ms
-Gates Online          5457.169 ms   5352.953 ms    375.800 ms
+Preprocessing Total   1293.987 ms   1276.645 ms     51.069 ms
+Gates Setup             49.228 ms     35.757 ms     19.771 ms
+Gates Online          5600.799 ms   5524.537 ms    489.486 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    6852.944 ms   6882.001 ms    366.443 ms
+Circuit Evaluation    6948.907 ms   6840.484 ms    505.822 ms
 ===========================================================================
 Communication with each other party:
 Sent: 89.007 MiB in 106417 messages
@@ -622,29 +2110,29 @@ Received: 89.007 MiB in 106416 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             70.247 ms     69.612 ms      1.693 ms
-MT Setup               161.302 ms    151.299 ms     35.472 ms
+MT Presetup             65.761 ms     65.860 ms      1.075 ms
+MT Setup               155.410 ms    154.118 ms      6.252 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     733.939 ms    716.274 ms     67.086 ms
+OT Extension Setup     693.757 ms    706.797 ms     22.139 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1022.366 ms    983.172 ms     77.856 ms
-Gates Setup             28.472 ms     22.299 ms     18.063 ms
-Gates Online          2399.620 ms   2394.554 ms     39.129 ms
+Preprocessing Total    982.010 ms    988.945 ms     29.208 ms
+Gates Setup             24.369 ms     24.536 ms      1.766 ms
+Gates Online          2385.642 ms   2376.898 ms     86.342 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    3457.410 ms   3417.454 ms    102.381 ms
+Circuit Evaluation    3397.584 ms   3376.217 ms     74.449 ms
 ===========================================================================
 Communication with each other party:
 Sent: 67.262 MiB in 80549 messages
@@ -653,29 +2141,29 @@ Received: 67.262 MiB in 80548 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              8.243 ms      7.961 ms      0.991 ms
-MT Setup                38.675 ms     35.795 ms     13.493 ms
+MT Presetup              8.767 ms      9.103 ms      0.553 ms
+MT Setup                35.823 ms     35.838 ms      0.362 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     187.639 ms    200.303 ms     24.139 ms
+OT Extension Setup     206.042 ms    211.326 ms     15.901 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    303.710 ms    313.122 ms     21.447 ms
-Gates Setup              5.475 ms      4.917 ms      1.599 ms
-Gates Online           525.379 ms    513.217 ms    147.695 ms
+Preprocessing Total    322.386 ms    320.938 ms     10.425 ms
+Gates Setup              4.984 ms      4.834 ms      0.577 ms
+Gates Online           597.008 ms    604.178 ms    142.525 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     842.828 ms    835.076 ms    138.990 ms
+Circuit Evaluation     941.877 ms    950.277 ms    159.853 ms
 ===========================================================================
 Communication with each other party:
 Sent: 10.977 MiB in 13435 messages
@@ -684,29 +2172,29 @@ Received: 10.977 MiB in 13434 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             63.395 ms     63.820 ms      6.910 ms
-MT Setup               141.575 ms    127.632 ms     30.540 ms
+MT Presetup             66.425 ms     64.795 ms      7.318 ms
+MT Setup               169.425 ms    169.811 ms     43.519 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     674.789 ms    694.757 ms     70.444 ms
+OT Extension Setup     627.421 ms    633.886 ms     29.572 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    942.682 ms    968.893 ms     60.976 ms
-Gates Setup             21.166 ms     19.379 ms      3.447 ms
-Gates Online          2190.888 ms   2131.316 ms     98.328 ms
+Preprocessing Total    928.000 ms    927.072 ms     31.192 ms
+Gates Setup             22.587 ms     20.352 ms      5.144 ms
+Gates Online          2147.615 ms   2158.795 ms     21.472 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    3159.745 ms   3178.281 ms    102.634 ms
+Circuit Evaluation    3104.984 ms   3111.558 ms     46.953 ms
 ===========================================================================
 Communication with each other party:
 Sent: 58.503 MiB in 70111 messages
@@ -715,29 +2203,29 @@ Received: 58.503 MiB in 70110 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 100
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              2.466 ms      2.605 ms      0.521 ms
-MT Setup                10.642 ms      9.912 ms      3.738 ms
+MT Presetup              2.015 ms      2.140 ms      0.268 ms
+MT Setup                14.869 ms      8.512 ms     12.081 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      56.277 ms     57.982 ms     10.802 ms
+OT Extension Setup      58.648 ms     56.243 ms     15.449 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    138.632 ms    141.785 ms     17.638 ms
-Gates Setup              1.893 ms      1.625 ms      1.010 ms
-Gates Online           250.892 ms    289.882 ms    117.600 ms
+Preprocessing Total    143.191 ms    151.332 ms     10.830 ms
+Gates Setup              2.257 ms      1.418 ms      1.776 ms
+Gates Online           502.852 ms    497.827 ms     40.994 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     401.363 ms    434.144 ms    125.523 ms
+Circuit Evaluation     659.199 ms    647.397 ms     33.861 ms
 ===========================================================================
 Communication with each other party:
 Sent: 2.217 MiB in 2997 messages
@@ -746,29 +2234,29 @@ Received: 2.217 MiB in 2996 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            101.767 ms    100.893 ms      1.652 ms
-MT Setup               272.360 ms    243.419 ms     55.123 ms
+MT Presetup            109.149 ms    103.858 ms     11.042 ms
+MT Setup               241.672 ms    242.637 ms      1.973 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    1102.599 ms   1103.067 ms     45.453 ms
+OT Extension Setup    1123.264 ms   1101.380 ms     74.694 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1537.558 ms   1523.704 ms     45.240 ms
-Gates Setup           1246.331 ms   1236.481 ms     55.345 ms
-Gates Online          1455.103 ms   1490.400 ms     77.226 ms
+Preprocessing Total   1529.292 ms   1497.050 ms     84.536 ms
+Gates Setup           1363.801 ms   1410.386 ms    109.547 ms
+Gates Online          1602.457 ms   1601.633 ms     64.091 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    4249.279 ms   4239.949 ms     96.903 ms
+Circuit Evaluation    4508.609 ms   4523.456 ms    153.915 ms
 ===========================================================================
 Communication with each other party:
 Sent: 1467.404 MiB in 70657 messages
@@ -777,29 +2265,29 @@ Received: 98.874 MiB in 12746 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            103.452 ms    103.633 ms      0.400 ms
-MT Setup               242.166 ms    241.730 ms      3.510 ms
+MT Presetup            102.988 ms    103.816 ms      1.727 ms
+MT Setup               243.164 ms    243.961 ms      4.816 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    1121.498 ms   1118.036 ms     43.198 ms
+OT Extension Setup    1104.472 ms   1120.512 ms     33.952 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1522.430 ms   1517.516 ms     43.738 ms
-Gates Setup            878.361 ms    883.085 ms     32.423 ms
-Gates Online          1128.171 ms   1154.470 ms     80.544 ms
+Preprocessing Total   1505.054 ms   1516.543 ms     32.488 ms
+Gates Setup            967.895 ms    954.315 ms     30.008 ms
+Gates Online          1156.789 ms   1130.324 ms    103.639 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    3537.198 ms   3583.325 ms     80.523 ms
+Circuit Evaluation    3636.380 ms   3652.347 ms    116.191 ms
 ===========================================================================
 Communication with each other party:
 Sent: 1205.965 MiB in 59588 messages
@@ -808,11 +2296,11 @@ Received: 98.874 MiB in 12746 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -826,11 +2314,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     12.102 ms      3.877 ms     16.522 ms
-Gates Setup            632.663 ms    633.922 ms     16.790 ms
-Gates Online           115.564 ms    115.539 ms      2.287 ms
+Preprocessing Total      3.573 ms      3.545 ms      0.076 ms
+Gates Setup            653.748 ms    646.798 ms     14.880 ms
+Gates Online           113.801 ms    114.255 ms      2.589 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     763.667 ms    763.122 ms     28.673 ms
+Circuit Evaluation     776.429 ms    773.128 ms     15.555 ms
 ===========================================================================
 Communication with each other party:
 Sent: 946.423 MiB in 39854 messages
@@ -839,11 +2327,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -857,11 +2345,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      7.965 ms      3.901 ms     12.072 ms
-Gates Setup            129.157 ms    131.449 ms      6.886 ms
-Gates Online            21.785 ms     21.584 ms      1.282 ms
+Preprocessing Total      3.507 ms      3.576 ms      0.184 ms
+Gates Setup            127.780 ms    128.959 ms      8.312 ms
+Gates Online            20.610 ms     20.573 ms      1.045 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     162.491 ms    164.453 ms     14.234 ms
+Circuit Evaluation     155.989 ms    157.852 ms      8.171 ms
 ===========================================================================
 Communication with each other party:
 Sent: 156.026 MiB in 6205 messages
@@ -870,11 +2358,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_rounding_naive bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -888,11 +2376,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      4.162 ms      4.053 ms      0.501 ms
-Gates Setup            524.799 ms    523.328 ms     13.608 ms
-Gates Online            99.316 ms     98.289 ms      2.097 ms
+Preprocessing Total     11.758 ms      3.707 ms     16.265 ms
+Gates Setup            528.678 ms    526.456 ms     13.864 ms
+Gates Online            97.171 ms     96.923 ms      0.703 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     632.023 ms    630.560 ms     14.615 ms
+Circuit Evaluation     642.060 ms    629.623 ms     26.341 ms
 ===========================================================================
 Communication with each other party:
 Sent: 818.662 MiB in 34631 messages
@@ -901,11 +2389,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -919,11 +2407,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      4.186 ms      4.180 ms      0.254 ms
-Gates Setup             58.531 ms     58.326 ms      5.820 ms
-Gates Online             4.974 ms      4.802 ms      0.653 ms
+Preprocessing Total      3.354 ms      3.386 ms      0.096 ms
+Gates Setup             48.232 ms     48.742 ms      3.730 ms
+Gates Online             3.677 ms      3.600 ms      0.416 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      72.781 ms     73.619 ms      6.179 ms
+Circuit Evaluation      59.210 ms     61.175 ms      3.636 ms
 ===========================================================================
 Communication with each other party:
 Sent: 28.266 MiB in 982 messages
@@ -932,29 +2420,29 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_noise_generation_naive bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup           1063.099 ms   1065.124 ms      6.672 ms
-MT Setup              2392.253 ms   2395.429 ms     16.850 ms
+MT Presetup           1060.525 ms   1060.469 ms      3.901 ms
+MT Setup              2399.712 ms   2385.290 ms     30.061 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup   11081.555 ms  11099.654 ms     74.373 ms
+OT Extension Setup   10989.071 ms  10898.575 ms    139.089 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total  14600.862 ms  14600.351 ms     65.460 ms
-Gates Setup             39.429 ms     37.897 ms      3.665 ms
-Gates Online          4381.344 ms   4400.938 ms    206.448 ms
+Preprocessing Total  14507.934 ms  14422.515 ms    115.558 ms
+Gates Setup             41.047 ms     41.448 ms      2.557 ms
+Gates Online          4707.439 ms   4701.059 ms    225.920 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   19026.353 ms  19080.845 ms    215.823 ms
+Circuit Evaluation   19262.108 ms  19234.822 ms    160.575 ms
 ===========================================================================
 Communication with each other party:
 Sent: 1014.589 MiB in 128553 messages
@@ -963,29 +2451,29 @@ Received: 1014.589 MiB in 128552 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_noise_generation_optimized bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            881.634 ms    882.157 ms      4.114 ms
-MT Setup              1979.893 ms   1967.196 ms     34.667 ms
+MT Presetup            882.803 ms    884.345 ms      3.673 ms
+MT Setup              1992.945 ms   1991.067 ms     26.715 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    9146.706 ms   9072.832 ms    170.906 ms
+OT Extension Setup    9064.781 ms   9051.029 ms     26.462 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total  12065.575 ms  12008.476 ms    199.905 ms
-Gates Setup             33.498 ms     34.931 ms      2.401 ms
-Gates Online          4077.762 ms   4062.046 ms    168.484 ms
+Preprocessing Total  12002.086 ms  11982.222 ms     50.459 ms
+Gates Setup             32.106 ms     30.718 ms      2.597 ms
+Gates Online          4144.028 ms   4090.104 ms    118.470 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   16181.267 ms  16059.987 ms    330.044 ms
+Circuit Evaluation   16183.470 ms  16129.345 ms    160.885 ms
 ===========================================================================
 Communication with each other party:
 Sent: 839.266 MiB in 106417 messages
@@ -994,29 +2482,29 @@ Received: 839.266 MiB in 106416 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_perturbation_naive bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            679.888 ms    682.155 ms      4.538 ms
-MT Setup              1439.687 ms   1438.557 ms     11.934 ms
+MT Presetup            681.879 ms    683.610 ms      3.139 ms
+MT Setup              1442.946 ms   1434.168 ms     19.057 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    6969.391 ms   6965.014 ms     52.179 ms
+OT Extension Setup    6921.582 ms   6918.865 ms     36.919 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   9149.892 ms   9136.714 ms     53.260 ms
-Gates Setup             22.028 ms     21.535 ms      1.578 ms
-Gates Online          2278.444 ms   2275.974 ms     89.584 ms
+Preprocessing Total   9103.771 ms   9077.166 ms     43.320 ms
+Gates Setup             24.872 ms     24.985 ms      0.873 ms
+Gates Online          2301.642 ms   2316.140 ms     40.720 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   11455.731 ms  11426.108 ms     78.442 ms
+Circuit Evaluation   11436.110 ms  11434.704 ms     23.267 ms
 ===========================================================================
 Communication with each other party:
 Sent: 634.158 MiB in 80549 messages
@@ -1025,29 +2513,29 @@ Received: 634.157 MiB in 80548 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_perturbation_optimized bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            117.241 ms    108.423 ms     13.539 ms
-MT Setup               250.511 ms    245.057 ms     16.078 ms
+MT Presetup            120.547 ms    127.945 ms      9.753 ms
+MT Setup               245.280 ms    243.957 ms      3.513 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    1127.342 ms   1113.864 ms     37.530 ms
+OT Extension Setup    1127.163 ms   1120.693 ms     35.411 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1556.525 ms   1561.230 ms     47.975 ms
-Gates Setup              3.919 ms      3.743 ms      0.508 ms
-Gates Online           476.531 ms    469.829 ms     95.074 ms
+Preprocessing Total   1554.422 ms   1553.252 ms     47.218 ms
+Gates Setup              3.685 ms      3.622 ms      0.166 ms
+Gates Online           472.999 ms    472.208 ms     96.178 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    2041.935 ms   2085.694 ms    110.027 ms
+Circuit Evaluation    2036.310 ms   2058.720 ms    139.382 ms
 ===========================================================================
 Communication with each other party:
 Sent: 103.306 MiB in 13435 messages
@@ -1056,29 +2544,29 @@ Received: 103.306 MiB in 13434 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_rounding_naive bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            594.206 ms    595.011 ms      3.099 ms
-MT Setup              1253.574 ms   1256.789 ms     11.272 ms
+MT Presetup            595.180 ms    595.479 ms      4.445 ms
+MT Setup              1258.428 ms   1259.677 ms      8.796 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    6132.667 ms   6119.023 ms     93.166 ms
+OT Extension Setup    6049.081 ms   6028.252 ms     52.394 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   8040.075 ms   8034.213 ms     93.747 ms
-Gates Setup             19.499 ms     18.837 ms      1.658 ms
-Gates Online          2021.414 ms   1967.022 ms     90.517 ms
+Preprocessing Total   7957.932 ms   7953.037 ms     51.989 ms
+Gates Setup             21.607 ms     21.821 ms      2.125 ms
+Gates Online          2054.313 ms   2049.836 ms     91.839 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   10085.991 ms  10058.800 ms    123.368 ms
+Circuit Evaluation   10038.950 ms  10034.857 ms     45.565 ms
 ===========================================================================
 Communication with each other party:
 Sent: 551.533 MiB in 70111 messages
@@ -1087,29 +2575,29 @@ Received: 551.533 MiB in 70110 messages
 ===========================================================================
 Protocol BooleanGMW operation kSnappingMechanism_rounding_optimized bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 07694ca4 @ dev
-invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1142097
+MOTION version: 4dcff23b @ dev
+invocation: ./benchmark_liangzhao_snapping_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1575482
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             17.123 ms     13.155 ms      6.601 ms
-MT Setup                76.428 ms     67.748 ms     24.355 ms
+MT Presetup             22.609 ms     20.672 ms      5.592 ms
+MT Setup                70.282 ms     72.608 ms     18.803 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     293.972 ms    293.574 ms     35.988 ms
+OT Extension Setup     279.282 ms    257.564 ms     56.415 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    458.330 ms    480.977 ms     34.471 ms
-Gates Setup              1.241 ms      1.058 ms      0.383 ms
-Gates Online           192.761 ms    143.000 ms    107.073 ms
+Preprocessing Total    451.191 ms    447.803 ms     80.153 ms
+Gates Setup              1.272 ms      1.036 ms      0.412 ms
+Gates Online           257.128 ms    229.824 ms    107.089 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     658.837 ms    587.627 ms    107.409 ms
+Circuit Evaluation     716.571 ms    656.857 ms    106.256 ms
 ===========================================================================
 Communication with each other party:
 Sent: 20.682 MiB in 2997 messages
