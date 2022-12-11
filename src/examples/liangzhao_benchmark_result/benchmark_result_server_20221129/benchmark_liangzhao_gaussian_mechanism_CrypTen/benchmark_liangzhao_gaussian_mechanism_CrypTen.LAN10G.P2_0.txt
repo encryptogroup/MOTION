@@ -1,30 +1,30 @@
-lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.036 ms      0.035 ms      0.007 ms
-MT Setup                27.517 ms     35.920 ms     21.394 ms
+MT Presetup              0.030 ms      0.034 ms      0.007 ms
+MT Setup                 1.386 ms      0.191 ms      1.890 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       3.197 ms      2.126 ms      3.070 ms
+OT Extension Setup       9.976 ms     12.605 ms      4.873 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    106.391 ms    110.933 ms     29.519 ms
-Gates Setup            429.744 ms    453.754 ms    102.582 ms
-Gates Online           212.401 ms    190.863 ms     76.881 ms
+Preprocessing Total     79.605 ms     70.921 ms     20.418 ms
+Gates Setup            367.679 ms    350.042 ms     53.457 ms
+Gates Online           174.154 ms    168.951 ms     39.919 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     754.872 ms    797.439 ms    174.846 ms
+Circuit Evaluation     627.845 ms    651.640 ms     50.752 ms
 ===========================================================================
 Communication with each other party:
 Sent: 2.242 MiB in 31339 messages
@@ -33,29 +33,29 @@ Received: 0.161 MiB in 2704 messages
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.188 ms      0.173 ms      0.096 ms
-MT Setup                 6.841 ms      7.745 ms      3.152 ms
+MT Presetup              0.237 ms      0.186 ms      0.170 ms
+MT Setup                 4.750 ms      5.797 ms      3.170 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       5.796 ms      4.738 ms      3.602 ms
+OT Extension Setup       9.824 ms      7.367 ms      5.055 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     74.212 ms     72.916 ms      4.694 ms
-Gates Setup           2803.273 ms   2768.479 ms    142.576 ms
-Gates Online           683.598 ms    670.353 ms     89.281 ms
+Preprocessing Total     76.749 ms     74.670 ms      6.871 ms
+Gates Setup           3083.120 ms   3091.717 ms    246.096 ms
+Gates Online           702.740 ms    715.813 ms     91.573 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    3568.825 ms   3445.942 ms    215.686 ms
+Circuit Evaluation    3870.519 ms   3797.565 ms    287.710 ms
 ===========================================================================
 Communication with each other party:
 Sent: 8.560 MiB in 123116 messages
@@ -64,11 +64,11 @@ Received: 1.446 MiB in 25100 messages
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -82,11 +82,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      8.077 ms      3.463 ms     12.059 ms
-Gates Setup             30.159 ms     24.094 ms     15.640 ms
-Gates Online             6.730 ms      6.566 ms      0.907 ms
+Preprocessing Total     13.537 ms      4.275 ms     17.667 ms
+Gates Setup             50.196 ms     50.046 ms     26.980 ms
+Gates Online            10.009 ms      9.109 ms      3.203 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      52.656 ms     46.560 ms     20.739 ms
+Circuit Evaluation      83.027 ms     70.793 ms     40.434 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.138 MiB in 1865 messages
@@ -95,11 +95,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -113,11 +113,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      3.869 ms      3.712 ms      0.568 ms
-Gates Setup             78.288 ms     77.939 ms     34.922 ms
-Gates Online            17.086 ms     15.061 ms      4.026 ms
+Preprocessing Total      4.325 ms      4.294 ms      0.319 ms
+Gates Setup            153.113 ms    137.288 ms     51.916 ms
+Gates Online            28.818 ms     29.842 ms      5.282 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     104.614 ms    104.902 ms     37.807 ms
+Circuit Evaluation     198.621 ms    175.868 ms     58.969 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.319 MiB in 4371 messages
@@ -126,29 +126,29 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.536 ms      0.404 ms      0.390 ms
-MT Setup                 4.929 ms      3.377 ms      3.558 ms
+MT Presetup              0.621 ms      0.393 ms      0.463 ms
+MT Setup                 4.980 ms      3.879 ms      3.721 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      17.409 ms     19.027 ms      3.650 ms
+OT Extension Setup      20.353 ms     20.450 ms      4.011 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     90.779 ms     91.599 ms      2.911 ms
-Gates Setup             22.769 ms     21.972 ms      2.169 ms
-Gates Online          1387.704 ms   1382.060 ms    159.419 ms
+Preprocessing Total     92.673 ms     92.982 ms      4.261 ms
+Gates Setup             23.775 ms     22.307 ms      2.331 ms
+Gates Online          1197.421 ms   1144.961 ms    111.524 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1507.934 ms   1503.268 ms    160.161 ms
+Circuit Evaluation    1322.166 ms   1264.705 ms    113.404 ms
 ===========================================================================
 Communication with each other party:
 Sent: 3.442 MiB in 59955 messages
@@ -157,29 +157,29 @@ Received: 3.442 MiB in 59954 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              3.060 ms      3.238 ms      0.697 ms
-MT Setup                10.741 ms      6.644 ms      6.137 ms
+MT Presetup              3.467 ms      3.555 ms      0.258 ms
+MT Setup                 8.780 ms      6.538 ms      4.346 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup      41.433 ms     45.347 ms     10.731 ms
+OT Extension Setup      48.228 ms     49.836 ms     12.243 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    132.270 ms    130.219 ms     12.559 ms
-Gates Setup             70.886 ms     69.534 ms      5.363 ms
-Gates Online          8014.966 ms   7757.622 ms    978.994 ms
+Preprocessing Total    134.378 ms    133.733 ms      5.327 ms
+Gates Setup             74.841 ms     73.495 ms      5.168 ms
+Gates Online          7771.371 ms   7864.828 ms    568.705 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    8224.137 ms   7968.548 ms    979.115 ms
+Circuit Evaluation    7986.523 ms   8081.964 ms    566.765 ms
 ===========================================================================
 Communication with each other party:
 Sent: 12.693 MiB in 221297 messages
@@ -188,29 +188,29 @@ Received: 12.693 MiB in 221296 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.048 ms      0.049 ms      0.007 ms
-MT Setup                10.964 ms      5.438 ms     15.935 ms
+MT Presetup              0.059 ms      0.062 ms      0.007 ms
+MT Setup                 3.839 ms      0.264 ms      4.466 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       4.238 ms      3.618 ms      2.243 ms
+OT Extension Setup       7.341 ms      9.759 ms      4.388 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     81.892 ms     76.357 ms     16.770 ms
-Gates Setup              1.423 ms      1.291 ms      0.716 ms
-Gates Online           266.247 ms    296.063 ms    116.298 ms
+Preprocessing Total     78.365 ms     78.216 ms      2.048 ms
+Gates Setup              1.399 ms      1.161 ms      0.525 ms
+Gates Online           296.126 ms    278.587 ms     86.862 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     370.089 ms    372.410 ms    136.940 ms
+Circuit Evaluation     395.045 ms    379.671 ms     96.664 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.240 MiB in 4105 messages
@@ -219,60 +219,804 @@ Received: 0.240 MiB in 4104 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup              0.069 ms      0.059 ms      0.019 ms
-MT Setup                 5.820 ms      1.748 ms      6.559 ms
+MT Presetup              0.093 ms      0.083 ms      0.021 ms
+MT Setup                 9.821 ms      1.582 ms     17.475 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup       6.518 ms      6.118 ms      3.075 ms
+OT Extension Setup       5.516 ms      5.339 ms      1.541 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     76.697 ms     79.605 ms      5.025 ms
-Gates Setup              3.176 ms      3.361 ms      0.551 ms
-Gates Online           267.538 ms    218.513 ms     96.589 ms
+Preprocessing Total     82.375 ms     72.806 ms     17.673 ms
+Gates Setup              2.967 ms      2.560 ms      0.714 ms
+Gates Online           223.030 ms    167.793 ms     83.448 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     354.135 ms    305.271 ms     99.033 ms
+Circuit Evaluation     319.494 ms    305.045 ms     79.761 ms
 ===========================================================================
 Communication with each other party:
 Sent: 0.527 MiB in 9117 messages
 Received: 0.527 MiB in 9116 messages
 ===========================================================================
 ===========================================================================
-Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1000
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 10
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             18.334 ms     13.083 ms     13.245 ms
-MT Setup                63.167 ms     55.071 ms     20.632 ms
+MT Presetup              0.178 ms      0.193 ms      0.028 ms
+MT Setup                 5.308 ms      5.526 ms      0.616 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     251.565 ms    252.882 ms     18.793 ms
+OT Extension Setup       6.606 ms      6.614 ms      0.507 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    392.833 ms    395.854 ms     41.102 ms
-Gates Setup            327.201 ms    330.677 ms     11.605 ms
-Gates Online           591.157 ms    597.740 ms     30.113 ms
+Preprocessing Total     76.523 ms     76.432 ms      1.231 ms
+Gates Setup            577.918 ms    526.210 ms    107.074 ms
+Gates Online           359.812 ms    350.949 ms    106.281 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1317.475 ms   1305.455 ms     73.604 ms
+Circuit Evaluation    1020.686 ms   1030.717 ms    160.225 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.580 MiB in 31339 messages
+Received: 0.331 MiB in 2704 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.718 ms      1.156 ms      1.138 ms
+MT Setup                18.330 ms     10.621 ms     15.774 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      43.215 ms     44.419 ms     14.402 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    121.402 ms    128.095 ms     13.270 ms
+Gates Setup           2681.895 ms   2664.175 ms     96.224 ms
+Gates Online           752.335 ms    738.772 ms     69.766 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3564.512 ms   3550.222 ms    159.191 ms
+===========================================================================
+Communication with each other party:
+Sent: 31.324 MiB in 123116 messages
+Received: 3.186 MiB in 25100 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     20.059 ms      4.229 ms     19.631 ms
+Gates Setup             42.834 ms     30.886 ms     25.454 ms
+Gates Online             8.992 ms      6.659 ms      3.762 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      78.823 ms     78.046 ms     22.009 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.556 MiB in 1865 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      4.384 ms      4.416 ms      0.099 ms
+Gates Setup            194.714 ms    187.755 ms     17.220 ms
+Gates Online            33.043 ms     34.017 ms      3.886 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     243.831 ms    242.042 ms     21.053 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.273 MiB in 4371 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              5.518 ms      3.715 ms      3.507 ms
+MT Setup                21.525 ms     18.269 ms      6.820 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     116.329 ms    121.947 ms     21.550 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    210.969 ms    213.735 ms     15.057 ms
+Gates Setup             23.435 ms     22.091 ms      2.524 ms
+Gates Online          1281.899 ms   1195.661 ms    140.888 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1522.885 ms   1454.062 ms    138.980 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.595 MiB in 59955 messages
+Received: 7.595 MiB in 59954 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             20.726 ms     20.803 ms      0.254 ms
+MT Setup                72.190 ms     63.160 ms     28.255 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     227.316 ms    223.918 ms     28.812 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    390.243 ms    392.057 ms     18.449 ms
+Gates Setup             71.769 ms     69.098 ms      5.276 ms
+Gates Online          7860.374 ms   7492.776 ms    701.457 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    8328.417 ms   7969.524 ms    681.996 ms
+===========================================================================
+Communication with each other party:
+Sent: 28.090 MiB in 221297 messages
+Received: 28.090 MiB in 221296 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.363 ms      0.363 ms      0.049 ms
+MT Setup                 6.006 ms      7.747 ms      4.169 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      12.675 ms      9.836 ms      6.431 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     88.616 ms     87.929 ms      4.049 ms
+Gates Setup              1.643 ms      1.628 ms      0.509 ms
+Gates Online           311.668 ms    255.433 ms    117.658 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     447.281 ms    378.127 ms    160.795 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.499 MiB in 4105 messages
+Received: 0.499 MiB in 4104 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 10
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.766 ms      0.726 ms      0.100 ms
+MT Setup                 5.663 ms      5.030 ms      2.880 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      25.803 ms     23.024 ms      8.414 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     99.609 ms     98.795 ms      5.299 ms
+Gates Setup              3.558 ms      3.802 ms      0.525 ms
+Gates Online           214.993 ms    188.559 ms     65.600 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     334.024 ms    299.894 ms     77.919 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.136 MiB in 9117 messages
+Received: 1.136 MiB in 9116 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.741 ms      0.457 ms      0.549 ms
+MT Setup                 8.157 ms      8.627 ms      5.506 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      16.318 ms     18.935 ms      5.008 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    101.566 ms     89.556 ms     23.196 ms
+Gates Setup            403.846 ms    376.947 ms    136.535 ms
+Gates Online           272.080 ms    311.917 ms    135.792 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     783.732 ms    887.082 ms    252.491 ms
+===========================================================================
+Communication with each other party:
+Sent: 22.397 MiB in 31339 messages
+Received: 0.709 MiB in 2704 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.579 ms      8.236 ms      2.791 ms
+MT Setup                30.512 ms     31.244 ms      7.846 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     111.453 ms    111.513 ms     16.853 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    206.810 ms    212.392 ms      9.036 ms
+Gates Setup           2186.171 ms   2146.017 ms    117.443 ms
+Gates Online           680.246 ms    665.131 ms     48.322 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    3081.257 ms   3033.103 ms    157.164 ms
+===========================================================================
+Communication with each other party:
+Sent: 80.998 MiB in 123116 messages
+Received: 7.055 MiB in 25100 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     21.531 ms      7.530 ms     20.118 ms
+Gates Setup             40.902 ms     42.458 ms     19.496 ms
+Gates Online             9.551 ms      9.492 ms      1.575 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      77.305 ms     88.326 ms     25.379 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.469 MiB in 1865 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      4.347 ms      4.472 ms      0.544 ms
+Gates Setup            145.839 ms    174.030 ms     60.323 ms
+Gates Online            25.345 ms     29.058 ms     10.392 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     186.622 ms    226.642 ms     71.940 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.353 MiB in 4371 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             17.996 ms     10.470 ms     10.087 ms
+MT Setup                54.040 ms     53.226 ms      2.421 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     235.811 ms    244.325 ms     22.005 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    373.928 ms    380.562 ms     24.895 ms
+Gates Setup             22.944 ms     22.626 ms      1.302 ms
+Gates Online          1354.931 ms   1298.117 ms    217.247 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1758.044 ms   1708.347 ms    223.154 ms
+===========================================================================
+Communication with each other party:
+Sent: 16.824 MiB in 59955 messages
+Received: 16.824 MiB in 59954 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             57.582 ms     57.957 ms      0.588 ms
+MT Setup               132.637 ms    131.936 ms      2.530 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     571.936 ms    571.176 ms     12.591 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    831.425 ms    836.741 ms     16.953 ms
+Gates Setup             68.008 ms     66.264 ms      3.893 ms
+Gates Online          8119.555 ms   7980.832 ms    813.171 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9025.237 ms   8894.245 ms    816.339 ms
+===========================================================================
+Communication with each other party:
+Sent: 62.308 MiB in 221297 messages
+Received: 62.308 MiB in 221296 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.156 ms      1.187 ms      0.070 ms
+MT Setup                11.011 ms      8.546 ms      9.019 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      27.150 ms     33.980 ms      9.939 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    110.759 ms    106.183 ms      9.342 ms
+Gates Setup              1.775 ms      1.758 ms      0.361 ms
+Gates Online           260.657 ms    234.429 ms    102.012 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     405.893 ms    393.006 ms    103.158 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.073 MiB in 4105 messages
+Received: 1.073 MiB in 4104 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 30
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.084 ms      1.696 ms      0.677 ms
+MT Setup                17.068 ms      9.209 ms     10.576 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      48.948 ms     51.763 ms     10.084 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    137.753 ms    144.289 ms      9.148 ms
+Gates Setup              3.288 ms      3.331 ms      0.567 ms
+Gates Online           299.605 ms    332.480 ms    104.022 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     447.098 ms    484.480 ms    111.377 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.486 MiB in 9117 messages
+Received: 2.486 MiB in 9116 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.279 ms      1.110 ms      0.220 ms
+MT Setup                 7.707 ms      7.402 ms      1.424 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      53.671 ms     54.527 ms      9.672 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    129.054 ms    118.985 ms     24.304 ms
+Gates Setup            183.331 ms    178.260 ms      9.044 ms
+Gates Online           270.747 ms    244.377 ms     47.100 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     590.792 ms    550.259 ms     70.201 ms
+===========================================================================
+Communication with each other party:
+Sent: 71.339 MiB in 31339 messages
+Received: 2.067 MiB in 2704 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             19.477 ms     19.694 ms      1.389 ms
+MT Setup                77.347 ms     62.968 ms     23.076 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     235.773 ms    234.263 ms     19.055 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    390.370 ms    395.781 ms     10.017 ms
+Gates Setup           1000.671 ms    991.843 ms     92.528 ms
+Gates Online           618.981 ms    596.363 ms    107.970 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2018.882 ms   2001.589 ms    137.459 ms
+===========================================================================
+Communication with each other party:
+Sent: 257.103 MiB in 123116 messages
+Received: 20.972 MiB in 25100 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      4.696 ms      4.319 ms      1.012 ms
+Gates Setup             22.601 ms     21.011 ms      5.918 ms
+Gates Online             7.763 ms      7.590 ms      1.440 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      40.636 ms     39.428 ms      7.969 ms
+===========================================================================
+Communication with each other party:
+Sent: 4.700 MiB in 1865 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      5.539 ms      5.358 ms      1.711 ms
+Gates Setup             72.031 ms     38.028 ms     52.257 ms
+Gates Online            21.931 ms     14.201 ms      9.979 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     104.117 ms     60.456 ms     65.458 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.713 MiB in 4371 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             52.151 ms     54.085 ms     10.640 ms
+MT Setup               147.254 ms    132.984 ms     34.681 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     612.328 ms    621.431 ms     66.895 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    880.845 ms    857.245 ms     73.107 ms
+Gates Setup             24.006 ms     17.637 ms     12.816 ms
+Gates Online          1155.636 ms   1185.125 ms     50.334 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2065.841 ms   2082.456 ms     73.124 ms
+===========================================================================
+Communication with each other party:
+Sent: 50.033 MiB in 59955 messages
+Received: 50.033 MiB in 59954 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            185.115 ms    184.717 ms      1.274 ms
+MT Setup               449.307 ms    439.145 ms     16.271 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1881.874 ms   1865.342 ms    116.770 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2580.735 ms   2563.706 ms    103.749 ms
+Gates Setup             71.578 ms     67.127 ms     10.711 ms
+Gates Online          7052.075 ms   6749.797 ms    548.897 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    9710.357 ms   9500.698 ms    542.745 ms
+===========================================================================
+Communication with each other party:
+Sent: 185.438 MiB in 221297 messages
+Received: 185.438 MiB in 221296 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              2.637 ms      2.778 ms      0.528 ms
+MT Setup                13.602 ms     11.386 ms      3.954 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      74.165 ms     85.380 ms     21.303 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    172.508 ms    174.668 ms     10.613 ms
+Gates Setup              1.592 ms      1.761 ms      0.284 ms
+Gates Online           255.581 ms    208.416 ms    135.586 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     474.768 ms    389.875 ms    176.352 ms
+===========================================================================
+Communication with each other party:
+Sent: 3.143 MiB in 4105 messages
+Received: 3.143 MiB in 4104 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 100
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              7.226 ms      6.516 ms      3.200 ms
+MT Setup                30.582 ms     31.132 ms      5.578 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     140.234 ms    152.731 ms     23.902 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    249.268 ms    232.995 ms     29.890 ms
+Gates Setup              2.946 ms      2.877 ms      0.414 ms
+Gates Online           192.925 ms    172.943 ms     39.441 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     452.094 ms    443.334 ms     49.614 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.348 MiB in 9117 messages
+Received: 7.348 MiB in 9116 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1000
+===========================================================================
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
+===========================================================================
+Run time statistics over 5 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             14.957 ms     12.991 ms      3.492 ms
+MT Setup                53.853 ms     49.089 ms      8.789 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     262.968 ms    268.289 ms     29.443 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    392.567 ms    389.699 ms     27.168 ms
+Gates Setup            341.705 ms    337.875 ms     10.047 ms
+Gates Online           569.281 ms    594.429 ms     32.823 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1309.743 ms   1345.815 ms     57.623 ms
 ===========================================================================
 Communication with each other party:
 Sent: 698.827 MiB in 31339 messages
@@ -281,29 +1025,29 @@ Received: 19.323 MiB in 2704 messages
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            205.520 ms    205.057 ms      0.830 ms
-MT Setup               502.154 ms    500.935 ms      6.600 ms
+MT Presetup            202.049 ms    199.144 ms      6.188 ms
+MT Setup               499.213 ms    500.160 ms      3.301 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    2184.070 ms   2204.265 ms     64.266 ms
+OT Extension Setup    2155.375 ms   2157.353 ms     19.163 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   2947.677 ms   2980.472 ms     65.359 ms
-Gates Setup           3643.873 ms   3719.196 ms    222.449 ms
-Gates Online          3244.225 ms   3252.478 ms    215.103 ms
+Preprocessing Total   2911.440 ms   2921.735 ms     17.712 ms
+Gates Setup           3899.752 ms   3883.514 ms    152.594 ms
+Gates Online          3421.450 ms   3438.846 ms    142.236 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    9884.528 ms   9978.454 ms    362.298 ms
+Circuit Evaluation   10253.583 ms  10240.637 ms    149.053 ms
 ===========================================================================
 Communication with each other party:
 Sent: 2513.762 MiB in 123116 messages
@@ -312,11 +1056,11 @@ Received: 197.689 MiB in 25100 messages
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -330,11 +1074,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total     12.241 ms      4.436 ms     15.997 ms
-Gates Setup             33.930 ms     33.246 ms      4.489 ms
-Gates Online             7.742 ms      7.888 ms      1.140 ms
+Preprocessing Total     13.350 ms      4.823 ms     15.684 ms
+Gates Setup             37.563 ms     36.245 ms      4.587 ms
+Gates Online             8.456 ms      8.756 ms      0.997 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      59.174 ms     53.078 ms     17.128 ms
+Circuit Evaluation      65.132 ms     60.395 ms     13.433 ms
 ===========================================================================
 Communication with each other party:
 Sent: 46.142 MiB in 1865 messages
@@ -343,11 +1087,11 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol GarbledCircuit operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
@@ -361,11 +1105,11 @@ Base OTs                 0.000 ms      0.000 ms      0.000 ms
 OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total      7.854 ms      3.856 ms     12.021 ms
-Gates Setup             55.569 ms     53.898 ms      9.410 ms
-Gates Online            14.051 ms     13.876 ms      0.758 ms
+Preprocessing Total      4.122 ms      4.091 ms      0.503 ms
+Gates Setup             56.002 ms     54.662 ms      7.617 ms
+Gates Online            14.780 ms     14.183 ms      2.168 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation      82.169 ms     80.690 ms     14.190 ms
+Circuit Evaluation      79.959 ms     78.204 ms     10.645 ms
 ===========================================================================
 Communication with each other party:
 Sent: 105.116 MiB in 4371 messages
@@ -374,29 +1118,29 @@ Received: 0.000 MiB in 4 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup            493.524 ms    486.703 ms     15.351 ms
-MT Setup              1194.874 ms   1195.321 ms      9.764 ms
+MT Presetup            489.027 ms    487.202 ms      3.681 ms
+MT Setup              1193.565 ms   1191.020 ms      9.766 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup    5182.441 ms   5158.907 ms    126.592 ms
+OT Extension Setup    5221.317 ms   5148.817 ms    142.648 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   6929.855 ms   6934.077 ms    124.504 ms
-Gates Setup             18.449 ms     18.824 ms      1.780 ms
-Gates Online          1056.255 ms   1043.681 ms     65.704 ms
+Preprocessing Total   6976.360 ms   6912.008 ms    131.932 ms
+Gates Setup             16.765 ms     15.801 ms      1.339 ms
+Gates Online          1029.121 ms   1030.975 ms     25.251 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    8009.326 ms   8009.675 ms    119.421 ms
+Circuit Evaluation    8027.808 ms   7976.844 ms    108.797 ms
 ===========================================================================
 Communication with each other party:
 Sent: 471.687 MiB in 59955 messages
@@ -405,29 +1149,29 @@ Received: 471.687 MiB in 59954 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup           1831.004 ms   1835.853 ms      9.242 ms
-MT Setup              4317.511 ms   4316.815 ms     34.318 ms
+MT Presetup           1835.926 ms   1841.642 ms     10.786 ms
+MT Setup              4449.705 ms   4371.418 ms    157.036 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup   19834.592 ms  19867.360 ms     76.939 ms
+OT Extension Setup   19762.055 ms  20149.449 ms    960.094 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total  26041.098 ms  26048.243 ms     99.104 ms
-Gates Setup             66.853 ms     67.280 ms      3.361 ms
-Gates Online          6018.336 ms   5954.958 ms    151.916 ms
+Preprocessing Total  26103.364 ms  26343.306 ms    841.530 ms
+Gates Setup             67.274 ms     66.176 ms      3.879 ms
+Gates Online          8699.009 ms   8308.517 ms   2385.191 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation   32130.666 ms  32086.383 ms    176.345 ms
+Circuit Evaluation   34874.586 ms  35755.995 ms   1878.834 ms
 ===========================================================================
 Communication with each other party:
 Sent: 1748.798 MiB in 221297 messages
@@ -436,29 +1180,29 @@ Received: 1748.798 MiB in 221296 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             27.865 ms     27.073 ms      7.354 ms
-MT Setup                97.439 ms     79.858 ms     28.035 ms
+MT Presetup             32.774 ms     30.489 ms     13.381 ms
+MT Setup                91.015 ms     79.292 ms     27.622 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     362.047 ms    361.744 ms     43.474 ms
+OT Extension Setup     376.681 ms    381.384 ms     60.042 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total    566.517 ms    582.304 ms     55.542 ms
-Gates Setup              1.383 ms      1.098 ms      0.478 ms
-Gates Online           137.538 ms    136.773 ms     56.404 ms
+Preprocessing Total    562.100 ms    542.733 ms     66.270 ms
+Gates Setup              1.321 ms      1.123 ms      0.475 ms
+Gates Online           104.361 ms    108.298 ms     10.018 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation     709.565 ms    678.562 ms    107.360 ms
+Circuit Evaluation     672.383 ms    657.945 ms     68.854 ms
 ===========================================================================
 Communication with each other party:
 Sent: 29.413 MiB in 4105 messages
@@ -467,29 +1211,29 @@ Received: 29.413 MiB in 4104 messages
 ===========================================================================
 Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1000
 ===========================================================================
-MOTION version: 38da9187 @ dev
-invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
-by lzhao@simx1, PID 1126823
+MOTION version: e55e1010 @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 5
+by lzhao@simx1, PID 1536726
 ===========================================================================
-Run time statistics over 10 iterations
+Run time statistics over 5 iterations
 ---------------------------------------------------------------------------
                           mean        median        stddev
 ---------------------------------------------------------------------------
-MT Presetup             69.603 ms     72.208 ms     10.694 ms
-MT Setup               170.698 ms    166.493 ms      8.494 ms
+MT Presetup             75.059 ms     70.666 ms      8.675 ms
+MT Setup               165.688 ms    165.942 ms      0.757 ms
 SP Presetup              0.000 ms      0.000 ms      0.000 ms
 SP Setup                 0.000 ms      0.000 ms      0.000 ms
 SB Presetup              0.000 ms      0.000 ms      0.000 ms
 SB Setup                 0.000 ms      0.000 ms      0.000 ms
 Base OTs                 0.000 ms      0.000 ms      0.000 ms
-OT Extension Setup     758.109 ms    739.147 ms     53.890 ms
+OT Extension Setup     751.109 ms    750.654 ms     14.589 ms
 KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
 ---------------------------------------------------------------------------
-Preprocessing Total   1074.055 ms   1050.217 ms     63.262 ms
-Gates Setup              2.410 ms      2.285 ms      0.245 ms
-Gates Online           192.711 ms    185.905 ms     56.231 ms
+Preprocessing Total   1048.139 ms   1048.642 ms     22.019 ms
+Gates Setup              2.402 ms      2.336 ms      0.256 ms
+Gates Online           200.197 ms    183.649 ms     45.636 ms
 ---------------------------------------------------------------------------
-Circuit Evaluation    1273.662 ms   1247.475 ms     64.005 ms
+Circuit Evaluation    1255.892 ms   1239.255 ms     58.543 ms
 ===========================================================================
 Communication with each other party:
 Sent: 69.078 MiB in 9117 messages
