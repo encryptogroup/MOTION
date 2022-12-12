@@ -125,8 +125,8 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::vector<Combination> combinations;
 
-  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
-  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBitSizes) {
       for (const auto operation_type : kBooleanGmwOperationTypes) {
         if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
@@ -140,8 +140,8 @@ std::vector<Combination> GenerateAllCombinations() {
     }
   }
 
-  // for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
-  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
+  for (const auto number_of_simd : kNumbersOfSimd_1_10_100_1000) {
+  // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
     for (const auto bit_size : kBitSizes) {
       for (const auto operation_type : kGarbledCircuitOperationTypes) {
         if ((bit_size == 32) && (operation_type == T::kClampB_circuit ||
