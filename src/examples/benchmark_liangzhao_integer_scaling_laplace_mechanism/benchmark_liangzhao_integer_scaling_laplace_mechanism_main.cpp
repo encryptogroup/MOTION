@@ -353,7 +353,7 @@ std::vector<Combination> GenerateAllCombinations() {
     // only for debugging
     // batch_size =100; // ! overflow
     // batch_size =50; // ! overflow
-    batch_size =30; // ? if overflow
+    // batch_size =30; // no overflow (almost overflow)
 
     // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
     //                           T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
@@ -470,7 +470,7 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
     // ================================================
     // ! BooleanGMW 32-bit
-    batch_size = 100;
+    batch_size = 30;
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
