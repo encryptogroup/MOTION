@@ -105,7 +105,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // only for debugging
     // batch_size = 30;
-    batch_size = 100;
+    batch_size = 200;
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
@@ -203,12 +203,10 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
 
     // ! Garbled Circuit 64-bit
-    // ? if overflow
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
                               batch_size, failure_probability_pow2_neg_40);
 
-    // ? if overflow
     combinations.emplace_back(
         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized, batch_size,
@@ -245,12 +243,10 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
 
     // ! Garbled Circuit 64-bit
-    // ? if overflow
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
                               batch_size, failure_probability_pow2_neg_40);
 
-    // ? if overflow
     combinations.emplace_back(
         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized, batch_size,
@@ -287,12 +283,10 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
 
     // ! Garbled Circuit 64-bit
-    // ? if overflow
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
                               batch_size, failure_probability_pow2_neg_40);
 
-    // ? if overflow
     combinations.emplace_back(
         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized, batch_size,
@@ -311,11 +305,12 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit 32-bit
     batch_size = 100;
 
-    // ? if overflow
+    // no overflow
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
                               batch_size, failure_probability_pow2_neg_40);
 
+    // no overflow
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized, batch_size,
@@ -330,12 +325,12 @@ std::vector<Combination> GenerateAllCombinations() {
                               batch_size, failure_probability_pow2_neg_40);
 
     // ! Garbled Circuit 64-bit
-    // ? if overflow
+    // no overflow
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive,
                               batch_size, failure_probability_pow2_neg_40);
 
-    // ? if overflow
+    // no overflow
     combinations.emplace_back(
         64, encrypto::motion::MpcProtocol::kGarbledCircuit,
         T::kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized, batch_size,
