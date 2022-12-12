@@ -89,11 +89,11 @@ std::vector<Combination> GenerateAllCombinations() {
   double failure_probability_pow2_neg_40 = std::exp2l(-40.0);
 
   std::size_t batch_size = 1;
-  std::size_t num_of_parties = 2;
-  bool benchmark_gc = true;
-  // bool benchmark_gc = false;
-  // bool benchmark_boolean_gmw = true;
-  bool benchmark_boolean_gmw = false;
+  std::size_t num_of_parties = 3;
+  // bool benchmark_gc = true;
+  bool benchmark_gc = false;
+  bool benchmark_boolean_gmw = true;
+  // bool benchmark_boolean_gmw = false;
 
   double sigma = 0.15;
 
@@ -107,29 +107,29 @@ std::vector<Combination> GenerateAllCombinations() {
     // only for debugging
     // batch_size=30; // ! overflow
 
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
-    //     batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+        batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
                               batch_size, failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(
-    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(
-    //     64, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
-    //     batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        64, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
+        batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation,
@@ -139,15 +139,15 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit
     batch_size = 5;
 
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
-    //     batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+        batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
@@ -174,19 +174,19 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 10;
 
     // no overflow
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
-    //     batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+        batch_size, failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
+                              batch_size, failure_probability_pow2_neg_40, sigma);
 
     // ! overflow
     // combinations.emplace_back(
@@ -209,16 +209,16 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 20;
 
     // no overflow
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-    //     failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+        failure_probability_pow2_neg_40, sigma);
 
     // no overflow
-    // combinations.emplace_back(
-    //     32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
-    //     batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(
+        32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+        batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
@@ -246,30 +246,30 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! BooleanGMW
     batch_size = 1;
 
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40, sigma);
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40, sigma);
 
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
-        batch_size, failure_probability_pow2_neg_40, sigma);
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
                               T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
                               batch_size, failure_probability_pow2_neg_40, sigma);
 
-    combinations.emplace_back(
-        64, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40, sigma);
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40, sigma);
 
     // no overflow (almost overflow)
-    combinations.emplace_back(
-        64, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
-        batch_size, failure_probability_pow2_neg_40, sigma);
+    // combinations.emplace_back(
+    //     64, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
                               T::kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation,
@@ -278,15 +278,15 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! BooleanGMW
     batch_size = 5;
 
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
-        failure_probability_pow2_neg_40, sigma);
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive, batch_size,
+    //     failure_probability_pow2_neg_40, sigma);
 
-    combinations.emplace_back(
-        32, encrypto::motion::MpcProtocol::kBooleanGmw,
-        T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
-        batch_size, failure_probability_pow2_neg_40, sigma);
+    // combinations.emplace_back(
+    //     32, encrypto::motion::MpcProtocol::kBooleanGmw,
+    //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
+    //     batch_size, failure_probability_pow2_neg_40, sigma);
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kBooleanGmw,
                               T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
