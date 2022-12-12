@@ -90,13 +90,13 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::size_t batch_size = 1;
   std::size_t num_of_parties = 2;
-  
+
   bool benchmark_gc = true;
   bool benchmark_boolean_gmw = false;
   // bool benchmark_gc = false;
   // bool benchmark_boolean_gmw = true;
 
-  double sigma = 0.15;
+  // double sigma = 0.15;
 
 // only for debugging
   double sigma = 1.12; // ! overflow
