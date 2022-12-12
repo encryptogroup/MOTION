@@ -1679,9 +1679,9 @@ void test_discrete_gaussian_distribution_EXP_failure_estimation() {
     std::size_t num_of_elements = 1;
     double min = 0;
 
-    // double max = 1;  // iterations_1=0
+     double max = 1;  // iterations_1=0
     //    double max = 10;
-    double max = 100;
+//    double max = 100;
 
     std::vector<double> sigma_double_vector = rand_range_double_vector(min, max, num_of_elements);
 
@@ -1728,12 +1728,22 @@ void test_optimize_discrete_gaussian_distribution_EXP_iteration() {
     std::srand(time(nullptr));
     long double total_failure_probability = std::exp2(-40);
     //    std::size_t num_of_elements = 10;
-    std::size_t num_of_elements = 1;
-    double min = 1;
+    std::size_t num_of_elements = 100;
+//    double min = 0;
+//    double max = 1;
 
-    // double max = 2;  // iterations_1=0
-    double max = 10;
-    // double max = 1;
+//     double min = 1;  // iterations_1=0
+//    double max = 2;
+
+//    double min = 2;  // iterations_1=0
+//    double max = 5;
+//
+//    double min = 5;  // iterations_1=0
+//    double max = 10;
+
+    double min = 10;  // iterations_1=0
+    double max = 100;
+
 
     std::vector<double> sigma_double_vector = rand_range_double_vector(min, max, num_of_elements);
 
@@ -1751,7 +1761,7 @@ void test_optimize_discrete_gaussian_distribution_EXP_iteration() {
         //         sigma_tmp = 6.1;
         //         sigma_tmp = 7.1;
         //         sigma_tmp = 8.1;
-        sigma_tmp = 9.1;
+//        sigma_tmp = 9.1;
         //         sigma_tmp = 10.1;
 
         long double t_tmp = floor(sigma_tmp) + 1;
@@ -1808,7 +1818,7 @@ void test_optimize_integer_scaling_laplace_distribution_EXP_iteration() {
     double min = 0;
 
 
-    double max = 0.1;
+    double max = 0.01;
 
     std::vector<double> epsilon_double_vector = rand_range_double_vector(min, max, num_of_elements);
 

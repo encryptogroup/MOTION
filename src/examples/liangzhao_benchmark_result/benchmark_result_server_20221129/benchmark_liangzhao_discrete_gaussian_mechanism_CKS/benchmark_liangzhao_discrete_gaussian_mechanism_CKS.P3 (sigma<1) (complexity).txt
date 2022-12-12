@@ -1,0 +1,128 @@
+lzhao@simx2 ~/test_MOTION_complexity/MOTION_complexity/build/bin $ ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000 
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.5
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 38
+minimum_total_iteration_: 26600
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 38
+num_of_simd_dgau_: 1
+num_of_simd_total_: 950
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 22173189
+num_of_boolean_gmw_mux_gate: 6925168
+max_depth_of_boolean_gmw_and_gate_before: 636
+max_depth_of_boolean_gmw_mux_gate_before: 73
+max_depth_of_boolean_gmw_and_mux_gate_before: 686
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: 807ed68a @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000
+by lzhao@simx2, PID 1521841
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            782.170 ms      0.000 ms -nan       ms
+MT Setup              1710.764 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   11349.848 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  13903.799 ms      0.000 ms -nan       ms
+Gates Setup         167985.255 ms      0.000 ms -nan       ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  181893.396 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 346.127 MiB in 390 messages
+Received: 346.127 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.5
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 38
+minimum_total_iteration_: 26600
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 38
+num_of_simd_dgau_: 1
+num_of_simd_total_: 950
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 383
+num_of_boolean_gmw_mux_gate: 0
+max_depth_of_boolean_gmw_and_gate_before: 6
+max_depth_of_boolean_gmw_mux_gate_before: 0
+max_depth_of_boolean_gmw_and_mux_gate_before: 6
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation bit size 32 SIMD 1
+===========================================================================
+MOTION version: 807ed68a @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000
+by lzhao@simx2, PID 1521841
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.067 ms      0.000 ms      0.000 ms
+MT Setup                43.676 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.304 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    111.185 ms      0.000 ms -nan       ms
+Gates Setup              0.398 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1209.939 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.033 MiB in 390 messages
+Received: 0.033 MiB in 390 messages
+===========================================================================

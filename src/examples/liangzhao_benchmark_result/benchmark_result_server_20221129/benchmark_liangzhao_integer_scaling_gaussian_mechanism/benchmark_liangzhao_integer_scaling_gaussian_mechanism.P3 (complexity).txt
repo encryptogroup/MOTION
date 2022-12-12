@@ -1,0 +1,110 @@
+lzhao@simx2 ~/test_MOTION_complexity/MOTION_complexity/build/bin $ ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized
+SecureIntegerScalingGaussianMechanism::FLGaussianNoiseGeneration_optimized
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 62636961
+num_of_boolean_gmw_mux_gate: 246567
+max_depth_of_boolean_gmw_and_gate_before: 10527
+max_depth_of_boolean_gmw_mux_gate_before: 71
+max_depth_of_boolean_gmw_and_mux_gate_before: 10540
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 7ccd2e31 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000
+by lzhao@simx2, PID 1522836
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2054.397 ms      0.000 ms -nan       ms
+MT Setup              4853.239 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   26296.619 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  33259.593 ms      0.000 ms      0.000 ms
+Gates Setup          10437.181 ms      0.000 ms -nan       ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   43702.055 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 972.425 MiB in 390 messages
+Received: 972.425 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+epsilon: 1.435
+delta_: 0.001
+SecureIntegerScalingGaussianMechanism::ParameterSetup
+sigma: 11.4258
+2.0 * sigma_ / binomial_bound_: 1.58565e-16
+resolution_r_: 2.22045e-16
+sqrtN_: 1.02914e+17
+m_: 145542782360452235
+iteration_: 430
+total_failure_probability_: 8.86439e-13
+
+kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 5404
+num_of_boolean_gmw_mux_gate: 388
+max_depth_of_boolean_gmw_and_gate_before: 106
+max_depth_of_boolean_gmw_mux_gate_before: 10
+max_depth_of_boolean_gmw_and_mux_gate_before: 111
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingGaussianMechanism_FLGaussian_perturbation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 7ccd2e31 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_gaussian_mechanism --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 2,130.83.125.167,23000
+by lzhao@simx2, PID 1522836
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.370 ms      0.000 ms      0.000 ms
+MT Setup                 3.077 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       8.220 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     76.322 ms      0.000 ms      0.000 ms
+Gates Setup           1748.952 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2535.302 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.115 MiB in 390 messages
+Received: 0.115 MiB in 390 messages
+===========================================================================
