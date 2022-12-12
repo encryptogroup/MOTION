@@ -77,7 +77,18 @@ TEST(IntegerScalingLaplaceMechanism,
       std::vector<double> fD_vector = rand_range_double_vector(0, 2, num_of_simd_lap);
 
       double sensitivity = 1;
-      double epsilon = 0.01;
+
+      // double epsilon = 0.01;
+
+      // // only for debugging purposes
+      // double epsilon =0.2;
+      double epsilon =0.3;
+      // double epsilon =0.4;
+      // double epsilon =0.5;
+      // double epsilon =0.6;
+      // double epsilon =0.7;
+      // double epsilon =0.8;
+      // double epsilon =0.9;
 
       try {
         std::vector<PartyPointer> motion_parties(
@@ -90,8 +101,9 @@ TEST(IntegerScalingLaplaceMechanism,
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          encrypto::motion::ShareWrapper share_fD = motion_parties.at(party_id)->In<kGarbledCircuit>(
-              ToInput<double, std::true_type>(fD_vector), 0);
+          encrypto::motion::ShareWrapper share_fD =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(
+                  ToInput<double, std::true_type>(fD_vector), 0);
 
           SecureIntegerScalingLaplaceMechanism secure_integer_scaling_laplace_mechanism =
               SecureIntegerScalingLaplaceMechanism(share_fD);
@@ -173,8 +185,9 @@ TEST(IntegerScalingLaplaceMechanism,
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          encrypto::motion::ShareWrapper share_fD = motion_parties.at(party_id)->In<kGarbledCircuit>(
-              ToInput<double, std::true_type>(fD_vector), 0);
+          encrypto::motion::ShareWrapper share_fD =
+              motion_parties.at(party_id)->In<kGarbledCircuit>(
+                  ToInput<double, std::true_type>(fD_vector), 0);
 
           SecureIntegerScalingLaplaceMechanism secure_integer_scaling_laplace_mechanism =
               SecureIntegerScalingLaplaceMechanism(share_fD);
@@ -219,9 +232,6 @@ TEST(IntegerScalingLaplaceMechanism,
     template_test(static_cast<std::uint64_t>(0));
   }
 }
-
-
-
 
 // ! BooleanGMW
 TEST(IntegerScalingLaplaceMechanism,
@@ -425,8 +435,8 @@ TEST(IntegerScalingLaplaceMechanism,
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          encrypto::motion::ShareWrapper share_fD = motion_parties.at(party_id)->In<kBmr>(
-              ToInput<double, std::true_type>(fD_vector), 0);
+          encrypto::motion::ShareWrapper share_fD =
+              motion_parties.at(party_id)->In<kBmr>(ToInput<double, std::true_type>(fD_vector), 0);
 
           SecureIntegerScalingLaplaceMechanism secure_integer_scaling_laplace_mechanism =
               SecureIntegerScalingLaplaceMechanism(share_fD);
@@ -508,8 +518,8 @@ TEST(IntegerScalingLaplaceMechanism,
 #pragma omp single
 #pragma omp taskloop num_tasks(motion_parties.size())
         for (auto party_id = 0u; party_id < motion_parties.size(); ++party_id) {
-          encrypto::motion::ShareWrapper share_fD = motion_parties.at(party_id)->In<kBmr>(
-              ToInput<double, std::true_type>(fD_vector), 0);
+          encrypto::motion::ShareWrapper share_fD =
+              motion_parties.at(party_id)->In<kBmr>(ToInput<double, std::true_type>(fD_vector), 0);
 
           SecureIntegerScalingLaplaceMechanism secure_integer_scaling_laplace_mechanism =
               SecureIntegerScalingLaplaceMechanism(share_fD);
@@ -554,7 +564,5 @@ TEST(IntegerScalingLaplaceMechanism,
     template_test(static_cast<std::uint64_t>(0));
   }
 }
-
-
 
 }  // namespace

@@ -92,7 +92,7 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
       em::SecureIntegerScalingLaplaceMechanism(share_input_fD);
 
   // only for debug
-  double epsilon = 0.01213;
+  double epsilon = 0.1;
 
   std::cout << "failure_probability: " << failure_probability << std::endl;
 
