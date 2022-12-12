@@ -220,9 +220,9 @@ std::vector<Combination> GenerateAllCombinations() {
     //     T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized,
     //     batch_size, failure_probability_pow2_neg_40, sigma);
 
-    // combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
-    //                           T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
-    //                           batch_size, failure_probability_pow2_neg_40, sigma);
+    combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
+                              T::kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation,
+                              batch_size, failure_probability_pow2_neg_40, sigma);
 
     // ! overflow
     // combinations.emplace_back(
