@@ -45,7 +45,7 @@ namespace em = encrypto::motion;
 em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t number_of_simd,
                                        std::size_t bit_size, em::MpcProtocol protocol,
                                        em::DPMechanismType operation_type,
-                                       double failure_probability) {
+                                       double failure_probability, double sigma) {
   std::size_t floating_point_mantissa_bit_size = 53;
   std::size_t floating_point_exponent_bit_size = 11;
 
@@ -91,7 +91,8 @@ em::RunTimeStatistics EvaluateProtocol(em::PartyPointer& party, std::size_t numb
 
   // only for debug
   // double sigma = 0.135;
-  double sigma = 1.135;
+
+  // double sigma = 1.135;
 
   std::cout<<"failure_probability: "<<failure_probability<<std::endl;
 

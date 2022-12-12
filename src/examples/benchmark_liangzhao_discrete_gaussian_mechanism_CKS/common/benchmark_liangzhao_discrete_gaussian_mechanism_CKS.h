@@ -31,4 +31,4 @@
 encrypto::motion::RunTimeStatistics EvaluateProtocol(
     encrypto::motion::PartyPointer& party, std::size_t number_of_simd, std::size_t bit_size,
     encrypto::motion::MpcProtocol protocol, encrypto::motion::DPMechanismType operation_type,
-    double failure_probability);
+    double failure_probability, double sigma);
