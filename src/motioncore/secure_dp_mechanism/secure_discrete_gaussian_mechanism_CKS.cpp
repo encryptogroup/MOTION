@@ -257,7 +257,7 @@ SecureSignedInteger SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNois
 
   assert(t_ != 1);
 
-  std::cout<<"assert(t_ != 1);"<<std::endl;
+  std::cout << "assert(t_ != 1);" << std::endl;
 
   std::vector<double> sigma_vector(num_of_simd_dgau_, sigma_);
 
@@ -265,8 +265,7 @@ SecureSignedInteger SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNois
 
   switch (fD_->Get()->GetProtocol()) {
     case MpcProtocol::kBooleanGmw: {
-
-      std::cout<<"case MpcProtocol::kBooleanGmw"<<std::endl;
+      std::cout << "case MpcProtocol::kBooleanGmw" << std::endl;
       result_vector = SecureSamplingAlgorithm_naive(fD_->Get())
                           .FLDiscreteGaussianDistribution_BGMW<float, std::uint64_t, std::int64_t>(
                               sigma_vector, random_floating_point_0_1_boolean_gmw_share_dlap,
@@ -321,6 +320,9 @@ SecureSignedInteger SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNois
   //   num_of_simd_dgau_ = fD_->Get()->GetNumberOfSimdValues();
 
   assert(t_ == 1);
+
+  std::cout << "assert(t_ == 1);" << std::endl;
+
   std::vector<double> sigma_vector(num_of_simd_dgau_, sigma_);
 
   std::vector<ShareWrapper> result_vector;
@@ -337,22 +339,28 @@ SecureSignedInteger SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNois
     }
 
     case MpcProtocol::kGarbledCircuit: {
-      result_vector = SecureSamplingAlgorithm_naive(fD_->Get())
-                          .FLDiscreteGaussianDistribution_GC<float, std::uint64_t, std::int64_t>(
-                              sigma_vector, random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kGarbledCircuit>(),
-                              boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kGarbledCircuit>(),
-                              random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kGarbledCircuit>(), iteration_2_,
-                              iteration_3_, iteration_4_);
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteGaussianDistribution_GC<float, std::uint64_t, std::int64_t>(
+                  sigma_vector,
+                  random_floating_point_0_1_boolean_gmw_share_dlap
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kGarbledCircuit>(),
+                  random_floating_point_0_1_boolean_gmw_share_dgau
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_2_, iteration_3_, iteration_4_);
       break;
     }
 
     case MpcProtocol::kBmr: {
-      result_vector = SecureSamplingAlgorithm_naive(fD_->Get())
-                          .FLDiscreteGaussianDistribution_BMR<float, std::uint64_t, std::int64_t>(
-                              sigma_vector, random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
-                              boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kBmr>(),
-                              random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kBmr>(), iteration_2_,
-                              iteration_3_, iteration_4_);
+      result_vector =
+          SecureSamplingAlgorithm_naive(fD_->Get())
+              .FLDiscreteGaussianDistribution_BMR<float, std::uint64_t, std::int64_t>(
+                  sigma_vector,
+                  random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kBmr>(),
+                  random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kBmr>(),
+                  iteration_2_, iteration_3_, iteration_4_);
       break;
     }
 
@@ -400,7 +408,7 @@ SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimize
     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
         SecureSamplingAlgorithm_optimized(fD_->Get())
             .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
-                                                      iteration_1_ * num_of_simd_total_);
+                                                       iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
         SecureSamplingAlgorithm_optimized(fD_->Get())
@@ -555,22 +563,28 @@ SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimize
     }
 
     case MpcProtocol::kGarbledCircuit: {
-      result_vector = SecureSamplingAlgorithm_optimized(fD_->Get())
-                          .FLDiscreteGaussianDistribution_GC<float, std::uint64_t, std::int64_t>(
-                              sigma_vector, random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kGarbledCircuit>(),
-                              boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kGarbledCircuit>(),
-                              random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kGarbledCircuit>(), iteration_2_,
-                              iteration_3_, iteration_4_);
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteGaussianDistribution_GC<float, std::uint64_t, std::int64_t>(
+                  sigma_vector,
+                  random_floating_point_0_1_boolean_gmw_share_dlap
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kGarbledCircuit>(),
+                  random_floating_point_0_1_boolean_gmw_share_dgau
+                      .Convert<MpcProtocol::kGarbledCircuit>(),
+                  iteration_2_, iteration_3_, iteration_4_);
       break;
     }
 
     case MpcProtocol::kBmr: {
-      result_vector = SecureSamplingAlgorithm_optimized(fD_->Get())
-                          .FLDiscreteGaussianDistribution_BMR<float, std::uint64_t, std::int64_t>(
-                              sigma_vector, random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
-                              boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kBmr>(),
-                              random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kBmr>(), iteration_2_,
-                              iteration_3_, iteration_4_);
+      result_vector =
+          SecureSamplingAlgorithm_optimized(fD_->Get())
+              .FLDiscreteGaussianDistribution_BMR<float, std::uint64_t, std::int64_t>(
+                  sigma_vector,
+                  random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
+                  boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kBmr>(),
+                  random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kBmr>(),
+                  iteration_2_, iteration_3_, iteration_4_);
       break;
     }
 
@@ -892,7 +906,7 @@ SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimize
     ShareWrapper random_unsigned_integer_boolean_gmw_share_dlap =
         SecureSamplingAlgorithm_optimized(fD_->Get())
             .GenerateRandomUnsignedIntegerPow2_BGMW<T>(log2_denominator_,
-                                                      iteration_1_ * num_of_simd_total_);
+                                                       iteration_1_ * num_of_simd_total_);
 
     ShareWrapper boolean_gmw_share_bernoulli_sample_dlap =
         SecureSamplingAlgorithm_optimized(fD_->Get())
@@ -1007,8 +1021,7 @@ SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimize
               .FLDiscreteGaussianDistribution_BMR<double, std::uint64_t, std::int64_t>(
                   sigma_vector,
                   random_floating_point_0_1_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
-                  random_unsigned_integer_boolean_gmw_share_dlap
-                      .Convert<MpcProtocol::kBmr>(),
+                  random_unsigned_integer_boolean_gmw_share_dlap.Convert<MpcProtocol::kBmr>(),
                   boolean_gmw_share_bernoulli_sample_dlap.Convert<MpcProtocol::kBmr>(),
                   random_floating_point_0_1_boolean_gmw_share_dgau.Convert<MpcProtocol::kBmr>(),
                   iteration_1_, iteration_2_, iteration_3_, iteration_4_);

@@ -96,7 +96,7 @@ std::vector<Combination> GenerateAllCombinations() {
   bool benchmark_boolean_gmw = false;
 
   double sigma = 0.15;
-
+ 
   // double sigma = 1.12; // ! overflow
 
   if (benchmark_gc && num_of_parties == 2 && sigma < 1) {
