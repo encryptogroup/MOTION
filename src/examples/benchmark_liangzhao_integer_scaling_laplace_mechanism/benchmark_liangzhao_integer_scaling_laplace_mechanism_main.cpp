@@ -105,7 +105,7 @@ std::vector<Combination> GenerateAllCombinations() {
 
     // only for debugging
     // batch_size = 30;
-    batch_size = 200;
+    // batch_size = 200; ? seems no overflow
 
     combinations.emplace_back(32, encrypto::motion::MpcProtocol::kGarbledCircuit,
                               T::kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive,
