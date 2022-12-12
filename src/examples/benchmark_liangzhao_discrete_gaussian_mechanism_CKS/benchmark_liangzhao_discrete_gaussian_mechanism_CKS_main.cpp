@@ -104,8 +104,8 @@ std::vector<Combination> GenerateAllCombinations() {
     // ! Garbled Circuit
     batch_size = 1;
 
-// only for debugging
-    batch_size=30;
+    // only for debugging
+    // batch_size=30; // ! overflow
 
     combinations.emplace_back(
         32, encrypto::motion::MpcProtocol::kGarbledCircuit,
