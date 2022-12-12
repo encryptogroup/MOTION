@@ -1,0 +1,165 @@
+liangzhao@ubuntu22:/media/liangzhao/d5c709c3-5e6f-4fa2-b422-007a6f243cda/test_liangzhao_darmstadt_complexity/MOTION_complexity/build/bin$     ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 29348
+num_of_boolean_gmw_mux_gate: 434
+max_depth_of_boolean_gmw_and_gate_before: 471
+max_depth_of_boolean_gmw_mux_gate_before: 34
+max_depth_of_boolean_gmw_and_mux_gate_before: 476
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_noise_generation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 121803
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             10.113 ms      0.000 ms      0.000 ms
+MT Setup                17.263 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     334.222 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1290.600 ms      0.000 ms      0.000 ms
+Gates Setup            112.126 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1410.534 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.488 MiB in 390 messages
+Received: 0.488 MiB in 390 messages
+===========================================================================
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 106834
+num_of_boolean_gmw_mux_gate: 3619
+max_depth_of_boolean_gmw_and_gate_before: 2627
+max_depth_of_boolean_gmw_mux_gate_before: 129
+max_depth_of_boolean_gmw_and_mux_gate_before: 2676
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_noise_generation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 121803
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             37.858 ms      0.000 ms      0.000 ms
+MT Setup                73.290 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1155.123 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2103.465 ms      0.000 ms      0.000 ms
+Gates Setup            473.858 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2578.061 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.738 MiB in 390 messages
+Received: 1.738 MiB in 390 messages
+===========================================================================
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 1731
+num_of_boolean_gmw_mux_gate: 126
+max_depth_of_boolean_gmw_and_gate_before: 56
+max_depth_of_boolean_gmw_mux_gate_before: 7
+max_depth_of_boolean_gmw_and_mux_gate_before: 59
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL32Gaussian_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 121803
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.735 ms      0.000 ms      0.000 ms
+MT Setup                 0.998 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     126.317 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    963.466 ms      0.000 ms      0.000 ms
+Gates Setup              6.547 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     970.764 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 390 messages
+Received: 0.056 MiB in 390 messages
+===========================================================================
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 4103
+num_of_boolean_gmw_mux_gate: 260
+max_depth_of_boolean_gmw_and_gate_before: 69
+max_depth_of_boolean_gmw_mux_gate_before: 8
+max_depth_of_boolean_gmw_and_mux_gate_before: 72
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kGaussianMechanism_CrypTen_FL64Gaussian_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_gaussian_mechanism_CrypTen --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 121803
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.367 ms      0.000 ms      0.000 ms
+MT Setup                96.023 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      38.459 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1030.724 ms      0.000 ms      0.000 ms
+Gates Setup             16.851 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1049.808 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.095 MiB in 390 messages
+Received: 0.095 MiB in 390 messages
+===========================================================================

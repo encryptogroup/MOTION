@@ -1,0 +1,337 @@
+liangzhao@ubuntu22:/media/liangzhao/d5c709c3-5e6f-4fa2-b422-007a6f243cda/test_liangzhao_darmstadt_complexity/MOTION_complexity/build/bin$   ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+kDPMechanism_PrivaDA_FL32Laplace_noise_generation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 17796
+num_of_boolean_gmw_mux_gate: 651
+max_depth_of_boolean_gmw_and_gate_before: 437
+max_depth_of_boolean_gmw_mux_gate_before: 32
+max_depth_of_boolean_gmw_and_mux_gate_before: 463
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_noise_generation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              6.196 ms      0.000 ms      0.000 ms
+MT Setup                88.191 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     165.464 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1112.545 ms      0.000 ms      0.000 ms
+Gates Setup             73.799 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1193.219 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.313 MiB in 390 messages
+Received: 0.313 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL64Laplace_noise_generation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 76860
+num_of_boolean_gmw_mux_gate: 5071
+max_depth_of_boolean_gmw_and_gate_before: 2771
+max_depth_of_boolean_gmw_mux_gate_before: 127
+max_depth_of_boolean_gmw_and_mux_gate_before: 2868
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_noise_generation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             25.989 ms      0.000 ms      0.000 ms
+MT Setup               135.816 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     950.557 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2060.261 ms      0.000 ms      0.000 ms
+Gates Setup            350.988 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2420.526 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.296 MiB in 390 messages
+Received: 1.296 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL32Laplace_perturbation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 1731
+num_of_boolean_gmw_mux_gate: 126
+max_depth_of_boolean_gmw_and_gate_before: 56
+max_depth_of_boolean_gmw_mux_gate_before: 7
+max_depth_of_boolean_gmw_and_mux_gate_before: 59
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32Laplace_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.852 ms      0.000 ms      0.000 ms
+MT Setup                86.324 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      37.627 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1131.358 ms      0.000 ms      0.000 ms
+Gates Setup              7.168 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1143.420 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 390 messages
+Received: 0.056 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL64Laplace_perturbation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 4103
+num_of_boolean_gmw_mux_gate: 260
+max_depth_of_boolean_gmw_and_gate_before: 69
+max_depth_of_boolean_gmw_mux_gate_before: 8
+max_depth_of_boolean_gmw_and_mux_gate_before: 72
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64Laplace_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.277 ms      0.000 ms      0.000 ms
+MT Setup                91.968 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      32.765 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1101.063 ms      0.000 ms      0.000 ms
+Gates Setup             15.434 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1117.208 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.095 MiB in 390 messages
+Received: 0.095 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 30711
+num_of_boolean_gmw_mux_gate: 106
+max_depth_of_boolean_gmw_and_gate_before: 241
+max_depth_of_boolean_gmw_mux_gate_before: 6
+max_depth_of_boolean_gmw_and_mux_gate_before: 242
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_noise_generation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.829 ms      0.000 ms      0.000 ms
+MT Setup               109.844 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     285.113 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1328.990 ms      0.000 ms      0.000 ms
+Gates Setup             69.576 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1399.364 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.505 MiB in 390 messages
+Received: 0.505 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 113205
+num_of_boolean_gmw_mux_gate: 4322
+max_depth_of_boolean_gmw_and_gate_before: 1914
+max_depth_of_boolean_gmw_mux_gate_before: 72
+max_depth_of_boolean_gmw_and_mux_gate_before: 1955
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_noise_generation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             39.842 ms      0.000 ms      0.000 ms
+MT Setup               141.818 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1368.843 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2411.823 ms      0.000 ms      0.000 ms
+Gates Setup            322.059 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2737.432 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.847 MiB in 390 messages
+Received: 1.847 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 159
+num_of_boolean_gmw_mux_gate: 0
+max_depth_of_boolean_gmw_and_gate_before: 5
+max_depth_of_boolean_gmw_mux_gate_before: 0
+max_depth_of_boolean_gmw_and_mux_gate_before: 5
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL32DiscreteLaplace_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.288 ms      0.000 ms      0.000 ms
+MT Setup                20.237 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      91.530 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    956.271 ms      0.000 ms      0.000 ms
+Gates Setup              0.707 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     957.999 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.029 MiB in 390 messages
+Received: 0.029 MiB in 390 messages
+===========================================================================
+kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 383
+num_of_boolean_gmw_mux_gate: 0
+max_depth_of_boolean_gmw_and_gate_before: 6
+max_depth_of_boolean_gmw_mux_gate_before: 0
+max_depth_of_boolean_gmw_and_mux_gate_before: 6
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kDPMechanism_PrivaDA_FL64DiscreteLaplace_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_dp_mechanism_PrivaDA --my-id 2 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 117314
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.553 ms      0.000 ms      0.000 ms
+MT Setup                81.002 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      20.456 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    998.787 ms      0.000 ms      0.000 ms
+Gates Setup              2.023 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1001.826 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.033 MiB in 390 messages
+Received: 0.033 MiB in 390 messages
+===========================================================================
