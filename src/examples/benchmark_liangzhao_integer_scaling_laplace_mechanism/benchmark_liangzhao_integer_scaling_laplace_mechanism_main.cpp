@@ -95,8 +95,8 @@ std::vector<Combination> GenerateAllCombinations() {
 
   //  std::size_t num_of_parties = 3;
   //  std::size_t num_of_parties = 5;
-  bool benchmark_gc = false;
-  bool benchmark_boolean_gmw = true;
+  // bool benchmark_gc = false;
+  // bool benchmark_boolean_gmw = true;
 
   if (benchmark_gc && num_of_parties == 2) {
     // ================================================
