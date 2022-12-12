@@ -234,7 +234,7 @@ std::vector<Combination> GenerateAllCombinations() {
     batch_size = 1;
 
     // only for debugging purposes
-    batch_size = 10; // ? if overflow
+    // batch_size = 10; // ! overflow
 
     // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw,
     //                           T::kIntegerScalingGaussianMechanism_FLGaussian_noise_generation_naive,
