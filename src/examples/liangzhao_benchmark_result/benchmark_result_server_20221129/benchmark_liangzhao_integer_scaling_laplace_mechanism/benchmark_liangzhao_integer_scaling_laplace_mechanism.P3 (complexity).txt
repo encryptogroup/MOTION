@@ -1,0 +1,483 @@
+liangzhao@ubuntu22:/media/liangzhao/d5c709c3-5e6f-4fa2-b422-007a6f243cda/test_liangzhao_darmstadt_complexity/MOTION_complexity/build/bin$  ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+My id 1
+Other parties:  0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_naive
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 3187536
+num_of_boolean_gmw_mux_gate: 95801
+max_depth_of_boolean_gmw_and_gate_before: 11326
+max_depth_of_boolean_gmw_mux_gate_before: 49
+max_depth_of_boolean_gmw_and_mux_gate_before: 11362
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive bit size 32 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 146410
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1083.762 ms      0.000 ms      0.000 ms
+MT Setup              2199.253 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   28037.394 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  32200.720 ms      0.000 ms      0.000 ms
+Gates Setup           2147.082 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   34348.791 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 50.231 MiB in 390 messages
+Received: 50.231 MiB in 390 messages
+===========================================================================
+
+
+
+
+
+liangzhao@ubuntu22:/media/liangzhao/d5c709c3-5e6f-4fa2-b422-007a6f243cda/test_liangzhao_darmstadt_complexity/MOTION_complexity/build/bin$     ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+My id 1
+Other parties:  0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration_optimized
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 1698397
+num_of_boolean_gmw_mux_gate: 55284
+max_depth_of_boolean_gmw_and_gate_before: 1363
+max_depth_of_boolean_gmw_mux_gate_before: 79
+max_depth_of_boolean_gmw_and_mux_gate_before: 1430
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            573.406 ms      0.000 ms      0.000 ms
+MT Setup               943.378 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   13824.745 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  16199.315 ms      0.000 ms      0.000 ms
+Gates Setup           1244.207 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   17444.275 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 26.534 MiB in 390 messages
+Received: 26.534 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 36050
+num_of_boolean_gmw_mux_gate: 3173
+max_depth_of_boolean_gmw_and_gate_before: 1129
+max_depth_of_boolean_gmw_mux_gate_before: 65
+max_depth_of_boolean_gmw_and_mux_gate_before: 1188
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive bit size 32 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             13.771 ms      0.000 ms      0.000 ms
+MT Setup                19.474 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     430.944 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1395.277 ms      0.000 ms      0.000 ms
+Gates Setup            144.176 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1544.557 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.634 MiB in 390 messages
+Received: 0.634 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 5404
+num_of_boolean_gmw_mux_gate: 388
+max_depth_of_boolean_gmw_and_gate_before: 106
+max_depth_of_boolean_gmw_mux_gate_before: 10
+max_depth_of_boolean_gmw_and_mux_gate_before: 111
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.870 ms      0.000 ms      0.000 ms
+MT Setup                84.348 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      54.564 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1070.725 ms      0.000 ms      0.000 ms
+Gates Setup             21.987 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1108.653 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.115 MiB in 390 messages
+Received: 0.115 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_naive
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 7223394
+num_of_boolean_gmw_mux_gate: 298319
+max_depth_of_boolean_gmw_and_gate_before: 13189
+max_depth_of_boolean_gmw_mux_gate_before: 112
+max_depth_of_boolean_gmw_and_mux_gate_before: 13257
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           2554.846 ms      0.000 ms      0.000 ms
+MT Setup              4109.841 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   64930.693 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  72554.561 ms      0.000 ms      0.000 ms
+Gates Setup           4914.431 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   77469.890 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 115.865 MiB in 390 messages
+Received: 115.865 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration_optimized
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 5148439
+num_of_boolean_gmw_mux_gate: 62922
+max_depth_of_boolean_gmw_and_gate_before: 2620
+max_depth_of_boolean_gmw_mux_gate_before: 114
+max_depth_of_boolean_gmw_and_mux_gate_before: 2689
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1723.353 ms      0.000 ms      0.000 ms
+MT Setup              2914.830 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   44710.277 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  50609.689 ms      0.000 ms      0.000 ms
+Gates Setup           3447.514 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   54058.085 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 80.116 MiB in 390 messages
+Received: 80.116 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 36050
+num_of_boolean_gmw_mux_gate: 3173
+max_depth_of_boolean_gmw_and_gate_before: 1129
+max_depth_of_boolean_gmw_mux_gate_before: 65
+max_depth_of_boolean_gmw_and_mux_gate_before: 1188
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             13.475 ms      0.000 ms      0.000 ms
+MT Setup                28.588 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     487.885 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1491.541 ms      0.000 ms      0.000 ms
+Gates Setup            270.730 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1817.119 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.634 MiB in 390 messages
+Received: 0.634 MiB in 390 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+
+GateExecutor: After gate setup
+num_of_boolean_gmw_and_gate: 5404
+num_of_boolean_gmw_mux_gate: 388
+max_depth_of_boolean_gmw_and_gate_before: 106
+max_depth_of_boolean_gmw_mux_gate_before: 10
+max_depth_of_boolean_gmw_and_mux_gate_before: 111
+num_of_garbled_circuit_and_gate: 0
+num_of_bmr_and_gate: 0
+
+===========================================================================
+Protocol BooleanGMW operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: c2bb7699-dirty @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 1 --parties 0,127.0.0.1,23000 1,127.0.0.1,23001 2,127.0.0.1,23002
+by liangzhao@ubuntu22, PID 142446
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.936 ms      0.000 ms      0.000 ms
+MT Setup                35.876 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     137.937 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1071.621 ms      0.000 ms      0.000 ms
+Gates Setup             21.551 ms      0.000 ms      0.000 ms
+Gates Online             0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1103.415 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.115 MiB in 390 messages
+Received: 0.115 MiB in 390 messages
+===========================================================================

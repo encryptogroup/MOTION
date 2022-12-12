@@ -28,9 +28,11 @@ int main() {
 
 //    test_optimize_geometric_distribution_EXP_iteration();
 //    test_optimize_discrete_laplace_distribution_EXP_iteration();
-    test_optimize_discrete_gaussian_distribution_EXP_iteration();
+//    test_optimize_discrete_gaussian_distribution_EXP_iteration();
 //test_discrete_gaussian_distribution_EXP_failure_estimation();
 //     test_optimize_discrete_laplace_distribution_EXP_iteration_with_threshold();
+
+test_optimize_integer_scaling_laplace_distribution_EXP_iteration();
 
 
 

@@ -220,4 +220,6 @@ void test_optimize_discrete_gaussian_distribution_EXP_iteration();
 
 void test_optimize_discrete_gaussian_distribution_EXP_iteration();
 
+void test_optimize_integer_scaling_laplace_distribution_EXP_iteration();
+
 // void test_optimize_discrete_laplace_distribution_EXP_iteration_with_threshold();
