@@ -1,0 +1,810 @@
+lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 1
+num_of_simd_total_: 1150
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_naive
+assert(t_ == 1);
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive bit size 32 SIMD 1
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            315.893 ms      0.000 ms      0.000 ms
+MT Setup               799.252 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5629.242 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6826.157 ms      0.000 ms -nan       ms
+Gates Setup           3648.862 ms      0.000 ms -nan       ms
+Gates Online          1711.773 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   12230.691 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 309.313 MiB in 2705 messages
+Received: 776.502 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 1
+num_of_simd_total_: 1150
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            315.890 ms      0.000 ms -nan       ms
+MT Setup               764.322 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    5773.867 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   6936.678 ms      0.000 ms      0.000 ms
+Gates Setup           3191.501 ms      0.000 ms      0.000 ms
+Gates Online          1510.425 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   11648.750 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 309.313 MiB in 2705 messages
+Received: 776.502 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 1
+num_of_simd_total_: 1150
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation bit size 32 SIMD 1
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.880 ms      0.000 ms -nan       ms
+Gates Setup             22.325 ms      0.000 ms      0.000 ms
+Gates Online             6.040 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      48.289 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.007 MiB in 70 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 1
+num_of_simd_total_: 1150
+SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_naive bit size 64 SIMD 1
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3269.079 ms      0.000 ms -nan       ms
+MT Setup              8196.055 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   56611.972 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  68188.330 ms      0.000 ms -nan       ms
+Gates Setup           3389.855 ms      0.000 ms      0.000 ms
+Gates Online          2812.222 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   74393.885 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 3167.299 MiB in 25101 messages
+Received: 3891.871 MiB in 93580 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 1
+num_of_simd_total_: 1150
+SecureDiscreteGaussianMechanismCKS::FL64DiscreteGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_noise_generation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3273.873 ms      0.000 ms -nan       ms
+MT Setup              8154.348 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   56463.547 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  67982.994 ms      0.000 ms -nan       ms
+Gates Setup           3495.347 ms      0.000 ms      0.000 ms
+Gates Online          2668.373 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   74164.063 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 3167.299 MiB in 25101 messages
+Received: 3891.871 MiB in 93580 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 1
+num_of_simd_total_: 1150
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL64DiscreteGaussian_perturbation bit size 64 SIMD 1
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     10.024 ms      0.000 ms -nan       ms
+Gates Setup             47.076 ms      0.000 ms -nan       ms
+Gates Online            29.315 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     626.622 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.007 MiB in 70 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 5
+num_of_simd_total_: 5750
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_naive
+assert(t_ == 1);
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive bit size 32 SIMD 5
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1565.876 ms      0.000 ms -nan       ms
+MT Setup              3677.841 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   26292.272 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  31623.148 ms      0.000 ms      0.000 ms
+Gates Setup          17464.697 ms      0.000 ms      0.000 ms
+Gates Online          6309.783 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   55409.010 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1545.995 MiB in 2705 messages
+Received: 3877.207 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 5
+num_of_simd_total_: 5750
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized bit size 32 SIMD 5
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1564.804 ms      0.000 ms -nan       ms
+MT Setup              3707.624 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   26204.919 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  31619.168 ms      0.000 ms -nan       ms
+Gates Setup          17795.791 ms      0.000 ms      0.000 ms
+Gates Online          6186.631 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   55615.583 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1545.995 MiB in 2705 messages
+Received: 3877.207 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 5
+num_of_simd_total_: 5750
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation bit size 32 SIMD 5
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.539 ms      0.000 ms -nan       ms
+Gates Setup             18.701 ms      0.000 ms -nan       ms
+Gates Online             7.206 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      88.600 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.021 MiB in 70 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 10
+num_of_simd_total_: 11500
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_naive
+assert(t_ == 1);
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive bit size 32 SIMD 10
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3103.274 ms      0.000 ms -nan       ms
+MT Setup             10613.441 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   50396.345 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  64336.558 ms      0.000 ms      0.000 ms
+Gates Setup          36385.813 ms      0.000 ms -nan       ms
+Gates Online         11934.734 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  112736.982 ms      0.000 ms      0.001 ms
+===========================================================================
+Communication with each other party:
+Sent: 3091.832 MiB in 2705 messages
+Received: 7753.154 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 10
+num_of_simd_total_: 11500
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized bit size 32 SIMD 10
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           3128.588 ms      0.000 ms      0.000 ms
+MT Setup              7363.881 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   53061.038 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  63691.217 ms      0.000 ms      0.000 ms
+Gates Setup          34516.720 ms      0.000 ms      0.000 ms
+Gates Online         12078.412 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation  110382.598 ms      0.000 ms      0.001 ms
+===========================================================================
+Communication with each other party:
+Sent: 3091.832 MiB in 2705 messages
+Received: 7753.154 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 10
+num_of_simd_total_: 11500
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation bit size 32 SIMD 10
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     19.367 ms      0.000 ms -nan       ms
+Gates Setup             12.240 ms      0.000 ms -nan       ms
+Gates Online             3.815 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      37.652 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.038 MiB in 70 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 20
+num_of_simd_total_: 23000
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_naive
+assert(t_ == 1);
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_naive bit size 32 SIMD 20
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           6201.849 ms      0.000 ms      0.000 ms
+MT Setup             19969.772 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup  102986.173 ms      0.000 ms      0.001 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total 129475.543 ms      0.000 ms -nan       ms
+Gates Setup          72956.746 ms      0.000 ms -nan       ms
+Gates Online         23047.995 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation  225528.699 ms      0.000 ms      0.002 ms
+===========================================================================
+Communication with each other party:
+Sent: 6183.522 MiB in 2705 messages
+Received: 15505.067 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 20
+num_of_simd_total_: 23000
+SecureDiscreteGaussianMechanismCKS::FL32DiscreteGaussianNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_noise_generation_optimized bit size 32 SIMD 20
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           6247.630 ms      0.000 ms -nan       ms
+MT Setup             18376.744 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup  103645.388 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total 128515.146 ms      0.000 ms      0.000 ms
+Gates Setup          72959.431 ms      0.000 ms      0.000 ms
+Gates Online         23225.810 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation  224766.541 ms      0.000 ms      0.001 ms
+===========================================================================
+Communication with each other party:
+Sent: 6183.522 MiB in 2705 messages
+Received: 15505.067 MiB in 24908 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureDiscreteGaussianMechanismCKS::ParameterSetup
+sigma: 0.15
+numerator: 1
+denominator: 1
+numerator_: 1
+denominator_: 1
+log2_denominator_: 0
+discrete_gaussian_best_iteration_1: 0
+discrete_gaussian_best_iteration_2: 28
+discrete_gaussian_best_iteration_3: 25
+discrete_gaussian_best_iteration_4: 46
+minimum_total_iteration_: 32200
+minimum_total_MPC_time_: 2166.91
+geometric_failure_probability_estimation_: 1.95039e-65
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+discrete_laplace_failure_probability_estimation_: 3.12067e-13
+upscale_factor_: 1
+num_of_simd_geo_: 25
+num_of_simd_dlap_: 46
+num_of_simd_dgau_: 20
+num_of_simd_total_: 23000
+===========================================================================
+Protocol GarbledCircuit operation kDiscreteGaussianMechanismCKS_FL32DiscreteGaussian_perturbation bit size 32 SIMD 20
+===========================================================================
+MOTION version: 5be7b8b0 @ dev
+invocation: ./benchmark_liangzhao_discrete_gaussian_mechanism_CKS --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx2, PID 1491232
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.584 ms      0.000 ms -nan       ms
+Gates Setup              3.947 ms      0.000 ms -nan       ms
+Gates Online             3.950 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      27.633 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 0.000 MiB in 4 messages
+Received: 0.072 MiB in 70 messages
+===========================================================================
