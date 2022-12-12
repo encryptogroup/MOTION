@@ -1,0 +1,1570 @@
+lzhao@simx1 ~/MOTION/build/bin $ ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive bit size 32 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              4.110 ms      0.000 ms      0.000 ms
+MT Setup                25.920 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      43.263 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    128.702 ms      0.000 ms      0.000 ms
+Gates Setup           5667.683 ms      0.000 ms      0.000 ms
+Gates Online           289.369 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6107.245 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 76.443 MiB in 56964 messages
+Received: 1.920 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              4.285 ms      0.000 ms      0.000 ms
+MT Setup                12.271 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      52.580 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    132.538 ms      0.000 ms -nan       ms
+Gates Setup            312.290 ms      0.000 ms -nan       ms
+Gates Online           199.048 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     668.531 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 36.500 MiB in 26832 messages
+Received: 1.838 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive bit size 32 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      6.063 ms      0.000 ms -nan       ms
+Gates Setup            822.021 ms      0.000 ms      0.000 ms
+Gates Online           157.210 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1005.504 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.830 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized bit size 32 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      7.264 ms      0.000 ms -nan       ms
+Gates Setup            111.187 ms      0.000 ms -nan       ms
+Gates Online            20.484 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     159.706 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.393 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive bit size 64 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             24.039 ms      0.000 ms      0.000 ms
+MT Setup                52.957 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     297.596 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    436.152 ms      0.000 ms -nan       ms
+Gates Setup           4249.831 ms      0.000 ms -nan       ms
+Gates Online           445.585 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    5150.688 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 171.238 MiB in 106700 messages
+Received: 17.916 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 1
+num_of_simd_total_: 3
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             27.968 ms      0.000 ms -nan       ms
+MT Setup                58.086 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     224.585 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    395.264 ms      0.000 ms -nan       ms
+Gates Setup            510.520 ms      0.000 ms      0.000 ms
+Gates Online           458.550 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1377.716 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 112.510 MiB in 67274 messages
+Received: 17.833 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive bit size 64 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     10.923 ms      0.000 ms -nan       ms
+Gates Setup            742.104 ms      0.000 ms -nan       ms
+Gates Online           153.992 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     928.592 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 2.830 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized bit size 64 SIMD 1
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      7.896 ms      0.000 ms      0.000 ms
+Gates Setup            130.676 ms      0.000 ms      0.000 ms
+Gates Online            22.592 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     181.330 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.393 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 10
+num_of_simd_total_: 30
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive bit size 32 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             21.395 ms      0.000 ms -nan       ms
+MT Setup                42.374 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     235.018 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    375.882 ms      0.000 ms -nan       ms
+Gates Setup           6345.938 ms      0.000 ms      0.000 ms
+Gates Online           250.127 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6975.844 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 738.076 MiB in 56964 messages
+Received: 18.419 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 10
+num_of_simd_total_: 30
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized bit size 32 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             22.259 ms      0.000 ms -nan       ms
+MT Setup                63.038 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     213.234 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    354.951 ms      0.000 ms -nan       ms
+Gates Setup            296.563 ms      0.000 ms      0.000 ms
+Gates Online           325.178 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     996.159 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 352.595 MiB in 26832 messages
+Received: 17.592 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive bit size 32 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.472 ms      0.000 ms      0.000 ms
+Gates Setup            689.712 ms      0.000 ms -nan       ms
+Gates Online           156.066 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     867.535 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 11.193 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized bit size 32 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.488 ms      0.000 ms      0.000 ms
+Gates Setup             58.237 ms      0.000 ms -nan       ms
+Gates Online            17.629 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      97.112 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.581 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 10
+num_of_simd_total_: 30
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            181.828 ms      0.000 ms      0.000 ms
+MT Setup               431.249 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1854.918 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2540.288 ms      0.000 ms -nan       ms
+Gates Setup           9606.652 ms      0.000 ms      0.000 ms
+Gates Online           542.324 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   12693.191 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 1662.387 MiB in 106700 messages
+Received: 173.115 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 10
+num_of_simd_total_: 30
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            181.072 ms      0.000 ms      0.000 ms
+MT Setup               440.424 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1866.022 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2541.752 ms      0.000 ms -nan       ms
+Gates Setup            837.180 ms      0.000 ms      0.000 ms
+Gates Online           803.091 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    4202.296 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1093.489 MiB in 67274 messages
+Received: 172.288 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive bit size 64 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.559 ms      0.000 ms      0.000 ms
+Gates Setup            807.690 ms      0.000 ms      0.000 ms
+Gates Online           155.067 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     986.383 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 11.193 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized bit size 64 SIMD 10
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.412 ms      0.000 ms -nan       ms
+Gates Setup             75.345 ms      0.000 ms -nan       ms
+Gates Online            16.608 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     113.148 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1.581 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 40
+num_of_simd_total_: 120
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive bit size 32 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             78.548 ms      0.000 ms -nan       ms
+MT Setup               161.790 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     795.743 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1089.271 ms      0.000 ms -nan       ms
+Gates Setup          17546.503 ms      0.000 ms      0.000 ms
+Gates Online           253.280 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   18908.617 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 2943.263 MiB in 56964 messages
+Received: 73.430 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 40
+num_of_simd_total_: 120
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized bit size 32 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             76.943 ms      0.000 ms -nan       ms
+MT Setup               160.314 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     746.450 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1032.965 ms      0.000 ms -nan       ms
+Gates Setup           1021.548 ms      0.000 ms -nan       ms
+Gates Online           587.398 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2647.431 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 1406.198 MiB in 26832 messages
+Received: 70.123 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive bit size 32 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.846 ms      0.000 ms -nan       ms
+Gates Setup            486.387 ms      0.000 ms -nan       ms
+Gates Online           122.055 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation     629.686 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 38.674 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized bit size 32 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     16.021 ms      0.000 ms -nan       ms
+Gates Setup             54.384 ms      0.000 ms -nan       ms
+Gates Online            15.631 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      88.571 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 5.487 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 40
+num_of_simd_total_: 120
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive bit size 64 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            726.619 ms      0.000 ms -nan       ms
+MT Setup              1712.746 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    7642.045 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  10132.034 ms      0.000 ms -nan       ms
+Gates Setup          24270.212 ms      0.000 ms      0.000 ms
+Gates Online           511.252 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   34919.491 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 6632.610 MiB in 106700 messages
+Received: 690.634 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 40
+num_of_simd_total_: 120
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized bit size 64 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            715.286 ms      0.000 ms -nan       ms
+MT Setup              1708.687 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    7362.494 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   9836.317 ms      0.000 ms -nan       ms
+Gates Setup           3603.531 ms      0.000 ms      0.000 ms
+Gates Online           777.673 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   14238.501 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 4363.398 MiB in 67274 messages
+Received: 687.327 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive bit size 64 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.468 ms      0.000 ms -nan       ms
+Gates Setup            517.951 ms      0.000 ms -nan       ms
+Gates Online           126.011 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     664.382 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 38.674 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized bit size 64 SIMD 40
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.524 ms      0.000 ms -nan       ms
+Gates Setup             34.231 ms      0.000 ms      0.000 ms
+Gates Online            15.843 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      70.474 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 5.487 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 100
+num_of_simd_total_: 300
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_naive bit size 32 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            192.598 ms      0.000 ms -nan       ms
+MT Setup               416.899 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2155.825 ms      0.000 ms -nan       ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2821.385 ms      0.000 ms -nan       ms
+Gates Setup          35549.697 ms      0.000 ms -nan       ms
+Gates Online           917.655 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   39296.129 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 7354.244 MiB in 56964 messages
+Received: 183.443 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL32LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 100
+num_of_simd_total_: 300
+
+SecureDiscreteLaplaceMechanismCKS::FL32DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_noise_generation_optimized bit size 32 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup            184.060 ms      0.000 ms -nan       ms
+MT Setup               409.622 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    2121.332 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   2763.470 ms      0.000 ms      0.000 ms
+Gates Setup           2524.791 ms      0.000 ms      0.000 ms
+Gates Online          1562.592 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation    6870.143 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 3513.635 MiB in 26832 messages
+Received: 175.176 MiB in 1549 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_naive bit size 32 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.491 ms      0.000 ms      0.000 ms
+Gates Setup            293.046 ms      0.000 ms -nan       ms
+Gates Online           111.105 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     410.505 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 93.934 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL32Laplace_perturbation_optimized bit size 32 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.495 ms      0.000 ms      0.000 ms
+Gates Setup             34.316 ms      0.000 ms -nan       ms
+Gates Online            15.616 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      69.893 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 13.341 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 100
+num_of_simd_total_: 300
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_naive
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_naive bit size 64 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1791.643 ms      0.000 ms      0.000 ms
+MT Setup              4330.582 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   18444.943 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  24619.385 ms      0.000 ms -nan       ms
+Gates Setup          47787.326 ms      0.000 ms -nan       ms
+Gates Online          2455.045 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   74883.912 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 16574.158 MiB in 106700 messages
+Received: 1725.578 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+SecureIntegerScalingLaplaceMechanism::FL64LaplaceNoiseGeneration
+SecureDiscreteLaplaceMechanismCKS::ParameterSetup
+scale: 21187.1
+failure_probability_requirement_: 9.09495e-13
+numerator_: 49
+denominator_: 1048576
+log2_denominator_: 20
+discrete_laplace_best_iterations_1: 28
+discrete_laplace_best_iterations_2: 30
+discrete_laplace_best_iterations_3: 3
+minimum_total_iteration: 84
+minimum_total_MPC_time: 25656.9
+geometric_failure_probability_estimation: 6.91424e-13
+discrete_laplace_failure_probability_estimation: 1.27546e-14
+upscale_factor: 1
+num_of_simd_geo_: 3
+num_of_simd_dlap_: 100
+num_of_simd_total_: 300
+
+SecureDiscreteLaplaceMechanismCKS::FL64DiscreteLaplaceNoiseGeneration_optimized
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_noise_generation_optimized bit size 64 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup           1797.152 ms      0.000 ms      0.000 ms
+MT Setup              4289.113 ms      0.000 ms -nan       ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup   19513.706 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total  25660.308 ms      0.000 ms      0.000 ms
+Gates Setup           7998.034 ms      0.000 ms -nan       ms
+Gates Online          1763.656 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation   35441.737 ms      0.000 ms      0.000 ms
+===========================================================================
+Communication with each other party:
+Sent: 10903.803 MiB in 67274 messages
+Received: 1717.311 MiB in 12747 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_naive bit size 64 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.388 ms      0.000 ms -nan       ms
+Gates Setup            271.685 ms      0.000 ms -nan       ms
+Gates Online           103.109 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     395.123 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 93.934 MiB in 38994 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+failure_probability: 9.09495e-13
+SecureIntegerScalingLaplaceMechanism::ParameterSetup
+epsilon: 0.01213
+sensitivity_l1_ / epsilon / pow2_k_: 0.00251588
+resolution_r_: 0.00390625
+lambda_: 4.71984e-05
+scale_: 21187.1
+
+===========================================================================
+Protocol GarbledCircuit operation kIntegerScalingLaplaceMechanism_FL64Laplace_perturbation_optimized bit size 64 SIMD 100
+===========================================================================
+MOTION version: 6ace6b58 @ dev
+invocation: ./benchmark_liangzhao_integer_scaling_laplace_mechanism --my-id 0 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000
+by lzhao@simx1, PID 1238512
+===========================================================================
+Run time statistics over 1 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      3.509 ms      0.000 ms -nan       ms
+Gates Setup             31.562 ms      0.000 ms -nan       ms
+Gates Online            16.362 ms      0.000 ms -nan       ms
+---------------------------------------------------------------------------
+Circuit Evaluation      70.693 ms      0.000 ms -nan       ms
+===========================================================================
+Communication with each other party:
+Sent: 13.341 MiB in 5345 messages
+Received: 0.000 MiB in 4 messages
+===========================================================================
+lzhao@simx1 ~/MOTION/build/bin $ 
