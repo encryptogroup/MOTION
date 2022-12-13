@@ -73,11 +73,16 @@ std::vector<Combination> GenerateAllCombinations() {
   const std::array kBooleanBitSizes = {64};
   // const std::array kNumbersOfSimd = {1, 10, 1000};
   const std::array kNumbersOfSimd_1_1000 = {1, 100, 1000};
-  // const std::array kNumbersOfSimd_1000 = {1000};
+  const std::array kNumbersOfSimd_1000 = {1000};
 
   const std::array kBooleanGmwOperationTypes = {
       // boolean circuit based method
-      T::kAdd, T::kSub,    T::kMul, T::kDiv, T::kLt,  T::kGt,
+      T::kAdd,
+      T::kSub,
+      T::kMul,
+      T::kDiv,
+      T::kLt,
+      T::kGt,
       // T::kEq,  T::kIsZero, T::kGE,  T::kLE,  T::kNeg, T::kMod,
 
       // only for debugging
@@ -104,14 +109,14 @@ std::vector<Combination> GenerateAllCombinations() {
 
   std::vector<Combination> combinations;
 
-  for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
-    for (const auto bit_size : kBooleanBitSizes) {
-      for (const auto operation_type : kBooleanGmwOperationTypes) {
-        combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
-                                  operation_type, number_of_simd);
-      }
-    }
-  }
+  // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
+  //   for (const auto bit_size : kBooleanBitSizes) {
+  //     for (const auto operation_type : kBooleanGmwOperationTypes) {
+  //       combinations.emplace_back(bit_size, encrypto::motion::MpcProtocol::kBooleanGmw,
+  //                                 operation_type, number_of_simd);
+  //     }
+  //   }
+  // }
 
   // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
   //   for (const auto bit_size : kBooleanBitSizes) {
@@ -130,6 +135,10 @@ std::vector<Combination> GenerateAllCombinations() {
   //     }
   //   }
   // }
+
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kMod, 1000);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kMod, 1000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, T::kMod, 1000);
 
   return combinations;
 }
