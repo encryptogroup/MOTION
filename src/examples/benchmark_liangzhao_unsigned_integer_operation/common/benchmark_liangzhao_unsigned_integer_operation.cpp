@@ -152,26 +152,26 @@ std::cout<<"after input"<<std::endl;
   unsigned_integer_bmr_share_1_U128 = em::SecureUnsignedInteger(
       party->In<em::MpcProtocol::kBmr>(em::ToInput<U128>(vector_of_input_U128), 0));
 
-  // unsigned_integer_gc_share_0_U8 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
-  // unsigned_integer_gc_share_1_U8 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
-  // unsigned_integer_gc_share_0_U16 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
-  // unsigned_integer_gc_share_1_U16 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
-  // unsigned_integer_gc_share_0_U32 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
-  // unsigned_integer_gc_share_1_U32 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
-  // unsigned_integer_gc_share_0_U64 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
-  // unsigned_integer_gc_share_1_U64 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
-  // unsigned_integer_gc_share_0_U128 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
-  // unsigned_integer_gc_share_1_U128 = em::SecureUnsignedInteger(
-  //     party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
+  unsigned_integer_gc_share_0_U8 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
+  unsigned_integer_gc_share_1_U8 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U8>(vector_of_input_U8), 0));
+  unsigned_integer_gc_share_0_U16 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
+  unsigned_integer_gc_share_1_U16 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U16>(vector_of_input_U16), 0));
+  unsigned_integer_gc_share_0_U32 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
+  unsigned_integer_gc_share_1_U32 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U32>(vector_of_input_U32), 0));
+  unsigned_integer_gc_share_0_U64 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
+  unsigned_integer_gc_share_1_U64 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U64>(vector_of_input_U64), 0));
+  unsigned_integer_gc_share_0_U128 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
+  unsigned_integer_gc_share_1_U128 = em::SecureUnsignedInteger(
+      party->In<em::MpcProtocol::kGarbledCircuit>(em::ToInput<U128>(vector_of_input_U128), 0));
 
   if (protocol == encrypto::motion::MpcProtocol::kBooleanGmw) {
 
