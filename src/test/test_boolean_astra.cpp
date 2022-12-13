@@ -84,6 +84,45 @@ class BooleanAstraTestParameters {
       }
     }
   }
+  
+  void GenerateAndNInputs(size_t arity) {
+    zeros_single_.emplace_back(kDefaultTestBitLength, false);
+    zeros_simd_.resize(number_of_simd_, mo::BitVector<>(kDefaultTestBitLength, false));
+
+    for (auto& v : inputs_and_n_) {
+      v.resize(arity);
+      for (mo::BitVector<>& t : v) {
+        t = mo::BitVector<>::SecureRandom(kDefaultTestBitLength);
+      }
+    }
+    
+    
+    
+    //TODO: SIMD here
+  }
+  
+  void ShareAndNInputs() {
+    //Input owner is always 0
+    size_t input_owner = 0;
+    size_t arity = inputs_and_n_[0].size();
+    for (std::size_t party_id : {0, 1, 2}) {
+      shared_and_n_inputs_[party_id].reserve(arity);
+      for(size_t i = 0; i != arity; ++i) {
+        if (party_id == input_owner) {
+        shared_and_n_inputs_[party_id].emplace_back(
+            parties_.at(party_id)->template In<kBooleanAstra>(inputs_and_n_[0][i], input_owner));
+        /*shared_inputs_simd_[party_id][input_owner] =
+            parties_.at(party_id)->template In<kBooleanAstra>(inputs_simd_[input_owner], input_owner);*/
+        
+        } else {
+          shared_and_n_inputs_[party_id].emplace_back(
+              parties_.at(party_id)->template In<kBooleanAstra>(zeros_single_, input_owner));
+          /*shared_inputs_simd_[party_id][input_owner] =
+              parties_.at(party_id)->template In<kBooleanAstra>(zeros_simd_, input_owner);*/
+        }
+      }
+    }
+  }
 
   
   void GenerateDotProductInputs() {
@@ -172,6 +211,15 @@ class BooleanAstraTestParameters {
     return result;
   }
   
+  std::vector<std::byte> GetAndNOfInputs() const {
+    mo::BitVector<> result = inputs_and_n_[0][0];
+    for(size_t i = 0; i != inputs_and_n_[0].size(); ++i) {
+      result &= inputs_and_n_[0][i];
+    }
+    
+    return result.GetData();
+  }
+  
   mo::BitVector<> DotProduct(std::vector<mo::BitVector<>> const& x, std::vector<mo::BitVector<>> const& y) const {
     assert(x.size() == y.size());
     mo::BitVector<> result = x[0] & y[0];
@@ -217,6 +265,11 @@ class BooleanAstraTestParameters {
   std::array<std::vector<mo::BitVector<>>, 3> inputs_simd_;
   std::array<std::vector<mo::BitVector<>>, 2> inputs_dot_product_single_;
   std::array<std::vector<std::vector<mo::BitVector<>>>, 2> inputs_dot_product_simd_;
+  
+  //Dimensions: inputs_and_n_[PARTY][ARGUMENT_ID]
+  std::array<std::vector<mo::BitVector<>>, 3> inputs_and_n_;
+  //Dimensions: shared_and_n_inputs_[PARTY_ID][ARGUMENT_ID]
+  std::array<std::vector<mo::ShareWrapper>, 3> shared_and_n_inputs_;
 
   std::vector<mo::BitVector<>> zeros_single_;
   std::vector<mo::BitVector<>> zeros_simd_;
@@ -347,6 +400,34 @@ TEST(BooleanAstraTest, And) {
     });
   }
   for (auto& f : futures) f.get();
+}
+
+TEST(BooleanAstraTest, AndN_arity_2_to_8) {
+  constexpr size_t lower_arity = 2, upper_arity = 8;
+  assert(lower_arity < upper_arity);
+  for(size_t i = lower_arity; i != upper_arity; ++i) {
+    BooleanAstraTestParameters astra_test;
+    astra_test.GenerateAndNInputs(i);
+    astra_test.ShareAndNInputs();
+    std::array<std::future<void>, 3> futures;
+    for (auto party_id = 0u; party_id != astra_test.parties_.size(); ++party_id) {
+      futures[party_id] = std::async([&, party_id]() {
+        auto share_and_n_single = mo::AndN(astra_test.shared_and_n_inputs_[party_id]);
+  
+        auto share_output_and_n_all = share_and_n_single.Out();
+  
+        astra_test.parties_[party_id]->Run();
+  
+        {
+          std::vector<std::byte> circuit_result_single = ToByteVector(share_output_and_n_all);
+          std::vector<std::byte> expected_result_single = astra_test.GetAndNOfInputs();
+          EXPECT_EQ(circuit_result_single, expected_result_single);
+        }
+        astra_test.parties_[party_id]->Finish();
+      });
+    }
+    for (auto& f : futures) f.get();
+  }
 }
 
 TEST(BooleanAstraTest, DotProduct) {

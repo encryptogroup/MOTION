@@ -401,6 +401,15 @@ ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) {
   }
 }
 
+ShareWrapper AndN(std::span<ShareWrapper> as) {
+  
+  if(as[0]->GetCircuitType() == CircuitType::kBoolean) {
+    return as[0].AndN(as);
+  } else {
+    throw std::runtime_error("AndN not implemented for given protocol");
+  }
+}
+
 template <MpcProtocol P>
 ShareWrapper ShareWrapper::Convert() const {
   constexpr auto kArithmeticGmw = MpcProtocol::kArithmeticGmw;
@@ -1157,6 +1166,26 @@ ShareWrapper ShareWrapper::BooleanDotProduct(std::span<ShareWrapper> a, std::spa
     } break;
     default:
       throw std::invalid_argument("Unsupported Boolean protocol in ShareWrapper::BooleanDotProduct");
+  }
+}
+
+ShareWrapper ShareWrapper::AndN(std::span<ShareWrapper> as) const {
+  switch (as[0]->GetProtocol()) {
+    case MpcProtocol::kBooleanAstra: {
+      std::vector<proto::boolean_astra::WirePointer> a_input;
+      a_input.reserve(as.size());
+
+      for (auto i = 0u; i != as.size(); ++i) {
+        auto share_a = std::dynamic_pointer_cast<proto::boolean_astra::Share>(as[i].share_);
+        assert(share_a);
+        a_input.emplace_back(share_a->GetBooleanAstraWire());
+      }
+      auto and_n_gate = share_->GetRegister()
+                          ->EmplaceGate<proto::boolean_astra::AndNGate>(std::move(a_input));
+      return ShareWrapper(and_n_gate->GetOutputAsBooleanAstraShare());
+    } break;
+    default:
+      throw std::invalid_argument("Unsupported Boolean protocol in ShareWrapper::AndN");
   }
 }
 

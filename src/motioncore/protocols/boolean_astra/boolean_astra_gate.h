@@ -111,6 +111,25 @@ class AndGate final : public motion::TwoGate {
   GatePointer lambda_ab_gate_ = nullptr;
 };
 
+class AndNGate final : public motion::Gate {
+  using Base = motion::Gate;
+  
+ public:
+  AndNGate(std::vector<boolean_astra::WirePointer> as);
+  
+  ~AndNGate() final = default;
+  
+  void EvaluateSetup() final override;
+  void EvaluateOnline() final override;
+  
+  boolean_astra::SharePointer GetOutputAsBooleanAstraShare();
+
+ private:
+  std::vector<boolean_astra::WirePointer> parents_;
+  std::vector<motion::ReusableFiberFuture<std::vector<std::uint8_t>>> multiply_n_futures_online_;
+  std::vector<GatePointer> intermediary_lambdas_;
+};
+
 class BooleanDotProductGate final : public motion::TwoGate {
   using Base = motion::TwoGate;
  public:

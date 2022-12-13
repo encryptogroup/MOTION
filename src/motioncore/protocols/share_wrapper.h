@@ -96,6 +96,8 @@ class ShareWrapper {
   }
   
   friend ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b);
+  
+  friend ShareWrapper AndN(std::span<ShareWrapper> as);
 
 
   ShareWrapper operator==(const ShareWrapper& other) const;
@@ -223,6 +225,8 @@ class ShareWrapper {
   ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const;
   
   ShareWrapper BooleanDotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b) const;
+  
+  ShareWrapper AndN(std::span<ShareWrapper> as) const;
 
   ShareWrapper ArithmeticGmwToBmr() const;
 
@@ -236,5 +240,7 @@ class ShareWrapper {
 };
 
 ShareWrapper DotProduct(std::span<ShareWrapper> a, std::span<ShareWrapper> b);
+  
+ShareWrapper AndN(std::span<ShareWrapper> as);
 
 }  // namespace encrypto::motion

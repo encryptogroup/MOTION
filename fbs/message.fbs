@@ -27,7 +27,7 @@ enum MessageType : ubyte {
   kBooleanAstraOnlineDotProductGate = 23,
   kBooleanGmwDMultiplyGate = 24,
   kBooleanGmwEMultiplyGate = 25,
-  // add new message types here
+  kBooleanAstraOnlineAndNGate = 26,// add new message types here
   }
 
 // TODO: implement message splitting if the size of a single message goes over 2^32 - 1 bits

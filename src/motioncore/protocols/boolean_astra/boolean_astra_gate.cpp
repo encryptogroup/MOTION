@@ -26,10 +26,12 @@
 #include <functional>
 #include <mutex>
 #include <type_traits>
+#include <map>
 
 #include "boolean_astra_gate.h"
 #include "boolean_astra_share.h"
 #include "boolean_astra_wire.h"
+#include "protocols/share_wrapper.h"
 #include "communication/message_manager.h"
 #include "primitives/sharing_randomness_generator.h"
 #include "protocols/boolean_gmw/boolean_gmw_gate.h"
@@ -123,7 +125,7 @@ void BroadcastValues(std::vector<boolean_astra::Wire::value_type> const& values,
     communication_layer.BroadcastMessage(message.Release());
 }
 
-std::vector<boolean_astra::Wire::value_type> GetZeroWireData(const boolean_astra::WirePointer& parent) {
+std::vector<boolean_astra::Wire::value_type> GetZeroWireData(boolean_astra::WirePointer const& parent) {
   size_t simd_values = parent->GetNumberOfSimdValues();
   
   std::vector<boolean_astra::Wire::value_type> result;
@@ -472,43 +474,32 @@ void AddDelayedInputJob(Backend& backend,
     });
 }
 
-GatePointer AddLambdaAbJob(
+boolean_gmw::SharePointer AddLambdaSumJob(
   Backend& backend, size_t number_of_parties, size_t my_id, 
-  boolean_astra::WirePointer a_wire, boolean_astra::WirePointer b_wire) {
+  boolean_astra::WirePointer wire) {
       
-  assert(a_wire);
-  assert(b_wire);
-  size_t simd_values = a_wire->GetNumberOfSimdValues();
-  assert(simd_values == b_wire->GetNumberOfSimdValues());
-  std::vector<std::shared_ptr<boolean_gmw::InputGate>> inputs_a;
-  std::vector<std::shared_ptr<boolean_gmw::InputGate>> inputs_b;
-  inputs_a.reserve(number_of_parties);
-  inputs_b.reserve(number_of_parties);
+  assert(wire);
+  size_t simd_values = wire->GetNumberOfSimdValues();
+  std::vector<std::shared_ptr<boolean_gmw::InputGate>> inputs;
+  inputs.reserve(number_of_parties);
   std::vector<BitVector<>> zero_input_data;
   zero_input_data.reserve(simd_values);
   for(size_t i = 0u; i != simd_values; ++i) {
-    assert(a_wire->GetValues()[i].lambda_i.GetSize() == b_wire->GetValues()[i].lambda_i.GetSize());
-    zero_input_data.emplace_back(a_wire->GetValues()[i].lambda_i.GetSize(), false);
+    zero_input_data.emplace_back(wire->GetValues()[i].lambda_i.GetSize(), false);
   }
   
-  for(auto party_id = 0u; party_id != number_of_parties; ++party_id) {
+  for(size_t party_id = 0; party_id != number_of_parties; ++party_id) {
     //Add job that waits for own wires to become ready and sets input
-    auto input_a = std::make_shared<boolean_gmw::InputGate>(zero_input_data, party_id, backend);
-    auto input_b = std::make_shared<boolean_gmw::InputGate>(zero_input_data, party_id, backend);
+    auto input_gate = std::make_shared<boolean_gmw::InputGate>(zero_input_data, party_id, backend);
     if(party_id == my_id) {
-      AddDelayedInputJob(backend, a_wire, input_a);
-      AddDelayedInputJob(backend, b_wire, input_b);
+      AddDelayedInputJob(backend, wire, input_gate);
     }
     else {
-      AddFullEvaluationJob(backend, input_a);
-      AddFullEvaluationJob(backend, input_b);
+      AddFullEvaluationJob(backend, input_gate);
     }
-    //place the input gates into temparary vectors for further use
-    inputs_a.emplace_back(std::move(input_a));
-    inputs_b.emplace_back(std::move(input_b));
+    inputs.emplace_back(std::move(input_gate));
   }
-  assert(inputs_a.size() == inputs_b.size());
-  //We added an evaluation job for all input gates at this point
+  assert(inputs.size() == number_of_parties);
   
   auto sum_lambdas = [&](const GatePointer& a, const GatePointer& b) {
     //All parameter gates have already an evaluation job added at this point
@@ -519,18 +510,123 @@ GatePointer AddLambdaAbJob(
     AddFullEvaluationJob(backend, result);
     return result;
   };
-  
-  assert(inputs_a.size() >= 2);
-  //Sum all lambdas using inner arithmetic gmw
-  GatePointer lambda_a = std::accumulate(inputs_a.begin() + 2, inputs_a.end(), sum_lambdas(inputs_a[0], inputs_a[1]), sum_lambdas);
-  GatePointer lambda_b = std::accumulate(inputs_b.begin() + 2, inputs_b.end(), sum_lambdas(inputs_b[0], inputs_b[1]), sum_lambdas);
+  //Sum all lambdas using inner boolean gmw
+  assert(inputs.size() >= 2);
+  GatePointer sum_gate = std::accumulate(inputs.begin() + 2, inputs.end(), sum_lambdas(inputs[0], inputs[1]), sum_lambdas);
+  return std::make_shared<boolean_gmw::Share>(std::move(sum_gate->GetOutputWires()));
+}
+
+GatePointer AddLambdaAbJob(
+  Backend& backend, size_t number_of_parties, size_t my_id, 
+  boolean_astra::WirePointer a_wire, boolean_astra::WirePointer b_wire) {
+      
+  assert(a_wire);
+  assert(b_wire);
+  size_t simd_values = a_wire->GetNumberOfSimdValues();
+  assert(simd_values == b_wire->GetNumberOfSimdValues());
   
   //Multiply both sums
-  auto a_sum_share = std::make_shared<boolean_gmw::Share>(lambda_a->GetOutputWires());
-  auto b_sum_share = std::make_shared<boolean_gmw::Share>(lambda_b->GetOutputWires());
+  auto a_sum_share = AddLambdaSumJob(backend, number_of_parties, my_id, a_wire);
+  auto b_sum_share = AddLambdaSumJob(backend, number_of_parties, my_id, b_wire);
   GatePointer lambda_ab = std::make_shared<boolean_gmw::AndGate>(a_sum_share, b_sum_share);
   AddFullEvaluationJob(backend, lambda_ab);
   return lambda_ab;
+}
+
+size_t NextPowerOf2(size_t number) {
+  size_t shift = 1;
+  for(size_t i = 0; i != sizeof(size_t) / 2; ++i, ++shift) {
+    number |= number >> shift;
+  }
+  return number + 1;
+}
+
+std::vector<GatePointer> IntermediaryLambdaJob(
+  Backend& backend, size_t number_of_parties, size_t my_id, 
+  std::vector<boolean_astra::WirePointer> const& wires) {
+  size_t const arity = wires.size();
+  assert(arity >= 2);
+  //The lambda_products vector must be initialized with a size of 0.
+  std::vector<GatePointer> lambda_products;
+  //We need space for every possible <arity>-bit number,
+  //except for the numbers having less than one set bit.
+  lambda_products.reserve((1 << arity) - arity - 1);
+  std::vector<boolean_gmw::SharePointer> lambda_factors;
+  //We need space for every possible <arity>-bit number,
+  //that have exactly one set bit.
+  lambda_factors.reserve(arity);
+  //We create a bidirectional association between a number and a lambda product,
+  //s.t. the product of all lambda_factors, where there is a 1 in the 
+  //binary representation of the number is associated with it.
+  //The indexing of the bits in the number goes from lsb to msb.
+  //E.g. [00101]_2 shall be associated with lambda_factors[0] * lambda_factors[2]
+  std::map<size_t, GatePointer> key_lambda_map;
+  std::map<GatePointer, size_t> lambda_key_map;
+  
+  auto multiply_factors = 
+    [&](size_t index1, size_t index2) {
+      auto& lf1 = lambda_factors[index1];
+      auto& lf2 = lambda_factors[index2];
+      auto product = std::make_shared<boolean_gmw::AndGate>(lf1, lf2);
+      AddFullEvaluationJob(backend, product);
+      lambda_products.emplace_back(product);
+      //Create bidirectional association between product key and product
+      size_t product_key = (1 << index1) | (1 << index2);
+      key_lambda_map.emplace(std::make_pair(product_key, product));
+      lambda_key_map.emplace(std::make_pair(product, product_key));
+    };
+  
+  auto multiply_product_factor = 
+    [&](size_t index_lambda_product, size_t index_lambda_factor) {
+      auto& lp = lambda_products[index_lambda_product];
+      auto& lf = lambda_factors[index_lambda_factor];
+      auto lp_share = std::make_shared<boolean_gmw::Share>(lp->GetOutputWires());
+      auto product = std::make_shared<boolean_gmw::AndGate>(lp_share, lf);
+      AddFullEvaluationJob(backend, product);
+      lambda_products.emplace_back(product);
+      //Create bidirectional association between product key and product
+      size_t lambda_product_key = lambda_key_map.at(lp);
+      size_t new_product_key = lambda_product_key | (1 << index_lambda_factor);
+      key_lambda_map.emplace(std::make_pair(new_product_key, product));
+      lambda_key_map.emplace(std::make_pair(product, new_product_key));
+    };
+  
+  lambda_factors.reserve(arity);
+  for(size_t i = 0; i != arity; ++i) {
+    lambda_factors.emplace_back(AddLambdaSumJob(backend, number_of_parties, my_id, wires[i]));
+  }
+  
+  for(size_t factor_idx = 1; factor_idx != arity; ++factor_idx) {
+    //The lambda_products vector will be extended during the loop,
+    //therefor we need to store the size at the start of the loop.
+    size_t products_size = lambda_products.size();
+    
+    //We multiply the current lambda_factor with every lambda_product of the 
+    //previous iteration and add their product to the lambda_products vector.
+    for(size_t product_idx = 0; product_idx != products_size; ++product_idx) {
+      multiply_product_factor(product_idx, factor_idx);
+    }
+    //We multiply the current lambda_factor with every previous lambda_factors
+    for(size_t previous_idx = 0; previous_idx != factor_idx; ++previous_idx) {
+      multiply_factors(previous_idx, factor_idx);
+    }
+  }
+  
+  assert(lambda_products.size() == key_lambda_map.size());
+  std::vector<GatePointer> result(1 << arity);
+  result[0] = nullptr;
+  size_t n = 0;
+  for(size_t i = 1; i != result.size(); ++i) {
+    if(i == (1u << n)) {
+      assert(!key_lambda_map.contains(i));
+      result[i] = nullptr;
+      ++n;
+    } else {
+      assert(key_lambda_map.contains(i));
+      result[i] = std::move(key_lambda_map.at(i));
+    }
+  }
+  return result;
 }
 
 AndGate::AndGate(const boolean_astra::WirePointer& a, const boolean_astra::WirePointer& b)
@@ -666,6 +762,161 @@ void AndGate::EvaluateOnline() {
 }
 
 boolean_astra::SharePointer AndGate::GetOutputAsBooleanAstraShare() {
+  auto wire = std::dynamic_pointer_cast<boolean_astra::Wire>(output_wires_[0]);
+  assert(wire);
+  return std::make_shared<boolean_astra::Share>(wire);
+}
+
+AndNGate::AndNGate(std::vector<boolean_astra::WirePointer> as)
+    : Base( (assert(as.size() > 0), as[0]->GetBackend()) ) {
+  using communication::MessageType::kBooleanAstraOnlineAndNGate;
+
+  requires_online_interaction_ = true;
+  gate_type_ = GateType::kInteractive;
+  gate_id_ = GetRegister().NextGateId();
+
+  auto w = GetRegister().template EmplaceWire<boolean_astra::Wire>(backend_, GetZeroWireData(as[0]));
+  output_wires_ = {std::move(w)};
+  parents_ = std::move(as);
+  
+  auto& communication_layer = GetCommunicationLayer();
+  std::size_t my_id = communication_layer.GetMyId();
+  auto& message_manager = communication_layer.GetMessageManager();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
+  
+  //P0 is the only party that receives all shares of all other parties during online multiplication
+  if(my_id == 0) {
+    multiply_n_futures_online_ = 
+      message_manager.RegisterReceiveAll(kBooleanAstraOnlineAndNGate, gate_id_);
+  }
+  else {
+    multiply_n_futures_online_.emplace_back(
+      message_manager.RegisterReceive(0, kBooleanAstraOnlineAndNGate, gate_id_));
+  }
+  
+  intermediary_lambdas_ = IntermediaryLambdaJob(backend_, number_of_parties, my_id, parents_);
+}
+
+void AndNGate::EvaluateSetup() {
+  //Wait for base provider to finish its setup, since we use its SharingRandomnessGenerators
+  GetBaseProvider().WaitForSetup();
+  auto& communication_layer = GetCommunicationLayer();
+  auto my_id = communication_layer.GetMyId();
+  auto out_wire = std::dynamic_pointer_cast<boolean_astra::Wire>(output_wires_[0]);
+  assert(out_wire);
+
+  auto& out_values = out_wire->GetMutableValues();
+  size_t simd_values = out_values.size();
+  
+  //Generate and store lambda_zi
+  auto& rng = GetBaseProvider().GetMyRandomnessGenerator(my_id);
+  for(auto i = 0u; i != simd_values; ++i) {
+    out_values[i].lambda_i = rng.GetBits(gate_id_, out_values[i].lambda_i.GetSize());
+  }
+  
+  for(auto const& l : intermediary_lambdas_) {
+    if(l != nullptr) {
+      auto const& l_wires = l->GetOutputWires();
+    
+      for(auto const& w : l_wires) {
+        w->GetIsReadyCondition().Wait();
+      }
+    }
+  }
+  
+  out_wire->SetSetupIsReady();
+}
+
+void AndNGate::EvaluateOnline() {
+  constexpr int64_t kLeadPartyId = 0;
+  using communication::MessageType::kBooleanAstraOnlineAndNGate;
+  WaitSetup();
+  assert(setup_is_ready_);
+  for(auto const& p : parents_) {
+    p->GetIsReadyCondition().Wait();
+  }
+      
+  auto& communication_layer = GetCommunicationLayer();
+  auto number_of_parties = communication_layer.GetNumberOfParties();
+  auto my_id = communication_layer.GetMyId();
+  auto out_wire = std::dynamic_pointer_cast<boolean_astra::Wire>(output_wires_[0]);
+  assert(out_wire);
+  std::vector<boolean_astra::WirePointer> a_wires;
+  a_wires.reserve(a_wires.size());
+  for(size_t i = 0; i != parents_.size(); ++i) {
+    auto w = std::dynamic_pointer_cast<boolean_astra::Wire>(parents_[i]);
+    assert(w);
+    a_wires.emplace_back(std::move(w));
+  }
+  auto& out_values = out_wire->GetMutableValues();
+  size_t simd_values = out_values.size();
+  
+  //TODO: if runtime/memory tradeoff desired: Replace calculate_product with lookup table of intermediary products
+  auto calculate_ms_product = [&](size_t factors_key, size_t simd_idx) {
+    //Initialize result as the neutral element of multiplication
+    BitVector<> result(out_values[simd_idx].value.GetSize(), true);
+    //1s encode lambdas in the product, therefore we negate it, so that 1s encode ms in the product
+    size_t neg_factors_key = ~factors_key;
+    for(size_t i = 0; i != a_wires.size(); ++i, neg_factors_key >>= 1) {
+      if(0x1 == (neg_factors_key & 0x1)) {
+        auto w = std::dynamic_pointer_cast<boolean_astra::Wire>(a_wires[i]);
+        assert(w);
+        result &= w->GetValues()[simd_idx].value;
+      }
+    }
+    
+    return result;
+  };
+  auto get_intermediary_lambda_p = [&](size_t factors_key, size_t simd_idx) {
+    assert(factors_key != 0);
+    auto w = std::dynamic_pointer_cast<boolean_gmw::Wire>(
+               intermediary_lambdas_[factors_key]->GetOutputWires()[simd_idx]);
+    assert(w);
+    return std::addressof(w->GetValues());
+  };
+  
+  for(size_t i = 0; i != simd_values; ++i) {
+    size_t n = 0;
+    assert(intermediary_lambdas_.size() > 1);
+    for(size_t j = (my_id == kLeadPartyId ? 0 : 1); j != intermediary_lambdas_.size(); ++j) {
+      if(j == 0) {
+        out_values[i].value ^= calculate_ms_product(j, i);
+      } else {
+        BitVector<> const* intermediary_lambda_p = nullptr;
+        if(j == (1u << n)) {
+          intermediary_lambda_p = std::addressof(a_wires[n]->GetValues()[i].lambda_i);
+          ++n;
+        } else {
+          intermediary_lambda_p = get_intermediary_lambda_p(j, i);
+        }
+        assert(intermediary_lambda_p != nullptr);
+        out_values[i].value ^= calculate_ms_product(j, i) & *intermediary_lambda_p;
+      }
+    }
+    out_values[i].value ^= out_values[i].lambda_i;
+  }
+  
+  //All parties (except P0) send their share to P0 and receive the sum of all shares from P0
+  if(my_id != kLeadPartyId) {
+    SendValues(out_values, kLeadPartyId, gate_id_, communication_layer, kBooleanAstraOnlineAndNGate);
+    //We receive only from 1 party, so the futures index is always 0
+    auto message = multiply_n_futures_online_[0].get();
+    auto payload = communication::GetMessage(message.data())->payload();
+    AssignToValues(out_values, {payload->Data(), payload->size()});
+  }
+  
+  //P0 receives all shares, sums them up and sends result back to everyone
+  if(my_id == kLeadPartyId) {
+    for(auto party_id = 0u; party_id != number_of_parties - 1; ++party_id) {
+      auto message = multiply_n_futures_online_[party_id].get();
+      const auto payload = communication::GetMessage(message.data())->payload();
+      XorAssignToValues(out_values, {payload->Data(), payload->size()});
+    }
+    BroadcastValues(out_values, gate_id_, communication_layer, kBooleanAstraOnlineAndNGate);
+  }
+}
+
+boolean_astra::SharePointer AndNGate::GetOutputAsBooleanAstraShare() {
   auto wire = std::dynamic_pointer_cast<boolean_astra::Wire>(output_wires_[0]);
   assert(wire);
   return std::make_shared<boolean_astra::Share>(wire);
