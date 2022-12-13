@@ -67,8 +67,7 @@ struct Combination {
 std::vector<Combination> GenerateAllCombinations() {
   using T = encrypto::motion::SignedIntegerOperationType;
 
-  const std::array kBooleanBitSizes = {8, 16, 32, 64, 128};
-
+  // const std::array kBooleanBitSizes = {8, 16, 32, 64, 128};
   // const std::array kNumbersOfSimd = {1, 10, 1000};
 
   // only for debugging purposes
