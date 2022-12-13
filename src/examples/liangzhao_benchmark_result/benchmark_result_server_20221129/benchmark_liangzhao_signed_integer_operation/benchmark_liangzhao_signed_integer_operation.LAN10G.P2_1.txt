@@ -1,0 +1,1861 @@
+lzhao@simx2 ~/MOTION/build/bin $ ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+===========================================================================
+Protocol BooleanGMW operation INT_ADD bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.023 ms      0.019 ms      0.008 ms
+MT Setup                 4.530 ms      5.294 ms      5.653 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.972 ms      4.345 ms      4.487 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     85.515 ms     81.776 ms     22.534 ms
+Gates Setup              0.650 ms      0.607 ms      0.276 ms
+Gates Online            25.122 ms     24.273 ms     12.407 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     115.544 ms    109.805 ms     30.734 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.079 MiB in 1166 messages
+Received: 0.088 MiB in 1187 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_SUB bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.020 ms      0.019 ms      0.007 ms
+MT Setup                 7.183 ms      7.408 ms      3.996 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       1.854 ms      0.580 ms      2.307 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     84.914 ms     68.508 ms     22.248 ms
+Gates Setup              0.581 ms      0.615 ms      0.118 ms
+Gates Online            21.460 ms     16.853 ms     11.363 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     111.518 ms     87.960 ms     28.719 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.079 MiB in 1166 messages
+Received: 0.088 MiB in 1187 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_MUL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.097 ms      0.073 ms      0.058 ms
+MT Setup                 2.678 ms      0.346 ms      4.290 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       9.848 ms     10.227 ms      6.541 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.889 ms     67.398 ms     20.996 ms
+Gates Setup              4.051 ms      3.512 ms      0.980 ms
+Gates Online           107.888 ms     92.635 ms     39.118 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     195.583 ms    186.185 ms     34.900 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.534 MiB in 9100 messages
+Received: 0.543 MiB in 9121 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_DIV bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.126 ms      0.116 ms      0.071 ms
+MT Setup                12.189 ms      5.918 ms     13.465 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       6.183 ms      5.106 ms      5.773 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     86.374 ms     79.441 ms     16.405 ms
+Gates Setup              6.071 ms      5.680 ms      1.674 ms
+Gates Online         62625.683 ms  64640.347 ms   7894.460 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   62725.786 ms  64729.767 ms   7905.845 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.605 MiB in 10336 messages
+Received: 0.614 MiB in 10357 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_LT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.017 ms      0.018 ms      0.004 ms
+MT Setup                 2.587 ms      0.375 ms      4.767 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.568 ms      5.355 ms      2.085 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     88.435 ms     75.738 ms     22.887 ms
+Gates Setup              0.568 ms      0.550 ms      0.056 ms
+Gates Online           112.260 ms    141.484 ms     55.777 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     207.470 ms    224.254 ms     55.041 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 768 messages
+Received: 0.065 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_GT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.016 ms      0.017 ms      0.006 ms
+MT Setup                10.544 ms      8.466 ms     12.450 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       5.156 ms      1.091 ms      5.283 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     85.197 ms     74.276 ms     21.006 ms
+Gates Setup              0.520 ms      0.520 ms      0.088 ms
+Gates Online            72.140 ms     54.936 ms     51.254 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     163.028 ms    150.436 ms     59.929 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 768 messages
+Received: 0.065 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_EQ bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.014 ms      0.015 ms      0.003 ms
+MT Setup                 5.050 ms      4.382 ms      4.126 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.761 ms      2.034 ms      4.394 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     92.454 ms    100.790 ms     18.051 ms
+Gates Setup              0.507 ms      0.508 ms      0.070 ms
+Gates Online           100.596 ms    116.851 ms     64.753 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     199.293 ms    185.901 ms     57.513 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.042 MiB in 526 messages
+Received: 0.051 MiB in 547 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_GE bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.014 ms      0.013 ms      0.006 ms
+MT Setup                 5.966 ms      0.044 ms     12.619 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       7.100 ms      5.738 ms      5.167 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     87.660 ms     79.056 ms     25.994 ms
+Gates Setup              0.541 ms      0.563 ms      0.075 ms
+Gates Online            69.772 ms     71.834 ms     52.856 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     163.268 ms    164.168 ms     63.520 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 768 messages
+Received: 0.065 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_LE bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.014 ms      0.015 ms      0.003 ms
+MT Setup                 4.843 ms      4.639 ms      4.288 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.555 ms      1.533 ms      4.967 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     77.978 ms     74.614 ms     19.126 ms
+Gates Setup              0.583 ms      0.573 ms      0.071 ms
+Gates Online           109.375 ms    115.273 ms     48.430 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     193.773 ms    207.035 ms     55.811 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.056 MiB in 768 messages
+Received: 0.065 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_InRange bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.021 ms      0.022 ms      0.006 ms
+MT Setup                 6.376 ms      3.215 ms      6.996 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.877 ms      2.379 ms      3.885 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.694 ms     71.947 ms     19.276 ms
+Gates Setup              0.889 ms      0.691 ms      0.583 ms
+Gates Online            60.003 ms     35.406 ms     63.518 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     144.349 ms    132.206 ms     63.227 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.099 MiB in 1510 messages
+Received: 0.108 MiB in 1531 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_IsZero bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.015 ms      0.001 ms
+MT Setup                 4.656 ms      8.999 ms      5.259 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.498 ms      2.327 ms      3.987 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     80.251 ms     75.896 ms     20.903 ms
+Gates Setup              0.635 ms      0.614 ms      0.074 ms
+Gates Online            88.752 ms     98.561 ms     54.703 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     175.059 ms    154.786 ms     59.518 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.042 MiB in 526 messages
+Received: 0.051 MiB in 547 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_IsNeg bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     21.952 ms      5.747 ms     20.351 ms
+Gates Setup              0.640 ms      0.684 ms      0.074 ms
+Gates Online             3.574 ms      2.846 ms      2.578 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      32.098 ms     18.736 ms     22.036 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.017 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_NEG bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.015 ms      0.016 ms      0.001 ms
+MT Setup                 4.850 ms      1.689 ms      4.751 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       3.068 ms      4.147 ms      2.192 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     88.503 ms     73.741 ms     19.013 ms
+Gates Setup              0.567 ms      0.559 ms      0.047 ms
+Gates Online          2283.898 ms   2819.686 ms   1050.955 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2380.489 ms   2891.579 ms   1051.062 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.043 MiB in 528 messages
+Received: 0.051 MiB in 549 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_Int2FL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.064 ms      0.068 ms      0.015 ms
+MT Setup                 7.542 ms      4.736 ms      6.887 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       4.243 ms      4.022 ms      2.647 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     78.150 ms     75.421 ms      5.987 ms
+Gates Setup              2.480 ms      2.184 ms      0.890 ms
+Gates Online           361.522 ms    345.212 ms    149.883 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     449.309 ms    429.621 ms    147.330 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.361 MiB in 6094 messages
+Received: 0.370 MiB in 6115 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_Int2Fx bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     36.942 ms     31.589 ms     20.963 ms
+Gates Setup              0.628 ms      0.646 ms      0.109 ms
+Gates Online             3.570 ms      3.037 ms      3.392 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      48.780 ms     45.114 ms     20.548 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.017 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_ADD bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              8.372 ms      5.384 ms      6.384 ms
+MT Setup                41.980 ms     24.141 ms     29.778 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     162.426 ms    164.173 ms     39.668 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    285.205 ms    263.058 ms     47.583 ms
+Gates Setup              1.379 ms      1.298 ms      0.417 ms
+Gates Online           112.250 ms    128.009 ms     36.893 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     404.276 ms    392.080 ms     78.746 ms
+===========================================================================
+Communication with each other party:
+Sent: 13.663 MiB in 1166 messages
+Received: 21.291 MiB in 1187 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_SUB bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              5.608 ms      5.271 ms      1.362 ms
+MT Setup                48.782 ms     22.132 ms     35.355 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     145.142 ms    152.093 ms     28.763 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    269.379 ms    262.851 ms     24.993 ms
+Gates Setup              1.271 ms      1.227 ms      0.286 ms
+Gates Online            85.539 ms     75.361 ms     33.745 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     361.614 ms    362.983 ms     52.355 ms
+===========================================================================
+Communication with each other party:
+Sent: 13.663 MiB in 1166 messages
+Received: 21.291 MiB in 1187 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_MUL bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             91.022 ms     93.995 ms     10.192 ms
+MT Setup               289.511 ms    189.066 ms    122.869 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     880.560 ms    918.185 ms    153.310 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1327.293 ms   1352.972 ms    156.695 ms
+Gates Setup              4.059 ms      3.688 ms      1.003 ms
+Gates Online           125.108 ms    127.878 ms     29.798 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1460.149 ms   1463.195 ms    171.189 ms
+===========================================================================
+Communication with each other party:
+Sent: 76.503 MiB in 9100 messages
+Received: 84.131 MiB in 9121 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_DIV bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             99.632 ms    105.341 ms     12.163 ms
+MT Setup               223.872 ms    190.466 ms     92.828 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup    1118.286 ms   1160.911 ms    193.376 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total   1503.271 ms   1567.448 ms    186.949 ms
+Gates Setup              5.102 ms      4.395 ms      1.473 ms
+Gates Online         52886.410 ms  52154.359 ms   5772.051 ms
+---------------------------------------------------------------------------
+Circuit Evaluation   54400.054 ms  53987.610 ms   5811.624 ms
+===========================================================================
+Communication with each other party:
+Sent: 86.292 MiB in 10336 messages
+Received: 93.920 MiB in 10357 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_LT bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.375 ms      3.534 ms      0.765 ms
+MT Setup                21.806 ms     20.632 ms     12.803 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      82.977 ms     79.468 ms     26.607 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    173.200 ms    164.335 ms     23.757 ms
+Gates Setup              1.286 ms      1.264 ms      0.272 ms
+Gates Online           149.446 ms    154.464 ms     32.996 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     330.316 ms    346.192 ms     45.064 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.511 MiB in 768 messages
+Received: 18.139 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_GT bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.282 ms      3.011 ms      0.698 ms
+MT Setup                36.587 ms     25.028 ms     29.573 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      77.257 ms     68.753 ms     21.113 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    185.843 ms    182.272 ms     26.809 ms
+Gates Setup              1.354 ms      1.301 ms      0.192 ms
+Gates Online           161.861 ms    128.644 ms     93.066 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     356.674 ms    319.141 ms    109.020 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.511 MiB in 768 messages
+Received: 18.139 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_EQ bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.201 ms      1.152 ms      0.291 ms
+MT Setup                18.164 ms      8.629 ms     14.771 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      25.441 ms     21.095 ms      8.977 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    108.776 ms    110.728 ms     14.375 ms
+Gates Setup              1.204 ms      1.223 ms      0.203 ms
+Gates Online           152.436 ms    149.815 ms     41.899 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     267.979 ms    257.441 ms     44.245 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.594 MiB in 526 messages
+Received: 16.222 MiB in 547 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_GE bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.342 ms      3.452 ms      0.846 ms
+MT Setup                22.534 ms     14.366 ms     18.619 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      80.859 ms     66.585 ms     27.932 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    170.001 ms    176.065 ms     25.085 ms
+Gates Setup              1.572 ms      1.224 ms      0.875 ms
+Gates Online           130.639 ms    140.323 ms     56.370 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     308.274 ms    326.188 ms     79.792 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.511 MiB in 768 messages
+Received: 18.139 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_LE bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              3.173 ms      3.014 ms      0.539 ms
+MT Setup                22.536 ms     12.086 ms     22.496 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      83.631 ms     76.931 ms     32.702 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    188.735 ms    185.097 ms     28.710 ms
+Gates Setup              1.345 ms      1.341 ms      0.249 ms
+Gates Online           150.877 ms    131.711 ms     67.861 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     347.145 ms    331.475 ms     78.833 ms
+===========================================================================
+Communication with each other party:
+Sent: 10.511 MiB in 768 messages
+Received: 18.139 MiB in 789 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_InRange bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             19.644 ms     18.936 ms      2.492 ms
+MT Setup                59.898 ms     34.560 ms     42.288 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     186.425 ms    216.476 ms     55.276 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    331.367 ms    331.154 ms     48.118 ms
+Gates Setup              1.370 ms      1.271 ms      0.390 ms
+Gates Online           149.966 ms    125.708 ms     97.122 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     488.120 ms    498.473 ms    122.748 ms
+===========================================================================
+Communication with each other party:
+Sent: 16.388 MiB in 1510 messages
+Received: 24.016 MiB in 1531 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_IsZero bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.249 ms      1.073 ms      0.612 ms
+MT Setup                 9.258 ms      6.274 ms      8.524 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      40.483 ms     36.851 ms     15.054 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    114.069 ms    122.683 ms     12.900 ms
+Gates Setup              1.188 ms      1.099 ms      0.318 ms
+Gates Online           167.614 ms    160.452 ms     58.626 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     289.614 ms    281.338 ms     67.970 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.594 MiB in 526 messages
+Received: 16.222 MiB in 547 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_IsNeg bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      9.146 ms      5.880 ms      5.416 ms
+Gates Setup              1.309 ms      1.173 ms      0.262 ms
+Gates Online           104.402 ms     99.374 ms     55.207 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     121.269 ms    131.472 ms     55.904 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 15.198 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_NEG bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              1.428 ms      1.202 ms      0.798 ms
+MT Setup                11.272 ms      5.864 ms     11.125 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup      36.537 ms     38.586 ms     15.742 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    111.484 ms    115.339 ms     14.917 ms
+Gates Setup              1.241 ms      1.153 ms      0.216 ms
+Gates Online          2872.368 ms   2854.576 ms     49.417 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2993.779 ms   2954.374 ms     60.429 ms
+===========================================================================
+Communication with each other party:
+Sent: 8.610 MiB in 528 messages
+Received: 16.238 MiB in 549 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_Int2FL bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup             62.293 ms     60.973 ms      8.560 ms
+MT Setup               201.504 ms    115.505 ms    134.737 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup     653.071 ms    659.761 ms    121.763 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total    981.668 ms   1010.930 ms    112.084 ms
+Gates Setup              2.686 ms      2.220 ms      0.821 ms
+Gates Online           274.481 ms    241.777 ms     93.748 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    1263.388 ms   1230.499 ms    162.367 ms
+===========================================================================
+Communication with each other party:
+Sent: 52.694 MiB in 6094 messages
+Received: 60.322 MiB in 6115 messages
+===========================================================================
+===========================================================================
+Protocol BooleanGMW operation INT_Int2Fx bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     10.922 ms      6.978 ms      4.957 ms
+Gates Setup              1.250 ms      1.247 ms      0.221 ms
+Gates Online            95.807 ms     89.711 ms     39.532 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     113.519 ms    110.181 ms     41.548 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 15.198 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_ADD bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     24.896 ms     11.086 ms     21.162 ms
+Gates Setup              5.990 ms      7.236 ms      4.347 ms
+Gates Online            10.794 ms     10.485 ms      5.716 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      47.558 ms     31.439 ms     22.996 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_SUB bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     18.876 ms      6.895 ms     20.490 ms
+Gates Setup             11.209 ms     10.384 ms      4.678 ms
+Gates Online            11.027 ms     11.652 ms      5.106 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      47.168 ms     38.745 ms     25.107 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_MUL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      5.148 ms      5.168 ms      0.141 ms
+Gates Setup             39.464 ms     41.617 ms      7.098 ms
+Gates Online            27.250 ms     26.912 ms      3.655 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      75.180 ms     75.454 ms      7.337 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.309 MiB in 4068 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_DIV bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      6.936 ms      5.349 ms      3.198 ms
+Gates Setup             96.037 ms     94.132 ms      9.706 ms
+Gates Online           336.519 ms    335.255 ms    102.809 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     445.660 ms    438.937 ms    104.025 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.350 MiB in 4631 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_LT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     18.560 ms     10.410 ms     19.896 ms
+Gates Setup              9.146 ms     10.343 ms      5.834 ms
+Gates Online            13.082 ms     12.563 ms      5.972 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      46.924 ms     44.427 ms     24.543 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_GT bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     14.608 ms      6.400 ms     16.783 ms
+Gates Setup              8.967 ms      9.278 ms      6.354 ms
+Gates Online            14.139 ms     15.379 ms      4.564 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      43.963 ms     38.992 ms     20.032 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_EQ bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     28.457 ms     17.599 ms     22.351 ms
+Gates Setup              3.269 ms      3.656 ms      2.049 ms
+Gates Online             6.944 ms      1.121 ms     13.357 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      45.155 ms     37.909 ms     28.680 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_GE bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     30.032 ms     13.738 ms     24.874 ms
+Gates Setup              6.349 ms      6.522 ms      4.744 ms
+Gates Online             9.722 ms      9.725 ms      4.163 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      51.512 ms     41.596 ms     25.886 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_LE bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.544 ms      5.618 ms     12.822 ms
+Gates Setup              7.027 ms      5.099 ms      3.984 ms
+Gates Online            10.096 ms     10.853 ms      4.485 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      35.206 ms     34.232 ms     17.541 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_InRange bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     39.372 ms     46.041 ms     21.636 ms
+Gates Setup             11.956 ms     13.263 ms      6.220 ms
+Gates Online            11.961 ms     10.178 ms      2.549 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      69.437 ms     80.085 ms     21.595 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.031 MiB in 226 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_IsZero bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     23.529 ms     34.615 ms     21.548 ms
+Gates Setup              4.140 ms      3.230 ms      4.208 ms
+Gates Online             2.542 ms      2.258 ms      0.974 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      36.458 ms     48.960 ms     19.491 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_IsNeg bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     26.217 ms     33.911 ms     21.181 ms
+Gates Setup              0.551 ms      0.538 ms      0.065 ms
+Gates Online             1.536 ms      0.821 ms      1.306 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      32.779 ms     39.732 ms     20.604 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.017 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_NEG bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     15.771 ms      6.675 ms     19.756 ms
+Gates Setup              4.559 ms      3.368 ms      3.136 ms
+Gates Online             3.529 ms      1.881 ms      3.671 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      28.901 ms     18.686 ms     17.654 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.022 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_Int2FL bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     10.490 ms      6.098 ms     13.193 ms
+Gates Setup             24.468 ms     23.793 ms      6.349 ms
+Gates Online            15.245 ms     16.056 ms      2.679 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      54.467 ms     56.898 ms     11.502 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.078 MiB in 871 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_Int2Fx bit size 64 SIMD 1
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     32.846 ms     46.374 ms     22.856 ms
+Gates Setup              0.598 ms      0.597 ms      0.104 ms
+Gates Online             2.889 ms      1.646 ms      2.852 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      42.344 ms     60.344 ms     23.952 ms
+===========================================================================
+Communication with each other party:
+Sent: 0.008 MiB in 14 messages
+Received: 0.017 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_ADD bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     14.347 ms      5.823 ms     15.710 ms
+Gates Setup             27.706 ms     29.604 ms      8.492 ms
+Gates Online            82.371 ms     63.395 ms     41.421 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     130.568 ms    119.132 ms     46.089 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.680 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_SUB bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      9.483 ms      6.259 ms      5.195 ms
+Gates Setup             31.447 ms     34.469 ms      7.251 ms
+Gates Online            84.293 ms     68.652 ms     36.278 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     130.895 ms    112.782 ms     42.244 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.680 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_MUL bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     21.883 ms     31.528 ms     20.186 ms
+Gates Setup            355.873 ms    251.945 ms    181.905 ms
+Gates Online            75.949 ms     76.929 ms      8.562 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     458.623 ms    338.463 ms    184.928 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 110.106 MiB in 4068 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_DIV bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     18.133 ms      9.325 ms     19.627 ms
+Gates Setup           1484.522 ms   1479.732 ms     12.763 ms
+Gates Online          1206.223 ms   1177.086 ms     56.921 ms
+---------------------------------------------------------------------------
+Circuit Evaluation    2715.125 ms   2682.900 ms     72.308 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 123.355 MiB in 4631 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_LT bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      8.635 ms      5.753 ms      5.023 ms
+Gates Setup             33.411 ms     38.287 ms      7.595 ms
+Gates Online            60.480 ms     64.793 ms     10.135 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     109.038 ms    106.635 ms     13.102 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.704 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_GT bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     10.110 ms      6.973 ms      4.961 ms
+Gates Setup             31.076 ms     30.860 ms      5.860 ms
+Gates Online            67.515 ms     64.004 ms     12.190 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     115.388 ms    108.874 ms     12.051 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.704 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_EQ bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.112 ms      5.773 ms     15.274 ms
+Gates Setup             23.584 ms     20.778 ms      6.546 ms
+Gates Online            45.857 ms     47.261 ms      7.848 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      87.222 ms     90.703 ms     15.741 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.680 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_GE bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.703 ms     13.804 ms      4.068 ms
+Gates Setup             29.557 ms     27.739 ms      5.226 ms
+Gates Online            68.524 ms     69.961 ms      8.427 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     116.413 ms    115.698 ms      9.206 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.704 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_LE bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      7.546 ms      6.078 ms      3.463 ms
+Gates Setup             33.829 ms     34.799 ms      7.049 ms
+Gates Online            60.307 ms     58.848 ms     11.407 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     108.230 ms    107.716 ms     16.920 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.704 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_InRange bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     12.502 ms      9.292 ms     14.527 ms
+Gates Setup             39.111 ms     42.429 ms     11.544 ms
+Gates Online            42.833 ms     44.761 ms      6.757 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      99.829 ms    106.698 ms     20.881 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 19.692 MiB in 226 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_IsZero bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     12.493 ms      5.630 ms     11.658 ms
+Gates Setup             14.882 ms     17.424 ms      5.761 ms
+Gates Online            35.863 ms     39.789 ms     10.777 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      68.942 ms     66.718 ms     23.190 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.680 MiB in 98 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_IsNeg bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     15.575 ms     15.722 ms     12.256 ms
+Gates Setup              1.271 ms      1.122 ms      0.329 ms
+Gates Online            66.484 ms     76.895 ms     24.509 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      90.056 ms    103.491 ms     26.900 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 15.198 MiB in 35 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_NEG bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total      7.490 ms      6.601 ms      3.534 ms
+Gates Setup             22.301 ms     23.229 ms      5.376 ms
+Gates Online            46.302 ms     45.372 ms      4.093 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      83.298 ms     82.565 ms      6.673 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 16.704 MiB in 99 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_Int2FL bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     10.984 ms      9.637 ms      5.317 ms
+Gates Setup             68.398 ms     67.830 ms      6.410 ms
+Gates Online            65.223 ms     64.684 ms      5.717 ms
+---------------------------------------------------------------------------
+Circuit Evaluation     150.661 ms    147.503 ms     11.612 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 34.871 MiB in 871 messages
+===========================================================================
+===========================================================================
+Protocol GarbledCircuit operation INT_Int2Fx bit size 64 SIMD 1000
+===========================================================================
+MOTION version: 31d22964 @ dev
+invocation: ./benchmark_liangzhao_signed_integer_operation --my-id 1 --parties 0,130.83.125.165,23000 1,130.83.125.166,23000 --repetitions 10
+by lzhao@simx2, PID 1891139
+===========================================================================
+Run time statistics over 10 iterations
+---------------------------------------------------------------------------
+                          mean        median        stddev
+---------------------------------------------------------------------------
+MT Presetup              0.000 ms      0.000 ms      0.000 ms
+MT Setup                 0.000 ms      0.000 ms      0.000 ms
+SP Presetup              0.000 ms      0.000 ms      0.000 ms
+SP Setup                 0.000 ms      0.000 ms      0.000 ms
+SB Presetup              0.000 ms      0.000 ms      0.000 ms
+SB Setup                 0.000 ms      0.000 ms      0.000 ms
+Base OTs                 0.000 ms      0.000 ms      0.000 ms
+OT Extension Setup       0.000 ms      0.000 ms      0.000 ms
+KK13 OT Extension Setup      0.000 ms      0.000 ms      0.000 ms
+---------------------------------------------------------------------------
+Preprocessing Total     11.997 ms      7.172 ms      6.734 ms
+Gates Setup              2.205 ms      1.412 ms      2.416 ms
+Gates Online            73.126 ms     78.060 ms     12.755 ms
+---------------------------------------------------------------------------
+Circuit Evaluation      94.195 ms     93.802 ms     14.533 ms
+===========================================================================
+Communication with each other party:
+Sent: 7.569 MiB in 14 messages
+Received: 15.198 MiB in 35 messages
+===========================================================================
