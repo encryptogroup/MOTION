@@ -117,7 +117,7 @@ std::vector<Combination> GenerateAllCombinations() {
   //     }
   //   }
   // }
-
+ 
   // for (const auto number_of_simd : kNumbersOfSimd_1_1000) {
   //   for (const auto bit_size : kBooleanBitSizes) {
   //     for (const auto operation_type : kBooleanGmwOperationTypes) {
