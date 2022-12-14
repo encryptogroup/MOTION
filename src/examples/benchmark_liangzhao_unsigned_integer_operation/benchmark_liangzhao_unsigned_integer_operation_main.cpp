@@ -136,9 +136,9 @@ std::vector<Combination> GenerateAllCombinations() {
   //   }
   // }
 
-  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kMod, 1000);
+  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kGarbledCircuit, T::kMod, 1000);
   combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBooleanGmw, T::kMod, 1000);
-  // combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, T::kMod, 1000);
+  combinations.emplace_back(64, encrypto::motion::MpcProtocol::kBmr, T::kMod, 1000);
 
   return combinations;
 }
