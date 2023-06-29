@@ -182,7 +182,7 @@ Alternatively, it can be built locally in `your_build_folder/doc` by adding `-DM
   * millionaires' problem: each party has an integer input (amount of money), the protocol yields the index of the party 
   with the largest input (i.e., the richest party)
   * **TODO (in work, cleanup):** All the applications implemented in [HyCC](https://gitlab.com/securityengineering/HyCC) 
-  via our HyCC adapter
+  via our [HyCC adapter](https://github.com/encryptogroup/MOTION2NX/tree/motion2nx/src/contrib/hycc)
     
 Three other examples with a detailed `README` can be found in `src/examples/tutorial/` :
   * Crosstabs
