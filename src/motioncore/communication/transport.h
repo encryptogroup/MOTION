@@ -27,6 +27,7 @@
 #include <stdexcept>
 #include <span>
 #include <vector>
+#include <cstdint>
 
 namespace encrypto::motion::communication {
 
