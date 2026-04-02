@@ -13,7 +13,7 @@ cp -r cmake-3.19.5-Linux-x86_64/share/* /usr/share/
 rm -r cmake*
 
 # compile and install boost
-wget -O boost_1_76_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2
+wget -O boost_1_76_0.tar.bz2 https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2
 tar xjvf boost_1_76_0.tar.bz2
 cd boost_1_76_0
 ./bootstrap.sh --prefix=/usr/local --with-libraries=context,fiber,filesystem,log,system,thread,program_options,json

@@ -3,7 +3,7 @@ message("!!!!! Building boost from sources. This can take a few minutes.")
 include(ExternalProject)
 
 set(MOTION_BUILD_BOOST_FROM_SOURCES ON)
-set(Boost_URL "https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2")
+set(Boost_URL "https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2")
 set(Boost_URL_HASH_SHA256 "f0397ba6e982c4450f27bf32a2a83292aba035b827a5623a14636ea583318c41")
 set(Boost_INSTALL ${CMAKE_CURRENT_BINARY_DIR}/extern/boost)
 set(Boost_LIB_DIR ${Boost_INSTALL}/lib)
